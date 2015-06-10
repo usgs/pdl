@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://earthquake.usgs.gov/distribution/product"
+	xmlns:product="http://earthquake.usgs.gov/distribution/product"
+	elementFormDefault="qualified">
+
+
+<annotation><documentation><![CDATA[
+ProductXML Schema
+Jeremy Fee <jmfee@usgs.gov>
+10 November 2009
+]]></documentation></annotation>
+
+
+<element name="product" type="product:product">
+	<annotation><documentation>
+		The root element of ProductXML.
+	</documentation></annotation>
+</element>
+
+
+<element name="notification" type="product:notification">
+	<annotation><documentation>
+		The root element of a product Notification.
+	</documentation></annotation>
+</element>
+
+
+
+<complexType name="product">
+	<annotation><documentation>
+		A product is a specific version of any content produced in response to
+		an earthquake, information about an earthquake, or another product.
+		Products have a unique ID, properties, links to other products and
+		resources, and content and/or files.
+	</documentation></annotation>
+
+	<sequence>
+		<element name="property" type="product:property" minOccurs="0" maxOccurs="unbounded"/>
+		<element name="link" type="product:link" minOccurs="0" maxOccurs="unbounded"/>
+		<element name="content" type="product:content" minOccurs="0" maxOccurs="unbounded"/>
+		<element name="signature" type="base64Binary" minOccurs="0" maxOccurs="1"/>
+	</sequence>
+
+	<attribute name="id" type="anyURI" use="required">
+		<annotation><documentation><![CDATA[
+				Example: urn:usgs-product:<source>:<type>:<code>
+		]]></documentation></annotation>
+	</attribute>
+
+	<attribute name="updateTime" type="dateTime" use="required">
+		<annotation><documentation>
+			When this version of product contents was assembled.
+			Newer update times override older update times for products with the same id.
+		</documentation></annotation>
+	</attribute>
+
+	<attribute name="status" type="string" default="update">
+		<annotation><documentation>
+			Product status.  Used to convey meaning about the purpose of this update.
+			Initially defined values are "update" and "delete", although each type of
+			product may define its own status vocabulary.
+		</documentation></annotation>
+	</attribute>
+
+	<attribute name="trackerURL" type="anyURI">
+		<annotation><documentation>
+			A URL where status updates are posted.
+			NOTE: trackers are deprecated.
+		</documentation></annotation>
+	</attribute>
+</complexType>
+
+<complexType name="property">
+	<annotation><documentation>
+		String name value pairs.
+		Names should be unique within a product.
+	</documentation></annotation>
+
+	<attribute name="name" type="string">
+		<annotation><documentation>
+			Property names should share the same meaning across all products.
+			If a property is product specific, it should be scoped.
+			For example:
+				shakemap.maxMMI = 5
+		</documentation></annotation>
+	</attribute>
+
+	<attribute name="value" type="string"/>
+</complexType>
+
+<complexType name="link">
+	<annotation><documentation>
+		A related product or resource.
+	</documentation></annotation>
+
+	<attribute name="rel" type="string" default="related">
+		<annotation><documentation>
+			How product or resource is related.
+		</documentation></annotation>
+	</attribute>
+
+	<attribute name="href" type="anyURI">
+		<annotation><documentation>
+			Either a ProductID (see product id attribute) or a URL.
+		</documentation></annotation>
+	</attribute>
+</complexType>
+
+<complexType name="content">
+<simpleContent>
+	<annotation><documentation>
+		A file or other content.
+	</documentation></annotation>
+
+	<extension base="string">
+		<attribute name="modified" type="dateTime"/>
+
+		<attribute name="path" type="string" default="">
+			<annotation><documentation>
+				A name or "/" separated path.
+			</documentation></annotation>
+		</attribute>
+
+		<attribute name="type" type="string" default="text/plain">
+			<annotation><documentation>
+				Mime type.
+			</documentation></annotation>
+		</attribute>
+
+		<attribute name="length" type="long">
+			<annotation><documentation>
+				Optional, but recommended.  Decoded content length.
+			</documentation></annotation>
+		</attribute>
+
+		<attribute name="href" type="anyURI">
+			<annotation><documentation>
+				Location where content may be obtained.
+				When the href attribute is present, no element content should be included.
+			</documentation></annotation>
+		</attribute>
+
+		<attribute name="encoded" type="boolean" default="false">
+			<annotation><documentation>
+				If true, content is base64 encoded bytes.
+				Otherwise, raw content.
+			</documentation></annotation>
+		</attribute>
+	</extension>
+</simpleContent>
+</complexType>
+
+
+</schema>

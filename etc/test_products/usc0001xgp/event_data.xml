@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<event_data eventid="c0001xgp" source="us" network="us" region="global" process_timestamp="2011-03-11 11:38:22" ciim_version="208" code_version="1.3" event_version="A">
+  <event magnitude="8.9" latitude="38.322" longitude="142.369" depth="24.4" event_timestamp="2011-03-11 05:46:23" localtime="Mar 11 2011 14:46:23 local" locationtext="NEAR THE EAST COAST OF HONSHU, JAPAN" />
+  <cdi_summary nresponses="345" max_intensity="7.8" citydb="city_2009" />
+  <products>
+    <category name="Maps">
+      <product name="City map">
+        <description><![CDATA[Map of responses by city or ZIP code]]></description>
+        <format type="image/jpeg" file="usc0001xgp_ciim.jpg" />
+        <format type="application/pdf" file="usc0001xgp_ciim.pdf" />
+        <format type="application/postscript" file="usc0001xgp_ciim.ps" />
+        <format type="text/html" file="usc0001xgp_ciim_imap.html" />
+      </product>
+    </category>
+    <category name="Plots">
+      <product name="Intensity vs. Distance">
+        <description><![CDATA[Plot of Attenuation (fall-off) with distance for each intensity versus its distance from the epicenter]]></description>
+        <format type="image/jpeg" file="usc0001xgp_plot_atten.jpg" />
+        <format type="application/postscript" file="usc0001xgp_plot_atten.ps" />
+      </product>
+      <product name="Responses vs. Time">
+        <description><![CDATA[Plot of total number of responses since the event]]></description>
+        <format type="image/jpeg" file="usc0001xgp_plot_numresp.jpg" />
+        <format type="application/postscript" file="usc0001xgp_plot_numresp.ps" />
+      </product>
+    </category>
+    <category name="Data">
+      <product name="Product List">
+        <description><![CDATA[List of available DYFI maps and data for this event]]></description>
+        <format type="text/xml" file="event_data.xml" />
+      </product>
+      <product name="Intensity Summary">
+        <description><![CDATA[Table of intensities aggregated by city or ZIP code]]></description>
+        <format type="text/plain" file="cdi_zip.txt" />
+        <format type="text/xml" file="cdi_zip.xml" />
+      </product>
+    </category>
+  </products>
+</event_data>

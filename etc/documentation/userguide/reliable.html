@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Reliable Listener Configuration</title>
+<link rel="stylesheet" href="userguide.css" />
+</head>
+
+<body>
+	<h1>Reliable Listener Configuration</h1>
+	<p>
+		<a href="index.html">&laquo; Back to Documentation</a>
+	</p>
+	<p>
+		<small>$Id$<br /> $URL$
+		</small>
+	</p>
+
+	<p>PDL offers several options for more reliable processing of
+		notifications and products, but these are not enabled by default and
+		require user configuration.</p>
+
+	<h2>Listener configuration</h2>
+	<p>It is recommended that users configure a listenerIndex,
+		maxTries, and retryDelay, for each listener to ensure it reliably
+		receives and processes notifications of new products.</p>
+
+	<h3>listenerIndex</h3>
+	<p>Note: while this is effective in reprocessing notifications that
+		failed the first time, it requires a process restart</p>
+	<dl>
+		<dt>listenerIndex</dt>
+		<dd>a notification index specific to a listener, that is used to
+			keep track of notifications that have been successfully processed</dd>
+	</dl>
+	<p>At process start, when a listener has a listenerIndex
+		configured, each notification receiver will requeue all notifications
+		it has received for processing by the listener. When processing a
+		notification, the listener then checks whether it has already
+		processed the product, effectively requeuing any products that may
+		have failed to process on the first attempt.</p>
+
+	<h3>maxTries and retryDelay</h3>
+	<p>maxTries and retryDelay settings control how a listener handles
+		notifications that fail to process on the first attempt; and ensure a
+		notification is processed without requiring a process restart.</p>
+	<dl>
+		<dt>maxTries</dt>
+		<dd>defines the number of delivery attempts PDL should make for a
+			specific listener; and defaults to 1.</dd>
+		<dt>retryDelay</dt>
+		<dd>defines how many milliseconds to wait between delivery
+			attempts that fail; and defaults to 300000ms (5 minutes).</dd>
+	</dl>
+
+	<h2>Configuration Example</h2>
+	<p>The lines in bold below show an example of how these properties
+		can be added to a listener. In general, any type of listener can
+		configure these properties.</p>
+	<pre>
+[LISTENERNAME]
+type = gov.usgs.earthquake.distribution.ExternalNotificationListener
+command = /bin/echo
+includeTypes = origin
+<strong>listenerIndexFile = data/LISTENERNAME_listener.db
+maxTries = 3
+retryDelay = 300000</strong>
+	</pre>
+	<p>
+		<a href="configuration.html#NotificationListener">See
+			NotificationListener configuration for more information</a>
+	</p>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>GeoServe</title>
+</head>
+<body>
+	<h1>GeoServe</h1>
+	<p><a href="index.html">&laquo; Back to Products Documentation</a></p>
+
+	<p>
+		<small>
+			$Id: geoserve.html 15596 2012-07-06 17:31:03Z tene $<br />
+			$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/userguide/products/geoserve.html $
+		</small>
+	</p>
+
+	<h2>Types</h2>
+	<dl>
+		<dt>geoserve</dt>
+		<dd>
+			An aggregate product composed of information fetched from the
+			GeoServe web service.
+		</dd>
+	</dl>
+
+	<h2>Properties</h2>
+	<dl>
+		<dt>utcOffset</dt>
+		<dd>[Integer] Minutes between epicenter timezone and UTC.</dd>
+
+		<dt>tsunamiFlag</dt>
+		<dd>
+			[&ldquo;true&rdquo;|&ldquo;false&rdquo;]
+			Boolean string indicating if the tsunami flag should be
+			triggered automatically.
+		</dd>
+
+		<dt>location</dt>
+		<dd>The location name for the earthquake. Event page title.</dd>
+	</dl>
+	<h2>Content</h2>
+	<dl>
+		<dt>geoserve.json</dt>
+		<dd>
+			[application/json]
+			Raw JSON string of the response from the GeoServe web service.
+			Note: There are may properties on this JSON object that are not
+			sent as part of the official product. Generally they are split
+			off into their component properties and sent separately.
+		</dd>
+	</dl>
+
+</body>
+</html>

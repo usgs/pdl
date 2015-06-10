@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PDL Client Install Instructions</title>
+<link rel="stylesheet" type="text/css" href="userguide.css" />
+</head>
+
+<body>
+<h1 id="install">PDL Client Install Instructions</h1>
+<p><a href="../index.html">&laquo; Back to User Guide</a></p>
+<p><small>$Id: install.html 20298 2013-10-17 16:52:00Z jmfee $<br />
+$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/userguide/install.html $</small></p>
+
+
+<h2>Navigation</h2>
+<ul>
+		<li><a href="requirements">System Requirements</a></li>
+		<li><a href="#downloads">PDL Client Downloads</a></li>
+		<li><a href="#install">Install</a></li>
+		<li><a href="#crontab">Automatic Scheduling</a></li>
+		<li><a href="#files">Downloaded File List</a></li>
+</ul>
+
+<hr />
+<h2 id="requirements">System Requirements</h2>
+<ul>
+	<li><strong>Sun Java Runtime Environment (JRE) version
+	1.6 or newer</strong>. <em>GNU Java (gij or GNU libgcj) should NOT be
+	confused with Sun Java.</em>
+	<p>You can find your version of java by running</p>
+	<div class="code"><pre>
+<strong>java -version</strong>
+
+java version "1.6.0_06"
+Java(TM) SE Runtime Environment (build 1.6.0_06-b02)
+Java HotSpot(TM) Server VM (build 10.0-b22, mixed mode)
+</pre></div>
+	<p><a href="http://www.java.com/">Download Java from
+	http://www.java.com/</a></p>
+	</li>
+
+	<li><strong>Active Internet Connection</strong></li>
+</ul>
+
+<hr />
+<h2 id="downloads">PDL Client Downloads</h2>
+<p>Download and unzip either one of the following distribution files. Each includes 
+shell scripts for unix and a batch file for windows.</p>
+<ul>
+	<li><a href="http://ehppdl1.cr.usgs.gov/ProductClient.zip">http://ehppdl1.cr.usgs.gov/ProductClient.zip</a></li>
+	<li><a href="http://ehppdl2.wr.usgs.gov/ProductClient.zip">http://ehppdl2.wr.usgs.gov/ProductClient.zip</a></li>
+</ul>
+
+<hr />
+<h2 id="install">Install</h2>
+<ul class="spaced-list">
+	<li>Download the PDL Product Client by clicking on one of the above <i>zip</i> 
+	file links.</li>
+	<li>Unzip the file to create the <i>ProductClient</i> PDL client directory.</li>
+	<li>Place <i>ProductClient</i> in a directory of your choosing.</li>
+	<li>Optionally, you will probably wish to modify <i>config.ini</i>, potentially to 
+	configure new products or to narrow the scope to the specific products you're 
+	interested in. Follow the instructions at <a href="configuration.html">Product 
+	Client Documentation</a> to alter the <i>config.ini</i> 
+	file.</li>
+	<li>In Addition, consider setting up a new user for a PDL service account, rather 
+	than running PDL under <i>root</i>. With a separate PDL account, permissions can 
+	be managed independently for resources associated with features such as external 
+	listener commands.</li>	
+	
+</ul>
+<p>
+<hr />
+<h2 id="crontab">Automatic Scheduling</h2>
+<p>For Linux users, the PDL client can be started automatically on client 
+machine reboot. This requires adding PDL's <i>init.sh</i> shell script to be added 
+to the Crontab table. Calling the init script from the crontab will automatically 
+start, or restart if the process isn't running, the PDL client application.</p>
+<p>To add an entry to the crontab table, execute:&nbsp; <code>sudo [pdluser] crontab -e</code></p>
+<p class="indented">...where [pdluser] is the client machine's user ID for running PDL.</p>
+<p>After asking for your password, this will bring up the crontab table using your 
+system's default editor (you must be listed in your system's <i>sudoers</i> table 
+to perform this operation. <a href="http://www.xinotes.org/notes/note/235/">See this 
+link for adding  a user to sudoers</a>) Add the following to crontab, where PDL_CLIENT_DIR 
+is the location of the <i>ProductClient</i> PDL Client directory:</p>
+
+<div class="code"><pre>
+# start (if not already running) every five minutes
+*/5 * * * * <strong>PDL_CLIENT_DIR/init.sh</strong> start &gt;/dev/null 2&gt;&amp;1 &amp;
+</pre></div>
+<p>In the above crontab snippet, the five asterisks specify the runtime minute, 
+hour, day-of-month, month and day-of-week. Under Linux systems, "*/5" will 
+evaluate to "run every 5 minutes." This should also work on BSD Unix systems such as 
+Mac OS X. An alternative syntax explicitly names the minutes after the hour in a 
+comma-separated list:</p>
+
+<div class="code"><pre>
+# start (if not already running) at 5, 10, 15, ...minutes after the hour
+5,10,15,20,25,30,35,40,45,50,55 * * * * <strong>PDL_CLIENT_DIR/init.sh</strong> start &gt;/dev/null 2&gt;&amp;1 &amp;
+</pre></div>
+
+<p>The redirect to <code>dev/null</code> throws away standard output and 
+the <code>2>&1</code> redirects standard error output to the same stream as 
+standard output (throw away). The ending ampersand launches init.sh in the 
+background.</p>
+
+<p><strong>NOTE</strong>: the init script assumes <code>java</code> is on the 
+system PATH.  You may need to configure a crontab path, or update the init 
+script to use an absolute path for <code>java</code>.</p>
+
+<hr />
+<h2 id="files">Downloaded File List</h2>
+
+
+<dl>
+	<dt>ProductClient</dt>
+	<dd>The directory unzipped from the download, containing all the other files</dd>
+	
+	<dt>README.txt</dt>
+	<dd>A simple text file containing instructions for a receipt of PDL products</dd>
+	
+	<dt>run.sh</dt>
+	<dd>A Unix/Linux shell script that executes receipts and sends  
+	of PDL products</dd>
+	
+	<dt>run.bat</dt>
+	<dd>A Windows batch file version of run.sh</dd>
+	
+	<dt>init.sh</dt>
+	<dd>A shell script for starting and stopping the PDL Client, as 
+	well performing a status inquiry</dd>
+	
+	<dt>config.ini</dt>
+	<dd>A file containing PDL client configuration information. By
+	default, it configures the sending and receiving of all product types.</dd>
+	
+	<dt>ProductClient.jar</dt>
+	<dd>The archive file containing all the Java code
+	necessary for running the PDL client.</dd>
+	
+</dl>
+
+<hr />
+
+</body>
+</html>

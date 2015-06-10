@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Configuring Product Index to Use MySQL</title>
+<link rel="stylesheet" href="userguide.css" />
+</head>
+
+<body>
+<h1>Configuring the Product Index to Use MySQL</h1>
+<p><a href="./indexer.html">&laquo; Back to Indexer Documentation</a></p>
+<p><small>$Id: configureMySQL.html 15596 2012-07-06 17:31:03Z tene $<br />
+$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/userguide/configureMySQL.html $</small></p>
+
+
+<h2>Navigation</h2>
+<ul>
+	<li><a href="#overview">Overview</a></li>
+	<li><a href="#database">Setup Database</a></li>
+	<li><a href="#tables">Create Table Schemas</a></li>
+	<li><a href="#triggers">Creating the Indexer's Database Triggers</a></li>
+	<li><a href="#config">Edit the Config File</a></li>
+</ul>
+
+<h2 id="overview">Overview</h2>
+<p>
+	This document describes the steps necessary to configure the Product Index to store
+	product summaries in a MySQL database, instead of the default SQLite database. These
+	instructions can be adapted to allow the Product Index to use another database, provided 
+	that a proper JDBC driver is installed.
+</p>
+
+<h2 id="database">Setup Database</h2>
+<p>
+	Note: for this step, you must have privileges to add new MySQL users and create
+	new databases on your server. If you do not have the required privileges, ask
+	your database administrator to perform this step for you.
+</p>
+
+<p>
+	We recommend that you create a new database exclusively for the Product Index:
+</p>
+
+<div class="code"><pre>
+CREATE DATABASE product_index;
+</pre>
+</div>
+
+<p>
+	Next, create two users on the database. The first is an admin user and the second
+	only has read/write permissions.
+</p>
+
+<div class="code"><pre>
+GRANT ALL PRIVILEGES ON `product_index`.* TO 'pi_admin'@'localhost' IDENTIFIED BY 'mySecretPassword';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `product_index`.* TO 'pi_write'@'localhost' IDENTIFIED BY 'myOtherSecretPassword';
+</pre>
+</div>
+
+<h2 id="tables">Create Table Schemas</h2>
+
+<p>
+	Next, you must create four tables in your newly created database. The Product Index
+	needs tables to store events, products summaries, product summary links, and product
+	summary. The tables must be created with the SQL commands in the following linked sql file, which can be
+	executed as the <code>pi_admin</code> user we just created:
+</p>
+
+<p><a href="http://ehppdl1.cr.usgs.gov/userguide/schema/productIndexSchemaMysql.sql">MYSQL Product Index Schema</a></p>
+
+
+<p>
+	The commands also create foreign key constraints and indexes. The Product Index
+	will still function fully without either of these, but they are included as enhancements.
+	The foreign key constraints ensure that the integrity of the data is maintained. The
+	indexes can greatly improve performance retrieving products from the database. 
+</p>
+
+<h2 id="triggers">Creating the Indexer's Database Triggers</h2>
+<h3>Indexer SQL Dependencies</h3>
+<p>
+	Beyond the creation of these four tables, the Indexer is dependent on two additional 
+	database components: the <i>feplus</i> system and <i>OnEventUpdate</i> stored 
+	procedures:
+</p>
+
+<dl>
+		<dt>mysql_feplus</dt>
+		<dd>Found in the <i>schema/mysql_feplus</i> directory, feplus implements 
+		region-identifying functionality based on latitude and longitude. It uses 
+		the definitions in the <i>etc/config/regions.xml</i> file to associate a 
+		region-name with a particular latitude/longitude location of an event or 
+		product. OnEventUpdate stored procedures uses this functionality for 
+		<i>origin</i> and <i>geoserve</i> products, which ultimately determine 
+		properties such as event <i>significance</i>.</dd>
+		
+		<dt>onEventTrigger Stored Procedures</dt>
+		<dd>Found in the <i>schema/productIndexOnEventUpdateMysql.sql</i> file, 
+		these procedures summarize products and events for efficient retrieval. 
+		The trigger is evoked when the Indexer's Java classes use 
+		time/latitude/longitude information in products to create or modify events.</dd>
+</dl>
+
+<h3>Trigger Installation</h3>
+<h4>mysql_feplus</h4>
+<ol>
+	<li>Determine the database user, password and database name.</li>
+	<li>In your linux terminal, cd to the PDL <i>etc/schema/mysql_feplus</i> 
+	directory.</li>
+	<li>Following the directions in that directory's README.txt file, use your 
+	editor of choice to update the username, password and database values in the 
+	<i>setup.sh</i> shell-script file to match your database.</li>
+	<li>Run the setup by entering <i>./setup.sh</i> at the terminal.</li>
+	<li>This will create your feplus database and SQL functions.</li>
+</ol>
+
+<h4>onEventTrigger Stored Procedures</h4>
+<ol>
+	<li>Continuing from the feplus install above, <i>cd ..</i> to rise one level
+	in your directory structure.</li>
+	<li>From your terminal, key in: <br /><i>mysql5 -u </i>username <i>-p</i> databasename 
+	<i>&lt; productIndexOnEventUpdateMysql.sql</i></li>
+	<li>This will create your eventSummary table and Indexer onEventTrigger procedures.</li>
+</ol>
+
+<p>
+	Your MySQL database is now set up properly, so it's time to configure the Product Index.
+</p>
+
+<h2 id="config">Edit the Config File</h2>
+
+<p>
+	As described on the <a href="configuration.html#ProductIndex">configuration page</a>, the Product 
+	Index can accept 3 configuration parameters: <code>indexfile</code>, <code>driver</code>, and 
+	<code>url</code>. <code>indexfile</code> only applies to SQLite databases; you should not set
+	this parameter for MySQL databases. Modify your global configuration file (config.ini) to include
+	the following:
+</p>
+
+<div class="code"><pre>
+...
+
+listeners = listener_indexer
+
+[listener_indexer]
+type = gov.usgs.earthquake.indexer.Indexer
+...
+index = indexer_index
+
+[indexer_index]
+type = gov.usgs.earthquake.indexer.JDBCProductIndex
+driver = com.mysql.jdbc.Driver
+url = jdbc:mysql://127.0.0.1/product_index?user=pi_write&password=myOtherSecretPassword
+
+</pre></div>
+
+<p>
+	In this example, the <code>[indexer_index]</code> section sets the parameters for
+	the Product Index. The <code>driver</code> parameter must be set to "com.mysql.jdbc.Driver" 
+	to use MySQL. Only the MySQL Java driver is provided by default, so if to use another 
+	database (PostgreSQL, Oracle, etc) you need to install the relevent JDBC driver.  
+</p>
+
+<p>
+	The <code>url</code> parameter should be set to a valid JDBC URL. For MySQL, 
+	the format is <code>jdbc:mysql://[host][:port]/[database]?user=[username]&password=[password]</code>
+</p>
+</body>
+</html>

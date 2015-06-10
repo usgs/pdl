@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Running an EIDSInputWedge</title>
+<link rel="stylesheet" type="text/css" href="userguide.css" />
+</head>
+
+<body>
+<h1>Running an EIDSInputWedge</h1>
+<p><a href="./index.html">&laquo; Back to User Guide</a></p>
+<p><small>$Id: eidsinputwedge.html 21960 2014-09-02 22:43:32Z jmfee $<br />
+$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/userguide/eidsinputwedge.html $</small></p>
+
+<p>The EIDSInputWedge provides a polling interface for sending new
+products, which was frequently used with EIDS. Messages to be sent are
+written to a poll directory, and are converted to products by a parsing
+class that understands the file format.</p>
+
+<p>Polling may introduce latency between when a product is created
+and when it is sent, and does not provide direct feedback (other than
+log files) about the status of sent products. Consider <a
+	href="sending.html#commandline">Using the Command Line to Send
+Products</a>.</p>
+
+<h2>Command Line Usage</h2>
+<p>An external configuration file may be used with the
+EIDSInputWedge, instead of command line arguments. See the next section
+for a configuration example.</p>
+
+
+<h3>Send a Quakeml Product</h3>
+<p>No "parser" is required to send Quakeml files.</p>
+<em>NOTE: backslashes added for readability, command is one line.</em>
+<div class="code"><pre>
+java -jar ProductClient.jar
+	--mainclass=gov.usgs.earthquake.eids.EIDSInputWedge \
+	--servers=pdldevel.cr.usgs.gov:11235 \
+	--privateKey=/path/to/id_dsa \
+	<strong>--file=QUAKEML_FILE</strong>
+</pre></div>
+
+
+<h4>Convert CUBE/EQXML Event and Delete messages to Quakeml Products</h4>
+<p>CUBE "E " and "DE" type messages can be converted to Quakeml, using the EidsToQuakemlConverter:</p>
+<p>See the <a href="quakeml.html">Quakeml conversion guide</a></p>
+
+<em>NOTE: backslashes added for readability, command is one line.</em>
+<div class="code"><pre>
+java -jar ProductClient.jar
+	--mainclass=gov.usgs.earthquake.eids.EIDSInputWedge \
+	<strong>--parser=gov.usgs.earthquake.event.EidsToQuakemlConverter</strong> \
+	--servers=pdldevel.cr.usgs.gov:11235 \
+	--privateKey=/path/to/id_dsa \
+	<strong>--file=CUBE_OR_EQXML_FILE</strong>
+</pre></div>
+
+<h4>Convert CUBE "LI" messages to Products</h4>
+<p>CUBE "LI" messages have no representation in Quakeml, and must use the EQMessageProductCreator:</p>
+<p>See the <a href="quakeml.html">Quakeml conversion guide</a></p>
+
+<em>NOTE: backslashes added for readability, command is one line.</em>
+<div class="code"><pre>
+java -jar ProductClient.jar
+	--mainclass=gov.usgs.earthquake.eids.EIDSInputWedge \
+	<strong>--parser=gov.usgs.earthquake.eids.EQMessageProductCreator</strong> \
+	--servers=pdldevel.cr.usgs.gov:11235 \
+	--privateKey=/path/to/id_dsa \
+	<strong>--file=CUBE_ADDON_FILE</strong>
+</pre></div>
+
+
+<h3>Attachments</h3>
+<p>Optionally, when sending one file as a Product, files can be
+attached. Use the <code>--attach=FILE_OR_DIR</code> argument one or more
+times.  Directory trees are preserved, and each path must be unique (last wins).
+If more than one product is generated, an exception is thrown.
+
+
+<h3>Poll a Directory for Files</h3>
+<em>NOTE: backslashes added for readability, command is one line.</em>
+<div class="code"><pre>
+java -jar ProductClient.jar
+	--mainclass=gov.usgs.earthquake.eids.EIDSInputWedge \
+	--parser=gov.usgs.earthquake.event.EidsToQuakemlConverter \
+	--servers=pdldevel.cr.usgs.gov:11235 \
+	--privateKey=/path/to/id_dsa \
+	<strong>--poll \
+	--polldir=POLLDIRECTORY \
+	--pollInterval=1000</strong>
+</pre></div>
+
+<h3>Full Command Line Usage</h3>
+<em>Run this command to display full command line usage</em>
+<div class="code"><pre>
+java -jar ProductClient.jar --mainclass=gov.usgs.earthquake.eids.EIDSInputWedge
+</pre></div>
+
+
+
+<h2>Example Configuration File</h2>
+
+<p>This configuration is sends CUBE/EQXML/Quakeml files (see <code>parserClass</code>)
+to the development server (see <code>pdldevel</code>).</p>
+
+<p>This should be a file named "config.ini" in the working
+directory, or for another location use the "--configFile=CONFIGFILE"
+argument.</p>
+
+
+<div class="code"><pre>
+;; EIDS Input Wedge Config
+mainclass = gov.usgs.earthquake.eids.EIDSInputWedge
+
+
+
+;; PRIVATE KEY
+;; OpenSSH DSA private key used to sign messages
+
+; register the corresponding public key (.pub) on the hubs where messages are sent
+privateKeyFile = /path/to/id_dsa
+
+
+
+;; SENDERS
+;; list of senders that will send messages
+
+; use this list for development
+senders = pdldevel
+
+; use this list for production
+; senders = ehppdl1, ehppdl2
+
+
+
+;; DIRECTORIES
+;; Where messages are read and stored
+
+
+; files to process
+directory = polldir
+
+; check for messages in milliseconds
+interval = 1000
+
+; processed files
+oldinputdir = oldinput
+
+; files that could not be processed
+errordir = errordir
+
+
+
+
+;; PARSER 
+;; How messages are converted to QuakeML.  This must be a class that implements
+;; the java interface gov.usgs.earthquake.quakeml.FileToQuakemlConverter
+
+; (Default) EidsToQuakemlConverter accepts CUBE, EQXML, and QuakeML event messages
+parserClass = gov.usgs.earthquake.event.EidsToQuakemlConverter
+
+; NDKToQuakemlConverter accepts NDK format focal mechanisms
+; parserClass = gov.usgs.earthquake.focalmechanism.NDKToQuakemlConverter
+
+; VaxToQuakemlConverter accepts Vax format focal mechanisms
+; parserClass = gov.usgs.earthquake.focalmechanism.VaxToQuakemlConverter
+
+
+;; PRODUCT TYPES
+;; these flags affect the product types that are generated, and affect the meaning of a product.
+
+; when true, prefix all product types with "internal-"
+; indicates the product is for internal consumption, and should not generate emails or other public notifications.
+createInternalProducts = false
+
+; when true, suffix all product types with "-scenario"
+; indicates the product is for a scenario event, instead of an actual earthquake.
+createScenarioProducts = false
+
+
+; when a phase-data product is created, also create a "lightweight" origin with only preferred origin and magnitude.
+sendOriginWhenPhasesExist = true
+
+; when a phase-data product is created, also create "lightweight" focal-mechanism, moment-tensor, or broadband-depth products.
+sendMechanismWhenPhasesExist = true
+
+
+;; LOGGING
+
+; one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST
+loglevel = CONFIG
+
+; directory where log files are written
+logdirectory = log
+
+; log file name pattern
+logfile = yyyyMMdd'.log'
+
+; whether to redirect console output
+redirectconsole = false
+
+
+
+
+;; TRACKER
+;; The tracker provides centralized tracking.  A URL _must_ be provided for 
+;; sent messages, but tracker updates are not sent from this computer unless
+;; enableTracker is set to true.
+
+; tracker url assigned to created products
+trackerURL = http://ehppdl1.cr.usgs.gov/tracker
+
+; whether to send tracker updates from this computer
+enableTracker = false
+
+
+
+
+;; SENDERS
+;; Where products are sent.  Only sections included in the "senders" list above
+;; are loaded.
+
+; pdldevel is the development hub
+[pdldevel]
+type = gov.usgs.earthquake.distribution.SocketProductSender
+host = pdldevel.cr.usgs.gov
+port = 11235
+connectTimeout = 15000
+
+
+; ehppdl1 and ehppdl2 are the production hubs
+[ehppdl1]
+type = gov.usgs.earthquake.distribution.SocketProductSender
+host = ehppdl1.cr.usgs.gov
+port = 11235
+connectTimeout = 15000
+
+[ehppdl2]
+type = gov.usgs.earthquake.distribution.SocketProductSender
+host = ehppdl2.wr.usgs.gov
+port = 11235
+connectTimeout = 15000
+</pre></div>
+
+
+
+</body>
+</html>

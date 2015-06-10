@@ -1,0 +1,284 @@
+<?xml version="1.0"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://earthquake.usgs.gov/distribution/indexer"
+	xmlns:indexer="http://earthquake.usgs.gov/distribution/indexer"
+	xmlns:product="http://earthquake.usgs.gov/distribution/product"
+	elementFormDefault="qualified">
+
+
+<annotation><documentation><![CDATA[
+ProductSearch Schema
+Jeremy Fee <jmfee@usgs.gov>
+10 November 2009
+]]></documentation></annotation>
+
+
+<import namespace="http://earthquake.usgs.gov/distribution/product" schemaFile="product.xsd"/>
+
+
+<element name="searchrequest" type="indexer:searchRequest">
+	<annotation><documentation>
+		The root element of a PDL Search Request
+	</documentation></annotation>
+</element>
+
+<element name="searchresponse" type="indexer:searchResponse">
+	<annotation><documentation>
+		The root element of a PDL Search Response
+	</documentation></annotation>
+</element>
+
+
+
+<complexType name="searchRequest">
+	<sequence>
+		<element name="query" type="indexer:searchQuery" minOccurs="1" maxOccurs="unbounded"/>
+	</sequence>
+</complexType>
+
+<complexType name="searchResponse">
+	<sequence>
+		<element name="result" type="indexer:searchResult" minOccurs="1" maxOccurs="unbounded"/>
+	</sequence>
+</complexType>
+
+
+
+
+
+<complexType name="eventSummary">
+	<annotation><documentation>
+		A summary of an event includes properties that are relevant for search, and optionally
+		the product summaries that are associated with this event.
+	</documentation></annotation>
+
+	<sequence>
+		<element name="property" type="product:property" minOccurs="0" maxOccurs="unbounded">
+			<annotation><documentation>
+				Summary properties for this event.
+			</documentation></annotation>
+		</element>
+	</sequence>
+
+	<attributeGroup ref="indexer:summaryAttributes"/>
+</complexType>
+
+<complexType name="event">
+	<annotation><documentation>
+		A summary of an event includes properties that are relevant for search, and optionally
+		the product summaries that are associated with this event.
+	</documentation></annotation>
+
+	<sequence>
+		<element name="productSummary" type="indexer:productSummary" minOccurs="0" maxOccurs="unbounded">
+			<annotation><documentation>
+				Products associated with this event.
+			</documentation></annotation>
+		</element>
+	</sequence>
+
+	<attributeGroup ref="indexer:summaryAttributes"/>
+</complexType>
+
+
+<complexType name="productSummary">
+	<annotation><documentation>
+		The summary is a product without its contents, and information about any associated event.
+	</documentation></annotation>
+
+	<sequence>
+		<element name="property" type="product:property" minOccurs="0" maxOccurs="unbounded"/>
+		<element name="link" type="product:link" minOccurs="0" maxOccurs="unbounded"/>
+	</sequence>
+
+	<attributeGroup ref="indexer:summaryAttributes"/>
+</complexType>
+
+
+<attributeGroup name="summaryAttributes">
+	<annotation><documentation>
+		Attributes used for eventSummary and productSummary types.
+	</documentation></annotation>
+
+	<attribute name="id" type="anyURI">
+		<annotation><documentation>
+			ID of product or event.
+		</documentation></annotation>
+	</attribute>
+
+	<attribute name="updateTime" type="dateTime">
+		<annotation><documentation>
+			Newer update times override older update times for products or events with the same id.
+		</documentation></annotation>
+	</attribute>
+
+	<attribute name="status" type="string" default="update">
+		<annotation><documentation>
+			Product or event status.  Used to convey meaning about the purpose of this update.
+			Generally anything that is not "delete" can be considered an update.
+		</documentation></annotation>
+	</attribute>
+
+	<attribute name="source" type="string">
+		<annotation><documentation>
+			This is the source of the event or product.
+			ANSS network, or QuakeML authority.
+		</documentation></annotation>
+	</attribute>
+
+	<attribute name="sourceCode" type="string">
+		<annotation><documentation>
+			The is the code assigned by the source.
+			ANSS network eventcode, or QuakeML resource+local id.
+		</documentation></annotation>
+	</attribute>
+
+	<attribute name="time" type="date">
+		<annotation><documentation>
+			Time of event associated with this event or product.
+		</documentation></annotation>
+	</attribute>
+
+	<attribute name="latitude" type="decimal">
+		<annotation><documentation>
+			Latitude of event associated with this event or product.
+		</documentation></annotation>
+	</attribute>
+
+	<attribute name="longitude" type="decimal">
+		<annotation><documentation>
+			Longitude of event associated with this event or product.
+		</documentation></annotation>
+	</attribute>
+
+	<attribute name="depth" type="decimal">
+		<annotation><documentation>
+			Depth of event associated with this event or product.
+		</documentation></annotation>
+	</attribute>
+
+	<attribute name="magnitude" type="decimal">
+		<annotation><documentation>
+			Magnitude of event associated with this event or product.
+		</documentation></annotation>
+	</attribute>
+
+	<attribute name="version" type="string">
+		<annotation><documentation>
+			Version assigned by product source.
+		</documentation></annotation>
+	</attribute>
+
+	<attribute name="preferredWeight" type="long">
+		<annotation><documentation>
+			Preferred weight of a product.
+		</documentation></annotation>
+	</attribute>
+</attributeGroup>
+
+
+<simpleType name="searchMethod">
+	<annotation><documentation>
+		An enumeration of supported query types.
+	</documentation></annotation>
+
+	<restriction base="string">
+		<enumeration value="getEvents">
+			<annotation><documentation>
+				The result will contain zero or more eventSummary type elements,
+				without productSummary children.
+			</documentation></annotation>
+		</enumeration>
+		<enumeration value="getEvent">
+			<annotation><documentation>
+				The result will contain zero or one eventSummary type elements,
+				with productSummary children.
+			</documentation></annotation>
+		</enumeration>
+		<enumeration value="getProducts">
+			<annotation><documentation>
+				The result will contain zero or more productSummary type elements.
+			</documentation></annotation>
+		</enumeration>
+		<enumeration value="getProduct">
+			<annotation><documentation>
+				The result will contain zero or one product type element.
+			</documentation></annotation>
+		</enumeration>
+	</restriction>
+</simpleType>
+
+<complexType name="searchQuery">
+	<sequence>
+		<element name="property" type="product:property" minOccurs="0" maxOccurs="unbounded"/>
+		<element name="productSummary" type="indexer:productSummary" minOccurs="0" maxOccurs="unbounded">
+			<annotation><documentation>
+				Used to pass productID to a getProducts query.
+				Other attributes are ignored.
+			</documentation></annotation>
+		</element>
+	</sequence>
+
+	<attribute name="method" type="indexer:searchMethod" use="required"/>
+
+	<attribute name="eventSource" type="string"/>
+	<attribute name="eventSourceCode" type="string"/>
+	<attribute name="minEventTime" type="date"/>
+	<attribute name="maxEventTime" type="date"/>
+	<attribute name="minEventLatitude" type="decimal"/>
+	<attribute name="maxEventLatitude" type="decimal"/>
+	<attribute name="minEventLongitude" type="decimal"/>
+	<attribute name="maxEventLongitude" type="decimal"/>
+	<attribute name="minEventDepth" type="decimal"/>
+	<attribute name="maxEventDepth" type="decimal"/>
+	<attribute name="minEventMagnitude" type="decimal"/>
+	<attribute name="maxEventMagnitude" type="decimal"/>
+
+	<attribute name="minProductUpdateTime" type="date"/>
+	<attribute name="maxProductUpdateTime" type="date"/>
+	<attribute name="productSource" type="string"/>
+	<attribute name="productType" type="string"/>
+	<attribute name="productCode" type="string"/>
+	<attribute name="productVersion" type="string"/>
+	<attribute name="productStatus" type="string"/>
+</complexType>
+
+<complexType name="searchResult">
+	<sequence>
+		<element name="query" type="indexer:searchQuery">
+			<annotation><documentation>
+				The query that generated this result.
+			</documentation></annotation>
+		</element>
+		<element name="error" type="string" minOccurs="0" maxOccurs="1">
+			<annotation><documentation>
+				This element only appears when an error occurred processing the query.
+			</documentation></annotation>
+		</element>
+		<element name="eventSummary" type="indexer:eventSummary" minOccurs="0" maxOccurs="unbounded">
+			<annotation><documentation>
+				Zero or more returned for method "getEventSummary".
+			</documentation></annotation>
+		</element>
+		<element name="productSummary" type="indexer:productSummary" minOccurs="0" maxOccurs="unbounded">
+			<annotation><documentation>
+				Zero or more returned for method "getProductSummary".
+			</documentation></annotation>
+		</element>
+		<element name="product" type="product:product" minOccurs="0" maxOccurs="unbounded">
+			<annotation><documentation>
+				Zero or more returned for method "getProduct".
+			</documentation></annotation>
+		</element>
+		<element name="event" type="indexer:event" minOccurs="0" maxOccurs="unbounded">
+			<annotation><documentation>
+				Zero or more returned for method "getEvent".
+			</documentation></annotation>
+		</element>
+	</sequence>
+
+	<attribute name="method" type="product:searchMethod" use="required"/>
+</complexType>
+
+
+</schema>

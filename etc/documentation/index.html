@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Product Distribution User Guide</title>
+</head>
+
+<body>
+	<h1>Product Distribution User Guide</h1>
+
+	<p>
+		<small>$Id: index.html 17879 2012-12-12 19:49:10Z jmfee $<br />
+			$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/index.html $
+		</small>
+	</p>
+
+
+	<h2>Introduction</h2>
+	<p>
+		The Product Distribution Layer (PDL) is a USGS platform for exchanging
+		information about seismic events such as earthquakes and landslides.
+		It provides a standard method for bundling textual and multimedia data
+		into a package called a <i>product</i>.
+	</p>
+
+	<p>Products are created by USGS and non-USGS clients, distributed
+		using PDL, and received by various USGS and non-USGS automated systems
+		such as Real-time Earthquake Maps, the Comprehensive Catalog of
+		seismic events (Comcat), ShakeMaps, the PAGER earthquake alert system
+		and the Earthquake Notification Service. PDL is designed to support
+		both existing and future needs for seismic information.</p>
+
+	<p>PDL focuses on distribution and triggering, and integrates with
+		other systems for processing. After a product is created it is sent to
+		a distribution hub. The distribution hub creates a notification that
+		includes a URL where the full product can be downloaded. Clients
+		connect to the distribution hub and receive notifications about
+		available products. Based on configuration, a client may choose to
+		download and process a product.</p>
+
+	<p>PDL provides two primary alternatives for processing products: a
+		java API for direct integration, and a command line api for
+		applications to be executed when products are received.</p>
+
+	<p>The Product Tracker is an external, opt-in system that tracks
+		product activity, including product receipts, sends, downloads and
+		notifications.</p>
+
+	<h2 id="documentation">Documentation</h2>
+
+	<ul>
+		<li><a href="userguide/system_overview.html#overview">System
+				Overview</a></li>
+		<li><a href="userguide/install.html">Installation
+				Instructions</a></li>
+		<li><a href="userguide/sending.html">Sending Products</a></li>
+		<li><a href="userguide/receiving.html">Receiving Products</a></li>
+		<li><a href="userguide/tracking.html">Tracking Products</a></li>
+
+		<li><a href="userguide/configuration.html">Configuration</a></li>
+		<li><a href="userguide/commandLine.html">Command Line
+				Arguments</a>
+		<li><a href="userguide/products/index.html">Product Reference</a></li>
+		<li><a href="userguide/monitoring.html">Monitoring</a></li>
+		<li><a href="userguide/troubleshooting.html">Troubleshooting</a></li>
+		<li><a href="userguide/java_api.html">Java API</a></li>
+		<li><a href="userguide/changeLog.html">System Change Log</a></li>
+
+	</ul>
+
+	<h2 id="requirements">System Requirements</h2>
+	<ul>
+		<li><strong>Sun Java Runtime Environment (JRE) version
+				1.6 or newer</strong>. <em>GNU Java (gij or GNU libgcj) should NOT be
+				confused with Sun Java.</em>
+			<p>You can find your version of java by running</p>
+			<div class="code">
+				<pre>
+<strong>java -version</strong>
+
+java version "1.6.0_06"
+Java(TM) SE Runtime Environment (build 1.6.0_06-b02)
+Java HotSpot(TM) Server VM (build 10.0-b22, mixed mode)
+</pre>
+			</div>
+			<p>
+				<a href="http://www.java.com/">Download Java from
+					http://www.java.com/</a>
+			</p></li>
+
+		<li><strong>An active Internet Connection</strong></li>
+	</ul>
+
+
+	<hr />
+	<h2 id="downloads">Downloads</h2>
+	<p>Download and unzip either one of the following distribution
+		files. Each includes shell scripts for unix and a batch file for
+		windows.</p>
+	<ul>
+		<li><a href="http://ehppdl1.cr.usgs.gov/ProductClient.zip">http://ehppdl1.cr.usgs.gov/ProductClient.zip</a></li>
+		<li><a href="http://ehppdl2.wr.usgs.gov/ProductClient.zip">http://ehppdl2.wr.usgs.gov/ProductClient.zip</a></li>
+	</ul>
+
+	<p>
+		See the <a href="userguide/install.html">Installation Instructions</a>
+		for more details.
+	</p>
+
+</body>
+
+</html>

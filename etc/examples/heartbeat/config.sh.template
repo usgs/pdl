@@ -1,0 +1,30 @@
+##
+##
+## See: README file for information about these parameters.
+##
+##
+
+## ------------------------------------------------------------
+#  Configuration Settings for Install/Uninstall Script
+## ------------------------------------------------------------
+
+HEARTBEAT_VERSION='0.0.1';
+HEARTBEAT_PATH='';
+HEARTBEAT_USER='';
+HEARTBEAT_SCHEDULE='*/5 * * * *';
+HEARTBEAT_SENDER="${HEARTBEAT_PATH}/sendHeartbeat";
+HEARTBEAT_MARKER='AUTO Added by Heartbeat install';
+HEARTBEAT_LOG="heartbeat.log";
+
+
+## ------------------------------------------------------------
+#  Configuration Settings for Sender Script
+## ------------------------------------------------------------
+
+HEARTBEAT_CLIENT="ProductClient.jar";
+HEARTBEAT_CLIENT_CONFIG='';
+HEARTBEAT_KEY='';
+
+HEARTBEAT_SOURCE='us';
+HEARTBEAT_CODE=`hostname`;
+HEARTBEAT_TRACKER='http://pdldevel.cr.usgs.gov/tracker/';

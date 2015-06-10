@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>origin Product Documentation</title>
+<link rel="stylesheet" href="../userguide.css" />
+</head>
+
+<body>
+<h1>origin Product Documentation</h1>
+<p><a href="index.html">&laquo; Back to Products Documentation</a></p>
+<p><small>$Id: origin.html 23028 2015-04-30 23:28:49Z jmfee $<br />
+$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/userguide/products/origin.html $</small></p>
+
+<h2>Types</h2>
+<dl>
+	<dt>origin</dt>
+	<dd>Origin products are currently read from EQXML messages.</dd>
+
+	<dt>phase-data</dt>
+	<dd>Similar to origin product, but underlying xml contains phase data.  
+			This type of message is usually sent in addition to origin, because 
+			the message is significantly larger.</dd>
+
+	<dt>origin-scenario</dt>
+	<dt>phase-data-scenario</dt>
+	<dd>Scenario earthquakes.</dd>
+
+	<dt>internal-origin</dt>
+	<dt>internal-phase-data</dt>
+	<dd>Preliminary locations that are not QC'ed for release to public.</dd>
+</dl>
+
+<h2>Sources</h2>
+<dl>
+	<dt>Network Code</dt>
+	<dd>The contributing network.</dd>
+</dl>
+
+<h2>Status</h2>
+<dl>
+	<dt>UPDATE</dt>
+	<dd>The product is not being deleted.</dd>
+	<dt>DELETE</dt>
+	<dd>The product is being deleted.</dd>
+</dl>
+
+<h2>Properties</h2>
+<dl>
+	<dt>azimuthal-gap</dt>
+	<dd>Azimuthal Gap of this origin in degrees.</dd>
+
+	<dt>depth</dt>
+	<dd>The depth associated with this origin.</dd>
+
+	<dt>depth-type</dt>
+	<dd>How depth was computed.</dd>
+
+	<dt>error-ellipse-azimuth</dt>
+	<dd>Azimuth of error ellipse major axis in degrees.</dd>
+
+	<dt>error-ellipse-intermediate</dt>
+	<dd>Length of error ellipse intermediate axis in meters.</dd>
+
+	<dt>error-ellipse-major</dt>
+	<dd>Length of error ellipse major axis in meters.</dd>
+
+	<dt>error-ellipse-minor</dt>
+	<dd>Length of error ellipse minor axis in meters.</dd>
+
+	<dt>error-ellipse-plunge</dt>
+	<dd>Plunge of error ellipse major axis in degrees.</dd>
+
+	<dt>error-ellipse-rotation</dt>
+	<dd>Rotation of error ellipse major axis in degrees.</dd>
+
+	<dt>evaluation-status</dt>
+	<dd>quakeml evaluation status of this origin.</dd>
+
+	<dt>eventsource</dt>
+	<dd>The event network this origin is associated with.</dd>
+
+	<dt>eventsourcecode</dt>
+	<dd>The event network code this origin is associated with.</dd>
+
+	<dt>eventtime</dt>
+	<dd>The origin time associated with this origin.</dd>
+
+	<dt>eventtime-error</dt>
+	<dd>Time uncertainty in seconds.</dd>
+
+	<dt>eventtype</dt>
+	<dd>Type of origin. Default is "earthquake".</dd>
+
+	<dt>horizontal-error</dt>
+	<dd>Horizontal error associated with this location in kilometers.</dd>
+
+	<dt>latitude</dt>
+	<dd>The latitude associated with this origin.</dd>
+
+	<dt>latitude-error</dt>
+	<dd>Latitude uncertainty in degrees.</dd>
+
+	<dt>longitude</dt>
+	<dd>The longitude associated with this origin.</dd>
+
+	<dt>longitude-error</dt>
+	<dd>Longitude uncertainty in degrees.</dd>
+
+	<dt>magnitude</dt>
+	<dd>The preferred magnitude value that accompanied this origin.</dd>
+
+	<dt>magnitude-azimuthal-gap</dt>
+	<dd>Azimuthal gap of stations used to compute magnitude in degrees.</dd>
+
+	<dt>magnitude-error</dt>
+	<dd>Any error associated with the magnitude.</dd>
+
+	<dt>magnitude-num-stations-used</dt>
+	<dd>Number of stations used to compute magnitude.</dd>
+
+	<dt>magnitude-source</dt>
+	<dd>Source of magnitude parameters, not necessarily the same as product source.</dd>
+
+	<dt>magnitude-type</dt>
+	<dd>The magnitude type.</dd>
+
+	<dt>minimum-distance</dt>
+	<dd>Distance from location to nearest station.</dd>
+
+	<dt>num-stations-used</dt>
+	<dd>Number of stations used to compute this location.</dd>
+
+	<dt>num-phases-used</dt>
+	<dd>Number of phases used to compute this location.</dd>
+
+	<dt>origin-source</dt>
+	<dd>Source of origin parameters, not necessarily the same as product source.</dd>
+
+	<dt>quakeml-magnitude-publicid</dt>
+	<dd>The magnitude element publicID attribute value,
+			when product is generated from quakeml.</dd>
+
+	<dt>quakeml-origin-publicid</dt>
+	<dd>The origin element publicID attribute value,
+			when product is generated from quakeml.</dd>
+
+	<dt>quakeml-publicid</dt>
+	<dd>The event element publicID attribute value,
+			when product is generated from quakeml.</dd>
+
+	<dt>region</dt>
+	<dd>A region name associated with this location.</dd>
+
+	<dt>review-status</dt>
+	<dd>Whether this event has been reviewed by a human.</dd>
+
+	<dt>standard-error</dt>
+	<dd>RMS time error. Another measurement of error associated with this location.</dd>
+
+	<dt>title</dt>
+	<dd>Earthquake name description, when product is generated from quakeml.</dd>
+
+	<dt>version</dt>
+	<dd>The version associated with this origin.</dd>
+
+	<dt>vertical-error</dt>
+	<dd>Vertical error associated with this location.</dd>
+</dl>
+
+
+<h2>Contents</h2>
+<dl>
+	<dt>eqxml.xml</dt>
+	<dd>Original EQXML message containing origin (if originally EQXML).</dd>
+
+	<dt>quakeml.xml</dt>
+	<dd>Original Quakeml message containing origin (if originally Quakeml).
+</dl>
+
+
+<h2>Deprecated Properties</h2>
+<p>These properties were defined at one point, but are either not used consistently or frequently.
+<dl>
+	<dt>usage</dt>
+	<dd>Usage information, one of "Actual" (Default), "Scenario",
+	"Test"</dd>
+
+	<dt>scope</dt>
+	<dd>Scope information, one of "Public" (Default), "Internal"</dd>
+
+	<dt>depth-error</dt>
+	<dd>Error associated with depth.</dd>
+
+	<dt>depth-method</dt>
+	<dd>Method used to compute depth.</dd>
+
+	<dt>latitude-error</dt>
+	<dd>Latitude error associated with this location</dd>
+
+	<dt>longitude-error</dt>
+	<dd>Longitude error associated with this location.</dd>
+
+	<dt>num-phases-associated</dt>
+	<dd>Number of phases related to this event.</dd>
+
+	<dt>num-stations-associated</dt>
+	<dd>Number of stations related to this event.</dd>
+
+	<dt>eventtime-error</dt>
+	<dd>Origin time error.</dd>
+
+	<dt>preferred-flag</dt>
+	<dd>Boolean eqxml preferredFlag value. "true" or "false"</dd>
+
+	<dt>location-method-class</dt>
+	<dd>Location method category</dd>
+
+	<dt>location-method-algorithm</dt>
+	<dd>Specific algorithm used for location.</dd>
+
+	<dt>location-method-model</dt>
+	<dd>Model used for location.</dd>
+
+	<dt>error-axis-count</dt>
+	<dd>Number of ErrorAxes Axis elements in message</dd>
+
+	<dt>error-axis-N-azimuth</dt>
+	<dd>The azimuth of the Nth error-axis.</dd>
+
+	<dt>error-axis-N-plunge</dt>
+	<dd>The plunge of the Nth error axis.</dd>
+
+	<dt>error-axis-N-length</dt>
+	<dd>The length of the Nth error axis.</dd>
+
+	<dt>error-axis-N-length-unit</dt>
+	<dd>The length units of the Nth error axis.</dd>
+
+	<dt>eqxml-action</dt>
+	<dd>Action from eqxml message, if from EQXML.</dd>
+
+	<dt>eqxml-sourcekey</dt>
+	<dd>Source from eqxml message, if from EQXML</dd>
+
+	<dt>magnitude-azimuthal-gap</dt>
+	<dd>The magnitude azimuthal gap.</dd>
+
+	<dt>has-phases</dt>
+	<dd>"true" if phase information is embedded in the XML.  
+			There is now a separate "phase-data" product.</dd>
+</dl>
+</body>
+</html>

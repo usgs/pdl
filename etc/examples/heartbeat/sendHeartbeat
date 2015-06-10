@@ -1,0 +1,60 @@
+#!/bin/bash
+
+configfile="`dirname $0`/config.sh";
+if [ ! -f "$configfile" ]; then
+   echo 'No configuration file found.'; 
+   echo 'Create a configuration file before starting heartbeat.';
+   echo 'See: README file for more information.';
+	exit -1;
+fi
+source "$configfile";
+
+id='$Id: sendHeartbeat 16937 2012-10-04 23:53:30Z emartinez $';
+url='$HeadURL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/examples/heartbeat/sendHeartbeat $';
+url=`echo $url | awk '{print $2}'`;
+format='%Y-%m-%d %H:%M:%S';
+
+# Build a heartbeat send command
+command="java -jar $HEARTBEAT_CLIENT --send";
+
+command="${command} --source=${HEARTBEAT_SOURCE}";
+command="${command} --type=heartbeat";
+command="${command} --code=${HEARTBEAT_CODE}";
+command="${command} --trackerURL=${HEARTBEAT_TRACKER}";
+
+command="${command} --status=UPDATE";
+command="${command} --content";
+
+if [ ! -z "${HEARTBEAT_CLIENT_CONFIG}" ]; then
+	# Use explicit configuration file if so configured
+	command="${command} --configFile=${HEARTBEAT_CLIENT_CONFIG}";
+fi
+
+if [ ! -z "${HEARTBEAT_KEY}" ]; then
+	# Sign the product if so configured
+	command="${command} --privateKey=${HEARTBEAT_KEY}";
+fi
+
+# Log it
+echo "[`date +"$format"`] $command";
+
+## 
+# 10/01/12 -- EMM
+# CLI product sender requires content of some sort. So we're sending the content
+# as inline content from STDIN using a HEREDOC. Maybe a better way to do this?
+#
+# Also, since we must send content; sending a parsable INI format data file.
+# Maybe it would be better to send this type of information as product
+# properties.
+## 
+
+# Do it
+pushd `dirname $HEARTBEAT_CLIENT` > /dev/null 2>&1;
+cat <<- EOF | $command
+; $id
+heartbeat_head_url='${url}';
+heartbeat_sender_version='${HEARTBEAT_VERSION}';
+EOF
+popd > /dev/null 2>&1;
+
+exit 0;

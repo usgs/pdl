@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>significance Product Documentation</title>
+<link rel="stylesheet" href="../userguide.css" />
+</head>
+
+<body>
+<h1>significance Product Documentation</h1>
+<p><a href="index.html">&laquo; Back to Products Documentation</a></p>
+<p><small>$Id: significance.html 15596 2012-07-06 17:31:03Z tene $<br />
+$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/userguide/products/significance.html $</small></p>
+
+<h2>Types</h2>
+<dl>
+	<dt>significance</dt>
+	<dd>Small product used to manually set the significance value of an event.
+	This can be used to promote or demote any event. The current threshold for
+	the web to consider an event &ldquo;significant&rdquo; is &ge;600.</dd>
+
+	<dd>
+	Significance is calculated from properties of the <i>origin</i>, <i>losspager</i> 
+	and <i>dyfi</i> products. It is calculated from the following multi-step formula:
+	
+	<dl>
+			<dt>magnitude_significance</dt>
+			<dd>= (100/6.5) * magnitude<sup>2</sup></dd>
+			
+			<dt>pager_significance</dt>
+			<dd>= &nbsp;2000 if red&nbsp;&nbsp; 1000 if orange&nbsp;&nbsp;500 if yellow</dd>
+			
+			<dt>dyfi_significance</dt>
+			<dd>= MIN(num_Resp, 1000) * maxmmi * 0.10</dd>
+			
+			<dt>significance</dt>
+			<dd>= MAX(magnitude_significance, pager_significance) + dyfi_significance</dd>
+	</dl>
+	</dd>	
+
+</dl>
+
+<h2>Sources</h2>
+<dl>
+	<dt>admin</dt>
+	<dd><a href="mailto:emartinez@usgs.gov">Eric Martinez</a></dd>
+	<!--<dd>Public Key</dd>-->
+</dl>
+
+<h2>Status</h2>
+<dl>
+	<dt>UPDATE</dt>
+	<dd>Used when adding or updating the significance product.</dd>
+	<dt>DELETE</dt>
+	<dd>Used when deleting an existing significance product.</dd>
+</dl>
+
+<h2>Properties</h2>
+<dl>
+    <dt>eventsource</dt>
+    <dd>The event network the corresponding event is associated with.</dd>
+
+    <dt>eventsourcecode</dt>
+    <dd>The event network code the corresponding event is associated with.</dd>
+
+	<dt>significance</dt>
+	<dd>The value to use for significance (integer)</dd>
+</dl>
+
+</body>
+</html>

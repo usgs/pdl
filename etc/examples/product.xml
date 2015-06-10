@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<product xmlns="http://earthquake.usgs.gov/schema/product"
+		id="urn:earthquake-usgs-gov:us:pager:us2008abcd"
+		updateTime="2009-02-18T16:45:07Z"
+		status="UPDATED">
+
+	<!-- simple properties that can be used without parsing files/attachments. -->
+	<property name="pager.exposure.123" value="456"/>
+
+	<!-- links to other products. -->
+	<link rel="related" href="urn:usgs-ehp:us:shakemap:us2008abcd"/>
+	<link rel="related" href="urn:usgs-ehp:us:origin:us2008abcd"/>
+
+	<!-- product content -->
+	<content path="path/to/filename" type="image/gif" length="1234" encoded="true"><![CDATA[base64 encoded bytes...]]></content>
+
+	<!-- content with an empty path is also acceptable (only one per product) -->
+	<content path="" type="text/plain" length="27"><![CDATA[Optional, non-file content.]]></content>
+
+</product>

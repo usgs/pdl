@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Product Distribution User Guide</title>
+<link rel="stylesheet" type="text/css" href="userguide.css" />
+</head>
+
+<body>
+<h1>Product Distribution User Guide</h1>
+<p><small>$Id: index.html 19873 2013-07-30 18:55:34Z jmfee $<br />
+$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/userguide/index.html $</small></p>
+
+
+<h2>Navigation</h2>
+<ul>
+	<li><a href="#overview">System Overview</a>
+	<ul>
+		<li><a href="#productsandnotifications">Products and
+		Notifications</a></li>
+		<li><a href="#distribution">Distribution</a></li>
+		<li><a href="#receivers">Notification Receivers</a></li>
+		<li><a href="#listeners">NotificationListeners</a>
+		<ul>
+			<li><a href="#externalnotificationlistener">ExternalNotificationListener</a></li>
+			<li><a href="#indexer">Indexer</a></li>
+			<li><a href="#externalindexerlistener">ExternalIndexerListener</a></li>
+			<li><a href="reliable.html">Reliable Listener Configuration</a>
+		</ul>
+		</li>
+		<li><a href="#senders">Product Senders</a></li>
+		<li><a href="#java">Java Integration</a></li>
+	</ul>
+	<li><a href="#requirements">System Requirements</a></li>
+	<li><a href="#installation">Installation</a></li>
+	
+	</li>
+	<li>Usage
+	<ul>
+		<li><a href="sending.html">Sending Products</a>
+		<ul>
+			<li><a href="EIDS.html">Using EIDS</a></li>
+			<li><a href="eidsinputwedge.html">EIDS Input Wedge</a></li>
+		</ul>
+		</li>
+		<li><a href="receiving.html">Receiving Products</a>
+		<ul>
+			<li><a href="indexer.html">Indexer</a></li>
+			<li><a href="eidsoutputwedge.html">EIDS OutputWedge</a></li>
+		</ul>
+		</li>
+		<li><a href="tracking.html">Tracking Products</a></li>
+	</ul>
+	</li>
+	<li><a href="configuration.html">Configuration</a></li>
+	<li><a href="commandLine.html">Command Line Arguments</a>
+	<li><a href="changeLog.html">Change Log</a></li>
+	<li><a href="products/index.html">Product Reference</a></li>
+	<li><a href="monitoring.html">Monitoring</a></li>
+	<li><a href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+
+<hr />
+
+<h2 id="overview">System Overview</h2>
+
+<h3 id="productsandnotifications">Products and Notifications</h3>
+
+<h4>Product</h4>
+<p>A Product is a group of files or content. Each product is
+uniquely identified by source, type, code, and update time. These key
+attributes are described as follows:</p>
+
+<h5>Versions</h5>
+<p>Products with the same source, type, and code, but different update times are
+considered different versions of the same product. Later updates to the
+same product replace previous versions, where older versions are retained
+in the database.</p>
+
+<h5>Status</h5>
+<p>A product status may have different meanings depending on product
+type. "DELETE" always has the same meaning: that a product has been
+cancelled. Deleting a product is the same as sending a product, except
+the status is now "DELETE" and contents are optional. This version of
+the product is distributed the same way as any other update.</p>
+
+<h5>Properties</h5>
+<p>Properties are optional name/value pairs that describe the
+product. They are used to quickly identify characteristics of a product
+without needing to parse its content. Examples include PAGER
+"alertlevel", and origin "magnitude-type".</p>
+
+<h5>Links</h5>
+<p>Links are optional and are a <abbr
+	title="Uniform Resource Identifier">URI</a> with a relation that
+describes how the resource is related to the product. Because the link
+is a URI, it can be either a URN or URL. One example would be including
+a "background" related link for a product. Another example would be
+identifying a related product that was used as an input.</p>
+
+
+<h4>Notification</h4>
+<p>A Notification is a small message with Product's source, type,
+code, update time, URL for download, and URL expiration date.</p>
+
+
+<h3 id="distribution">Distribution</h3>
+<p>Product Distribution provides a standard solution for data
+distribution.</p>
+
+<p>Data producers and consumers are loosely coupled. Producers
+broadcast a product, via redundant hubs, and all clients are notified it
+is available. Only clients that are interested download the full content
+for processing. This simplifies both sending and receiving data because
+all producers and consumers only need to communicate with the hubs.
+Because producers and consumers initiate connections to the hubs, most
+users do not need to reconfigure firewalls.</p>
+
+<p>Producers use a private key to sign products when they are sent.
+Hubs verify this signature using a public key before distributing
+products to ensure only authorized producers are able to send products.
+Clients may optionally verify these signatures as well.</p>
+
+<p>Clients can be configured to trigger processing when new products
+arrive, either using command line arguments or a Java API, eliminating
+polling latency. In many cases this has reduced processing time from
+minutes to seconds.</p>
+
+
+<h3 id="receivers">Notification Receivers</h3>
+
+<p>A NotificationReceiver receives Notifications for products and
+keeps a NotificationIndex of all received notifications. Whenever a
+notification is received, it is queued for processing by each
+NotificationListener. Each listener has a separate queue, and uses a
+separate thread to process queued notifications one at a time. This
+prevents a slow listener from blocking a fast listener.</p>
+
+<p>When a listener processes a notification, it may request the
+product from the receiver. Any number of listeners may request the same
+product, but the receiver will only download once. Once the receiver has
+retrieved the product, the listener processes its contents.</p>
+
+<p>Periodically, the receiver will remove expired notifications from
+its index, and downloaded products that are no longer needed. By default
+a receiver only keeps downloaded products for 15 minutes, just long
+enough for listeners to process, to minimize disk usage.</p>
+
+
+
+
+<h3 id="listeners">Notification Listeners</h3>
+
+<h4 id="externalnotificationlistener">ExternalNotificationListener</h4>
+<p>ExternalNotificationListeners process products by executing an
+external command line process for each received product. The
+ExternalNotificationListener does not associate related products
+together, for that functionality use the Indexer.</p>
+
+
+<h5>Example ExternalNotificationListener command line arguments</h5>
+<div class="code">/path/to/executable
+--directory=/Users/jmfee/Desktop/ProductClient/data/listener_example_storage/origin/nc71742550/nc/1330975200000
+--type=origin --code=nc71742550 --source=nc
+--updateTime=2012-03-05T19:20:00.000Z --status=UPDATE
+--trackerURL=http://ehppdl1.cr.usgs.gov/tracker/
+"--property-eventtime=2012-03-05T19:18:22.500Z"
+"--property-cube-magnitude-type=D" "--property-magnitude-type=Md"
+"--property-eids-feeder=ncss3.ncss-mp.cisn.org"
+"--property-azimuthal-gap=46.8" "--property-magnitude=1.8"
+"--property-eventsource=nc" "--property-eventsourcecode=71742550"
+"--property-eids-feeder-sequence=208382"
+"--property-location-method-class=Unknown" "--property-depth=2.4"
+"--property-version=1" "--property-magnitude-error=0.2"
+"--property-horizontal-error=0.2" "--property-num-phases-used=37"
+"--property-magnitude-num-stations-used=14"
+"--property-vertical-error=0.3" "--property-minimum-distance=0.00898315"
+"--property-longitude=-122.8205" "--property-latitude=38.8177"
+"--property-location-method-algorithm=B"
+"--property-cube-location-method=B" "--property-standard-error=0.06"
+"--property-review-status=AUTOMATIC"
+--signature=MCwCFCT2On3fJ6dydk+MIoPp8zZ3ChbAAhQY01euDYqi6xaOD660dbYIML8qKQ==
+</div>
+
+<p><a href="receiving.html">See Receiving Products for more information</a></p>
+
+
+
+
+<h4 id="indexer">Indexer</h4>
+<p>The Indexer associates related products into events. The indexer
+uses authoritative regions to choose preferred products when multiple
+sources contribute the same type of product for the same event. Every
+time the Indexer changes the index, it notifies IndexerListeners about
+the change.</p>
+
+<h5>Indexer Listeners</h5>
+<p>IndexerListeners are similar to NotificationListeners but listen
+to Indexer changes (which are triggered by products) instead of
+listening to notifications for products. Because the indexer keeps track
+of previously processed products, duplicate and non-preferred
+information can be filtered. Additionally, updates that do not change an
+event's location or magnitude can also be filtered.</p>
+
+
+<h5 id="externalindexerlistener">Example ExternalIndexerListener command line arguments</h5>
+<div class="code">/path/to/executable
+--directory=/Users/jmfee/Desktop/ProductClient/data/indexerlistener_storage/origin/nc71742550/nc/1330975200000
+--type=origin --code=nc71742550 --source=nc
+--updateTime=2012-03-05T19:20:00.000Z --status=UPDATE
+--trackerURL=http://ehppdl1.cr.usgs.gov/tracker/
+"--property-magnitude-type=Md" "--property-eventsourcecode=71742550"
+"--property-location-method-class=Unknown" "--property-version=1"
+"--property-horizontal-error=0.2"
+"--property-magnitude-num-stations-used=14"
+"--property-minimum-distance=0.00898315"
+"--property-longitude=-122.8205" "--property-cube-location-method=B"
+"--property-standard-error=0.06"
+"--property-eventtime=2012-03-05T19:18:22.500Z"
+"--property-cube-magnitude-type=D"
+"--property-eids-feeder=ncss3.ncss-mp.cisn.org"
+"--property-azimuthal-gap=46.8" "--property-eventsource=nc"
+"--property-magnitude=1.8" "--property-eids-feeder-sequence=208382"
+"--property-depth=2.4" "--property-magnitude-error=0.2"
+"--property-num-phases-used=37" "--property-vertical-error=0.3"
+"--property-latitude=38.8177" "--property-location-method-algorithm=B"
+"--property-review-status=AUTOMATIC" --action=EVENT_UPDATED
+--preferred-eventid=nc71742550 --preferred-eventsource=nc
+--preferred-eventsourcecode=71742550 --eventids=nc71742550
+--preferred-magnitude=1.8 --preferred-latitude=38.8177
+--preferred-longitude=-122.8205 --preferred-depth=2.4
+--preferred-eventtime=2012-03-05T19:18:22.500Z
+--signature=MCwCFCT2On3fJ6dydk+MIoPp8zZ3ChbAAhQY01euDYqi6xaOD660dbYIML8qKQ==
+</div>
+
+<p><a href="indexer.html">See Indexer for more information</a></p>
+
+
+
+
+<h3 id="senders">Product Senders</h3>
+<p>A SocketProductSender sends a product directly to a ProductHub,
+which stores the product and sends a Notification to all connected
+NotificationReceivers. Product hubs register a public key for each
+sender, and verify product signatures to ensure only known senders may
+distribute products.</p>
+
+<p><a href="sending.html">See Sending Products for more information</a></p>
+
+
+<h3 id="java">Java API</h3>
+<p>Custom Notification and Indexer Listeners can be integrated with
+PDL using the Java API. Other languages need to use the
+ExternalNotificationListener and ExternalIndexerListener.</p>
+
+<p>NotificationListeners must implement the
+gov.usgs.earthquake.distribution.NotificationListener interface. Most
+users can extend the
+gov.usgs.earthquake.distribution.DefaultNotificationListener class.</p>
+
+<p>IndexerListeners must implement the
+gov.usgs.earthquake.indexer.IndexerListener interface. Most users can
+extend the gov.usgs.earthquake.indexer.DefaultIndexerListener class.</p>
+
+
+<p><a href="/javadoc/">See the Java API Documentation for more information.</a></p>
+
+<h2 id="requirements">System Requirements</h2>
+<ul>
+	<li><strong>Sun Java Runtime Environment (JRE) version
+	1.6 or newer</strong>. <em>GNU Java (gij or GNU libgcj) should NOT be
+	confused with Sun Java.</em>
+	<p>You can find your version of java by running</p>
+	<div class="code"><pre>
+<strong>java -version</strong>
+
+java version "1.6.0_06"
+Java(TM) SE Runtime Environment (build 1.6.0_06-b02)
+Java HotSpot(TM) Server VM (build 10.0-b22, mixed mode)
+</pre></div>
+	<p><a href="http://www.java.com/">Download Java from
+	http://www.java.com/</a></p>
+	</li>
+
+	<li><strong>Active Internet Connection</strong></li>
+</ul>
+
+
+<hr />
+<h2 id="installation">Installation</h2>
+<p>Download and unzip either one of the following distribution files. Each includes 
+shell scripts for unix and a batch file for windows.</p>
+<ul>
+	<li><a href="http://ehppdl1.cr.usgs.gov/ProductClient.zip">http://ehppdl1.cr.usgs.gov/ProductClient.zip</a></li>
+	<li><a href="http://ehppdl2.wr.usgs.gov/ProductClient.zip">http://ehppdl2.wr.usgs.gov/ProductClient.zip</a></li>
+</ul>
+
+
+<hr />
+
+</body>
+</html>

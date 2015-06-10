@@ -1,0 +1,303 @@
+This README file contains information about configuring, running, and
+troubleshooting the heartbeat sender application.
+
+################################################################################
+#
+# Table of Contents
+#
+################################################################################
+
+I.   Conventions Used in this Document
+II.  Configuring
+III. Running
+IV.  Troubleshooting
+
+You can use your file editor's search feature on the above section titles in
+order to jump directly to that section.
+
+################################################################################
+#
+# I.  Conventions Used in this Document
+#
+################################################################################
+
+Each section of this document starts with a header. The header is easily
+identifiable by the string of hash characters (#) above and below the section
+header text. Each line of the header is also prefixed with a hash character. The
+section headers are meant to clearly delineate the sections of this README file.
+
+This README file assumes you are using the heartbeat sending package on a
+Unix command prompt. If you are using Windows or another GUI interface, you will
+have to figure out how the Unix commands translate to your environment.
+
+At some points this REAME file will suggest you type commands on the command
+line. Command prompt I/O instructions are lead and followed with a blank line.
+Throughout the instruction itself, commands to be typed are prefixed with a
+percent (%) character. You should type the content on the line with the percent
+character exactly as it appears in the instructions.
+
+Some commands you type on the command line will produce output. In this case,
+the output from a command will be displayed below the example command in this
+README file. Each line of output will be prefixed by a tab character at the
+start of the output line. For example:
+
+% ls
+	config.sh.template  init.sh  README  sendHeartbeat
+
+% date
+	Mon Oct  1 19:02:41 UTC 2012
+
+In these examples, you would have typed "ls" or "date", and you should expect
+output similar to what is listed directly below the example command.
+
+################################################################################
+#
+# II.  Configuring
+#
+################################################################################
+
+Upon checking this project out from SVN you should have received a configuration
+template file. This template file is for demonstration purposes only. The
+heartbeat sender itself actually uses a file called "config.sh" that you must
+create. You can use the template file to help you create the actual
+configuration file. Copy the template file to the actual configuration file.
+
+% cp config.sh.template config.sh
+
+Note that this configuration file is itself a shell script. This means you _can_
+use dynamic values for the configuration settings if you want to. Do this only
+if you know what you are doing and understand how the environment might change
+when the configuration file is read during the cron process.
+
+Now you can edit the configuration file for the current environment. Open the
+file using your preferred text editor (vi, pico, emacs, etc...) and update the
+configuration variables as appropriate (see below).
+
+HEARTBEAT_VERSION (Do not change this)
+  This is version of the heartbeat sender software.
+
+HEARTBEAT_PATH
+  This is the fully qualified system path to where the heartbeat sender is
+  installed. This should generally be the same directory where this README file
+  is located.
+
+HEARTBEAT_USER
+  This is the name of the user that will be sending heartbeat products. This can
+  be any user on the system, but that user must have:
+    1. A reasonable default PATH setting with things like 'awk', 'java', etc...
+	 2. Read access to the HEARTBEAT_PATH directory.
+	 3. Read access to the HEARTBEAT_CLIENT jar file (see below).
+	 4. Write access to the HEARTBEAT_LOG file (see below).
+
+HEARTBEAT_SCHEDULE
+  The schedule on which heartbeats will be sent on this system. This is a
+  crontab format schedule string. For example:
+
+  ---------- Minute of hour (0 - 59)
+  | -------- Hour of day (0 - 23)
+  | | ------ Day of month (1 - 31)
+  | | | ---- Month (1 - 12)
+  | | | | -- Day of week (0 - 6; 0 = Sunday)
+  | | | | |
+  * * * * *
+
+  An asterisk (*) means to send for every interval of the given unit. For
+  example, '* * * * *', means to send a heartbeat every minute of every hour of
+  every day of every month. You can also use things like '*/5' for any value.
+  This translates roughly into 'every 5th of these units'. For example,
+  '*/5 * * * *', means the heartbeat will be sent every 5th minute of every hour
+  of every day of every month.
+
+HEARTBEAT_SENDER
+  This is the fully-qualified path to the script that will actually send the
+  heartbeat product. If you properly set up the HEARTBEAT_PATH (see above), you
+  should not need to change this value.
+
+HEARTBEAT_MARKER (Do not change this)
+  This is used during the start/stop process when running the heartbeat sender
+  (see below). You should not change this value.
+
+HEARTBEAT_LOG
+  This is the fully qualified path to a log file. All output from the sender
+  will be logged here. The HEARTBEAT_USER must have write access to this file.
+
+
+HEARTBEAT_CLIENT
+  This is the fully qualified path to the ProductClient.jar JAR file on the
+  sender machine. This JAR will have it's own configuration separate from what
+  you indicate in the configuration file for the heartbeat sender.
+  
+  For more information about obtaining product sender client see:
+       http://ehppdl1.cr.usgs.gov/userguide/index.html
+
+  For more information about configuring a product sender client see:
+       http://ehppdl1.cr.usgs.gov/userguide/configuration.html
+
+       
+HEARTBEAT_CLIENT_CONFIG
+  This is the fullly qualified path to the product client configuration file.
+  This file will be used with the --configFile property when sending heartbeat
+  messages. This allows you to re-use a client JAR file without forcing the
+  re-use of the pre-configured client configuration file. If this is left empty
+  then the default client configuration file is used instead.
+
+
+HEARTBEAT_KEY
+  The private key file with which the sender will sign heartbeat products it
+  sends. If this is left empty then products will not be signed. Only signed
+  products are accepted on the production hubs, however unsigned products can be
+  sent for development/testing using pdldevel. The production hubs will need to
+  be configured to accept your key before you can send signed products.
+
+  For more information about generating and/or registering a public/private
+  key-pair see:
+       http://ehppdl1.cr.usgs.gov/userguide/sending.html#signatures
+
+HEARTBEAT_SOURCE
+  This is the product source to use when sending products. If you are signing
+  your products, your key must be registered for this source.
+
+HEARTBEAT_CODE
+  This is the product code to use when sending products. By convention this
+  should be set to the system name that is sending the product.
+
+HEARTBEAT_TRACKER
+  This is the tracker to use when sending products. Be convention, development
+  systems should track to the development tracker and production systems should
+  track to the production tracker.
+
+  Development Tracker: http://pdldevel.cr.usgs.gov/tracker/
+  Production Tracker:  http://ehppdl1.cr.usgs.gov/tracker/
+
+After configuring the variables appropriate for your system you can now start
+the sending process.
+
+################################################################################
+#
+# III. Running
+#
+################################################################################
+
+Running the sender is done by using the included 'init.sh' script. With this
+script you can:
+
+ - Start the sender
+ - Stop the sender
+ - Check the sender status
+ - Restart the sender
+ - Watch the sender logs
+ - Test the sender
+ - Get quick tips for using init.sh
+
+For most actions you will require 'root' privileges, for this reason it is
+advised you always run the 'init.sh' script with 'sudo'. For simpler/cleaner
+commands, the sudo is omitted from examples below. All example commands are
+executed from the HEARTBEAT_PATH directory (see above).
+
+
+
+- Start the sender
+
+% ./init.sh start
+	Starting heartbeat sender...done.
+
+If you try to start the sender when it has already been started you will receive
+an error message. You must either stop the sender first, or try a restart.
+
+
+
+- Stop the sender
+
+% ./init.sh stop
+	Stopping heartbeat sender...done.
+
+If you try to stop the sender when it is not currently started you will receive
+an error message. You must start the sender first.
+
+
+- Check the sender status
+
+% ./init.sh status
+	Heartbeat sender is running (Y-m-d_H:i:s).
+or
+	Heartbeat sender is stopped.
+
+When heartbeat sender is running, the parenthetical data indicates when the
+heartbeat sender was started.
+
+
+
+- Restart the sender
+
+% ./init.sh restart
+	Restarting the sender...done.
+
+
+
+- Watch the sender logs
+
+% ./init.sh log
+	Log information stored in ${HEARTBEAT_LOG}
+
+This will print the last few lines of the log file and will continue to tail the
+log file (tail -f) until you cancel the tail using ctrl-c.
+	
+
+
+- Test the sender
+
+% ./init.sh test
+	Sending a heartbeat product...done.
+
+This will attempt to send the product but it may fail. You should check the logs
+after this completes in order to see if the product was successfully sent.
+
+
+
+- Get quick tips for using init.sh
+
+% ./init.sh
+	Usage ./init.sh [start|stop|status|restart|log|test]
+
+################################################################################
+#
+# IV.  Troubleshooting
+#
+################################################################################
+
+Below are some common troubleshooting steps to take if/when a problem arises
+with the heartbeat sender. If the resolutions below do not fix the problem, you
+can contact the EHP Web Team for more assistance.
+
+I am starting the sender and then I check the logs, but I don't see any
+products getting sent.
+
+	When you start the heartbeat sender, an actual heartbeat product will not be
+	sent until the next HEARTBEAT_SCHEDULE occurs. That is, if your
+	HEARTBEAT_SCHEDULE is set to '*/5 * * * *', and it is currently 42 minutes
+	past the hour, the next heartbeat product will not be sent for roughly 3
+	minutes (at 45 minutes past the hour).
+
+I have started the sender and waited for the next HEARTBEAT_SCHEDULE interval to
+occur, but I still do not see anything in the logs.
+
+	You should double-check your configuration file to make sure you do not have
+	any typos that might be causing this error.
+	
+	If you feel confident the configuration file is correct, check the system
+	cron logs (/var/log/cron). Once you open this file, search for the
+	HEARTBEAT_MARKER text to verify the cron is executing.
+
+	If the cron is executing, check the file permissions on the HEARTBEAT_LOG
+	file to make sure the HEARTBEAT_USER has write permissions on this file.
+
+The logs state, "Redirecting STDOUT and STDERR to log file". Where is this log
+information?
+
+	This location of the log referenced by this redirect can be found be checking
+	your HEARTBEAT_CLIENT configuration file (generally config.ini in the same
+	location as the HEARTBEAT_CLIENT file).
+
+################################################################################
+# End of README :: $Id: README 16935 2012-10-04 23:50:51Z emartinez $
+################################################################################

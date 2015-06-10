@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>focal-mechanism Product Documentation</title>
+<link rel="stylesheet" href="../userguide.css" />
+</head>
+
+<body>
+<h1>focal-mechanism Product Documentation</h1>
+<p><a href="index.html">&laquo; Back to Products Documentation</a></p>
+<p><small>$Id: focal-mechanism.html 18903 2013-03-05 19:23:55Z jmfee $<br />
+$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/userguide/products/focal-mechanism.html $</small></p>
+
+<h2>Types</h2>
+<dl>
+	<dt>focal-mechanism</dt>
+	<dd>First Motion, without a Moment Tensor. <a
+		href="moment-tensor.html">See <code>moment-tensor</code></a>.</dd>
+</dl>
+
+<!--
+<h2>Sources</h2>
+<dl>
+	<dt>Source name</dt>
+	<dd>Contact information</dd>
+	<dd>Public Key</dd>
+</dl>
+-->
+
+<h2>Properties</h2>
+<dl>
+	<dt>beachball-source</dt>
+	<dd>The original author of this focal mechanism (network/author
+	code).</dd>
+
+	<dt>beachball-type</dt>
+	<dd>Type of moment tensor. (E.g. Centroid, Mwc, Mwb)</dd>
+
+	<dt>magnitude</dt>
+	<dd>Magnitude corresponding to scalar moment.</dd>
+
+	<dt>eventtime</dt>
+	<dd>Input time of event. (iso8601 UTC datetime)</dd>
+
+	<dt>latitude</dt>
+	<dd>Input latitude of event. (degrees)</dd>
+
+	<dt>longitude</dt>
+	<dd>Input longitude of event. (degrees)</dd>
+
+	<dt>nodal-plane-1-strike</dt>
+	<dd>Strike angle of first nodal plane (degrees)</dd>
+	<dt>nodal-plane-1-slip</dt>
+	<dd>Slip angle of first nodal plane (degrees)</dd>
+	<dt>nodal-plane-1-dip</dt>
+	<dd>Dip angle of first nodal plane (degrees)</dd>
+
+	<dt>nodal-plane-2-strike</dt>
+	<dd>Strike angle of second nodal plane (degrees)</dd>
+	<dt>nodal-plane-2-slip</dt>
+	<dd>Slip angle of second nodal plane (degrees)</dd>
+	<dt>nodal-plane-2-dip</dt>
+	<dd>Dip angle of second nodal plane (degrees)</dd>
+
+	<dt>num-stations-used</dt>
+	<dd>Number of observations used in calculation</dd>
+
+	<dt>review-status</dt>
+	<dd>whether focal mechanism has been reviewed.  "automatic" or "manual".  
+	If this property does not appear, it implies "automatic".</dd>
+</dl>
+
+<h2>Contents</h2>
+<dl>
+	<dt>eqxml.xml</dt>
+	<dd>Original EQXML message containing focal mechanism (if originally EQXML).</dd>
+
+	<dt>quakeml.xml</dt>
+	<dd>Original Quakeml message containing focal mechanism (if originally Quakeml).
+</dl>
+
+</body>
+</html>

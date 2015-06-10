@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ShakeMap Product Documentation</title>
+<link rel="stylesheet" href="../userguide.css" />
+</head>
+
+<body>
+<h1>ShakeMap Product Documentation</h1>
+<p><a href="index.html">&laquo; Back to Products Documentation</a></p>
+<p><small>$Id: shakemap.html 20266 2013-09-27 19:01:15Z jmfee $<br />
+$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/userguide/products/shakemap.html $</small></p>
+
+<h2>Types</h2>
+<dl>
+	<dt>shakemap</dt>
+	<dd>Production version of shakemap products.</dd>
+
+</dl>
+
+<h2>Sources</h2>
+<dl>
+	<dt>US</dt>
+	<dd><a href="mailto:klin@usgs.gov">Kuo Wan Lin, National Earthquake Information Center
+	&nbsp;&lt;klin@usgs.gov&gt;</a></dd>
+
+	<dt>HV</dt>
+	<dd><a href="mailto:klin@usgs.gov">U.S. Geological Survey, Hawaiian Volcano Observatory. Kuo Wan Lin
+	&nbsp;&lt;klin@usgs.gov&gt;</a></dd>
+
+	<dt>NM</dt>
+	<dd><a href="mailto:klin@usgs.gov">Cooperative New Madrid Seismic Network. Kuo Wan Lin
+	&nbsp;&lt;klin@usgs.gov&gt;</a></dd>
+
+	<dt>SE</dt>
+	<dd><a href="mailto:klin@usgs.gov">Southeast U.S. Seismic Network. Kuo Wan Lin 
+	&nbsp;&lt;klin@usgs.gov&gt;</a></dd>
+
+	<dt>CI</dt>
+	<dd><a href="mailto: dollar@usgs.gov">California Integrated Seismic Network. Bob Dollar 
+	&nbsp;&lt;dollar@usgs.gov&gt;</a></dd>
+	
+	<dt>NC</dt>
+	<dd><a href="mailto: lombard@seismo.berkeley.edu">CISN Northern California Management Center. 
+	Pete Lombard &nbsp;&lt;lombard@seismo.berkeley.edu&gt;</a> 
+	<a href="mailto: tmacdonald@usgs.gov">Tim MacDonald
+	&nbsp;&lt;tmacdonald@usgs.gov&gt;</a>
+	</dd>
+
+	<dt>UU</dt>
+	<dd><a href="mailto: pankow@seis.utah.edu">University of Utah Seismograph Stations. Kris Pankow 
+	&nbsp;&lt;pankow@seis.utah.edu&gt;</a></dd>
+		
+	<dt>NN</dt>
+	<dd><a href="mailto: gabe@seismo.unr.edu">Seismological Laboratory, University of Nevada, Reno. 
+	Gabe Plank &nbsp;&lt;gabe@seismo.unr.edu&gt;</a> 
+	<a href="mailto: ken@seismo.unr.edu">Ken Smith
+	&nbsp;&lt;ken@seismo.unr.edu&gt;</a>
+	</dd>	
+
+	<dt>UW</dt>
+	<dd><a href="mailto: jrhartog@uw.edu">Pacific Northwest Seismic Network.
+	Renate Hartog&nbsp;&lt;jrhartog@uw.edu&gt;</a></dd>
+
+	<dt>AK</dt>
+	<dd><a href="mailto: natasha@gi.alaska.edu">
+	Alaska Earthquake Information Center. Natalia Ruppert&nbsp;&lt;natasha@gi.alaska.edu&gt;</a></dd>
+</dl>
+
+<h2>Properties</h2>
+<dl>
+    <dt>eventsource</dt>
+    <dd>The event network the corresponding event is associated with.</dd>
+
+    <dt>eventsourcecode</dt>
+    <dd>The event network code the corresponding event is associated with.</dd>
+
+    <dt>map-status</dt>
+    <dd>The map status obtained from the <i>grid.xml</i> file included in the product.
+    	<dl>
+    		<dd>REVIEWED</dd>
+    		<dd>RELEASED</dd>
+    		<dd>CANCELLED</dd>
+    	</dl>
+ 	</dd>
+ 	
+    <dt>event-type</dt>
+    <dd>The event type obtained from the <i>grid.xml</i> file included in the product.
+    	<dl>
+    		<dd>ACTUAL</dd>
+    		<dd>TEST</dd>
+    		<dd>SCENARIO</dd>
+    		<dd>HEARTBEAT</dd>
+    	</dl>
+    </dd>
+ 
+    <dt>process-timestamp</dt>
+    <dd>The time this product was last updated. Obtained from the <i>process_timestamp</i> 
+    attribute of the <i>grid.xml</i> file included in the product.</dd>
+ 
+    <dt>event-description</dt>
+    <dd>A textual description of the event, such as <i>13.4 mi W of Wheeler 
+    Ridge, CA</i>. Obtained from the <i>event_description</i> attribute of the 
+    <i>grid.xml</i> file included in the product.</dd>
+ 
+    <dt>minimum-longitude</dt>
+    <dd>The minimum-longitude of the ShakeMap, obtained from the <i>lon_min</i> 
+    attribute of the <i>grid.xml</i> file included in the product.</dd>
+ 
+    <dt>maximum-longitude</dt>
+    <dd>The maximum-longitude of the ShakeMap, obtained from the <i>lon_max</i> 
+    attribute of the <i>grid.xml</i> file included in the product.</dd>
+    
+    <dt>minimum-latitude</dt>
+    <dd>The minimum-latitude of the ShakeMap, obtained from the <i>lat_min</i> 
+    attribute of the <i>grid.xml</i> file included in the product.</dd>
+    
+     <dt>maximum-latitude</dt>
+    <dd>The maximum-latitude of the ShakeMap, obtained from the <i>lat_max</i> 
+    attribute of the <i>grid.xml</i> file included in the product.</dd>
+      
+    
+</dl>
+
+<h2>Contents</h2>
+<dl>
+
+	<dt>grid.xml</dt>
+	<dd>The input ShakeMap grid.xml file, from which a grid of shaking intensities 
+	are extracted.</dd>
+
+	<dt>rock_grid.xml</dt>
+	<dd>An included ShakeMap file from which a grid of intensity/ground motions on 
+	rock are extracted.</dd>
+
+	<dt>uncertainty.xml</dt>
+	<dd>An included ShakeMap file from which a grid of uncertainties are extracted.</dd>
+
+	<dt>grid.xyz.xml</dt>
+	<dd>An included ShakeMap file from which a grid of ground motions in ASCII 
+	text format are extracted.</dd>
+
+	<dt>shape.zip</dt>
+	<dd>ShakeMap general-purpose GIS shape file.</dd>
+
+	<dt>*.kml</dt>
+	<dd>ShakeMap general-purpose GIS shape files in Google Earth format.</dd>
+
+	<dt>hazus.zip</dt>
+	<dd>Data files for HAZUS loss estimation.</dd>
+
+	<dt>stationlist.txt</dt>
+	<dd>Lists of data about seismic stations.</dd>
+	
+	<dt>stationlist.xml</dt>
+	<dd>Lists of data about seismic stations.</dd>
+		
+	<dt>metadata.txt</dt>
+	<dd>FGDC-compliant metadata identifying the event, along with background 
+	information concerning shakemaps, accuracy of measures and other data.</dd>
+	
+	<dt>metadata.xml</dt>
+	<dd>FGDC-compliant metadata identifying the event, along with background 
+	information concerning shakemaps, accuracy of measures and other data.</dd>
+	
+	<dt>metadata.html</dt>
+	<dd>FGDC-compliant metadata identifying the event, along with background 
+	information concerning shakemaps, accuracy of measures and other data.</dd>
+	
+	<dt>info.xml</dt>
+	<dd>ShakeMap processing parameters and map summary information.</dd>
+		
+	<dt>tvguide.txt</dt>
+	<dd>ShakeMap information for news media.</dd>
+
+	<dt>ii_thumbnail.jpg</dt>
+	<dd>Thumbnail map of macroseismic intensity.</dd>
+
+	<dt>intensity.jpg</dt>
+	<dd>A map of macroseismic intensity.</dd>
+
+	<dt>intensity.ps.zip</dt>
+	<dd>A map of macroseismic intensity.</dd>
+
+	<dt>pga.jpg</dt>
+	<dd>Map of peak ground velocity (cm/s), in JPG format.</dd>
+
+	<dt>pgv.ps.zip</dt>
+	<dd>Map of peak ground velocity (cm/s), in zipped Postscript format.</dd>
+
+	<dt>psa03.jpg</dt>
+	<dd>Map of 0.3 sec 5% damped pseudo-spectral acceleration(%g), in JPG format.</dd>
+
+	<dt>psa03.ps.zip</dt>
+	<dd>Map of 0.3 sec 5% damped pseudo-spectral acceleration(%g), in zipped 
+	Postscript format.</dd>
+
+	<dt>psa10.jpg</dt>
+	<dd>Map of 1.0 sec 5% damped pseudo-spectral acceleration(%g), in JPG format.</dd>
+
+	<dt>psa10.ps.zip</dt>
+	<dd>Map of 1.0 sec 5% damped pseudo-spectral acceleration(%g), in zipped 
+	Postscript format.</dd>
+
+	<dt>psa30.jpg</dt>
+	<dd>Map of 3.0 sec 5% damped pseudo-spectral acceleration(%g), in JPG format.</dd>
+
+	<dt>psa30.ps.zip</dt>
+	<dd>Map of 3.0 sec 5% damped pseudo-spectral acceleration(%g), in zipped 
+	Postscript format.</dd>
+
+	<dt>tvmap.jpg</dt>
+	<dd>Large format map of macroseismic intensity suitable for television 
+	broadcast, in JPG format.</dd>
+
+	<dt>tvmap.ps.zip</dt>
+	<dd>Large format map of macroseismic intensity suitable for television 
+	broadcast, in zipped Postscript format.</dd>
+
+	<dt>tvmap_bare.jpg</dt>
+	<dd>Large format undecorated map of macroseismic intensity suitable for 
+	television broadcast, in JPG format.</dd>
+
+	<dt>tvmap_bare.ps.zip</dt>
+	<dd>Large format undecorated map of macroseismic intensity suitable for 
+	television broadcast, in zipped Postscript format.</dd>
+
+	<dt>urat_pga.jpg</dt>
+	<dd>Map of PGA uncertainty, in JPG format.</dd>
+
+	<dt>urat_pga.ps.zip</dt>
+	<dd>Map of PGA uncertainty, in zipped Postscript format.</dd>
+
+</dl>
+
+</body>
+</html>

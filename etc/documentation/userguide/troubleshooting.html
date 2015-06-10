@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Troubleshooting</title>
+<link rel="stylesheet" href="userguide.css" />
+</head>
+
+<body>
+<h1>Troubleshooting</h1>
+<p><a href="../index.html#documentation">&laquo; Back to User Guide</a></p>
+<p><small>$Id: troubleshooting.html 22318 2014-11-12 23:07:38Z jmfee $<br />
+$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/userguide/troubleshooting.html $</small></p>
+
+
+
+<h2>Receive Mode</h2>
+
+<h3>Database is locked</h3>
+
+<p>Example exception from log:</p>
+<div class="code"><pre>
+WARNING	thread=13	[receiver_pdl] exception during receiver cleanup
+<strong>java.sql.SQLException: database locked</strong>
+	at org.sqlite.DB.execute(DB.java:270)
+	at org.sqlite.DB.executeUpdate(DB.java:281)
+	at org.sqlite.PrepStmt.executeUpdate(PrepStmt.java:77)
+	at gov.usgs.earthquake.distribution.JDBCNotificationIndex.removeNotification(JDBCNotificationIndex.java:513)
+	at gov.usgs.earthquake.distribution.DefaultNotificationReceiver.removeExpiredNotifications(DefaultNotificationReceiver.java:301)
+	at gov.usgs.earthquake.distribution.DefaultNotificationReceiver$2.run(DefaultNotificationReceiver.java:577)
+	at java.util.TimerThread.mainLoop(Timer.java:512)
+	at java.util.TimerThread.run(Timer.java:462)
+</pre></div>
+
+<p>Steps to fix:</p>
+<ol>
+	<li>Stop the client, and comment any cron entry that may
+	automatically restart the client.</li>
+	<li>Find the database that is locked. For a receiver, this is
+	likely <code>data/receiver_index.db</code>. Usually there will also be
+	a file with the suffix <code>-journal</code>. <strong>DO NOT
+	DELETE THE JOURNAL</strong>.</li>
+	<li>Open the database using SQLite 3: <code>sqlite3
+	data/receiver_index.db</code> , as the user who owns the file. SQLite will
+	automatically apply the journaled updates and unlock the database.</li>
+	<li>Exit SQLite: <code>.quit&lt;ENTER&gt;</code> .</li>
+	<li>Remove the EIDS tracking file, usually <code>data/receiver_pdl_tracking.dat</code>.
+	This is because EIDS has already delivered notifications for products
+	that were still queued. This will force EIDS to reprocess these
+	notifications so any missed products are processed.</li>
+	<li>Restart the client, and uncomment any cron entry that was
+	commented in the first step.</li>
+</ol>
+
+
+<h3>Products are not being processed</h3>
+<p>Example log message:</p>
+<div class="code"><pre>
+FINE    thread=1762     [client_receiver] listener (indexer) has 1341 queued notifications
+</pre></div>
+
+<p>NOTE: Have you recently restarted the client for the first time, after
+an outage, or after clearing the EIDS tracking file? Sometimes it is
+normal for notifications to queue, although you should also see evidence
+that they are being processed.</p>
+
+<p>Steps to fix:</p>
+<ol>
+	<li>Stop the client, and comment any cron entry that may
+	automatically restart the client. If the client will not stop
+	gracefully, you may need to kill -9. Be careful to check that the
+	database was not locked (which usually happens during ungraceful
+	shutdowns).</li>
+	<li>Remove the EIDS tracking file, usually <code>data/receiver_pdl_tracking.dat</code>.
+	This is because EIDS has already delivered notifications for products
+	that were still queued. This will force EIDS to reprocess these
+	notifications so any missed products are processed.</li>
+	<li>Restart the client, and uncomment any cron entry that was
+	commented in the first step.</li>
+
+</ol>
+
+
+
+
+<h3>Too many open files</h3>
+
+<p>Example exception from log:</p>
+<div class="code"><pre>
+ <strong>java.io.FileNotFoundException: data/htdocs/us_general-link_nc71810601-0_1341367815000.xml 
+ (Too many open files)</strong>
+    at java.io.FileInputStream.open(Native Method)
+    at java.io.FileInputStream.<init>(FileInputStream.java:106)
+    at gov.usgs.util.StreamUtils.getInputStream(StreamUtils.java:60)
+    at gov.usgs.earthquake.distribution.URLProductStorage.getProductSourceFormat(URLProductStorage.java:139)
+    at gov.usgs.earthquake.distribution.FileProductStorage.getProductSource(FileProductStorage.java:470)
+    at gov.usgs.earthquake.distribution.FileProductStorage.hasProduct(FileProductStorage.java:506)
+    at gov.usgs.earthquake.distribution.EIDSNotificationSender.onBeforeProcessNotification(EIDSNotificationSender.java:79)
+    ...
+<strong>or</strong>
+
+ <strong>Exception: data/htdocs/us_general-link_nc71810601-0_1341367815000.xml (Too many open files) 
+ source=us, type=general-link, code=nc71810601-0, updateTime=Wed Jul 04 02:10:15 UTC 2012</strong>
+
+    at org.sqlite.DB.execute(DB.java:270)
+    at org.sqlite.DB.executeUpdate(DB.java:281)
+    at org.sqlite.PrepStmt.executeUpdate(PrepStmt.java:77)
+    at gov.usgs.earthquake.distribution.JDBCNotificationIndex.removeNotification(JDBCNotificationIndex.java:513)
+    at gov.usgs.earthquake.distribution.DefaultNotificationReceiver.removeExpiredNotifications(DefaultNotificationReceiver.java:301)
+    at gov.usgs.earthquake.distribution.DefaultNotificationReceiver$2.run(DefaultNotificationReceiver.java:577)
+    at java.util.TimerThread.mainLoop(Timer.java:512)
+    at java.util.TimerThread.run(Timer.java:462)
+</pre></div>
+
+<p>Steps to fix:</p>
+<ol>
+	<li>Verify (for RHEL): As [pdluser], run <i>ulimit -n</i>. 
+	When there is no limit, unlimited, or a large limit; this usually indicates another 
+	problem like a failed yum auto-update, which may be resolved by a system reboot.</li>
+	<li>When ulimit -n returns 8192 or less, the resolution is:
+		<ol>
+			<li class="spaced-above">Increase number of open files limit (<i>/etc/security/limits.conf</i>).
+			This can usually be set to 65536, or unlimited.</li>
+			<li>Re-login as [pdluser] to inherit the new limit.</li>
+			<li>Start PDL process.</li>
+		</ol>
+	</li>
+			
+</ol>
+
+
+<h3>No space left on device</h3>
+<p>Example exception from log:</p>
+<div class="code"><pre>
+INFO  thread=16 Exception executing task
+<strong>java.io.FileNotFoundException: data/indexer_storage/origin/ci10204610/ci/1415644284160/quakeml.xml (No space left on device)</strong>
+  at java.io.FileOutputStream.open(Native Method)
+  at java.io.FileOutputStream.<init>(FileOutputStream.java:212)
+  at gov.usgs.util.StreamUtils.getOutputStream(StreamUtils.java:163)
+  at gov.usgs.util.StreamUtils.getOutputStream(StreamUtils.java:185)
+  at gov.usgs.earthquake.product.FileContent.<init>(FileContent.java:110)
+  at gov.usgs.earthquake.product.io.DirectoryProductHandler.onContent(DirectoryProductHandler.java:54)
+  at gov.usgs.earthquake.product.io.FilterProductHandler.onContent(FilterProductHandler.java:67)
+  at gov.usgs.earthquake.product.io.ObjectProductSource.sendContents(ObjectProductSource.java:144)
+  at gov.usgs.earthquake.product.io.ObjectProductSource.streamTo(ObjectProductSource.java:63)
+  at gov.usgs.earthquake.distribution.FileProductStorage.storeProductSource(FileProductStorage.java:669)
+  at gov.usgs.earthquake.distribution.FileProductStorage.storeProduct(FileProductStorage.java:651)
+  at gov.usgs.earthquake.indexer.Indexer.onProduct(Indexer.java:489)
+  at gov.usgs.earthquake.indexer.Indexer.onProduct(Indexer.java:461)
+  at gov.usgs.earthquake.distribution.DefaultNotificationListener.onNotification(DefaultNotificationListener.java:115)
+  at gov.usgs.earthquake.distribution.ExecutorListenerNotifier$1.call(ExecutorListenerNotifier.java:172)
+  at gov.usgs.earthquake.distribution.ExecutorListenerNotifier$1.call(ExecutorListenerNotifier.java:169)
+  at gov.usgs.util.ExecutorTask.run(ExecutorTask.java:181)
+  at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+  at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:334)
+  at java.util.concurrent.FutureTask.run(FutureTask.java:166)
+  at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1146)
+  at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+  at java.lang.Thread.run(Thread.java:701)
+</pre></div>
+
+<p>Steps to fix:</p>
+<ol>
+  <li>Verify (for RHEL): check disk free space, run <i>df -h</i>;
+      and check disk free inodes, run <i>df -i</i>
+  </li>
+  <li>If the partition where PDL files are stored is full, or out of inodes:
+    <ul>
+      <li class="spaced-above">Remove old PDL log files.</li>
+      <li>Check External Listener storage directories (which are not automatically cleared) for files that can be deleted using the unix find command.</li>
+      <li>Make sure the indexer has appropriate archive policies configured.</li>
+      <li>Make sure ExternalIndexerListeners have "autoArchive" enabled.</li>
+    </ul>
+  </li>      
+</ol>
+
+
+</body>
+</html>

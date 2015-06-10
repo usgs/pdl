@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Command Line Arguments</title>
+<link rel="stylesheet" href="userguide.css" />
+</head>
+
+<body>
+<h1>Command Line Arguments</h1>
+<p><a href="../index.html#documentation">&laquo; Back to User Guide</a></p>
+<p><small>$Id: commandLine.html 22560 2015-01-16 00:23:16Z ehunter $<br />
+$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/userguide/commandLine.html $</small></p>
+
+<h2>Navigation</h2>
+<ul>
+	<li><a href="#client">ProductClient.jar Arguments</a></li>
+	<li><a href="#exit">ProductClient.jar Sender exit codes</a></li>
+	<li><a href="#api">Command Line Sender/Receiver Arguments</a></li>
+</ul>
+
+
+<h2 id="client">ProductClient.jar Arguments</h2>
+	<p>When run without arguments, the product client displays usage.</p>
+	<p><strong>One of <code>--send</code>, <code>--receive</code>, or <code>--track</code> is required.</strong></p>
+	<dl>
+		<dt>--configFile=&lt;configFile&gt;</dt>
+		<dd>
+			Optional.
+			Override the default configuration file location,
+				which is <code>config.ini</code> in the current working directory.
+		</dd>
+	
+		<dt>--help</dt>
+		<dd>
+			Optional.
+			Display usage information and exit.  For help with <code>--send</code>,
+			use the combination <code>--send --help</code>.
+		</dd>
+	
+		<dt>--send</dt>
+		<dd>
+			Optional.
+			Create a product using the <a href="#api">Command Line API</a>.
+			The product is sent using all configured senders.
+		</dd>
+	
+		<dt>--receive</dt>
+		<dd>
+			Optional.
+			Start a persistent client to receive products.
+		</dd>
+	
+		<dt>--track</dt>
+		<dd>
+			Optional.
+			Track sent products.
+		</dd>
+	</dl>
+
+
+<h2 id="exit">ProductClient.jar Sender exit codes</h2>
+	<dl>
+		<dt>0</dt>
+		<dd>
+			Normal exit, the product was built and send without any problems.
+			In addition to this exit code, the ID of the built product is output to STDOUT.
+		</dd>
+
+		<dt>1</dt>
+		<dd>
+			Invalid arguments, either an invalid combination or invalid value.
+			This is usually accompanied by text describing what was invalid.
+		</dd>
+
+		<dt>2</dt>
+		<dd>
+			Unable to build product.
+			Rare.
+		</dd>
+
+		<dt>3</dt>
+		<dd>
+			Total send failure.
+			Every configured product sender had an exception.
+			The product was likely not received by anyone.
+		</dd>
+
+		<dt>4</dt>
+		<dd>
+			Partial send failure.
+			At least one configured product sender succeeded, which is often sufficient for
+			distribution.  Check the logs for more information about the senders that
+			had exceptions.
+		</dd>
+	</dl>
+
+
+<h2 id="api">Command Line Sender/Receiver API</h2>
+	<p>
+		The Command Line API is used to create new products, 
+			and by external listeners to receive products.
+	</p>
+	<dl>
+		<dt>--source=&lt;source&gt;</dt>
+		<dd>
+			Network that generated this product, as a two character network code.
+			<br/>Examples include <code>us</code>, <code>nc</code>, and <code>ci</code>.
+		</dd>
+	
+		<dt>--type=&lt;type&gt;</dt>
+		<dd>
+			Product type.  A short identifier that is shared by all sources of a type of product.
+			<br/>Examples include <code>shakemap</code>, <code>pager</code>, and <code>dyfi</code>.
+		</dd>
+	
+		<dt>--code=&lt;code&gt;</dt>
+		<dd>
+			Full event code: 2 character network code followed by up to 8 character network event code.
+			<br/>Examples include <code>us2009abcd</code> and <code>nc12345678</code>
+		</dd>
+	
+		<dt>--updateTime=&lt;updateTime&gt;</dt>
+		<dd>
+			Optional.  Default is now.
+			When this version of source+type+code was updated.
+			<br/>An example is <code>2010-01-14T14:11:28.691-07:00</code>.
+		</dd>
+	
+		<dt>--trackerURL=&lt;trackerURL&gt;</dt>
+		<dd>
+			A location where tracking updates are sent.
+		</dd>
+	
+		<dt>--status=&lt;status&gt;</dt>
+		<dd>
+			Optional. Default is <code>UPDATE</code>.
+			Product generators may use any status without spaces.
+			However, the status must be used consistently for all products of that type.
+			<br/>Examples include <code>UPDATE</code>, and <code>DELETE</code>.
+		</dd>
+	
+		<dt>--delete</dt>
+		<dd>
+			Optional.  A synonym for <code>--status=DELETE</code>.
+			This updates the status to delete.
+			Product generators may send content along with a "deleted" product.
+			<br/><em>NOTE: ProductDistribution makes no attempt to remove earlier versions of the product,
+				and only attempts to deliver this update.</em>
+		</dd>
+	
+	
+		<dt>--property-&lt;name&gt;=&lt;value&gt;</dt>
+		<dd>
+			Optional.
+			Product property.
+			Each property may have only one value.
+			Name and value must not contain an equals (=).
+			
+			<dl>
+	
+				<dt>--eventtime=&lt;eventtime&gt;</dt>
+				<dd>
+					Optional.
+					When the event with which this product is associated occurred.
+					<br/>Examples include <code>2010-01-14T14:11:28.691-07:00</code>
+						and <code>2010-01-14T21:11:28.691Z</code>.
+					<br/>Synonym for <code>--property-eventtime=&lt;eventtime&gt;</code>.
+				</dd>
+	
+				<dt>--latitude=&lt;latitude&gt;</dt>
+				<dd>
+					Optional.
+					Latitude (in decimal degrees) of event with which this product is associated.
+					<br/>Synonym for <code>--property-latitude=&lt;latitude&gt;</code>.
+				</dd>
+	
+				<dt>--longitude=&lt;longitude&gt;</dt>
+				<dd>
+					Optional.
+					Longitude (in decimal degrees) of event with which this product is associated.
+					<br/>Synonym for <code>--property-longitude=&lt;longitude&gt;</code>.
+				</dd>
+	
+				<dt>--eventsource=&lt;eventsource&gt;</dt>
+				<dd>
+					Network that generated event with which this product is associated.
+					<br/>Examples include <code>us</code>, <code>nc</code>, and <code>ci</code>.
+					<br/>Synonym for <code>--property-eventsource=&lt;eventsource&gt;</code>
+				</dd>
+	
+				<dt>--eventsourcecode=&lt;eventsourcecode&gt;</dt>
+				<dd>
+					Code assigned by network that generated event with which this product is associated.
+					<br/>Examples include <code>2008abcd</code> and <code>12345678</code>.
+					<br/>Synonym for <code>--property-eventsourcecode=&lt;eventsourcecode&gt;</code>
+				</dd>
+	
+				<dt>--magnitude=&lt;magnitude&gt;</dt>
+				<dd>
+					Optional.
+					Magnitude of event with which this product is associated.
+					<br/>Synonym for <code>--property-magnitude=&lt;magnitude&gt;</code>.
+				</dd>
+	
+				<dt>--depth=&lt;depth&gt;</dt>
+				<dd>
+					Optional.
+					Depth (in kilometers) of event with which this product is associated.
+					<br/>Synonym for <code>--property-depth=&lt;depth&gt;</code>.
+				</dd>
+	
+				<dt>--version=&lt;version&gt;</dt>
+				<dd>
+					Optional.
+					Product generator version.
+					This is independent of the Product updateTime, which is used by distribution for versioning.
+					<br/>Synonym for <code>--property-version=&lt;version&gt;</code>.
+				</dd>
+	
+				<dt class="deprecated">--eventid=&lt;eventid&gt;</dt>
+				<dd class="deprecated">
+					Deprecated.  Use the --eventsource and --eventsourcecode arguments instead.
+	
+					<br/>Optional.  
+					Full 10 character eventid with which this product is associated.
+					<br/>An example is <code>us2008abcd</code>.
+					<br/>Synonym for <code>--property-eventid=&lt;eventid&gt;</code>.
+				</dd>
+	
+			</dl>
+		</dd>
+	
+	
+		<dt>--link-&lt;relation&gt;=&lt;uri&gt;</dt>
+		<dd>
+			Optional.  
+			Represent a relationship between this product and another product or resource.
+			Each relation may have many uris.
+			<code>&lt;uri&gt;</code> must be a valid URI as defined by RFC2396 or RFC2732.
+			<br/>Example:  --link-related=urn:usgs-product
+		</dd>
+	
+	
+		<dt>--content</dt>
+		<dd>
+			Optional.
+			Non-file product content is available via standard input.
+		</dd>
+	
+		<dt>--contentType=&lt;contentType&gt;</dt>
+		<dd>
+			Optional, used with <code>--content</code>.
+			Content mime-type for content read from standard input.
+		</dd>
+	
+		<dt>--file=&lt;file&gt;</dt>
+		<dd>
+			Optional.
+			<code>&lt;file&gt;</code> is a path to a file that is product content.
+			The file's name and modification date are preserved.
+			The mime type is inferred from the file extension.
+			The file is added at the root level of the product.
+		</dd>
+	
+		<dt>--directory=&lt;directory&gt;</dt>
+		<dd>
+			Optional.
+			<code>&lt;directory&gt;</code> is a path to a directory that contains product contents.
+			Any directory hierarchy within <code>&lt;directory&gt;</code> is preserved.
+		</dd>
+	
+		<dt>--privateKey=&lt;privateKey&gt;</dt>
+		<dd>
+			Optional.
+			Path to a file containing a PKCS#8 encoded private key in PEM or DER format.
+			When present, the key will be used to generate a signature for this product.
+		</dd>
+
+		<dt>--servers=&lt;servers&gt;</dt>
+		<dd>
+			Optional.
+			A comma separated list of server:port combinations.
+			Overrides any configured servers.</dd>
+
+		<dt>--connectTimeout=&lt;timeout&gt;</dt>
+		<dd>
+			Optional, default 15000.
+			Connect timeout in milliseconds.
+			NOTE: only affects servers specified using the --servers argument,
+				and must appear before the --servers argument on the command line.</dd>
+
+		<dt>--binaryFormat</dt>
+		<dd>
+			Optional, default uses xml format.
+			Send to hub using binary format.
+			NOTE: only affects servers specified using the --servers argument, 
+				and must appear before the --servers argument on the command line.</dd>
+
+		<dt>--disableDeflate</dt>
+		<dd>
+			Optional, default uses deflate compression.
+			Send to hub without using deflate compression.
+			NOTE: only affects servers specified using the --servers argument, 
+				and must appear before the --servers argument on the command line.</dd>
+	</dl>
+
+<h3>External Indexer Listener Arguments</h3>
+	<p>The external indexer listener provides these additional arguments:</p>
+	<dl>
+		<dt>--action=&lt;action&gt;</dt>
+		<dd>The <a href="index.html#change_type">indexer change type</a>.</dd>
+	</dl>
+
+	<p>After the indexer updates an event, these additional arguments with preferred event information are included:</p>
+	<dl>
+		<dt>--preferred-eventid=&lt;eventid&gt;</dt>
+		<dd>The full, unique event id for the event.</dd>
+		
+		<dt>--preferred-eventsource=&lt;eventsource&gt;</dt>
+		<dd>The preferred eventsource for the event.</dd>
+		
+		<dt>--preferred-eventsourcecode=&lt;eventsourcecode&gt;</dt>
+		<dd>The preferred eventsourcecode for the event.</dd>
+		
+		<dt>--preferred-eventtime=&lt;eventtime&gt;</dt>
+		<dd>The preferred eventtime for the event.</dd>
+		
+		<dt>--preferred-latitude=&lt;latitude&gt;</dt>
+		<dd>The preferred latitude for the event.</dd>
+		
+		<dt>--preferred-longitude=&lt;longitude&gt;</dt>
+		<dd>The preferred longitude for the event.</dd>
+		
+		<dt>--preferred-depth=&lt;depth&gt;</dt>
+		<dd>The preferred depth for the event.</dd>
+		
+		<dt>--preferred-magnitude=&lt;magnitude&gt;</dt>
+		<dd>The preferred magnitude for the event.</dd>
+		
+		<dt>--eventids=&lt;eventids&gt;</dt>
+		<dd>A comma separated list of all eventids associated with the event.</dd>
+	</dl>
+</body>
+</html>

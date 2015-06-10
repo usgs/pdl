@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Sending Products</title>
+<link rel="stylesheet" href="userguide.css" />
+<meta charset="UTF-8" />
+</head>
+
+<body>
+<h1>Sending Products</h1>
+<p><a href="../index.html#documentation">&laquo; Back to User Guide</a></p>
+<p><small>$Id: sending.html 22941 2015-04-06 14:11:05Z jmfee $<br />
+$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/userguide/sending.html $</small></p>
+
+
+<h2>Navigation</h2>
+<ul>
+	<li><a href="#start">Getting Started</a>
+	<ul>
+		<li><a href="#configure">Configuring a Sender</a></li>
+		<li><a href="#keypair">Generating a Keypair</a></li>
+	</ul>
+	</li>
+	<li><a href="#design">Designing New Products</a></li>
+	<li><a href="#commandline">Using the Command Line to Send
+	Products</a>
+	<ul>
+		<li><a href="#commandline_arguments">Send Arguments</a></li>
+		<li><a href="#commandline_examples">Send Examples</a></li>
+	</ul>
+	</li>
+	<li><a href="#java">Using Java API</a></li>
+	<li><a href="#signatures">Product Signatures</a></li>
+	<li><a href="#compression">Compression</a></li>
+	<li><a href="EIDS.html">Using EIDS</a></li>
+	<li><a href="eidsinputwedge.html">EIDS Input Wedge</a></li>
+</ul>
+
+
+<h2 id="start">Getting Started</h2>
+
+<ol>
+	<li id="configure">The application comes with an embedded
+	configuration that should be sufficient for most Product Senders in a
+	production environment. Be default, this configuration sends to all
+	Product Distribution Hubs. During development, or for the sake of being
+	explicit, you can create a simple configuration file to send to the
+	development Product Distribution Hub.
+	<ul style="margin-top: 16px;">
+		<li>Create a file called &ldquo;<a
+			href="simple_sender_config.ini"> config.ini</a>&rdquo; and place this
+		file in the same directory as the application.</li>
+		<li><a href="configuration.html#ProductSender">You may update the &ldquo;<a
+			href="simple_sender_config.ini"> config.ini</a>&rdquo;
+		configuration file if you want to change the default settings</a>.</li>
+	</ul>
+	</li>
+	<li id="keypair"><strong>Create a new Keypair.</strong>
+	<p>Senders <strong>must</strong> use their private key to sign products. Receivers <strong>may</strong>
+	use a sender's public key to verify signatures.</p>
+
+	<div class="code"><pre>
+ssh-keygen -t dsa -b 1024 -C 'Comment describing key' -f &lt;keyfilename&gt;
+</pre></div>
+
+	<p>Do not assign a key passphrase. This creates two files: a
+	private key named &ldquo;&lt;keyfilename&gt;&rdquo; and a public key
+	named &ldquo;&lt;keyfilename&gt;.pub&rdquo;.</p>
+	<p>As with all public/private keypairs, NEVER share your PRIVATE
+	key.</p>
+	<p>Give your PUBLIC key to everyone who needs to verify your
+	product signatures.</p>
+	</li>
+
+	<li><strong>Register your public key</strong>
+
+	<p>Send your public key and information about your products to <a
+		href="mailto:jmfee@usgs.gov">jmfee@usgs.gov</a>. You will receive a <code>source</code>
+	and <code>type</code> that can be used to send products.
+	</li>
+
+	<li><strong>Generate product documentation.</strong>
+	<p>This will let receivers know what they can expect. <a href="./products/">View existing documentation</a> for examples of other product documentation.</p>
+	</li>
+
+	<li><strong>Use the Command Line or <a href="/javadoc/">Java API</a> to Send
+	Products.</strong>
+	<p>Send your products using the assigned <code>source</code> and <code>type</code>.</p>
+	</li>
+</ol>
+
+
+<h2 id="design">Designing New Products</h2>
+
+<h3>What is a Product?</h3>
+
+<p>A product is a specific version of any content produced in
+response to an earthquake, information about an earthquake, or another
+product.</p>
+
+<p>A product usually consists of a directory of files, but may also
+include a stream of bytes, links to internet resources, and key/value
+pairs.</p>
+
+
+<h4>Product IDs</h4>
+<p>The source, type, and code uniquely identify a product and its
+associated content. Update times indicate different versions of the same
+product, and products with more recent update times supersede products
+with less recent update times.</p>
+
+<dl>
+	<dt>source</dt>
+	<dd>The product creator. Usually a network code.</dd>
+
+	<dt>type</dt>
+	<dd>The type of product. Multiple sources may create the same type
+	of product.</dd>
+
+	<dt>code</dt>
+	<dd>A unique code, for a given <code>source</code> and <code>type</code>
+	combination.</dd>
+
+	<dt>update time</dt>
+	<dd>When this version of content was created. Two products with
+	the same <code>source</code>, <code>type</code>, and <code>code</code>,
+	but different <code>update time</code>s are different versions of the
+	same product.</dd>
+</dl>
+
+
+<h4>Status</h4>
+<p>A brief status code. Typically <code>UPDATE</code> or <code>DELETE</code>.
+Any value that is not <code>DELETE</code> is considered an update.</p>
+
+<p>When a product producer deletes a product they send an update
+with a status <code>DELETE</code>, which is distributed like any other
+product.</p>
+
+
+<h4>Contents</h4>
+
+<strong>Files</strong>
+<p>Contents are optional, but are usually present when the status is
+not <code>DELETE</code>. Each content has a path, which corresponds to a
+filename.</p>
+
+<strong>Non file content</strong>
+<p>Each product may have one piece of content that is a stream of
+bytes. It has an empty path and isn't stored in a file. Typically this
+content is read from standard input, and also delivered to consumers via
+standard input.</p>
+
+
+<h4>Metadata</h4>
+
+<strong>Links</strong>
+<p>A product may include links to other products and resources.
+Links have a relation, which speciÞes how the resource is related to the
+product. There may be multiple links for each type of relation.</p>
+
+<strong>Properties</strong>
+<p>Key value pairs. Each property may only have one value. These can
+be used to determine whether further processing is required. "Standard"
+properties include:</p>
+
+<dl>
+	<dt>eventsource</dt>
+	<dd>network code of related event</dd>
+
+	<dt>eventsourcecode</dt>
+	<dd>network event code of related event</dd>
+
+	<dt>eventtime</dt>
+	<dd>time of related event</dd>
+
+	<dt>latitude</dt>
+	<dd>latitude of related event</dd>
+
+	<dt>longitude</dt>
+	<dd>longitude of related event</dd>
+
+	<dt>depth</dt>
+	<dd>depth of related event</dd>
+
+	<dt>magnitude</dt>
+	<dd>magnitude of related event</dd>
+
+	<dt>version</dt>
+	<dd>producer product version. This is not used for ordering
+	products, which use update time as a versions.</dd>
+</dl>
+
+<p>All of these properties are optional, but a combination of either
+<code>eventsource</code> and <code>eventsourcecode</code> OR <code>eventtime</code>,
+<code>latitude</code>, and <code>longitude</code> are recommended for
+event-related products for association purposes.</p>
+
+
+<h4>Signature</h4>
+<p>Producers generate a signature which may be verified by both hubs
+and consumers. The signature consists of a hash of all product contents
+and attributes, which is encrypted using a private key and verified
+using a public key.</p>
+
+<p>Production hubs require a signature, and a keypair must be
+registered before products are sent.</p>
+
+
+<h3 id="content">Generating a &ldquo;Good&rdquo; Product</h3>
+<p>The information contained in this section is a recommendation,
+not a requirement however recommendations can be seen as a best practice
+when generating new products.</p>
+
+<h4 id="content_props">Product Properties</h4>
+<p>Properties should be defined for important attributes of your
+product. They allow recipients to quickly determine whether they should
+process a product, without extensive parsing.</p>
+
+<p>For example, <code>eventsource</code> and <code>eventsourcecode</code>
+are used by the indexer to associate a product with an event. Other
+examples include <code>dyfi</code> number of responses, <code>losspager</code>
+alert level, and <code>shakemap</code> maximum MMI.</p>
+
+<p><a href="./products/index.html">See the product documentation for other examples of
+product properties.</a></p>
+
+<h4 id="content_xml">Contents.xml File</h4>
+<p>It is recommended you include with your product a
+&ldquo;contents.xml&rdquo; file. This file describes all of the contents
+you are sending with your product. It helps the web page to better
+display your product and ultimately determines what content users will
+be able to easily download from the web site.</p>
+<p>The contents.xml file format is defined with a <a
+	href="contents.xsd">contents.xsd</a> file. You must understand how to
+read <a href="http://www.w3schools.com/schema/" target="_blank">XML
+schema (XSD)</a> files in order to properly generate a contents.xml file.</p>
+
+
+<h4>Grouping Content</h4>
+<p>When mapping products into PDL, it is important to consider how
+content is generated and updated when deciding what individual products
+should contain.
+<p>For event-related products, the group of content is everything
+related to that event.</p>
+
+<p>For non-event-related products, the group depends more on how
+content is generated and updated. For example, station related content
+might be broken up by station. It's possible that this content would
+need to be further divided based on update intervals.</p>
+
+<h4>Product Code Conventions</h4>
+<p>A product <code>code</code> must be unique forever, from the same
+<code>source</code> and <code>type</code>. Product creators also reuse
+the <code>code</code> to update or delete the product.</p>
+
+<p>For event-related products, an eventid makes a good code because
+it also must be unique forever. Examples include : <code>us2011abcd</code>
+and <code>nc12345678</code>.</p>
+
+<p>For non-event-related products another ID scheme is required.
+Timestamps are often useful in this situation when the products are
+related to a time window.</p>
+
+<p>An internal database key <em>can</em> be used.
+
+
+<h2 id="commandline">Using the Command Line to Send Products</h2>
+
+<div class="code"><pre>
+java -jar ProductClient.jar --send [send arguments]
+</pre></div>
+
+<h3 id="commandline_arguments">Send Arguments</h3>
+<p>The Command Line API is used to create new products, and by
+external listeners to receive products.</p>
+
+<p>These arguments are mandatory.</p>
+<dl>
+	<dt>--source=&lt;source&gt;</dt>
+	<dd>This is assigned when you register your KeyPair with the hubs.
+	<br />
+	Examples include <code>us</code>, <code>nc</code>, and <code>ci</code>.
+	</dd>
+
+	<dt>--type=&lt;type&gt;</dt>
+	<dd>Product type. This is assigned when you register your KeyPair
+	with the hubs. <br />
+	Examples include <code>shakemap</code>, <code>pager</code>, and <code>dyfi</code>.
+	</dd>
+
+	<dt>--code=&lt;code&gt;</dt>
+	<dd>A unique identifier for this product. This should only be
+	reused when updating an existing product. Generally a full event id (2
+	character network code followed by up to 8 character network event
+	code) <br />
+	Examples include <code>us2009abcd</code> and <code>nc12345678</code></dd>
+	
+	<dt>--trackerURL=&lt;trackerURL&gt;</dt>
+	<dd>A location where tracking updates are sent. <br />
+	Example: <code> --trackerURL=http://ehppdl1.cr.usgs.gov/tracker/ </code></dd>
+</dl>
+
+<p>These arguments are optional.</p>
+<dl>
+	<dt>--updateTime=&lt;updateTime&gt;</dt>
+	<dd>Optional. Default is now. When this version of
+	source+type+code was updated. <br />
+	An example is <code>2010-01-14T14:11:28.691-07:00</code>.</dd>
+
+
+	<dt>--status=&lt;status&gt;</dt>
+	<dd>Optional. Default is <code>UPDATE</code>. Product generators
+	may use any status without spaces. However, the status must be used
+	consistently for all products of that type. <br />
+	Examples include <code>UPDATE</code>, and <code>DELETE</code>.
+
+	<dl>
+		<dt>--delete</dt>
+		<dd>Optional. A synonym for <code>--status=DELETE</code>. This
+		updates the status to delete. Product generators may send content
+		along with a "deleted" product. <br />
+		<em>NOTE: ProductDistribution makes no attempt to remove earlier
+		versions of the product, and only attempts to deliver this update.</em></dd>
+	</dl>
+	</dd>
+
+
+	<dt>--property-&lt;name&gt;=&lt;value&gt;</dt>
+	<dd>Optional. Product property. Each property may have only one
+	value. Name and value must not contain an equals (=).
+
+	<dl>
+		<dt>--eventtime=&lt;eventtime&gt;</dt>
+		<dd>Optional. When the event with which this product is
+		associated occurred. <br />
+		Examples include <code>2010-01-14T14:11:28.691-07:00</code> and <code>2010-01-14T21:11:28.691Z</code>.
+		<br />
+		Synonym for <code>--property-eventtime=&lt;eventtime&gt;</code>.</dd>
+
+		<dt>--latitude=&lt;latitude&gt;</dt>
+		<dd>Optional. Latitude (in decimal degrees) of event with which
+		this product is associated. <br />
+		Synonym for <code>--property-latitude=&lt;latitude&gt;</code>.</dd>
+
+		<dt>--longitude=&lt;longitude&gt;</dt>
+		<dd>Optional. Longitude (in decimal degrees) of event with which
+		this product is associated. <br />
+		Synonym for <code>--property-longitude=&lt;longitude&gt;</code>.</dd>
+
+		<dt>--eventsource=&lt;eventsource&gt;</dt>
+		<dd>Network that generated event with which this product is
+		associated. <br />
+		Examples include <code>us</code>, <code>nc</code>, and <code>ci</code>.
+		</dd>
+
+		<dt>--eventsourcecode=&lt;eventsourcecode&gt;</dt>
+		<dd>Code assigned by network that generated event with which this
+		product is associated. <br />
+		Examples include <code>2008abcd</code> and <code>12345678</code>.</dd>
+
+		<dt>--magnitude=&lt;magnitude&gt;</dt>
+		<dd>Optional. Magnitude of event with which this product is
+		associated. <br />
+		Synonym for <code>--property-magnitude=&lt;magnitude&gt;</code>.</dd>
+
+		<dt>--depth=&lt;depth&gt;</dt>
+		<dd>Optional. Depth (in kilometers) of event with which this
+		product is associated. <br />
+		Synonym for <code>--property-depth=&lt;depth&gt;</code>.</dd>
+
+		<dt>--version=&lt;version&gt;</dt>
+		<dd>Optional. Product generator version. This is independent of
+		the Product updateTime, which is used by distribution for versioning.
+		<br />
+		Synonym for <code>--property-version=&lt;version&gt;</code>.</dd>
+
+		<dt class="deprecated">--eventid=&lt;eventid&gt;</dt>
+		<dd class="deprecated">Deprecated. Use the --eventsource and
+		--eventsourcecode arguments instead. <br />
+		Optional. Full 10 character eventid with which this product is
+		associated. <br />
+		An example is <code>us2008abcd</code>. <br />
+		Synonym for <code>--property-eventid=&lt;eventid&gt;</code>.</dd>
+
+	</dl>
+	</dd>
+
+
+	<dt>--link-&lt;relation&gt;=&lt;uri&gt;</dt>
+	<dd>Optional. Represent a relationship between this product and
+	another product or resource. Each relation may have many uris. <code>&lt;uri&gt;</code>
+	must be a valid URI as defined by RFC2396 or RFC2732. <br />
+	Example: --link-related=urn:usgs-product</dd>
+
+
+	<dt>--content</dt>
+	<dd>Optional. Non-file product content is available via standard
+	input.
+	<dl>
+		<dt>--contentType=&lt;contentType&gt;</dt>
+		<dd>Optional, used with <code>--content</code>. Content mime-type
+		for content read from standard input.</dd>
+	</dl>
+	</dd>
+
+	<dt>--file=&lt;file&gt;</dt>
+	<dd>Optional. <code>&lt;file&gt;</code> is a path to a file that
+	is product content. The file's name and modification date are
+	preserved. The mime type is inferred from the file extension. The file
+	is added at the root level of the product.</dd>
+
+	<dt>--directory=&lt;directory&gt;</dt>
+	<dd>Optional. <code>&lt;directory&gt;</code> is a path to a
+	directory that contains product contents. Any directory hierarchy
+	within <code>&lt;directory&gt;</code> is preserved.</dd>
+
+	<dt>--privateKey=&lt;privateKey&gt;</dt>
+	<dd>Optional. Path to a file containing a PKCS#8 encoded private
+	key in PEM or DER format. When present, the key will be used to
+	generate a signature for this product.</dd>
+
+	<dt>--configFile=&lt;file&gt;</dt>
+	<dd>Optional. Path to a file containing the configuration for your
+	sender. If ommitted, the sender will check the current working
+	directory for a file called &ldquo;config.ini&rdquo;. If that file does
+	not exist the sender will use the default embedded configuration.</dd>
+</dl>
+
+
+<h3>Send Examples</h3>
+
+<h4>Sending or Updating a Product</h4>
+<p>Sending a new product is the same as sending an update to a
+product.</p>
+
+<p><em>Line continuation characters (\) added for readability,
+all arguments would appear on one line.</em></p>
+
+<div class="code"><pre>
+% java -jar ProductClient.jar --send \
+	--source=us \
+	--type=dyfi \
+	--code=EVENTID \
+	--directory=DYFIPRODUCTCONTENTS \
+	--privateKey=PRIVATEKEYFILE \
+	--eventsource=EVENTNETWORK \
+	--eventsourcecode=EVENTCODE \
+	--eventtime=2010-10-25T15:10:24Z \
+	--latitude=12.345 \
+	--longitude=23.456 \
+	--property-num-responses=17000
+</pre></div>
+
+<p>In the above example, a <i>dyfi</i> product is sent. Source, Type, and
+Code uniquely identify this product. Directory contains all the product
+files. The Private Key is used to sign the message. Event properties
+eventsource, eventsourcecode, eventtime, latitude, longitude are all
+included. In addition, a dyfi specific property "num-responses" is
+included that indicates how many people have filled out the dyfi
+questionaire.</p>
+
+
+<h4>Deleting a previously sent Product</h4>
+<p>To delete a product, reuse the same source, type, and code, and
+set the status to DELETE using the --delete argument.</p>
+<p><em>Line continuation characters (\) added for readability,
+all arguments would appear on one line.</em></p>
+
+<div class="code"><pre>
+% java -jar ProductClient.jar --send \
+	--source=us \
+	--type=dyfi \
+	--code=EVENTCODE \
+	--eventid=EVENTCODE \
+	--delete \
+	--privateKey=PRIVATEKEYFILE
+</pre></div>
+
+<p>In the above example, a dyfi product is deleted. Source, Type and
+Code uniquely identify which product is being deleted. The --delete
+argument sets the status to DELETE. The Private Key is used to sign the
+message.</p>
+
+
+<h2 id="signatures">Product Signatures</h2>
+<p>Product Senders use an OpenSSH DSA keypair used to sign and
+verify their products.</p>
+
+<h3>Creating a new Keypair</h3>
+<div class="code"><pre>
+ssh-keygen -t dsa -b 1024 -C 'Comment describing key' -f &lt;keyfilename&gt;
+</pre></div>
+
+<p>Do not assign a key passphrase. This creates two files: a private
+key named "&lt;keyfilename&gt;" and a public key named
+"&lt;keyfilename&gt;.pub"</p>
+<p>As with all public/private keypairs, NEVER share your PRIVATE
+key.</p>
+<p>Give your PUBLIC key to everyone who needs to verify your product
+signatures.</p>
+
+
+<h3>Using the Keypair</h3>
+<p>The private key is used by the sender when sending products, and
+the public key is used by receivers when verifying products.</p>
+
+<h4>Signing products with the private key</h4>
+<p>Use the "--privateKey=&lt;keyfilename&gt;" argument when --send ing
+products.</p>
+
+<h4>Configuring signature verification with the public key</h4>
+<p>This will check signatures before processing a product.</p>
+
+<p>Update the ProductStorage configuration:</p>
+<div class="code"><pre>
+[my_storage]
+...
+verifySignatures = true
+keychain = ..., key_&lt;keyfilename&gt;
+
+[key_&lt;keyfilename&gt;]
+type = gov.usgs.earthquake.distribution.ProductKey
+types = &lt;producttype&gt;
+sources = &lt;productsource&gt;
+key = &lt;public key contents&gt;
+</pre></div>
+
+<h3>How is the signature generated and verified?</h3>
+<p>Both the sender and receiver compute a SHA-1 digest of all
+product contents and metadata (except the signature).</p>
+
+<p>A sender uses their private key to encrypt this digest, and sends
+the encrypted digest as the signature.</p>
+
+<p>A receiver uses the senders public key to decrypt the signature
+(only the senders public key is able to decrypt the signature). The
+receiver then compares the computed digest to the sender's digest.</p>
+
+<p>If the sender and receiver digests match, the signature is
+verified and the content is what was originally sent. If the sender and
+receiver digests DON'T match, the product is not what was originally
+sent, or was signed using a different key.</p>
+
+
+<h2 id="compression">Compression</h2>
+
+<p>Depending on the type of content	your product contains 
+	(text/binary/compressed binary), transfer compression can significantly
+	decrease network usage.  However, this is a trade off between available CPU and 
+	network bandwidth.</p>
+
+<p>A general rule is text or uncompressed binary content should use compression;
+	compressed binary content should not use additional compression.
+	You can read how to configure your transfer on the 
+	<a href="configuration.html#ProductSender">ProductSender configuration</a>.</p>
+
+
+<p>You can use the DeflateComparison utility test content you expect to send:</p>
+<div class="code"><pre>
+java -cp ProductClient.jar gov.usgs.earthquake.distribution.DeflateComparison FILE [FILE ...]
+<pre></div>
+Where FILE(s) are files or directories that are part of your product content.
+
+
+<h3>Quakeml compression example</h3>
+<div class="code"><pre>
+etc/test_products/quakeml/pde20100314080803960_32.xml, length = 611853 bytes
+no compression
+	0.000s, 0.0% reduction (0 fewer bytes)
+default compression (-1)
+	0.497s, 94.3% reduction (576916 fewer bytes)
+best speed (1)
+	0.444s, 93.4% reduction (571463 fewer bytes)
+best compression (9)
+	0.432s, 94.6% reduction (578911 fewer bytes)
+</pre></div>
+
+<h3>ShakeMap compression example</h3>
+<div class="code"><pre>
+etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.xml, length = 2405991 bytes
+no compression
+	0.001s, 0.0% reduction (0 fewer bytes)
+default compression (-1)
+	1.819s, 39.2% reduction (943012 fewer bytes)
+best speed (1)
+	1.747s, 36.7% reduction (883394 fewer bytes)
+best compression (9)
+	1.502s, 39.3% reduction (944685 fewer bytes)
+</pre></div>
+
+<h3>PAGER compression example</h3>
+<div class="code"><pre>
+etc/test_products/usa00040xz/us_losspager_usa00040xz_1287260989064.xml, length = 1519786 bytes
+no compression
+	0.000s, 0.0% reduction (0 fewer bytes)
+default compression (-1)
+	0.934s, 43.8% reduction (665810 fewer bytes)
+best speed (1)
+	0.902s, 41.2% reduction (625532 fewer bytes)
+best compression (9)
+	0.966s, 43.9% reduction (667636 fewer bytes)
+</pre></div>
+
+</body>
+</html>

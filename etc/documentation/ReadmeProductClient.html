@@ -1,0 +1,832 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>Product Client Configuration</title>
+	<style type="text/css">/*<![CDATA[*/
+		dt {
+			font-family:monospace;
+			padding:5px;
+		}
+		dd {
+			margin-bottom:1em;
+		}
+		dt.deprecated {
+			text-decoration: line-through;
+		}
+	/*]]>*/</style>
+</head>
+
+<body>
+
+<h1>Product Client Documentation</h1>
+<p>
+	<strong>$Id: ReadmeProductClient.html 7903 2010-10-25 22:36:35Z jmfee $</strong><br/>
+	$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/ReadmeProductClient.html $<br/>
+	<a href="mailto:jmfee@usgs.gov">jmfee@usgs.gov</a>
+</p>
+
+
+<h2>Contents</h2>
+<ul>
+	<li><a href="#overview">Overview</a></li>
+	<li><a href="#system_requirements">System Requirements</a></li>
+	<li><a href="#quick_start">Quick Start</a></li>
+	<li><a href="#arguments">Arguments</a></li>
+	<li><a href="#config">Configuration</a>
+		<ul>
+			<li><a href="#config_listeners">Listeners</a></li>
+			<li><a href="#config_receivers">Receivers</a></li>
+			<li><a href="#config_senders">Senders</a></li>
+			<li><a href="#config_storage">ProductStorage</a></li>
+			<li><a href="#config_index">NotificationIndex</a></li>
+			<li><a href="#config_key">ProductKey</a></li>
+		</ul>
+	</li>
+	<li><a href="#api">Command Line API</a></li>
+	<li><a href="#example_listener_config">Example Listener Configuration</a></li>
+	<li><a href="#signatures">Product Signatures</a></li>
+</ul>
+
+
+<h2><a name="overview"></a>Overview</h2>
+<h3>Product</h3>
+<p>
+	A product is a specific version of any content produced in response to an earthquake, 
+		information about an earthquake, or another product.
+	A product is uniquely identified by its type, code, source, and an update time.
+	More recent update times for a product (type+code+source) always supersede less recent update times. 
+</p>
+
+<h3>Delete</h3>
+<p>
+	Product distribution does not delete products directly.
+	Instead, it updates a products status to DELETE, and distributes the update 
+		like any other product.
+	Receivers of products are informed of the updated status and should act accordingly.
+</p>
+<p>
+	If there a a problem with a product that needs to be corrected,
+		send an updated version; even if it is only a minor correction.
+</p>
+
+<h3>Product Distribution</h3>
+<p>
+	After a product is created, a Product Sender sends the product to distribution hubs.
+	Distribution hubs notify Product Receivers that the product is available and where it can be downloaded.
+	Depending on their configuration, Product Receivers download and process products.
+</p>
+
+<p>
+	Product Distribution is the process of sending, notifying, and downloading products.
+</p>
+
+
+
+<h2><a name="system_requirements"></a>System Requirements</h2>
+<ul>
+	<li><strong>Sun Java Runtime Environment (JRE) version 1.6 or newer</strong>. 
+		<em>GNU Java (gij or GNU libgcj) should NOT be confused with Sun Java.</em>
+		<p>You can find your version of java by running</p>
+<div class="code"><pre>
+<strong>java -version</strong>
+java version "1.6.0_06"
+Java(TM) SE Runtime Environment (build 1.6.0_06-b02)
+Java HotSpot(TM) Server VM (build 10.0-b22, mixed mode)
+</pre></div>
+		<p><a href="http://www.java.com/">Download Java from http://www.java.com/</a></p>
+	</li>
+
+	<li><strong>Active Internet Connection</strong></li>
+</ul>
+
+<h2><a name="quick_start"></a>Quick Start</h2>
+
+<h3>Install</h3>
+<p><a href="ProductClient.jar">Download the latest ProductClient.jar</a></p>
+
+<h3>Product Senders</h3>
+<p>
+	The embedded configuration should be sufficient for sending products.
+	By default, senders send products to all Product Distribution Hubs.
+</p>
+
+<ul>
+	<li>
+		<a href="#signatures">Create a new Keypair</a>, 
+			then send the public key to <a href="mailto:jmfee@usgs.gov">jmfee@usgs.gov</a>.
+	</li>
+	<li>Look at the <a href="#api">Command Line API</a> used to build products.</li>
+	<li>Send a product
+<pre>
+	java -jar Productclient.jar --send --help
+</pre>
+	</li>
+</ul>
+
+<h3>Product Receivers</h3>
+<p>
+	The embedded configuration is sufficient to receive products.
+	By default, receivers will connect to one Product Distribution Hub, and
+		are configured to failover to other hubs when needed.
+</p>
+
+<ul>
+	<li>
+		Look at the <a href="#api">Command Line API</a> used by ExternalNotificationListeners
+		to receive products.
+	</li>
+	<li>
+		<a href="#config">Configure listeners</a>, you may want to see an
+		<a href="#example_listener_config">Example Listener Configuration</a>.
+	</li>
+	<li>Start the client
+<pre>
+	java -jar ProductClient.jar --receive --configFile=&lt;listenerConfigFile&gt;
+</pre>
+	</li>
+</ul>
+
+
+
+<h2><a name="arguments"></a>Arguments</h2>
+<p>When run without arguments, the product client displays usage.</p>
+<p><strong>One of <code>--send</code>, <code>--receive</code>, or <code>--track</code> is required.</strong></p>
+<dl>
+	<dt>--configFile=&lt;configFile&gt;</dt>
+	<dd>
+		Optional.
+		Override the default configuration file location,
+			which is <code>config.ini</code> in the current working directory.
+	</dd>
+
+	<dt>--help</dt>
+	<dd>
+		Optional.
+		Display usage information and exit.  For help with <code>--send</code>,
+		use the combination <code>--send --help</code>.
+	</dd>
+
+	<dt>--send</dt>
+	<dd>
+		Optional.
+		Create a product using the <a href="#api">Command Line API</a>.
+		The product is sent using all configured senders.
+	</dd>
+
+	<dt>--receive</dt>
+	<dd>
+		Optional.
+		Start a persistent client to receive products.
+	</dd>
+
+	<dt>--track</dt>
+	<dd>
+		Optional.
+		Track sent products.
+	</dd>
+</dl>
+
+
+
+<h2><a name="config"></a>Config File</h2>
+<p>
+	ProductClient.jar configuration files use an INI style syntax for properties.
+</p>
+<p>
+	The product client includes an embedded configuration with defaults for sending and receiving products.
+	User configuration is combined with the embedded configuration, and user settings override any defaults.
+</p>
+<p>
+	By default the product client tries to load the user configuration from a file named 'config.ini' in the current working directory.
+	You can override this default user configuration location using the "--configFile=&lt;configFile&gt;" argument.
+</p>
+
+<h2>Config Parameters</h2>
+
+<h3>Global Properties</h3>
+<dl>
+	<dt>logdirectory</dt>
+	<dd>
+		A directory where log files are created.
+		The default value is "log".
+		Log files rotate once per day and are named "ProductClient_YYYYMMDD.log".
+		<br/><em>NOTE: this replaces the "logfile" property.</em>
+	</dd>
+
+	<dt>loglevel</dt>
+	<dd>
+		How verbose of logging.
+		Default is INFO.
+		Possible values are SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.
+	</dd>
+
+	<dt>redirectconsole</dt>
+	<dd>
+		Whether to redirect console output (STDOUT, STDERR) to the log file.
+		Default is false.
+	</dd>
+
+	<dt>senders</dt>
+	<dd>
+		A comma delimited list of section names to load as senders.
+		Items in this list must implement the ProductSender interface.
+	</dd>
+
+	<dt>receivers</dt>
+	<dd>
+		A comma delimited list of section names to load as receivers.
+		Items in this list must implement the NotificationReceiver interface.
+	</dd>
+
+	<dt>listeners</dt>
+	<dd>
+		Listeners are used by Hubs and Clients.
+		A comma delimited list of section names to load as listeners.
+		Items in this list must implement the NotificationListener interface.
+	</dd>
+
+	<dt>enableTracker</dt>
+	<dd>
+		Whether or not to send tracker updates for sent and received products.
+		Default is enabled (true).
+	</dd>
+
+	<dt>trackerURL</dt>
+	<dd>
+		Default tracker URL assigned to products when sending.
+		Default is http://ehppdl1.cr.usgs.gov/tracker/
+	</dd>
+</dl>
+
+<h3>Sections and Section Properties</h3>
+<p>
+	Each section represents an object that can be loaded.
+	These objects are refered to by their section name.
+</p>
+
+<pre>
+	[section_name]
+	type = fully.qualified.classname
+	property1 = value1
+	property2 = value2
+
+	[section_name2]
+	etc...
+</pre>
+
+<h4>Section Properties</h4>
+<dl>
+	<dt>type</dt>
+	<dd>
+		A fully qualified classname.
+		See the list of classes below for examples.
+		The class may implement the Configurable interface for access to properties.
+	</dd>
+</dl>
+
+<h3><a name="config_listeners"></a>Listeners</h3>
+<p>Listeners are used by Hubs and Clients</p>
+
+<dl>
+	<dt>includeTypes</dt>
+	<dd>
+		(Optional)  A comma delimited list of product types to process.
+		When present, only types in this list are processed.
+	</dd>
+
+	<dt>excludeTypes</dt>
+	<dd>
+		(Optional)  A comma delmited list of product types NOT to process.
+		When present, types in this list are NOT processed.
+	</dd>
+</dl>
+
+<h4>Listener Types</h4>
+<dl>
+	<dt>gov.usgs.earthquake.distribution.ExternalNotificationListener</dt>
+	<dd>
+		This represents a command/process to run each time a product is received.
+		
+		<dl>
+			<dt>storage</dt>
+			<dd>
+				Name of a configured ProductStorage.
+				Generally, a ProductStorage should not be shared between a receiver and listener.
+				Products are extracted into this storage before executing command, 
+						with a --directory argument representing the stored location.
+			</dd>
+
+			<dt>command</dt>
+			<dd>A path to an executable file and arguments</dd>
+			
+			<dt>timeout</dt>
+			<dd>
+				(Optional, default=100000) Timeout in milliseconds for an execution of command.
+				If command doesn't finish executing within the timeout, the process is terminated.
+				When timeout is set to zero (0), commands are never terminated.
+			</dd>
+		</dl>
+	</dd>
+
+	<dt>gov.usgs.earthquake.distribution.RelayProductListener</dt>
+	<dd>
+		Forward any received products to another SocketProductReceiver.
+		For configuration purposes, a RelayProductListener is treated as a gov.usgs.earthquake.distribution.SocketProductSender.
+	</dd>
+
+	<dt>gov.usgs.earthquake.indexer.Indexer</dt>
+	<dd>
+		Builds and index of received products.
+		Associates groups of related products into events.
+		
+		<dl>
+			<dt>storage</dt>
+			<dd>
+				Name of a configured ProductStorage.
+			</dd>
+
+			<dt>index</dt>
+			<dd>
+				Name of a configured gov.usgs.earthquake.indexer.ProductIndex.
+			</dd>
+
+			<dt>modules</dt>
+			<dd>
+				A comma delimited list of configured <code>IndexerModule</code>.
+			</dd>
+
+			<dt>listeners</dt>
+			<dd>
+				A comma delimited list of configured <code>IndexerListener</code>
+			</dd>
+		</dl>
+	</dd>
+</dl>
+
+
+<h3><a name="config_receivers"></a>Receivers</h3>
+<p>Receivers are used by Hubs and Clients.</p>
+
+<dl>
+	<dt>index</dt>
+	<dd>
+		Name of a configured NotificationIndex.
+		Generally one NotificationIndex may be shared by all receivers.
+		If a NotificationIndex is shared, the ProductStorage must also be shared.
+	</dd>
+
+	<dt>storage</dt>
+	<dd>
+		Name of a configured ProductStorage.
+		Generally one ProductStorage may be shared by all receivers.
+		If a ProductStorage is shared, the NotificationIndex must also be shared.
+	</dd>
+
+	<dt>storageage</dt>
+	<dd>
+		How long to store products in milliseconds.
+		Default is 300000 milliseconds = 5 minutes.
+	</dd>
+
+	<dt>cleanupInterval</dt>
+	<dd>
+		How often to check for products older than storageage milliseconds.
+		Default is 300000 milliseconds = 5 minutes.
+	</dd>
+</dl>
+
+<h4>Receiver Types</h4>
+<dl>
+	<dt>gov.usgs.earthquake.distribution.EIDSNotificationReceiver</dt>
+	<dd>
+		This is used primarily by clients to receive notifications from EIDS.
+		
+		<dl>
+			<dt>serverHost</dt>
+			<dd>The IP address or hostname where an EIDS Server with notifications is running.</dd>
+		
+			<dt>serverPort</dt>
+			<dd>The port where an EIDS Server with notifications is running.</dd>
+
+			<dt>alternateServers</dt>
+			<dd>(Optional) A comma separated list of host:port that should be used as alternate servers when serverHost is unreachable.</dd>
+		</dl>
+	</dd>
+
+	<dt>gov.usgs.earthquake.distribution.SocketProductReceiver</dt>
+	<dd>
+		This is used primarily by hubs to receive products directly.
+		<dl>
+			<dt>port</dt>
+			<dd>
+				(Optional) Default is 11235.  
+				The port used to accept connections.
+			</dd>
+		</dl>
+	</dd>
+</dl>
+
+
+
+<h3><a name="config_senders"></a>Senders</h3>
+<p>Senders are used by Product Creators to send a product to a Hub.</p>
+
+<dl>
+	<dt>gov.usgs.earthquake.distribution.SocketProductSender</dt>
+	<dd>
+		<dl>
+			<dt>host</dt>
+			<dd>The IP address or hostname where a SocketProductReceiver is listening.</dd>
+
+			<dt>port</dt>
+			<dd>The port where a SocketProductReceiver is listening.</dd>
+		</dl>
+	</dd>
+</dl>
+
+
+<h3><a name="config_storage"></a>ProductStorage</h3>
+<p>Storage is used by Hubs and Clients to store received products.</p>
+<dl>
+	<dt>gov.usgs.earthquake.distribution.FileProductStorage</dt>
+	<dd>
+		<dl>
+			<dt>directory</dt>
+			<dd>
+				The directory where products are stored.
+				Default is "storage".
+			</dd>
+
+			<dt>verifySignatures</dt>
+			<dd>
+				Whether or not to verify signatures when storing products.
+				Should be one of:
+
+				<dl>
+					<dt>off</dt>
+					<dd>(Default) Do not verify signatures</dd>
+
+					<dt>test</dt>
+					<dd>Check signatures, but do not reject products with invalid signatures.</dd>
+
+					<dt>&lt;anything else&gt;</dt>
+					<dd>Verify signatures, and reject products with invalid signatures.</dd>
+				</dl>
+			</dd>
+
+			<dt>keychain</dt>
+			<dd>
+				Used when verifying signatures.
+				A comma delimited list of sections to load as ProductKeys.
+			</dd>
+		</dl>
+	</dd>
+
+	<dt>gov.usgs.earthquake.distribution.URLProductStorage</dt>
+	<dd>
+		<p>A URLProductStorage is configured just like a FileProductStorage, with the following additional property</p>
+		<dl>
+			<dt>url</dt>
+			<dd>
+				A fully qualified (including http://) base url corresponding to <code>directory</code>.
+				<p>To map a directory onto a url in Apache, use an Alias.</p>
+			</dd>
+		</dl>
+	</dd>
+</dl>
+
+<h3><a name="config_index"></a>NotificationIndex</h3>
+<p>A notification index is used by Hubs and Clients to track available products.</p>
+<dl>
+	<dt>gov.usgs.earthquake.distribution.JDBCNotificationIndex</dt>
+	<dd>
+		<dl>
+			<dt>indexfile</dt>
+			<dd>
+				The SQLite database file.
+				Default is "pd_index.db".
+			</dd>
+		</dl>
+	</dd>
+</dl>
+
+<h3><a name="config_key"></a>ProductKey</h3>
+<p>Keys are used to verify signed products, and more specifically by FileProductStorage.</p>
+<dl>
+	<dt>gov.usgs.earthquake.distribution.ProductKey</dt>
+	<dd>
+		<dl>
+			<dt>key</dt>
+			<dd>An OpenSSH format public key (similar to .ssh/authorized_keys).</dd>
+
+			<dt>types</dt>
+			<dd>
+				A comma delimited list of product types for which this key is valid.
+				Default = all.
+			</dd>
+
+			<dt>sources</dt>
+			<dd>
+				A comma delimited list of product sources for which this key is valid.
+				Default = all.
+			</dd>
+		</dl>
+	</dd>
+</dl>
+
+<h2><a name="api"></a>Command Line API</h2>
+<p>
+	The Command Line API is used to create new products, 
+		and by external listeners to receive products.
+</p>
+<dl>
+	<dt>--source=&lt;source&gt;</dt>
+	<dd>
+		Network that generated this product, as a two character network code.
+		<br/>Examples include <code>us</code>, <code>nc</code>, and <code>ci</code>.
+	</dd>
+
+	<dt>--type=&lt;type&gt;</dt>
+	<dd>
+		Product type.  A short identifier that is shared by all sources of a type of product.
+		<br/>Examples include <code>shakemap</code>, <code>pager</code>, and <code>dyfi</code>.
+	</dd>
+
+	<dt>--code=&lt;code&gt;</dt>
+	<dd>
+		Full event code: 2 character network code followed by up to 8 character network event code.
+		<br/>Examples include <code>us2009abcd</code> and <code>nc12345678</code>
+	</dd>
+
+	<dt>--updateTime=&lt;updateTime&gt;</dt>
+	<dd>
+		Optional.  Default is now.
+		When this version of source+type+code was updated.
+		<br/>An example is <code>2010-01-14T14:11:28.691-07:00</code>.
+	</dd>
+
+	<dt>--trackerURL=&lt;trackerURL&gt;</dt>
+	<dd>
+		A location where tracking updates are sent.
+	</dd>
+
+	<dt>--status=&lt;status&gt;</dt>
+	<dd>
+		Optional. Default is <code>UPDATE</code>.
+		Product generators may use any status without spaces.
+		However, the status must be used consistently for all products of that type.
+		<br/>Examples include <code>UPDATE</code>, and <code>DELETE</code>.
+	</dd>
+
+	<dt>--delete</dt>
+	<dd>
+		Optional.  A synonym for <code>--status=DELETE</code>.
+		This updates the status to delete.
+		Product generators may send content along with a "deleted" product.
+		<br/><em>NOTE: ProductDistribution makes no attempt to remove earlier versions of the product,
+			and only attempts to deliver this update.</em>
+	</dd>
+
+
+	<dt>--property-&lt;name&gt;=&lt;value&gt;</dt>
+	<dd>
+		Optional.
+		Product property.
+		Each property may have only one value.
+		Name and value must not contain an equals (=).
+		
+		<dl>
+
+			<dt>--eventtime=&lt;eventtime&gt;</dt>
+			<dd>
+				Optional.
+				When the event with which this product is associated occurred.
+				<br/>Examples include <code>2010-01-14T14:11:28.691-07:00</code>
+					and <code>2010-01-14T21:11:28.691Z</code>.
+				<br/>Synonym for <code>--property-eventtime=&lt;eventtime&gt;</code>.
+			</dd>
+
+			<dt>--latitude=&lt;latitude&gt;</dt>
+			<dd>
+				Optional.
+				Latitude (in decimal degrees) of event with which this product is associated.
+				<br/>Synonym for <code>--property-latitude=&lt;latitude&gt;</code>.
+			</dd>
+
+			<dt>--longitude=&lt;longitude&gt;</dt>
+			<dd>
+				Optional.
+				Longitude (in decimal degrees) of event with which this product is associated.
+				<br/>Synonym for <code>--property-longitude=&lt;longitude&gt;</code>.
+			</dd>
+
+			<dt>--eventsource=&lt;eventsource&gt;</dt>
+			<dd>
+				Network that generated event with which this product is associated.
+				<br/>Examples include <code>us</code>, <code>nc</code>, and <code>ci</code>.
+			</dd>
+
+			<dt>--eventsourcecode=&lt;eventsourcecode&gt;</dt>
+			<dd>
+				Code assigned by network that generated event with which this product is associated.
+				<br/>Examples include <code>2008abcd</code> and <code>12345678</code>.
+			</dd>
+
+			<dt>--magnitude=&lt;magnitude&gt;</dt>
+			<dd>
+				Optional.
+				Magnitude of event with which this product is associated.
+				<br/>Synonym for <code>--property-magnitude=&lt;magnitude&gt;</code>.
+			</dd>
+
+			<dt>--depth=&lt;depth&gt;</dt>
+			<dd>
+				Optional.
+				Depth (in kilometers) of event with which this product is associated.
+				<br/>Synonym for <code>--property-depth=&lt;depth&gt;</code>.
+			</dd>
+
+			<dt>--version=&lt;version&gt;</dt>
+			<dd>
+				Optional.
+				Product generator version.
+				This is independent of the Product updateTime, which is used by distribution for versioning.
+				<br/>Synonym for <code>--property-version=&lt;version&gt;</code>.
+			</dd>
+
+			<dt class="deprecated">--eventid=&lt;eventid&gt;</dt>
+			<dd class="deprecated">
+				Deprecated.  Use the --eventsource and --eventsourcecode arguments instead.
+
+				<br/>Optional.  
+				Full 10 character eventid with which this product is associated.
+				<br/>An example is <code>us2008abcd</code>.
+				<br/>Synonym for <code>--property-eventid=&lt;eventid&gt;</code>.
+			</dd>
+
+		</dl>
+	</dd>
+
+
+	<dt>--link-&lt;relation&gt;=&lt;uri&gt;</dt>
+	<dd>
+		Optional.  
+		Represent a relationship between this product and another product or resource.
+		Each relation may have many uris.
+		<code>&lt;uri&gt;</code> must be a valid URI as defined by RFC2396 or RFC2732.
+		<br/>Example:  --link-related=urn:usgs-product
+	</dd>
+
+
+	<dt>--content</dt>
+	<dd>
+		Optional.
+		Non-file product content is available via standard input.
+	</dd>
+
+	<dt>--contentType=&lt;contentType&gt;</dt>
+	<dd>
+		Optional, used with <code>--content</code>.
+		Content mime-type for content read from standard input.
+	</dd>
+
+	<dt>--file=&lt;file&gt;</dt>
+	<dd>
+		Optional.
+		<code>&lt;file&gt;</code> is a path to a file that is product content.
+		The file's name and modification date are preserved.
+		The mime type is inferred from the file extension.
+		The file is added at the root level of the product.
+	</dd>
+
+	<dt>--directory=&lt;directory&gt;</dt>
+	<dd>
+		Optional.
+		<code>&lt;directory&gt;</code> is a path to a directory that contains product contents.
+		Any directory hierarchy within <code>&lt;directory&gt;</code> is preserved.
+	</dd>
+
+	<dt>--privateKey=&lt;privateKey&gt;</dt>
+	<dd>
+		Optional.
+		Path to a file containing a PKCS#8 encoded private key in PEM or DER format.
+		When present, the key will be used to generate a signature for this product.
+	</dd>
+</dl>
+
+
+
+<h2><a name="example_listener_config"></a>Example Listener Configuration</h2>
+
+<pre>
+listeners = listener1
+
+[listener1]
+type = gov.usgs.earthquake.distribution.ExternalNotificationListener
+command = &lt;path to your program&gt;
+timeout = 100000
+storage = listener_storage
+
+[listener_storage]
+type = gov.usgs.earthquake.distribution.FileProductStorage
+directory = storagedir
+</pre>
+
+
+<h3>Explanation</h3>
+<p>One listener (named "listener1") is configured to receive products.</p>
+<pre>
+listeners = listener1
+</pre>
+
+<p>The listener is an External Notification Listener</p>
+<pre>
+[listener1]
+type = gov.usgs.earthquake.distribution.ExternalNotificationListener
+</pre>
+
+<p>After a product is received, the command "&lt;path to your program&gt;" is executed</p>
+<pre>
+command = &lt;path to your program&gt;
+</pre>
+
+<p>The command will be terminated if it runs for more than 100000 milliseconds (100 seconds).</p>
+<pre>
+timeout = 100000
+</pre>
+
+<p>Products are stored (before calling command) to a ProductStorage named "listener_storage"</p>
+<pre>
+storage = listener_storage
+</pre>
+
+<p>The ProductStorage ("listener_storage") is a FileProductStorage that uses the directory storagedir.</p>
+<pre>
+[listener_storage]
+type = gov.usgs.earthquake.distribution.FileProductStorage
+directory = storagedir
+</pre>
+
+
+
+<h2><a name="signatures"></a>Product Signatures</h2>
+<p>Product Senders create an OpenSSH DSA keypair used to sign and verify their products.</p>
+
+<h3>Creating a new Keypair</h3>
+<pre>
+	ssh-keygen -t dsa -b 1024 -C 'Comment describing key' -f &lt;keyfilename&gt;
+</pre>
+
+<p>
+	Do not assign a key passphrase. 
+	This creates two files:
+		a private key named "&lt;keyfilename&gt;" and
+		a public key named "&lt;keyfilename&gt;.pub"
+</p>
+<p>As with all public/private keypairs, NEVER share your PRIVATE key.</p> 
+<p>
+	Give your PUBLIC key to everyone who needs to verify your product signatures.
+</p>
+
+
+<h3>Using the Keypair</h3>
+<p>
+	The private key is used by the sender when sending products, 
+	and the public key is used by receivers when verifying products.
+</p>
+
+<h4>Signing products with the private key</h4>
+Use the "--privateKey=&lt;keyfilename&gt;" argument when --send ing products.
+
+<h4>Configuring signature verification with the public key</h4>
+Update the ProductStorage configuration:
+<pre>
+	[my_storage]
+	...
+	verifySignatures = true
+	keychain = ..., key_&lt;keyfilename&gt;
+
+	[key_&lt;keyfilename&gt;]
+	types = &lt;producttype&gt;
+	sources = &lt;productsource&gt;
+	key = &lt;public key contents&gt;
+</pre>
+
+<h3>How is the signature generated and verified?</h3>
+<p>Both the sender and receiver compute a SHA-1 digest of all product contents and metadata (except the signature).</p>
+
+<p>A sender uses their private key to encrypt this digest, and sends the encrypted digest as the signature.</p>
+
+<p>
+	A receiver uses the senders public key to decrypt the signature
+		(only the senders public key is able to decrypt the signature).
+	The receiver then compares the computed digest to the sender's digest.
+</p>
+	
+<p>
+	If the sender and receiver digests match, the signature is verified and the content is what was originally sent.
+	If the sender and receiver digests DON'T match, the product is not what was originally sent, or was signed using a different key.
+</p>
+
+</body>
+</html>

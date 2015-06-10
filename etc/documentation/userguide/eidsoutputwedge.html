@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>EIDS Output Wedge Documentation</title>
+<link rel="stylesheet" href="userguide.css" />
+</head>
+
+<body>
+
+<h1>EIDS Output Wedge Documentation</h1>
+<p><a href="receiving.html">&laquo; Back to Receiving Documentation</a></p>
+<p><small>$Id: eidsoutputwedge.html 20203 2013-09-17 19:51:23Z jmfee $<br />
+$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/userguide/eidsoutputwedge.html $</small></p>
+
+
+<p>The EIDS Output Wedge provides backward compatibility for EIDS
+clients to receive EQXML/CUBE from PDL. If you are just starting with
+PDL, it is recommended you use the ExternalIndexerListener or
+ExternalNotificationListener interfaces instead.</p>
+
+
+
+<h2>Configuration</h2>
+<p>This is a complete configuration example.
+Notice that "eidsoutputwedge" is included in the listeners list, 
+and in the section [eidsoutputwedge] the outputFormat is configured as cube.txt.
+</p>
+
+<div class="code"><pre>
+;; EIDS Output Wedge Config
+mainclass = gov.usgs.earthquake.distribution.ProductClient
+
+
+
+; comma separated list of listener names, 
+; name corresponds to [name] section below.
+listeners = eidsoutputwedge
+
+; comma separated list of receiver names
+receivers = receiver_pdl
+
+
+
+;; LOGGING
+
+; one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST
+loglevel = CONFIG
+
+; directory where log files are written
+logdirectory = log
+
+; whether to redirect console output
+redirectconsole = false
+
+
+
+;; TRACKER
+;; The tracker provides centralized tracking.
+;; Tracker updates are only sent from this computer when enableTracker is "true"
+
+; whether to send tracker updates from this computer
+enableTracker = false
+
+
+
+; this can be repeated by creating a new section (with a different name)
+; adding the section name to the listeners list above, and changing the directory 
+; and outputFormat
+
+[eidsoutputwedge]
+type = gov.usgs.earthquake.eids.EIDSOutputWedge
+directory = outputdir
+tempDirectory = temp
+#outputFormat = quakeml.xml
+outputFormat = cube.txt
+#outputFormat = eqxml.xml
+
+
+
+## most clients use this receiver
+[receiver_pdl]
+type = gov.usgs.earthquake.distribution.EIDSNotificationReceiver
+storageDirectory = data/receiver_storage
+indexFile = data/receiver_index.db
+trackingfile = data/receiver_pdl_tracking.dat
+; the eids server(s) to connect
+serverHost = ehppdl1.cr.usgs.gov
+serverPort = 39977
+alternateServers = ehppdl2.wr.usgs.gov
+; these help minimize internal disk usage, and do not affect output directories
+; how long to wait before checking for expired products
+; 900000 milliseconds = 15 minutes
+cleanupInterval = 900000
+; how old products are before considered expired
+storageage = 900000
+
+
+</pre></div>
+
+
+</body>
+</html>

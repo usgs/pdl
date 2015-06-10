@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Indexer</title>
+<link rel="stylesheet" href="userguide.css" />
+</head>
+
+<body>
+<h1>Indexer</h1>
+<p><a href="receiving.html">&laquo; Back to Receiving Documentation</a></p>
+<p><small>$Id: indexer.html 19047 2013-03-14 00:01:19Z jmfee $<br />
+$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/userguide/indexer.html $</small></p>
+
+
+<p>The Indexer maintains an index of received products. It uses this
+index to associate related products into events, based on eventid or
+time, latitude, and longitude. When multiple sources submit information
+for the same event, the indexer determines which source is considered
+preferred for that type of information.</p>
+
+<h2>The Index</h2>
+<p>The index is typically a database, although it is not required to
+be. The default implementation uses JDBC, and should be able to maintain
+an index in any JDBC compliant database.</p>
+
+<h2>Archive Policies</h2>
+<p>Archive policies define rules for when the indexer should remove
+information from its index.</p>
+
+<h2>Search</h2>
+<p><em>Enabled by default.</em> The indexer listens on a socket to
+allow external users to search and retrieve information from The Index.</p>
+<p>See the command line client <code>--search</code> option, or
+SearchSocket API class.</p>
+<p>Searches and results use an XML format. See
+etc/schema/indexer.xsd for details.</p>
+
+
+<h2>Indexer Events</h2>
+<p>When a product arrives and is added to the index, the indexer
+keeps track of the changes it makes. Each Indexer Event is a group of
+one or more changes that were made in response to one product arriving.</p>
+
+<p>This tracking is performed through an onEventTrigger database trigger. For 
+a technical description of this trigger and instructions for implementing it 
+on the MySQL database, see <a href="configureMySQL.html">Configuring the Product 
+Index to Use MySQL</a>
+</p>
+
+<a name="change_types"></a>
+<h3>Change Types</h3>
+<dl>
+	<dt>EVENT_ADDED</dt>
+	<dd>An event was added to the index. This occurs when a product
+	arrives that cannot associate to an existing event, but has enough
+	information (time, latitude, longitude) to create a new event.
+
+	<dl>
+		<dt>EVENT_SPLIT</dt>
+		<dd>An event that was part of another event in the index, in now
+		considered a separate event. This usually occurs when a network
+		updates is location far enough away from the "parent" event.<br />
+		<br />
+		There may be several EVENT_SPLIT changes, but there will always also
+		be an EVENT_UPDATED for the event that the split events were split
+		from.</dd>
+	</dl>
+	</dd>
+
+	<dt>EVENT_UPDATED</dt>
+	<dd>An event that already existed in the index was updated. This
+	occurs when a product arrives and associates to an existing event. This
+	does not necessarily mean the preferred event properties (eventid,
+	time, latitude, longitude, magnitude, depth) have changed, only that
+	information associated to this event is different than before.</dd>
+
+	<dt>EVENT_DELETED</dt>
+	<dd>An event that already existed in the index was deleted. This
+	effectively means the event did not occur. This occurs when a product
+	arrives, associates to an existing event, and because of the new
+	information the event no longer has a time, latitude, or longitude.
+
+	<dl>
+		<dt>EVENT_MERGED</dt>
+		<dd>An event that already existed in the index merged with
+		another event. This means this event still occured, but is now part of
+		another event (and is not preferred).<br /><br />
+		There may be several EVENT_MERGED changes, but there will always also
+		be an EVENT_UPDATED for the event that the merged events were merged
+		into.</dd>
+	</dl>
+	</dd>
+
+	<dt>EVENT_ARCHIVED</dt>
+	<dd>An event was removed from the index due to a configured
+	archive policy. The event still occured, but is no longer being tracked
+	by this indexer.</dd>
+
+	<dt>PRODUCT_ADDED</dt>
+	<dd>A product arrived, was unable to associate to an event, and
+	did not have enough information (time, latitude, longitude) to create a
+	new event.</dd>
+
+	<dt>PRODUCT_UPDATED</dt>
+	<dd>An unassociated product was updated. If an update causes the
+	product to associate, there will be an EVENT_UPDATED change instead of
+	PRODUCT_UPDATED.</dd>
+
+	<dt>PRODUCT_DELETED</dt>
+	<dd>An unassociated product was deleted.</dd>
+
+	<dt>PRODUCT_ARCHIVED</dt>
+	<dd>An unassociated product was removed from the index due to a
+	configured archive policy.</dd>
+
+</dl>
+
+
+<h2>Example Indexer Configuration File</h2>
+<p>In this example, an indexer is configured to:</p>
+<ul>
+	<li>Download "origin" and "shakemap-input" type products</li>
+	<li>Call a listener named "shakemap_listener" whenever an event's
+	preferred mag,lat,lon,depth, or time change, which triggers an
+	executable script "/home/shake/bin/ProductClient/trigger_pdl".</li>
+	<li>Automatically clean up old versions of products, and events
+	after 60 days</li>
+</ul>
+
+
+<div class="code"><pre>
+; note this configuration does not include senders, 
+; which would be required for sending products.
+
+receivers = receiver_pdl
+listeners = indexer
+enableTracker = false
+
+
+; receive from production hubs
+[receiver_pdl]
+type = gov.usgs.earthquake.distribution.EIDSNotificationReceiver
+storageDirectory = data/receiver_storage
+indexFile = data/receiver_index.db
+serverHost = ehppdl1.cr.usgs.gov
+serverPort = 39977
+alternateServers = ehppdl2.wr.usgs.gov:39977
+cleanupInterval = 900000
+storageage = 900000
+
+
+; indexer is only listener
+; currently it only receives origin messages
+[indexer]
+type = gov.usgs.earthquake.indexer.Indexer
+listenerIndexFile = data/indexer_listener_index.db
+storageDirectory = data/indexer_product_storage
+indexfile = data/indexer_product_index.db
+includeTypes = origin
+listeners = indexerlistener_example
+archivePolicy = policyOldEvents, policyOldProducts, policyOldProductVersions
+
+[policyOldEvents]
+; remove events after one month
+type = gov.usgs.earthquake.indexer.ArchivePolicy
+maxAge = 2592000000
+
+[policyOldProducts]
+; remove unassociated products after one week
+type = gov.usgs.earthquake.indexer.ProductArchivePolicy
+maxAge = 604800000
+onlyUnassociated = true
+
+[policyOldProductVersions]
+; remove old versions of products after one hour
+type = gov.usgs.earthquake.indexer.ProductArchivePolicy
+maxAge = 3600000
+onlySuperseded = true
+
+
+; whenever the indexer makes a change, it calls this listener
+; currently it only receives changes triggered by origin products
+[indexerlistener_example]
+type = gov.usgs.earthquake.indexer.ExternalIndexerListener
+storageDirectory = data/indexerlistener_storage
+command = echo
+processPreferredOnly = true
+includeTypes = origin
+</pre></div>
+
+<h2>Indexer Summarization</h2>
+<p>As an aid to indexing, the Indexer maintains a <i>product summary</i> 
+of products, associating them to seismic events using time, latitude and
+longitude. Using these three attributes, the Indexer assigns an <i>eventID</i> 
+to the summaries, so that multiple products can be efficiently cross-referenced 
+to a single event.</p>
+
+<p>As part of the summarization process, the Indexer extracts a specific subset 
+of properties from various products, so that important key aspects of an event 
+are visible without having to interrogate the details of multiple products.  
+</p>
+
+<h3>Summarized Properties</h3>
+<p>The following properties are extracted from products and are associated with 
+summarizations of events:</p>
+<dl>
+	<dt>region</dt>
+	<dd>The name of a particular geographic region. Initially the Indexer makes an 
+	attempt at obtaining the region directly from the <i>origin</i> or 
+	<i>geoserve</i> products. Failing that, it derives the region using the event's 
+	latitude and longitude.  This derivation is performed by the <i>feplus</i> feature 
+	of the Indexer, where individual regions are defined by latitude/longitude 
+	within the <i>etc/config/regions.xml</i> file.</dd>
+	
+	<dt>maxmmi</dt>
+	<dd>The maximum shaking intensity found in the <i>shakemap</i> product, although 
+	maxmmi is directly obtained from the <i>losspager</i> product. If not available 
+	from losspager, then  maxmmi is obtained from the <i>dyfi</i> product.</dd>
+
+	<dt>alertlevel</dt>
+	<dd>A categorized fatality or economic loss level, obtained from the 
+	<i>losspager</i> product.:
+		<dl>
+			<dt>Green</dt>
+			<dd>0 fatalities OR less than 1 million U.S. dollars economic loss.</dd>
+			<dt>Yellow</dt>
+			<dd>1-99 fatalities OR less than 100 million U.S. dollars economic loss.</dd>
+			<dt>Orange</dt>
+			<dd>100-999 fatalities OR less than 1 billion U.S. dollars economic loss.</dd>
+			<dt>Red</dt>
+			<dd>1000+ fatalities OR greater than 1 billion U.S. dollars economic loss.</dd>
+		</dl>
+	</dd>
+	
+	<dt>review_status</dt>
+	<dd>Whether this event has been reviewed by a human, obtained from the 
+	<i>origin</i> product.</dd>
+
+	<dt>event_type</dt>
+	<dd>The type of event, such as <i>earthquake</i> or <i>landslide</i>,  obtained 
+	from the <i>origin</i> product.</dd>
+
+	<dt>azimuthal_gap</dt>
+	<dd>Azimuthal Gap is obtained from the <i>origin</i> product.</dd>
+
+	<dt>magnitude</dt>
+	<dd>Magnitude is obtained from the <i>origin</i> product.</dd>
+
+
+	<dt>num_Resp</dt>
+	<dd>The number of individuals completing the DYFI web dialogue for this event, 
+	obtained from the nresponses attribute of the event_data.xml file included in 
+	the <i>dyfi</i> product.</dd>
+
+	<dt>tsunamiFlag</dt>
+	<dd>A [&ldquo;true&rdquo;|&ldquo;false&rdquo;] Boolean string indicating if 
+	the tsunami flag should be triggered automatically, obtained from the 
+	<i>geoserve</i> product.</dd>
+
+	<dt>utcOffset</dt>
+	<dd>Number of minutes between the epicenter timezone and UTC, obtained 
+	from the <i>geoserve</i> product.</dd>
+
+	<dt>significance</dt>
+	<dd>
+	An integer value indicating the significance of an event, calculated 
+	from properties of the <i>origin</i>, <i>losspager</i> and <i>dyfi</i> 
+	products.
+	
+	<p>Significance is calculated from the following multi-step formula:</p>
+	
+	<dl>
+			<dt>magnitude_significance</dt>
+			<dd>= (100/6.5) * magnitude<sup>2</sup></dd>
+			
+			<dt>pager_significance</dt>
+			<dd>= &nbsp;2000 if red&nbsp;&nbsp; 1000 if orange&nbsp;&nbsp;500 if yellow</dd>
+			
+			<dt>dyfi_significance</dt>
+			<dd>= MIN(num_Resp, 1000) * maxmmi * 0.10</dd>
+			
+			<dt>significance</dt>
+			<dd>= MAX(magnitude_significance, pager_significance) + dyfi_significance</dd>
+	</dl>
+	</dd>
+</dl>
+
+<h3>Product Summarized Preferred Weight</h3>
+<p>Within each type of product, the summary with the largest preferred weight is 
+considered preferred. This calculated weight is the sum of four components:</p>
+<dl>
+			<dt>DEFAULT_PREFERRED_WEIGHT = 1</dt>
+			<dd>All product summaries have a preferred weight of at least 1.</dd>
+			
+			<dt>SAME_SOURCE_WEIGHT = 5</dt>
+			<dd>Weight added when product source is same as event source.</dd>
+			
+			<dt>AUTHORITATIVE_WEIGHT = 100</dt>
+			<dd>Weight added when product author is in the product's authoritative 
+			region.</dd>
+			
+			<dt>AUTHORITATIVE_EVENT_WEIGHT = 50</dt>
+			<dd>Weight added when product refers to an authoritative event.</dd>
+	</dl>
+
+
+<h2 id="modules">Indexer Components</h2>
+<h3>Indexer SQL Dependencies</h3>
+<p>
+	The Indexer is dependent on two SQL components: the <i>feplus</i> system and 
+	<i>OnEventUpdate</i> stored procedures:
+</p>
+
+<dl>
+		<dt>mysql_feplus</dt>
+		<dd>Found in the <i>schema/mysql_feplus</i> directory, feplus implements 
+		region-identifying functionality based on latitude and longitude. It uses 
+		the definitions in the <i>etc/config/regions.xml</i> file to associate a 
+		region-name with a particular latitude/longitude location of an event or 
+		product. OnEventUpdate stored procedures uses this functionality for 
+		<i>origin</i> and <i>geoserve</i> products, which ultimately determine 
+		properties such as event <i>significance</i>.</dd>
+		
+		<dt>onEventTrigger Stored Procedures</dt>
+		<dd>Found in the <i>schema/productIndexOnEventUpdateMysql.sql</i> file, 
+		these procedures summarize products and events for efficient retrieval. 
+		The trigger is evoked when the Indexer's Java classes use 
+		time/latitude/longitude information in products to create or modify events.</dd>
+</dl>
+
+<h3>Some Major Java Components</h3>
+<dl>
+		<dt>JDBCProductIndex</dt>
+		<dd>This class implements the ProductIndex interface to maintain events, 
+		product summaries, event summaries and properties. It contains and executes 
+		the SQL manipulations of the database.</dd>
+		
+		<dt>Indexer</dt>
+		<dd>This key class uses JDBCProductIndex to maintain the database, as well 
+		as adds and removes listeners, receives products and sends notifications. It 
+		extends the DefaultNotificationListener class.</dd>
+</dl>
+
+<h3>Indexer Modules</h3>
+<p>Specific products sometimes have special needs for indexing; the two existing 
+product type of this nature are the <i>shakemap</i> and <i>dyfi</i> products. This 
+special indexing is configured in <i>config.ini</i>, as is documented in the 
+<a href="configuration.html#indexerconfig">Indexer Components</a> section of the 
+configuration documentation and illustrated below.</p>
+<p>The following code snippet from <i>config.ini</i> shows the minimum entries 
+necessary for requesting special indexing for the shakemap and dyfi products:</p>
+
+<div class="code"><pre>
+[indexer]
+modules = indexer_module_shakemap, indexer_module_dyfi
+
+[indexer_module_shakemap]
+type = gov.usgs.earthquake.shakemap.ShakeMapIndexerModule
+
+[indexer_module_dyfi]
+type = gov.usgs.earthquake.dyfi.DYFIIndexerModule
+
+</pre></div>
+
+<ul>
+	<li>The <i>modules =</i> line creates labels for further shakemap and 
+	dyfi definition.</li> 
+	<li>The <i>[indexer_module_shakemap]</i> and <i>[indexer_module_dyfi]</i> lines 
+	mark the start of those definitions.</li>
+	<li>The two <i>type =</i> lines specify the Java code classes that will handle 
+	 the special indexing for those two product types.</li>
+	 </ul>
+
+<p>As has been noted elsewhere in this documentation, the custom programming of 
+these special indexing classes requires coordination between the product producer 
+and the PDL web team at <a href="mailto:jmfee@usgs.gov">jmfee@usgs.gov</a>.</p>
+
+<dl>
+		<dt>gov.usgs.earthquake.shakemap.ShakeMapIndexerModule</dt>
+		<dd>This class implements the ProductIndex interface to maintain events, 
+		product summaries, event summaries and properties. It contains and executes 
+		the SQL manipulations of the database.</dd>
+		
+		<dt>gov.usgs.earthquake.dyfi.DYFIIndexerModule</dt>
+		<dd>This key class uses JDBCProductIndex to maintain the database, as well 
+		as adds and removes listeners, receives products and sends notifications. It 
+		extends the DefaultNotificationListener class.</dd>
+</dl>
+
+
+</body>
+</html>

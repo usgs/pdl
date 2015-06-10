@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Text Products</title>
+</head>
+<body>
+	<h1>Text Products</h1>
+	<p><a href="index.html">&laquo; Back to Products Documentation</a></p>
+
+	<p style="border-bottom:1px solid #999999;padding-bottom:16px;">
+		<small>
+			$Id: text.html 15596 2012-07-06 17:31:03Z tene $<br />
+			$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/userguide/products/text.html $
+		</small>
+	</p>
+	
+
+<h2>Introduction</h2>
+<p>The content of a simple text-type product is displayed directly on the event page.
+Text may be plain text or HTML markup. However, markup is not validated nor 
+reviewed; product producers sending this type of product must take care to
+ensure the text content is appropriate.</p>
+
+<p>There are three types of text products: <i>general-text</i>, 
+<i>scitech-text</i> and <i>impact-text</i>. The text product-type is determined by 
+the content of the <i>code</i> property of the product, where code is associated 
+with the <a href="addon.html">addon</a> product. For example, if code = "GeneralMisc",
+a <i>general-text</i> product is created, rather than scitech-text or impact-text. 
+The <i>text</i> product itself is never created.</p>
+
+
+<p>In a sense, <i>addon</i> and <i>text</i> can be considered "abstract" 
+products having properties that are used by other products, resulting in 
+the creation of one of the three concrete text product types. To illustrate,
+if an <a href="origin.html">origin</a> product makes use of the 
+<i>addon-type</i> and <i>text</i> properties with <i>code</i> = 
+"GeneralMisc", then a <i>general-link</i> product will be created in addition 
+to origin. This extra link information will then be seen of the Summary page 
+for the product.</p>
+
+	<h2>Types</h2>
+	<dl>
+		<dt>general-text</dt>
+		<dd><i>general-text</i> is currently displayed on the Summary page 
+		for the event. These products are created when code starts with case 
+		insensitively: "Aftershock", "AfterWarn", "ASW", "GeneralMisc".
+		</dd>
+		<br />
+		<dt>scitech-text</dt>
+		<dd><i>scitech-text</i> is currently displayed on the Technical page 
+		for the event. These products are created when code starts with case 
+		insensitively: "Energy", "FocalMech", "ncfm" (deprecated, use FocalMech 
+		instead), "HistMomentTensor", "FiniteFault", "MomentTensor", "mtensor" 
+		(deprecated, use MomentTensor instead), "Phase", "SeisCrossSec", 
+		"SeisRecSec", "TravelTimes", "Waveform", "Seismograms", "SciTechMisc".
+		</dd>		
+		<br />
+		<dt>impact-text</dt>
+		<dd><i>impact-text</i> is currently displayed on the Impact page 
+		for the event. These products are created when code starts with case 
+		insensitively: "TsunamiLinks", "ImpactMisc".
+		</dd>				
+	</dl>	
+	
+	
+	
+	<h2>Properties</h2>
+	<dl>
+		<dt>addon-type</dt><dd>A value of "comment" specifies this as a <i>text</i> 
+		product.</dd>
+		<dt>code</dt><dd>Starting case-insensitve text determines the type of text 
+		product (see Introduction above): <i>general-text</i>, <i>scitech-text</i> or
+		<i>impact-text</i>.</dd>
+	</dl>
+	<h2>Contents</h2>
+	<dl>
+		<dt><em>inline</em></dt><dd>The text to display on the event page.</dd>
+	</dl>
+
+</body>
+</html>
