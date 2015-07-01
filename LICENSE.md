@@ -11,6 +11,7 @@ aggrements for each library can be found in the "lib" directory.
 Libraries used at runtime
 -------------------------
 
+ - cap-library-r11.jar                  (https://github.com/google/cap-library)
  - ganymed-ssh2-build251beta1.jar       (https://github.com/northern-bites/ganymed-ssh2)
  - json-simple-1.1.1.jar                (https://code.google.com/p/json-simple/)
  - MessageUtils.jar                     (https://github.com/usgs/eqmessageutils)
