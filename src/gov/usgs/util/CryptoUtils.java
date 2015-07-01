@@ -6,16 +6,19 @@
  */
 package gov.usgs.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-
 import java.security.Key;
 import java.security.PublicKey;
 import java.security.PrivateKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPrivateKey;
@@ -242,8 +245,8 @@ public class CryptoUtils {
 			throws InvalidKeyException, NoSuchAlgorithmException,
 			NoSuchPaddingException, IllegalArgumentException, IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		processCipherStream(getEncryptCipher(key), StreamUtils
-				.getInputStream(toEncrypt), baos);
+		processCipherStream(getEncryptCipher(key),
+				StreamUtils.getInputStream(toEncrypt), baos);
 		return baos.toByteArray();
 	}
 
@@ -265,8 +268,8 @@ public class CryptoUtils {
 			throws InvalidKeyException, NoSuchAlgorithmException,
 			NoSuchPaddingException, IllegalArgumentException, IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		processCipherStream(getDecryptCipher(key), StreamUtils
-				.getInputStream(toDecrypt), baos);
+		processCipherStream(getDecryptCipher(key),
+				StreamUtils.getInputStream(toDecrypt), baos);
 		return baos.toByteArray();
 	}
 
@@ -313,6 +316,26 @@ public class CryptoUtils {
 		KeyPairGenerator gen = KeyPairGenerator.getInstance(DSA_ALGORITHM);
 		gen.initialize(bits);
 		return gen.generateKeyPair();
+	}
+
+	/**
+	 * Read a X509 encoded certificate. May be DER or PEM encoded.
+	 *
+	 * @param bytes
+	 *            the certificate data as a byte array.
+	 * @return parsed certificate.
+	 * @throws CertificateException
+	 * @throws IOException
+	 */
+	public static Certificate readCertificate(final byte[] bytes)
+			throws CertificateException, IOException {
+		byte[] data = bytes;
+		if (((char) data[0]) == '-') {
+			data = convertPEMToDER(new String(data));
+		}
+		Certificate certificate = CertificateFactory.getInstance("X.509")
+				.generateCertificate(new ByteArrayInputStream(data));
+		return certificate;
 	}
 
 	/**
