@@ -10,9 +10,10 @@ public class DYFIIndexerModule extends DefaultIndexerModule {
 	@Override
 	public int getSupportLevel(Product product) {
 		int supportLevel = IndexerModule.LEVEL_UNSUPPORTED;
-		if (product.getId().getType().startsWith("dyfi")
-				&& product.getContents().containsKey(
-						DYFIProduct.DYFI_EVENT_XML_ATTACHMENT)) {
+		String type = getBaseProductType(product.getId().getType());
+		// support dyfi products that contain dyfi event xml
+		if (type.startsWith("dyfi")	&& product.getContents().containsKey(
+				DYFIProduct.DYFI_EVENT_XML_ATTACHMENT)) {
 			supportLevel = IndexerModule.LEVEL_SUPPORTED;
 		}
 		return supportLevel;

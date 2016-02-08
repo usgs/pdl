@@ -8,11 +8,11 @@ import gov.usgs.earthquake.product.Product;
 /**
  * A specialized implementation of the IndexerModule interface for Tectonic
  * Summary products.
- * 
+ *
  * Provides a higher and more specific level of support for tectonic summary
  * products, including checking for "Reviewed" status on the tectonic summary.
  * These "Reviewed tectonic summmaries will always be preferred.
- * 
+ *
  */
 
 public class TectonicSummaryIndexerModule extends DefaultIndexerModule {
@@ -22,8 +22,9 @@ public class TectonicSummaryIndexerModule extends DefaultIndexerModule {
 	@Override
 	public int getSupportLevel(Product product) {
 		int supportLevel = IndexerModule.LEVEL_UNSUPPORTED;
+		String type = getBaseProductType(product.getId().getType());
 		// support tectonic summary products
-		if (product.getId().getType().startsWith("tectonic-summary")) {
+		if (type.startsWith("tectonic-summary")) {
 			supportLevel = IndexerModule.LEVEL_SUPPORTED;
 		}
 		return supportLevel;

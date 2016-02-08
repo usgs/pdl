@@ -14,7 +14,7 @@ import gov.usgs.earthquake.product.Product;
 /**
  * A specialized implementation of the IndexerModule interface for ShakeMap
  * products.
- * 
+ *
  * Provides a higher and more specific level of support for ShakeMap products,
  * including reading additional product information out of the ShakeMap content
  * files provided with the Product and placing it into the ProductSummary for
@@ -39,10 +39,10 @@ public class ShakeMapIndexerModule extends DefaultIndexerModule {
 	@Override
 	public int getSupportLevel(Product product) {
 		int supportLevel = IndexerModule.LEVEL_UNSUPPORTED;
+		String type = getBaseProductType(product.getId().getType());
 		// Support only ShakeMap products that contain grid.xml
-		if (product.getId().getType().startsWith("shakemap")
-				&& product.getContents().containsKey(
-						ShakeMap.GRID_XML_ATTACHMENT))
+		if (type.startsWith("shakemap")	&& product.getContents().containsKey(
+				ShakeMap.GRID_XML_ATTACHMENT))
 			supportLevel = IndexerModule.LEVEL_SUPPORTED;
 		return supportLevel;
 	}
