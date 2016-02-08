@@ -1,9 +1,15 @@
 language: java
+
+jdk:
+  - oraclejdk8
+  - oraclejdk7
+  - openjdk6
+
 install:
   - ssh-keygen -f ~/.ssh/key.rsa -t rsa -N '' -b 4096
   - cat ~/.ssh/key.rsa.pub >> ~/.ssh/authorized_keys
   - chmod 700 ~/.ssh/authorized_keys
-  - ssh localhost 'pwd && ls'
+  - ssh -vvv localhost 'pwd && ls'
 
 addons:
   ssh_known_hosts:
