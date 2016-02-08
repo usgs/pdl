@@ -1,15 +1,6 @@
 language: java
-
-java:
-  - '1.8.0'
-  - '1.7.0'
-
-  install:
-    - ant deps
-
-  script:
-    - ant test
-
-  addons:
-    ssh_known_hosts:
-      - 127.0.0.1
+install: ant deps
+script: ant test
+addons:
+  ssh_known_hosts:
+    - 127.0.0.1
