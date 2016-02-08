@@ -1,2 +1,8 @@
 language: java
-install: true
+install:
+  - ssh-keygen -t -rsa -N '' -b 4096
+
+addons:
+  ssh_known_hosts:
+  - 127.0.0.1
+  - localhost
