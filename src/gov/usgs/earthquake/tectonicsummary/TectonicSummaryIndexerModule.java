@@ -24,7 +24,7 @@ public class TectonicSummaryIndexerModule extends DefaultIndexerModule {
 		int supportLevel = IndexerModule.LEVEL_UNSUPPORTED;
 		String type = getBaseProductType(product.getId().getType());
 		// support tectonic summary products
-		if (type.startsWith("tectonic-summary")) {
+		if (type.equals("tectonic-summary")) {
 			supportLevel = IndexerModule.LEVEL_SUPPORTED;
 		}
 		return supportLevel;

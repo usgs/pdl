@@ -41,7 +41,7 @@ public class ShakeMapIndexerModule extends DefaultIndexerModule {
 		int supportLevel = IndexerModule.LEVEL_UNSUPPORTED;
 		String type = getBaseProductType(product.getId().getType());
 		// Support only ShakeMap products that contain grid.xml
-		if (type.startsWith("shakemap")	&& product.getContents().containsKey(
+		if (type.equals("shakemap")	&& product.getContents().containsKey(
 				ShakeMap.GRID_XML_ATTACHMENT))
 			supportLevel = IndexerModule.LEVEL_SUPPORTED;
 		return supportLevel;
