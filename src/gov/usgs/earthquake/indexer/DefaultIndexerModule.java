@@ -163,6 +163,25 @@ public class DefaultIndexerModule implements IndexerModule {
 	}
 
 	/**
+	 * Remove "internal-" prefix and "-scenario" suffix from product type".
+	 *
+	 * @param type
+	 *        product type.
+	 * @return base product type (without any known prefix or suffix).
+	 */
+	public String getBaseProductType(String type) {
+		if (type.startsWith("internal-")) {
+			type.replace("internal-", "");
+		}
+
+		if (type.endsWith("-scenario")) {
+			type.replace("-scenario", "");
+		}
+
+		return type;
+	}
+
+	/**
 	 * This module provides a default level of support for any type of product.
 	 * 
 	 * @param product
