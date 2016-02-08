@@ -6,8 +6,8 @@ jdk:
   - openjdk6
 
 install:
-  - ssh-keygen -f ~/.ssh/key.rsa -t rsa -N '' -b 4096
-  - cat ~/.ssh/key.rsa.pub >> ~/.ssh/authorized_keys
+  - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N '' -b 4096
+  - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
   - chmod 700 ~/.ssh/authorized_keys
   - ssh -vvv localhost 'pwd && ls'
 
