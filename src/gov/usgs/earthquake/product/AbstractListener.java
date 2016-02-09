@@ -332,7 +332,7 @@ public class AbstractListener extends DefaultConfigurable {
 		
 		includeFlag = config.getProperty(INCLUDE_ACTUALS_PROPERTY);
 		if (includeFlag != null) {
-			includeActuals = (includeFlag.equalsIgnoreCase("no") ||
+			includeActuals = !(includeFlag.equalsIgnoreCase("no") ||
 					includeFlag.equalsIgnoreCase("false"));
 		}
 
