@@ -112,7 +112,7 @@ public class AbstractListenerTest {
 	
 	
 	@Test
-	public void configuresCorrectly() {
+	public void configuresIncludeActualsCorrectly() {
 		AbstractListener listener = new AbstractListener();
 		Config config;
 		
