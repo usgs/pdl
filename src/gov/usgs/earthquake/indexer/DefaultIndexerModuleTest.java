@@ -99,4 +99,21 @@ public class DefaultIndexerModuleTest {
 		Assert.assertTrue("Event and product source same",
 				weight >= DefaultIndexerModule.SAME_SOURCE_WEIGHT);
 	}
+	
+	/**
+	 * getBaseProductType should remove "internal-" prefix and "-scenario" suffix
+	 * from product type.
+	 */
+	@Test
+	public void testBaseProductType() {
+		String typeInternal = "internal-shakemap";
+		String typeScenario = "dyfi-scenario";
+		String typeInternalScenario = "internal-tectonic-summary-scenario";
+		
+		DefaultIndexerModule indexer = new DefaultIndexerModule(); 
+		
+		Assert.assertEquals("shakemap", indexer.getBaseProductType(typeInternal));
+		Assert.assertEquals("dyfi", indexer.getBaseProductType(typeScenario));
+		Assert.assertEquals("tectonic-summary", indexer.getBaseProductType(typeInternalScenario));
+	}
 }

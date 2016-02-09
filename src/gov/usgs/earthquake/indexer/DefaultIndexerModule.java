@@ -171,11 +171,11 @@ public class DefaultIndexerModule implements IndexerModule {
 	 */
 	public String getBaseProductType(String type) {
 		if (type.startsWith("internal-")) {
-			type.replace("internal-", "");
+			type = type.replace("internal-", "");
 		}
 
 		if (type.endsWith("-scenario")) {
-			type.replace("-scenario", "");
+			type = type.replace("-scenario", "");
 		}
 
 		return type;
