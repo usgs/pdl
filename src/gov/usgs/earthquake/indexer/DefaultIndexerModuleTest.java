@@ -101,8 +101,8 @@ public class DefaultIndexerModuleTest {
 	}
 	
 	/**
-	 * 
-	 * 
+	 * getBaseProductType should remove "internal-" prefix and "-scenario" suffix
+	 * from product type.
 	 */
 	@Test
 	public void testBaseProductType() {
