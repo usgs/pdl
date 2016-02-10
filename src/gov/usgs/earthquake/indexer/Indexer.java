@@ -360,7 +360,9 @@ public class Indexer extends DefaultNotificationListener {
 
 		if (theSummary != null) {
 			LOGGER.log(Level.INFO, "[" + getName() + "] indexed product id="
-					+ theSummary.getId().toString() + buf.toString());
+					+ theSummary.getId().toString()
+					+ ", status=" + theSummary.getStatus()
+					+ buf.toString());
 		} else {
 			LOGGER.log(Level.FINE, "[" + getName()
 					+ "] event summary was null. This probably "
