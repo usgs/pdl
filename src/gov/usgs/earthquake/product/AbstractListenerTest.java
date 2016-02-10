@@ -15,10 +15,10 @@ import gov.usgs.util.Config;
  * 
  */
 public class AbstractListenerTest {
-	ProductId id = new ProductId("source", "type", "code");
-	ProductId scenario_id = new ProductId("source", "type-scenario", "code"); 
-	ProductId development_id = new ProductId("source", "type-devel", "code");
-	ProductId internal_id = new ProductId("source", "internal-type", "code");
+	ProductId actualId = new ProductId("source", "type", "code");
+	ProductId scenarioId = new ProductId("source", "type-scenario", "code"); 
+	ProductId developmentId = new ProductId("source", "type-devel", "code");
+	ProductId internalId = new ProductId("source", "internal-type", "code");
 
 	@Test
 	public void acceptsValidID() {
@@ -28,13 +28,13 @@ public class AbstractListenerTest {
 		//        includeScenarios = false by default
 		//        includeDevelopment = false by default
 		Assert.assertTrue("Valid Product ID accepted by default listener",
-				listener.accept(id));
+				listener.accept(actualId));
 		Assert.assertFalse("Scenario Product ID refused by default listener",
-				listener.accept(scenario_id) );
+				listener.accept(scenarioId) );
 		Assert.assertFalse("Development Product ID refused by default listener", 
-				listener.accept(development_id) );
+				listener.accept(developmentId) );
 		Assert.assertFalse("Internal Product ID refused by default listener", 
-				listener.accept(internal_id) );
+				listener.accept(internalId) );
 	}
 	
 	@Test
@@ -43,12 +43,12 @@ public class AbstractListenerTest {
 
 		// Test includeActuals defaults to true.
 		Assert.assertTrue("Valid Product ID accepted by default listener",
-				listener.accept(id));
+				listener.accept(actualId));
 
 		// Test includeActuals set to false
 		listener.setIncludeActuals(false);
 		Assert.assertFalse("Actual Product ID refused by listener with includeActuals = false",
-				listener.accept(id));
+				listener.accept(actualId));
 	}
 	
 	@Test
@@ -57,12 +57,12 @@ public class AbstractListenerTest {
 		
 		// Test includeScenarios defaults to false
 		Assert.assertFalse("Scenario Product ID refused by default listener",
-				listener.accept(scenario_id) );
+				listener.accept(scenarioId) );
 		
 		//Test includeScenarios set to true
 		listener.setIncludeScenarios(true);
 		Assert.assertTrue("Sceneario Product ID accepted by by listener with includeScenario = true", 
-				listener.accept(scenario_id));
+				listener.accept(scenarioId));
 	}
 	
 	@Test
@@ -71,12 +71,12 @@ public class AbstractListenerTest {
 		
 		// Test includeDevelopment defaults to false
 		Assert.assertFalse("Development Product ID refused by default listener",
-				listener.accept(development_id) );
+				listener.accept(developmentId) );
 		
 		//Test includeDevelopment set to true
 		listener.setIncludeDevelopments(true);
 		Assert.assertTrue("Development Product ID accepted by by listener with includeDevelopment = true", 
-				listener.accept(development_id));
+				listener.accept(developmentId));
 	}
 	
 	@Test
@@ -85,12 +85,12 @@ public class AbstractListenerTest {
 		
 		// Test includeInternals defaults to false
 		Assert.assertFalse("Internals Product ID refused by default listener", 
-				listener.accept(internal_id));
+				listener.accept(internalId));
 		
 		// Test incluceInternals set to true
 		listener.setIncludeInternals(true);
 		Assert.assertTrue("Internals Product ID accepted by listener with includeInternals = true", 
-				listener.accept(internal_id));
+				listener.accept(internalId));
 		
 	}
 	
@@ -104,10 +104,10 @@ public class AbstractListenerTest {
 		
 		// "Normal" id should be refused.
 		Assert.assertFalse("Product ID refused by listener with includeActuals = false",
-				listener.accept(id));
+				listener.accept(actualId));
 		// Scenarios id will be accepted.
 		Assert.assertTrue("Scenarios ID accepted by listener with includeActuals = false, includeScenarios = true",
-				listener.accept(scenario_id));
+				listener.accept(scenarioId));
 	}
 	
 	
@@ -125,7 +125,7 @@ public class AbstractListenerTest {
 			System.out.println(e);
 			Assert.assertFalse("Exception thrown on configure", true);
 		}
-		Assert.assertFalse("includeActuals configured to no ", listener.accept(id));
+		Assert.assertFalse("includeActuals configured to no ", listener.accept(actualId));
 		
 		
 		// Test includeActuals configured to false.
@@ -137,7 +137,7 @@ public class AbstractListenerTest {
 			System.out.println(e);
 			Assert.assertFalse("Exception thrown on configure", true);
 		}
-		Assert.assertFalse("includeActuals configured to false ", listener.accept(id));
+		Assert.assertFalse("includeActuals configured to false ", listener.accept(actualId));
 	}
 	
 }
