@@ -1,6 +1,6 @@
 /*
  * Indexer
- *
+ * 
  * $Id: Indexer.java 22936 2015-04-01 15:54:02Z jmfee $
  * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/indexer/Indexer.java $
  */
@@ -37,23 +37,23 @@ import java.util.logging.Logger;
 /**
  * The indexer receives products from Distribution, and adds them to the
  * EventIndex.
- *
+ * 
  * This class provides the following configurable properties (in addition to
  * those inherited from DefaultNotificationListener):
  * <dl>
  * <dt>associator</dt>
  * <dd>An object that implements the Associator interface.</dd>
- *
+ * 
  * <dt>storage</dt>
  * <dd>An object that implements the ProductStorage interface.</dd>
- *
+ * 
  * <dt>index</dt>
  * <dd>An object that implements the ProductIndex interface.</dd>
- *
+ * 
  * <dt>modules</dt>
  * <dd>A comma delimited list of objects that implement the IndexerModule
  * interface</dd>
- *
+ * 
  * <dt>listeners</dt>
  * <dd>A comma delimited list of objects that implement the IndexerListener
  * interface</dd>
@@ -153,7 +153,7 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Default no-arg constructor. This gets called from the Configurable API.
 	 * All configuration parameters are set in the "configure" method.
-	 *
+	 * 
 	 * @throws Exception
 	 *             If the JDBCProductIndex throws an exception.
 	 */
@@ -169,7 +169,7 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Returns the current associator used to associate products to one-another
 	 * and products to events.
-	 *
+	 * 
 	 * @return The current Associator.
 	 */
 	public Associator getAssociator() {
@@ -179,7 +179,7 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Sets the given associator as the current associator to associate products
 	 * to one-another and products to events.
-	 *
+	 * 
 	 * @param associator
 	 *            The associator to use from this point forward.
 	 */
@@ -190,7 +190,7 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Returns the product storage component that is used to store products as
 	 * they are received.
-	 *
+	 * 
 	 * @return The current product storage component.
 	 */
 	public ProductStorage getProductStorage() {
@@ -200,7 +200,7 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Sets the current product storage component used to store products as they
 	 * are received.
-	 *
+	 * 
 	 * @param productStorage
 	 *            The product storage component to use from this point forward.
 	 */
@@ -211,7 +211,7 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Returns the product index component used to index product information as
 	 * it is received.
-	 *
+	 * 
 	 * @return The current product index component.
 	 */
 	public ProductIndex getProductIndex() {
@@ -221,7 +221,7 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Sets the product index component used to index product information as it
 	 * is received.
-	 *
+	 * 
 	 * @param productIndex
 	 *            The product index component to use from this point forward.
 	 */
@@ -232,7 +232,7 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Adds the give indexer module to the current list of modules used by the
 	 * indexer to handle products.
-	 *
+	 * 
 	 * @param toAdd
 	 *            The IndexerModule to add to our list.
 	 */
@@ -243,7 +243,7 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Removes the first occurrence of the given indexer module from the current
 	 * list of known modules.
-	 *
+	 * 
 	 * @param toRemove
 	 *            The module to remove.
 	 * @see java.util.LinkedList#remove(Object)
@@ -255,7 +255,7 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * This method checks each module's support level for the given product,
 	 * returning the first module with the highest support level.
-	 *
+	 * 
 	 * @param product
 	 *            the product to summarize.
 	 * @return module best suited to summarize product.
@@ -287,7 +287,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * Adds a listener to this indexer. Listeners are notified when an event is
 	 * added, updated, or deleted, or when a new product arrives and is
 	 * un-associated to an event.
-	 *
+	 * 
 	 * @param toAdd
 	 *            The IndexerListener to add
 	 */
@@ -303,7 +303,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * Removes a listener from this indexer.Listeners are notified when an event
 	 * is added, updated, or deleted, or when a new product arrives and is
 	 * un-associated to an event.
-	 *
+	 * 
 	 * @param toRemove
 	 *            The IndexerListener to remove
 	 */
@@ -319,13 +319,13 @@ public class Indexer extends DefaultNotificationListener {
 
 	/**
 	 * Send an indexer event to all registered IndexerListeners.
-	 *
+	 * 
 	 * Creates a NotificationEvent, with a reference to this object and calls
 	 * each notificationListeners onNotification method in separate threads.
-	 *
+	 * 
 	 * This method usually returns before registered NotificationListeners have
 	 * completed processing a notification.
-	 *
+	 * 
 	 * @param event
 	 *            The event that occurred to trigger the notification. Note: An
 	 *            IndexerEvent has a specific "type" to clarify the type of
@@ -361,7 +361,7 @@ public class Indexer extends DefaultNotificationListener {
 		if (theSummary != null) {
 			LOGGER.log(Level.INFO, "[" + getName() + "] indexed product id="
 					+ theSummary.getId().toString()
-					+ ",status=" + theSummary.getStatus()
+					+ ",Status=" + theSummary.getStatus()
 					+ buf.toString());
 		} else {
 			LOGGER.log(Level.FINE, "[" + getName()
@@ -384,7 +384,7 @@ public class Indexer extends DefaultNotificationListener {
 
 	/**
 	 * Check whether this product is in the index.
-	 *
+	 * 
 	 * @param id
 	 * @return true if product has already been indexed.
 	 */
@@ -423,13 +423,13 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * This method receives a product from Product Distribution and adds it to
 	 * the index.
-	 *
+	 * 
 	 * Implementation follows from Product Indexer Diagram (pg.10) of
 	 * ProductIndexer.pdf document dated 09/09/2010.
-	 *
+	 * 
 	 * Calls onProduct(product, false), which will not reprocess already
 	 * processed products.
-	 *
+	 * 
 	 * @param product
 	 *            The product triggering the event.
 	 * @throws Exception
@@ -443,7 +443,7 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Receive a product and add it to the index. Optionally, reprocessing a
 	 * product that has already been processed.
-	 *
+	 * 
 	 * @param product
 	 *            The product triggering the event.
 	 * @param force
@@ -699,7 +699,7 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Check whether two products are redundant, meaning would not affect event
 	 * associations and indexer can skip split/merge steps.
-	 *
+	 * 
 	 * @param previous previous version of product.
 	 * @param current current version of product.
 	 * @return true if products are equivalent for association purposes.
@@ -735,21 +735,21 @@ public class Indexer extends DefaultNotificationListener {
 
 	/**
 	 * Check for, and handle incoming trump products.
-	 *
+	 * 
 	 * Handles version specific trump products, calls
 	 * {@link #checkForPersistentTrump(Event, ProductSummary, ProductSummary)}
 	 * to handle "persistent" trump products.
-	 *
+	 * 
 	 * VERSION SPECIFIC TRUMP
-	 *
+	 * 
 	 * Version specific trump products include:
 	 * - a link with relation "product" that is a product id urn.
 	 * - a property "weight" that defines the new preferred weight.
-	 *
+	 * 
 	 * Finds the associated product, resummarizes. If trump is deleted, product
 	 * is associated as is. If trump is not deleted, set's preferred weight
 	 * before reassociating.
-	 *
+	 * 
 	 * Preconditions:
 	 * <ul>
 	 * <li>The "trump" type product must associate with the correct event on its
@@ -757,7 +757,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * eventsource/eventsourcecode of the associated product. This means that no
 	 * product without an eventsource/eventsourcecode property may be trumped.</li>
 	 * </ul>
-	 *
+	 * 
 	 * @param event
 	 *            current event being updated.
 	 * @param productSummary
@@ -886,7 +886,7 @@ public class Indexer extends DefaultNotificationListener {
 			persistentTrumpType = "trump-" + type;
 			trumpType = type;
 		}
-
+		
 		// find active persistent trump product for type
 		ProductSummary persistentTrump = updatedEvent.getPreferredProduct(
 				persistentTrumpType);
@@ -919,7 +919,7 @@ public class Indexer extends DefaultNotificationListener {
 					// remove trump from previously trumped product.
 					updatedEvent = resummarizeProduct(updatedEvent, summary);
 				}
-			}
+			}			
 		}
 		// return updated event
 		return updatedEvent;
@@ -927,7 +927,7 @@ public class Indexer extends DefaultNotificationListener {
 
 	/**
 	 * Get the productId referred to by a trump product.
-	 *
+	 * 
 	 * @param trumpSummary
 	 *            trump product with reference to product id.
 	 * @return product id, or null if unable to parse product id.
@@ -945,7 +945,7 @@ public class Indexer extends DefaultNotificationListener {
 
 	/**
 	 * Get a product summary object using its product id.
-	 *
+	 * 
 	 * @param id
 	 *            id to find.
 	 * @return matching product summary or null.
@@ -964,7 +964,7 @@ public class Indexer extends DefaultNotificationListener {
 
 	/**
 	 * Update a product summary weight
-	 *
+	 * 
 	 * @param event
 	 *            the event.
 	 * @param summary
@@ -1000,7 +1000,7 @@ public class Indexer extends DefaultNotificationListener {
 
 	/**
 	 * Resummarize a product within an event.
-	 *
+	 * 
 	 * @param event
 	 *            the event.
 	 * @param summary
@@ -1035,7 +1035,7 @@ public class Indexer extends DefaultNotificationListener {
 
 	/**
 	 * Check for event splits (and split them if needed).
-	 *
+	 * 
 	 * @param summary
 	 *            the summary the indexer is currently processing.
 	 * @param originalEvent
@@ -1145,7 +1145,7 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Removes the leaf event (and all its products) from the root event. This
 	 * method modifies the runtime objects as well as updating the index DB.
-	 *
+	 * 
 	 * @param root
 	 *            The root event from which all leaf products will be removed
 	 * @param leaf
@@ -1184,7 +1184,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * product have the same type, code, source, and update time; i.e. the
 	 * products are duplicates. This method modifies the runtime objects as well
 	 * as the index DB. The child event is then deleted.
-	 *
+	 * 
 	 * @param target
 	 *            The target event into which the child is merged.
 	 * @param child
@@ -1214,7 +1214,7 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Check and merge any nearby events or previously unassociated products
 	 * that now associate.
-	 *
+	 * 
 	 * @param summary
 	 *            the summary currently being processed by the indexer.
 	 * @param originalEvent
@@ -1405,10 +1405,10 @@ public class Indexer extends DefaultNotificationListener {
 	 * Associate products are processed during
 	 * {@link #checkForEventMerges(ProductSummary, Event, Event)} and are
 	 * ignored during this method.
-	 *
+	 * 
 	 * @see Associator#getSearchRequest(ProductSummary)
 	 * @see Associator#chooseEvent(List, ProductSummary)
-	 *
+	 * 
 	 * @param summary
 	 * @return Event to which a productSummary is associated, or null if not
 	 *         found.
@@ -1421,7 +1421,7 @@ public class Indexer extends DefaultNotificationListener {
 
 	/**
 	 * Find an existing event that summary should associate with.
-	 *
+	 * 
 	 * @param summary the previous event.
 	 * @param associating whether associating (vs archiving).
 	 * @return previous event, or null if none found.
@@ -1458,15 +1458,15 @@ public class Indexer extends DefaultNotificationListener {
 	 * protected IndexerEvent createIndexerEvent(ProductSummary prevSummary,
 	 * Event prevEvent, ProductSummary summary, Event event) { IndexerType type
 	 * = null; IndexerEvent indexerEvent = new IndexerEvent(this);
-	 *
+	 * 
 	 * // ---------------------------------- // Determine the type if
 	 * IndexerEvent // ----------------------------------
-	 *
+	 * 
 	 * if (summary.getStatus() == Product.STATUS_DELETE) { type =
 	 * IndexerEvent.PRODUCT_DELETED; if (event != null) { // Since we have an
 	 * event, this is now an EVENT_UPDATED type type =
 	 * IndexerEvent.EVENT_UPDATED;
-	 *
+	 * 
 	 * // Check if all products on event are deleted. if
 	 * (event.getProductList().size() == 0) { type = IndexerEvent.EVENT_DELETED;
 	 * } } } else { // Product was not a "DELETE" status. Must be an added or
@@ -1476,14 +1476,14 @@ public class Indexer extends DefaultNotificationListener {
 	 * summary != null) { type = IndexerEvent.PRODUCT_ADDED; } else if
 	 * (prevSummary != null && summary != null) { type =
 	 * IndexerEvent.PRODUCT_UPDATED; }
-	 *
+	 * 
 	 * if (summary == null) { // Not sure how this happens.
 	 * LOGGER.warning("Trying to notify of a null summary."); } }
-	 *
+	 * 
 	 * // Set parameters indexerEvent.setEventType(type);
 	 * indexerEvent.setOldEvent(prevEvent); indexerEvent.setSummary(summary);
 	 * indexerEvent.setEvent(event);
-	 *
+	 * 
 	 * return indexerEvent; }
 	 */
 	/**
@@ -1798,11 +1798,11 @@ public class Indexer extends DefaultNotificationListener {
 	 * EVENT_ARCHIVED type. Unassociated products are checked next, matched
 	 * unassociated products are archived and listeners are notified with
 	 * PRODUCT_ARCHIVE type.
-	 *
+	 * 
 	 * Note: Product "age" is determined by when the earthquake for that product
 	 * occurred and does not reflect how long the product has actually been in
 	 * the index.
-	 *
+	 * 
 	 * @see #archivePolicies
 	 */
 	public synchronized int[] purgeExpiredProducts() throws Exception {
@@ -1894,14 +1894,14 @@ public class Indexer extends DefaultNotificationListener {
 						productIndex.beginTransaction();
 						try {
 							removeSummary(product);
-
+	
 							// Notify of the product archived
 							IndexerEvent notification = new IndexerEvent(this);
 							notification.setSummary(product);
 							notification.addIndexerChange(new IndexerChange(
 									IndexerChange.PRODUCT_ARCHIVED, null, null));
 							notifyListeners(notification);
-
+	
 							++counts[1];
 							productIndex.commitTransaction();
 						} catch (Exception e) {
@@ -1925,7 +1925,7 @@ public class Indexer extends DefaultNotificationListener {
 
 	/**
 	 * Removes the given event from the Indexer ProductIndex and ProductStorage.
-	 *
+	 * 
 	 * @param event
 	 * @throws Exception
 	 *             If errors occur while removing the event
@@ -1950,7 +1950,7 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Removes the given summary from the Indexer ProductIndex and
 	 * ProductStorage.
-	 *
+	 * 
 	 * @param summary
 	 * @throws Exception
 	 *             If errors occur while removing the summary
@@ -1992,11 +1992,11 @@ public class Indexer extends DefaultNotificationListener {
 	 * successful, the summary is associated to the newly created event. Note:
 	 * The summary must have been externally added to the ProductIndex before
 	 * this method can be called.
-	 *
+	 * 
 	 * A product summary must have non-null (id) source and code, (location)
-	 * latitude and longitude, and (time) time, in order to have the minimum
+	 * latitude and longitude, and (time) time, in order to have the minimum 
 	 * properties required to create a new event.
-	 *
+	 * 
 	 * @param summary
 	 *            The product summary serving as the basis for the new event.
 	 * @return The event that is created, added and associated or null if the
@@ -2019,7 +2019,7 @@ public class Indexer extends DefaultNotificationListener {
 
 	/**
 	 * Search for products in this index.
-	 *
+	 * 
 	 * @param request
 	 *            the search request.
 	 * @return the search response.
