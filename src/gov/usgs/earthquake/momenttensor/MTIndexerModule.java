@@ -71,10 +71,11 @@ public class MTIndexerModule extends DefaultIndexerModule {
 					weight += MAG_OUTSIDE_RANGE_PENALTY;
 				}
 			}
-			// Add gcmt bonus
-			if (eventSource.equalsIgnoreCase(EVENT_SOURCE_GCMT)) {
-				weight += EVENT_SOURCE_GCMT_BONUS;
-			}
+		}
+		
+		// Add gcmt bonus if required
+		if (eventSource.equalsIgnoreCase(EVENT_SOURCE_GCMT)) {
+			weight += EVENT_SOURCE_GCMT_BONUS;
 		}
 
 		return weight;
