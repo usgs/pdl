@@ -262,7 +262,7 @@ public class AbstractListener extends DefaultConfigurable {
 			    !type.endsWith("-devel")
 			) {
 			LOGGER.finer("[" + getName()
-					+ "] product type was not actual. Not included.");
+					+ "] product type was actual. Not included.");
 			return false;
 		}
 
@@ -318,6 +318,8 @@ public class AbstractListener extends DefaultConfigurable {
 		if (includeFlag != null) {
 			includeTests = (includeFlag.equalsIgnoreCase("yes") ||
 					includeFlag.equalsIgnoreCase("true"));
+			LOGGER.config("[" + getName() + "] includeTests = "
+					+ includeTests);
 		} else {
 			includeDevelopments = DEFAULT_INCLUDE_TESTS;
 		}
@@ -326,6 +328,8 @@ public class AbstractListener extends DefaultConfigurable {
 		if (includeFlag != null) {
 			includeScenarios = (includeFlag.equalsIgnoreCase("yes") ||
 					includeFlag.equalsIgnoreCase("true"));
+			LOGGER.config("[" + getName() + "] includeScenarios = "
+					+ includeScenarios);
 		} else {
 			includeDevelopments = DEFAULT_INCLUDE_SCENARIOS;
 		}
@@ -334,12 +338,16 @@ public class AbstractListener extends DefaultConfigurable {
 		if (includeFlag != null) {
 			includeActuals = !(includeFlag.equalsIgnoreCase("no") ||
 					includeFlag.equalsIgnoreCase("false"));
+			LOGGER.config("[" + getName() + "] includeActuals = "
+					+ includeActuals);
 		}
 
 		includeFlag = config.getProperty(INCLUDE_INTERNALS_PROPERTY);
 		if (includeFlag != null) {
 			includeInternals = (includeFlag.equalsIgnoreCase("yes") ||
 					includeFlag.equalsIgnoreCase("true"));
+			LOGGER.config("[" + getName() + "] includeInternals = "
+					+ includeInternals);
 		} else {
 			includeDevelopments = DEFAULT_INCLUDE_INTERNALS;
 		}
@@ -348,6 +356,8 @@ public class AbstractListener extends DefaultConfigurable {
 		if (includeFlag != null) {
 			includeDevelopments = (includeFlag.equalsIgnoreCase("yes") ||
 					includeFlag.equalsIgnoreCase("true"));
+			LOGGER.config("[" + getName() + "] includeDevelopments = "
+					+ includeDevelopments);
 		} else {
 			includeDevelopments = DEFAULT_INCLUDE_DEVELOPMENTS;
 		}
