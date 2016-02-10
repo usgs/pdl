@@ -32,10 +32,12 @@ public class MTIndexerModule extends DefaultIndexerModule {
 	@Override
 	public int getSupportLevel(Product product) {
 		int supportLevel = IndexerModule.LEVEL_UNSUPPORTED;
+		String type = getBaseProductType(product.getId().getType());
 		// Support only moment tensor products
-		if (product.getId().getType().startsWith("moment-tensor")) {
+		if (type.equals("moment-tensor")) {
 			supportLevel = IndexerModule.LEVEL_SUPPORTED;
 		}
+
 		return supportLevel;
 	}
 
