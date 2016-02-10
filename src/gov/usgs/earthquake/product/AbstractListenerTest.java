@@ -112,31 +112,20 @@ public class AbstractListenerTest {
 	
 	
 	@Test
-	public void configuresIncludeActualsCorrectly() {
+	public void configuresIncludeActualsCorrectly() throws Exception {
 		AbstractListener listener = new AbstractListener();
 		Config config;
 		
 		// Test includeActuals configured to no.
 		config = new Config();
 		config.setProperty("includeActuals", "no");
-		try {
-			listener.configure(config);
-		} catch(Exception e) {
-			System.out.println(e);
-			Assert.assertFalse("Exception thrown on configure", true);
-		}
+		listener.configure(config);
 		Assert.assertFalse("includeActuals configured to no ", listener.accept(actualId));
-		
 		
 		// Test includeActuals configured to false.
 		config = new Config();
 		config.setProperty("includeActuals", "false");
-		try {
-			listener.configure(config);
-		} catch(Exception e) {
-			System.out.println(e);
-			Assert.assertFalse("Exception thrown on configure", true);
-		}
+		listener.configure(config);
 		Assert.assertFalse("includeActuals configured to false ", listener.accept(actualId));
 	}
 	
