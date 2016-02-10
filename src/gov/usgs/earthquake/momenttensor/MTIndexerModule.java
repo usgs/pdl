@@ -32,7 +32,7 @@ public class MTIndexerModule extends DefaultIndexerModule {
 	@Override
 	public int getSupportLevel(Product product) {
 		int supportLevel = IndexerModule.LEVEL_UNSUPPORTED;
-		// Support only ShakeMap products that contain grid.xml
+		// Support only moment tensor products
 		if (product.getId().getType().startsWith("moment-tensor")) {
 			supportLevel = IndexerModule.LEVEL_SUPPORTED;
 		}
