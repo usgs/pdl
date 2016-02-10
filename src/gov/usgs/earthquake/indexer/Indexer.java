@@ -361,7 +361,7 @@ public class Indexer extends DefaultNotificationListener {
 		if (theSummary != null) {
 			LOGGER.log(Level.INFO, "[" + getName() + "] indexed product id="
 					+ theSummary.getId().toString()
-					+ ",Status=" + theSummary.getStatus()
+					+ ",status=" + theSummary.getStatus()
 					+ buf.toString());
 		} else {
 			LOGGER.log(Level.FINE, "[" + getName()
