@@ -11,7 +11,7 @@
 		<a href="../index.html#documentation">&laquo; Back to User Guide</a>
 	</p>
 	<p>
-		<small>$Id: configuration.html 23018 2015-04-29 17:50:20Z jmfee $<br /> 
+		<small>$Id: configuration.html 23018 2015-04-29 17:50:20Z jmfee $<br />
 		$URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/documentation/userguide/configuration.html $
 		</small>
 	</p>
@@ -53,10 +53,10 @@
 		<pre>
 	globalproperty1 = globalvalue1
 	globalproperty2 = globalvalue2
-	
+
 	[section1]
 	section1property1 = section1value1
-	
+
 	[section2]
 	section2property1 = section2value1
 </pre>
@@ -85,14 +85,14 @@
 	<div class="code">
 		<pre>
 	listeners = listener1, listener2, listener3
-	
+
 	...
-	
+
 	[listener1]
 	type = gov.usgs.earthquake.distribution.ExternalNotificationListener
 	command = /path/to/executable
 	storage = storageX
-	
+
 	[storageX]
 	type = gov.usgs.earthquake.distribution.FileProductStorage
 	directory = /path/to/storage/directory
@@ -274,7 +274,7 @@
 
 		<dt>retryDelay</dt>
 		<dd>(Optional, Default 300000) Number of milliseconds to wait before attempting
-			redelivery of a notification after a listener throws a 
+			redelivery of a notification after a listener throws a
 			ContinuableListenerException during onNotification().
 			A value &lt; = 0 means no delay.  Used with <code>maxTries</code>.</dd>
 
@@ -536,7 +536,7 @@
 
 		<dt>readTimeout</dt>
 		<dd>Number of milliseconds allowed before read attempts timeout,
-			when downloading products. And, for SocketProductReceiver, 
+			when downloading products. And, for SocketProductReceiver,
 			when accepting products via socket.</dd>
 
 		<dt>listenerNotifier</dt>
@@ -546,7 +546,7 @@
 				<dd>(default) Executor uses one queue per listener and
 					notifications are processed in the order they are received.
 					</dd>
-				
+
 				<dt>roundrobin</dt>
 				<dd>Round robin uses one queue per listener for each product
 					source+type and takes one product from the front of each queue.
@@ -606,7 +606,7 @@
 	<dl>
 		<dt>gov.usgs.earthquake.distribution.SocketProductSender</dt>
 		<dd>
-			<p>See <a href="sending.html#compression">Sending products</a> 
+			<p>See <a href="sending.html#compression">Sending products</a>
 				for suggestions on configuring compression and format settings</p>
 
 			<dl>
@@ -626,12 +626,12 @@
 					data before timing out.</dd>
 
 				<dt>writeTimeout</dt>
-				<dd>(Optional) Default is -1.  Milliseconds to wait between 
+				<dd>(Optional) Default is -1.  Milliseconds to wait between
 					writes before timing out.
 
 					<p><small>NOTE: Java does not natively support write timeouts
-						for sockets in blocking mode.  This option uses a separate 
-						thread to monitor socket writes, and closes the socket if 
+						for sockets in blocking mode.  This option uses a separate
+						thread to monitor socket writes, and closes the socket if
 						a write does not occur within this time.</small></p></dd>
 
 				<dt>binaryFormat</dt>
@@ -872,7 +872,7 @@
 				<dd>(Default 5) How large a thread pool to use for searches. 1
 					thread is used for each connection, so 5 allows 5 concurrent
 					searches.</dd>
-				
+
 				<dt>associateUsingCurrentProducts</dt>
 				<dd>(Default false) Only consider "current" versions of products
 					when associating new products to events.  This improves
@@ -1157,6 +1157,13 @@
 			<code>shakemap</code>
 			type products. There are no configuration parameters for this module.
 		</dd>
+		<dt>gov.usgs.earthquake.momenttensor.MTIndexerModule</dt>
+			<dd>
+				Provides support for
+				<code>moment-tensor</code>
+				and adjusts the weight of a given product. There are no configuration
+				parameters for this module.
+			</dd>
 	</dl>
 
 	<h3 id="ProductIndex">ProductIndex</h3>

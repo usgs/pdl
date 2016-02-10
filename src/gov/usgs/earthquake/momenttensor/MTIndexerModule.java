@@ -32,10 +32,12 @@ public class MTIndexerModule extends DefaultIndexerModule {
 	@Override
 	public int getSupportLevel(Product product) {
 		int supportLevel = IndexerModule.LEVEL_UNSUPPORTED;
-		// Support only ShakeMap products that contain grid.xml
-		if (product.getId().getType().startsWith("moment-tensor")) {
+		String type = getBaseProductType(product.getId().getType());
+		// Support only moment tensor products
+		if (type.equals("moment-tensor")) {
 			supportLevel = IndexerModule.LEVEL_SUPPORTED;
 		}
+
 		return supportLevel;
 	}
 
@@ -69,10 +71,11 @@ public class MTIndexerModule extends DefaultIndexerModule {
 					weight += MAG_OUTSIDE_RANGE_PENALTY;
 				}
 			}
-			// Add gcmt bonus
-			if (eventSource.equalsIgnoreCase(EVENT_SOURCE_GCMT)) {
-				weight += EVENT_SOURCE_GCMT_BONUS;
-			}
+		}
+		
+		// Add gcmt bonus if required
+		if (eventSource.equalsIgnoreCase(EVENT_SOURCE_GCMT)) {
+			weight += EVENT_SOURCE_GCMT_BONUS;
 		}
 
 		return weight;

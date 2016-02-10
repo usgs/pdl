@@ -41,9 +41,9 @@ etc/schema/indexer.xsd for details.</p>
 keeps track of the changes it makes. Each Indexer Event is a group of
 one or more changes that were made in response to one product arriving.</p>
 
-<p>This tracking is performed through an onEventTrigger database trigger. For 
-a technical description of this trigger and instructions for implementing it 
-on the MySQL database, see <a href="configureMySQL.html">Configuring the Product 
+<p>This tracking is performed through an onEventTrigger database trigger. For
+a technical description of this trigger and instructions for implementing it
+on the MySQL database, see <a href="configureMySQL.html">Configuring the Product
 Index to Use MySQL</a>
 </p>
 
@@ -129,7 +129,7 @@ Index to Use MySQL</a>
 
 
 <div class="code"><pre>
-; note this configuration does not include senders, 
+; note this configuration does not include senders,
 ; which would be required for sending products.
 
 receivers = receiver_pdl
@@ -189,36 +189,36 @@ includeTypes = origin
 </pre></div>
 
 <h2>Indexer Summarization</h2>
-<p>As an aid to indexing, the Indexer maintains a <i>product summary</i> 
+<p>As an aid to indexing, the Indexer maintains a <i>product summary</i>
 of products, associating them to seismic events using time, latitude and
-longitude. Using these three attributes, the Indexer assigns an <i>eventID</i> 
-to the summaries, so that multiple products can be efficiently cross-referenced 
+longitude. Using these three attributes, the Indexer assigns an <i>eventID</i>
+to the summaries, so that multiple products can be efficiently cross-referenced
 to a single event.</p>
 
-<p>As part of the summarization process, the Indexer extracts a specific subset 
-of properties from various products, so that important key aspects of an event 
-are visible without having to interrogate the details of multiple products.  
+<p>As part of the summarization process, the Indexer extracts a specific subset
+of properties from various products, so that important key aspects of an event
+are visible without having to interrogate the details of multiple products.
 </p>
 
 <h3>Summarized Properties</h3>
-<p>The following properties are extracted from products and are associated with 
+<p>The following properties are extracted from products and are associated with
 summarizations of events:</p>
 <dl>
 	<dt>region</dt>
-	<dd>The name of a particular geographic region. Initially the Indexer makes an 
-	attempt at obtaining the region directly from the <i>origin</i> or 
-	<i>geoserve</i> products. Failing that, it derives the region using the event's 
-	latitude and longitude.  This derivation is performed by the <i>feplus</i> feature 
-	of the Indexer, where individual regions are defined by latitude/longitude 
+	<dd>The name of a particular geographic region. Initially the Indexer makes an
+	attempt at obtaining the region directly from the <i>origin</i> or
+	<i>geoserve</i> products. Failing that, it derives the region using the event's
+	latitude and longitude.  This derivation is performed by the <i>feplus</i> feature
+	of the Indexer, where individual regions are defined by latitude/longitude
 	within the <i>etc/config/regions.xml</i> file.</dd>
-	
+
 	<dt>maxmmi</dt>
-	<dd>The maximum shaking intensity found in the <i>shakemap</i> product, although 
-	maxmmi is directly obtained from the <i>losspager</i> product. If not available 
+	<dd>The maximum shaking intensity found in the <i>shakemap</i> product, although
+	maxmmi is directly obtained from the <i>losspager</i> product. If not available
 	from losspager, then  maxmmi is obtained from the <i>dyfi</i> product.</dd>
 
 	<dt>alertlevel</dt>
-	<dd>A categorized fatality or economic loss level, obtained from the 
+	<dd>A categorized fatality or economic loss level, obtained from the
 	<i>losspager</i> product.:
 		<dl>
 			<dt>Green</dt>
@@ -231,13 +231,13 @@ summarizations of events:</p>
 			<dd>1000+ fatalities OR greater than 1 billion U.S. dollars economic loss.</dd>
 		</dl>
 	</dd>
-	
+
 	<dt>review_status</dt>
-	<dd>Whether this event has been reviewed by a human, obtained from the 
+	<dd>Whether this event has been reviewed by a human, obtained from the
 	<i>origin</i> product.</dd>
 
 	<dt>event_type</dt>
-	<dd>The type of event, such as <i>earthquake</i> or <i>landslide</i>,  obtained 
+	<dd>The type of event, such as <i>earthquake</i> or <i>landslide</i>,  obtained
 	from the <i>origin</i> product.</dd>
 
 	<dt>azimuthal_gap</dt>
@@ -248,37 +248,37 @@ summarizations of events:</p>
 
 
 	<dt>num_Resp</dt>
-	<dd>The number of individuals completing the DYFI web dialogue for this event, 
-	obtained from the nresponses attribute of the event_data.xml file included in 
+	<dd>The number of individuals completing the DYFI web dialogue for this event,
+	obtained from the nresponses attribute of the event_data.xml file included in
 	the <i>dyfi</i> product.</dd>
 
 	<dt>tsunamiFlag</dt>
-	<dd>A [&ldquo;true&rdquo;|&ldquo;false&rdquo;] Boolean string indicating if 
-	the tsunami flag should be triggered automatically, obtained from the 
+	<dd>A [&ldquo;true&rdquo;|&ldquo;false&rdquo;] Boolean string indicating if
+	the tsunami flag should be triggered automatically, obtained from the
 	<i>geoserve</i> product.</dd>
 
 	<dt>utcOffset</dt>
-	<dd>Number of minutes between the epicenter timezone and UTC, obtained 
+	<dd>Number of minutes between the epicenter timezone and UTC, obtained
 	from the <i>geoserve</i> product.</dd>
 
 	<dt>significance</dt>
 	<dd>
-	An integer value indicating the significance of an event, calculated 
-	from properties of the <i>origin</i>, <i>losspager</i> and <i>dyfi</i> 
+	An integer value indicating the significance of an event, calculated
+	from properties of the <i>origin</i>, <i>losspager</i> and <i>dyfi</i>
 	products.
-	
+
 	<p>Significance is calculated from the following multi-step formula:</p>
-	
+
 	<dl>
 			<dt>magnitude_significance</dt>
 			<dd>= (100/6.5) * magnitude<sup>2</sup></dd>
-			
+
 			<dt>pager_significance</dt>
 			<dd>= &nbsp;2000 if red&nbsp;&nbsp; 1000 if orange&nbsp;&nbsp;500 if yellow</dd>
-			
+
 			<dt>dyfi_significance</dt>
 			<dd>= MIN(num_Resp, 1000) * maxmmi * 0.10</dd>
-			
+
 			<dt>significance</dt>
 			<dd>= MAX(magnitude_significance, pager_significance) + dyfi_significance</dd>
 	</dl>
@@ -286,19 +286,19 @@ summarizations of events:</p>
 </dl>
 
 <h3>Product Summarized Preferred Weight</h3>
-<p>Within each type of product, the summary with the largest preferred weight is 
+<p>Within each type of product, the summary with the largest preferred weight is
 considered preferred. This calculated weight is the sum of four components:</p>
 <dl>
 			<dt>DEFAULT_PREFERRED_WEIGHT = 1</dt>
 			<dd>All product summaries have a preferred weight of at least 1.</dd>
-			
+
 			<dt>SAME_SOURCE_WEIGHT = 5</dt>
 			<dd>Weight added when product source is same as event source.</dd>
-			
+
 			<dt>AUTHORITATIVE_WEIGHT = 100</dt>
-			<dd>Weight added when product author is in the product's authoritative 
+			<dd>Weight added when product author is in the product's authoritative
 			region.</dd>
-			
+
 			<dt>AUTHORITATIVE_EVENT_WEIGHT = 50</dt>
 			<dd>Weight added when product refers to an authoritative event.</dd>
 	</dl>
@@ -307,47 +307,48 @@ considered preferred. This calculated weight is the sum of four components:</p>
 <h2 id="modules">Indexer Components</h2>
 <h3>Indexer SQL Dependencies</h3>
 <p>
-	The Indexer is dependent on two SQL components: the <i>feplus</i> system and 
+	The Indexer is dependent on two SQL components: the <i>feplus</i> system and
 	<i>OnEventUpdate</i> stored procedures:
 </p>
 
 <dl>
 		<dt>mysql_feplus</dt>
-		<dd>Found in the <i>schema/mysql_feplus</i> directory, feplus implements 
-		region-identifying functionality based on latitude and longitude. It uses 
-		the definitions in the <i>etc/config/regions.xml</i> file to associate a 
-		region-name with a particular latitude/longitude location of an event or 
-		product. OnEventUpdate stored procedures uses this functionality for 
-		<i>origin</i> and <i>geoserve</i> products, which ultimately determine 
+		<dd>Found in the <i>schema/mysql_feplus</i> directory, feplus implements
+		region-identifying functionality based on latitude and longitude. It uses
+		the definitions in the <i>etc/config/regions.xml</i> file to associate a
+		region-name with a particular latitude/longitude location of an event or
+		product. OnEventUpdate stored procedures uses this functionality for
+		<i>origin</i> and <i>geoserve</i> products, which ultimately determine
 		properties such as event <i>significance</i>.</dd>
-		
+
 		<dt>onEventTrigger Stored Procedures</dt>
-		<dd>Found in the <i>schema/productIndexOnEventUpdateMysql.sql</i> file, 
-		these procedures summarize products and events for efficient retrieval. 
-		The trigger is evoked when the Indexer's Java classes use 
+		<dd>Found in the <i>schema/productIndexOnEventUpdateMysql.sql</i> file,
+		these procedures summarize products and events for efficient retrieval.
+		The trigger is evoked when the Indexer's Java classes use
 		time/latitude/longitude information in products to create or modify events.</dd>
 </dl>
 
 <h3>Some Major Java Components</h3>
 <dl>
 		<dt>JDBCProductIndex</dt>
-		<dd>This class implements the ProductIndex interface to maintain events, 
-		product summaries, event summaries and properties. It contains and executes 
+		<dd>This class implements the ProductIndex interface to maintain events,
+		product summaries, event summaries and properties. It contains and executes
 		the SQL manipulations of the database.</dd>
-		
+
 		<dt>Indexer</dt>
-		<dd>This key class uses JDBCProductIndex to maintain the database, as well 
-		as adds and removes listeners, receives products and sends notifications. It 
+		<dd>This key class uses JDBCProductIndex to maintain the database, as well
+		as adds and removes listeners, receives products and sends notifications. It
 		extends the DefaultNotificationListener class.</dd>
 </dl>
 
 <h3>Indexer Modules</h3>
-<p>Specific products sometimes have special needs for indexing; the two existing 
-product type of this nature are the <i>shakemap</i> and <i>dyfi</i> products. This 
-special indexing is configured in <i>config.ini</i>, as is documented in the 
-<a href="configuration.html#indexerconfig">Indexer Components</a> section of the 
+<p>Specific products sometimes have special needs for indexing; the three existing
+product type of this nature are the <i>shakemap</i>, <i>dyfi</i>, and
+<i>moment-tensor</i> products. This special indexing is configured in
+<i>config.ini</i>, as is documented in the
+<a href="configuration.html#indexerconfig">Indexer Components</a> section of the
 configuration documentation and illustrated below.</p>
-<p>The following code snippet from <i>config.ini</i> shows the minimum entries 
+<p>The following code snippet from <i>config.ini</i> shows the minimum entries
 necessary for requesting special indexing for the shakemap and dyfi products:</p>
 
 <div class="code"><pre>
@@ -360,33 +361,47 @@ type = gov.usgs.earthquake.shakemap.ShakeMapIndexerModule
 [indexer_module_dyfi]
 type = gov.usgs.earthquake.dyfi.DYFIIndexerModule
 
+[indexer_module_momenttensor]
+type = gov.usgs.earthquake.momenttensor.MTIndexerModule
+
 </pre></div>
 
 <ul>
-	<li>The <i>modules =</i> line creates labels for further shakemap and 
-	dyfi definition.</li> 
-	<li>The <i>[indexer_module_shakemap]</i> and <i>[indexer_module_dyfi]</i> lines 
-	mark the start of those definitions.</li>
-	<li>The two <i>type =</i> lines specify the Java code classes that will handle 
-	 the special indexing for those two product types.</li>
-	 </ul>
+	<li>
+		The <i>modules =</i> line creates labels for further shakemap and
+		dyfi definition.
+	</li>
+	<li>
+		The <i>[indexer_module_shakemap]</i>, <i>[indexer_module_dyfi]</i>,
+		and <i>[indexer_module_momenttensor]</i> lines mark the start of those
+		definitions.
+	</li>
+	<li>
+		The three <i>type =</i> lines specify the Java code classes that will handle
+		the special indexing for those three product types.
+	</li>
+</ul>
 
-<p>As has been noted elsewhere in this documentation, the custom programming of 
-these special indexing classes requires coordination between the product producer 
+<p>As has been noted elsewhere in this documentation, the custom programming of
+these special indexing classes requires coordination between the product producer
 and the PDL web team at <a href="mailto:jmfee@usgs.gov">jmfee@usgs.gov</a>.</p>
 
 <dl>
 		<dt>gov.usgs.earthquake.shakemap.ShakeMapIndexerModule</dt>
-		<dd>This class implements the ProductIndex interface to maintain events, 
-		product summaries, event summaries and properties. It contains and executes 
+		<dd>This class implements the ProductIndex interface to maintain events,
+		product summaries, event summaries and properties. It contains and executes
 		the SQL manipulations of the database.</dd>
-		
-		<dt>gov.usgs.earthquake.dyfi.DYFIIndexerModule</dt>
-		<dd>This key class uses JDBCProductIndex to maintain the database, as well 
-		as adds and removes listeners, receives products and sends notifications. It 
-		extends the DefaultNotificationListener class.</dd>
-</dl>
 
+		<dt>gov.usgs.earthquake.dyfi.DYFIIndexerModule</dt>
+		<dd>This key class uses JDBCProductIndex to maintain the database, as well
+		as adds and removes listeners, receives products and sends notifications. It
+		extends the DefaultNotificationListener class.</dd>
+
+		<dt>gov.usgs.earthquake.momenttensor.MTIndexerModule</dt>
+		<dd>
+			This class adjusts the weight of moment tensor products.
+		</dd>
+</dl>
 
 </body>
 </html>
