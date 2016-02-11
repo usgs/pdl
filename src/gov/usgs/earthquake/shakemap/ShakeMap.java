@@ -143,7 +143,7 @@ public class ShakeMap extends Product {
 		eventId = eventSource + eventSourceCode;
 
 		if (valueIsEmpty(getEventId(), eventId))  {
-			setEventId(eventSource, eventSource);
+			setEventId(eventSource, eventSourceCode);
 		}
 
 		// less preferred eventId (if not already set)
@@ -152,7 +152,7 @@ public class ShakeMap extends Product {
 		eventId = eventSource + eventSourceCode;
 
 		if (valueIsEmpty(getEventId(), eventId))  {
-			setEventId(eventSource, eventSource);
+			setEventId(eventSource, eventSourceCode);
 		}
 
 
