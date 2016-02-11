@@ -57,6 +57,9 @@ public class XmlUtils {
 	 * @return the XML representation as a string.
 	 */
 	public static String formatDate(final Date date) {
+		if (date == null) {
+			return null;
+		}
 		GregorianCalendar calendar = new GregorianCalendar();
 		calendar.setTimeInMillis(date.getTime());
 		return formatGregorianCalendar(calendar);

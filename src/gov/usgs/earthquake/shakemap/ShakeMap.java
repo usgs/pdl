@@ -19,6 +19,15 @@ import java.util.logging.Logger;
  */
 public class ShakeMap extends Product {
 
+	public static final String EVENT_DESCRIPTION_PROPERTY = "event_description";
+	public static final String EVENT_TYPE_PROPERTY = "event_type";
+	public static final String MAP_STATUS_PROPERTY = "map_status";
+	public static final String MAXIMUM_LATITUDE_PROPERTY = "maximum_latitude";
+	public static final String MAXIMUM_LONGITUDE_PROPERTY = "maximum_longitude";
+	public static final String MINIMUM_LATITUDE_PROPERTY = "minimum_latitude";
+	public static final String MINIMUM_LONGITUDE_PROPERTY = "minimum_lognitude";
+	public static final String PROCESS_TIMESTAMP_PROPERTY = "process_timestamp";
+
 	private static final Logger LOGGER = Logger.getLogger(ShakeMap.class
 			.getName());
 
@@ -138,7 +147,7 @@ public class ShakeMap extends Product {
 		}
 
 		// less preferred eventId (if not already set)
-		eventSource = gridXML.get(GridXMLHandler.SHAKEMAPGIRD_ORIGINATOR_XML);
+		eventSource = gridXML.get(GridXMLHandler.SHAKEMAPGRID_ORIGINATOR_XML);
 		eventSourceCode = gridXML.get(GridXMLHandler.SHAKEMAPGRID_ID_XML);
 		eventId = eventSource + eventSourceCode;
 
@@ -170,45 +179,45 @@ public class ShakeMap extends Product {
 
 
 		// ShakeMap Grid
-		minimumLongitude = gridXML.get(GridXMLHandler.MINIMUM_LONGITUDE_PROPERTY_XML);
-		if (valueIsEmpty(getMinimumLongitude().toString(), minimumLongitude)) {
+		minimumLongitude = gridXML.get(GridXMLHandler.GRIDSPEC_LONMIN_XML);
+		if (valueIsEmpty(getString(getMinimumLongitude()), minimumLongitude)) {
 			setMinimumLongitude(getBigDecimal(minimumLongitude));
 		}
 
-		maximumLongitude = gridXML.get(GridXMLHandler.MAXIMUM_LONGITUDE_PROPERTY_XML);
-		if (valueIsEmpty(getMaximumLongitude().toString(), maximumLongitude)) {
+		maximumLongitude = gridXML.get(GridXMLHandler.GRIDSPEC_LONMAX_XML);
+		if (valueIsEmpty(getString(getMaximumLongitude()), maximumLongitude)) {
 			setMaximumLongitude(getBigDecimal(maximumLongitude));
 		}
 
-		minimumLatitude = gridXML.get(GridXMLHandler.MINIMUM_LATITUDE_PROPERTY_XML);
-		if (valueIsEmpty(getMinimumLatitude().toString(), minimumLatitude)) {
+		minimumLatitude = gridXML.get(GridXMLHandler.GRIDSPEC_LATMIN_XML);
+		if (valueIsEmpty(getString(getMinimumLatitude()), minimumLatitude)) {
 			setMinimumLatitude(getBigDecimal(minimumLatitude));
 		}
 
-		maximumLatitude = gridXML.get(GridXMLHandler.MAXIMUM_LATITUDE_PROPERTY_XML);
-		if (valueIsEmpty(getMaximumLatitude().toString(), maximumLatitude)) {
+		maximumLatitude = gridXML.get(GridXMLHandler.GRIDSPEC_LATMAX_XML);
+		if (valueIsEmpty(getString(getMaximumLatitude()), maximumLatitude)) {
 			setMaximumLatitude(getBigDecimal(maximumLatitude));
 		}
 
 
 		// Event
 		latitude = gridXML.get(GridXMLHandler.EVENT_LATITUDE_XML);
-		if (valueIsEmpty(getLatitude().toString(), latitude)) {
+		if (valueIsEmpty(getString(getLatitude()), latitude)) {
 			setLatitude(getBigDecimal(latitude));
 		}
 
 		longitude = gridXML.get(GridXMLHandler.EVENT_LONGITUDE_XML);
-		if (valueIsEmpty(getLongitude().toString(), longitude)) {
+		if (valueIsEmpty(getString(getLongitude()), longitude)) {
 			setLongitude(getBigDecimal(longitude));
 		}
 
 		magnitude = gridXML.get(GridXMLHandler.EVENT_MAGNITUDE_XML);
-		if (valueIsEmpty(getMagnitude().toString(), magnitude)) {
+		if (valueIsEmpty(getString(getMagnitude()), magnitude)) {
 			setMagnitude(getBigDecimal(magnitude));
 		}
 
 		depth = gridXML.get(GridXMLHandler.EVENT_DEPTH_XML);
-		if (valueIsEmpty(getDepth().toString(), depth)) {
+		if (valueIsEmpty(getString(getDepth()), depth)) {
 			setDepth(getBigDecimal(depth));
 		}
 
@@ -388,13 +397,23 @@ public class ShakeMap extends Product {
 	}
 
 	/**
-	 * Returns string value as BigDecimal
+	 * Returns String value as BigDecimal
 	 */
 	protected BigDecimal getBigDecimal (String value) {
 		if (value == null) {
 			return null;
 		}
 		return new BigDecimal(value);
+	}
+
+	/**
+	 * Returns BigDecimal value as String
+	 */
+	protected String getString (BigDecimal value) {
+		if (value == null) {
+			return null;
+		}
+		return value.toString();
 	}
 
 }
