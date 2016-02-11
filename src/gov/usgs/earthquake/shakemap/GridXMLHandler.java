@@ -39,16 +39,13 @@ public class GridXMLHandler extends DefaultHandler {
 		public static final String EVENT_NETWORK = "event_network";
 		public static final String EVENT_ID = "event_id";
 		
-		
-
 		// ShakeMap gridspec parameters
 		public static final String GRIDSPEC_ELEMENT = "grid_specification";
 		public static final String GRIDSPEC_LONMIN = "lon_min";
 		public static final String GRIDSPEC_LONMAX = "lon_max";
 		public static final String GRIDSPEC_LATMIN = "lat_min";
 		public static final String GRIDSPEC_LATMAX = "lat_max";
-		
-		
+			
 		public static final String SHAKEMAPGRID_ELEMENT_XML = SHAKEMAPGRID_ELEMENT;
 		public static final String SHAKEMAPGRID_ID_XML =  SHAKEMAPGRID_ELEMENT+ "[" + SHAKEMAPGRID_ID + "]"	;
 		public static final String SHAKEMAPGRID_ORIGINATOR_XML = SHAKEMAPGRID_ELEMENT + "[" + SHAKEMAPGRID_ORIGINATOR + "]";
@@ -69,9 +66,9 @@ public class GridXMLHandler extends DefaultHandler {
 		
 		public static final String GRIDSPEC_ELEMENT_XML = GRIDSPEC_ELEMENT;
 		public static final String GRIDSPEC_LONMIN_XML = GRIDSPEC_ELEMENT+ "[" + GRIDSPEC_LONMIN + "]";
-		public static final String GRIDSPEC_LONMAX_XML = GRIDSPEC_ELEMENT+ " " + GRIDSPEC_LONMAX + "]";
-		public static final String GRIDSPEC_LATMIN_XML = GRIDSPEC_ELEMENT+ " " + GRIDSPEC_LATMIN + "]";
-		public static final String GRIDSPEC_LATMAX_XML = GRIDSPEC_ELEMENT+ " " + GRIDSPEC_LATMAX + "]";
+		public static final String GRIDSPEC_LONMAX_XML = GRIDSPEC_ELEMENT+ "[" + GRIDSPEC_LONMAX + "]";
+		public static final String GRIDSPEC_LATMIN_XML = GRIDSPEC_ELEMENT+ "[" + GRIDSPEC_LATMIN + "]";
+		public static final String GRIDSPEC_LATMAX_XML = GRIDSPEC_ELEMENT+ "[" + GRIDSPEC_LATMAX + "]";
 			
 	// ShakeMap griddata parameters
 	public static final String GRIDDATA_ELEMENT = "grid_data";
