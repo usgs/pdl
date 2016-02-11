@@ -17,7 +17,7 @@ import gov.usgs.earthquake.product.Product;
 public class MTIndexerModule extends DefaultIndexerModule {
 
 	private static final String TYPE_MWW = "Mww";
-	private static final long TYPE_MWW_BONUS = 4L;
+	private static final long TYPE_MWW_BONUS = 60L;
 	private static final String TYPE_MWC = "Mwc";
 	private static final long TYPE_MWC_BONUS = 2L;
 	private static final String TYPE_MWB = "Mwb";
