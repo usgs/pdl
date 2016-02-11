@@ -75,6 +75,8 @@ public class GridXMLHandler extends DefaultHandler {
 	public static final String STOP_PARSING_BEFORE_GRIDDATA =
 			"Stop parsing before grid data.";
 
+	private static final String XML_NAME = "name";
+	private static final String XML_VALUE = "value";
 	private HashMap<String, String> grid = new HashMap<String, String>();
 
 	/**
