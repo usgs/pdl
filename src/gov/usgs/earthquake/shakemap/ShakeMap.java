@@ -19,14 +19,14 @@ import java.util.logging.Logger;
  */
 public class ShakeMap extends Product {
 
-	public static final String EVENT_DESCRIPTION_PROPERTY = "event_description";
-	public static final String EVENT_TYPE_PROPERTY = "event_type";
-	public static final String MAP_STATUS_PROPERTY = "map_status";
-	public static final String MAXIMUM_LATITUDE_PROPERTY = "maximum_latitude";
-	public static final String MAXIMUM_LONGITUDE_PROPERTY = "maximum_longitude";
-	public static final String MINIMUM_LATITUDE_PROPERTY = "minimum_latitude";
-	public static final String MINIMUM_LONGITUDE_PROPERTY = "minimum_lognitude";
-	public static final String PROCESS_TIMESTAMP_PROPERTY = "process_timestamp";
+	public static final String EVENT_DESCRIPTION_PROPERTY = "event-description";
+	public static final String EVENT_TYPE_PROPERTY = "event-type";
+	public static final String MAP_STATUS_PROPERTY = "map-status";
+	public static final String MAXIMUM_LATITUDE_PROPERTY = "maximum-latitude";
+	public static final String MAXIMUM_LONGITUDE_PROPERTY = "maximum-longitude";
+	public static final String MINIMUM_LATITUDE_PROPERTY = "minimum-latitude";
+	public static final String MINIMUM_LONGITUDE_PROPERTY = "minimum-lognitude";
+	public static final String PROCESS_TIMESTAMP_PROPERTY = "process-timestamp";
 
 	private static final Logger LOGGER = Logger.getLogger(ShakeMap.class
 			.getName());
