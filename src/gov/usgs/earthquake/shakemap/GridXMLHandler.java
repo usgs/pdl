@@ -47,7 +47,7 @@ public class GridXMLHandler extends DefaultHandler {
 		public static final String GRIDSPEC_LATMAX = "lat_max";
 			
 		public static final String SHAKEMAPGRID_ELEMENT_XML = SHAKEMAPGRID_ELEMENT;
-		public static final String SHAKEMAPGRID_ID_XML =  SHAKEMAPGRID_ELEMENT+ "[" + SHAKEMAPGRID_ID + "]"	;
+		public static final String SHAKEMAPGRID_ID_XML =  SHAKEMAPGRID_ELEMENT+ "[" + SHAKEMAPGRID_ID + "]";
 		public static final String SHAKEMAPGRID_ORIGINATOR_XML = SHAKEMAPGRID_ELEMENT + "[" + SHAKEMAPGRID_ORIGINATOR + "]";
 		public static final String SHAKEMAPGRID_TIMESTAMP_XML = SHAKEMAPGRID_ELEMENT + "[" + SHAKEMAPGRID_TIMESTAMP + "]";
 		public static final String SHAKEMAPGRID_VERSION_XML = SHAKEMAPGRID_ELEMENT+ "[" + SHAKEMAPGRID_VERSION + "]";
