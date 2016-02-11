@@ -24,6 +24,9 @@ public class ShakeMap extends Product {
 	private static final Logger LOGGER = Logger.getLogger(ShakeMap.class
 			.getName());
 
+	// shakemap object used for comparison
+	private Product shakemap;
+
 	// References to file content in the Product
 	public static final String GRID_XML_ATTACHMENT = "download/grid.xml";
 	public static final String INFO_XML_ATTACHMENT = "download/info.xml";
@@ -54,6 +57,28 @@ public class ShakeMap extends Product {
 	public static final String MINIMUM_LATITUDE_PROPERTY = "minimum-latitude";
 	public static final String MAXIMUM_LATITUDE_PROPERTY = "maximum-latitude";
 
+  // ShakeMap grid parameters
+  public static final String SHAKEMAPGRID_ID = "shakemap_id";
+  public static final String SHAKEMAPGRID_ORIGINATOR = "shakemap_originator";
+  public static final String SHAKEMAPGRID_TIMESTAMP = "process_timestamp";
+  public static final String SHAKEMAPGRID_VERSION = "shakemap_version";
+  public static final String SHAKEMAPGRID_EVENT_TYPE = "shakemap_event_type";
+  public static final String SHAKEMAPGRID_EVENT_STATUS = "map_status";
+
+  // ShakeMap event parameters
+  public static final String EVENT_LATITUDE = "lat";
+  public static final String EVENT_LONGITUDE = "lon";
+  public static final String EVENT_MAGNITUDE = "magnitude";
+  public static final String EVENT_TIMESTAMP = "event_timestamp";
+  public static final String EVENT_DESCRIPTION = "event_description";
+  public static final String EVENT_DEPTH = "depth";
+
+  // ShakeMap gridspec parameters
+  public static final String GRIDSPEC_LONMIN = "lon_min";
+  public static final String GRIDSPEC_LONMAX = "lon_max";
+  public static final String GRIDSPEC_LATMIN = "lat_min";
+  public static final String GRIDSPEC_LATMAX = "lat_max";
+
 	// key in info.xml for maximum mmi
 	public static final String MAXIMUM_MMI_INFO_KEY = "mi_max";
 	public static final String MAXIMUM_MMI_PROPERTY = "maxmmi";
@@ -66,18 +91,18 @@ public class ShakeMap extends Product {
 		super(product);
 
 		// prefer grid attachment
-		Content source = product.getContents().get(GRID_XML_ATTACHMENT);
-		if (source != null) {
-			GridXMLHandler handler = new GridXMLHandler(this);
-			InputStream in = null;
+		Content gridxml = product.getContents().get(GRID_XML_ATTACHMENT);
+		if (gridxml != null) {
 			try {
-				in = source.getInputStream();
-				handler.parse(in);
+				// parse grid.xml
+				GridXMLHandler gridxmlHandler = new GridXMLHandler();
+				HashMap<String, String> grid = gridxmlHandler.parse(gridxml
+						.getInputStream());
+				// parse through hash maps to set shakemap properties
+				this.setGridXMLProperties(grid);
 			} catch (Exception e) {
 				// error parsing grid
-				throw new IllegalArgumentException(e);
-			} finally {
-				StreamUtils.closeStream(in);
+				LOGGER.log(Level.WARNING, "error parsing grid.xml", e);
 			}
 		}
 
@@ -88,16 +113,13 @@ public class ShakeMap extends Product {
 				InfoXMLHandler infoxmlHandler = new InfoXMLHandler();
 				HashMap<String, String> info = infoxmlHandler.parse(infoxml
 						.getInputStream());
-
-				// read maxmmi from info.xml
-				if (info.containsKey(MAXIMUM_MMI_INFO_KEY)) {
-					this.getProperties().put(MAXIMUM_MMI_PROPERTY,
-							info.get(MAXIMUM_MMI_INFO_KEY));
-				}
+				// parse through hash maps to set shakemap properties
+				this.setInfoXMLProperties(info);
 			} catch (Exception e) {
-				LOGGER.log(Level.WARNING, "error parsing infoxml", e);
+				LOGGER.log(Level.WARNING, "error parsing info.xml", e);
 			}
 		}
+
 
 		/*
 		 * else { // At this time we are disabling all non-grid.xml
@@ -117,6 +139,158 @@ public class ShakeMap extends Product {
 		 * //error parsing stationlist throw new IllegalArgumentException(e); }
 		 * } }
 		 */
+	}
+
+	/**
+	 * @param gridXML
+	 *            shakemap properties hash keyed by grid.xml attribute name
+	 */
+	public void setGridXMLProperties (HashMap<String, String> gridXML) {
+
+
+
+		// metadata
+		if (valueIsEmpty(EVENTSOURCE_PROPERTY, gridXML.get(SHAKEMAPGRID_ORIGINATOR)) &&
+				valueIsEmpty(EVENTSOURCECODE_PROPERTY, gridXML.get(SHAKEMAPGRID_ID))) {
+			setEventId(
+					gridXML.get(SHAKEMAPGRID_ORIGINATOR),
+					gridXML.get(SHAKEMAPGRID_ID)
+				);
+		}
+
+		if (valueIsEmpty(SHAKEMAPGRID_TIMESTAMP, gridXML.get(SHAKEMAPGRID_TIMESTAMP))) {
+			setProcessTimestamp(XmlUtils.getDate(
+					gridXML.get(SHAKEMAPGRID_TIMESTAMP)));
+		}
+
+		if (valueIsEmpty(VERSION_PROPERTY, gridXML.get(SHAKEMAPGRID_VERSION))) {
+			setVersion(gridXML.get(SHAKEMAPGRID_VERSION));
+		}
+
+		if (valueIsEmpty(EVENT_TYPE_PROPERTY, gridXML.get(SHAKEMAPGRID_EVENT_TYPE))) {
+			setEventType(gridXML.get(SHAKEMAPGRID_EVENT_TYPE));
+		}
+
+		if (valueIsEmpty(MAP_STATUS_PROPERTY, gridXML.get(SHAKEMAPGRID_EVENT_STATUS))) {
+			setMapStatus(gridXML.get(SHAKEMAPGRID_EVENT_STATUS));
+		}
+
+
+		// Shakemap
+		if (valueIsEmpty(MAP_STATUS_PROPERTY, gridXML.get(MAP_STATUS_PROPERTY))) {
+			setMapStatus(gridXML.get(MAP_STATUS_PROPERTY));
+		}
+
+		if (valueIsEmpty(EVENT_TYPE_PROPERTY, gridXML.get(EVENT_TYPE_PROPERTY))) {
+			setEventType(gridXML.get(EVENT_TYPE_PROPERTY));
+		}
+
+		if (valueIsEmpty(PROCESS_TIMESTAMP_PROPERTY, gridXML.get(PROCESS_TIMESTAMP_PROPERTY))) {
+			setProcessTimestamp(XmlUtils.getDate(
+					gridXML.get(PROCESS_TIMESTAMP_PROPERTY)));
+		}
+
+		if (valueIsEmpty(EVENT_DESCRIPTION_PROPERTY, gridXML.get(EVENT_DESCRIPTION_PROPERTY))) {
+			setEventDescription(gridXML.get(EVENT_DESCRIPTION_PROPERTY));
+		}
+
+		if (valueIsEmpty(MINIMUM_LONGITUDE_PROPERTY, gridXML.get(MINIMUM_LONGITUDE_PROPERTY))) {
+			setMinimumLongitude(getBigDecimal(gridXML.get(MINIMUM_LONGITUDE_PROPERTY)));
+		}
+
+		if (valueIsEmpty(MAXIMUM_LONGITUDE_PROPERTY, gridXML.get(MAXIMUM_LONGITUDE_PROPERTY))) {
+			setMaximumLongitude(getBigDecimal(gridXML.get(MAXIMUM_LONGITUDE_PROPERTY)));
+		}
+
+		if (valueIsEmpty(MINIMUM_LATITUDE_PROPERTY, gridXML.get(MINIMUM_LATITUDE_PROPERTY))) {
+			setMinimumLatitude(getBigDecimal(gridXML.get(MINIMUM_LATITUDE_PROPERTY)));
+		}
+
+		if (valueIsEmpty(MAXIMUM_LATITUDE_PROPERTY, gridXML.get(MAXIMUM_LATITUDE_PROPERTY))) {
+			setMaximumLatitude(getBigDecimal(gridXML.get(MAXIMUM_LATITUDE_PROPERTY)));
+		}
+
+
+		// Event
+		if (valueIsEmpty(EVENT_LATITUDE, gridXML.get(EVENT_LATITUDE))) {
+			setLatitude(getBigDecimal(gridXML.get(EVENT_LATITUDE)));
+		}
+
+		if (valueIsEmpty(EVENT_LONGITUDE, gridXML.get(EVENT_LONGITUDE))) {
+			setLongitude(getBigDecimal(gridXML.get(EVENT_LONGITUDE)));
+		}
+
+		if (valueIsEmpty(EVENT_MAGNITUDE, gridXML.get(EVENT_MAGNITUDE))) {
+			setMagnitude(getBigDecimal(gridXML.get(EVENT_MAGNITUDE)));
+		}
+
+		if (valueIsEmpty(EVENT_DEPTH, gridXML.get(EVENT_DEPTH))) {
+			setDepth(getBigDecimal(gridXML.get(EVENT_DEPTH)));
+		}
+
+		if (valueIsEmpty(EVENT_TIMESTAMP, gridXML.get(EVENT_TIMESTAMP))) {
+			setEventTime(XmlUtils.getDate(gridXML.get(EVENT_TIMESTAMP)
+					.replace("GMT", "Z")
+					.replace("UTC","Z")
+				));
+		}
+
+		if (valueIsEmpty(EVENT_DESCRIPTION, gridXML.get(EVENT_DESCRIPTION))) {
+			setEventDescription(gridXML.get(EVENT_DESCRIPTION));
+		}
+
+
+		// Grid Spec
+		if (valueIsEmpty(GRIDSPEC_LONMIN, gridXML.get(GRIDSPEC_LONMIN))) {
+			setMinimumLongitude(getBigDecimal(gridXML.get(GRIDSPEC_LONMIN)));
+		}
+
+		if (valueIsEmpty(GRIDSPEC_LATMIN, gridXML.get(GRIDSPEC_LATMIN))) {
+			setMinimumLatitude(getBigDecimal(gridXML.get(GRIDSPEC_LATMIN)));
+		}
+
+		if (valueIsEmpty(GRIDSPEC_LONMAX, gridXML.get(GRIDSPEC_LONMAX))) {
+			setMaximumLongitude(getBigDecimal(gridXML.get(GRIDSPEC_LONMAX)));
+		}
+
+		if (valueIsEmpty(GRIDSPEC_LATMAX, gridXML.get(GRIDSPEC_LATMAX))) {
+			setMaximumLatitude(getBigDecimal(gridXML.get(GRIDSPEC_LATMAX)));
+		}
+
+	};
+
+	/**
+	 * @param infoXML
+	 *            shakemap properties hash keyed by info.xml attribute name
+	 */
+	public void setInfoXMLProperties (HashMap<String, String> infoXML) {
+		// read maxmmi from info.xml
+		if (infoXML.containsKey(MAXIMUM_MMI_INFO_KEY)) {
+			this.getProperties().put(MAXIMUM_MMI_PROPERTY,
+					infoXML.get(MAXIMUM_MMI_INFO_KEY));
+		}
+	};
+
+	/**
+	 * @param property,
+	 *            the property to check on the PDL object
+	 * @return if the shakemap property is already set
+	 */
+	public boolean valueIsEmpty (String property, String value) {
+		// nothing to be set
+		if (value == null) {
+			return false;
+		}
+		// no value has been set
+		if (getProperties().get(property) == null) {
+			return true;
+		}
+		// value are different, log warning
+		if (!getProperties().get(property).equals(value)) {
+			LOGGER.log(Level.FINE,
+					"The ShakeMap property \"" + property + "\" does not match PDL value.");
+		}
+		return false;
 	}
 
 	/**
@@ -185,7 +359,7 @@ public class ShakeMap extends Product {
 	 * @return the minimum longitude boundary of this ShakeMap
 	 */
 	public BigDecimal getMinimumLongitude() {
-		return new BigDecimal(getProperties().get(MINIMUM_LONGITUDE_PROPERTY));
+		return getBigDecimal(getProperties().get(MINIMUM_LONGITUDE_PROPERTY));
 	}
 
 	/**
@@ -193,7 +367,7 @@ public class ShakeMap extends Product {
 	 *            the minimum longitude to set
 	 */
 	public void setMinimumLongitude(BigDecimal minimumLongitude) {
-		getProperties().put(ShakeMap.MINIMUM_LONGITUDE_PROPERTY,
+		getProperties().put(MINIMUM_LONGITUDE_PROPERTY,
 				minimumLongitude.toPlainString());
 	}
 
@@ -201,7 +375,7 @@ public class ShakeMap extends Product {
 	 * @return the maximum longitude boundary of this ShakeMap
 	 */
 	public BigDecimal getMaximumLongitude() {
-		return new BigDecimal(getProperties().get(MAXIMUM_LONGITUDE_PROPERTY));
+		return getBigDecimal(getProperties().get(MAXIMUM_LONGITUDE_PROPERTY));
 	}
 
 	/**
@@ -217,7 +391,7 @@ public class ShakeMap extends Product {
 	 * @return the minimum latitude boundary of this ShakeMap
 	 */
 	public BigDecimal getMinimumLatitude() {
-		return new BigDecimal(getProperties().get(MINIMUM_LATITUDE_PROPERTY));
+		return getBigDecimal(getProperties().get(MINIMUM_LATITUDE_PROPERTY));
 	}
 
 	/**
@@ -233,7 +407,7 @@ public class ShakeMap extends Product {
 	 * @return the maximum latitude boundary of this ShakeMap
 	 */
 	public BigDecimal getMaximumLatitude() {
-		return new BigDecimal(getProperties().get(MAXIMUM_LATITUDE_PROPERTY));
+		return getBigDecimal(getProperties().get(MAXIMUM_LATITUDE_PROPERTY));
 	}
 
 	/**
@@ -243,6 +417,16 @@ public class ShakeMap extends Product {
 	public void setMaximumLatitude(BigDecimal maximumLatitude) {
 		getProperties().put(MAXIMUM_LATITUDE_PROPERTY,
 				maximumLatitude.toPlainString());
+	}
+
+	/**
+	 * Returns string value as BigDecimal
+	 */
+	protected BigDecimal getBigDecimal (String value) {
+		if (value == null) {
+			return null;
+		}
+		return new BigDecimal(value);
 	}
 
 }
