@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 /**
  * ShakeMap class for ShakeMap products specifically.
- * 
+ *
  * This subclass of Product provides access to additional ShakeMap-specific
  * attributes and loads these attributes, as well as additional Product
  * attributes from ShakeMap source XML files.
@@ -25,7 +25,7 @@ public class ShakeMap extends Product {
 	public static final String MAXIMUM_LATITUDE_PROPERTY = "maximum-latitude";
 	public static final String MAXIMUM_LONGITUDE_PROPERTY = "maximum-longitude";
 	public static final String MINIMUM_LATITUDE_PROPERTY = "minimum-latitude";
-	public static final String MINIMUM_LONGITUDE_PROPERTY = "minimum-lognitude";
+	public static final String MINIMUM_LONGITUDE_PROPERTY = "minimum-longitude";
 	public static final String PROCESS_TIMESTAMP_PROPERTY = "process-timestamp";
 
 	private static final Logger LOGGER = Logger.getLogger(ShakeMap.class
@@ -97,13 +97,13 @@ public class ShakeMap extends Product {
 		 * else { // At this time we are disabling all non-grid.xml
 		 * functionality // as all shakemaps sent in should have a grid.xml
 		 * file.
-		 * 
+		 *
 		 * //otherwise try gridXYZ (has most) + stationlist (has depth) source =
 		 * product.getContents().get(GRID_XYZ_ATTACHMENT); if (source != null) {
 		 * GridXYZHandler handler = new GridXYZHandler(this); try {
 		 * handler.parse(source.getInputStream()); } catch (Exception e) {
 		 * //error parsing gridxyz throw new IllegalArgumentException(e); } }
-		 * 
+		 *
 		 * source = product.getContents().get(STATIONLIST_XML_ATTACHMENT); if
 		 * (source != null) { StationlistXMLHandler handler = new
 		 * StationlistXMLHandler(this); try {
