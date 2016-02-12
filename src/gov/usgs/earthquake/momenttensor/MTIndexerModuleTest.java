@@ -43,7 +43,7 @@ public class MTIndexerModuleTest {
 		Map<String,String> props = product.getProperties();
 		props.put("beachball-type", "MWW");
 		
-		Assert.assertEquals("MWW from NEIC in NEIC authoritative region.", 160L,
+		Assert.assertEquals("MWW from NEIC in NEIC authoritative region.", 216L,
 				module.getProductSummary(product).getPreferredWeight());
 	}
 	
