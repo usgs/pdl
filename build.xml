@@ -27,7 +27,6 @@
 
 	<!-- CLASSPATH -->
 	<fileset dir="${lib}" id="classpath.fileset">
-		<include name="cap-library-r11.jar" />
 		<include name="ganymed-ssh2-build251beta1.jar" />
 		<include name="log4j-1.2.9.jar" />
 		<include name="json-simple-1.1.1.jar" />
@@ -40,6 +39,10 @@
 
 	<path id="classpath">
 		<fileset refid="classpath.fileset" />
+		<fileset dir="${lib}">
+			<!-- this library breaks the built project, not sure why yet -->
+			<include name="cap-library-r11.jar" />
+		</fileset>
 	</path>
 
 	<path id="classpath-test">
