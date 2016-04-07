@@ -1,6 +1,6 @@
 /*
  * Bootstrap
- * 
+ *
  * $Id: Bootstrap.java 22520 2014-12-30 19:29:45Z jmfee $
  * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/Bootstrap.java $
  */
@@ -20,19 +20,22 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.logging.ConsoleHandler;
+import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.XMLFormatter;
 
 /**
  * Bootstrap is a class used to start an application.
- * 
+ *
  * It loads a configuration file, sets up initial logging, and starts a
  * configurable main method.
- * 
+ *
  * @author jmfee
- * 
+ *
  */
 public class Bootstrap {
 
@@ -59,6 +62,17 @@ public class Bootstrap {
 
 	/** Whether to test config only. */
 	public static final String CONFIG_TEST_ARGUMENT = "--configTest";
+
+	/** Property for log format. */
+	public static final String LOGFORMAT_PROPERTY_NAME = "logformat";
+	/** log format value for "pdl" format */
+	public static final String LOGFORMAT_PDL = "pdl";
+	/** log format value for java "simple" format */
+	public static final String LOGFORMAT_SIMPLE = "simple";
+	/** log format value for java "xml" format */
+	public static final String LOGFORMAT_XML = "xml";
+	/** Default log format is "simple". */
+	public static final String DEFAULT_LOGFORMAT = LOGFORMAT_PDL;
 
 	/** Property for log level. */
 	public static final String LOGLEVEL_PROPERTY_NAME = "loglevel";
@@ -107,7 +121,7 @@ public class Bootstrap {
 
 	/**
 	 * Read configuration from inside jar file, and configFile.
-	 * 
+	 *
 	 * @param configFile
 	 *            config file to load.
 	 * @throws IOException
@@ -183,7 +197,19 @@ public class Bootstrap {
 			rootLogger.addHandler(handler);
 		}
 
-		SimpleLogFormatter formatter = new SimpleLogFormatter();
+		Formatter formatter;
+		String logFormat = config.getProperty(
+				LOGFORMAT_PROPERTY_NAME, DEFAULT_LOGFORMAT);
+		if (logFormat.equals(LOGFORMAT_SIMPLE)) {
+			// built in simple formatter
+			formatter = new SimpleFormatter();
+		} else if (logFormat.equals(LOGFORMAT_XML)) {
+			// built in xml formatter
+			formatter = new XMLFormatter();
+		} else {
+			// pdl style simple formatter
+			formatter = new SimpleLogFormatter();
+		}
 		for (Handler handler : rootLogger.getHandlers()) {
 			handler.setFormatter(formatter);
 		}
