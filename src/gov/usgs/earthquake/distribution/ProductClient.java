@@ -65,7 +65,7 @@ public class ProductClient extends DefaultConfigurable implements
 		ProductClientMBean, Bootstrappable {
 
 	/** The "release" version number. */
-	public static final String RELEASE_VERSION = "Version 1.9.7 2015-04-30";
+	public static final String RELEASE_VERSION = "Version 1.10.0 2016-02-11";
 
 	/** SVN Id property. */
 	public static final String SVN_VERSION = "$Id: ProductClient.java 23028 2015-04-30 23:28:49Z jmfee $";
