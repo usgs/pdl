@@ -67,6 +67,9 @@ public class ProductClient extends DefaultConfigurable implements
 	/** The "release" version number. */
 	public static final String RELEASE_VERSION = "Version 1.10.1 2016-04-07";
 
+	/** Property name used on products for current RELEASE_VERSION. */
+	public static final String PDL_CLIENT_VERSION_PROPERTY = "pdl-client-version";
+
 	/** SVN Id property. */
 	public static final String SVN_VERSION = "$Id: ProductClient.java 23028 2015-04-30 23:28:49Z jmfee $";
 
