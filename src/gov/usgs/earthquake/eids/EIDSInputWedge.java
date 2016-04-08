@@ -35,11 +35,11 @@ import gov.usgs.util.StringUtils;
 /**
  * Read messages from a poll directory, and then push products into PDL. Also
  * supports push.
- * 
+ *
  * This is supports EIDS/QDDS style polling. The input messages are converted to
  * Quakeml using the FileToQuakemlConverter interface, then sent as Quakeml
  * based products.
- * 
+ *
  * Much of the configuration can be supplied using either a configuration file,
  * or command line arguments.
  */
@@ -103,6 +103,12 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 	public static final String DEFAULT_POLL_CAREFULLY = "false";
 	private boolean pollCarefully = false;
 
+	// include/exclude products to send by type.
+	public static final String INCLUDE_TYPES_PROPERTY = "includeTypes";
+	private ArrayList<String> includeTypes = new ArrayList<String>();
+	public static final String EXCLUDE_TYPES_PROPERTY = "excludeTypes";
+	private ArrayList<String> excludeTypes = new ArrayList<String>();
+
 	private Thread pollThread = null;
 
 	public EIDSInputWedge() throws Exception {
@@ -134,6 +140,18 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 							+ " generated more than 1 product");
 				}
 				product.getContents().putAll(attachContent);
+			}
+
+			String type = id.getType();
+			if (includeTypes.size() > 0 && includeTypes.indexOf(type) == -1) {
+				LOGGER.info("Skipping product " + id.toString() +
+						", type '" + type + "' not included");
+				continue;
+			}
+			if (excludeTypes.size() > 0 && excludeTypes.indexOf(type) != -1) {
+				LOGGER.info("Skipping product " + id.toString() +
+						", type '" + type + "' excluded");
+				continue;
 			}
 
 			// send product, save any exceptions
@@ -312,6 +330,25 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 				.getProperty(CREATE_SCENARIO_PRODUCTS_PROPERTY,
 						DEFAULT_CREATE_SCENARIO_PRODUCTS));
 		LOGGER.config("createScenarioProducts = " + createScenarioProducts);
+
+		String value;
+		value = config.getProperty(INCLUDE_TYPES_PROPERTY);
+		if (value != null) {
+			includeTypes.clear();
+			includeTypes.addAll(StringUtils.split(value, ","));
+		}
+		if (includeTypes.size() > 0) {
+			LOGGER.config("includeTypes = " + StringUtils.join(includeTypes, ", "));
+		}
+
+		value = config.getProperty(EXCLUDE_TYPES_PROPERTY);
+		if (value != null) {
+			excludeTypes.clear();
+			excludeTypes.addAll(StringUtils.split(value, ","));
+		}
+		if (excludeTypes.size() > 0) {
+			LOGGER.config("excludeTypes = " + StringUtils.join(excludeTypes, ", "));
+		}
 	}
 
 	@Override
@@ -468,6 +505,9 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 	public static final String CREATE_INTERNAL_PRODUCTS = "--internal";
 	public static final String CREATE_SCENARIO_PRODUCTS = "--scenario";
 
+	public static final String INCLUDE_TYPES_ARGUMENT = "--includeTypes=";
+	public static final String EXCLUDE_TYPES_ARGUMENT = "--excludeTypes=";
+
 	public static final String TEST_ARGUMENT = "--test";
 
 	/**
@@ -579,6 +619,14 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 				createInternalProducts = true;
 			} else if (arg.equals(CREATE_SCENARIO_PRODUCTS)) {
 				createScenarioProducts = true;
+			} else if (arg.startsWith(INCLUDE_TYPES_ARGUMENT)) {
+				includeTypes.clear();
+				includeTypes.addAll(
+						StringUtils.split(arg.replace(INCLUDE_TYPES_ARGUMENT, ""), ","));
+			} else if (arg.startsWith(EXCLUDE_TYPES_ARGUMENT)) {
+				excludeTypes.clear();
+				excludeTypes.addAll(
+						StringUtils.split(arg.replace(EXCLUDE_TYPES_ARGUMENT, ""), ","));
 			}
 		}
 
@@ -792,6 +840,12 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 
 		System.err.println("\t" + DISABLE_DEFLATE_ARGUMENT);
 		System.err.println("\t\tdisable deflate compression when sending to hubs");
+
+		System.err.println("\t" + INCLUDE_TYPES_ARGUMENT + "TYPES");
+		System.err.println("\t\tcomma separated list of product types to send, if empty all types are included.");
+
+		System.err.println("\t" + EXCLUDE_TYPES_ARGUMENT + "TYPES");
+		System.err.println("\t\tcomma separated list of product types to NOT send, if empty no types are excluded");
 
 		System.exit(1);
 	}
