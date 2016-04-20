@@ -21,9 +21,9 @@ import java.util.logging.Logger;
 
 /**
  * Essentials for building/sending products.
- * 
+ *
  * This is the base class for other builders.
- * 
+ *
  * Supported configurable properties:
  * <dl>
  * <dt>senders</dt>
@@ -76,11 +76,11 @@ public class ProductBuilder extends DefaultConfigurable {
 
 	/**
 	 * Send a product.
-	 * 
+	 *
 	 * If the product doesn't yet have a tracker URL, assigns current tracker
 	 * URL to product. If the product has not yet been signed, and a privateKey
 	 * is configured, signs the product before sending.
-	 * 
+	 *
 	 * @param product
 	 *            the product to send.
 	 * @return map of all exceptions thrown, from Sender to corresponding
@@ -95,6 +95,10 @@ public class ProductBuilder extends DefaultConfigurable {
 		if (product.getTrackerURL() == null) {
 			product.setTrackerURL(trackerURL);
 		}
+
+		// mark which version of client was used to create product
+		product.getProperties().put(ProductClient.PDL_CLIENT_VERSION_PROPERTY,
+				ProductClient.RELEASE_VERSION);
 
 		// doesn't already have a signature.
 		if (privateKey != null && product.getSignature() == null) {
@@ -138,7 +142,7 @@ public class ProductBuilder extends DefaultConfigurable {
 
 	/**
 	 * Add a ProductSender.
-	 * 
+	 *
 	 * @param sender
 	 */
 	public void addProductSender(final ProductSender sender) {
@@ -147,7 +151,7 @@ public class ProductBuilder extends DefaultConfigurable {
 
 	/**
 	 * Remove a previously added ProductSender.
-	 * 
+	 *
 	 * @param sender
 	 */
 	public void removeProductSender(final ProductSender sender) {

@@ -1,6 +1,6 @@
 /*
  * CLIProductBuilder
- * 
+ *
  * $Id: CLIProductBuilder.java 20438 2013-11-18 22:49:24Z jmfee $
  * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/CLIProductBuilder.java $
  */
@@ -34,13 +34,13 @@ import java.util.logging.Logger;
 
 /**
  * Command Line Interface Product Builder.
- * 
+ *
  * This class is used to build and send products. It is typically called by
  * using the --build argument with the standard ProductClient.
- * 
+ *
  * The CLIProductBuilder implements the Configurable interface and uses the
  * following configuration parameters:
- * 
+ *
  * <dl>
  * <dt>senders</dt>
  * <dd>(Required). A comma separated list of section names that should be loaded
@@ -160,10 +160,10 @@ public class CLIProductBuilder extends DefaultConfigurable {
 
 	/**
 	 * Load ProductSenders that will send any built Products.
-	 * 
+	 *
 	 * There should be a property "senders" containing a comma delimited list of
 	 * sender names to be loaded.
-	 * 
+	 *
 	 * @param config
 	 *            the Config to load.
 	 */
@@ -220,7 +220,7 @@ public class CLIProductBuilder extends DefaultConfigurable {
 
 	/**
 	 * Send a product to all configured ProductSenders.
-	 * 
+	 *
 	 * @param product
 	 *            the product to send.
 	 * @return exceptions that occured while sending. If map is empty, there
@@ -244,7 +244,7 @@ public class CLIProductBuilder extends DefaultConfigurable {
 
 	/**
 	 * Build a product using command line arguments.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public Product buildProduct() throws Exception {
@@ -388,6 +388,10 @@ public class CLIProductBuilder extends DefaultConfigurable {
 			LOGGER.warning("Product has no content, are you sure this is intended?");
 		}
 
+		// mark which version of client was used to create product
+		product.getProperties().put(ProductClient.PDL_CLIENT_VERSION_PROPERTY,
+				ProductClient.RELEASE_VERSION);
+
 		if (privateKey != null) {
 			LOGGER.fine("Signing product");
 			product.sign(CryptoUtils.readOpenSSHPrivateKey(StreamUtils
@@ -418,9 +422,9 @@ public class CLIProductBuilder extends DefaultConfigurable {
 
 	/**
 	 * Entry point into CLIProductBuilder.
-	 * 
+	 *
 	 * Called by Main if the --build argument is present.
-	 * 
+	 *
 	 * @param args
 	 * @throws Exception
 	 */

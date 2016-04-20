@@ -47,10 +47,14 @@ public class MTIndexerModule extends DefaultIndexerModule {
 		long weight = super.getPreferredWeight(summary);
 
 		// points by type
-		String tensorType = summary.getProperties().get("beachball-type");
+		String tensorType = summary.getProperties().get("derived-magnitude-type");
 		String eventSource = summary.getEventSource();
 		String derivedMagnitude = summary.getProperties().get("derived-magnitude");
 		BigDecimal magRange = derivedMagnitude == null ? null : new BigDecimal(derivedMagnitude);
+
+		if (tensorType == null) {
+			tensorType = summary.getProperties().get("beachball-type");
+		}
 
 		if (tensorType != null) {
 			// Add bonus
@@ -72,7 +76,7 @@ public class MTIndexerModule extends DefaultIndexerModule {
 				}
 			}
 		}
-		
+
 		// Add gcmt bonus if required
 		if (eventSource.equalsIgnoreCase(EVENT_SOURCE_GCMT)) {
 			weight += EVENT_SOURCE_GCMT_BONUS;
