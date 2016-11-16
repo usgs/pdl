@@ -48,10 +48,6 @@ import java.util.logging.Logger;
  * <dd>(Optional, Default true) Flag to indicate Actual products should be
  * accepted. Set to "true" or "yes" to enable.</dd>
  *
- * <dt>includeInternals</dt>
- * <dd>(Optional, Default false) Flag to indicate internal products should be
- * accepted. Set to "true" or "yes" to enable.</dd>
- *
  * <dt>includeDevelopments</dt>
  * <dd>(Optional, Default false) Flag to indicate development products should be
  * accepted. Set to "true" or "yes" to enable.</dd>
@@ -104,7 +100,7 @@ public class AbstractListener extends DefaultConfigurable {
 
 	/** Flag to indicate if scenario type products should be included **/
 	public static final String INCLUDE_SCENARIOS_PROPERTY = "includeScenarios";
-	
+
 	/** Flag to indicate if actual type products should be included **/
 	public static final String INCLUDE_ACTUALS_PROPERTY = "includeActuals";
 
@@ -144,7 +140,7 @@ public class AbstractListener extends DefaultConfigurable {
 
 	/** Default, do not include scenarios */
 	private static final boolean DEFAULT_INCLUDE_SCENARIOS = false;
-	
+
 	/** Default, do include actuals */
 	private static final boolean DEFAULT_INCLUDE_ACTUALS = true;
 
@@ -184,7 +180,7 @@ public class AbstractListener extends DefaultConfigurable {
 
 	/** Whether or not to include scenario type products */
 	private boolean includeScenarios = DEFAULT_INCLUDE_SCENARIOS;
-	
+
 	/** Whether or not to include actual type products */
 	private boolean includeActuals = DEFAULT_INCLUDE_ACTUALS;
 
@@ -255,7 +251,7 @@ public class AbstractListener extends DefaultConfigurable {
 					+ "] product type was scenario. Not included.");
 			return false;
 		}
-		
+
 		if (!includeActuals &&
 			    !type.endsWith("-scenario") &&
 			    !type.startsWith("internal-") &&
@@ -267,7 +263,7 @@ public class AbstractListener extends DefaultConfigurable {
 		}
 
 		if (type.startsWith("internal-") && !includeInternals) {
-			LOGGER.finer("[" + getName()
+			LOGGER.finest("[" + getName()
 					+ "] product type was internal. Not included.");
 			return false;
 		}
@@ -333,7 +329,7 @@ public class AbstractListener extends DefaultConfigurable {
 		} else {
 			includeDevelopments = DEFAULT_INCLUDE_SCENARIOS;
 		}
-		
+
 		includeFlag = config.getProperty(INCLUDE_ACTUALS_PROPERTY);
 		if (includeFlag != null) {
 			includeActuals = !(includeFlag.equalsIgnoreCase("no") ||
@@ -346,7 +342,7 @@ public class AbstractListener extends DefaultConfigurable {
 		if (includeFlag != null) {
 			includeInternals = (includeFlag.equalsIgnoreCase("yes") ||
 					includeFlag.equalsIgnoreCase("true"));
-			LOGGER.config("[" + getName() + "] includeInternals = "
+			LOGGER.finest("[" + getName() + "] includeInternals = "
 					+ includeInternals);
 		} else {
 			includeDevelopments = DEFAULT_INCLUDE_INTERNALS;
@@ -489,7 +485,7 @@ public class AbstractListener extends DefaultConfigurable {
 	public void setIncludeScenarios(boolean includeScenarios) {
 		this.includeScenarios = includeScenarios;
 	}
-	
+
 	/**
 	 * @return the includeActuals
 	 */

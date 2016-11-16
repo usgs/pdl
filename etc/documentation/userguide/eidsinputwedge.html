@@ -151,7 +151,7 @@ errordir = errordir
 
 
 
-;; PARSER 
+;; PARSER
 ;; How messages are converted to QuakeML.  This must be a class that implements
 ;; the java interface gov.usgs.earthquake.quakeml.FileToQuakemlConverter
 
@@ -167,10 +167,11 @@ parserClass = gov.usgs.earthquake.event.EidsToQuakemlConverter
 
 ;; PRODUCT TYPES
 ;; these flags affect the product types that are generated, and affect the meaning of a product.
-
+<!--
 ; when true, prefix all product types with "internal-"
 ; indicates the product is for internal consumption, and should not generate emails or other public notifications.
 createInternalProducts = false
+-->
 
 ; when true, suffix all product types with "-scenario"
 ; indicates the product is for a scenario event, instead of an actual earthquake.
@@ -202,7 +203,7 @@ redirectconsole = false
 
 
 ;; TRACKER
-;; The tracker provides centralized tracking.  A URL _must_ be provided for 
+;; The tracker provides centralized tracking.  A URL _must_ be provided for
 ;; sent messages, but tracker updates are not sent from this computer unless
 ;; enableTracker is set to true.
 
