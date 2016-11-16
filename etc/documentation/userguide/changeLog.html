@@ -24,8 +24,8 @@
 	<h2>Version 1.10.0 2016-02-11</h2>
 	<ul>
 		<li>
-			Improved support for internal-TYPE, TYPE-scenario, and
-			internal-TYPE-scenario product variants.
+			Improved support for <!-- internal-TYPE, --> TYPE-scenario, and
+			<!-- internal-TYPE-scenario --> product variants.
 		</li>
 		<li>
 			Updated how ShakeMap properties are handled when received as both product
@@ -196,7 +196,7 @@
 		</li>
 		<li>Changed EIDSClient restart to call underlying
 			QWConnectionMgr.reinitConnection(), instead of creating new client.</li>
-		<li>Updated to new MessageUtils.jar with support for internal and
+		<li>Updated to new MessageUtils.jar with support for <!-- internal and -->
 			scenario Quakeml products.</li>
 	</ul>
 
@@ -217,7 +217,7 @@
 				<li>AbstractListener <code>retryDelay</code> property
 				</li>
 				<li>EIDSInputWedge <code>sendOriginWhenPhasesExist</code>, <code>sendMechanismWhenPhasesExist</code>,
-					<code>createInternalProducts</code>, and <code>createScenarioProducts</code>
+					<!-- <code>createInternalProducts</code> -->, and <code>createScenarioProducts</code>
 					properties
 				</li>
 				<li>HeartbeatListener <code>heartbeatFile</code> and <code>storageTimeout</code>
@@ -285,7 +285,7 @@
 	<ul>
 		<li>EIDSInputWedge improvements
 			<ul>
-				<li>Added "--internal" and "--scenario" options to
+				<li>Added <!-- "-\-internal" and --> "--scenario" options to
 					EIDSInputWedge</li>
 				<li>Preserve original message content when input is EQXML, or
 					Quakeml (without custom parser argument).</li>
@@ -326,7 +326,7 @@
 		<li>added "retryDelay" configuration setting for listeners, used
 			in combination with "maxTries"</li>
 		<li>added methods for programmatic configuration of listener
-			properties "includeInternals", "includeScenarios", "includeTests",
+			properties <!-- "includeInternals", --> "includeScenarios", "includeTests",
 			and "includeDevelopments"</li>
 		<li>fixed association issue near date line.</li>
 		<li>added "connect timeout" warning when EIDSInputWedge is unable
@@ -567,7 +567,7 @@
 		<li>Updated indexer to use product source for authoritativeness
 			(was event source).</li>
 		<li>Configuration options to include scenario, test, development,
-			or internal products (now excluded by default).</li>
+			<!-- or internal products --> (now excluded by default).</li>
 	</ul>
 
 
