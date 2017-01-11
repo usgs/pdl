@@ -65,19 +65,19 @@ public class ProductClient extends DefaultConfigurable implements
 		ProductClientMBean, Bootstrappable {
 
 	/** The "release" version number. */
-	public static final String RELEASE_VERSION = "Version 1.10.1 2016-04-07";
+	public static final String RELEASE_VERSION = "Version 1.11.0 2017-01-11";
 
 	/** Property name used on products for current RELEASE_VERSION. */
 	public static final String PDL_CLIENT_VERSION_PROPERTY = "pdl-client-version";
 
 	/** SVN Id property. */
-	public static final String SVN_VERSION = "$Id: ProductClient.java 23028 2015-04-30 23:28:49Z jmfee $";
+	public static final String SVN_VERSION = "$Id$";
 
 	/** SVN Revision property. */
-	public static final String SVN_REVISION = "$Revision: 10672 $";
+	public static final String SVN_REVISION = "$Revision$";
 
 	/** SVN LastChangedDate property. */
-	public static final String SVN_LAST_CHANGED_DATE = "$LastChangedDate: 2015-04-30 17:28:49 -0600 (Thu, 30 Apr 2015) $";
+	public static final String SVN_LAST_CHANGED_DATE = "$LastChangedDate$";
 
 	/** Logging object. */
 	private static final Logger LOGGER = Logger.getLogger(ProductClient.class
