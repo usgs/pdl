@@ -19,6 +19,9 @@ public class ShakeMapIndexerModuleTest {
 	private static final String SHAKEMAP_XML_TEST_FILE = "etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.xml";
 	private static final String LPAGER_XML_TEST_FILE = "etc/test_products/usa00040xz/us_losspager_usa00040xz_1287260989064.xml";
 
+	private static final String EPICENTER_TEST_FILE = "etc/test_products/uw61272661/uw61272661.xml";
+	private static final String ZOOM_TEST_FILE = "etc/test_products/uw61272661/uw61272661~SEA.xml";
+
 	private IndexerModule module = null;
 	private Product product = null;
 	private ProductSummary summary = null;
@@ -52,27 +55,17 @@ public class ShakeMapIndexerModuleTest {
 		Assert.assertNotNull(summary.getEventLongitude());
 		Assert.assertNotNull(summary.getEventMagnitude());
 		Assert.assertNotNull(summary.getEventTime());
-		Assert.assertEquals(
-				((ShakeMapIndexerModule) module).getPreferredWeight(summary),
-				summary.getPreferredWeight());
+		Assert.assertEquals(((ShakeMapIndexerModule) module).getPreferredWeight(summary), summary.getPreferredWeight());
 
 		// Look for additional properties specific to ShakeMaps
-		Assert.assertNotNull(summary.getProperties().get(
-				ShakeMap.EVENT_DESCRIPTION_PROPERTY));
-		Assert.assertNotNull(summary.getProperties().get(
-				ShakeMap.EVENT_TYPE_PROPERTY));
-		Assert.assertNotNull(summary.getProperties().get(
-				ShakeMap.MAP_STATUS_PROPERTY));
-		Assert.assertNotNull(summary.getProperties().get(
-				ShakeMap.MAXIMUM_LATITUDE_PROPERTY));
-		Assert.assertNotNull(summary.getProperties().get(
-				ShakeMap.MAXIMUM_LONGITUDE_PROPERTY));
-		Assert.assertNotNull(summary.getProperties().get(
-				ShakeMap.MINIMUM_LATITUDE_PROPERTY));
-		Assert.assertNotNull(summary.getProperties().get(
-				ShakeMap.MINIMUM_LONGITUDE_PROPERTY));
-		Assert.assertNotNull(summary.getProperties().get(
-				ShakeMap.PROCESS_TIMESTAMP_PROPERTY));
+		Assert.assertNotNull(summary.getProperties().get(ShakeMap.EVENT_DESCRIPTION_PROPERTY));
+		Assert.assertNotNull(summary.getProperties().get(ShakeMap.EVENT_TYPE_PROPERTY));
+		Assert.assertNotNull(summary.getProperties().get(ShakeMap.MAP_STATUS_PROPERTY));
+		Assert.assertNotNull(summary.getProperties().get(ShakeMap.MAXIMUM_LATITUDE_PROPERTY));
+		Assert.assertNotNull(summary.getProperties().get(ShakeMap.MAXIMUM_LONGITUDE_PROPERTY));
+		Assert.assertNotNull(summary.getProperties().get(ShakeMap.MINIMUM_LATITUDE_PROPERTY));
+		Assert.assertNotNull(summary.getProperties().get(ShakeMap.MINIMUM_LONGITUDE_PROPERTY));
+		Assert.assertNotNull(summary.getProperties().get(ShakeMap.PROCESS_TIMESTAMP_PROPERTY));
 	}
 
 	@Test
@@ -80,8 +73,7 @@ public class ShakeMapIndexerModuleTest {
 		product = createProduct(SHAKEMAP_XML_TEST_FILE);
 
 		// This Product should be supported, as it is a ShakeMap product.
-		Assert.assertEquals(IndexerModule.LEVEL_SUPPORTED,
-				module.getSupportLevel(product));
+		Assert.assertEquals(IndexerModule.LEVEL_SUPPORTED, module.getSupportLevel(product));
 	}
 
 	@Test
@@ -90,13 +82,25 @@ public class ShakeMapIndexerModuleTest {
 
 		// This Product should not be supported, as it is not a ShakeMap
 		// product.
-		Assert.assertEquals(IndexerModule.LEVEL_UNSUPPORTED,
-				module.getSupportLevel(product));
+		Assert.assertEquals(IndexerModule.LEVEL_UNSUPPORTED, module.getSupportLevel(product));
+	}
+
+	@Test
+	public void preferMapCenteredOnEpicenter() throws Exception {
+		Product epicenter = createProduct(EPICENTER_TEST_FILE);
+		ProductSummary epicenterSummary = module.getProductSummary(epicenter);
+		Product zoom = createProduct(ZOOM_TEST_FILE);
+		ProductSummary zoomSummary = module.getProductSummary(zoom);
+
+		Assert.assertEquals("Epicenter summary weight", epicenterSummary.getPreferredWeight(), 181L);
+		Assert.assertEquals("Zoom summary weight", zoomSummary.getPreferredWeight(), 171L);
+		Assert.assertTrue("Epicenter map preferred",
+				epicenterSummary.getPreferredWeight() > zoomSummary.getPreferredWeight());
 	}
 
 	private Product createProduct(String testFile) throws Exception {
-		Product p = ObjectProductHandler.getProduct(new XmlProductSource(
-				StreamUtils.getInputStream(new File(testFile))));
+		Product p = ObjectProductHandler
+				.getProduct(new XmlProductSource(StreamUtils.getInputStream(new File(testFile))));
 		return p;
 	}
 
