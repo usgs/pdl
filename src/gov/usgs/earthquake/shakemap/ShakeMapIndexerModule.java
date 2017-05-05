@@ -34,7 +34,7 @@ public class ShakeMapIndexerModule extends DefaultIndexerModule {
 	// Number of degrees at which no additional weight will be
 	// assigned based on the proximity of the map center to the
 	// epicenter.
-	public static final int MAX_DELTA_DEGREES = 2;
+	public static final double MAX_DELTA_DEGREES = 2.0;
 
 	@Override
 	public int getSupportLevel(Product product) {
@@ -93,9 +93,9 @@ public class ShakeMapIndexerModule extends DefaultIndexerModule {
 		BigDecimal centerLon = minLon.add(maxLon).divide(new BigDecimal(2));
 
 		// Calculate delta in degrees between map center and event epicenter
-		long latDelta = Math.abs(centerLat.longValue() - eventLat.longValue());
-		long lonDelta = Math.abs(centerLon.longValue() - eventLon.longValue());
-		long locationDelta = (long) Math.sqrt(Math.pow(latDelta, 2)
+		double latDelta = Math.abs(centerLat.doubleValue() - eventLat.doubleValue());
+		double lonDelta = Math.abs(centerLon.doubleValue() - eventLon.doubleValue());
+		double locationDelta = (double) Math.sqrt(Math.pow(latDelta, 2)
 				+ Math.pow(lonDelta, 2));
 
 		// Increase weight dynamically if the map center is within
