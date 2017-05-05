@@ -2,6 +2,7 @@ package gov.usgs.earthquake.shakemap;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +36,10 @@ public class ShakeMapIndexerModule extends DefaultIndexerModule {
 	// assigned based on the proximity of the map center to the
 	// epicenter.
 	public static final double MAX_DELTA_DEGREES = 2.0;
+
+	// ShakeMap atlas is the most preferred ShakeMap contributor
+	public static final String SHAKEMAP_ATLAS_SOURCE = "atlas";
+	public static final int SHAKEMAP_ATLAS_WEIGHT = 200;
 
 	@Override
 	public int getSupportLevel(Product product) {
@@ -78,16 +83,31 @@ public class ShakeMapIndexerModule extends DefaultIndexerModule {
 		// Get the default preferred weight value from the parent class
 		long weight = super.getPreferredWeight(summary);
 
+		if (SHAKEMAP_ATLAS_SOURCE.equals(summary.getSource())) {
+			weight += SHAKEMAP_ATLAS_WEIGHT;
+		}
+
+		// check that shakemap has event properties and map extents
+		Map<String, String> properties = summary.getProperties();
+		if (summary.getEventLatitude() == null ||
+				summary.getEventLongitude() == null ||
+				properties.get(ShakeMap.MINIMUM_LATITUDE_PROPERTY) == null ||
+				properties.get(ShakeMap.MAXIMUM_LATITUDE_PROPERTY) == null ||
+				properties.get(ShakeMap.MINIMUM_LONGITUDE_PROPERTY) == null ||
+				properties.get(ShakeMap.MAXIMUM_LONGITUDE_PROPERTY) == null) {
+			return weight;
+		}
+
 		// Get properties for comparison to alter authoritative weight
 		BigDecimal eventLat = summary.getEventLatitude();
 		BigDecimal eventLon = summary.getEventLongitude();
-		BigDecimal minLat = new BigDecimal(summary.getProperties().get(
+		BigDecimal minLat = new BigDecimal(properties.get(
 				ShakeMap.MINIMUM_LATITUDE_PROPERTY));
-		BigDecimal maxLat = new BigDecimal(summary.getProperties().get(
+		BigDecimal maxLat = new BigDecimal(properties.get(
 				ShakeMap.MAXIMUM_LATITUDE_PROPERTY));
-		BigDecimal minLon = new BigDecimal(summary.getProperties().get(
+		BigDecimal minLon = new BigDecimal(properties.get(
 				ShakeMap.MINIMUM_LONGITUDE_PROPERTY));
-		BigDecimal maxLon = new BigDecimal(summary.getProperties().get(
+		BigDecimal maxLon = new BigDecimal(properties.get(
 				ShakeMap.MAXIMUM_LONGITUDE_PROPERTY));
 		BigDecimal centerLat = minLat.add(maxLat).divide(new BigDecimal(2));
 		BigDecimal centerLon = minLon.add(maxLon).divide(new BigDecimal(2));
@@ -112,8 +132,9 @@ public class ShakeMapIndexerModule extends DefaultIndexerModule {
 		if (eventLat.longValue() < maxLat.longValue()
 				&& eventLat.longValue() > minLat.longValue()
 				&& eventLon.longValue() < maxLon.longValue()
-				&& eventLon.longValue() > minLon.longValue())
+				&& eventLon.longValue() > minLon.longValue()) {
 			weight += CONTAINS_EPICENTER_WEIGHT;
+		}
 
 		return weight;
 	}

@@ -10,6 +10,7 @@ import org.junit.Test;
 import gov.usgs.earthquake.indexer.IndexerModule;
 import gov.usgs.earthquake.indexer.ProductSummary;
 import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.earthquake.product.io.ObjectProductHandler;
 import gov.usgs.earthquake.product.io.XmlProductSource;
 import gov.usgs.util.StreamUtils;
@@ -22,7 +23,7 @@ public class ShakeMapIndexerModuleTest {
 	private static final String EPICENTER_TEST_FILE = "etc/test_products/uw61272661/uw61272661.xml";
 	private static final String ZOOM_TEST_FILE = "etc/test_products/uw61272661/uw61272661~SEA.xml";
 
-	private IndexerModule module = null;
+	private ShakeMapIndexerModule module = null;
 	private Product product = null;
 	private ProductSummary summary = null;
 
@@ -55,7 +56,7 @@ public class ShakeMapIndexerModuleTest {
 		Assert.assertNotNull(summary.getEventLongitude());
 		Assert.assertNotNull(summary.getEventMagnitude());
 		Assert.assertNotNull(summary.getEventTime());
-		Assert.assertEquals(((ShakeMapIndexerModule) module).getPreferredWeight(summary), summary.getPreferredWeight());
+		Assert.assertEquals(module.getPreferredWeight(summary), summary.getPreferredWeight());
 
 		// Look for additional properties specific to ShakeMaps
 		Assert.assertNotNull(summary.getProperties().get(ShakeMap.EVENT_DESCRIPTION_PROPERTY));
@@ -96,6 +97,15 @@ public class ShakeMapIndexerModuleTest {
 		Assert.assertEquals("Zoom summary weight", zoomSummary.getPreferredWeight(), 171L);
 		Assert.assertTrue("Epicenter map preferred",
 				epicenterSummary.getPreferredWeight() > zoomSummary.getPreferredWeight());
+	}
+
+	@Test
+	public void preferShakeMapAtlas() throws Exception {
+		ProductSummary atlasSummary = new ProductSummary();
+		atlasSummary.setId(new ProductId("atlas", "type", "code"));
+
+		Assert.assertEquals("Atlas summary weight", 201,
+				module.getPreferredWeight(atlasSummary));
 	}
 
 	private Product createProduct(String testFile) throws Exception {
