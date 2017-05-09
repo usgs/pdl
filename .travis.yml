@@ -14,3 +14,9 @@ addons:
   ssh_known_hosts:
   - 127.0.0.1
   - localhost
+
+script:
+  - ant coverage
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
