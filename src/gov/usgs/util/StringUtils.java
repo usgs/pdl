@@ -17,7 +17,7 @@ public class StringUtils {
 
     /**
      * No Exception Double parsing method.
-     * 
+     *
      * @param value
      * @return null on error, otherwise Double value.
      */
@@ -33,7 +33,7 @@ public class StringUtils {
 
     /**
      * No Exception Float parsing method.
-     * 
+     *
      * @param value
      * @return null on error, otherwise Float value.
      */
@@ -49,7 +49,7 @@ public class StringUtils {
 
     /**
      * No Exception Integer parsing method.
-     * 
+     *
      * @param value
      * @return null on error, otherwise Integer value.
      */
@@ -65,7 +65,7 @@ public class StringUtils {
 
     /**
      * No Exception Long parsing method.
-     * 
+     *
      * @param value
      * @return null on error, otherwise Integer value.
      */
@@ -82,20 +82,20 @@ public class StringUtils {
     /**
      * Join objects in a list using the specified delimiter. The objects
      * toString method is used to get a string value.
-     * 
+     *
      * @param delimiter
      *            string to insert between list items.
      * @param list
      *            items to join.
      * @return string containing delimiter delimited list items.
      */
-    public static String join(final List<Object> list, final String delimiter) {
+    public static String join(final List<? extends Object> list, final String delimiter) {
         if (list == null || list.size() == 0) {
             return "";
         }
 
         StringBuffer buf = new StringBuffer();
-        Iterator<Object> iter = list.iterator();
+        Iterator<? extends Object> iter = list.iterator();
         // add first element to buffer
         if (iter.hasNext()) {
             buf.append(iter.next().toString());
@@ -113,7 +113,7 @@ public class StringUtils {
      * Split a string into a list of strings using the specified delimiter. The
      * intrinsic String.split method is used and elements of the returned String
      * array (if any) are added to a list.
-     * 
+     *
      * @param toSplit
      *            string to split.
      * @param delimiter
