@@ -7,6 +7,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -78,23 +79,27 @@ public class IndexerSourceAndCodeNotUniqueTest {
 
 		indexer.startup();
 
-		Product product = null;
-		for (File file : PRODUCTS) {
-			product = ObjectProductHandler.getProduct(new XmlProductSource(StreamUtils
-					.getInputStream(file)));
-			indexer.onProduct(product);
-			
-			synchronized (SYNC) {
-				SYNC.wait();
-			}
-			IndexerEvent lastEvent = listener.getLastEvent();
+		try {
+			Product product = null;
+			for (File file : PRODUCTS) {
+				product = ObjectProductHandler.getProduct(new XmlProductSource(StreamUtils
+						.getInputStream(file)));
+				indexer.onProduct(product);
 
-			for (IndexerChange ev : lastEvent.getIndexerChanges()) {
-				System.err.println(ev.getType());
+				synchronized (SYNC) {
+					SYNC.wait();
+				}
+				IndexerEvent lastEvent = listener.getLastEvent();
+
+				for (IndexerChange ev : lastEvent.getIndexerChanges()) {
+					System.err.println(ev.getType());
+				}
 			}
+		} catch (Exception e) {
+			Assert.fail("Indexer threw exception while processing products");
+		} finally {
+			indexer.shutdown();
 		}
-
-		indexer.shutdown();
 	}
 
 	public class TestIndexerListener extends DefaultIndexerListener {
