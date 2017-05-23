@@ -1679,7 +1679,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		String query_prefix = String
 				.format("SELECT * FROM %s p", SUMMARY_TABLE);
 		String query_suffix = "";
-		if (!whereClause.toString().equals("")) {
+		if (whereClause.length() > 0) {
 			query_suffix = String.format(" WHERE %s", whereClause.toString());
 		}
 		String query_text = query_prefix + query_suffix + " " + orderby;
