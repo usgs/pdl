@@ -11,17 +11,17 @@ import gov.usgs.earthquake.indexer.IndexerModule;
 import gov.usgs.earthquake.indexer.ProductSummary;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.product.io.BinaryProductSource;
 import gov.usgs.earthquake.product.io.ObjectProductHandler;
-import gov.usgs.earthquake.product.io.XmlProductSource;
 import gov.usgs.util.StreamUtils;
 
 public class ShakeMapIndexerModuleTest {
 
-	private static final String SHAKEMAP_XML_TEST_FILE = "etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.xml";
-	private static final String LPAGER_XML_TEST_FILE = "etc/test_products/usa00040xz/us_losspager_usa00040xz_1287260989064.xml";
+	private static final String SHAKEMAP_XML_TEST_FILE = "etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.bin";
+	private static final String LPAGER_XML_TEST_FILE = "etc/test_products/usa00040xz/us_losspager_usa00040xz_1287260989064.bin";
 
-	private static final String EPICENTER_TEST_FILE = "etc/test_products/uw61272661/uw61272661.xml";
-	private static final String ZOOM_TEST_FILE = "etc/test_products/uw61272661/uw61272661~SEA.xml";
+	private static final String EPICENTER_TEST_FILE = "etc/test_products/uw61272661/uw61272661.bin";
+	private static final String ZOOM_TEST_FILE = "etc/test_products/uw61272661/uw61272661~SEA.bin";
 
 	private ShakeMapIndexerModule module = null;
 	private Product product = null;
@@ -110,7 +110,7 @@ public class ShakeMapIndexerModuleTest {
 
 	private Product createProduct(String testFile) throws Exception {
 		Product p = ObjectProductHandler
-				.getProduct(new XmlProductSource(StreamUtils.getInputStream(new File(testFile))));
+				.getProduct(new BinaryProductSource(StreamUtils.getInputStream(new File(testFile))));
 		return p;
 	}
 
