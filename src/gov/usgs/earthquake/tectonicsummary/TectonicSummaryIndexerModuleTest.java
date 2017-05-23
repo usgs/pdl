@@ -8,12 +8,15 @@ import gov.usgs.earthquake.indexer.ProductSummary;
 import gov.usgs.earthquake.product.ProductId;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import gov.usgs.earthquake.indexer.IndexerModule;
 import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.io.BinaryProductSource;
 import gov.usgs.earthquake.product.io.ObjectProductHandler;
+import gov.usgs.earthquake.product.io.ProductSource;
 import gov.usgs.earthquake.product.io.XmlProductSource;
 import gov.usgs.util.StreamUtils;
 
@@ -21,7 +24,7 @@ public class TectonicSummaryIndexerModuleTest {
 
 	public static final long AUTHORITATIVE_WEIGHT = 200;
 	private static final String TECTONIC_SUMMARY_XML_TEST_FILE = "etc/test_products/usb000d75b/us_tectonicsummary_usb000d75b_1351097744544.xml";
-	private static final String LPAGER_XML_TEST_FILE = "etc/test_products/usa00040xz/us_losspager_usa00040xz_1287260989064.xml";
+	private static final String LPAGER_XML_TEST_FILE = "etc/test_products/usa00040xz/us_losspager_usa00040xz_1287260989064.bin";
 	
 	private IndexerModule module = null;
 	private Product product = null;
@@ -106,8 +109,14 @@ public class TectonicSummaryIndexerModuleTest {
 	}
 
 	private Product createProduct(String testFile) throws Exception {
-		Product p = ObjectProductHandler.getProduct(new XmlProductSource(
-				StreamUtils.getInputStream(new File(testFile))));
+		InputStream in = StreamUtils.getInputStream(new File(testFile));
+		ProductSource source;
+		if (testFile.endsWith(".xml")) {
+			source = new XmlProductSource(in);
+		} else {
+			source = new BinaryProductSource(in);
+		}
+		Product p = ObjectProductHandler.getProduct(source);
 		return p;
 	}
 
