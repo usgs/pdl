@@ -1,8 +1,5 @@
 /*
  * CLIProductBuilder
- *
- * $Id: CLIProductBuilder.java 20438 2013-11-18 22:49:24Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/CLIProductBuilder.java $
  */
 package gov.usgs.earthquake.distribution;
 

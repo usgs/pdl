@@ -1,8 +1,5 @@
 /*
  * Notification
- * 
- * $Id: Notification.java 10673 2011-06-30 23:48:47Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/Notification.java $
  */
 package gov.usgs.earthquake.distribution;
 

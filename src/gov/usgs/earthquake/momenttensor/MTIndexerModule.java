@@ -1,8 +1,5 @@
 /**
  * MTIndexerModule
- *
- * $Id: MTIndexerModule.java 2016-02-08 21:41:00+00:00
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/indexer/MTIndexerModule.java $
  */
 
 package gov.usgs.earthquake.momenttensor;

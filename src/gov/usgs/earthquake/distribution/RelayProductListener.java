@@ -1,8 +1,5 @@
 /*
  * RelayProductListener
- * 
- * $Id: RelayProductListener.java 10888 2011-07-25 22:13:05Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/RelayProductListener.java $
  */
 package gov.usgs.earthquake.distribution;
 

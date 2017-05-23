@@ -1,8 +1,5 @@
 /*
  * DefaultAssociator
- * 
- * $Id: DefaultAssociator.java 22455 2014-12-02 22:49:49Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/indexer/DefaultAssociator.java $
  */
 package gov.usgs.earthquake.indexer;
 

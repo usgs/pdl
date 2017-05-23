@@ -1,8 +1,5 @@
 /*
  * AbstractContent
- * 
- * $Id: AbstractContent.java 16667 2012-09-19 15:39:53Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/product/AbstractContent.java $
  */
 package gov.usgs.earthquake.product;
 

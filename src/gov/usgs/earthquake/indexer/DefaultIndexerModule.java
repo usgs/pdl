@@ -1,8 +1,5 @@
 /*
  * DefaultIndexerModule
- * 
- * $Id: DefaultIndexerModule.java 12600 2012-01-25 15:31:59Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/indexer/DefaultIndexerModule.java $
  */
 package gov.usgs.earthquake.indexer;
 

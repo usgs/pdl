@@ -1,8 +1,5 @@
 /*
  * IOTest
- * 
- * $Id: IOTest.java 17866 2012-12-10 17:04:28Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/product/io/IOTest.java $
  */
 package gov.usgs.earthquake.product.io;
 

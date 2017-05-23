@@ -1,8 +1,5 @@
 /*
  * Main
- *
- * $Id: ProductClient.java 23028 2015-04-30 23:28:49Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/ProductClient.java $
  */
 package gov.usgs.earthquake.distribution;
 
@@ -295,8 +292,6 @@ public class ProductClient extends DefaultConfigurable implements
 	 * @param args
 	 */
 	public void run(final String[] args) throws Exception {
-		LOGGER.fine(SVN_VERSION);
-
 		try {
 			// default is show usage
 			boolean receiveProducts = false;
@@ -462,7 +457,7 @@ public class ProductClient extends DefaultConfigurable implements
 
 	@Override
 	public String getVersion() {
-		return RELEASE_VERSION + "\n" + SVN_VERSION;
+		return RELEASE_VERSION;
 	}
 
 	@Override

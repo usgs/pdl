@@ -1,8 +1,5 @@
 /*
  * EventAddonProductParser
- * 
- * $Id: EventAddonParser.java 17544 2012-10-29 18:11:12Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/eids/EventAddonParser.java $
  */
 package gov.usgs.earthquake.eids;
 

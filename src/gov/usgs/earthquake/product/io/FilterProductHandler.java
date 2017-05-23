@@ -1,8 +1,5 @@
 /*
  * FilterProductHandler
- * 
- * $Id: FilterProductHandler.java 10673 2011-06-30 23:48:47Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/product/io/FilterProductHandler.java $
  */
 package gov.usgs.earthquake.product.io;
 

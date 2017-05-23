@@ -1,8 +1,5 @@
 /*
  * EIDSClient
- * 
- * $Id: EIDSClient.java 20524 2013-11-21 17:58:47Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/eidsutil/EIDSClient.java $
  */
 package gov.usgs.earthquake.eidsutil;
 

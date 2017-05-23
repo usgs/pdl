@@ -1,8 +1,5 @@
 /*
  * IndexerEvent
- * 
- * $Id: IndexerEvent.java 19746 2013-07-15 22:31:41Z ehunter $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/indexer/IndexerEvent.java $
  */
 package gov.usgs.earthquake.indexer;
 

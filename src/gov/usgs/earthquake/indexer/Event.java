@@ -1,8 +1,5 @@
 /*
  * Event
- * 
- * $Id: Event.java 22933 2015-03-31 16:25:44Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/indexer/Event.java $
  */
 package gov.usgs.earthquake.indexer;
 

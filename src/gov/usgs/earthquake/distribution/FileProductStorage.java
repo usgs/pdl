@@ -1,8 +1,5 @@
 /*
  * FileProductStorage
- * 
- * $Id: FileProductStorage.java 23017 2015-04-29 17:22:22Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/FileProductStorage.java $
  */
 package gov.usgs.earthquake.distribution;
 

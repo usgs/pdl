@@ -1,8 +1,5 @@
 /*
  * FileContent
- * 
- * $Id: FileContent.java 21948 2014-08-27 20:12:40Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/product/FileContent.java $
  */
 package gov.usgs.earthquake.product;
 

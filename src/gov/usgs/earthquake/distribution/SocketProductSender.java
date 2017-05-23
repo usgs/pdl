@@ -1,8 +1,5 @@
 /*
  * SocketProductSender
- * 
- * $Id: SocketProductSender.java 21513 2014-05-15 16:38:14Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/SocketProductSender.java $
  */
 package gov.usgs.earthquake.distribution;
 

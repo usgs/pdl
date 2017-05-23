@@ -1,8 +1,5 @@
 /*
  * ShakemapIndexerWedge
- * 
- * $Id: ShakeMapIndexerWedge.java 20382 2013-11-05 19:42:44Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/shakemap/ShakeMapIndexerWedge.java $
  */
 package gov.usgs.earthquake.shakemap;
 

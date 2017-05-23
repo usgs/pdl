@@ -1,8 +1,5 @@
 /*
  * NotificationReceiver
- * 
- * $Id: NotificationReceiver.java 12868 2012-02-15 22:23:30Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/NotificationReceiver.java $
  */
 package gov.usgs.earthquake.distribution;
 

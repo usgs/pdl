@@ -1,8 +1,5 @@
 /*
  * IndexerListener
- * 
- * $Id: IndexerListener.java 22335 2014-11-17 15:52:47Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/indexer/IndexerListener.java $
  */
 package gov.usgs.earthquake.indexer;
 
