@@ -289,7 +289,7 @@ public class StreamUtils {
 		 * @param in
 		 *            the InputStream to wrap.
 		 */
-		public UnclosableInputStream(final java.io.InputStream in) {
+		public UnclosableInputStream(final InputStream in) {
 			super(in);
 		}
 
@@ -319,7 +319,7 @@ public class StreamUtils {
 		 * @param out
 		 *            the OutputStream to wrap.
 		 */
-		public UnclosableOutputStream(final java.io.OutputStream out) {
+		public UnclosableOutputStream(final OutputStream out) {
 			super(out);
 		}
 

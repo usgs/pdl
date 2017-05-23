@@ -301,7 +301,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try {
 			insertEvent = connection.prepareStatement(INSERT_EVENT_QUERY,
 					new String[] { EVENT_INDEX_ID });
-		} catch (java.sql.SQLException e) {
+		} catch (SQLException e) {
 			// sqlite doesn't support RETURN_GENERATED_KEYS, but appears to
 			// return generated keys anyways
 			insertEvent = connection.prepareStatement(INSERT_EVENT_QUERY);
