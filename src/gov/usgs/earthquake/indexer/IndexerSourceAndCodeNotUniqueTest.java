@@ -60,7 +60,7 @@ public class IndexerSourceAndCodeNotUniqueTest {
 	
 
 	@Test
-	public void sourceAndCodeNotUniqueTest_ci37645983() throws Exception {
+	public void sourceAndCodeNotUniqueTestci37645983() throws Exception {
 		// turn up logging during test
 		LogManager.getLogManager().reset();
 		ConsoleHandler handler = new ConsoleHandler();
