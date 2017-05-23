@@ -105,9 +105,6 @@ public class IndexerSourceAndCodeNotUniqueTest {
 	public class TestIndexerListener extends DefaultIndexerListener {
 		private IndexerEvent lastIndexerEvent = null;
 
-		public TestIndexerListener() {
-		}
-
 		@Override
 		public void onIndexerEvent(final IndexerEvent event) {
 			try {
