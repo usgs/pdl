@@ -76,9 +76,6 @@ public class ProductClientTest {
 		// Make sure we created 1 listener
 		List<NotificationListener> listeners = client.getListeners();
 		Assert.assertEquals(1, listeners.size());
-
-		return;
-
 	}
 
 	/**

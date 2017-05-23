@@ -47,7 +47,7 @@ public class EventAddonParser extends SAXAdapter {
 			// convert the parsed addon to an EQMessage
 			return addon.getEQMessage();
 		} catch (SAXException e) {
-			if (!(e.getCause() instanceof java.text.ParseException)) {
+			if (!(e.getCause() instanceof ParseException)) {
 				throw e;
 			}
 		}

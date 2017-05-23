@@ -82,7 +82,7 @@ class Product(object):
 			product = Product()
 			product.parseArguments(args)
 			return product
-		except Exception, e:
+		except Exception:
 			#invalid product
 			return None
 	
