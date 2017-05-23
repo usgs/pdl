@@ -9,9 +9,6 @@ if [ ! -f "$configfile" ]; then
 fi
 source "$configfile";
 
-id='$Id: sendHeartbeat 16937 2012-10-04 23:53:30Z emartinez $';
-url='$HeadURL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/examples/heartbeat/sendHeartbeat $';
-url=`echo $url | awk '{print $2}'`;
 format='%Y-%m-%d %H:%M:%S';
 
 # Build a heartbeat send command
@@ -51,8 +48,6 @@ echo "[`date +"$format"`] $command";
 # Do it
 pushd `dirname $HEARTBEAT_CLIENT` > /dev/null 2>&1;
 cat <<- EOF | $command
-; $id
-heartbeat_head_url='${url}';
 heartbeat_sender_version='${HEARTBEAT_VERSION}';
 EOF
 popd > /dev/null 2>&1;

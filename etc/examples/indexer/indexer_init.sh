@@ -4,9 +4,6 @@
 # Product Client init script
 # Manages the product client process.
 #
-# $Id: indexer_init.sh 7903 2010-10-25 22:36:35Z jmfee $
-# $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/examples/indexer/indexer_init.sh $
-#
 
 if [ $# -lt 1 ]; then
 	echo "Usage: $0 {start|stop|restart|status}"

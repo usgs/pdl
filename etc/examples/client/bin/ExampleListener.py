@@ -5,9 +5,6 @@
 # ExternalNotificationListener.py
 # A python implementation of the ExternalNotificationListener Command Line API.
 #
-# $Id: ExampleListener.py 19968 2013-08-16 21:24:20Z jmfee $
-# $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/examples/client/bin/ExampleListener.py $
-#
 
 
 import os
