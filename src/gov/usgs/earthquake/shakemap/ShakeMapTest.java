@@ -7,19 +7,17 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.io.BinaryProductSource;
 import gov.usgs.earthquake.product.io.ObjectProductHandler;
-import gov.usgs.earthquake.product.io.XmlProductSource;
 import gov.usgs.util.StreamUtils;
 
 public class ShakeMapTest {
 
 	@Test
 	public void getShakeMap() throws Exception {
-		Product product = ObjectProductHandler
-				.getProduct(new XmlProductSource(
-						StreamUtils
-								.getInputStream(new File(
-										"etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.xml"))));
+		Product product = ObjectProductHandler.getProduct(new BinaryProductSource(
+				StreamUtils.getInputStream(new File(
+						"etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.bin"))));
 
 		// Test to make sure the product exists
 		Assert.assertNotNull(product);
@@ -52,11 +50,9 @@ public class ShakeMapTest {
 
 	@Test
 	public void testInfoXMLHandler() throws Exception {
-		Product product = ObjectProductHandler
-				.getProduct(new XmlProductSource(
-						StreamUtils
-								.getInputStream(new File(
-										"etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.xml"))));
+		Product product = ObjectProductHandler.getProduct(new BinaryProductSource(
+				StreamUtils.getInputStream(new File(
+						"etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.bin"))));
 
 		InfoXMLHandler handler = new InfoXMLHandler();
 		HashMap<String, String> info = handler.parse(product.getContents()

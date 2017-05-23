@@ -5,8 +5,8 @@ import gov.usgs.earthquake.distribution.ProductTracker;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.earthquake.product.ProductTest;
+import gov.usgs.earthquake.product.io.BinaryProductSource;
 import gov.usgs.earthquake.product.io.ObjectProductHandler;
-import gov.usgs.earthquake.product.io.XmlProductSource;
 import gov.usgs.earthquake.shakemap.ShakeMap;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.logging.SimpleLogFormatter;
@@ -25,11 +25,9 @@ public class ExternalIndexerListenerTest {
 
 	@Test
 	public void testAccept() throws Exception {
-		Product product = ObjectProductHandler
-				.getProduct(new XmlProductSource(
-						StreamUtils
-								.getInputStream(new File(
-										"etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.xml"))));
+		Product product = ObjectProductHandler.getProduct(new BinaryProductSource(
+				StreamUtils.getInputStream(new File(
+						"etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.bin"))));
 
 		ShakeMap shakemap = new ShakeMap(product);
 
