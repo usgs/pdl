@@ -8,8 +8,8 @@ import java.util.logging.Logger;
 
 import gov.usgs.earthquake.distribution.FileProductStorage;
 import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.io.BinaryProductSource;
 import gov.usgs.earthquake.product.io.ObjectProductHandler;
-import gov.usgs.earthquake.product.io.XmlProductSource;
 import gov.usgs.util.FileUtils;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.logging.SimpleLogFormatter;
@@ -33,11 +33,11 @@ public class IndexerSplitAfterDeleteWithoutIDTest {
 	private static File INDEX_FILE = new File("_test_index");
 
 	private static File FIRST_DYFI = new File(
-			"etc/test_products/usc000wc0l_at00maxjbo/us_dyfi_at00maxjbo_1348617830165.xml");
+			"etc/test_products/usc000wc0l_at00maxjbo/us_dyfi_at00maxjbo_1348617830165.bin");
 	private static File SECOND_DYFI = new File(
-			"etc/test_products/usc000wc0l_at00maxjbo/us_dyfi_at00maxjbo_1348617988866.xml");
+			"etc/test_products/usc000wc0l_at00maxjbo/us_dyfi_at00maxjbo_1348617988866.bin");
 	private static File THIRD_DYFI = new File(
-			"etc/test_products/usc000wc0l_at00maxjbo/us_dyfi_usc000cw0l_1348618020200.xml");
+			"etc/test_products/usc000wc0l_at00maxjbo/us_dyfi_usc000cw0l_1348618020200.bin");
 
 	private static final Object SYNC = new Object();
 
@@ -75,7 +75,7 @@ public class IndexerSplitAfterDeleteWithoutIDTest {
 
 		Product dyfi = null;
 		// parse product
-		dyfi = ObjectProductHandler.getProduct(new XmlProductSource(StreamUtils
+		dyfi = ObjectProductHandler.getProduct(new BinaryProductSource(StreamUtils
 				.getInputStream(FIRST_DYFI)));
 		// index product
 		indexer.onProduct(dyfi);
@@ -93,7 +93,7 @@ public class IndexerSplitAfterDeleteWithoutIDTest {
 		 * </pre>
 		 */
 		// parse product
-		dyfi = ObjectProductHandler.getProduct(new XmlProductSource(StreamUtils
+		dyfi = ObjectProductHandler.getProduct(new BinaryProductSource(StreamUtils
 				.getInputStream(SECOND_DYFI)));
 		// index product
 		indexer.onProduct(dyfi);
@@ -122,7 +122,7 @@ public class IndexerSplitAfterDeleteWithoutIDTest {
 		 * the subsequent product generates a NullPointerException.
 		 */
 		// parse product
-		dyfi = ObjectProductHandler.getProduct(new XmlProductSource(StreamUtils
+		dyfi = ObjectProductHandler.getProduct(new BinaryProductSource(StreamUtils
 				.getInputStream(THIRD_DYFI)));
 		// index product
 		indexer.onProduct(dyfi);
