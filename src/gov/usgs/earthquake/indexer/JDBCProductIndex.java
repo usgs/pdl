@@ -301,7 +301,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try {
 			insertEvent = connection.prepareStatement(INSERT_EVENT_QUERY,
 					new String[] { EVENT_INDEX_ID });
-		} catch (java.sql.SQLException e) {
+		} catch (SQLException e) {
 			// sqlite doesn't support RETURN_GENERATED_KEYS, but appears to
 			// return generated keys anyways
 			insertEvent = connection.prepareStatement(INSERT_EVENT_QUERY);
@@ -1679,7 +1679,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		String query_prefix = String
 				.format("SELECT * FROM %s p", SUMMARY_TABLE);
 		String query_suffix = "";
-		if (!whereClause.toString().equals("")) {
+		if (whereClause.length() > 0) {
 			query_suffix = String.format(" WHERE %s", whereClause.toString());
 		}
 		String query_text = query_prefix + query_suffix + " " + orderby;

@@ -104,8 +104,16 @@ public class DefaultAssociator implements Associator {
 				Event event = iter.next();
 
 				boolean sameSourceDifferentCode = false;
-				Iterator<ProductSummary> summaryIter = event.getProductList()
-						.iterator();
+				Iterator<ProductSummary> summaryIter;
+
+				if (event.isDeleted()) {
+					// ignore delete products before checking
+					summaryIter = Event.getWithoutSuperseded(
+							Event.getWithoutDeleted(event.getAllProductList())).iterator();
+				} else {
+					summaryIter = event.getProductList()
+							.iterator();
+				}
 				while (summaryIter.hasNext()) {
 					ProductSummary nextSummary = summaryIter.next();
 					if (summarySource.equalsIgnoreCase(nextSummary
