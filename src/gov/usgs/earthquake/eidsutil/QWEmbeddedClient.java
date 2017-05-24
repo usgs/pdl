@@ -1,8 +1,5 @@
 /*
  * QWEmbeddedClient
- * 
- * $Id: QWEmbeddedClient.java 18697 2013-02-12 22:09:06Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/eidsutil/QWEmbeddedClient.java $
  */
 package gov.usgs.earthquake.eidsutil;
 

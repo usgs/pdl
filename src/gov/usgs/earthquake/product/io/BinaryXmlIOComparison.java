@@ -26,25 +26,19 @@ public class BinaryXmlIOComparison {
 	public static void main(final String[] args) throws Exception {
 		int numRuns = 10;
 		testProductIO(
-				ObjectProductHandler
-						.getProduct(new XmlProductSource(
-								StreamUtils
-										.getInputStream(new File(
-												"etc/test_products/se082311a/us_dyfi_se082311a_1314562782198.xml")))),
+				ObjectProductHandler.getProduct(new BinaryProductSource(
+						StreamUtils.getInputStream(new File(
+								"etc/test_products/se082311a/us_dyfi_se082311a_1314562782198.bin")))),
 				numRuns);
 		testProductIO(
-				ObjectProductHandler
-						.getProduct(new XmlProductSource(
-								StreamUtils
-										.getInputStream(new File(
-												"etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.xml")))),
+				ObjectProductHandler.getProduct(new BinaryProductSource(
+						StreamUtils.getInputStream(new File(
+								"etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.bin")))),
 				numRuns);
 		testProductIO(
-				ObjectProductHandler
-						.getProduct(new XmlProductSource(
-								StreamUtils
-										.getInputStream(new File(
-												"etc/test_products/usa00040xz/us_losspager_usa00040xz_1287260989064.xml")))),
+				ObjectProductHandler.getProduct(new BinaryProductSource(
+						StreamUtils.getInputStream(new File(
+								"etc/test_products/usa00040xz/us_losspager_usa00040xz_1287260989064.bin")))),
 				numRuns);
 	}
 

@@ -1,8 +1,5 @@
 /*
  * JDBCProductIndex
- * 
- * $Id: JDBCProductIndex.java 22451 2014-12-02 22:41:46Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/indexer/JDBCProductIndex.java $
  */
 package gov.usgs.earthquake.indexer;
 

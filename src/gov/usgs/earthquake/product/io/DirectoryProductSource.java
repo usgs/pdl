@@ -1,8 +1,5 @@
 /*
  * DirectoryProductSource
- * 
- * $Id: DirectoryProductSource.java 21485 2014-05-05 21:45:40Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/product/io/DirectoryProductSource.java $
  */
 package gov.usgs.earthquake.product.io;
 

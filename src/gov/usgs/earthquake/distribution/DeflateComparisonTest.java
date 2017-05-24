@@ -16,13 +16,13 @@ public class DeflateComparisonTest {
 	@Test
 	public void testShakemap() throws IllegalArgumentException, IOException {
 		new DeflateComparison().testFile(new File(
-				"etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.xml"));
+				"etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.bin"));
 	}
 
 	@Test
 	public void testPager() throws IllegalArgumentException, IOException {
 		new DeflateComparison().testFile(new File(
-				"etc/test_products/usa00040xz/us_losspager_usa00040xz_1287260989064.xml"));
+				"etc/test_products/usa00040xz/us_losspager_usa00040xz_1287260989064.bin"));
 	}
 
 }

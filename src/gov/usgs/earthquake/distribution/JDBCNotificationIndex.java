@@ -1,8 +1,5 @@
 /*
  * JDBCNotificationIndex
- *
- * $Id: JDBCNotificationIndex.java 18311 2013-01-30 18:14:54Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/JDBCNotificationIndex.java $
  */
 package gov.usgs.earthquake.distribution;
 

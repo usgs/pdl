@@ -1,8 +1,5 @@
 /*
  * Associator
- * 
- * $Id: Associator.java 17846 2012-12-06 18:36:15Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/indexer/Associator.java $
  */
 package gov.usgs.earthquake.indexer;
 

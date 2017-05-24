@@ -4,9 +4,6 @@
 # Product Hub init script
 # Manages the product client and eids server
 #
-# $Id: hub_init.sh 7903 2010-10-25 22:36:35Z jmfee $
-# $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/etc/examples/hub/hub_init.sh $
-#
 
 if [ $# -lt 1 ]; then
 	echo "Usage: $0 {start|stop|restart|status}"

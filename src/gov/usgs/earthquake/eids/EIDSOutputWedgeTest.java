@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import gov.usgs.earthquake.distribution.ProductTracker;
 import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.io.BinaryProductSource;
 import gov.usgs.earthquake.product.io.ObjectProductHandler;
 import gov.usgs.earthquake.product.io.XmlProductSource;
 import gov.usgs.util.Config;
@@ -22,7 +23,7 @@ import org.junit.Test;
 
 public class EIDSOutputWedgeTest {
 	public static final String ORIGIN_PRODUCT_PATH = "etc/test_products/20110725_usc00053hg_nc71606670/nc_origin_nc71606670_1311633433000.xml";
-	public static final String PAGER_PRODUCT_PATH = "etc/test_products/usa00040xz/us_losspager_usa00040xz_1287260989064.xml";
+	public static final String PAGER_PRODUCT_PATH = "etc/test_products/usa00040xz/us_losspager_usa00040xz_1287260989064.bin";
 
 	public static final File DIRECTORY = new File(
 			System.getProperty("user.home"), "Desktop/productio/");
@@ -46,7 +47,7 @@ public class EIDSOutputWedgeTest {
 
 		ORIGIN = ObjectProductHandler.getProduct(new XmlProductSource(
 				StreamUtils.getInputStream(new File(ORIGIN_PRODUCT_PATH))));
-		PAGER = ObjectProductHandler.getProduct(new XmlProductSource(
+		PAGER = ObjectProductHandler.getProduct(new BinaryProductSource(
 				StreamUtils.getInputStream(new File(PAGER_PRODUCT_PATH))));
 	}
 

@@ -1,8 +1,5 @@
 /*
  * IndexerTest
- * 
- * $Id: IndexerTest.java 22934 2015-04-01 01:59:09Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/indexer/IndexerTest.java $
  */
 package gov.usgs.earthquake.indexer;
 

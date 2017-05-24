@@ -1,8 +1,5 @@
 /*
  * ExternalNotificationListenerTest
- *
- * $Id: ExternalNotificationListenerTest.java 14017 2012-04-04 20:24:13Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/ExternalNotificationListenerTest.java $
  */
 package gov.usgs.earthquake.distribution;
 

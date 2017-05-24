@@ -1,8 +1,5 @@
 /*
  * EventTest
- * 
- * $Id: EventTest.java 21947 2014-08-27 19:52:21Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/indexer/EventTest.java $
  */
 package gov.usgs.earthquake.indexer;
 

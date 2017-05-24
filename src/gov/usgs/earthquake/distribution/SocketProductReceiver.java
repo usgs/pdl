@@ -1,8 +1,5 @@
 /*
  * SocketProductReceiver
- * 
- * $Id: SocketProductReceiver.java 22302 2014-11-06 00:34:13Z jmfee $
- * $HeadURL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/SocketProductReceiver.java $
  */
 package gov.usgs.earthquake.distribution;
 

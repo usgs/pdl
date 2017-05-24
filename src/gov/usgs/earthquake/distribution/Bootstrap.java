@@ -1,8 +1,5 @@
 /*
  * Bootstrap
- *
- * $Id: Bootstrap.java 22520 2014-12-30 19:29:45Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/Bootstrap.java $
  */
 package gov.usgs.earthquake.distribution;
 

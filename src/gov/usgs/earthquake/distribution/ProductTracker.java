@@ -1,8 +1,5 @@
 /*
  * ProductTracker
- * 
- * $Id: ProductTracker.java 22326 2014-11-14 20:57:59Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/ProductTracker.java $
  */
 package gov.usgs.earthquake.distribution;
 

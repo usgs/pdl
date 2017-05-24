@@ -16,10 +16,10 @@ import java.util.logging.Logger;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.earthquake.product.ProductTest;
+import gov.usgs.earthquake.product.io.BinaryProductHandler;
+import gov.usgs.earthquake.product.io.BinaryProductSource;
 import gov.usgs.earthquake.product.io.ObjectProductHandler;
 import gov.usgs.earthquake.product.io.ObjectProductSource;
-import gov.usgs.earthquake.product.io.XmlProductHandler;
-import gov.usgs.earthquake.product.io.XmlProductSource;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.logging.SimpleLogFormatter;
 
@@ -34,7 +34,7 @@ import org.junit.Test;
  */
 public class ConcurrentStorageTest {
 
-	public static final String SHAKEMAP_PRODUCT_PATH = "etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.xml";
+	public static final String SHAKEMAP_PRODUCT_PATH = "etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.bin";
 	private Product SHAKEMAP;
 
 	/** EIDS receiver to receive URL notification and attempt download. */
@@ -66,7 +66,7 @@ public class ConcurrentStorageTest {
 		rootLogger.addHandler(handler);
 		rootLogger.setLevel(Level.FINEST);
 
-		SHAKEMAP = ObjectProductHandler.getProduct(new XmlProductSource(
+		SHAKEMAP = ObjectProductHandler.getProduct(new BinaryProductSource(
 				StreamUtils.getInputStream(new File(SHAKEMAP_PRODUCT_PATH))));
 		// resign using a key we can verify against...
 		SHAKEMAP.sign(ProductTest.SIGNATURE_KEY_PAIR.getPrivate());
@@ -253,6 +253,8 @@ public class ConcurrentStorageTest {
 
 			SocketProductSender sender = new SocketProductSender("localhost",
 					Integer.parseInt(SocketProductSender.DEFAULT_SENDER_PORT));
+			sender.setBinaryFormat(true);
+			sender.setEnableDeflate(false);
 			try {
 				sender.sendProduct(product);
 			} catch (Exception e) {
@@ -299,7 +301,7 @@ public class ConcurrentStorageTest {
 	 */
 	private static class ProductWebServer extends Thread {
 		private final ServerSocket serverSocket;
-		private byte[] xml;
+		private byte[] data;
 
 		ProductWebServer(final Product product, final int port)
 				throws Exception {
@@ -307,9 +309,9 @@ public class ConcurrentStorageTest {
 
 			// generate xml in advance
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			new ObjectProductSource(product).streamTo(new XmlProductHandler(
+			new ObjectProductSource(product).streamTo(new BinaryProductHandler(
 					baos));
-			xml = baos.toByteArray();
+			data = baos.toByteArray();
 		}
 
 		public ServerSocket getServerSocket() {
@@ -323,13 +325,13 @@ public class ConcurrentStorageTest {
 					if (socket != null) {
 						OutputStream out = socket.getOutputStream();
 						out.write("HTTP/1.0 200 OK\r\n".getBytes());
-						out.write(("Content-length: " + xml.length + "\r\n")
+						out.write(("Content-length: " + data.length + "\r\n")
 								.getBytes());
 						out.write("\r\n".getBytes());
 
 						Thread.sleep(100);
 
-						out.write(xml);
+						out.write(data);
 						socket.shutdownOutput();
 						StreamUtils.closeStream(out);
 						socket.close();

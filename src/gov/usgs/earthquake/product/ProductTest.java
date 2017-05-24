@@ -1,8 +1,5 @@
 /*
  * ProductTest
- * 
- * $Id: ProductTest.java 12644 2012-01-25 22:03:21Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/product/ProductTest.java $
  */
 package gov.usgs.earthquake.product;
 

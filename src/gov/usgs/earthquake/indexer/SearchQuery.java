@@ -1,8 +1,5 @@
 /*
  * SearchQuery
- * 
- * $Id: SearchQuery.java 17632 2012-11-02 23:22:35Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/indexer/SearchQuery.java $
  */
 package gov.usgs.earthquake.indexer;
 

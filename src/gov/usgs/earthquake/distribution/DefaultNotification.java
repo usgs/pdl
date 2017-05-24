@@ -1,8 +1,5 @@
 /*
  * DefaultNotification
- * 
- * $Id: DefaultNotification.java 21506 2014-05-13 16:49:37Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/DefaultNotification.java $
  */
 package gov.usgs.earthquake.distribution;
 

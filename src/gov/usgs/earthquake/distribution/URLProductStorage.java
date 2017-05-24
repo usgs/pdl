@@ -1,8 +1,5 @@
 /*
  * URLProductStorage
- * 
- * $Id: URLProductStorage.java 18277 2013-01-28 16:57:03Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/URLProductStorage.java $
  */
 package gov.usgs.earthquake.distribution;
 

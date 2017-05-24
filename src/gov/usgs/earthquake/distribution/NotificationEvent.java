@@ -1,8 +1,5 @@
 /*
  * NotificationEvent
- * 
- * $Id: NotificationEvent.java 22505 2014-12-17 16:29:41Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/NotificationEvent.java $
  */
 package gov.usgs.earthquake.distribution;
 

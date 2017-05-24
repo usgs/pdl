@@ -1,8 +1,5 @@
 /*
  * DefaultNotificationListener
- * 
- * $Id: DefaultNotificationListener.java 20433 2013-11-18 22:39:26Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/DefaultNotificationListener.java $
  */
 package gov.usgs.earthquake.distribution;
 

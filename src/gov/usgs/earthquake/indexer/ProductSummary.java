@@ -1,8 +1,5 @@
 /*
  * ProductSummary
- * 
- * $Id: ProductSummary.java 12550 2012-01-19 00:10:42Z jmfee $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/indexer/ProductSummary.java $
  */
 package gov.usgs.earthquake.indexer;
 

@@ -1,8 +1,5 @@
 /*
  * URLContent
- * 
- * $Id: URLContent.java 11059 2011-08-02 16:32:44Z bkfindley $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/product/URLContent.java $
  */
 package gov.usgs.earthquake.product;
 

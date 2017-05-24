@@ -1,8 +1,5 @@
 /*
  * Product
- * 
- * $Id: Product.java 15212 2012-06-12 22:44:59Z ehunter $
- * $URL: https://ghttrac.cr.usgs.gov/websvn/ProductDistribution/trunk/src/gov/usgs/earthquake/product/Product.java $
  */
 package gov.usgs.earthquake.product;
 
