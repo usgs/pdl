@@ -1461,8 +1461,8 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 				// Better sub-select when these properties are specified
 				clauseList
 					.add(String
-						.format("p.%s = (SELECT %s FROM %s ps WHERE ps.%s=%s AND ps.%s=%s AND ps.%s=%s AND ps.%s <> 'DELETE' ORDER BY ps.%s DESC LIMIT 1)",
-							SUMMARY_PRODUCT_INDEX_ID, SUMMARY_TABLE,
+						.format("p.%s = (SELECT %s FROM %s ps WHERE ps.%s='%s' AND ps.%s='%s' AND ps.%s='%s' AND ps.%s <> 'DELETE' ORDER BY ps.%s DESC LIMIT 1)",
+							SUMMARY_PRODUCT_INDEX_ID, SUMMARY_PRODUCT_INDEX_ID, SUMMARY_TABLE,
 							SUMMARY_SOURCE, querySource,
 							SUMMARY_TYPE, queryType,
 							SUMMARY_CODE, queryCode,
