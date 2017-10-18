@@ -131,9 +131,9 @@ public class ConcurrentStorageTest {
 			receiverIndex.removeNotification(existingNotifications.next());
 		}
 
-		final ProductWebServer webServer = new ProductWebServer(product, 8081);
+		final ProductWebServer webServer = new ProductWebServer(product, 9999);
 		final URL webURL = new URL(
-				"http://localhost:8081/somepath/doesnt/matter");
+				"http://localhost:9999/somepath/doesnt/matter");
 
 		final SendViaNotification viaNotification = new SendViaNotification(
 				eidsReceiver, product, webURL, 100);
@@ -172,9 +172,9 @@ public class ConcurrentStorageTest {
 			receiverIndex.removeNotification(existingNotifications.next());
 		}
 
-		final ProductWebServer webServer = new ProductWebServer(product, 8081);
+		final ProductWebServer webServer = new ProductWebServer(product, 9999);
 		final URL webURL = new URL(
-				"http://localhost:8081/somepath/doesnt/matter");
+				"http://localhost:9999/somepath/doesnt/matter");
 
 		final SendViaNotification viaNotification = new SendViaNotification(
 				eidsReceiver, product, webURL, 50);
@@ -271,7 +271,7 @@ public class ConcurrentStorageTest {
 
 	/**
 	 * NotificationListener used for testing.
-	 * 
+	 *
 	 * Saves most recently received product.
 	 */
 	private static class TestingNotificationListener extends
