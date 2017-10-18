@@ -245,7 +245,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 	/**
 	 * Constructor. Sets index_file to the default value JDBC_DEFAULT_FILE
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public JDBCProductIndex() throws Exception {
@@ -265,7 +265,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 	/**
 	 * Grab values from the Config object and put them into private variables.
-	 * 
+	 *
 	 * @param config
 	 *            Configuration for the product index
 	 */
@@ -335,7 +335,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 	/**
 	 * Return a connection to the database.
-	 * 
+	 *
 	 * @return Connection object
 	 * @throws Exception
 	 */
@@ -553,7 +553,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Return all events from the database that meet the parameters specified in
 	 * the ProductIndexQuery object.
-	 * 
+	 *
 	 * @param query
 	 *            A description of which events to retrieve.
 	 * @return List of Event objects
@@ -577,7 +577,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 	/**
 	 * Add an event to the database
-	 * 
+	 *
 	 * @param event
 	 *            Event to store
 	 * @return Event object with eventId set to the database id
@@ -624,7 +624,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 	/**
 	 * Delete an event from the database.
-	 * 
+	 *
 	 * @param event
 	 *            Event to remove
 	 * @return List containing all the ProductIds that were deleted by the
@@ -670,7 +670,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 	/**
 	 * Return all products that aren't associated with an event.
-	 * 
+	 *
 	 * @param query
 	 *            ProductIndexQuery used to further limit the results
 	 * @return List of unassociated Products
@@ -721,7 +721,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Return all products that meet the parameters specified in the
 	 * ProductIndexQuery object.
-	 * 
+	 *
 	 * @param query
 	 *            A description of which products to retrieve.
 	 * @return List of ProductSummary objects
@@ -748,7 +748,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 	/**
 	 * Add a product summary to the database
-	 * 
+	 *
 	 * @param summary
 	 *            ProductSummary object to store. Must not be null.
 	 * @return Copy of the product summary object with the indexId set to the
@@ -860,7 +860,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Delete a product summary from the database If the summary doesn't have an
 	 * indexId value set, throw an exception
-	 * 
+	 *
 	 * @param summary
 	 *            ProductSummary object to delete
 	 */
@@ -892,7 +892,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * Create an association between the given event and product summary. This
 	 * assumes that both the event and the product are already stored in their
 	 * respective tables.
-	 * 
+	 *
 	 * @param event
 	 * @param summary
 	 * @return Copy of event with summary added to the event's products list
@@ -935,9 +935,9 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Delete the association, if it exists, between the given event and product
 	 * summary.
-	 * 
+	 *
 	 * NOTE: this removes the association between the event and ALL versions of the product summary.
-	 * 
+	 *
 	 * @param event
 	 * @param summary
 	 */
@@ -1020,7 +1020,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 	/**
 	 * Query the database to get the event with the given event index id
-	 * 
+	 *
 	 * @param eventIndexId
 	 * @return Event object
 	 * @throws SQLException
@@ -1050,7 +1050,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Query the database to get a list of event index ids that have products
 	 * matching the given ProductIndexQuery.
-	 * 
+	 *
 	 * @param query
 	 * @return List of index ids
 	 * @throws Exception
@@ -1117,7 +1117,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 	/**
 	 * Use the index id to get a ProductSummary from the database.
-	 * 
+	 *
 	 * @param summaryIndexId
 	 * @return ProductSummary pulled from the database
 	 * @throws SQLException
@@ -1303,7 +1303,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		// Add summary property information
 		Map<String, String> properties = getSummaryProperties(summaryIndexId);
 		summary.setProperties(properties);
-		
+
 		// set numeric attributes based on string values to preserve original precision
 		if (properties.containsKey(Product.DEPTH_PROPERTY)) {
 			summary.setEventDepth(new BigDecimal(
@@ -1329,7 +1329,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Use the event index id to get a list of all of the product summary ids
 	 * associated with that event
-	 * 
+	 *
 	 * @param eventIndexId
 	 * @return List of product index ids
 	 * @throws SQLException
@@ -1366,7 +1366,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Query the database for a list of product summary index ids for summaries
 	 * that match the given query.
-	 * 
+	 *
 	 * @param query
 	 * @return List of product index ids
 	 * @throws SQLException
@@ -1437,7 +1437,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * productSummary table. If the query doesn't set any properties, this
 	 * method will return an empty list. It is up to the calling methods to
 	 * check if the clause list is empty when they build their WHERE clause.
-	 * 
+	 *
 	 * @param query
 	 * @return ArrayList<String> containing clauses in the form: column="value"
 	 */
@@ -1451,14 +1451,33 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		// If they only want current products make a clause that contains a
 		// subquery
 		if (query.getResultType() == ProductIndexQuery.RESULT_TYPE_CURRENT) {
-			clauseList
+			String queryCode, querySource, queryType;
+
+			queryCode = query.getProductCode();
+			querySource = query.getProductSource();
+			queryType = query.getProductType();
+
+			if (queryCode != null && querySource != null && queryType != null) {
+				// Better sub-select when these properties are specified
+				clauseList
 					.add(String
-							.format("NOT EXISTS (SELECT %s FROM %s ps WHERE ps.%s=p.%s AND ps.%s=p.%s AND ps.%s=p.%s AND ps.%s > p.%s AND ps.%s <> 'DELETE')",
-									SUMMARY_PRODUCT_INDEX_ID, SUMMARY_TABLE,
-									SUMMARY_TYPE, SUMMARY_TYPE, SUMMARY_SOURCE,
-									SUMMARY_SOURCE, SUMMARY_CODE, SUMMARY_CODE,
-									SUMMARY_UPDATE_TIME, SUMMARY_UPDATE_TIME,
-									SUMMARY_STATUS));
+						.format("p.%s = (SELECT %s FROM %s ps WHERE ps.%s=%s AND ps.%s=%s AND ps.%s=%s AND ps.%s <> 'DELETE' ORDER BY ps.%s DESC LIMIT 1)",
+							SUMMARY_PRODUCT_INDEX_ID, SUMMARY_TABLE,
+							SUMMARY_SOURCE, querySource,
+							SUMMARY_TYPE, queryType,
+							SUMMARY_CODE, queryCode,
+							SUMMARY_STATUS,
+							SUMMARY_UPDATE_TIME));
+			} else {
+				clauseList
+						.add(String
+								.format("NOT EXISTS (SELECT %s FROM %s ps WHERE ps.%s=p.%s AND ps.%s=p.%s AND ps.%s=p.%s AND ps.%s > p.%s AND ps.%s <> 'DELETE')",
+										SUMMARY_PRODUCT_INDEX_ID, SUMMARY_TABLE,
+										SUMMARY_TYPE, SUMMARY_TYPE, SUMMARY_SOURCE,
+										SUMMARY_SOURCE, SUMMARY_CODE, SUMMARY_CODE,
+										SUMMARY_UPDATE_TIME, SUMMARY_UPDATE_TIME,
+										SUMMARY_STATUS));
+			}
 		}
 		// If they only want superseded products, make a slightly different
 		// clause that has a subquery
@@ -1652,7 +1671,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Create the full SELECT query for the products table using the clauseList
 	 * as the WHERE clause
-	 * 
+	 *
 	 * @param clauseList
 	 *            List of Strings to be AND'd together in the WHERE clause
 	 * @param orderby
@@ -1689,7 +1708,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * as the WHERE clause. This method is a wrapper for
 	 * buildProductQuery(List<String> clauseList, String orderby) with an empty
 	 * orderby string
-	 * 
+	 *
 	 * @param clauseList
 	 * @return String containing the full SELECT query
 	 */
@@ -1699,7 +1718,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 	/**
 	 * Parse the next item in the result set into a ProductSummary object
-	 * 
+	 *
 	 * @param results
 	 * @return ProductSummary object with attributes filled from database
 	 * @throws Exception
@@ -1788,7 +1807,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Look in the database for all the properties associated with the given
 	 * product summary.
-	 * 
+	 *
 	 * @param summaryIndexId
 	 * @return Map of property name to property value
 	 * @throws SQLException
@@ -1840,7 +1859,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Save the properties in the database and associate them to the given
 	 * productId
-	 * 
+	 *
 	 * @param productId
 	 * @param properties
 	 * @throws SQLException
@@ -1866,7 +1885,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 	/**
 	 * Delete the given properties from the index
-	 * 
+	 *
 	 * @param productId
 	 */
 	protected synchronized void removeProductProperties(long productId)
@@ -1879,7 +1898,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Look in the database for all the links associated with the given product
 	 * summary.
-	 * 
+	 *
 	 * @param summaryIndexId
 	 * @return Map of link relation (link type) to URL
 	 * @throws SQLException
@@ -1951,7 +1970,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 	/**
 	 * Save the links in the database and associate them to the given productId
-	 * 
+	 *
 	 * @param productId
 	 *            Index id of the product to select
 	 * @param links
@@ -1980,7 +1999,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 	/**
 	 * Delete the given links from the index
-	 * 
+	 *
 	 * @param productId
 	 */
 	protected synchronized void removeProductLinks(long productId)
@@ -1993,7 +2012,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Convert the given longitude to be between -180 and 180. If the given
 	 * value is already in the range, this method just returns the value.
-	 * 
+	 *
 	 * @param lon
 	 * @return double normalized between -180 and 180
 	 */
@@ -2022,7 +2041,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 	/**
 	 * Wrapper to normalize BigDecimal longitudes
-	 * 
+	 *
 	 * @param lon
 	 * @return Normalized BigDecimal latitude
 	 */
@@ -2037,7 +2056,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Called when the indexer is done updating events after a product is
 	 * processed. Stores the preferred attributes for each event in the list
-	 * 
+	 *
 	 * @param events
 	 *            the events that have been updated.
 	 */
