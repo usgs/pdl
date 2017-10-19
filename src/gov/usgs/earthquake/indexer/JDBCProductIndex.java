@@ -309,7 +309,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try {
 			insertSummary = connection.prepareStatement(INSERT_SUMMARY_QUERY,
 					new String[] { SUMMARY_PRODUCT_INDEX_ID });
-		} catch (java.sql.SQLException e) {
+		} catch (SQLException e) {
 			// sqlite doesn't support RETURN_GENERATED_KEYS, but appears to
 			// return generated keys anyways
 			insertSummary = connection.prepareStatement(INSERT_SUMMARY_QUERY);
