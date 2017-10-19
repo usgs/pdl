@@ -2020,26 +2020,27 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @return double normalized between -180 and 180
 	 */
 	protected double normalizeLongitude(double lon) {
+		double normalizedLon = lon;
 
-		if (lon <= 180 && lon > -180) {
-			return lon;
+		if (normalizedLon <= 180 && normalizedLon > -180) {
+			return normalizedLon;
 		}
 
 		// If the value is above 180, make it negative by subtracting 360
-		if (lon > 180) {
-			lon = lon % 360;
-			lon = lon - 360;
-			return lon;
+		if (normalizedLon > 180) {
+			normalizedLon = normalizedLon % 360;
+			normalizedLon = normalizedLon - 360;
+			return normalizedLon;
 		}
 
 		// If the value is below 180, make it positive by adding 360
-		if (lon <= -180) {
-			lon = lon % 360;
-			lon = lon + 360;
-			return lon;
+		if (normalizedLon <= -180) {
+			normalizedLon = normalizedLon % 360;
+			normalizedLon = normalizedLon + 360;
+			return normalizedLon;
 		}
 
-		return lon;
+		return normalizedLon;
 	}
 
 	/**
