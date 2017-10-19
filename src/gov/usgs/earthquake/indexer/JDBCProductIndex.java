@@ -1451,7 +1451,9 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		// If they only want current products make a clause that contains a
 		// subquery
 		if (query.getResultType() == ProductIndexQuery.RESULT_TYPE_CURRENT) {
-			String queryCode, querySource, queryType;
+			String queryCode,
+					querySource,
+					queryType;
 
 			queryCode = query.getProductCode();
 			querySource = query.getProductSource();
