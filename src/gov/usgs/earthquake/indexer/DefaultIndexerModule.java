@@ -141,11 +141,9 @@ public class DefaultIndexerModule implements IndexerModule {
 				// based on product source, who authored this product.
 				preferredWeight += AUTHORITATIVE_WEIGHT;
 			}
-			if (eventSource != null) {
-				if (REGIONS.isAuthor(eventSource, location)) {
-					// based on event source, which event this product is about
-					preferredWeight += AUTHORITATIVE_EVENT_WEIGHT;
-				}
+			if (eventSource != null && REGIONS.isAuthor(eventSource, location)) {
+				// based on event source, which event this product is about
+				preferredWeight += AUTHORITATIVE_EVENT_WEIGHT;
 			}
 		}
 
@@ -167,15 +165,17 @@ public class DefaultIndexerModule implements IndexerModule {
 	 * @return base product type (without any known prefix or suffix).
 	 */
 	public String getBaseProductType(String type) {
-		if (type.startsWith("internal-")) {
-			type = type.replace("internal-", "");
+		String baseType = type;
+
+		if (baseType.startsWith("internal-")) {
+			baseType = baseType.replace("internal-", "");
 		}
 
-		if (type.endsWith("-scenario")) {
-			type = type.replace("-scenario", "");
+		if (baseType.endsWith("-scenario")) {
+			baseType = baseType.replace("-scenario", "");
 		}
 
-		return type;
+		return baseType;
 	}
 
 	/**

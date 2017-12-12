@@ -44,9 +44,6 @@ public class ContentListener extends DefaultNotificationListener {
 	/** Output format for files inside outputDirectory. */
 	private String outputFormat = DEFAULT_OUTPUT_FORMAT;
 
-	public ContentListener() {
-	}
-
 	@Override
 	public void configure(final Config config) throws Exception {
 		super.configure(config);

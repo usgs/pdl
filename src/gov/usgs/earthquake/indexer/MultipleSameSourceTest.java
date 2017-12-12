@@ -54,7 +54,7 @@ public class MultipleSameSourceTest {
 	}
 
 	@Before
-	public void setup() throws Exception {
+	public void setUp() throws Exception {
 		// turn off tracking during test
 		ProductTracker.setTrackerEnabled(false);
 
@@ -79,7 +79,7 @@ public class MultipleSameSourceTest {
 	}
 
 	@After
-	public void teardown() throws Exception {
+	public void tearDown() throws Exception {
 		indexer.shutdown();
 	}
 
