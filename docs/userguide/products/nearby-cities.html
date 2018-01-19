@@ -2,6 +2,7 @@
 <html>
 <head>
 	<title>Nearby Cities</title>
+	<link rel="stylesheet" href="../userguide.css" />
 </head>
 <body>
 	<h1>Nearby Cities</h1>
@@ -13,18 +14,28 @@
 		<dt>nearby-cities</dt>
 		<dd>
 			This product contains data about cities near to the event. Cities
-			are ordered by their relative distance. Content is generally fetched
-			from GeoServe web service and there is some logic determining
-			exactly which cities are chosen.
+			are ordered by their relative distance.
+
+			<p>
+				When this product is not contributed, nearby places are loaded
+				from the Geoserve Places web service.  For example:
+
+				<a target="_blank"
+					href="https://earthquake.usgs.gov/ws/geoserve/places.json?latitude=45.1&amp;longitude=-70.1&amp;type=event"
+				>https://earthquake.usgs.gov/ws/geoserve/places.json?latitude=45.1&amp;longitude=-70.1&amp;type=event</a>
+			</p>
+			</p>
 		</dd>
 	</dl>
+
 	<h2>Properties</h2>
 	<dl>
 		<dd>Not applicable</dd>
 	</dl>
+
 	<h2>Contents</h2>
 	<dl>
-		<dt>nearby-cities.inc.html</dt>
+		<dt class="deprecated">nearby-cities.inc.html</dt>
 		<dd>[text/html] List markup for the cities.</dd>
 
 		<dt>nearby-cities.json</dt>
@@ -33,5 +44,52 @@
 			data.
 		</dd>
 	</dl>
+
+	<h2>JSON Format</h2>
+	<p>The JSON file should contain an array of city objects, typically 5 nearby places.
+
+	<h3>City object properties</h3>
+	<dl>
+		<dt>distance</dt>
+		<dd>distance from epicenter in kilometers</dd>
+
+		<dt>direction</dt>
+		<dd>compass direction from city/place to epicenter</dd>
+
+		<dt>name</dt>
+		<dd>name of city/place</dd>
+
+		<dt>longitude</dt>
+		<dd>longitude in decimal degrees</dd>
+
+		<dt>latitude</dt>
+		<dd>latitude in decimal degrees</dd>
+
+		<dt>population</dt>
+		<dd>population of city, or <code>null</code>
+			<br/><small>(NOTE: this must be the JSON <code>null</code> value, not a quoted string)</small>
+		</dd>
+	</dl>
+
+	<h3>Example</h3>
+	<div class="code"><pre>[
+  {
+    "distance": 2,
+    "direction":"SE",
+    "name":"Berkeley, California",
+    "longitude":-122.2746,
+    "latitude":37.8718,
+    "population":null
+  },
+  {
+    "distance":4,
+    "direction":"NE",
+    "name":"Emeryville, California",
+    "longitude":-122.2853,
+    "latitude":37.8313,
+    "population":null
+  }
+]</pre></div>
+
 </body>
 </html>
