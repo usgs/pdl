@@ -15,31 +15,14 @@
  * @author jmfee@usgs.gov
  * @version 2018-01-25
  */
-'use strict';
-const https = require('https');
+"use strict";
+const https = require("https");
 
 
 // URL to fetch geoserve authoritative regions
-const AUTHORITATIVE_URL = 'https://earthquake.usgs.gov/ws/geoserve/layers.json?type=authoritative';
-
-// fetch and format the regions
-getUrl(AUTHORITATIVE_URL).then(data => {
-    return JSON.parse(data);
-}).then(data => {
-    let regions = data.authoritative.features;
-    // sort by network code
-    regions.sort(function(a, b) {
-        let anet = a.properties.network;
-        let bnet = b.properties.network;
-        return (anet < bnet) ? -1 : (anet == bnet) ? 0 : 1;
-    });
-    regions.forEach(printRegion);
-}).catch(err => {
-    process.stderr.write(err);
-});
+const AUTHORITATIVE_URL = "https://earthquake.usgs.gov/ws/geoserve/layers.json?type=authoritative";
 
 
-///////////////////////////////////////////////////////////////////////////////
 
 /**
  * Fetch a URL (https of course) and return a promise.
@@ -49,39 +32,19 @@ getUrl(AUTHORITATIVE_URL).then(data => {
  */
 function getUrl(url) {
     return new Promise((resolve, reject) => {
-        https.get(url, res => {
-            let body = '';
-            res.on('data', data => {
+        https.get(url, (res) => {
+            let body = "";
+            res.on("data", (data) => {
                 body += data;
             });
-            res.on('error', (e) => {
+            res.on("error", (e) => {
                 reject(e);
             });
-            res.on('end', () => {
+            res.on("end", () => {
                 resolve(body);
             });
         });
     });
-}
-
-/**
- * Output region name and coordinate elements.
- * Assumes coordinates are of type Polygon.
- * @param {Object} region authoritative region geojson feature.
- */
-function printRegion(region) {
-    process.stderr.write(region.properties.network + "\n");
-    // polygon outer ring is 0th ring in coordinates
-    let coords = region.geometry.coordinates[0];
-    // geoserve outputs counterclockwise
-    coords = coords.reverse();
-
-    coords.forEach((coord) => {
-        let latitude = round(coord[1], 4).toFixed(4);
-        let longitude = round(coord[0], 4).toFixed(4);
-        process.stderr.write(`\t\t\t<coordinate latitude="${latitude}" longitude="${longitude}"/>\n`)
-    });
-    process.stderr.write("\n");
 }
 
 /**
@@ -94,3 +57,39 @@ function round(num, decimals) {
     let rounded = Math.round(num * scale) / scale;
     return rounded;
 }
+
+/**
+ * Output region name and coordinate elements.
+ * Assumes coordinates are of type Polygon.
+ * @param {Object} region authoritative region geojson feature.
+ */
+function showRegion(region) {
+    process.stderr.write(region.properties.network + "\n");
+    // polygon outer ring is 0th ring in coordinates
+    let coords = region.geometry.coordinates[0];
+    // geoserve outputs counterclockwise
+    coords = coords.reverse();
+
+    coords.forEach((coord) => {
+        let latitude = round(coord[1], 4).toFixed(4);
+        let longitude = round(coord[0], 4).toFixed(4);
+        process.stderr.write(`\t\t\t<coordinate latitude="${latitude}" longitude="${longitude}"/>\n`);
+    });
+    process.stderr.write("\n");
+}
+
+// fetch and format the regions
+getUrl(AUTHORITATIVE_URL).then((data) => {
+    return JSON.parse(data);
+}).then((data) => {
+    let regions = data.authoritative.features;
+    // sort by network code
+    regions.sort(function(a, b) {
+        let anet = a.properties.network;
+        let bnet = b.properties.network;
+        return (anet < bnet) ? -1 : (anet === bnet) ? 0 : 1;
+    });
+    regions.forEach(showRegion);
+}).catch((err) => {
+    process.stderr.write(err);
+});
