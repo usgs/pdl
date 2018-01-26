@@ -19,7 +19,6 @@ import sys
 import xml.parsers.expat as expat
 
 
-
 KML_TEMPLATE = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
@@ -93,7 +92,6 @@ def format_regions_kml(regions_xml):
     kml = kml.replace("{{REGIONS}}", ''.join(placemarks))
     kml = kml.replace("{{UPDATED}}", regions_xml["updated"])
     return kml
-    
 
 def parse_regions(file_like):
     """Parse Regions XML from a file-like object."""
@@ -124,7 +122,6 @@ def parse_regions(file_like):
     p.EndElementHandler = end_element
     p.ParseFile(file_like)
     return regions
-
 
 
 if __name__ == "__main__":
