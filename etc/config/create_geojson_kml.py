@@ -1,20 +1,23 @@
 #! /usr/bin/env python
 """
-Script to convert regions.xml to KML.
+Script to convert from region XML to GeoJSON and KML for easier visualization.
 
-Reads xml from stdin, writes kml to stdout.
-
+Reads regions.xml
+Writes regions.geojson and regions.kml
 
 Usage:
-        cat regions.xml | ./regions_to_kml.py > regions.kml
+        ./regions_to_kml.py
 
 @author jmfee@usgs.gov
 @version 2018-01-26
 """
 
 
+import json
+import os
 import sys
 import xml.parsers.expat as expat
+
 
 
 KML_TEMPLATE = """\
@@ -44,7 +47,7 @@ KML_TEMPLATE = """\
 </kml>
 """
 
-PLACEMARK_TEMPLATE = """
+KML_PLACEMARK_TEMPLATE = """
 <Placemark id="region_{{ID}}">
     <name>{{ID}}</name>
     <styleUrl>#RegionStyle</styleUrl>
@@ -54,14 +57,37 @@ PLACEMARK_TEMPLATE = """
 </Placemark>
 """
 
+
+def format_regions_geojson(regions_xml):
+    """Format regions as a GeoJSON feature collection"""
+    geojson = {
+        "type": "FeatureCollection",
+        "updated": regions_xml["updated"],
+        "features": [
+            {
+                "type": "Feature",
+                "id": r["code"],
+                "properties": {
+                    "network": r["code"],
+                },
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [r["coords"]]
+                },
+            } for r in regions_xml["regions"]
+        ],
+    }
+    return json.dumps(geojson, indent=4)
+
 def format_regions_kml(regions_xml):
+    """Format regions as a KML"""
     placemarks = []
     for region in regions_xml["regions"]:
-        placemark = PLACEMARK_TEMPLATE
+        placemark = KML_PLACEMARK_TEMPLATE
         placemark = placemark.replace("{{ID}}", region["code"])
         placemark = placemark.replace("{{COORDS}}",
                 # coords in lon,lat order
-                '\n    '.join([','.join(c) for c in region["coords"]]))
+                '\n    '.join([','.join(map(str, c)) for c in region["coords"]]))
         placemarks.append(placemark)
     kml = KML_TEMPLATE
     kml = kml.replace("{{REGIONS}}", ''.join(placemarks))
@@ -85,8 +111,8 @@ def parse_regions(file_like):
             }
         elif name == "coordinate":
             region["region"]["coords"].append([
-                attrs["longitude"],
-                attrs["latitude"],
+                float(attrs["longitude"]),
+                float(attrs["latitude"]),
             ])
         elif name == "update":
             regions["updated"] = attrs["date"]
@@ -102,5 +128,14 @@ def parse_regions(file_like):
 
 
 if __name__ == "__main__":
-    regions_xml = parse_regions(sys.stdin)
-    print(format_regions_kml(regions_xml))
+    # work from same directory as script
+    os.chdir(os.path.dirname(sys.argv[0]))
+    print("Parsing regions.xml")
+    with open("regions.xml", "rb") as xmlf:
+        regions_xml = parse_regions(xmlf)
+    print("Writing regions.geojson")
+    with open("regions.geojson", "wb") as jsonf:
+        jsonf.write(format_regions_geojson(regions_xml))
+    print("Writing regions.kml")
+    with open("regions.kml", "wb") as kmlf:
+        kmlf.write(format_regions_kml(regions_xml))
