@@ -65,6 +65,9 @@ public class Indexer extends DefaultNotificationListener {
 	/** Preferred weight for persistent trump. */
 	public static final long TRUMP_PREFERRED_WEIGHT = 100000000;
 
+	public static final String TRUMP_PRODUCT_TYPE = "trump";
+	public static final String PERSISTENT_TRUMP_PREFIX = "trump-";
+
 	/** Property name to configure a custom associator. */
 	public static final String ASSOCIATOR_CONFIG_PROPERTY = "associator";
 
@@ -433,8 +436,10 @@ public class Indexer extends DefaultNotificationListener {
 		if (!superAccept) {
 			// automatically accept products that affect association
 			final String type = id.getType();
-			if ("origin".equals(type) || "associate".equals(type) || "disassociate".equals(type)
-					|| type.startsWith("trump")) {
+			if (Event.ORIGIN_PRODUCT_TYPE.equals(type) ||
+					Event.ASSOCIATE_PRODUCT_TYPE.equals(type) ||
+					Event.DISASSOCIATE_PRODUCT_TYPE.equals(type)
+					|| type.startsWith(TRUMP_PRODUCT_TYPE)) {
 				return true;
 			}
 		}
@@ -563,7 +568,7 @@ public class Indexer extends DefaultNotificationListener {
 			// special handling to allow trump products to associate based on
 			// a product link. Not used when eventsource/eventsourcecode set.
 			if (prevEvent == null
-					&& productSummary.getId().getType().equals("trump")
+					&& productSummary.getId().getType().equals(TRUMP_PRODUCT_TYPE)
 					&& productSummary.getLinks().containsKey("product")
 					&& !productSummary.getStatus().equalsIgnoreCase(
 							Product.STATUS_DELETE)) {
@@ -795,7 +800,7 @@ public class Indexer extends DefaultNotificationListener {
 		}
 
 		String type = productSummary.getId().getType();
-		if (type.equals("trump")) {
+		if (type.equals(TRUMP_PRODUCT_TYPE)) {
 			// version specific trump
 			ProductId trumpedId = null;
 			ProductSummary trumpedSummary = null;
@@ -895,17 +900,17 @@ public class Indexer extends DefaultNotificationListener {
 		String trumpCode = null;
 
 		// determine persistentTrumpType and trumpType
-		if (type.startsWith("trump-")) {
+		if (type.startsWith(PERSISTENT_TRUMP_PREFIX)) {
 			// incoming trump product
 			persistentTrumpType = type;
-			trumpType = type.replace("trump-", "");
+			trumpType = type.replace(PERSISTENT_TRUMP_PREFIX, "");
 			associatingTrump = true;
 			// always set persistent trump preferred weight to 1,
 			// so most recent updateTime is most preferred
 			updatedEvent = setSummaryWeight(updatedEvent, productSummary, 1L);
 		} else {
 			// incoming product, possibly affected by existing trump
-			persistentTrumpType = "trump-" + type;
+			persistentTrumpType = PERSISTENT_TRUMP_PREFIX + type;
 			trumpType = type;
 		}
 		

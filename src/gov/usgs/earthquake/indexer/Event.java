@@ -28,6 +28,7 @@ import java.util.logging.Logger;
  */
 public class Event implements Comparable<Event> {
 
+	public static final String ORIGIN_PRODUCT_TYPE = "origin";
 	public static final String ASSOCIATE_PRODUCT_TYPE = "associate";
 	public static final String DISASSOCIATE_PRODUCT_TYPE = "disassociate";
 	public static final String OTHEREVENTSOURCE_PROPERTY = "othereventsource";
@@ -492,11 +493,11 @@ public class Event implements Comparable<Event> {
 		ProductSummary preferredProduct = null;
 		Iterator<ProductSummary> iter = null;
 
-		productsList = allProducts.get("origin");
+		productsList = allProducts.get(ORIGIN_PRODUCT_TYPE);
 		if (productsList != null) {
 			// "origin" products not superseded or deleted
 			productsList = getSortedMostPreferredFirst(getWithoutDeleted(
-					getWithoutSuperseded(allProducts.get("origin"))));
+					getWithoutSuperseded(allProducts.get(ORIGIN_PRODUCT_TYPE))));
 			iter = productsList.iterator();
 			while (iter.hasNext()) {
 				preferredProduct = iter.next();
@@ -507,7 +508,7 @@ public class Event implements Comparable<Event> {
 
 			// "origin" products superseded by a delete
 			productsList = getSortedMostPreferredFirst(getWithoutSuperseded(
-					getWithoutDeleted(allProducts.get("origin"))));
+					getWithoutDeleted(allProducts.get(ORIGIN_PRODUCT_TYPE))));
 			iter = productsList.iterator();
 			while (iter.hasNext()) {
 				preferredProduct = iter.next();
@@ -579,12 +580,12 @@ public class Event implements Comparable<Event> {
 		ProductSummary preferredProduct = null;
 		Iterator<ProductSummary> iter = null;
 
-		productsList = allProducts.get("origin");
+		productsList = allProducts.get(ORIGIN_PRODUCT_TYPE);
 		if (productsList != null) {
 			// "origin" products not superseded or deleted,
 			// that have origin properties
 			productsList = getSortedMostPreferredFirst(getWithoutDeleted(
-					getWithoutSuperseded(allProducts.get("origin"))));
+					getWithoutSuperseded(allProducts.get(ORIGIN_PRODUCT_TYPE))));
 			iter = productsList.iterator();
 			while (iter.hasNext()) {
 				preferredProduct = iter.next();
@@ -596,7 +597,7 @@ public class Event implements Comparable<Event> {
 			// "origin" products not superseded,
 			// that have event id
 			productsList = getSortedMostPreferredFirst(getWithoutSuperseded(
-					allProducts.get("origin")));
+					allProducts.get(ORIGIN_PRODUCT_TYPE)));
 			iter = productsList.iterator();
 			while (iter.hasNext()) {
 				preferredProduct = iter.next();
