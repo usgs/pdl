@@ -418,6 +418,31 @@ public class Indexer extends DefaultNotificationListener {
 	}
 
 	/**
+	 * Override the DefaultNotificationListener accept method,
+	 * to always process products that may affect event association.
+	 *
+	 * @param id
+	 *        the product id to check.
+	 * @return boolean
+	 *         whether the product should be indexed.
+	 */
+	@Override
+	public boolean accept(final ProductId id) {
+		final boolean superAccept = super.accept(id);
+
+		if (!superAccept) {
+			// automatically accept products that affect association
+			final String type = id.getType();
+			if ("origin".equals(type) || "associate".equals(type) || "disassociate".equals(type)
+					|| type.startsWith("trump")) {
+				return true;
+			}
+		}
+
+		return superAccept;
+	}
+
+	/**
 	 * This method receives a product from Product Distribution and adds it to
 	 * the index.
 	 * 
