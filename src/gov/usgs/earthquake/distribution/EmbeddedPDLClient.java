@@ -89,9 +89,9 @@ public class EmbeddedPDLClient {
 
 		// client for production hub
 		File dataDirectory = new File("embeddedStorage");
-		String hostname = "ehppdl1.cr.usgs.gov";
+		String hostname = "prod01-pdl01.cr.usgs.gov";
 		Integer port = 39977;
-		String alternateServers = "ehppdl2.wr.usgs.gov";
+		String alternateServers = "prod02-pdl01.wr.usgs.gov:39977";
 
 		// create embedded client
 		final EmbeddedPDLClient client = new EmbeddedPDLClient(dataDirectory,
