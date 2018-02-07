@@ -8,7 +8,7 @@ public class EIDSClientTest {
 
 	@Test
 	public void testConnection() throws InterruptedException {
-		final EIDSClient client = new EIDSClient("ehppdl1.cr.usgs.gov", 39977);
+		final EIDSClient client = new EIDSClient("prod01-pdl01.cr.usgs.gov", 39977);
 		client.addListener(new EIDSListener() {
 			@Override
 			public void onEIDSMessage(final EIDSMessageEvent event) {

@@ -456,7 +456,7 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 	public static final String VALIDATE_ARGUMENT = "--validate";
 	public static final String PRIVATE_KEY_ARGUMENT = "--privateKey=";
 	public static final String SERVERS_ARGUMENT = "--servers=";
-	public static final String SERVERS_DEFAULT = "ehppdl1.cr.usgs.gov:11235,ehppdl2.wr.usgs.gov:11235";
+	public static final String SERVERS_DEFAULT = "prod01-pdl01.cr.usgs.gov:11235,prod02-pdl01.cr.usgs.gov:11235";
 	public static final String CONNECT_TIMEOUT_ARGUMENT = "--connectTimeout=";
 	public static final Integer DEFAULT_CONNECT_TIMEOUT = 15000;
 	public static final String BINARY_FORMAT_ARGUMENT = "--binaryFormat";

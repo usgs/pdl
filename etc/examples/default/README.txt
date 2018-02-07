@@ -20,5 +20,5 @@ More Information
 For more information about Product Distribution, like integrating with external
 applications to send and receive products, visit the online documentation:
 
-	http://ehppdl1.cr.usgs.gov/userguide/
+	https://usgs.github.io/pdl/userguide/
 

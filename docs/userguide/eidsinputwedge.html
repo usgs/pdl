@@ -126,7 +126,7 @@ privateKeyFile = /path/to/id_dsa
 senders = pdldevel
 
 ; use this list for production
-; senders = ehppdl1, ehppdl2
+; senders = prod01, prod02
 
 
 
@@ -198,7 +198,6 @@ redirectconsole = false
 
 
 
-
 ;; TRACKER
 ;; The tracker provides centralized tracking.  A URL _must_ be provided for 
 ;; sent messages, but tracker updates are not sent from this computer unless
@@ -209,7 +208,6 @@ trackerURL = http://ehppdl1.cr.usgs.gov/tracker
 
 ; whether to send tracker updates from this computer
 enableTracker = false
-
 
 
 
@@ -225,16 +223,16 @@ port = 11235
 connectTimeout = 15000
 
 
-; ehppdl1 and ehppdl2 are the production hubs
-[ehppdl1]
+; prod01 and prod02 are the production hubs
+[prod01]
 type = gov.usgs.earthquake.distribution.SocketProductSender
-host = ehppdl1.cr.usgs.gov
+host = prod01-pdl01.cr.usgs.gov
 port = 11235
 connectTimeout = 15000
 
-[ehppdl2]
+[prod02]
 type = gov.usgs.earthquake.distribution.SocketProductSender
-host = ehppdl2.wr.usgs.gov
+host = prod02-pdl01.cr.usgs.gov
 port = 11235
 connectTimeout = 15000
 </pre></div>

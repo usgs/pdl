@@ -140,9 +140,9 @@ enableTracker = false
 type = gov.usgs.earthquake.distribution.EIDSNotificationReceiver
 storageDirectory = data/receiver_storage
 indexFile = data/receiver_index.db
-serverHost = ehppdl1.cr.usgs.gov
+serverHost = prod01-pdl01.cr.usgs.gov
 serverPort = 39977
-alternateServers = ehppdl2.wr.usgs.gov:39977
+alternateServers = prod02-pdl01.cr.usgs.gov:39977
 cleanupInterval = 900000
 storageage = 900000
 
@@ -154,7 +154,7 @@ type = gov.usgs.earthquake.indexer.Indexer
 listenerIndexFile = data/indexer_listener_index.db
 storageDirectory = data/indexer_product_storage
 indexfile = data/indexer_product_index.db
-includeTypes = origin
+includeTypes = origin, associate, disassociate, trump, trump-origin
 listeners = indexerlistener_example
 archivePolicy = policyOldEvents, policyOldProducts, policyOldProductVersions
 

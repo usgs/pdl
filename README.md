@@ -11,12 +11,14 @@ PDL distributes many types of information. It:
 
 
 ## Download latest release
-  - http://ehppdl1.cr.usgs.gov/ProductClient.zip
-  - or, only the latest JAR file http://ehppdl1.cr.usgs.gov/ProductClient/ProductClient.jar
+  Download ProductClient.zip from the GitHub releases page:
+
+  - https://github.com/usgs/pdl/releases
+
+  PDL can be upgraded by replacing the ProductClient.jar file and restarting the process.
 
 ## User Guide
-  - http://ehppdl1.cr.usgs.gov/userguide/
-  - http://ehppdl2.wr.usgs.gov/userguide/
+  - https://usgs.github.io/pdl/
 
 ## Examples
   - http://github.com/jmfee-usgs/pdl-client-examples

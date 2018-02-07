@@ -205,19 +205,27 @@
 			command line argument of ProductClient.jar
 		</dd>
 
-		<dt>enableTracker</dt>
+		<dt class="deprecated">enableTracker</dt>
 		<dd>Whether or not to send tracker updates for sent and received
-			products. Default is disabled (false).</dd>
+			products. Default is disabled (false).
+			<strong>The tracker is no longer supported.</strong>
+		</dd>
 
-		<dt>trackerURL</dt>
-		<dd>Default tracker URL assigned to products when sending. It is
-			recommended this be http://ehppdl1.cr.usgs.gov/tracker/</dd>
+		<dt class="deprecated">trackerURL</dt>
+		<dd>Default tracker URL assigned to products when sending.</dd>
 
-		<dt>enableZabbix</dt>
+		<dt class="deprecated">enableZabbix</dt>
 		<dd>Whether or not to enable zabbix monitoring. Default is
-			disabled (false).</dd>
+			disabled (false).
+			<strong>Zabbix monitoring is no longer supported.</strong>
 
-		<dt>zabbixPort</dt>
+			<p>We now recommend configuring a HeartbeatListener, and
+				using an external monitoring script
+				https://github.com/usgs/pdlmonitor
+			</p>
+		</dd>
+
+		<dt class="deprecated">zabbixPort</dt>
 		<dd>Override the default port (10052) when using zabbix
 			monitoring.</dd>
 	</dl>
