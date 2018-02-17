@@ -153,50 +153,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 				final String indexerCommand = getProductSummaryCommand(change,
 						indexerChange);
 
-				// execute
-				LOGGER.info("[" + getName() + "] running command "
-						+ indexerCommand);
-				final Process process = Runtime.getRuntime().exec(
-						indexerCommand);
-
-				// Stream content over stdin if it exists
-				if (product != null) {
-					Content content = product.getContents().get("");
-					if (content != null) {
-						StreamUtils.transferStream(content.getInputStream(),
-								process.getOutputStream());
-					}
-				}
-
-				// Close the output stream
-				StreamUtils.closeStream(process.getOutputStream());
-
-				Timer commandTimer = new Timer();
-				if (this.getTimeout() > 0) {
-					// Schedule process destruction for commandTimeout
-					// milliseconds in the future
-					commandTimer.schedule(new TimerTask() {
-						public void run() {
-							LOGGER.warning("[" + getName()
-									+ "] command timeout '" + indexerCommand
-									+ "', destroying process.");
-							process.destroy();
-						}
-					}, this.getTimeout());
-				}
-
-				// Wait for process to complete
-				process.waitFor();
-				// Cancel the timer if it was not triggered
-				commandTimer.cancel();
-				LOGGER.info("[" + getName() + "] command '" + indexerCommand
-						+ "' exited with status '" + process.exitValue() + "'");
-
-				// send heartbeat info
-				HeartbeatListener.sendHeartbeatMessage(getName(), "command",
-						indexerCommand);
-				HeartbeatListener.sendHeartbeatMessage(getName(), "exit value",
-						Integer.toString(process.exitValue()));
+				runProductCommand(indexerCommand, product);
 			}
 		}
 
@@ -235,6 +192,57 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 		}
 	}
 
+	/**
+	 * Run a product command.
+	 *
+	 * @param command command and arguments.
+	 * @param product product, when set and empty content (path "") is defined,
+	 *        the content is provided to the command on stdin.
+	 * @throws Exception
+	 */
+	public void runProductCommand(final String command, final Product product) throws Exception {
+		// execute
+		LOGGER.info("[" + getName() + "] running command " + command);
+		final Process process = Runtime.getRuntime().exec(command);
+
+		// Stream content over stdin if it exists
+		if (product != null) {
+			Content content = product.getContents().get("");
+			if (content != null) {
+				StreamUtils.transferStream(content.getInputStream(),
+						process.getOutputStream());
+			}
+		}
+
+		// Close the output stream
+		StreamUtils.closeStream(process.getOutputStream());
+
+		Timer commandTimer = new Timer();
+		if (this.getTimeout() > 0) {
+			// Schedule process destruction for commandTimeout
+			// milliseconds in the future
+			commandTimer.schedule(new TimerTask() {
+				public void run() {
+					LOGGER.warning("[" + getName()
+							+ "] command timeout '" + command
+							+ "', destroying process.");
+					process.destroy();
+				}
+			}, this.getTimeout());
+		}
+
+		// Wait for process to complete
+		process.waitFor();
+		// Cancel the timer if it was not triggered
+		commandTimer.cancel();
+		LOGGER.info("[" + getName() + "] command '" + command
+				+ "' exited with status '" + process.exitValue() + "'");
+
+		// send heartbeat info
+		HeartbeatListener.sendHeartbeatMessage(getName(), "command", command);
+		HeartbeatListener.sendHeartbeatMessage(getName(), "exit value",
+				Integer.toString(process.exitValue()));
+	}
 
 	/**
 	 * Get the product command and add the indexer arguments to it.
