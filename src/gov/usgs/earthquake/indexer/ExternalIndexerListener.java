@@ -235,6 +235,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 		}
 	}
 
+
 	/**
 	 * Get the product command and add the indexer arguments to it.
 	 * 
@@ -245,8 +246,78 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 	 */
 	public String getProductSummaryCommand(IndexerEvent change,
 			IndexerChange indexerChange) throws Exception {
-		StringBuffer indexerCommand = new StringBuffer(getCommand());
 		ProductSummary summary = change.getSummary();
+
+		Event event = indexerChange.getNewEvent();
+		// When archiving events include event information
+		if (event == null && indexerChange.getType() == IndexerChangeType.EVENT_ARCHIVED) {
+			event = indexerChange.getOriginalEvent();
+		}
+
+		String command = getProductSummaryCommand(event, summary);
+
+		// Tells external indexer what type of index event occurred.
+		command = command + " " +
+				ExternalIndexerListener.EVENT_ACTION_ARGUMENT +
+				indexerChange.getType().toString();
+
+		return command;
+	}
+
+	/**
+	 * Get the command for a specific event and summary.
+	 *
+	 * @param event
+	 * @param summary
+	 * @return command line arguments as a string.
+	 * @throws Exception
+	 */
+	public String getProductSummaryCommand(Event event, ProductSummary summary) throws Exception {
+		StringBuffer indexerCommand = new StringBuffer(getCommand());
+
+		if (event != null) {
+			EventSummary eventSummary = event.getEventSummary();
+			indexerCommand.append(" ")
+					.append(ExternalIndexerListener.PREFERRED_ID_ARGUMENT)
+					.append(eventSummary.getId());
+			indexerCommand
+					.append(" ")
+					.append(ExternalIndexerListener.PREFERRED_EVENTSOURCE_ARGUMENT)
+					.append(eventSummary.getSource());
+			indexerCommand
+					.append(" ")
+					.append(ExternalIndexerListener.PREFERRED_EVENTSOURCECODE_ARGUMENT)
+					.append(eventSummary.getSourceCode());
+			Map<String, List<String>> eventids = event.getAllEventCodes(true);
+			Iterator<String> sourceIter = eventids.keySet().iterator();
+			indexerCommand.append(" ").append(EVENT_IDS_ARGUMENT);
+			while (sourceIter.hasNext()) {
+				String source = sourceIter.next();
+				Iterator<String> sourceCodeIter = eventids.get(source).iterator();
+				while (sourceCodeIter.hasNext()) {
+					String sourceCode = sourceCodeIter.next();
+					indexerCommand.append(source).append(sourceCode);
+					if (sourceCodeIter.hasNext() || sourceIter.hasNext()) {
+						indexerCommand.append(",");
+					}
+				}
+			}
+
+			indexerCommand.append(" ").append(PREFERRED_MAGNITUDE_ARGUMENT)
+					.append(eventSummary.getMagnitude());
+			indexerCommand.append(" ").append(PREFERRED_LATITUDE_ARGUMENT)
+					.append(eventSummary.getLatitude());
+			indexerCommand.append(" ").append(PREFERRED_LONGITUDE_ARGUMENT)
+					.append(eventSummary.getLongitude());
+			indexerCommand.append(" ").append(PREFERRED_DEPTH_ARGUMENT)
+					.append(eventSummary.getDepth());
+			String eventTime = null;
+			if (event.getTime() != null) {
+				eventTime = XmlUtils.formatDate(event.getTime());
+			}
+			indexerCommand.append(" ").append(PREFERRED_ORIGIN_TIME_ARGUMENT)
+					.append(eventTime);
+		}
 
 		if (summary != null) {
 
@@ -306,61 +377,6 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 							.append(iter2.next().toString());
 				}
 			}
-		}
-
-		// Tells external indexer what type of index event occurred.
-		indexerCommand.append(" ")
-				.append(ExternalIndexerListener.EVENT_ACTION_ARGUMENT)
-				.append(indexerChange.getType().toString());
-
-		Event event = indexerChange.getNewEvent();
-		// When archiving events include event information
-		if (event == null && indexerChange.getType() == IndexerChangeType.EVENT_ARCHIVED) {
-			event = indexerChange.getOriginalEvent();
-		}
-
-		if (event != null) {
-			EventSummary eventSummary = event.getEventSummary();
-			indexerCommand.append(" ")
-					.append(ExternalIndexerListener.PREFERRED_ID_ARGUMENT)
-					.append(eventSummary.getId());
-			indexerCommand
-					.append(" ")
-					.append(ExternalIndexerListener.PREFERRED_EVENTSOURCE_ARGUMENT)
-					.append(eventSummary.getSource());
-			indexerCommand
-					.append(" ")
-					.append(ExternalIndexerListener.PREFERRED_EVENTSOURCECODE_ARGUMENT)
-					.append(eventSummary.getSourceCode());
-			Map<String, List<String>> eventids = event.getAllEventCodes(true);
-			Iterator<String> sourceIter = eventids.keySet().iterator();
-			indexerCommand.append(" ").append(EVENT_IDS_ARGUMENT);
-			while (sourceIter.hasNext()) {
-				String source = sourceIter.next();
-				Iterator<String> sourceCodeIter = eventids.get(source).iterator();
-				while (sourceCodeIter.hasNext()) {
-					String sourceCode = sourceCodeIter.next();
-					indexerCommand.append(source).append(sourceCode);
-					if (sourceCodeIter.hasNext() || sourceIter.hasNext()) {
-						indexerCommand.append(",");
-					}
-				}
-			}
-
-			indexerCommand.append(" ").append(PREFERRED_MAGNITUDE_ARGUMENT)
-					.append(eventSummary.getMagnitude());
-			indexerCommand.append(" ").append(PREFERRED_LATITUDE_ARGUMENT)
-					.append(eventSummary.getLatitude());
-			indexerCommand.append(" ").append(PREFERRED_LONGITUDE_ARGUMENT)
-					.append(eventSummary.getLongitude());
-			indexerCommand.append(" ").append(PREFERRED_DEPTH_ARGUMENT)
-					.append(eventSummary.getDepth());
-			String eventTime = null;
-			if (event.getTime() != null) {
-				eventTime = XmlUtils.formatDate(event.getTime());
-			}
-			indexerCommand.append(" ").append(PREFERRED_ORIGIN_TIME_ARGUMENT)
-					.append(eventTime);
 		}
 
 		Product product = null;
