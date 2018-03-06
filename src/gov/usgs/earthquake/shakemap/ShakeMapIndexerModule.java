@@ -1,6 +1,7 @@
 package gov.usgs.earthquake.shakemap;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.logging.Level;
@@ -11,6 +12,7 @@ import gov.usgs.earthquake.indexer.IndexerModule;
 import gov.usgs.earthquake.indexer.ProductSummary;
 import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.Product;
+import gov.usgs.util.StreamUtils;
 
 /**
  * A specialized implementation of the IndexerModule interface for ShakeMap
@@ -61,8 +63,10 @@ public class ShakeMapIndexerModule extends DefaultIndexerModule {
 		Content overlayImage = product.getContents().get(OVERLAY_IMAGE_PATH);
 		if (overlayImage != null) {
 			SimpleImageInfo info = null;
+			InputStream overlayInputStream = null;
 			try {
-				info = new SimpleImageInfo(overlayImage.getInputStream());
+				overlayInputStream = overlayImage.getInputStream();
+				info = new SimpleImageInfo(overlayInputStream);
 				summary.getProperties().put(OVERLAY_WIDTH_PROPERTY,
 						Integer.toString(info.getWidth()));
 				summary.getProperties().put(OVERLAY_HEIGHT_PROPERTY,
@@ -72,6 +76,8 @@ public class ShakeMapIndexerModule extends DefaultIndexerModule {
 			} catch (IOException e) {
 				LOGGER.log(Level.WARNING, "exception reading "
 						+ OVERLAY_IMAGE_PATH + " width/height", e);
+			} finally {
+				StreamUtils.closeStream(overlayInputStream);
 			}
 		}
 

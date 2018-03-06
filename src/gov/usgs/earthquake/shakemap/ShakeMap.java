@@ -2,8 +2,10 @@ package gov.usgs.earthquake.shakemap;
 
 import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.Product;
+import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
 
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
@@ -65,30 +67,36 @@ public class ShakeMap extends Product {
 		// prefer grid attachment
 		Content gridxml = product.getContents().get(GRID_XML_ATTACHMENT);
 		if (gridxml != null) {
+			InputStream gridXmlIn = null;
 			try {
 				// parse grid.xml
 				GridXMLHandler gridxmlHandler = new GridXMLHandler();
-				HashMap<String, String> grid = gridxmlHandler.parse(gridxml
-						.getInputStream());
+				gridXmlIn = gridxml.getInputStream();
+				HashMap<String, String> grid = gridxmlHandler.parse(gridXmlIn);
 				// parse through hash maps to set shakemap properties
 				this.setGridXMLProperties(grid);
 			} catch (Exception e) {
 				// error parsing grid
 				LOGGER.log(Level.WARNING, "error parsing grid.xml", e);
+			} finally {
+				StreamUtils.closeStream(gridXmlIn);
 			}
 		}
 
 		Content infoxml = product.getContents().get(INFO_XML_ATTACHMENT);
 		if (infoxml != null) {
+			InputStream infoXmlIn = null;
 			try {
 				// parse info.xml
 				InfoXMLHandler infoxmlHandler = new InfoXMLHandler();
-				HashMap<String, String> info = infoxmlHandler.parse(infoxml
-						.getInputStream());
+				infoXmlIn = infoxml.getInputStream();
+				HashMap<String, String> info = infoxmlHandler.parse(infoXmlIn);
 				// parse through hash maps to set shakemap properties
 				this.setInfoXMLProperties(info);
 			} catch (Exception e) {
 				LOGGER.log(Level.WARNING, "error parsing info.xml", e);
+			} finally {
+				StreamUtils.closeStream(infoXmlIn);
 			}
 		}
 

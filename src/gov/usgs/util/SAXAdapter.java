@@ -164,6 +164,8 @@ public class SAXAdapter extends DefaultHandler {
             return null;
         } catch (Exception e) {
             return e;
+        } finally {
+            StreamUtils.closeStream(xml);
         }
     }
 

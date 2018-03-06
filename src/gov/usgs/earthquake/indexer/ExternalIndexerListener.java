@@ -237,6 +237,12 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 		commandTimer.cancel();
 		LOGGER.info("[" + getName() + "] command '" + command
 				+ "' exited with status '" + process.exitValue() + "'");
+		if (process.exitValue() != 0) {
+			byte[] errorOutput = StreamUtils.readStream(process.getErrorStream());
+			LOGGER.fine("[" + getName() + "] command '" + command + "' stderr output '" +
+					new String(errorOutput) + "'");
+		}
+		StreamUtils.closeStream(process.getErrorStream());
 
 		// send heartbeat info
 		HeartbeatListener.sendHeartbeatMessage(getName(), "command", command);
