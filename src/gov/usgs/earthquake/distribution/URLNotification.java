@@ -4,6 +4,7 @@
 package gov.usgs.earthquake.distribution;
 
 import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
 
 import java.io.InputStream;
@@ -61,11 +62,15 @@ public class URLNotification extends DefaultNotification {
 	 * @throws Exception
 	 */
 	public static URLNotification parse(final InputStream in) throws Exception {
-		URLNotificationParser parser = new URLNotificationParser();
-		// do actual parsing
-		parser.parse(in);
-		// return parsed notification
-		return parser.getNotification();
+		try {
+			URLNotificationParser parser = new URLNotificationParser();
+			// do actual parsing
+			parser.parse(in);
+			// return parsed notification
+			return parser.getNotification();
+		} finally {
+			StreamUtils.closeStream(in);
+		}
 	}
 
 	/**

@@ -74,8 +74,12 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 	 *            the receiving ProductOutput.
 	 */
 	public synchronized void streamTo(ProductHandler out) throws Exception {
-		this.out = out;
-		XmlUtils.parse(in, this);
+		try {
+			this.out = out;
+			XmlUtils.parse(in, this);
+		} finally {
+			StreamUtils.closeStream(in);
+		}
 	}
 
 	/**

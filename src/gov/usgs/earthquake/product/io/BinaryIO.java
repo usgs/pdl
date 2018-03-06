@@ -45,6 +45,7 @@ public class BinaryIO {
 		// transfer stream bytes
 		int read = -1;
 		byte[] bytes = new byte[1024];
+		// read no more than length bytes
 		while ((read = in.read(bytes)) != -1) {
 			out.write(bytes, 0, read);
 		}
@@ -69,8 +70,16 @@ public class BinaryIO {
 		return buffer;
 	}
 
+
 	public String readString(final InputStream in) throws IOException {
+		return this.readString(in, -1);
+	}
+
+	public String readString(final InputStream in, final int maxLength) throws IOException {
 		int length = readInt(in);
+		if (maxLength > 0 && length > maxLength) {
+			throw new IOException("request string length " + length + " greater than maxLength " + maxLength);
+		}
 		byte[] buffer = new byte[length];
 		readFully(buffer, in);
 		return new String(buffer, "UTF8");

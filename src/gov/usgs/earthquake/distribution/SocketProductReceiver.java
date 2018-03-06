@@ -58,6 +58,10 @@ public class SocketProductReceiver extends DefaultNotificationReceiver
 	
 	private static final String DEFAULT_SIZE_LIMIT = "-1";
 
+	// product id is read by PDL protocol
+	// most are <100 bytes
+	private static final int MAX_PRODUCTID_LENGTH = 8192;
+
 	private static final Logger LOGGER = Logger
 			.getLogger(SocketProductReceiver.class.getName());
 
@@ -149,7 +153,13 @@ public class SocketProductReceiver extends DefaultNotificationReceiver
 						+ version + "' " + socket);
 				if (SocketProductSender.PROTOCOL_VERSION_0_1.equals(version)) {
 					// product id is only message
-					productId = ProductId.parse(io.readString(in));
+					String productIdString;
+					try {
+						productIdString = io.readString(in, MAX_PRODUCTID_LENGTH);
+					} catch (Exception e) {
+						throw new Exception("product id too long");
+					}
+					productId = ProductId.parse(productIdString);
 					if (storageLocks != null) {
 						storageLocks.acquireWriteLock(productId);
 					}
