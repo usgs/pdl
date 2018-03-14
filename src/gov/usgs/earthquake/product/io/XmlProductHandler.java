@@ -223,4 +223,13 @@ public class XmlProductHandler implements ProductHandler {
 		out.write(buf.toString().getBytes());
 	}
 
+	/**
+	 * Free any resources associated with this handler.
+	 */
+	@Override
+	public void close() {
+		StreamUtils.closeStream(out);
+	}
+
+
 }

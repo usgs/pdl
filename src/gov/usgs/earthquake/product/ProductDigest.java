@@ -160,6 +160,15 @@ public class ProductDigest implements ProductHandler {
 		// generating signature, ignore
 	}
 
+	/**
+	 * Free any resources associated with this handler.
+	 */
+	@Override
+	public void close() {
+		StreamUtils.closeStream(digestStream);
+	}
+
+
 	public static void main(final String[] args) throws Exception {
 		if (args.length == 0) {
 			System.err.println("Usage: ProductDigest FILE [FILE ...]");

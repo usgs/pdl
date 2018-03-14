@@ -116,6 +116,7 @@ public class FileUtils {
 						files[i].delete();
 					}
 				}
+				files = null;
 			} else {
 				path.delete();
 			}

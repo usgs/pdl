@@ -314,4 +314,15 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 		this.out = out;
 	}
 
+
+	/**
+	 * Free any resources associated with this handler.
+	 */
+	@Override
+	public void close() {
+		StreamUtils.closeStream(in);
+		out.close();
+	}
+
+
 }

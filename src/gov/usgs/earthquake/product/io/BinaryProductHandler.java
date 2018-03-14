@@ -174,4 +174,13 @@ public class BinaryProductHandler implements ProductHandler {
 		out.close();
 	}
 
+	/**
+	 * Free any resources associated with this source.
+	 */
+	@Override
+	public void close() {
+		StreamUtils.closeStream(out);
+		out = null;
+	}
+
 }

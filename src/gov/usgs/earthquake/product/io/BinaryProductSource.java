@@ -105,4 +105,15 @@ public class BinaryProductSource implements ProductSource {
 			StreamUtils.closeStream(in);
 		}
 	}
+
+
+	/**
+	 * Free any resources associated with this source.
+	 */
+	@Override
+	public void close() {
+		StreamUtils.closeStream(in);
+		in = null;
+	}
+
 }

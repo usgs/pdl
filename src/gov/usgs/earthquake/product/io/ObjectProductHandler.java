@@ -168,8 +168,20 @@ public class ObjectProductHandler implements ProductHandler {
 	 */
 	public static Product getProduct(final ProductSource in) throws Exception {
 		ObjectProductHandler out = new ObjectProductHandler();
-		in.streamTo(out);
+		try {
+			in.streamTo(out);
+		} finally {
+			in.close();
+		}
 		return out.getProduct();
+	}
+
+
+	/**
+	 * Free any resources associated with this handler.
+	 */
+	@Override
+	public void close() {
 	}
 
 }

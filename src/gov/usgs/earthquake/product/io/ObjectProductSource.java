@@ -166,4 +166,12 @@ public class ObjectProductSource implements ProductSource {
 		out.onEndProduct(product.getId());
 	}
 
+
+	/**
+	 * Free any resources associated with this source.
+	 */
+	@Override
+	public void close() {
+	}
+
 }
