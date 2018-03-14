@@ -321,7 +321,9 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 	@Override
 	public void close() {
 		StreamUtils.closeStream(in);
-		out.close();
+		if (out != null) {
+			out.close();
+		}
 	}
 
 

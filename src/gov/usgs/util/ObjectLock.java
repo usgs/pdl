@@ -32,6 +32,8 @@ public class ObjectLock<T> {
 	 */
 	private HashMap<T, Integer> lockThreadCounts = new HashMap<T, Integer>();
 
+	private final Object syncObject = new Object();
+
 	/**
 	 * Construct a new ObjectLock object.
 	 */
@@ -112,7 +114,7 @@ public class ObjectLock<T> {
 	 */
 	public void acquireReadLock(final T object) throws InterruptedException {
 		ReentrantReadWriteLock lock = null;
-		synchronized (this) {
+		synchronized (syncObject) {
 			lock = getLock(object);
 			incrementThreadCount(object);
 		}
@@ -145,7 +147,7 @@ public class ObjectLock<T> {
 	 *            the object to unlock for reading.
 	 */
 	public void releaseReadLock(final T object) {
-		synchronized (this) {
+		synchronized (syncObject) {
 			ReentrantReadWriteLock lock = getLock(object);
 			decrementThreadCount(object);
 			lock.readLock().unlock();
@@ -163,7 +165,7 @@ public class ObjectLock<T> {
 	 */
 	public void acquireWriteLock(final T object) throws InterruptedException {
 		ReentrantReadWriteLock lock = null;
-		synchronized (this) {
+		synchronized (syncObject) {
 			lock = getLock(object);
 			incrementThreadCount(object);
 		}
@@ -180,7 +182,7 @@ public class ObjectLock<T> {
 	 *            the object to unlock for writing.
 	 */
 	public void releaseWriteLock(final T object) {
-		synchronized (this) {
+		synchronized (syncObject) {
 			ReentrantReadWriteLock lock = getLock(object);
 			decrementThreadCount(object);
 			lock.writeLock().unlock();

@@ -582,6 +582,9 @@ public class FileProductStorage extends DefaultConfigurable implements
 							DirectoryProductHandler.PRODUCT_XML_FILENAME)
 							.exists());
 				}
+				if (source != null) {
+					source.close();
+				}
 			}
 
 			if (!hasProduct) {
@@ -634,6 +637,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 				FileUtils.deleteEmptyParents(productFile, baseDirectory);
 				LOGGER.finer("[" + getName() + "] product removed, id=" + idString);
 			}
+			productFile = null;
 			// remove from any legacy storages
 			Iterator<ProductStorage> legacyIter = legacyStorages.iterator();
 			while (legacyIter.hasNext()) {
