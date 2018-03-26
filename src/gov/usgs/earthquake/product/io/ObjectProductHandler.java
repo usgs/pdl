@@ -182,6 +182,7 @@ public class ObjectProductHandler implements ProductHandler {
 	 */
 	@Override
 	public void close() {
+		this.product = null;
 	}
 
 }

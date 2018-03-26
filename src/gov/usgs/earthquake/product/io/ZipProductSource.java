@@ -101,6 +101,7 @@ public class ZipProductSource implements ProductSource {
 	 */
 	@Override
 	public void close() {
+		this.zip = null;
 	}
 
 }

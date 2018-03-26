@@ -172,6 +172,7 @@ public class ObjectProductSource implements ProductSource {
 	 */
 	@Override
 	public void close() {
+		this.product = null;
 	}
 
 }
