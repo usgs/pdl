@@ -285,7 +285,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 					+ listener.getClass().getCanonicalName());
 			final ExecutorService service = listeners.get(listener);
 
-			service.submit(new Thread() {
+			service.submit(new Runnable() {
 
 				public void run() {
 					listener.onStorageEvent(event);
