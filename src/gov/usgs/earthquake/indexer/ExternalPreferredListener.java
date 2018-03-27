@@ -67,7 +67,8 @@ public class ExternalPreferredListener extends ExternalIndexerListener {
 				// pass product content as input to command
 				Product product = null;
 				try {
-					product = getStorage().getProduct(changedProduct.getId());
+					// this product is not necessarily the product that triggered the change.
+					product = storeProduct(event.getIndexer().getProductStorage().getProduct(changedProduct.getId()));
 				} catch (Exception e) {
 					// ignore, just leave null
 				}
@@ -98,22 +99,8 @@ public class ExternalPreferredListener extends ExternalIndexerListener {
 			return changes;
 		}
 		
-		Map<String, ProductSummary> newProducts;
-		Event newEvent = change.getNewEvent();
-		if (newEvent != null) {
-			newProducts = newEvent.getPreferredProducts();
-		} else {
-			newProducts = new HashMap<String, ProductSummary>();
-		}
-
-		Event originalEvent = change.getOriginalEvent();
-		Map<String, ProductSummary> originalProducts;
-		if (originalEvent != null) {
-			originalProducts = originalEvent.getPreferredProducts();
-		} else {
-			originalProducts = new HashMap<String, ProductSummary>();
-		}
-
+		Map<String, ProductSummary> newProducts = getPreferredProducts(change.getNewEvent());
+		Map<String, ProductSummary> originalProducts = getPreferredProducts(change.getOriginalEvent());
 
 		// check all currently preferred products
 		for (String type : newProducts.keySet()) {
@@ -140,6 +127,19 @@ public class ExternalPreferredListener extends ExternalIndexerListener {
 		}
 		
 		return changes;
+	}
+
+	/**
+	 * Get a map of preferred products from an event.
+	 *
+	 * @param event the event.
+	 * @return preferred products, or empty hashmap if event is null.
+	 */
+	public static Map<String, ProductSummary> getPreferredProducts(final Event event) {
+		if (event == null) {
+			return new HashMap<String, ProductSummary>();
+		}
+		return event.getPreferredProducts();
 	}
 
 }

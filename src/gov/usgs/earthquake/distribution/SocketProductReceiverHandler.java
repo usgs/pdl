@@ -135,7 +135,7 @@ public class SocketProductReceiverHandler implements Runnable {
 						productIdString = io.readString(in, 1024);
 					} catch (IOException e) {
 						if (e.getMessage().contains("maxLength")) {
-							throw new Exception("version too long");
+							throw new IOException("version too long");
 						} else {
 							throw e;
 						}
