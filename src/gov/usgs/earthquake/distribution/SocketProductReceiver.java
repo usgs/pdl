@@ -3,25 +3,16 @@
  */
 package gov.usgs.earthquake.distribution;
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import gov.usgs.earthquake.product.ProductId;
-import gov.usgs.earthquake.product.io.BinaryIO;
-import gov.usgs.earthquake.product.io.IOUtil;
 import gov.usgs.earthquake.product.io.ProductSource;
-import gov.usgs.earthquake.util.SizeLimitInputStream;
 import gov.usgs.util.Config;
-import gov.usgs.util.ObjectLock;
 import gov.usgs.util.SocketAcceptor;
 import gov.usgs.util.SocketListenerInterface;
-import gov.usgs.util.StreamUtils;
 
 /**
  * Receive Products directly via a Socket.
@@ -58,9 +49,6 @@ public class SocketProductReceiver extends DefaultNotificationReceiver
 	
 	private static final String DEFAULT_SIZE_LIMIT = "-1";
 
-	// product id is read by PDL protocol
-	// most are <100 bytes
-	private static final int MAX_PRODUCTID_LENGTH = 8192;
 
 	private static final Logger LOGGER = Logger
 			.getLogger(SocketProductReceiver.class.getName());
@@ -123,134 +111,14 @@ public class SocketProductReceiver extends DefaultNotificationReceiver
 	public void onSocket(Socket socket) {
 		LOGGER.info("[" + getName() + "] accepted connection "
 				+ socket.toString());
-		boolean enablePdlProtocol = false;
-		BinaryIO io = new BinaryIO();
-		BufferedInputStream in = null;
-		InputStream productIn = null;
-		OutputStream out = null;
-		ProductId productId = null;
-		ObjectLock<ProductId> storageLocks;
 
-		// do locking here, since check for existence happens here
 		try {
-			storageLocks = ((FileProductStorage) getProductStorage())
-					.getStorageLocks();
+			new SocketProductReceiverHandler(this, socket).run();
 		} catch (Exception e) {
-			storageLocks = null;
-		}
-
-		try {
-			socket.setSoTimeout(getReadTimeout());
-			in = new BufferedInputStream(socket.getInputStream());
-			out = socket.getOutputStream();
-
-			in.mark(1024);
-			if (in.read() == 'P' && in.read() == 'D' && in.read() == 'L') {
-				// pdl protocol
-				enablePdlProtocol = true;
-				String version = io.readString(in);
-				LOGGER.fine("[" + getName() + "] using protocol version '"
-						+ version + "' " + socket);
-				if (SocketProductSender.PROTOCOL_VERSION_0_1.equals(version)) {
-					// product id is only message
-					String productIdString;
-					try {
-						productIdString = io.readString(in, MAX_PRODUCTID_LENGTH);
-					} catch (Exception e) {
-						throw new Exception("product id too long");
-					}
-					productId = ProductId.parse(productIdString);
-					if (storageLocks != null) {
-						storageLocks.acquireWriteLock(productId);
-					}
-					if (getProductStorage().hasProduct(productId)) {
-						// have product, don't send
-						io.writeString(
-								SocketProductSender.ALREADY_HAVE_PRODUCT, out);
-						out.flush();
-						return;
-					} else {
-						// don't have product
-						io.writeString(SocketProductSender.UNKNOWN_PRODUCT, out);
-						out.flush();
-					}
-				} else {
-					throw new Exception("Unknown protocol version '" + version
-							+ "'");
-				}
-			} else {
-				LOGGER.fine("[" + getName() + "] not using PDL protocol "
-						+ socket);
-				in.reset();
-			}
-
-			productIn = in;
-			if (sizeLimit > 0) {
-				productIn = new SizeLimitInputStream(in, sizeLimit);
-			}
-			String status = storeAndNotify(IOUtil
-					.autoDetectProductSource(new StreamUtils.UnclosableInputStream(
-							productIn)));
-
-			LOGGER.info(status + " from " + socket.toString());
-			try {
-				// tell sender "success"
-				if (enablePdlProtocol) {
-					// new way
-					io.writeString(status, out);
-				} else {
-					// old way
-					out.write(status.getBytes());
-				}
-				out.flush();
-			} catch (Exception ex) {
-				LOGGER.log(Level.WARNING, "[" + getName()
-						+ "] unable to notify sender of success", ex);
-			}
-		} catch (Exception ex) {
-			if (ex instanceof ProductAlreadyInStorageException
-					|| ex.getCause() instanceof ProductAlreadyInStorageException) {
-				LOGGER.info("[" + getName() + "] product from "
-						+ socket.toString() + " already in storage");
-				try {
-					// tell sender "success"
-					if (enablePdlProtocol) {
-						io.writeString(
-								SocketProductSender.ALREADY_HAVE_PRODUCT, out);
-					} else {
-						out.write("Product already received".getBytes());
-					}
-					out.flush();
-				} catch (Exception ex2) {
-					LOGGER.log(Level.WARNING, "[" + getName()
-							+ "] unable to notify sender of exception", ex2);
-				}
-			} else {
-				LOGGER.log(Level.WARNING, "[" + getName()
-						+ "] exception while processing socket", ex);
-				// tell sender "exception"
-				try {
-					String errorMessage = SocketProductSender.RECEIVE_ERROR
-							+ " '" + ex.getMessage() + "'";
-					if (enablePdlProtocol) {
-						io.writeString(errorMessage, out);
-					} else {
-						out.write(errorMessage.getBytes());
-					}
-					out.flush();
-				} catch (Exception ex2) {
-					LOGGER.log(Level.WARNING, "[" + getName()
-							+ "] unable to notify sender of exception", ex2);
-				}
-			}
+			LOGGER.log(Level.WARNING,
+					"[" + getName() + "] uncaught exception processing "
+					+ socket.toString(), e);
 		} finally {
-			if (storageLocks != null && productId != null) {
-				storageLocks.releaseWriteLock(productId);
-			}
-
-			StreamUtils.closeStream(in);
-			StreamUtils.closeStream(out);
-
 			try {
 				socket.shutdownInput();
 			} catch (Exception e) {
@@ -301,6 +169,14 @@ public class SocketProductReceiver extends DefaultNotificationReceiver
 
 	public void setPort(int port) {
 		this.port = port;
+	}
+
+	public long getSizeLimit() {
+		return sizeLimit;
+	}
+
+	public void setSizeLimit(long sizeLimit) {
+		this.sizeLimit = sizeLimit;
 	}
 
 	public int getThreads() {
