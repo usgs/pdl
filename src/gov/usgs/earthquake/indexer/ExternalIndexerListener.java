@@ -187,11 +187,12 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 	 * @return
 	 * @throws Exception
 	 */
-	public Product storeProduct(Product product) throws Exception {
+	public Product storeProduct(final Product product) throws Exception {
+		Product listenerProduct = null;
 		try {
 			if (product != null) {
 				getStorage().storeProduct(product);
-				product = getStorage().getProduct(product.getId());
+				listenerProduct = getStorage().getProduct(product.getId());
 			} else {
 				LOGGER.finer("[" + getName()
 						+ "] Change product is null. Probably archiving.");
@@ -199,10 +200,10 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 		} catch (ProductAlreadyInStorageException paise) {
 			LOGGER.info("[" + getName() + "] product already in storage");
 			// keep going anyways, but load from local storage
-			product = getStorage().getProduct(product.getId());
+			listenerProduct = getStorage().getProduct(product.getId());
 		}
 
-		return product;
+		return listenerProduct;
 	}
 
 	/**
