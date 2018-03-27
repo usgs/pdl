@@ -31,7 +31,12 @@ public class SocketProductReceiverHandler implements Runnable {
 		this.receiver = receiver;
 		this.socket = socket;
 	}
-	
+
+	/**
+	 * Acquire write lock in receiver storage.
+	 *
+	 * @param id product to lock.
+	 */
 	public void acquireWriteLock(final ProductId id) {
 		try {
 			ObjectLock<ProductId> storageLocks = ((FileProductStorage) receiver.getProductStorage())
@@ -42,6 +47,11 @@ public class SocketProductReceiverHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * Release write lock in receiver storeage.
+	 *
+	 * @param id product to unlock.
+	 */
 	public void releaseWriteLock(final ProductId id) {
 		if (id == null) {
 			return;
@@ -81,29 +91,8 @@ public class SocketProductReceiverHandler implements Runnable {
 	}
 
 	/**
-	 * Read ProductId protocol version.
-	 *
-	 * @param in input stream to read
-	 * @return version, or null if not the PDL protocol.
-	 *
-	 * @throws IOException
+	 * Process incoming socket connection.
 	 */
-	public String readProductId(final InputStream in) throws IOException {
-		String version = null;
-		if (in.read() == 'P' && in.read() == 'D' && in.read() == 'L') {
-			try {
-				version = io.readString(in, PDL_PROTOCOL_BUFFER);
-			} catch (IOException e) {
-				if (e.getMessage().contains("maxLength")) {
-					throw new IOException("bad protocol version");
-				} else {
-					throw e;
-				}
-			}
-		}
-		return version;
-	}
-
 	@Override
 	public void run() {
 		BufferedInputStream in = null;
