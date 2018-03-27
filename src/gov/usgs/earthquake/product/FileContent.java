@@ -226,4 +226,11 @@ public class FileContent extends AbstractContent {
 		return SYSTEM_MIME_TYPES.getContentType(file);
 	}
 
+	/**
+	 * Free any resources associated with this content.
+	 */
+	public void close() {
+		// nothing to free
+	}
+
 }
