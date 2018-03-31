@@ -53,7 +53,7 @@ public class ConcurrentStorageTest {
 	private static final Object listenerSync = new Object();
 
 	@Before
-	public void setup() throws Exception {
+	public void setUp() throws Exception {
 		// turn off tracking during test
 		ProductTracker.setTrackerEnabled(false);
 
@@ -103,7 +103,7 @@ public class ConcurrentStorageTest {
 	}
 
 	@After
-	public void teardown() throws Exception {
+	public void tearDown() throws Exception {
 		eidsReceiver.shutdown();
 		socketReceiver.shutdown();
 	}

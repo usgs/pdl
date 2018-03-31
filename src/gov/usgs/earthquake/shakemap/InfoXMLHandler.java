@@ -14,11 +14,6 @@ public class InfoXMLHandler extends DefaultHandler {
 	private static final String XML_VALUE = "value";
 	private HashMap<String, String> info = new HashMap<String, String>();
 
-	/**
-	 * Construct a new SAX Handler for an info.xml document.
-	 */
-	public InfoXMLHandler() {
-	}
 
 	/**
 	 * @param in

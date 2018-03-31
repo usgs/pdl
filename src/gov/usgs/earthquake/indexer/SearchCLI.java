@@ -52,12 +52,6 @@ public class SearchCLI {
 	public static String FILE_OUTPUT_ARGUMENT = "--outputFile=";
 
 	/**
-	 * Default constructor, for configurable interface.
-	 */
-	public SearchCLI() {
-	}
-
-	/**
 	 * Entry point into search. Called by Main when the --search argument is
 	 * used.
 	 * 

@@ -27,8 +27,6 @@ public class TectonicSummaryIndexerModuleTest {
 	private static final String LPAGER_XML_TEST_FILE = "etc/test_products/usa00040xz/us_losspager_usa00040xz_1287260989064.bin";
 	
 	private IndexerModule module = null;
-	private Product product = null;
-	private ProductSummary summary = null;
 	
 	@Test
 	public void testTectonicSummaryWeightOver() {
@@ -73,8 +71,8 @@ public class TectonicSummaryIndexerModuleTest {
 
 	@Test
 	public void getProductSummary() throws Exception {
-		product = createProduct(TECTONIC_SUMMARY_XML_TEST_FILE);
-		summary = module.getProductSummary(product);
+		Product product = createProduct(TECTONIC_SUMMARY_XML_TEST_FILE);
+		ProductSummary summary = module.getProductSummary(product);
 
 		// Ensure summary exists
 		Assert.assertNotNull(summary);
@@ -91,7 +89,7 @@ public class TectonicSummaryIndexerModuleTest {
 
 	@Test
 	public void getSupportedProductLevel() throws Exception {
-		product = createProduct(TECTONIC_SUMMARY_XML_TEST_FILE);
+		Product product = createProduct(TECTONIC_SUMMARY_XML_TEST_FILE);
 
 		// This Product should be supported, as it is a ShakeMap product.
 		Assert.assertEquals(IndexerModule.LEVEL_SUPPORTED,
@@ -100,7 +98,7 @@ public class TectonicSummaryIndexerModuleTest {
 
 	@Test
 	public void getUnsupportedProductLevel() throws Exception {
-		product = createProduct(LPAGER_XML_TEST_FILE);
+		Product product = createProduct(LPAGER_XML_TEST_FILE);
 
 		// This Product should not be supported, as it is not a ShakeMap
 		// product.

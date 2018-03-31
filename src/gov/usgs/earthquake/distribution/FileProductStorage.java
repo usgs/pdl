@@ -128,13 +128,6 @@ public class FileProductStorage extends DefaultConfigurable implements
 	/** Locks used to make storage operations atomic. */
 	private ObjectLock<ProductId> storageLocks = new ObjectLock<ProductId>();
 
-	/**
-	 * @return the storageLocks
-	 */
-	public ObjectLock<ProductId> getStorageLocks() {
-		return storageLocks;
-	}
-
 	/** Whether or not to reject invalid signatures. */
 	private boolean rejectInvalidSignatures = false;
 
@@ -305,6 +298,13 @@ public class FileProductStorage extends DefaultConfigurable implements
 		if (service != null) {
 			service.shutdown();
 		}
+	}
+
+	/**
+	 * @return the storageLocks
+	 */
+	public ObjectLock<ProductId> getStorageLocks() {
+		return storageLocks;
 	}
 
 	/**
@@ -710,9 +710,10 @@ public class FileProductStorage extends DefaultConfigurable implements
 							+ "] bad signature for id=" + id);
 				}
 			}
+		} catch (ProductAlreadyInStorageException paise) {
+			throw paise;
 		} catch (Exception e) {
-			if (!(e instanceof ProductAlreadyInStorageException)
-					&& !(e.getCause() instanceof ProductAlreadyInStorageException)) {
+			if (!(e.getCause() instanceof ProductAlreadyInStorageException)) {
 				if (e instanceof InvalidSignatureException) {
 					// suppress stack trace for invalid signature
 					LOGGER.warning(e.getMessage()
