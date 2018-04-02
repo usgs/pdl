@@ -81,6 +81,8 @@ public final class ExecutorTask<T> implements Future<T>, Runnable {
 	/** Name for this task. */
 	private String name = null;
 
+	private final Object syncObject = new Object();
+
 	/**
 	 * Construct a new ExecutorTask
 	 * 
@@ -225,8 +227,8 @@ public final class ExecutorTask<T> implements Future<T>, Runnable {
 		// done running, either successfully or because out of tries
 		done = true;
 		// notify anyone waiting for task to complete
-		synchronized (this) {
-			this.notifyAll();
+		synchronized (syncObject) {
+			syncObject.notifyAll();
 		}
 	}
 
@@ -266,8 +268,8 @@ public final class ExecutorTask<T> implements Future<T>, Runnable {
 	@Override
 	public T get() throws InterruptedException, ExecutionException {
 		while (!cancelled && !done && numTries < maxTries) {
-			synchronized (this) {
-				this.wait();
+			synchronized (syncObject) {
+				syncObject.wait();
 			}
 		}
 
@@ -286,8 +288,8 @@ public final class ExecutorTask<T> implements Future<T>, Runnable {
 	public T get(long timeout, TimeUnit unit) throws InterruptedException,
 			ExecutionException, TimeoutException {
 		if (!cancelled && !done && numTries < maxTries) {
-			synchronized (this) {
-				unit.timedWait(this, timeout);
+			synchronized (syncObject) {
+				unit.timedWait(syncObject, timeout);
 			}
 		}
 

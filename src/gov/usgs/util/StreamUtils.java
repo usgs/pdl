@@ -261,8 +261,11 @@ public class StreamUtils {
 		try {
 			if (stream instanceof OutputStream) {
 				OutputStream out = (OutputStream) stream;
-				out.flush();
-				out.close();
+				try {
+					out.flush();
+				} finally {
+					out.close();
+				}
 			} else if (stream instanceof InputStream) {
 				((InputStream) stream).close();
 			}

@@ -109,4 +109,13 @@ public class ZipProductHandler extends ObjectProductHandler {
 		}
 	}
 
+
+	/**
+	 * Free any resources associated with this handler.
+	 */
+	@Override
+	public void close() {
+		StreamUtils.closeStream(out);
+	}
+
 }

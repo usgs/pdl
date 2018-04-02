@@ -63,4 +63,11 @@ public class URLContent extends AbstractContent {
 		return content;
 	}
 
+	/**
+	 * Free any resources associated with this content.
+	 */
+	public void close() {
+		// nothing to free
+	}
+
 }

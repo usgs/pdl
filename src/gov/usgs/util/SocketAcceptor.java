@@ -118,7 +118,7 @@ public class SocketAcceptor implements Runnable {
                 final SocketListenerInterface threadCallback = callback;
 
                 // schedule processing
-                Future<?> socketThread = socketExecutor.submit(new Thread() {
+                Future<?> socketThread = socketExecutor.submit(new Runnable() {
                     public void run() {
                         try {
                             threadCallback.onSocket(threadSocket);

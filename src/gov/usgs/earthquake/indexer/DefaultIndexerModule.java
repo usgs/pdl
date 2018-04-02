@@ -11,6 +11,7 @@ import gov.usgs.earthquake.qdm.util.Regions;
 import gov.usgs.util.StreamUtils;
 
 import java.io.File;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.util.logging.Logger;
@@ -59,17 +60,26 @@ public class DefaultIndexerModule implements IndexerModule {
 			}
 		});
 
+		InputStream in;
 		try {
 			// first try loading out of the jar (etc/regions.xml)
 			URL regionsXmlURL = DefaultIndexerModule.class.getClassLoader()
 					.getResource(REGIONS_XML);
-			REGIONS = new Regions(new InputSource(
-					StreamUtils.getInputStream(regionsXmlURL)));
+			in = StreamUtils.getInputStream(regionsXmlURL);
+			try {
+				REGIONS = new Regions(new InputSource(in));
+			} finally {
+				StreamUtils.closeStream(in);
+			}
 		} catch (Exception e) {
 			try {
 				// now try the file system (etc/regions.xml)
-				REGIONS = new Regions(new InputSource(
-						StreamUtils.getInputStream(new File(REGIONS_XML))));
+				in = StreamUtils.getInputStream(new File(REGIONS_XML));
+				try {
+					REGIONS = new Regions(new InputSource(in));
+				} finally {
+					StreamUtils.closeStream(in);
+				}
 			} catch (Exception e2) {
 				// now try regions.xml
 				REGIONS = new Regions();

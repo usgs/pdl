@@ -130,7 +130,11 @@ public class Bootstrap {
 		InputStream in = Bootstrap.class.getClassLoader().getResourceAsStream(
 				JAR_CONFIGFILE);
 		if (in != null) {
-			config.load(in);
+			try {
+				config.load(in);
+			} finally {
+				StreamUtils.closeStream(in);
+			}
 		} else {
 			LOGGER.config("Jar configuration not found");
 		}
@@ -141,7 +145,12 @@ public class Bootstrap {
 					+ configFile.getCanonicalPath());
 
 			config = new Config(config);
-			config.load(StreamUtils.getInputStream(configFile));
+			in = StreamUtils.getInputStream(configFile);
+			try {
+				config.load(in);
+			} finally {
+				StreamUtils.closeStream(in);
+			}
 		}
 
 		return config;

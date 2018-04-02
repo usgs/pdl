@@ -31,4 +31,9 @@ public interface ProductSource {
 	 */
 	public void streamTo(final ProductHandler out) throws Exception;
 
+	/**
+	 * Free any resources associated with this source.
+	 */
+	public void close();
+
 }

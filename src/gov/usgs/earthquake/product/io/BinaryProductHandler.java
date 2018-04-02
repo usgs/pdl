@@ -3,7 +3,9 @@ package gov.usgs.earthquake.product.io;
 import gov.usgs.earthquake.product.ByteContent;
 import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.StreamUtils;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
@@ -145,8 +147,12 @@ public class BinaryProductHandler implements ProductHandler {
 
 		io.writeString(content.getContentType(), out);
 		io.writeDate(content.getLastModified(), out);
-		io.writeStream(content.getLength().longValue(),
-				content.getInputStream(), out);
+		InputStream contentInputStream = content.getInputStream();
+		try {
+			io.writeStream(content.getLength().longValue(), contentInputStream, out);
+		} finally {
+			StreamUtils.closeStream(contentInputStream);
+		}
 	}
 
 	@Override
@@ -166,6 +172,15 @@ public class BinaryProductHandler implements ProductHandler {
 
 		out.flush();
 		out.close();
+	}
+
+	/**
+	 * Free any resources associated with this source.
+	 */
+	@Override
+	public void close() {
+		StreamUtils.closeStream(out);
+		out = null;
 	}
 
 }

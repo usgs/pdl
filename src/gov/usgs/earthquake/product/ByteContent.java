@@ -59,4 +59,10 @@ public class ByteContent extends AbstractContent {
 		return content;
 	}
 
+	/**
+	 * Free any resources associated with this content.
+	 */
+	public void close() {
+		// nothing to free
+	}
 }

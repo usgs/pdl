@@ -106,4 +106,9 @@ public interface ProductHandler {
 	 */
 	public void onEndProduct(final ProductId id) throws Exception;
 
+	/**
+	 * Free any resources associated with this handler.
+	 */
+	public void close();
+
 }

@@ -6,6 +6,8 @@ package gov.usgs.earthquake.product;
 import java.io.IOException;
 import java.io.InputStream;
 
+import gov.usgs.util.StreamUtils;
+
 /**
  * Content within an InputStream.
  */
@@ -42,4 +44,10 @@ public class InputStreamContent extends AbstractContent {
 		return content;
 	}
 
+	/**
+	 * Free any resources associated with this content.
+	 */
+	public void close() {
+		StreamUtils.closeStream(content);
+	}
 }

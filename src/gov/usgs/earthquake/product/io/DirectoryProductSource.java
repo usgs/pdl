@@ -101,4 +101,13 @@ public class DirectoryProductSource implements ProductSource {
 		}
 	}
 
+
+	/**
+	 * Free any resources associated with this source.
+	 */
+	@Override
+	public void close() {
+		directory = null;
+	}
+
 }

@@ -22,6 +22,7 @@ import gov.usgs.util.StreamUtils;
 import gov.usgs.util.StringUtils;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.PublicKey;
@@ -224,11 +225,16 @@ public class FileProductStorage extends DefaultConfigurable implements
 						.getProperty(KEYCHAIN_FILE_PROPERTY_NAME);
 				if (keychainFileName != null) {
 					Config keychainConfig = new Config();
-					keychainConfig.load(StreamUtils.getInputStream(new File(
-							keychainFileName)));
+					InputStream keychainFileInputStream = StreamUtils.getInputStream(
+							new File(keychainFileName));
+					try {
+						keychainConfig.load(keychainFileInputStream);
+					} finally {
+						StreamUtils.closeStream(keychainFileInputStream);
+					}
 					keyNames = keychainConfig
 							.getProperty(KEYCHAIN_PROPERTY_NAME);
-					keychain = new ProductKeyChain(keyNames, Config.getConfig());
+					keychain = new ProductKeyChain(keyNames, keychainConfig);
 				} else {
 					LOGGER.warning("[" + getName()
 							+ "] no product keys configured");
@@ -279,7 +285,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 					+ listener.getClass().getCanonicalName());
 			final ExecutorService service = listeners.get(listener);
 
-			service.submit(new Thread() {
+			service.submit(new Runnable() {
 
 				public void run() {
 					listener.onStorageEvent(event);
@@ -576,6 +582,9 @@ public class FileProductStorage extends DefaultConfigurable implements
 							DirectoryProductHandler.PRODUCT_XML_FILENAME)
 							.exists());
 				}
+				if (source != null) {
+					source.close();
+				}
 			}
 
 			if (!hasProduct) {
@@ -628,6 +637,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 				FileUtils.deleteEmptyParents(productFile, baseDirectory);
 				LOGGER.finer("[" + getName() + "] product removed, id=" + idString);
 			}
+			productFile = null;
 			// remove from any legacy storages
 			Iterator<ProductStorage> legacyIter = legacyStorages.iterator();
 			while (legacyIter.hasNext()) {

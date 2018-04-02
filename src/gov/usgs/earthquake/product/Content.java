@@ -43,4 +43,8 @@ public interface Content {
 	 */
 	public Long getLength();
 
+	/**
+	 * Free any resources associated with this content.
+	 */
+	public void close();
 }

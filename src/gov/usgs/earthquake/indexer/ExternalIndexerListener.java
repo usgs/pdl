@@ -19,6 +19,7 @@ import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
@@ -124,21 +125,8 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 		// no specified inclusions, and do not handle products that are
 		// specifically excluded.
 		if (accept(change)) {
-			Product product = null;
 			// store product first
-			try {
-				product = change.getProduct();
-				if (product != null) {
-					getStorage().storeProduct(change.getProduct());
-					product = getStorage().getProduct(product.getId());
-				} else {
-					LOGGER.finer("[" + getName()
-							+ "] Change product is null. Probably archiving.");
-				}
-			} catch (ProductAlreadyInStorageException paise) {
-				LOGGER.info("[" + getName() + "] product already in storage");
-				// keep going anyways
-			}
+			Product product = storeProduct(change.getProduct());
 
 			for (Iterator<IndexerChange> changeIter = change
 					.getIndexerChanges().iterator(); changeIter.hasNext();) {
@@ -153,50 +141,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 				final String indexerCommand = getProductSummaryCommand(change,
 						indexerChange);
 
-				// execute
-				LOGGER.info("[" + getName() + "] running command "
-						+ indexerCommand);
-				final Process process = Runtime.getRuntime().exec(
-						indexerCommand);
-
-				// Stream content over stdin if it exists
-				if (product != null) {
-					Content content = product.getContents().get("");
-					if (content != null) {
-						StreamUtils.transferStream(content.getInputStream(),
-								process.getOutputStream());
-					}
-				}
-
-				// Close the output stream
-				StreamUtils.closeStream(process.getOutputStream());
-
-				Timer commandTimer = new Timer();
-				if (this.getTimeout() > 0) {
-					// Schedule process destruction for commandTimeout
-					// milliseconds in the future
-					commandTimer.schedule(new TimerTask() {
-						public void run() {
-							LOGGER.warning("[" + getName()
-									+ "] command timeout '" + indexerCommand
-									+ "', destroying process.");
-							process.destroy();
-						}
-					}, this.getTimeout());
-				}
-
-				// Wait for process to complete
-				process.waitFor();
-				// Cancel the timer if it was not triggered
-				commandTimer.cancel();
-				LOGGER.info("[" + getName() + "] command '" + indexerCommand
-						+ "' exited with status '" + process.exitValue() + "'");
-
-				// send heartbeat info
-				HeartbeatListener.sendHeartbeatMessage(getName(), "command",
-						indexerCommand);
-				HeartbeatListener.sendHeartbeatMessage(getName(), "exit value",
-						Integer.toString(process.exitValue()));
+				runProductCommand(indexerCommand, product);
 			}
 		}
 
@@ -236,6 +181,90 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 	}
 
 	/**
+	 * Store product associated with the change.
+	 *
+	 * @param change
+	 * @return
+	 * @throws Exception
+	 */
+	public Product storeProduct(final Product product) throws Exception {
+		Product listenerProduct = null;
+		try {
+			if (product != null) {
+				getStorage().storeProduct(product);
+				listenerProduct = getStorage().getProduct(product.getId());
+			} else {
+				LOGGER.finer("[" + getName()
+						+ "] Change product is null. Probably archiving.");
+			}
+		} catch (ProductAlreadyInStorageException paise) {
+			LOGGER.info("[" + getName() + "] product already in storage");
+			// keep going anyways, but load from local storage
+			listenerProduct = getStorage().getProduct(product.getId());
+		}
+
+		return listenerProduct;
+	}
+
+	/**
+	 * Run a product command.
+	 *
+	 * @param command command and arguments.
+	 * @param product product, when set and empty content (path "") is defined,
+	 *        the content is provided to the command on stdin.
+	 * @throws Exception
+	 */
+	public void runProductCommand(final String command, final Product product) throws Exception {
+		// execute
+		LOGGER.info("[" + getName() + "] running command " + command);
+		final Process process = Runtime.getRuntime().exec(command);
+
+		// Stream content over stdin if it exists
+		if (product != null) {
+			Content content = product.getContents().get("");
+			if (content != null) {
+				StreamUtils.transferStream(content.getInputStream(),
+						process.getOutputStream());
+			}
+		}
+
+		// Close the output stream
+		StreamUtils.closeStream(process.getOutputStream());
+
+		Timer commandTimer = new Timer();
+		if (this.getTimeout() > 0) {
+			// Schedule process destruction for commandTimeout
+			// milliseconds in the future
+			commandTimer.schedule(new TimerTask() {
+				public void run() {
+					LOGGER.warning("[" + getName()
+							+ "] command timeout '" + command
+							+ "', destroying process.");
+					process.destroy();
+				}
+			}, this.getTimeout());
+		}
+
+		// Wait for process to complete
+		process.waitFor();
+		// Cancel the timer if it was not triggered
+		commandTimer.cancel();
+		LOGGER.info("[" + getName() + "] command '" + command
+				+ "' exited with status '" + process.exitValue() + "'");
+		if (process.exitValue() != 0) {
+			byte[] errorOutput = StreamUtils.readStream(process.getErrorStream());
+			LOGGER.fine("[" + getName() + "] command '" + command + "' stderr output '" +
+					new String(errorOutput) + "'");
+		}
+		StreamUtils.closeStream(process.getErrorStream());
+
+		// send heartbeat info
+		HeartbeatListener.sendHeartbeatMessage(getName(), "command", command);
+		HeartbeatListener.sendHeartbeatMessage(getName(), "exit value",
+				Integer.toString(process.exitValue()));
+	}
+
+	/**
 	 * Get the product command and add the indexer arguments to it.
 	 * 
 	 * @param change
@@ -245,73 +274,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 	 */
 	public String getProductSummaryCommand(IndexerEvent change,
 			IndexerChange indexerChange) throws Exception {
-		StringBuffer indexerCommand = new StringBuffer(getCommand());
 		ProductSummary summary = change.getSummary();
-
-		if (summary != null) {
-
-			File productDirectory = getStorage().getProductFile(summary.getId());
-			if (productDirectory.exists()) {
-				// Add the directory argument
-				indexerCommand.append(" ")
-						.append(CLIProductBuilder.DIRECTORY_ARGUMENT)
-						.append(productDirectory.getCanonicalPath());
-			}
-
-			// Add arguments from summary
-			indexerCommand.append(" ").append(CLIProductBuilder.TYPE_ARGUMENT)
-					.append(summary.getType());
-			indexerCommand.append(" ").append(CLIProductBuilder.CODE_ARGUMENT)
-					.append(summary.getCode());
-			indexerCommand.append(" ").append(CLIProductBuilder.SOURCE_ARGUMENT)
-					.append(summary.getSource());
-			indexerCommand.append(" ")
-					.append(CLIProductBuilder.UPDATE_TIME_ARGUMENT)
-					.append(XmlUtils.formatDate(summary.getUpdateTime()));
-			indexerCommand.append(" ").append(CLIProductBuilder.STATUS_ARGUMENT)
-					.append(summary.getStatus());
-			if (summary.isDeleted()) {
-				indexerCommand.append(" ")
-						.append(CLIProductBuilder.DELETE_ARGUMENT);
-			}
-
-			// Add optional tracker URL argument
-			if (summary.getTrackerURL() != null) {
-				indexerCommand.append(" ")
-						.append(CLIProductBuilder.TRACKER_URL_ARGUMENT)
-						.append(summary.getTrackerURL());
-			}
-
-			// Add property arguments
-			Map<String, String> props = summary.getProperties();
-			Iterator<String> iter = props.keySet().iterator();
-			while (iter.hasNext()) {
-				String name = iter.next();
-				indexerCommand.append(" \"")
-						.append(CLIProductBuilder.PROPERTY_ARGUMENT).append(name)
-						.append("=").append(props.get(name).replace("\"", "\\\""))
-						.append("\"");
-			}
-
-			// Add link arguments
-			Map<String, List<URI>> links = summary.getLinks();
-			iter = links.keySet().iterator();
-			while (iter.hasNext()) {
-				String relation = iter.next();
-				Iterator<URI> iter2 = links.get(relation).iterator();
-				while (iter2.hasNext()) {
-					indexerCommand.append(" ")
-							.append(CLIProductBuilder.LINK_ARGUMENT)
-							.append(relation).append("=")
-							.append(iter2.next().toString());
-				}
-			}
-		}
-
-		// Tells external indexer what type of index event occurred.
-		indexerCommand.append(" ")
-				.append(ExternalIndexerListener.EVENT_ACTION_ARGUMENT)
-				.append(indexerChange.getType().toString());
 
 		Event event = indexerChange.getNewEvent();
 		// When archiving events include event information
@@ -319,49 +282,34 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 			event = indexerChange.getOriginalEvent();
 		}
 
-		if (event != null) {
-			EventSummary eventSummary = event.getEventSummary();
-			indexerCommand.append(" ")
-					.append(ExternalIndexerListener.PREFERRED_ID_ARGUMENT)
-					.append(eventSummary.getId());
-			indexerCommand
-					.append(" ")
-					.append(ExternalIndexerListener.PREFERRED_EVENTSOURCE_ARGUMENT)
-					.append(eventSummary.getSource());
-			indexerCommand
-					.append(" ")
-					.append(ExternalIndexerListener.PREFERRED_EVENTSOURCECODE_ARGUMENT)
-					.append(eventSummary.getSourceCode());
-			Map<String, List<String>> eventids = event.getAllEventCodes(true);
-			Iterator<String> sourceIter = eventids.keySet().iterator();
-			indexerCommand.append(" ").append(EVENT_IDS_ARGUMENT);
-			while (sourceIter.hasNext()) {
-				String source = sourceIter.next();
-				Iterator<String> sourceCodeIter = eventids.get(source).iterator();
-				while (sourceCodeIter.hasNext()) {
-					String sourceCode = sourceCodeIter.next();
-					indexerCommand.append(source).append(sourceCode);
-					if (sourceCodeIter.hasNext() || sourceIter.hasNext()) {
-						indexerCommand.append(",");
-					}
-				}
-			}
+		String command = getProductSummaryCommand(event, summary);
 
-			indexerCommand.append(" ").append(PREFERRED_MAGNITUDE_ARGUMENT)
-					.append(eventSummary.getMagnitude());
-			indexerCommand.append(" ").append(PREFERRED_LATITUDE_ARGUMENT)
-					.append(eventSummary.getLatitude());
-			indexerCommand.append(" ").append(PREFERRED_LONGITUDE_ARGUMENT)
-					.append(eventSummary.getLongitude());
-			indexerCommand.append(" ").append(PREFERRED_DEPTH_ARGUMENT)
-					.append(eventSummary.getDepth());
-			String eventTime = null;
-			if (event.getTime() != null) {
-				eventTime = XmlUtils.formatDate(event.getTime());
-			}
-			indexerCommand.append(" ").append(PREFERRED_ORIGIN_TIME_ARGUMENT)
-					.append(eventTime);
+		// Tells external indexer what type of index event occurred.
+		command = command + " " +
+				ExternalIndexerListener.EVENT_ACTION_ARGUMENT +
+				indexerChange.getType().toString();
+
+		return command;
+	}
+
+	/**
+	 * Get the command for a specific event and summary.
+	 *
+	 * @param event
+	 * @param summary
+	 * @return command line arguments as a string.
+	 * @throws Exception
+	 */
+	public String getProductSummaryCommand(Event event, ProductSummary summary) throws Exception {
+		StringBuffer indexerCommand = new StringBuffer(getCommand());
+
+		if (event != null) {
+			indexerCommand.append(getEventArguments(event));
 		}
+		if (summary != null) {
+			indexerCommand.append(getProductSummaryArguments(summary));
+		}
+
 
 		Product product = null;
 		try {
@@ -394,6 +342,127 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 		}
 
 		return indexerCommand.toString();
+	}
+
+	/**
+	 * Get command line arguments for an event.
+	 *
+	 * @param event the event
+	 * @return command line arguments
+	 */
+	public String getEventArguments(final Event event) {
+		StringBuffer buf = new StringBuffer();
+
+		EventSummary eventSummary = event.getEventSummary();
+		buf.append(" ")
+				.append(ExternalIndexerListener.PREFERRED_ID_ARGUMENT)
+				.append(eventSummary.getId());
+		buf.append(" ")
+				.append(ExternalIndexerListener.PREFERRED_EVENTSOURCE_ARGUMENT)
+				.append(eventSummary.getSource());
+		buf.append(" ")
+				.append(ExternalIndexerListener.PREFERRED_EVENTSOURCECODE_ARGUMENT)
+				.append(eventSummary.getSourceCode());
+		Map<String, List<String>> eventids = event.getAllEventCodes(true);
+		Iterator<String> sourceIter = eventids.keySet().iterator();
+		buf.append(" ").append(EVENT_IDS_ARGUMENT);
+		while (sourceIter.hasNext()) {
+			String source = sourceIter.next();
+			Iterator<String> sourceCodeIter = eventids.get(source).iterator();
+			while (sourceCodeIter.hasNext()) {
+				String sourceCode = sourceCodeIter.next();
+				buf.append(source).append(sourceCode);
+				if (sourceCodeIter.hasNext() || sourceIter.hasNext()) {
+					buf.append(",");
+				}
+			}
+		}
+
+		buf.append(" ").append(PREFERRED_MAGNITUDE_ARGUMENT)
+				.append(eventSummary.getMagnitude());
+		buf.append(" ").append(PREFERRED_LATITUDE_ARGUMENT)
+				.append(eventSummary.getLatitude());
+		buf.append(" ").append(PREFERRED_LONGITUDE_ARGUMENT)
+				.append(eventSummary.getLongitude());
+		buf.append(" ").append(PREFERRED_DEPTH_ARGUMENT)
+				.append(eventSummary.getDepth());
+		String eventTime = null;
+		if (event.getTime() != null) {
+			eventTime = XmlUtils.formatDate(event.getTime());
+		}
+		buf.append(" ").append(PREFERRED_ORIGIN_TIME_ARGUMENT)
+				.append(eventTime);
+
+		return buf.toString();
+	}
+
+	/**
+	 * Get command line arguments for a product summary.
+	 *
+	 * @param summary the product summary
+	 * @return command line arguments
+	 */
+	public String getProductSummaryArguments(final ProductSummary summary) throws IOException {
+		StringBuffer buf = new StringBuffer();
+
+		File productDirectory = getStorage().getProductFile(summary.getId());
+		if (productDirectory.exists()) {
+			// Add the directory argument
+			buf.append(" ")
+					.append(CLIProductBuilder.DIRECTORY_ARGUMENT)
+					.append(productDirectory.getCanonicalPath());
+		}
+
+		// Add arguments from summary
+		buf.append(" ").append(CLIProductBuilder.TYPE_ARGUMENT)
+				.append(summary.getType());
+		buf.append(" ").append(CLIProductBuilder.CODE_ARGUMENT)
+				.append(summary.getCode());
+		buf.append(" ").append(CLIProductBuilder.SOURCE_ARGUMENT)
+				.append(summary.getSource());
+		buf.append(" ")
+				.append(CLIProductBuilder.UPDATE_TIME_ARGUMENT)
+				.append(XmlUtils.formatDate(summary.getUpdateTime()));
+		buf.append(" ").append(CLIProductBuilder.STATUS_ARGUMENT)
+				.append(summary.getStatus());
+		if (summary.isDeleted()) {
+			buf.append(" ")
+					.append(CLIProductBuilder.DELETE_ARGUMENT);
+		}
+
+		// Add optional tracker URL argument
+		if (summary.getTrackerURL() != null) {
+			buf.append(" ")
+					.append(CLIProductBuilder.TRACKER_URL_ARGUMENT)
+					.append(summary.getTrackerURL());
+		}
+
+		// Add property arguments
+		Map<String, String> props = summary.getProperties();
+		Iterator<String> iter = props.keySet().iterator();
+		while (iter.hasNext()) {
+			String name = iter.next();
+			buf.append(" \"")
+					.append(CLIProductBuilder.PROPERTY_ARGUMENT).append(name)
+					.append("=").append(props.get(name).replace("\"", "\\\""))
+					.append("\"");
+		}
+
+		// Add link arguments
+		Map<String, List<URI>> links = summary.getLinks();
+		iter = links.keySet().iterator();
+		while (iter.hasNext()) {
+			String relation = iter.next();
+			Iterator<URI> iter2 = links.get(relation).iterator();
+			while (iter2.hasNext()) {
+				buf.append(" ")
+						.append(CLIProductBuilder.LINK_ARGUMENT)
+						.append(relation).append("=")
+						.append(iter2.next().toString());
+			}
+		}
+
+		return buf.toString();
 	}
 
 	/**

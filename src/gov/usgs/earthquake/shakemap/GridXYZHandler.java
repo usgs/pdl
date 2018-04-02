@@ -6,6 +6,8 @@ package gov.usgs.earthquake.shakemap;
 
 import java.util.zip.ZipInputStream;
 
+import gov.usgs.util.StreamUtils;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
@@ -42,48 +44,52 @@ public class GridXYZHandler {
 	}
 
 	public void parse(final InputStream in) throws Exception {
-		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new ZipInputStream(in)));
-		String firstLine = br.readLine();
-		br.close();
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					new ZipInputStream(in)));
+			String firstLine = br.readLine();
+			br.close();
 
-		String parts[] = firstLine.split(" ");
-		// id
-		shakemap.setEventSourceCode(parts[0]);
+			String parts[] = firstLine.split(" ");
+			// id
+			shakemap.setEventSourceCode(parts[0]);
 
-		// magnitude
-		shakemap.setMagnitude(new BigDecimal(parts[1]));
-		// latitude
-		shakemap.setLatitude(new BigDecimal(parts[2]));
-		// longitude
-		shakemap.setLongitude(new BigDecimal(parts[3]));
+			// magnitude
+			shakemap.setMagnitude(new BigDecimal(parts[1]));
+			// latitude
+			shakemap.setLatitude(new BigDecimal(parts[2]));
+			// longitude
+			shakemap.setLongitude(new BigDecimal(parts[3]));
 
-		// month day year hour:minute:second timezone
-		String[] eventTimestampParts = new String[5];
-		System.arraycopy(parts, 4, eventTimestampParts, 0, 5);
-		shakemap.setEventTime(EVENT_TIMESTAMP_FORMAT.parse(join(" ",
-				eventTimestampParts)));
+			// month day year hour:minute:second timezone
+			String[] eventTimestampParts = new String[5];
+			System.arraycopy(parts, 4, eventTimestampParts, 0, 5);
+			shakemap.setEventTime(EVENT_TIMESTAMP_FORMAT.parse(join(" ",
+					eventTimestampParts)));
 
-		// lonMin
-		shakemap.setMinimumLongitude(new BigDecimal(parts[9]));
-		// latMin
-		shakemap.setMinimumLatitude(new BigDecimal(parts[10]));
-		// lonMax
-		shakemap.setMaximumLongitude(new BigDecimal(parts[11]));
-		// latMax
-		shakemap.setMaximumLatitude(new BigDecimal(parts[12]));
+			// lonMin
+			shakemap.setMinimumLongitude(new BigDecimal(parts[9]));
+			// latMin
+			shakemap.setMinimumLatitude(new BigDecimal(parts[10]));
+			// lonMax
+			shakemap.setMaximumLongitude(new BigDecimal(parts[11]));
+			// latMax
+			shakemap.setMaximumLatitude(new BigDecimal(parts[12]));
 
-		// (Process time: dow month day hour:minute:second year)
-		String[] processTimestampParts = new String[7];
-		System.arraycopy(parts, 13, processTimestampParts, 0, 7);
-		shakemap.setProcessTimestamp(PROCESS_TIMESTAMP_FORMAT.parse(join(" ",
-				processTimestampParts)));
+			// (Process time: dow month day hour:minute:second year)
+			String[] processTimestampParts = new String[7];
+			System.arraycopy(parts, 13, processTimestampParts, 0, 7);
+			shakemap.setProcessTimestamp(PROCESS_TIMESTAMP_FORMAT.parse(join(" ",
+					processTimestampParts)));
 
-		String eventDescription = "";
-		for (int i = 20; i < parts.length; i++) {
-			eventDescription += parts[i] + " ";
+			String eventDescription = "";
+			for (int i = 20; i < parts.length; i++) {
+				eventDescription += parts[i] + " ";
+			}
+			shakemap.setEventDescription(eventDescription.trim());
+		} finally {
+			StreamUtils.closeStream(in);
 		}
-		shakemap.setEventDescription(eventDescription.trim());
 	}
 
 	protected String join(final String delimeter, final String[] parts) {

@@ -96,4 +96,12 @@ public class ZipProductSource implements ProductSource {
 		}
 	}
 
+	/**
+	 * Free any resources associated with this handler.
+	 */
+	@Override
+	public void close() {
+		this.zip = null;
+	}
+
 }

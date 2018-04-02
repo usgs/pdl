@@ -82,6 +82,11 @@ public class TimeoutProcess {
 			timer.cancel();
 		}
 
+		// close streams
+		StreamUtils.closeStream(getErrorStream());
+		StreamUtils.closeStream(getInputStream());
+		StreamUtils.closeStream(getOutputStream());
+
 		return status;
 	}
 

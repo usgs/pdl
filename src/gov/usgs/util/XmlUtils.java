@@ -7,7 +7,7 @@
 package gov.usgs.util;
 
 import java.io.IOException;
-
+import java.io.InputStream;
 import java.util.GregorianCalendar;
 import java.util.Calendar;
 import java.util.Date;
@@ -171,7 +171,12 @@ public class XmlUtils {
 		XMLReader xr = XMLReaderFactory.createXMLReader();
 		xr.setContentHandler(handler);
 		xr.setErrorHandler(handler);
-		xr.parse(new InputSource(StreamUtils.getInputStream(xml)));
+		InputStream in = StreamUtils.getInputStream(xml);
+		try {
+			xr.parse(new InputSource(in));
+		} finally {
+			StreamUtils.closeStream(in);
+		}
 	}
 
 	/**

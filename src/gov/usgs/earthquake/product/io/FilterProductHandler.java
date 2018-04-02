@@ -94,4 +94,13 @@ public class FilterProductHandler implements ProductHandler {
 		output.onSignature(id, signature);
 	}
 
+
+	/**
+	 * Free any resources associated with this source.
+	 */
+	@Override
+	public void close() {
+		output.close();
+	}
+
 }

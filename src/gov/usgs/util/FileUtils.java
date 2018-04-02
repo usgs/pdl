@@ -116,6 +116,7 @@ public class FileUtils {
 						files[i].delete();
 					}
 				}
+				files = null;
 			} else {
 				path.delete();
 			}
@@ -169,24 +170,25 @@ public class FileUtils {
 	 *            this value are relative to the CWD.
 	 */
 	public static void extractResourceFile(String rsFile, String fsFile) {
+		InputStream is = FileUtils.class.getResourceAsStream(rsFile);
 		try {
-			InputStream is = FileUtils.class.getResourceAsStream(rsFile);
 			FileOutputStream os = new FileOutputStream(fsFile);
-			byte[] buf = new byte[1024];
-			while (true) {
-				int len = is.read(buf);
-				if (len < 0) {
-					break;
-				}
-				os.write(buf, 0, len);
-			} // END: while
+			try {
+				byte[] buf = new byte[1024];
+				while (true) {
+					int len = is.read(buf);
+					if (len < 0) {
+						break;
+					}
+					os.write(buf, 0, len);
+				} // END: while
 
-			// Do we have a logger yet?
-			// System.err.println("Copied " + rsFile + " from jar file to " +
-			// fsFile+" in the file system.  ("+totalCopied+" bytes).");
-
-			is.close();
-			os.close();
+				// Do we have a logger yet?
+				// System.err.println("Copied " + rsFile + " from jar file to " +
+				// fsFile+" in the file system.  ("+totalCopied+" bytes).");
+			} finally {
+				StreamUtils.closeStream(os);
+			}
 		} catch (FileNotFoundException fnf) {
 			// Logger?
 			System.err.println(fnf.getMessage() + " -- 1");
@@ -195,6 +197,8 @@ public class FileUtils {
 			System.err.println(iox.getMessage() + " -- 2");
 		} catch (NullPointerException npx) {
 			// A dummy catch
+		} finally {
+			StreamUtils.closeStream(is);
 		}
 	}
 
