@@ -770,6 +770,12 @@ public class FileProductStorage extends DefaultConfigurable implements
 						+ "] released write lock for product id="
 						+ id.toString());
 			}
+
+			// close underlying handler
+			output.close();
+			output.setProductOutput(null);
+
+			source.close();
 		}
 
 		ProductId id = output.getProductId();

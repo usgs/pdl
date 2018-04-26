@@ -49,5 +49,6 @@ public class InputStreamContent extends AbstractContent {
 	 */
 	public void close() {
 		StreamUtils.closeStream(content);
+		content = null;
 	}
 }
