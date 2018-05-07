@@ -100,7 +100,9 @@ public class FilterProductHandler implements ProductHandler {
 	 */
 	@Override
 	public void close() {
-		output.close();
+		if (output != null) {
+			output.close();
+		}
 	}
 
 }

@@ -75,21 +75,26 @@ public class BinaryProductSource implements ProductSource {
 
 					// background thread delivers content object to product handler
 					ContentOutputThread outputThread = new ContentOutputThread(out, id, path, content);
-					outputThread.start();
 
-					// read stream content
-					io.readStream(length, in, pipedOut);
-
-					// done reading content, close piped stream to signal EOF.
-					StreamUtils.closeStream(pipedOut);
-					pipedOut = null;
 					try {
-						// wait for background thread to complete
-						outputThread.join();
-					} catch (Exception e) {
-						// ignore
+						outputThread.start();
+
+						// read stream content
+						io.readStream(length, in, pipedOut);
+					} finally {
+						// done reading content, close piped stream to signal EOF.
+						StreamUtils.closeStream(pipedOut);
+						pipedOut = null;
+						try {
+							// wait for background thread to complete
+							outputThread.join();
+						} catch (Exception e) {
+							// ignore
+						}
+						outputThread = null;
+						content.close();
 					}
-					outputThread = null;
+
 				} else if (next.equals(BinaryProductHandler.SIGNATURE)) {
 					String signature = io.readString(in);
 					out.onSignature(id, signature);

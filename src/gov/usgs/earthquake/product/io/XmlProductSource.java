@@ -21,7 +21,6 @@ import java.util.Date;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -43,6 +42,9 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 
 	/** Used to send content to ProductOutput as it is read. */
 	private PipedOutputStream contentOutputStream;
+
+	/** Content being read. */
+	private InputStreamContent content;
 
 	/** Used for signature ProductOutput. */
 	private StringBuffer signatureBuffer;
@@ -206,7 +208,7 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 									contentInputStream, Base64.DONT_GUNZIP);
 						}
 
-						InputStreamContent content = new InputStreamContent(
+						content = new InputStreamContent(
 								contentInputStream);
 						content.setContentType(type);
 						content.setLength(length);
@@ -220,6 +222,7 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 					}
 
 				} catch (Exception e) {
+					closeContent();
 					throw new SAXException(e);
 				}
 			}
@@ -249,17 +252,8 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 			try {
 				if (XmlProductHandler.CONTENT_ELEMENT.equals(localName)) {
 					// done reading content content, close piped stream to
-					// signal
-					// EOF.
-					StreamUtils.closeStream(contentOutputStream);
-					contentOutputStream = null;
-					try {
-						// wait for background thread to complete
-						contentOutputThread.join();
-					} catch (Exception e) {
-						// ignore
-					}
-					contentOutputThread = null;
+					// signal EOF.
+					closeContent();
 				} else if (XmlProductHandler.SIGNATURE_ELEMENT
 						.equals(localName)) {
 					String signature = signatureBuffer.toString();
@@ -269,6 +263,7 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 					out.onEndProduct(id);
 				}
 			} catch (Exception e) {
+				closeContent();
 				throw new SAXException(e);
 			}
 		}
@@ -295,8 +290,7 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 				contentOutputStream.write(chars.getBytes());
 			} catch (Exception e) {
 				// close the piped stream if there was an exception
-				StreamUtils.closeStream(contentOutputStream);
-				contentOutputThread = null;
+				closeContent();
 				throw new SAXException(e);
 			}
 		} else if (signatureBuffer != null) {
@@ -320,11 +314,29 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 	 */
 	@Override
 	public void close() {
+		closeContent();
+
 		StreamUtils.closeStream(in);
 		if (out != null) {
 			out.close();
 		}
 	}
 
+
+	public void closeContent() {
+		StreamUtils.closeStream(contentOutputStream);
+		contentOutputStream = null;
+		if (contentOutputThread != null) {
+			try {
+				contentOutputThread.join();
+			} catch (Exception e) {
+				// ignore
+			}
+		}
+		contentOutputThread = null;
+		if (content != null) {
+			content.close();
+		}
+	}
 
 }

@@ -50,6 +50,7 @@ public class DirectoryProductHandler extends ObjectProductHandler {
 			// FileContent copy constructor extracts content
 			FileContent fc = new FileContent(content, new File(directory, path));
 			super.onContent(id, path, new URLContent(fc));
+			fc = null;
 		}
 	}
 
@@ -61,16 +62,25 @@ public class DirectoryProductHandler extends ObjectProductHandler {
 
 		// save reference to stream, so it can be forced close.
 		OutputStream out = null;
+		ProductSource source = null;
+		ProductHandler handler = null;
 		try {
 			out = StreamUtils.getOutputStream(new File(directory,
 					PRODUCT_XML_FILENAME));
 
 			// save product attributes as xml
-			new ObjectProductSource(getProduct())
-					.streamTo(new XmlProductHandler(out));
+			source = new ObjectProductSource(getProduct());
+			handler = new XmlProductHandler(out);
+			source.streamTo(handler);
 		} finally {
 			// close stream
 			StreamUtils.closeStream(out);
+			if (source != null) {
+				source.close();
+			}
+			if (handler != null) {
+				handler.close();
+			}
 		}
 	}
 
