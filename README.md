@@ -1,7 +1,8 @@
 Product Distribution Layer (PDL)
 ================================
 [![Build Status](https://travis-ci.org/usgs/pdl.svg?branch=master)](https://travis-ci.org/usgs/pdl)
-
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/76d1d267050345429fadc49ee35b117f)](https://www.codacy.com/app/usgs/pdl)
+[![codecov](https://codecov.io/gh/usgs/pdl/branch/master/graph/badge.svg)](https://codecov.io/gh/usgs/pdl)
 
 PDL distributes many types of information. It:
 - integrates with existing systems, Cross-platform command line and Java APIs.
