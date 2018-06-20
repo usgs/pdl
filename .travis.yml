@@ -25,7 +25,7 @@ script:
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-  - java -cp ~/codacy-coverage-reporter-assembly-latest.jar com.codacy.CodacyCoverageReporter -l Java -r dist/reports/coverage-xml/coverage.xml
+  - java -jar ~/codacy-coverage-reporter-assembly-latest.jar report -l Java -r dist/reports/coverage-xml/coverage.xml
 
 env:
   CODACY_PROJECT_TOKEN:
