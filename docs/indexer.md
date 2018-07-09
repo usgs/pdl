@@ -1,16 +1,3 @@
-- Overview
-- Versioning
-
-- Actions
-- Add, Delete, Update, Archive
-- Event ID, Event Location
-- Modules, Preferred Weight
-- Override Products
-- Properties
-
-
-
-
 Indexer
 =======
 
