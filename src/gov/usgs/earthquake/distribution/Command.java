@@ -71,10 +71,12 @@ public class Command {
 		} finally {
 			try {
 				outputTransfer.interrupt();
+				outputTransfer.join();
 			} catch (Exception e) {
 			}
 			try {
 				errorTransfer.interrupt();
+				errorTransfer.join();
 			} catch (Exception e) {
 			}
 		}
