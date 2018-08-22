@@ -115,7 +115,7 @@ public class ReplicationStorageListenerTest {
 		localStorage.storeProduct(product2);
 
 		// Wait for just a bit to let the product replicate
-		Thread.sleep(2500L);
+		Thread.sleep(5000L);
 
 		// Make sure the remote storage has the product
 		System.err.println("Checking if remote storage has first product.");
@@ -131,7 +131,7 @@ public class ReplicationStorageListenerTest {
 		localStorage.removeProduct(product.getId());
 
 		// Wait for just a bit to let the removal replicate
-		Thread.sleep(2500L);
+		Thread.sleep(5000L);
 
 		System.err.println("Checking if first product was removed from " +
 				"remote storage.");

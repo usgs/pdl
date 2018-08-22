@@ -5,9 +5,11 @@
  * Learn how to create Gradle builds at https://guides.gradle.org/creating-new-gradle-builds/
  */
 
-
-apply plugin: "java"
-apply plugin: "jacoco"
+plugins {
+  id "java"
+  id "jacoco"
+  id "com.gradle.build-scan" version "1.16"
+}
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -26,7 +28,6 @@ ext {
 configurations {
   codacy
 }
-
 
 dependencies {
   codacy "com.codacy:codacy-coverage-reporter:4.0+"
@@ -70,6 +71,11 @@ sourceSets {
   }
 }
 
+
+buildScan {
+  termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+  termsOfServiceAgree = 'yes'
+}
 
 clean.doFirst {
   print(configurations.compile.asPath)
