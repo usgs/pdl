@@ -9,6 +9,7 @@ import gov.usgs.util.TimeoutProcessBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -319,6 +320,10 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 
 				LOGGER.info("[" + getName() + "] command \"" + cmdStr
 						+ "\" exited with status [" + exitStatus + "]");
+				if (exitStatus != 0) {
+					LOGGER.info("[" + getName() + "] command \"" + cmdStr
+							+ "\" error output: " + new String(process.errorOutput()));
+				}
 			} catch (ProcessTimeoutException cex) {
 
 				StringBuffer message = new StringBuffer();
