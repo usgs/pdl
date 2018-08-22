@@ -6,6 +6,7 @@
  */
 package gov.usgs.util;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Timer;
@@ -31,6 +32,9 @@ public class TimeoutProcess {
 	/** Timer object that will destroy this process. */
 	private Timer timer = null;
 
+	/** Standard error output. */
+	private byte[] errorOutput;
+
 	/**
 	 * Construct a new TimeoutProcess.
 	 * 
@@ -43,6 +47,10 @@ public class TimeoutProcess {
 
 	public void destroy() {
 		process.destroy();
+	}
+
+	public byte[] errorOutput() {
+		return errorOutput;
 	}
 
 	public int exitValue() {
@@ -70,7 +78,7 @@ public class TimeoutProcess {
 	 * @throws ProcessTimeoutException
 	 *             if the process timed out before exiting.
 	 */
-	public int waitFor() throws InterruptedException, ProcessTimeoutException {
+	public int waitFor() throws InterruptedException, IOException, ProcessTimeoutException {
 		int status = process.waitFor();
 
 		if (timeoutElapsed()) {
@@ -82,10 +90,14 @@ public class TimeoutProcess {
 			timer.cancel();
 		}
 
-		// close streams
-		StreamUtils.closeStream(getErrorStream());
-		StreamUtils.closeStream(getInputStream());
-		StreamUtils.closeStream(getOutputStream());
+		try {
+			errorOutput = StreamUtils.readStream(getErrorStream());
+		} finally {
+			// close streams
+			StreamUtils.closeStream(getErrorStream());
+			StreamUtils.closeStream(getInputStream());
+			StreamUtils.closeStream(getOutputStream());
+		}
 
 		return status;
 	}
