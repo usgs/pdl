@@ -64,7 +64,7 @@ public class ReplicationStorageListenerTest {
 		config.setSectionProperty(REPLICATION_SECTION,
 				ReplicationStorageListener.ARCHIVE_FLAG_PROPERTY, "true");
 		config.setSectionProperty(REPLICATION_SECTION,
-				ReplicationStorageListener.REPL_CMD_PROPERTY, "/usr/bin/rsync");
+				ReplicationStorageListener.REPL_CMD_PROPERTY, "rsync");
 		config.setSectionProperty(REPLICATION_SECTION,
 				ReplicationStorageListener.REPL_MAX_TRIES_PROPERTY, "1");
 		config.setSectionProperty(REPLICATION_SECTION,
