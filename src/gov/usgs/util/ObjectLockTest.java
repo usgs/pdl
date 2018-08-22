@@ -34,10 +34,10 @@ public class ObjectLockTest {
 
 	private ObjectLock<Integer> objectLock = new ObjectLock<Integer>();
 
-	public static final Integer testObject1 = new Integer(1234);
-	public static final Integer testObject2 = new Integer(1234);
-	public static final Integer testObject3 = new Integer(1234);
-	public static final Integer testObject4 = new Integer(1234);
+	public static final Integer testObject1 = Integer.valueOf(1234);
+	public static final Integer testObject2 = Integer.valueOf(1234);
+	public static final Integer testObject3 = Integer.valueOf(1234);
+	public static final Integer testObject4 = Integer.valueOf(1234);
 
 	@Test
 	public void readLockBlocksUntilWriteLockIsReleased() throws Exception {
@@ -323,7 +323,7 @@ public class ObjectLockTest {
 
 		public int get() {
 			// Just ensuring pass-by-value. Not that we need to.
-			return (new Integer(this.value)).intValue();
+			return (Integer.valueOf(this.value)).intValue();
 		}
 	}
 }

@@ -291,7 +291,7 @@ public class ArchivePolicy extends DefaultConfigurable {
 						property = date.getTime();
 					}
 				} else {
-					property = new Long(buffer);
+					property = Long.valueOf(buffer);
 				}
 			}
 		} catch (NumberFormatException npx) {
@@ -305,7 +305,7 @@ public class ArchivePolicy extends DefaultConfigurable {
 		try {
 			String buffer = config.getProperty(name);
 			if (buffer != null) {
-				property = new Long(buffer);
+				property = Long.valueOf(buffer);
 			}
 		} catch (NumberFormatException npx) {
 			property = null;

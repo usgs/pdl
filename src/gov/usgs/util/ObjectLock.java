@@ -71,7 +71,7 @@ public class ObjectLock<T> {
 	private void incrementThreadCount(final T object) {
 		Integer threadCount = lockThreadCounts.get(object);
 		if (threadCount == null) {
-			threadCount = new Integer(0);
+			threadCount = Integer.valueOf(0);
 		}
 		threadCount = threadCount + 1;
 		lockThreadCounts.put(object, threadCount);
