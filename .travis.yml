@@ -27,6 +27,9 @@ addons:
     - 127.0.0.1
     - localhost
 
+script:
+  - ./gradlew build --info
+
 # upload coverage
 after_success:
   - bash <(curl -s https://codecov.io/bash)
