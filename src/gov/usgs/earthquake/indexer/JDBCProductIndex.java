@@ -1098,7 +1098,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			// Loop over our results and add each eventIndexId to the list
 			while (results.next()) {
 				// EVENT_INDEX_ID
-				eventIndexIds.add(new Long(results.getLong(1)));
+				eventIndexIds.add(Long.valueOf(results.getLong(1)));
 			}
 		} finally {
 			try {
@@ -1349,7 +1349,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			// Add each product summary index id to our list
 			while (results.next()) {
 				// SUMMARY_PRODUCT_INDEX_ID
-				summaryIndexIds.add(new Long(results.getLong(1)));
+				summaryIndexIds.add(Long.valueOf(results.getLong(1)));
 			}
 		} finally {
 			// must close result set to keep from blocking transaction
@@ -1409,7 +1409,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			// Loop over our results and add each eventIndexId to the list
 			while (results.next()) {
 				// SUMMARY_PRODUCT_INDEX_ID
-				summaryIndexIds.add(new Long(results.getLong(1)));
+				summaryIndexIds.add(Long.valueOf(results.getLong(1)));
 			}
 
 			LOGGER.finest("[" + getName() + "] query complete");

@@ -89,7 +89,7 @@ public class CorbaSender {
 
 	} // END: constructor CorbaSender
 
-	public void finalize() {
+	public void destroy() {
 		try { feeder._release(); } catch (Exception ex) { /* ignore */ }
 		try { object._release(); } catch (Exception ex) { /* ignore */ }
 		try { orb.shutdown(true); } catch (Exception ex) { /* ignore */ }

@@ -25,7 +25,7 @@ public class ByteContent extends AbstractContent {
 	 */
 	public ByteContent(final byte[] content) {
 		this.content = content;
-		setLength(new Long(content.length));
+		setLength(Long.valueOf(content.length));
 	}
 
 	/**
@@ -42,7 +42,7 @@ public class ByteContent extends AbstractContent {
 	public ByteContent(final Content content) throws IOException {
 		super(content);
 		this.content = StreamUtils.readStream(content.getInputStream());
-		setLength(new Long(this.content.length));
+		setLength(Long.valueOf(this.content.length));
 	}
 
 	/**

@@ -244,7 +244,15 @@ public class EIDSNotificationSender extends DefaultNotificationListener {
 	public void shutdown() throws Exception {
 		super.shutdown();
 
-		corbaSender = null;
+		if (corbaSender != null) {
+			try {
+				corbaSender.destroy();
+			} catch (Exception e) {
+				// ignore
+			}
+			corbaSender = null;
+		}
+
 		try {
 			productStorage.shutdown();
 		} catch (Exception e) {

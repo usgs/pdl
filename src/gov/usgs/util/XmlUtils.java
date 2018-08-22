@@ -8,24 +8,29 @@ package gov.usgs.util;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.GregorianCalendar;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeFactory;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * Xml parsing utility functions.
@@ -167,8 +172,11 @@ public class XmlUtils {
 	 *             if any exceptions occur during parsing.
 	 */
 	public static void parse(final Object xml, final DefaultHandler handler)
-			throws SAXException, IOException {
-		XMLReader xr = XMLReaderFactory.createXMLReader();
+			throws SAXException, IOException, ParserConfigurationException {
+		SAXParserFactory spf = SAXParserFactory.newInstance();
+		spf.setNamespaceAware(true);
+		SAXParser sp = spf.newSAXParser();
+		XMLReader xr = sp.getXMLReader();
 		xr.setContentHandler(handler);
 		xr.setErrorHandler(handler);
 		InputStream in = StreamUtils.getInputStream(xml);

@@ -291,7 +291,8 @@ public class Bootstrap {
 		LOGGER.config("Loading main class " + className);
 		Bootstrappable main = null;
 		try {
-			main = (Bootstrappable) Class.forName(className).newInstance();
+			main = (Bootstrappable) Class.forName(className)
+					.getConstructor().newInstance();
 		} catch (ClassCastException cce) {
 			LOGGER.log(Level.SEVERE,
 					"Main class must implement the Bootstrappable interface",

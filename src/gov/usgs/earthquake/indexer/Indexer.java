@@ -1604,7 +1604,7 @@ public class Indexer extends DefaultNotificationListener {
 		// How often should the archive policies be run
 		String buffer = config.getProperty(INDEX_ARCHIVE_INTERVAL_PROPERTY);
 		if (buffer != null) {
-			archiveInterval = (new Long(buffer)).longValue();
+			archiveInterval = Long.parseLong(buffer);
 		} else {
 			// Use default age
 			archiveInterval = INDEX_ARCHIVE_INTERVAL_DEFAULT;

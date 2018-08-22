@@ -6,18 +6,19 @@
  */
 package gov.usgs.util;
 
+import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.util.LinkedList;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-
 import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.XMLReaderFactory;
 
-import java.util.LinkedList;
-
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
 
 /**
  * SAXAdapter is a sax handler that accumulates element content, which is a
@@ -157,7 +158,10 @@ public class SAXAdapter extends DefaultHandler {
      */
     public final Exception parse(InputStream xml) {
         try {
-            XMLReader xr = XMLReaderFactory.createXMLReader();
+            SAXParserFactory spf = SAXParserFactory.newInstance();
+            spf.setNamespaceAware(true);
+            SAXParser sp = spf.newSAXParser();
+            XMLReader xr = sp.getXMLReader();
             xr.setContentHandler(this);
             xr.setErrorHandler(this);
             xr.parse(new InputSource(xml));

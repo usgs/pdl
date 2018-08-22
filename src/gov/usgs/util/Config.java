@@ -113,7 +113,8 @@ public class Config extends Ini {
 			className = OBJECT_TYPE_MAP.get(className);
 		}
 
-		Object obj = Class.forName(className).newInstance();
+		Object obj = Class.forName(className)
+				.getConstructor().newInstance();
 		if (obj instanceof Configurable) {
 			((Configurable) obj).configure(this);
 		}
