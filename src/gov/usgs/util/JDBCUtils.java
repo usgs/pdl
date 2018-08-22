@@ -6,6 +6,8 @@
  */
 package gov.usgs.util;
 
+import java.lang.reflect.InvocationTargetException;
+
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -45,9 +47,10 @@ public class JDBCUtils {
 	 */
 	public static Connection getConnection(final String driver, final String url)
 			throws ClassNotFoundException, IllegalAccessException,
-			InstantiationException, SQLException {
+			InstantiationException, InvocationTargetException,
+			NoSuchMethodException, SQLException {
 		// create driver class, which registers with DriverManager
-		Class.forName(driver).newInstance();
+		Class.forName(driver).getConstructor().newInstance();
 
 		// request connection from DriverManager
 		return DriverManager.getConnection(url);
@@ -112,7 +115,8 @@ public class JDBCUtils {
 	 */
 	public static Connection getMysqlConnection(final String url)
 			throws SQLException, ClassNotFoundException,
-			IllegalAccessException, InstantiationException {
+			IllegalAccessException, InstantiationException,
+			InvocationTargetException, NoSuchMethodException {
 		return getConnection(MYSQL_DRIVER_CLASSNAME, url);
 	}
 
@@ -127,7 +131,8 @@ public class JDBCUtils {
 	 */
 	public static Connection getSqliteConnection(final File file)
 			throws SQLException, ClassNotFoundException,
-			IllegalAccessException, InstantiationException {
+			IllegalAccessException, InstantiationException,
+			InvocationTargetException, NoSuchMethodException {
 		String sqliteFileURL = "jdbc:sqlite:" + file.getAbsolutePath();
 		return getSqliteConnection(sqliteFileURL);
 	}
@@ -143,7 +148,8 @@ public class JDBCUtils {
 	 */
 	public static Connection getSqliteConnection(final String url)
 			throws SQLException, ClassNotFoundException,
-			IllegalAccessException, InstantiationException {
+			IllegalAccessException, InstantiationException,
+			InvocationTargetException, NoSuchMethodException {
 		return getConnection(SQLITE_DRIVER_CLASSNAME, url);
 	}
 

@@ -234,7 +234,8 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 		if (parserClassName == null) {
 			LOGGER.config("Using QuakemlToProductConverter");
 		} else {
-			Object parserObj = Class.forName(parserClassName).newInstance();
+			Object parserObj = Class.forName(parserClassName)
+					.getConstructor().newInstance();
 			if (parserObj instanceof ProductCreator) {
 				productCreator = (ProductCreator) parserObj;
 			} else if (parserObj instanceof FileToQuakemlConverter) {
@@ -535,7 +536,7 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 				}
 			} else if (arg.startsWith(PARSER_ARGUMENT)) {
 				Object parser = Class.forName(arg.replace(PARSER_ARGUMENT, ""))
-						.newInstance();
+						.getConstructor().newInstance();
 				if (parser instanceof ProductCreator) {
 					setProductCreator((ProductCreator) parser);
 				} else {

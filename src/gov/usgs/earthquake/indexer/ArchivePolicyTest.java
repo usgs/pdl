@@ -125,7 +125,7 @@ public class ArchivePolicyTest {
 		Config config = new Config();
 		config.setProperty("maxEventAge", "1");
 		config.setProperty("maxEventTime",
-				new Long(maxEventTime.getTime()).toString());
+				Long.valueOf(maxEventTime.getTime()).toString());
 
 		ArchivePolicy policy = new ArchivePolicy();
 		policy.configure(config);

@@ -5,9 +5,9 @@ package gov.usgs.earthquake.indexer;
 
 import gov.usgs.earthquake.distribution.SignatureVerifier;
 import gov.usgs.earthquake.product.Product;
-import gov.usgs.earthquake.qdm.util.LogIt;
-import gov.usgs.earthquake.qdm.util.Point;
-import gov.usgs.earthquake.qdm.util.Regions;
+import gov.usgs.earthquake.qdm.RegionsHandler;
+import gov.usgs.earthquake.qdm.Point;
+import gov.usgs.earthquake.qdm.Regions;
 import gov.usgs.util.StreamUtils;
 
 import java.io.File;
@@ -16,7 +16,6 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.util.logging.Logger;
 
-import org.xml.sax.InputSource;
 
 /**
  * Default implementation of the IndexerModule interface.
@@ -47,18 +46,6 @@ public class DefaultIndexerModule implements IndexerModule {
 	/** ANSS Authoritative Regions. */
 	public static Regions REGIONS = null;
 	static {
-		// the Regions class uses the Config Logger, provide one that
-		// integrates with new logging framework
-		gov.usgs.earthquake.qdm.util.Config.setLogIt(new LogIt() {
-			@Override
-			public void write(int level, boolean console, String str) {
-				if (console) {
-					LOGGER.info(str);
-				} else {
-					LOGGER.finer(str);
-				}
-			}
-		});
 
 		InputStream in;
 		try {
@@ -67,7 +54,9 @@ public class DefaultIndexerModule implements IndexerModule {
 					.getResource(REGIONS_XML);
 			in = StreamUtils.getInputStream(regionsXmlURL);
 			try {
-				REGIONS = new Regions(new InputSource(in));
+				RegionsHandler regionsHandler = new RegionsHandler();
+				regionsHandler.parse(in);
+				REGIONS = regionsHandler.regions;
 			} finally {
 				StreamUtils.closeStream(in);
 			}
@@ -76,7 +65,9 @@ public class DefaultIndexerModule implements IndexerModule {
 				// now try the file system (etc/regions.xml)
 				in = StreamUtils.getInputStream(new File(REGIONS_XML));
 				try {
-					REGIONS = new Regions(new InputSource(in));
+					RegionsHandler regionsHandler = new RegionsHandler();
+					regionsHandler.parse(in);
+					REGIONS = regionsHandler.regions;
 				} finally {
 					StreamUtils.closeStream(in);
 				}

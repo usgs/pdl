@@ -133,7 +133,7 @@ public class ProductArchivePolicyTest {
 		Config config = new Config();
 		config.setProperty("maxProductAge", "1");
 		config.setProperty("maxProductTime",
-				new Long(maxProductTime.getTime()).toString());
+				Long.valueOf(maxProductTime.getTime()).toString());
 
 		ProductArchivePolicy policy = new ProductArchivePolicy();
 		policy.configure(config);
