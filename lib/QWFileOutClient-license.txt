@@ -28,3 +28,26 @@ system and not for their own internal message distribution.
 
 
 http://www.isti2.com/QWIDS/current_dist/QWIDS_EIDS_Summary.html#Open
+
+
+
+==============================================================================
+NOTE: the following modifications have been made to this jar file:
+Jeremy Fee <jmfee@usgs.gov>
+2018-08-21
+
+1) files in `META-INF/services` have been removed.
+
+2) the class `com/isti/quakewatch/util/QWPasswordUtils.class` has been patched
+   to use `java.util.Base64` instead of `sun.misc.BASE64Encoder`:
+
+```
+16c16
+< import sun.misc.BASE64Encoder;
+---
+> import java.util.Base64;
+104c104
+<       return (new BASE64Encoder()).encode(md.digest());
+---
+>       return (Base64.getEncoder()).encodeToString(md.digest());
+```
