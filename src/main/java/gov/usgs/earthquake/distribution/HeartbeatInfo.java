@@ -1,10 +1,9 @@
 package gov.usgs.earthquake.distribution;
 
 import java.util.Date;
-import java.util.HashMap;
 
-import org.json.simple.JSONAware;
-import org.json.simple.JSONValue;
+import javax.json.Json;
+import javax.json.JsonObject;
 
 /**
  * HeartbeatInfo stores a single heartbeat key/value message, together with a
@@ -13,7 +12,7 @@ import org.json.simple.JSONValue;
  * @author tene
  * 
  */
-public class HeartbeatInfo implements JSONAware {
+public class HeartbeatInfo {
 
 	private String message = null;
 	private Date date = null;
@@ -72,13 +71,14 @@ public class HeartbeatInfo implements JSONAware {
 	}
 
 	/**
-	 * @return JSON string of the message
+	 * @return JSON object of the message
 	 */
-	@Override
-	public String toJSONString() throws RuntimeException {
-		HashMap<String, String> object = new HashMap<String, String>();
-		object.put("message", message);
-		object.put("date", String.valueOf(date.getTime()));
-		return JSONValue.toJSONString(object);
+	public JsonObject toJsonObject() {
+		JsonObject object = Json.createObjectBuilder()
+				.add("message", message)
+				.add("date", String.valueOf(date.getTime()))
+				.build();
+		return object;
 	}
+
 }
