@@ -231,7 +231,6 @@ public class FileProductStorageTest {
 
 	@Test
 	public void notifyListeners() {
-		// TODO
 		Assert.assertTrue("TODO :: Implement notifyListener test.", true);
 	}
 

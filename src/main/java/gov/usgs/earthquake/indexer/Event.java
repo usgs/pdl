@@ -197,7 +197,7 @@ public class Event implements Comparable<Event> {
 			list.remove(summary);
 			if (list.size() == 0) {
 				// if the list is now empty, remove the list
-				products.remove(list);
+				products.remove(type);
 			}
 		}
 		eventSummary = null;
@@ -829,7 +829,6 @@ public class Event implements Comparable<Event> {
 			summary.setMagnitude(magnitudeProduct.getEventMagnitude());
 		}
 
-		// TODO: add other event summary properties
 		// we may be able to avoid implementing this here, since the mapping
 		// interface will be driven by the PHP product index.
 		summary.getEventCodes().putAll(this.getEventCodes());
@@ -1119,7 +1118,7 @@ public class Event implements Comparable<Event> {
 
 			String subEventId = product.getEventId();
 			if (subEventId == null) {
-				// TODO: try to find another version of product with id?
+				// maybe try to find another version of product with id?
 				subEvent = preferredSubEvent;
 			} else {
 				subEvent = subEvents.get(subEventId);

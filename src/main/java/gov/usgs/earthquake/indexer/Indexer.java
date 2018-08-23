@@ -635,7 +635,7 @@ public class Indexer extends DefaultNotificationListener {
 						productSummary, prevEvent, event));
 			}
 
-			// TODO: Is this a problem??? split may modify the event, and then
+			// Is this a problem??? split may modify the event, and then
 			// the unmodified version of that event is passed to merge???
 			// If this is a problem, checkForEventSplits and checkForEventMerges
 			// could be modified to accept the notification object (and add

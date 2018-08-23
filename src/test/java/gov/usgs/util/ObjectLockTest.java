@@ -92,7 +92,6 @@ public class ObjectLockTest {
 				try {
 					Thread.sleep((int) (Math.random() * 100.0));
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 
@@ -125,7 +124,6 @@ public class ObjectLockTest {
 				try {
 					lock.acquireReadLock(object);
 				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 					return;
 				}
@@ -136,7 +134,6 @@ public class ObjectLockTest {
 				try {
 					Thread.sleep((int) (Math.random() * 100.0));
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 
@@ -207,7 +204,6 @@ public class ObjectLockTest {
 						try {
 							lock.acquireWriteLock(lockObject);
 						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 							return;
 						}
@@ -267,7 +263,6 @@ public class ObjectLockTest {
 						try {
 							lock.acquireWriteLock(lockObject);
 						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 							return;
 						}
