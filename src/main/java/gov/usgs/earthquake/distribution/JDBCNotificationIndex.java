@@ -838,7 +838,7 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	 * @throws Exception
 	 *             If a <code>SQLException</code> occurs.
 	 */
-	protected List<Notification> getNotifications(PreparedStatement ps)
+	protected synchronized List<Notification> getNotifications(PreparedStatement ps)
 			throws Exception {
 		List<Notification> n = new ArrayList<Notification>();
 		ResultSet rs = null;
