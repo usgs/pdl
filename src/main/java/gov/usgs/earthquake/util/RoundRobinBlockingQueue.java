@@ -12,7 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * {@link #put(Object)} and {@link #take()} are recommended, as other methods
  * internally call these methods.
  * 
- * @param <T>
+ * @param <T> queue item type.
  */
 public class RoundRobinBlockingQueue<T> extends RoundRobinQueue<T> implements
 		BlockingQueue<T> {

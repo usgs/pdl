@@ -18,13 +18,13 @@ import java.util.logging.Logger;
  * Note: no collision handling has been implemented, although hash collisions
  * are not expected.
  *
- * Examples: <br/>
- * Product ID: urn:usgs-product:us:shakemap:abcd1234:1304116272636 <br/>
- * SHA-1 hash: dde7b3986ee2fda8a793b599b6ae725ab35df58b <br/>
- * Directory: shakemap/dde/7b3/986/ee2/fda/8a7/93b/599/b6a/e72/5ab/35d/f58/b <br/>
- * <br/>
- * Product ID: urn:usgs-product:us:shakemap2:efgh5678:1304116272711 <br/>
- * SHA-1 hash: 8174d0f8d961d48c8a94a6bd0ab2a882e01173c6 <br/>
+ * Examples: <br>
+ * Product ID: urn:usgs-product:us:shakemap:abcd1234:1304116272636 <br>
+ * SHA-1 hash: dde7b3986ee2fda8a793b599b6ae725ab35df58b <br>
+ * Directory: shakemap/dde/7b3/986/ee2/fda/8a7/93b/599/b6a/e72/5ab/35d/f58/b <br>
+ * <br>
+ * Product ID: urn:usgs-product:us:shakemap2:efgh5678:1304116272711 <br>
+ * SHA-1 hash: 8174d0f8d961d48c8a94a6bd0ab2a882e01173c6 <br>
  * Directory: shakemap2/817/4d0/f8d/961/d48/c8a/94a/6bd/0ab/2a8/82e/011/73c/6
  *
  * @deprecated

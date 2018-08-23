@@ -24,7 +24,6 @@ public class IndexerListenerCallable implements Callable<Void> {
 	 *            the listener to notify
 	 * @param event
 	 *            the notification to send
-	 * @return a Callable
 	 */
 	public IndexerListenerCallable(final IndexerListener listener,
 			final IndexerEvent event) {

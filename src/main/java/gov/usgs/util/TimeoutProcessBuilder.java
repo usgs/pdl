@@ -35,7 +35,7 @@ public class TimeoutProcessBuilder {
 	 * strings.
 	 * 
 	 * @param timeout
-	 *            timeout in milliseconds for process, or <= 0 for no timeout.
+	 *            timeout in milliseconds for process, or &lt;= 0 for no timeout.
 	 * @param command
 	 *            array of strings that represent command. The first element
 	 *            must be the full path to the executable, without arguments.
@@ -50,7 +50,7 @@ public class TimeoutProcessBuilder {
 	 * strings.
 	 * 
 	 * @param timeout
-	 *            timeout in milliseconds for process, or <= 0 for no timeout.
+	 *            timeout in milliseconds for process, or &lt;= 0 for no timeout.
 	 * @param command
 	 *            list of strings that represent command.
 	 */

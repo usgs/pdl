@@ -79,7 +79,7 @@ public class AdminSocketServer extends DefaultConfigurable implements
 	 *            input
 	 * @param out
 	 *            write generated output to stream
-	 * @throws Exception
+	 * @throws Exception if misconfigured or the client quits.
 	 */
 	protected void processLine(final String line, final OutputStream out)
 			throws Exception {
