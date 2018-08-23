@@ -1,4 +1,5 @@
 language: java
+# local ssh seems to require sudo
 sudo: required
 
 jdk:
@@ -29,7 +30,9 @@ addons:
     - localhost
 
 script:
-  - ./gradlew build --scan -s
+  - ./gradlew --info build
+  # use --scan to post output online
+  # - ./gradlew build --scan
 
 # upload coverage
 after_success:
