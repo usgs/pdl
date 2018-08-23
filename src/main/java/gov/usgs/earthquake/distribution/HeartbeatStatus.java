@@ -5,14 +5,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.json.simple.JSONAware;
-import org.json.simple.JSONValue;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 /**
  * Heartbeat status information for a single component
  * 
  */
-public class HeartbeatStatus implements JSONAware {
+public class HeartbeatStatus {
 
 	private Map<String, HeartbeatInfo> statuses = null;
 
@@ -61,9 +62,15 @@ public class HeartbeatStatus implements JSONAware {
 
 	}
 
-	@Override
-	public String toJSONString() {
-		return JSONValue.toJSONString(statuses);
+	/**
+	 * @return a JsonObject for output.
+	 */
+	public JsonObject toJsonObject() {
+		JsonObjectBuilder builder = Json.createObjectBuilder();
+		for (String key : statuses.keySet()) {
+			builder.add(key, statuses.get(key).toJsonObject());
+		}
+		return builder.build();
 	}
 
 }

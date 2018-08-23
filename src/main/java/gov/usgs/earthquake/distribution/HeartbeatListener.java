@@ -15,7 +15,9 @@ import java.lang.management.MemoryUsage;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
-import org.json.simple.JSONValue;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+
 
 /**
  * Heartbeat Listener stores heartbeat messages and writes them to a heartbeat
@@ -186,21 +188,12 @@ public class HeartbeatListener extends DefaultNotificationListener {
 	 * @return JSON-formatted output from the map of components and their values
 	 */
 	public String formatHeartbeatOutput() {
-		String output = JSONValue.toJSONString(HASH_HEARTBEATS);
-		if (output == null) {
-
-			LOGGER.warning("Heartbeat output null");
-			Iterator<String> iter = HASH_HEARTBEATS.keySet().iterator();
-			while (iter.hasNext()) {
-				String next = iter.next();
-				LOGGER.info("key '" + next + "' = '"
-						+ HASH_HEARTBEATS.get(next).toJSONString());
-			}
-
-			return "{}";
-		} else {
-			return output;
+		JsonObjectBuilder builder = Json.createObjectBuilder();
+		for (String key : HASH_HEARTBEATS.keySet()) {
+			HeartbeatStatus status = HASH_HEARTBEATS.get(key);
+			builder.add(key, status == null ? null : status.toJsonObject());
 		}
+		return builder.build().toString();
 	}
 
 	/**
