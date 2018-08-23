@@ -143,7 +143,6 @@ public class DefaultAssociator implements Associator {
 
 		// more than one event found
 		else if (filteredEvents.size() > 1) {
-			// TODO: this is a potential merge, log for now
 			ArrayList<String> matches = new ArrayList<String>();
 			Iterator<Event> iter = filteredEvents.iterator();
 			while (iter.hasNext()) {
@@ -449,7 +448,6 @@ public class DefaultAssociator implements Associator {
 				try {
 					jdbcProductIndex = new JDBCProductIndex();
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 

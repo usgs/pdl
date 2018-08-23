@@ -139,10 +139,8 @@ public class SocketProductSenderTest {
 			} catch (IOException iox) {
 				System.err.println(iox.getMessage());
 			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

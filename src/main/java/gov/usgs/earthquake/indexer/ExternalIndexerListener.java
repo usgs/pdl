@@ -516,7 +516,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 	 */
 	public void shutdown() throws Exception {
 		super.shutdown();
-		// TODO: make current process a member and kill process?
+		// maybe make current process a member and kill process?
 		// or find way of detaching so client process can exit but product
 		// process can complete?
 		storage.shutdown();

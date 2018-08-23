@@ -877,7 +877,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 		Iterator<StorageListener> listenerIter = listeners.keySet().iterator();
 		while (listenerIter.hasNext()) {
 			removeStorageListener(listenerIter.next());
-			// TODO :: Maybe we should call "listener.shutdown()" here as well?
+			// Maybe we should call "listener.shutdown()" here as well?
 		}
 
 		// shutdown any legacy storages

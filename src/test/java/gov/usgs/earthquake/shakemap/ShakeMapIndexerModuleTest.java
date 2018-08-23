@@ -2,7 +2,6 @@ package gov.usgs.earthquake.shakemap;
 
 import java.io.File;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,11 +29,6 @@ public class ShakeMapIndexerModuleTest {
 	@Before
 	public void setUpTestEnvironment() throws Exception {
 		module = new ShakeMapIndexerModule();
-	}
-
-	@After
-	public void tearDownTestEnvironment() throws Exception {
-		// TODO: What to do?
 	}
 
 	@Test

@@ -207,7 +207,6 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			@Override
 			public ProductSummary getProductSummary(Product product)
 					throws Exception {
-				// TODO Auto-generated method stub
 				return null;
 			}
 		};
@@ -227,7 +226,6 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			@Override
 			public ProductSummary getProductSummary(Product product)
 					throws Exception {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
@@ -1814,13 +1812,11 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 	@Override
 	public int getMaxTries() {
-		// TODO Auto-generated method stub
 		return 1;
 	}
 
 	@Override
 	public long getTimeout() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 

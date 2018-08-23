@@ -224,7 +224,6 @@ public class ConcurrentStorageTest {
 			try {
 				receiver.receiveNotification(notification);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				Assert.fail("Exception receiving notification");
 			}
@@ -259,7 +258,6 @@ public class ConcurrentStorageTest {
 				sender.sendProduct(product);
 			} catch (Exception e) {
 				e.printStackTrace();
-				// TODO Auto-generated catch block
 				this.e = e;
 			}
 		}

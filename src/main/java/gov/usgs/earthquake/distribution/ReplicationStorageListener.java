@@ -9,7 +9,6 @@ import gov.usgs.util.TimeoutProcessBuilder;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -337,7 +336,6 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 				} else {
 					message.append(" Not retrying.");
 				}
-				// TODO :: Send to tracker as well ???
 				LOGGER.warning(message.toString());
 			} catch (IOException iox) {
 				LOGGER.log(Level.WARNING, iox.getMessage(), iox);
