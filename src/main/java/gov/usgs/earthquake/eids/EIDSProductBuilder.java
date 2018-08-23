@@ -157,14 +157,11 @@ public class EIDSProductBuilder extends ProductBuilder implements EIDSListener {
 
 			@Override
 			public String getName() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public void setName(String arg0) {
-				// TODO Auto-generated method stub
-
 			}
 		});
 

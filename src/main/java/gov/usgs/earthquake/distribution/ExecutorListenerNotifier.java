@@ -86,7 +86,8 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 		// shutdown executor thread
 		listenerExecutor.shutdown();
 
-		// TODO: shutdownNow() instead? shutdown gives all listeners a chance to
+		// Could use shutdownNow() instead?
+		// however, shutdown() gives all listeners a chance to
 		// process all notifications, but may keep client from shutting down
 		// quickly. Also, see DefaultNotificationReceiver.shutdown().
 	}

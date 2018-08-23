@@ -114,7 +114,7 @@ public interface ProductIndex extends Configurable {
 	 * 
 	 * @param summary
 	 *            the summary to remove.
-	 * @return TODO
+	 * @return id of removed summary.
 	 * @throws Exception
 	 */
 	public ProductId removeProductSummary(final ProductSummary summary)

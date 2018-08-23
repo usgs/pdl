@@ -189,7 +189,7 @@ public class EIDSNotificationSender extends DefaultNotificationListener {
 				outFile = new File(serverPolldir, filename + ".xml");
 			}
 
-			// TODO: is this atomic enough?
+			// is this atomic enough?, write then move may be better
 			FileUtils.writeFile(outFile, message.getBytes());
 			LOGGER.log(Level.INFO, "[" + getName()
 					+ "] sent notification to EIDS via " + outFile.getPath());

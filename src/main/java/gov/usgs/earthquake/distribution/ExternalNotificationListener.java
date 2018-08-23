@@ -119,7 +119,7 @@ public class ExternalNotificationListener extends DefaultNotificationListener {
 	 */
 	public void shutdown() throws Exception {
 		super.shutdown();
-		// TODO: make current process a member and kill process?
+		// maybe make current process a member and kill process?
 		// or find way of detaching so client process can exit but product
 		// process can complete?
 		storage.shutdown();
@@ -308,7 +308,8 @@ public class ExternalNotificationListener extends DefaultNotificationListener {
 				StreamUtils.closeStream(process.getOutputStream());
 			}
 
-			// TODO: log/capture process input/error streams
+			// maybe log/capture process input/error streams
+			// or switch to "Command"
 
 			exitValue = process.waitFor();
 		} catch (Exception e) {

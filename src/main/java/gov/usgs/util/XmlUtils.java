@@ -128,7 +128,7 @@ public class XmlUtils {
 	 * @return corresponding date object.
 	 */
 	public static Date getDate(final XMLGregorianCalendar xmlDate) {
-		// TODO: is this equivalent to getDate(String) processing above??
+		// is this equivalent to getDate(String) processing above??
 
 		// start with UTC, i.e. no daylight savings time.
 		TimeZone timezone = TimeZone.getTimeZone("GMT");

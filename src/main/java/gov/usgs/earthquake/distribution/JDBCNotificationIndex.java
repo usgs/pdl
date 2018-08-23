@@ -782,7 +782,7 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 				_dml_addTmpCode.executeBatch();
 			}
 
-			// TODO: is this the problem? reading with uncommitted writes?
+			// is this a problem? reading with uncommitted writes?
 			PreparedStatement ps = getCorrectStatement(sources, types, codes);
 			n = getNotifications(ps);
 		} finally {

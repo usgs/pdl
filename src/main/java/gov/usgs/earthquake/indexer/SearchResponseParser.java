@@ -360,7 +360,7 @@ public class SearchResponseParser extends DefaultHandler {
 											XmlProductHandler.PROPERTY_ATTRIBUTE_VALUE));
 				} else if (inQueryElement) {
 					// Currently working on a query
-					// TODO This is defined in the schema, but not in the class
+					// This is defined in the schema, but not in the class
 					// for either query
 				} else {
 					throw new SAXException(

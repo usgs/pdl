@@ -79,7 +79,6 @@ public class MisassociationTest {
 			indexer.onProduct(iter.next());
 		}
 
-		// TODO: check that US event never merges with NC
 		SearchRequest request = new SearchRequest();
 		request.addQuery(new EventsSummaryQuery(new ProductIndexQuery()));
 		SearchResponse response = indexer.search(request);

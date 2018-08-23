@@ -242,7 +242,6 @@ public class ProductSummary {
 
 	public String getEventId() {
 		if (eventSource == null || eventSourceCode == null) {
-			// TODO: fallback on product source + product code?
 			return null;
 		}
 		return (eventSource + eventSourceCode).toLowerCase();
@@ -390,8 +389,7 @@ public class ProductSummary {
 	 * Compares two ProductSummaries to determine if they are equal.
 	 * 
 	 * This first implementation just considers the ProductId of each summary.
-	 * This is probably not the best way to check for equality. TODO: Implement
-	 * a more robust method of comparison
+	 * This is probably not the best way to check for equality.
 	 */
 	@Override
 	public boolean equals(Object o) {
