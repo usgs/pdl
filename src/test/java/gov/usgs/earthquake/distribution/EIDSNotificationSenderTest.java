@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import gov.usgs.earthquake.product.Product;
@@ -72,6 +73,9 @@ public class EIDSNotificationSenderTest {
 		receiver.addNotificationListener(sender);
 		receiver.startup();
 
+		polldir.mkdir();
+		Assert.assertEquals("no files in polldir", polldir.list().length, 0);
+
 		// test
 		Product product = new ProductTest().getProduct();
 
@@ -80,14 +84,16 @@ public class EIDSNotificationSenderTest {
 				.storeProductSource(new ObjectProductSource(product));
 		receiver.receiveNotification(notification);
 		synchronized (syncObject) {
-			syncObject.wait();
+			syncObject.wait(5000);
 		}
+		Assert.assertEquals("no files in polldir", polldir.list().length, 1);
 
 		// 2) resend product
 		receiver.receiveNotification(notification);
 		synchronized (syncObject) {
-			syncObject.wait();
+			syncObject.wait(5000);
 		}
+		Assert.assertEquals("no files in polldir", polldir.list().length, 1);
 
 		// 3) remove from sender storage and resend
 		sender.getProductStorage().removeProduct(product.getId());
@@ -95,6 +101,7 @@ public class EIDSNotificationSenderTest {
 		synchronized (syncObject) {
 			syncObject.wait();
 		}
+		Assert.assertEquals("no files in polldir", polldir.list().length, 2);
 
 		receiver.shutdown();
 		sender.shutdown();

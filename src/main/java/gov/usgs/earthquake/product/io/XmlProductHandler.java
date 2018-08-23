@@ -3,19 +3,19 @@
  */
 package gov.usgs.earthquake.product.io;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URL;
+import java.util.Base64;
+
+import gov.usgs.util.StreamUtils;
+import gov.usgs.util.XmlUtils;
+
 import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.URLContent;
 import gov.usgs.earthquake.product.ProductId;
 
-import gov.usgs.util.Base64;
-import gov.usgs.util.StreamUtils;
-import gov.usgs.util.XmlUtils;
-
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import java.net.URI;
-import java.net.URL;
 
 /**
  * Store a product to an OutputStream using XML.
@@ -144,10 +144,10 @@ public class XmlProductHandler implements ProductHandler {
 			out.write(buf.toString().getBytes());
 
 			InputStream in = null;
-			Base64.OutputStream base64out = null;
+			OutputStream base64out = null;
 			try {
 				in = content.getInputStream();
-				base64out = new Base64.OutputStream(
+				base64out = Base64.getEncoder().wrap(
 						new StreamUtils.UnclosableOutputStream(out));
 				// write element content
 				StreamUtils.transferStream(in, base64out);
