@@ -3,25 +3,26 @@
  */
 package gov.usgs.earthquake.product.io;
 
-import gov.usgs.earthquake.product.InputStreamContent;
-import gov.usgs.earthquake.product.URLContent;
-import gov.usgs.earthquake.product.ProductId;
-
-import gov.usgs.util.StreamUtils;
-import gov.usgs.util.XmlUtils;
-import gov.usgs.util.Base64;
-
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-
 import java.net.URI;
 import java.net.URL;
+import java.util.Base64;
 import java.util.Date;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import gov.usgs.util.StreamUtils;
+import gov.usgs.util.XmlUtils;
+
+import gov.usgs.earthquake.product.InputStreamContent;
+import gov.usgs.earthquake.product.URLContent;
+import gov.usgs.earthquake.product.ProductId;
+
 
 /**
  * Load a product from an InputStream containing XML.
@@ -197,16 +198,9 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 
 					else {
 						// EMBEDDED CONTENT
-						contentOutputStream = new PipedOutputStream();
-						InputStream contentInputStream = new PipedInputStream(
-								contentOutputStream);
-
-						// check if content is base 64 encoded, by default it
-						// isn't
-						if (encoded != null && encoded.equals("true")) {
-							contentInputStream = new Base64.InputStream(
-									contentInputStream, Base64.DONT_GUNZIP);
-						}
+						// set up a piped stream
+						InputStream contentInputStream = openContentStream(
+								encoded != null && "true".equals(encoded));
 
 						content = new InputStreamContent(
 								contentInputStream);
@@ -322,6 +316,36 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 		}
 	}
 
+	/**
+	 * Set up a piped output stream used during parsing.
+	 *
+	 * The XmlProductSource parsing thread starts a background thread
+	 * to deliver content to the handler, then continues parsing XML
+	 * and delivers parsed content via the piped streams.
+	 *
+	 * If xml parsing completes as expected, the parsing thread
+	 * will close the connection in {@link #closeContent()}.  If
+	 * errors occur, the objects handling the product source object
+	 * call closeContent to ensure the resource is closed.
+	 */
+	@SuppressWarnings("resource")
+	public InputStream openContentStream(boolean encoded) throws IOException {
+		// EMBEDDED CONTENT
+		contentOutputStream = new PipedOutputStream();
+		InputStream contentInputStream = new PipedInputStream(
+				contentOutputStream);
+
+		// decode base 64 encoded content
+		if (encoded) {
+			// this stream is closed by closeContent()
+			// either in this thread if everything succeeds,
+			// or by the objects using the ProductSource.
+			contentInputStream = Base64.getDecoder()
+					.wrap(contentInputStream);
+		}
+
+		return contentInputStream;
+	}
 
 	public void closeContent() {
 		StreamUtils.closeStream(contentOutputStream);
