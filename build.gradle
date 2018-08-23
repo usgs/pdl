@@ -41,16 +41,15 @@ dependencies {
 sourceSets {
   main {
     java {
-      srcDirs = ["src"]
-      excludes = ["**/*Test*", "**/XmlVerifier*"]
+      excludes = ["**/XmlVerifier*"]
     }
   }
-  test {
-    java {
-      srcDirs = ["src"]
-      include "**/*Test*"
-    }
-  }
+}
+
+// show compile warnings
+tasks.withType(JavaCompile) {
+  options.setDeprecation(true);
+  options.setWarnings(true);
 }
 
 // coverage reports
@@ -73,14 +72,8 @@ test {
   }
 }
 
-// show compile warnings
-tasks.withType(JavaCompile) {
-  options.setDeprecation(true);
-  options.setWarnings(true);
-}
-
 // clean up after tests
-clean.doFirst {
+task testCleanup {
   delete("bin")
   delete("EIDSClient_tracking.dat")
   delete("heartbeat.dat")
@@ -96,6 +89,8 @@ clean.doFirst {
   delete("testSenderPolldir")
   delete("testSenderStorage")
 }
+clean.dependsOn testCleanup
+test.dependsOn testCleanup
 
 
 // Tasks for building releases
