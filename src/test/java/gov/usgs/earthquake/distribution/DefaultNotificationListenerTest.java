@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import gov.usgs.earthquake.product.Product;
@@ -42,6 +43,7 @@ public class DefaultNotificationListenerTest {
 		FileUtils.deleteTree(receiverStorage);
 
 		final Object syncObject = new Object();
+		final int[] onProductCount = {0};
 
 		DefaultNotificationListener listener = new DefaultNotificationListener() {
 			@Override
@@ -51,6 +53,11 @@ public class DefaultNotificationListenerTest {
 				synchronized (syncObject) {
 					syncObject.notify();
 				}
+			}
+
+			@Override
+			public void onProduct(final Product product) throws Exception {
+				onProductCount[0] += 1;
 			}
 		};
 		listener.setName("listener");
@@ -70,20 +77,24 @@ public class DefaultNotificationListenerTest {
 
 		// test
 		Product product = new ProductTest().getProduct();
+		Assert.assertEquals("number of notifications", onProductCount[0], 0);
 
 		// 1) send product
 		Notification notification = receiver
 				.storeProductSource(new ObjectProductSource(product));
 		receiver.receiveNotification(notification);
 		synchronized (syncObject) {
-			syncObject.wait();
+			syncObject.wait(2500L);
 		}
+		Assert.assertEquals("number of notifications", onProductCount[0], 1);
 
 		// 2) resend product
 		receiver.receiveNotification(notification);
+		// listener receives notification, but shouldn't call onProduct
 		synchronized (syncObject) {
-			syncObject.wait();
+			syncObject.wait(2500L);
 		}
+		Assert.assertEquals("number of notifications", onProductCount[0], 1);
 
 		// 3) remove from listener index and resend
 		Iterator<Notification> iter = listener.getNotificationIndex()
@@ -93,8 +104,9 @@ public class DefaultNotificationListenerTest {
 		}
 		receiver.receiveNotification(notification);
 		synchronized (syncObject) {
-			syncObject.wait();
+			syncObject.wait(2500L);
 		}
+		Assert.assertEquals("number of notifications", onProductCount[0], 2);
 
 		// done, now cleanup
 		receiver.shutdown();
