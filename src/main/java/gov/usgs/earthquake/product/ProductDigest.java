@@ -16,11 +16,11 @@ import java.net.URL;
 import java.security.DigestOutputStream;
 import java.security.KeyPair;
 import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
-import gov.usgs.util.Base64;
 
 /**
  * Used to generate product digests.
@@ -82,8 +82,8 @@ public class ProductDigest implements ProductHandler {
 		Date end = new Date();
 
 		byte[] digest = productDigest.getDigest();
-		LOGGER.fine("Digest='" + Base64.encodeBytes(digest) + "' , "
-				+ (end.getTime() - start.getTime()) + "ms");
+		LOGGER.fine("Digest='" + Base64.getEncoder().encodeToString(digest)
+				+ "' , " + (end.getTime() - start.getTime()) + "ms");
 		return digest;
 	}
 

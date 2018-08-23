@@ -37,6 +37,7 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -98,7 +99,7 @@ public class CryptoUtils {
 		Signature signature = Signature.getInstance(algorithm);
 		signature.initSign(privateKey);
 		signature.update(data);
-		return Base64.encodeBytes(signature.sign());
+		return Base64.getEncoder().encodeToString(signature.sign());
 	}
 
 	/**
@@ -126,7 +127,7 @@ public class CryptoUtils {
 		Signature signature = Signature.getInstance(algorithm);
 		signature.initVerify(publicKey);
 		signature.update(data);
-		return signature.verify(Base64.decode(allegedSignature));
+		return signature.verify(Base64.getDecoder().decode(allegedSignature));
 	}
 
 	/**
@@ -460,7 +461,7 @@ public class CryptoUtils {
 		String content = line[1];
 		// String comment = line[2];
 
-		ByteBuffer buf = ByteBuffer.wrap(Base64.decode(content));
+		ByteBuffer buf = ByteBuffer.wrap(Base64.getDecoder().decode(content));
 
 		// format of decoded content is: <type><keyparams>
 		// where type and each param is a DER string
@@ -540,8 +541,8 @@ public class CryptoUtils {
 
 			if (footer.equals("-----END " + type + "-----")) {
 				// expected match
-				return Base64.decode(StringUtils.join(new LinkedList<Object>(
-						lines), "\n"));
+				return Base64.getMimeDecoder().decode(
+						StringUtils.join(new LinkedList<Object>(lines), "\n"));
 			} else {
 				throw new IllegalArgumentException("Unexpected PEM footer '"
 						+ footer + "'");
