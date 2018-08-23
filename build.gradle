@@ -59,11 +59,6 @@ jacocoTestReport {
 }
 check.dependsOn jacocoTestReport
 
-// generate javadocs even if there are errors
-javadoc {
-  failOnError = false
-}
-
 test {
   filter {
     includeTestsMatching "*Test"

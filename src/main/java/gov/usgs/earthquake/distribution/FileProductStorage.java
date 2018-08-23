@@ -170,7 +170,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 	}
 
 	/**
-	 * This is chosen because 16^3 = 4096 < 32000, which is the ext3
+	 * This is chosen because 16^3 = 4096 &lt; 32000, which is the ext3
 	 * subdirectory limit.
 	 */
 	public static final int DIRECTORY_NAME_LENGTH = 3;

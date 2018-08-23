@@ -493,7 +493,7 @@ public class CryptoUtils {
 	 *
 	 * A DER encoded string has
 	 *
-	 * length = 4 bytes big-endian integer<br/>
+	 * length = 4 bytes big-endian integer<br>
 	 * string = length bytes
 	 *
 	 * @param buf

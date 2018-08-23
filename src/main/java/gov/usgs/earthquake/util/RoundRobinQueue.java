@@ -123,7 +123,7 @@ public class RoundRobinQueue<T> implements Queue<T> {
 	 * exception if this queue is empty.
 	 * 
 	 * @return the head of this queue.
-	 * @throws NoSuchElementExcpetion
+	 * @throws NoSuchElementException
 	 *             if this queue is empty.
 	 */
 	@Override

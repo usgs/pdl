@@ -59,11 +59,11 @@ import java.util.logging.Logger;
  * <dt>maxTries</dt>
  * <dd>(Optional, Default 1) Number of times to attempt delivery of each
  * notification, if the listener throws a ContinuableListenerException during
- * onNotification(). A value <= 1 means do not re-attempt.</dd>
+ * onNotification(). A value &lt;= 1 means do not re-attempt.</dd>
  *
  * <dt>timeout</dt>
  * <dd>(Optional, Default 0) Number of milliseconds before thread running
- * onNotification() is interrupted. A value <= 0 means never interrupt.</dd>
+ * onNotification() is interrupted. A value &lt;= 0 means never interrupt.</dd>
  *
  * <dt>retryDelay</dt>
  * <dd>(Optional, Default 0) Number of milliseconds to wait before re-attempting
@@ -426,7 +426,7 @@ public class AbstractListener extends DefaultConfigurable {
 	 * Number of tries to deliver notification, when an Exception is thrown
 	 * during onNotification().
 	 *
-	 * @return the attemptCount. A value < 1 means never try to deliver.
+	 * @return the attemptCount. A value &lt; 1 means never try to deliver.
 	 */
 	public int getMaxTries() {
 		return maxTries;
@@ -436,7 +436,7 @@ public class AbstractListener extends DefaultConfigurable {
 	 * Set the maxTries.
 	 *
 	 * @param maxTries
-	 *            the maxTries. A value < 1 means never try to deliver.
+	 *            the maxTries. A value &lt; 1 means never try to deliver.
 	 */
 	public void setMaxTries(final int maxTries) {
 		this.maxTries = maxTries;
@@ -446,7 +446,7 @@ public class AbstractListener extends DefaultConfigurable {
 	 * Number of milliseconds onNotification is allowed to run before being
 	 * interrupted.
 	 *
-	 * @return the timeout in milliseconds. A value <= 0 means never timeout.
+	 * @return the timeout in milliseconds. A value &lt;= 0 means never timeout.
 	 */
 	public long getTimeout() {
 		return timeout;
@@ -456,7 +456,7 @@ public class AbstractListener extends DefaultConfigurable {
 	 * Set the timeout.
 	 *
 	 * @param timeout
-	 *            the timeout in milliseconds. A value <= 0 means never timeout.
+	 *            the timeout in milliseconds. A value &lt;= 0 means never timeout.
 	 */
 	public void setTimeout(final long timeout) {
 		this.timeout = timeout;

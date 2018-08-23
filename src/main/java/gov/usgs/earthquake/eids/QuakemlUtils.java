@@ -225,15 +225,17 @@ public class QuakemlUtils {
 	 * <li>event.getPicks()</li>
 	 * <li>event.getAmplitudes()</li>
 	 * <li>event.getStationMagnitudes()</li>
-	 * <li>event.getOrigins()</li>
+	 * <li>event.getOrigins()
 	 * <ul>
 	 * <li>origin.getArrivals()</li>
 	 * </ul>
-	 * </li> <li>event.getMagnitudes()
+	 * </li>
+	 * <li>event.getMagnitudes()
 	 * <ul>
 	 * <li>magnitude.getStationMagnitudeContributions()</li>
 	 * </ul>
-	 * </li> </ul>
+	 * </li>
+	 * </ul>
 	 * 
 	 * @param event
 	 *            event to search.

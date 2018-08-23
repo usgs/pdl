@@ -1439,7 +1439,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * check if the clause list is empty when they build their WHERE clause.
 	 *
 	 * @param query
-	 * @return ArrayList<String> containing clauses in the form: column="value"
+	 * @return list containing clauses in the form: column="value"
 	 */
 	protected List<String> buildProductClauses(ProductIndexQuery query) {
 		List<String> clauseList = new ArrayList<String>();
@@ -1709,7 +1709,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Create the full SELECT query for the products table using the clauseList
 	 * as the WHERE clause. This method is a wrapper for
-	 * buildProductQuery(List<String> clauseList, String orderby) with an empty
+	 * {@link #buildProductQuery(List, String)} with an empty
 	 * orderby string
 	 *
 	 * @param clauseList

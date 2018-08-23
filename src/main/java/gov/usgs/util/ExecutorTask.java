@@ -25,7 +25,7 @@ import java.util.logging.Logger;
  * Can be used to schedule interrupt based timeouts, multiple attempts, and
  * Future style exception tracking for Runnable or Callable objects.
  * 
- * @param <T>
+ * @param <T> return type for callable.
  */
 public final class ExecutorTask<T> implements Future<T>, Runnable {
 
@@ -90,10 +90,10 @@ public final class ExecutorTask<T> implements Future<T>, Runnable {
 	 *            ExecutorService that this task will be submitted to.
 	 * @param maxTries
 	 *            maximum number of tries callable can throw an exception or
-	 *            timeout before giving up. < 1 means never run.
+	 *            timeout before giving up. &lt; 1 means never run.
 	 * @param timeout
 	 *            number of milliseconds to allow callable to run before it is
-	 *            interrupted. <= 0 means never timeout.
+	 *            interrupted. &lt;= 0 means never timeout.
 	 * @param callable
 	 *            the callable to call. To work well, the callable should handle
 	 *            interrupts gracefully.
@@ -121,10 +121,10 @@ public final class ExecutorTask<T> implements Future<T>, Runnable {
 	 *            ExecutorService that this task will be submitted to.
 	 * @param maxTries
 	 *            maximum number of tries callable can throw an exception or
-	 *            timeout before giving up. < 1 means never run.
+	 *            timeout before giving up. &lt; 1 means never run.
 	 * @param timeout
 	 *            number of milliseconds to allow callable to run before it is
-	 *            interrupted. <= 0 means never timeout.
+	 *            interrupted. &lt;= 0 means never timeout.
 	 * @param callable
 	 *            the callable to call. To work well, the callable should handle
 	 *            interrupts gracefully.

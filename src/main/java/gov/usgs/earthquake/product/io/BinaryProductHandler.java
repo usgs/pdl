@@ -16,14 +16,13 @@ import java.net.URL;
  * Binary representation of data types:
  * <dl>
  * <dt>Integer</dt>
- * <dd>4-bytes
- * <dd>
+ * <dd>4-bytes</dd>
  * <dt>Long</dt>
  * <dd>8-bytes</dd>
  * <dt>Date</dt>
  * <dd>Long (Date.getTime())</dd>
  * <dt>byte[]</dt>
- * <dd>Integer length, raw bytes</dt>
+ * <dd>Integer length, raw bytes</dd>
  * <dt>String</dt>
  * <dd>byte[] (String.getBytes("UTF8"))</dd>
  * <dt>URL/URI</dt>
