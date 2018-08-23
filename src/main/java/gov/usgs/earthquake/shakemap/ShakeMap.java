@@ -256,8 +256,10 @@ public class ShakeMap extends Product {
 	};
 
 	/**
-	 * @param property,
-	 *            the property to check on the PDL object
+	 * @param productValue
+	 *            the value from the PDL object
+	 * @param xmlValue
+	 *            the value from the XML document
 	 * @return if the shakemap property is already set
 	 */
 	public boolean valueIsEmpty (String productValue, String xmlValue) {

@@ -166,8 +166,12 @@ public class XmlUtils {
 	 *            source of xml.
 	 * @param handler
 	 *            SAX handler for xml.
-	 * @throws Exception
+	 * @throws SAXException
 	 *             if any exceptions occur during parsing.
+	 * @throws IOException
+	 *             if unable to convert xml to an inputstream.
+	 * @throws ParserConfigurationException
+	 *             if unable to create a namespace aware parser.
 	 */
 	public static void parse(final Object xml, final DefaultHandler handler)
 			throws SAXException, IOException, ParserConfigurationException {

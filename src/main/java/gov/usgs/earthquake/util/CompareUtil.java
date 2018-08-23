@@ -16,7 +16,6 @@ public class CompareUtil {
 	 * @return -1, if a is not null and b is null; 0, if a is null and b is
 	 *         null; 1, if a is null and b is not null; otherwise,
 	 *         a.compareTo(b).
-	 * @see #accept(IndexerEvent, IndexerChange)
 	 */
 	public static <T extends Comparable<T>> int nullSafeCompare(final T a, final T b) {
 		if (a == null && b != null) {

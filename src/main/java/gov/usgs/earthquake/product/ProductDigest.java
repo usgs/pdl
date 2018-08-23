@@ -16,7 +16,6 @@ import java.net.URL;
 import java.security.DigestOutputStream;
 import java.security.KeyPair;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.logging.Logger;
@@ -54,9 +53,6 @@ public class ProductDigest implements ProductHandler {
 
 	/**
 	 * Construct a new ProductDigest.
-	 * 
-	 * @throws NoSuchAlgorithmException
-	 *             if digest algorithm is not supported.
 	 */
 	protected ProductDigest() {
 		MessageDigest digest = null;

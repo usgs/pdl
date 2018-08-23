@@ -183,8 +183,8 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 	/**
 	 * Store product associated with the change.
 	 *
-	 * @param change
-	 * @return
+	 * @param product product to be stored.
+	 * @return a new product object, read from the listener storage.
 	 * @throws Exception
 	 */
 	public Product storeProduct(final Product product) throws Exception {

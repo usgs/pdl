@@ -99,7 +99,7 @@ public interface ProductStorage extends Configurable {
 	public void removeProduct(final ProductId id) throws Exception;
 
 	/**
-	 * Notifies </code>StorageListener</code>s of the change to the
+	 * Notifies <code>StorageListener</code>s of the change to the
 	 * <code>ProductStorage</code>.
 	 * 
 	 * @param event

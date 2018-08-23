@@ -27,6 +27,7 @@ import javax.management.ObjectName;
  * following configuration parameters:
  *
  * <dl>
+ *
  * <dt>receivers</dt>
  * <dd>(Required) A comma separated list of section names that should be loaded
  * as NotificationReceiver objects. Each receiver is a source of notifications
@@ -41,17 +42,18 @@ import javax.management.ObjectName;
  * <dd>(Optional) Log directory. Default is "log", relative to the current
  * working directory. Log files using a naming convention
  * <code>ProductClient_YYYYMMDD.log</code>.</dd>
- * </dl>
  *
  * <dt>loglevel</dt> <dd>(Optional) Default is INFO. One of SEVERE, WARNING,
  * INFO, CONFIG, FINE, FINER, FINEST</dd>
  *
  * <dt>enableTracker</dt> <dd>(Optional) Default is false. Whether or not to
  * send tracker updates to a product tracker. This is generally desirable, but
- * is disabled by default for the paranoid.</dd> </dl>
+ * is disabled by default for the paranoid.</dd>
  *
  * <dt>redirectconsole</dt> <dd>(Optional) Default is false. Whether or not to
  * redirect console output to the log file.</dd>
+ *
+ * </dl>
  *
  * <p>
  * All listeners listen to all receivers for notifications.

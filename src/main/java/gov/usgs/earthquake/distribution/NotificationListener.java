@@ -32,7 +32,7 @@ public interface NotificationListener extends Configurable {
 	 * Product product = event.getProduct();
 	 * </pre>
 	 * 
-	 * When getTimeout() returns a positive (>0) number of milliseconds, the
+	 * When getTimeout() returns a positive (&gt;0) number of milliseconds, the
 	 * thread calling onNotification may be interrupted. Listeners should use
 	 * care in handling InterruptedExceptions to ensure resources are properly
 	 * freed.
