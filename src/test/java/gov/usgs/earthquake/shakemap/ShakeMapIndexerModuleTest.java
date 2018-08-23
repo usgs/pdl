@@ -61,6 +61,9 @@ public class ShakeMapIndexerModuleTest {
 		Assert.assertNotNull(summary.getProperties().get(ShakeMap.MINIMUM_LATITUDE_PROPERTY));
 		Assert.assertNotNull(summary.getProperties().get(ShakeMap.MINIMUM_LONGITUDE_PROPERTY));
 		Assert.assertNotNull(summary.getProperties().get(ShakeMap.PROCESS_TIMESTAMP_PROPERTY));
+
+		Assert.assertEquals(summary.getProperties().get(ShakeMapIndexerModule.OVERLAY_WIDTH_PROPERTY), "720");
+		Assert.assertEquals(summary.getProperties().get(ShakeMapIndexerModule.OVERLAY_HEIGHT_PROPERTY), "716");
 	}
 
 	@Test

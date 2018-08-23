@@ -1,11 +1,14 @@
 package gov.usgs.earthquake.shakemap;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.imageio.ImageIO;
 
 import gov.usgs.earthquake.indexer.DefaultIndexerModule;
 import gov.usgs.earthquake.indexer.IndexerModule;
@@ -62,17 +65,16 @@ public class ShakeMapIndexerModule extends DefaultIndexerModule {
 
 		Content overlayImage = product.getContents().get(OVERLAY_IMAGE_PATH);
 		if (overlayImage != null) {
-			SimpleImageInfo info = null;
 			InputStream overlayInputStream = null;
 			try {
 				overlayInputStream = overlayImage.getInputStream();
-				info = new SimpleImageInfo(overlayInputStream);
+				BufferedImage info = ImageIO.read(overlayInputStream);
 				summary.getProperties().put(OVERLAY_WIDTH_PROPERTY,
 						Integer.toString(info.getWidth()));
 				summary.getProperties().put(OVERLAY_HEIGHT_PROPERTY,
 						Integer.toString(info.getHeight()));
-				System.err.println("width=" + info.getWidth());
-				System.err.println("height=" + info.getHeight());
+				LOGGER.finest("overlay width=" + info.getWidth() +
+						", overlay height=" + info.getHeight());
 			} catch (IOException e) {
 				LOGGER.log(Level.WARNING, "exception reading "
 						+ OVERLAY_IMAGE_PATH + " width/height", e);
