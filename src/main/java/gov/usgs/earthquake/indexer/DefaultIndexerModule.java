@@ -18,7 +18,8 @@ import java.util.logging.Logger;
 
 
 /**
- * Default implementation of the IndexerModule interface.
+ * Default implementation of the IndexerModule interface,
+ * implements ANSS Authoritative Region logic.
  * 
  * Provides a basic level of support for any type of product. Creates a
  * ProductSummary using the ProductSummary(product) constructor, which copies

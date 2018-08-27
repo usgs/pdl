@@ -6,7 +6,7 @@ import java.util.Map;
 import gov.usgs.earthquake.product.Product;
 
 /**
- * Notify external processes when preferred product change within events.
+ * (Experimental) Notify external processes when preferred product change within events.
  * 
  * @author jmfee
  *
@@ -15,6 +15,9 @@ public class ExternalPreferredListener extends ExternalIndexerListener {
 
 	public static final String PREFERRED_ACTION_ARGUMENT = "--preferred-action=";
 
+	/**
+	 * Types of preferred product actions.
+	 */
 	public static enum PreferredAction {
 		PREFERRED_ADDED,
 		PREFERRED_CHANGED,

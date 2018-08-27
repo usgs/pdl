@@ -30,7 +30,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * ExternalIndexerListener provides a translation to a command-line interface
+ * ExternalIndexerListener triggers external, non-Java listener processes.
+ * 
+ * Provides a translation to a command-line interface
  * for the product indexer to speak with external, non-Java listeners.
  * 
  * As a child-class of the AbstractListener, this also accepts the following

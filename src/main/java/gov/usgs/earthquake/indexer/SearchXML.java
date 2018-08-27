@@ -16,8 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * XML (de)serialization for SearchRequest and SearchResponse.
- * 
+ * Formatter for Search XML.
  */
 public class SearchXML {
 

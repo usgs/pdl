@@ -22,7 +22,74 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * One or more pieces of Content with a unique id.
+ * One or more pieces of Content with metadata.
+ *
+ * <dl>
+ * <dt><strong>ID</strong></dt>
+ * <dd>
+ * Products each have a unique {@link ProductId}.
+ * </dd>
+ *
+ * <dt><strong>Versioning</strong></dt>
+ * <dd>
+ * It is possible to create multiple versions of the same product,
+ * by reusing the same <code>source</code>, <code>type</code>, and
+ * <code>code</code>, with a different <code>updateTime</code>.
+ * <br>
+ * More recent (newer) <code>updateTime</code>s <strong>supersede</strong>
+ * Less recent (older) <code>updateTime</code>s.
+ * </dd>
+ *
+ * <dt><strong>Status</strong></dt>
+ * <dd>
+ * To <strong>delete</strong> a product, create a new version (updateTime)
+ * and set it's status to {@link STATUS_DELETE}.  All other statuses
+ * ({@link STATUS_UPDATE} by default) are considered updates, and any
+ * value can be used in product-specific ways.
+ * </dd>
+ *
+ * <dt><strong>Properties</strong></dt>
+ * <dd>
+ * Products have key/value attributes that are Strings.
+ * These can be useful to convey summary information about a product,
+ * so consumers can quickly decide whether to process before opening
+ * any product contents.
+ * </dd>
+ *
+ * <dt><strong>Links</strong></dt>
+ * <dd>
+ * Similar to properties, links allow a Product to specify a
+ * <code>relation</code> and one or more <code>link</code> for each
+ * relation type.
+ * Links must be {@link java.net.URI}s, and may be {@link ProductId}s.
+ * </dd>
+ *
+ * <dt><strong>Contents</strong></dt>
+ * <dd>
+ * Many Products start as a directory of files, and metadata is determined later.
+ * It's also possible to create products without any Contents attached,
+ * if all the necessary information can be encoded using Properties or Links.
+ * <br>
+ * One special "empty path" content, literally at the empty-string path,
+ * is handled differently; since an empty path cannot be written to a file.
+ * PDL typically reads this in from standard input, or delivers this on
+ * standard input to external processes.
+ * </dd>
+ *
+ * <dt><strong>Signature</strong></dt>
+ * <dd>
+ * A product can have a digital signature, based on a digest of all
+ * product contents and metadata.  These are required for most purposes.
+ * {@link CryptoUtils} provides utilities for working with OpenSSH keypairs.
+ * </dd>
+ *
+ * <dt><strong>Tracker URL (Deprecated)</strong></dt>
+ * <dd>
+ * Tracker URLs were initially used to track processing status as
+ * distribution progressed.  These are no longer supported, and often
+ * introduced new problems.
+ * </dd>
+ * </dl>
  */
 public class Product {
 
