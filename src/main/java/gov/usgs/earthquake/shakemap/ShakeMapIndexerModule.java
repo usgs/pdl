@@ -18,8 +18,7 @@ import gov.usgs.earthquake.product.Product;
 import gov.usgs.util.StreamUtils;
 
 /**
- * A specialized implementation of the IndexerModule interface for ShakeMap
- * products.
+ * ShakeMap Indexer Module.
  *
  * Provides a higher and more specific level of support for ShakeMap products,
  * including reading additional product information out of the ShakeMap content

@@ -1,6 +1,8 @@
 package gov.usgs.earthquake.util;
 
-
+/**
+ * Utility class for comparing potentially null values.
+ */
 public class CompareUtil {
 
 	/**

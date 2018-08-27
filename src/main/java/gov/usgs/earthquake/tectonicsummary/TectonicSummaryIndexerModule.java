@@ -6,15 +6,13 @@ import gov.usgs.earthquake.indexer.ProductSummary;
 import gov.usgs.earthquake.product.Product;
 
 /**
- * A specialized implementation of the IndexerModule interface for Tectonic
- * Summary products.
+ * Tectonic Summary indexer module.
  *
  * Provides a higher and more specific level of support for tectonic summary
  * products, including checking for "Reviewed" status on the tectonic summary.
  * These "Reviewed tectonic summmaries will always be preferred.
- *
  */
-
+@Deprecated()
 public class TectonicSummaryIndexerModule extends DefaultIndexerModule {
 
 	public static final int REVIEWED_TECTONIC_SUMMARY_WEIGHT = 200;

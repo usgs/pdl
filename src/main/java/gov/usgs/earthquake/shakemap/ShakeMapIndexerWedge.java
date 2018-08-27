@@ -24,7 +24,10 @@ import gov.usgs.util.Config;
 import gov.usgs.util.FileUtils;
 
 /**
- * This is a wedge between PDL and the old ShakeMap indexer.
+ * Legacy interface to trigger pre-Indexer ShakeMap processing.
+ * 
+ * The Old ShakeMap Indexer is no longer used,
+ * and this class is deprecated.
  * 
  * When a shakemap product arrives, it is only processed if one of these is
  * true:
@@ -57,6 +60,7 @@ import gov.usgs.util.FileUtils;
  * terminated.</dd>
  * </dl>
  */
+@Deprecated()
 public class ShakeMapIndexerWedge extends DefaultNotificationListener {
 
 	/** Logging object. */

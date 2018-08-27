@@ -3,7 +3,7 @@ package gov.usgs.earthquake.qdm;
 import java.util.ArrayList;
 
 /**
- * Has a list of coordinates as Points.
+ * A polygon without holes.
  * 
  * Points are assumed to use x=longitude, y=latitude.
  * A "default" region has no boundary points, and contains all points.

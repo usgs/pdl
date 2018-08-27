@@ -18,7 +18,6 @@ import java.util.logging.Logger;
  * is not active.
  * 
  * @author jmfee
- * 
  */
 public abstract class JDBCConnection extends DefaultConfigurable {
 

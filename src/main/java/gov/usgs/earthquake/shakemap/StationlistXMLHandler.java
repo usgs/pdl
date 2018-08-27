@@ -16,6 +16,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ * Parser for Shakemap "stationlist.xml" metadata.
+ */
 public class StationlistXMLHandler extends DefaultHandler {
 
 	public static final String SHAKEMAPDATA_ELEMENT = "shakemap-data";
@@ -57,6 +60,14 @@ public class StationlistXMLHandler extends DefaultHandler {
 		return getShakemap();
 	}
 
+	/**
+	 * Parse element attributes.
+	 * 
+	 * @param uri element namespace.
+	 * @param localName element name.
+	 * @param qName qualified element name.
+	 * @param attributes element attributes.
+	 */
 	public final void startElement(final String uri, final String localName,
 			final String qName, final Attributes attributes)
 			throws SAXException {

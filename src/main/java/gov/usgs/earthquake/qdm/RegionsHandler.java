@@ -12,6 +12,8 @@ import gov.usgs.util.XmlUtils;
 
 /**
  * XML SAX Handler for ANSS "regions.xml".
+ * 
+ * See the resource file <code>etc/config/regions.xml</code>
  *
  * Example:
  * <pre>{@code
@@ -41,6 +43,16 @@ public class RegionsHandler extends SAXAdapter {
     private String netid = null;
     private Region region = null;
     
+    /**
+     * Start Element handler.
+     *
+     * Builds region objects, and parses other information.
+     *
+     * @param uri namespace of element.
+     * @param localName name of element.
+     * @param qName qualified name of element.
+     * @param attributes element attributes.
+     */
     @Override
     public void onStartElement(final String uri, final String localName,
             final String qName, final Attributes attributes)
@@ -80,6 +92,16 @@ public class RegionsHandler extends SAXAdapter {
         }
     }
 
+    /**
+     * End element handler.
+     * 
+     * Adds built region objects to regions object.
+     *
+     * @param uri namespace of element.
+     * @param localName name of element.
+     * @param qName qualified name of element.
+     * @param content element content.
+     */
     @Override
     public void onEndElement(final String uri, final String localName,
             final String qName, final String content) throws SAXException {
