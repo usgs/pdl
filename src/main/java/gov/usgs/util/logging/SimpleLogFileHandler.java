@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 
 /**
  * A java.util.logging style Handler that does daily log rotation by default.
- * 
  */
 public class SimpleLogFileHandler extends Handler {
 

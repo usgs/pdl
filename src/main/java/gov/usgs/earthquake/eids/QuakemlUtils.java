@@ -18,6 +18,9 @@ import org.quakeml_1_2.TimeQuantity;
 import org.quakeml_1_2.FocalMechanism;
 import org.quakeml_1_2.EventParameters;
 
+/**
+ * Utility methods for ANSS Quakeml objects.
+ */
 public class QuakemlUtils {
 
 	/**

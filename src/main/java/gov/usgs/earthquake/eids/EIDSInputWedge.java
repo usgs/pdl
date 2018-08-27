@@ -33,8 +33,7 @@ import gov.usgs.util.FileUtils;
 import gov.usgs.util.StringUtils;
 
 /**
- * Read messages from a poll directory, and then push products into PDL. Also
- * supports push.
+ * Read messages from files or a poll directory, and push products into PDL.
  * 
  * This is supports EIDS/QDDS style polling. The input messages are converted to
  * Quakeml using the FileToQuakemlConverter interface, then sent as Quakeml

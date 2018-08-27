@@ -15,8 +15,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 /**
- * Simple(r) log formatter for java.util.logging messages. Outputs unique dates
- * once, with all messages sharing that time tab indented below.
+ * Simple(r) log formatter for java.util.logging messages.
+ * 
+ * Outputs unique dates once, with all messages sharing that time tab indented below.
  * 
  * Example Format:
  * <pre>

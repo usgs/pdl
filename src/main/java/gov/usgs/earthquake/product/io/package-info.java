@@ -1,5 +1,5 @@
 /**
- * This package contains classes that perform input and output for products.
+ * Classes that perform input and output for Products.
  *
  * The two primary interfaces are ProductSource and ProductHandler.
  * A ProductSource generates product events.

@@ -5,6 +5,10 @@ import gov.usgs.earthquake.product.ProductId;
 
 import java.io.File;
 
+/**
+ * Storage class used by DYFIIndexerWedge.
+ */
+@Deprecated
 public class DYFILegacyStorage extends FileProductStorage {
 
 	@Override

@@ -12,6 +12,9 @@ import gov.usgs.util.StreamUtils;
 import org.quakeml_1_2.Quakeml;
 import gov.usgs.ansseqmsg.EQMessage;
 
+/**
+ * Utility class to translate between Quakeml, EQXML, and CUBE formats.
+ */
 public class LegacyConverter {
 
 	public static enum Format {

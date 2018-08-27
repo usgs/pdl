@@ -7,6 +7,9 @@ import gov.usgs.earthquake.product.Product;
 import gov.usgs.util.Config;
 import gov.usgs.util.FileUtils;
 
+/**
+ * Output received products as files in a folder.
+ */
 public class EIDSOutputWedge extends DefaultNotificationListener {
 
 	/** Logging object. */

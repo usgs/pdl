@@ -17,7 +17,7 @@ import gov.usgs.earthquake.product.Product;
 import gov.usgs.util.Config;
 
 /**
- * Convert EIDS Message into products.
+ * Convert messages from EIDS into products.
  * 
  * Listens to messages from an EIDSClient. Uses EQXMLProductParser and
  * EventAddonParser to build products. Any built products are sent to all

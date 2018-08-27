@@ -5,6 +5,11 @@ import gov.usgs.earthquake.indexer.IndexerModule;
 import gov.usgs.earthquake.indexer.ProductSummary;
 import gov.usgs.earthquake.product.Product;
 
+/**
+ * DYFI Indexer Module.
+ * 
+ * Uses {@link DYFIProduct} class to summarize product.
+ */
 public class DYFIIndexerModule extends DefaultIndexerModule {
 
 	@Override

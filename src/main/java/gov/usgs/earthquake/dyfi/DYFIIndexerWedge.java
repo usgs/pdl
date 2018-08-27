@@ -7,6 +7,10 @@ import gov.usgs.util.Config;
 
 import java.util.logging.Logger;
 
+/**
+ * Legacy interface to trigger pre-Indexer ShakeMap processing.
+ */
+@Deprecated
 public class DYFIIndexerWedge extends ExternalNotificationListener {
 
 	private static final Logger LOGGER = Logger
