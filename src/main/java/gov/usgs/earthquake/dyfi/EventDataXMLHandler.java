@@ -9,6 +9,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ * Parser for DYFI "eventdata.xml" metadata.
+ */
 public class EventDataXMLHandler extends DefaultHandler {
 
 	// XML Element Names

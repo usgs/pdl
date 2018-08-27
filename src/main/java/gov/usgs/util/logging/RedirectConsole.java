@@ -8,7 +8,9 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 /**
- * Console redirection utility. Replaces system.out and system.err with
+ * Console redirection utility.
+ * 
+ * Replaces system.out and system.err with
  * printstreams that log all writes when flushed.
  */
 public class RedirectConsole {

@@ -6,7 +6,7 @@ import java.io.File;
 import java.util.List;
 
 /**
- * Interface used by the EIDSInputWedge.
+ * Interface used by the EIDSInputWedge to create products from files.
  * 
  * Parse a file (or directory) into a list of products.
  */

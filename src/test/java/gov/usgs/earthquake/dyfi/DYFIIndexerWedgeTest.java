@@ -14,6 +14,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+@SuppressWarnings("deprecation")
 public class DYFIIndexerWedgeTest {
 
 	// Static convenience strings that are accessed often

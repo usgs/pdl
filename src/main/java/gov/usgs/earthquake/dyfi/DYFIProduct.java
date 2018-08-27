@@ -8,9 +8,11 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 
 /**
- * Extends the default Product object to include DYFI-specific properties.
- * 
- * 
+ * DYFIProduct object to add additional Product properties based on contents.
+ *
+ * This subclass of Product provides access to additional DYFI-specific
+ * attributes and loads these attributes, as well as additional Product
+ * attributes from ShakeMap source XML files.
  */
 public class DYFIProduct extends Product {
 

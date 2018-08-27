@@ -12,7 +12,7 @@ import gov.usgs.earthquake.product.io.ObjectProductSource;
 import gov.usgs.util.Config;
 
 /**
- * Wrapper around EIDSProductBuilder so it acts as a Receiver.
+ * Wrap EIDSProductBuilder in NotificationReceiver interface.
  */
 public class EIDSProductReceiver extends EIDSNotificationReceiver {
 

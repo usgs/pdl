@@ -10,7 +10,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * An OutputStream that writes contents to a Logger upon each call to flush()
+ * An OutputStream that writes contents to a Logger upon each call to flush().
+ *
  * From http://blogs.sun.com/nickstephen/entry/java_redirecting_system_out_and
  */
 public class LoggingOutputStream extends ByteArrayOutputStream {
