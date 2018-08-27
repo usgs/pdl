@@ -50,6 +50,9 @@ import org.quakeml_1_2.TimeQuantity;
 import org.quakeml_1_2.PrincipalAxes;
 import org.quakeml_1_2.EvaluationStatus;
 
+/**
+ * Create Products from ANSS Quakeml files.
+ */
 public class QuakemlProductCreator implements ProductCreator {
 
 	public static final Logger LOGGER = Logger

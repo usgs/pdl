@@ -20,7 +20,9 @@ import gov.usgs.util.SAXAdapter;
 import gov.usgs.util.XmlUtils;
 
 /**
- * Parser for event addon messages. Maps these messages into an EQMessage with a
+ * Parser for event addon messages.
+ * 
+ * Maps these messages into an EQMessage with a
  * product link.
  */
 public class EventAddonParser extends SAXAdapter {
