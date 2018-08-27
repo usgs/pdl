@@ -10,8 +10,9 @@ import java.util.Date;
 import java.util.logging.Logger;
 
 /**
- * An ArchivePolicy sets a policy for the indexer to to clean up its
- * ProductIndex. The policy is created by configuration parameters and generates
+ * A policy for the Indexer to clean up Events in its ProductIndex.
+ *
+ * The policy is created by configuration parameters and generates
  * a ProductIndexQuery. Any product/event matching the product index query is
  * archived. Generally, archiving means the data for that product/event is
  * removed from the index as well as the storage. Upon archiving, an

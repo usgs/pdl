@@ -17,8 +17,7 @@ import gov.usgs.earthquake.product.io.XmlProductHandler;
 import gov.usgs.earthquake.product.io.XmlProductSource;
 
 /**
- * Used by SearchResponseParser to store xml products in a FileProductStorage as
- * they are parsed.
+ * Used by SearchResponseParser to store products during parsing.
  * 
  * Creates a "background" storage thread for storing, while this classes
  * startElement, characters, and endElement methods are called by the

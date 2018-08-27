@@ -5,8 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * This represents a search request, which is a series of ProductIndexQuery
- * objects paired with methods.
+ * A search request, which is one or more {@link SearchQuery}s.
  */
 public class SearchRequest implements Comparable<SearchRequest> {
 

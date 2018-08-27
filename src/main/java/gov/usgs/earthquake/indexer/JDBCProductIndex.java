@@ -34,6 +34,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * JDBC Implementation of {@link ProductIndex}.
+ */
 public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 	/** Logging Utility **/
