@@ -1,5 +1,12 @@
 package gov.usgs.earthquake.indexer;
 
+/**
+ * Description of a specific change to a {@link ProductIndex}.
+ * 
+ * Multiple IndexerChange objects may be created, and grouped
+ * into an {@link IndexerEvent}, in response to one product
+ * being processed.
+ */
 public class IndexerChange {
 
 	/** Enumeration of indexer event types. */

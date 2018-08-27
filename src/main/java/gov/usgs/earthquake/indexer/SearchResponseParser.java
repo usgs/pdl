@@ -16,6 +16,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ * Parser for SearchXML response.
+ */
 public class SearchResponseParser extends DefaultHandler {
 
 	private SearchResponse response = null;

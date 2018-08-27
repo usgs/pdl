@@ -18,7 +18,10 @@ import java.util.List;
 import java.net.URI;
 
 /**
- * A product summary is essentially a product without its contents.
+ * A ProductSummary is essentially a product without its contents.
+ * 
+ * These are usually created by {@link IndexerModule}s, which may
+ * inspect Product Content to add additional summary properties.
  */
 public class ProductSummary {
 

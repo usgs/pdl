@@ -10,6 +10,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ * Parser for SearchXML request.
+ */
 public class SearchRequestParser extends DefaultHandler {
 
 	/** The request being parsed. */

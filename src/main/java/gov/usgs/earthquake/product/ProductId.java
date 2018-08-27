@@ -8,6 +8,43 @@ import java.util.Date;
 
 /**
  * Attributes that uniquely identify a product.
+ *
+ * <dl>
+ * <dt>Source</dt>
+ * <dd>
+ *   The organization <u>sending</u> the product;
+ *   not necessarily the author of the product.
+ * 
+ *   Typically a FDSN network code.
+ * </dd>
+ * 
+ * <dt>Type</dt>
+ * <dd>
+ *   The type of product being sent.
+ * </dd>
+ * 
+ * <dt>Code</dt>
+ * <dd>
+ *   A unique code assigned by the <code>source</code> and <code>type</code>.
+ *   Source and Type are effectively a namespace for codes.
+ * 
+ *   If the same <code>code</code> is re-used, it indicates a different
+ *   version of the same product.
+ * </dd>
+ * 
+ * <dt>Update Time</dt>
+ * <dd>
+ *   A timestamp representing when a product was created.
+ * 
+ *   Update Time is also used as a <strong>version</strong>.
+ *   Products from the same <code>source</code> and <code>type</code> with
+ *   the same <code>code</code> are considered different versions of the
+ *   same product.
+ * 
+ *   More recent (newer) <code>updateTime</code>s
+ *   supersede less recent (older) <code>updateTimes</code>.
+ * </dd>
+ * </dl>
  */
 public class ProductId implements Comparable<ProductId> {
 
