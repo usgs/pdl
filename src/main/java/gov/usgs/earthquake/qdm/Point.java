@@ -1,9 +1,10 @@
 package gov.usgs.earthquake.qdm;
 
 /**
-* Class Point
-* <br>2003.01.06: Make class public, use double instead of float.
-*/
+ * A 2-D point class.
+ *
+ * <br>2003.01.06: Make class public, use double instead of float.
+ */
 public class Point {
 
   public double x;

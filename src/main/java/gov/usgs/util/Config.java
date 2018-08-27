@@ -1,8 +1,5 @@
 /*
  * Config
- *
- * $Id: Config.java 7868 2010-10-21 23:05:34Z jmfee $
- * $URL: https://ehptools.cr.usgs.gov/svn/ProductDistribution/trunk/src/gov/usgs/earthquake/distribution/Config.java $
  */
 package gov.usgs.util;
 

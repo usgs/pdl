@@ -3,6 +3,9 @@ package gov.usgs.earthquake.util;
 import gov.usgs.earthquake.distribution.NotificationEvent;
 import gov.usgs.earthquake.product.ProductId;
 
+/**
+ * Preliminary implementation for priority queuing products.
+ */
 public class NotificationEventBlockingQueue extends
 		RoundRobinBlockingQueue<NotificationEvent> {
 

@@ -7,6 +7,9 @@ import java.util.HashMap;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ * Parser for ShakeMap info.xml metadata.
+ */
 public class InfoXMLHandler extends DefaultHandler {
 
 	private static final String XML_TAG = "tag";

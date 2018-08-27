@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.logging.Logger;
 import gov.usgs.earthquake.distribution.DefaultNotificationListener;
 import gov.usgs.earthquake.product.Product;
-import gov.usgs.earthquake.shakemap.ShakeMapIndexerWedge;
 import gov.usgs.util.Config;
 import gov.usgs.util.FileUtils;
 
@@ -12,7 +11,7 @@ public class EIDSOutputWedge extends DefaultNotificationListener {
 
 	/** Logging object. */
 	private static final Logger LOGGER = Logger
-			.getLogger(ShakeMapIndexerWedge.class.getName());
+			.getLogger(EIDSOutputWedge.class.getName());
 
 	public static final String OUTPUT_TYPE_EQXML = "eqxml.xml";
 	public static final String OUTPUT_TYPE_QUAKEML = "quakeml.xml";
