@@ -7,7 +7,7 @@ http://www.usgs.gov/visual-id/credit_usgs.html#copyright
 
 Dependent libraries found in the "lib" directory are distributed under the
 open source (or open source-like) licenses/agreements. Appropriate license
-aggrements for each library can be found in the "lib" directory.  Other
+agreements for each library can be found in the "lib" directory.  Other
 dependencies can be found in `build.gradle`.
 
  - eqmessageutils.jar                   (https://github.com/usgs/eqmessageutils)
