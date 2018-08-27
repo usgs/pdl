@@ -20,6 +20,7 @@ import gov.usgs.earthquake.product.io.ProductSource;
 import gov.usgs.earthquake.product.io.XmlProductSource;
 import gov.usgs.util.StreamUtils;
 
+@SuppressWarnings("deprecation")
 public class TectonicSummaryIndexerModuleTest {
 
 	public static final long AUTHORITATIVE_WEIGHT = 200;

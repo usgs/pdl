@@ -16,6 +16,8 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 
 /**
+ * Parser for ShakeMap grid.xyz metadata.
+ *
  * id magnitude latitude longitude month day year hour:minute:second timezone
  * lonMin latMin lonMax latMax (Process time: dow month day hour:minute:second
  * year) eventDescription 2009232_290541 4.2 41.94 -114.09 AUG 20 2009 06:44:11
@@ -43,6 +45,11 @@ public class GridXYZHandler {
 		this.shakemap = shakemap;
 	}
 
+	/**
+	 * Read first line of grid.xyz file and set properties on ShakeMap object.
+	 *
+	 * @param in the grid.xyz input stream.
+	 */
 	public void parse(final InputStream in) throws Exception {
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(

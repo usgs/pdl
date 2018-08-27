@@ -13,7 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * ShakeMap class for ShakeMap products specifically.
+ * ShakeMap object to add additional Product properties based on contents.
  *
  * This subclass of Product provides access to additional ShakeMap-specific
  * attributes and loads these attributes, as well as additional Product

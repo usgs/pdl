@@ -3,7 +3,7 @@ package gov.usgs.earthquake.qdm;
 import java.util.ArrayList;
 
 /**
- * Set of regions defined by arrays of latitude and longitude. <br>
+ * Set of regions.
  *  
  * @author - Alan Jones, 1999.09.10 <br>
  *         2002.01.16: Convert from "regions" directory with above files to

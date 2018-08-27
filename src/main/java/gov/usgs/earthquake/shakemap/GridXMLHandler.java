@@ -9,7 +9,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * An XML Handler to load necessary product information from grid.xml
+ * Parser for ShakeMap grid.xml metadata.
  * 
  * Accepts a ShakeMap object and updates the properties of that product based on
  * the product's grid.xml file.
@@ -107,6 +107,15 @@ public class GridXMLHandler extends DefaultHandler {
 	}
 
 
+	/**
+	 * Read grid, event, and gridspec element attributes.
+	 *
+     * @param uri namespace of element.
+     * @param localName name of element.
+     * @param qName qualified name of element.
+     * @param attributes element attributes.
+	 * @throws SAXException when griddata element is reached, to stop parsing.
+	 */
 	public final void startElement(final String uri, final String localName,
 			final String qName, final Attributes attributes)
 			throws SAXException {
