@@ -126,7 +126,7 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 		if (acceptBeforeQueuing
 				&& listener instanceof DefaultNotificationListener) {
 			DefaultNotificationListener defaultListener = (DefaultNotificationListener) listener;
-			if (defaultListener.accept(event.getNotification().getProductId())) {
+			if (!defaultListener.accept(event.getNotification().getProductId())) {
 				return;
 			}
 		}
