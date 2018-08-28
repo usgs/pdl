@@ -98,6 +98,12 @@ test.dependsOn testCleanup
 
 // Tasks for building releases
 
+// create javadocs
+javadoc {
+  excludes = ['com/isti/**']
+  options.addBooleanOption('html5', true)
+}
+
 // create jar file
 jar {
   baseName = "ProductClient"
