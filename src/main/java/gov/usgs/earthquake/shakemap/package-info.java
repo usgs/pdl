@@ -1,4 +1,4 @@
 /**
- * Classes for <code>shakemap</code> type products.
+ * <code>shakemap</code> type products.
  */
 package gov.usgs.earthquake.shakemap;

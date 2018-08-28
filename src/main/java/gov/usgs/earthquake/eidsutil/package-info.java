@@ -1,5 +1,5 @@
 /**
- * Utility classes for the Earthquake Information Distribution System (EIDS).
+ * Wrappers for the Earthquake Information Distribution System (EIDS).
  *
  * {@link CorbaSender} sends messages to an EIDS server that is configured with a 
  * CorbaFeeder.
