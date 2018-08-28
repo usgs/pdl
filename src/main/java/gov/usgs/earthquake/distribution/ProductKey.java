@@ -81,10 +81,9 @@ public class ProductKey extends DefaultConfigurable {
 	 * @return true if this key might verify the signature for given product.
 	 */
 	public boolean isForProduct(final ProductId id) {
-		if (sources.size() == 0 || sources.contains(id.getSource())) {
-			if (types.size() == 0 || types.contains(id.getType())) {
-				return true;
-			}
+		if ((sources.size() == 0 || sources.contains(id.getSource()))
+				&& (types.size() == 0 || types.contains(id.getType()))) {
+			return true;
 		}
 		return false;
 	}

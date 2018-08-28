@@ -34,8 +34,7 @@ public class DefaultAssociator implements Associator {
 	public static final BigDecimal LOCATION_DIFF_KILOMETER = new BigDecimal(100);
 
 	/** Number of kilometers in a degree at the equator. */
-	public static final BigDecimal KILOMETERS_PER_DEGREE = new BigDecimal(
-			111.12);
+	public static final BigDecimal KILOMETERS_PER_DEGREE = new BigDecimal("111.12");
 
 	/**
 	 * Distance between related events latitude, in degrees.
@@ -300,20 +299,19 @@ public class DefaultAssociator implements Associator {
 		// if source is same, check code
 		String event1Source = event1Summary.getSource();
 		String event2Source = event2Summary.getSource();
-		if (event1Source != null && event2Source != null) {
-			if (event1Source.equalsIgnoreCase(event2Source)) {
-				String event1Code = event1Summary.getSourceCode();
-				String event2Code = event2Summary.getSourceCode();
-				// this is somewhat implied, (preferred source+code are
-				// combination) but be safe anyways
-				if (event1Code != null && event2Code != null) {
-					if (event1Code.equalsIgnoreCase(event2Code)) {
-						// same event id
-						return true;
-					} else {
-						// different event id from same source
-						return false;
-					}
+		if (event1Source != null && event2Source != null
+				&& event1Source.equalsIgnoreCase(event2Source)) {
+			String event1Code = event1Summary.getSourceCode();
+			String event2Code = event2Summary.getSourceCode();
+			// this is somewhat implied, (preferred source+code are
+			// combination) but be safe anyways
+			if (event1Code != null && event2Code != null) {
+				if (event1Code.equalsIgnoreCase(event2Code)) {
+					// same event id
+					return true;
+				} else {
+					// different event id from same source
+					return false;
 				}
 			}
 		}

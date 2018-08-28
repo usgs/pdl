@@ -60,37 +60,38 @@ public class URLNotificationParser extends SAXAdapter {
 			final String qName, final Attributes attributes)
 			throws SAXException {
 
-		if (uri.equals(PRODUCT_XML_NAMESPACE)) {
-			if (localName.equals(NOTIFICATION_ELEMENT)) {
-				ProductId id = ProductId.parse(XmlUtils.getAttribute(
-						attributes, uri, ATTRIBUTE_PRODUCT_ID));
-				id.setUpdateTime(XmlUtils.getDate(XmlUtils.getAttribute(
-						attributes, uri, ATTRIBUTE_PRODUCT_UPDATED)));
-
-				URL trackerURL = null;
-				try {
-					trackerURL = new URL(XmlUtils.getAttribute(attributes, uri,
-							ATTRIBUTE_TRACKER_URL));
-				} catch (Exception e) {
-					throw new SAXException("Unable to parse tracker url", e);
-				}
-
-				Date expirationDate = XmlUtils.getDate(XmlUtils.getAttribute(
-						attributes, uri, ATTRIBUTE_EXPIRES));
-
-				URL productURL = null;
-				try {
-					productURL = new URL(XmlUtils.getAttribute(attributes, uri,
-							ATTRIBUTE_URL));
-				} catch (Exception e) {
-					throw new SAXException("Unable to parse product url", e);
-				}
-
-				notification = new URLNotification(id, expirationDate,
-						trackerURL, productURL);
-			}
+		if (!uri.equals(PRODUCT_XML_NAMESPACE)) {
+			return;
 		}
 
+		if (localName.equals(NOTIFICATION_ELEMENT)) {
+			ProductId id = ProductId.parse(XmlUtils.getAttribute(
+					attributes, uri, ATTRIBUTE_PRODUCT_ID));
+			id.setUpdateTime(XmlUtils.getDate(XmlUtils.getAttribute(
+					attributes, uri, ATTRIBUTE_PRODUCT_UPDATED)));
+
+			URL trackerURL = null;
+			try {
+				trackerURL = new URL(XmlUtils.getAttribute(attributes, uri,
+						ATTRIBUTE_TRACKER_URL));
+			} catch (Exception e) {
+				throw new SAXException("Unable to parse tracker url", e);
+			}
+
+			Date expirationDate = XmlUtils.getDate(XmlUtils.getAttribute(
+					attributes, uri, ATTRIBUTE_EXPIRES));
+
+			URL productURL = null;
+			try {
+				productURL = new URL(XmlUtils.getAttribute(attributes, uri,
+						ATTRIBUTE_URL));
+			} catch (Exception e) {
+				throw new SAXException("Unable to parse product url", e);
+			}
+
+			notification = new URLNotification(id, expirationDate,
+					trackerURL, productURL);
+		}
 	}
 
 }

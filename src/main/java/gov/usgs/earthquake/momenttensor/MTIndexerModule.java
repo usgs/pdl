@@ -82,8 +82,8 @@ public class MTIndexerModule extends DefaultIndexerModule {
 	private static final long EVENT_SOURCE_GCMT_BONUS = 56L;
 
 	private static final long MAG_OUTSIDE_RANGE_PENALTY = -100L;
-	private static final BigDecimal MAG_RANGE_MIN = new BigDecimal(5.5);
-	private static final BigDecimal MAG_RANGE_MAX = new BigDecimal(7.0);
+	private static final BigDecimal MAG_RANGE_MIN = new BigDecimal("5.5");
+	private static final BigDecimal MAG_RANGE_MAX = new BigDecimal("7.0");
 
 	/**
 	 * Override IndexerModule api method.
@@ -140,11 +140,10 @@ public class MTIndexerModule extends DefaultIndexerModule {
 			}
 
 			// Subtract penalty
-			if (magRange != null) {
-				if (tensorType.equalsIgnoreCase(TYPE_MWB)
-						&& (magRange.compareTo(MAG_RANGE_MIN) == -1 || magRange.compareTo(MAG_RANGE_MAX) == 1)) {
-					weight += MAG_OUTSIDE_RANGE_PENALTY;
-				}
+			if (magRange != null
+					&& tensorType.equalsIgnoreCase(TYPE_MWB)
+					&& (magRange.compareTo(MAG_RANGE_MIN) == -1 || magRange.compareTo(MAG_RANGE_MAX) == 1)) {
+				weight += MAG_OUTSIDE_RANGE_PENALTY;
 			}
 		}
 

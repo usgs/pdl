@@ -5,6 +5,7 @@ package gov.usgs.earthquake.product;
 
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Attributes that uniquely identify a product.
@@ -189,13 +190,8 @@ public class ProductId implements Comparable<ProductId> {
 	 */
 	@Override
 	public boolean equals(final Object obj) {
-		if (obj != null && obj instanceof ProductId) {
-			if (compareTo((ProductId) obj) == 0) {
-				return true;
-			}
-		}
-
-		return false;
+		return obj != null && obj instanceof ProductId
+				&& this.compareTo((ProductId) obj) == 0;
 	}
 
 	/**
@@ -218,10 +214,12 @@ public class ProductId implements Comparable<ProductId> {
 		return compare;
 	}
 
+	/**
+	 * Override default Object.hashCode().
+	 */
 	@Override
 	public int hashCode() {
-		return getSource().hashCode() + getType().hashCode()
-				+ getCode().hashCode() + getUpdateTime().hashCode();
+		return Objects.hash(getSource(), getType(), getCode(), getUpdateTime());
 	}
 
 	/**

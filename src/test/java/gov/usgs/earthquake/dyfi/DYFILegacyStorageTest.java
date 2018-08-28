@@ -15,6 +15,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+@SuppressWarnings("deprecation")
 public class DYFILegacyStorageTest {
 
 	private DYFILegacyStorage storage = null;

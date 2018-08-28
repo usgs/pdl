@@ -152,16 +152,15 @@ public class ShakeMapIndexerWedge extends DefaultNotificationListener {
 							+ previousId.toString());
 				}
 
-				if (!productId.getSource().equals(shakemap.getEventSource())) {
+				if (!productId.getSource().equals(shakemap.getEventSource())
+						&& !productId.getSource().equals(previousId.getSource())) {
 					// incoming is not from preferred source
-					if (!productId.getSource().equals(previousId.getSource())) {
-						LOGGER.info("Skipping non-preferred shakemap, previous source='"
-								+ previousId.getSource()
-								+ "' incoming source='"
-								+ productId.getSource()
-								+ "'");
-						return;
-					}
+					LOGGER.info("Skipping non-preferred shakemap, previous source='"
+							+ previousId.getSource()
+							+ "' incoming source='"
+							+ productId.getSource()
+							+ "'");
+					return;
 				}
 			} catch (Exception e) {
 				// unable to load as a product, may be just a shakemap directory

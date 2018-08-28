@@ -401,4 +401,15 @@ public class ProductSummary {
 		}
 		return false;
 	}
+
+	/**
+	 * Generate hashcode for ProductId using all components.
+	 *
+	 * This implementation just uses hashcode from ProductId.
+	 */
+	@Override
+	public int hashCode() {
+		return getId().hashCode();
+	}
+
 }
