@@ -113,8 +113,8 @@ public class ListenerNotifierThread implements Runnable {
 	 */
 	public void notify(final NotificationEvent event) {
 		if (listener instanceof AbstractListener) {
-			if (!((AbstractListener) listener).accept(event.getNotification()
-					.getProductId())) {
+			AbstractListener abstractListener = (AbstractListener) listener;
+			if (!abstractListener.accept(event.getNotification().getProductId())) {
 				return;
 			}
 		}

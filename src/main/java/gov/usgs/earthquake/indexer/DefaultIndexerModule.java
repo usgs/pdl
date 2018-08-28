@@ -143,19 +143,15 @@ public class DefaultIndexerModule implements IndexerModule {
 				// based on product source, who authored this product.
 				preferredWeight += AUTHORITATIVE_WEIGHT;
 			}
-			if (eventSource != null) {
-				if (REGIONS.isAuthor(eventSource, location)) {
-					// based on event source, which event this product is about
-					preferredWeight += AUTHORITATIVE_EVENT_WEIGHT;
-				}
+			if (eventSource != null && REGIONS.isAuthor(eventSource, location)) {
+				// based on event source, which event this product is about
+				preferredWeight += AUTHORITATIVE_EVENT_WEIGHT;
 			}
 		}
 
-		if (eventSource != null) {
-			// same source check
-			if (eventSource.equalsIgnoreCase(source)) {
-				preferredWeight += SAME_SOURCE_WEIGHT;
-			}
+		// same source check
+		if (eventSource != null && eventSource.equalsIgnoreCase(source)) {
+			preferredWeight += SAME_SOURCE_WEIGHT;
 		}
 
 		return preferredWeight;

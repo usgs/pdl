@@ -135,13 +135,11 @@ public class DefaultIndexerListener extends AbstractListener implements
 					Event event = iter.next();
 					ProductSummary preferred = event
 							.getPreferredProduct(productType);
-					if (preferred != null) {
-						if (preferred.getId().equals(
-								change.getSummary().getId())) {
-							// it is the most preferred product for this event
-							isPreferred = true;
-							break;
-						}
+					if (preferred != null && preferred.getId().equals(
+							change.getSummary().getId())) {
+						// it is the most preferred product for this event
+						isPreferred = true;
+						break;
 					}
 				}
 			}
@@ -159,12 +157,11 @@ public class DefaultIndexerListener extends AbstractListener implements
 
 	public boolean accept(IndexerEvent event, IndexerChange change)
 			throws Exception {
-		if (ignoreArchive) {
-			// check whether this is an archive indexer change
-			if (change.getType() == IndexerChangeType.PRODUCT_ARCHIVED
-					|| change.getType() == IndexerChangeType.EVENT_ARCHIVED) {
-				return false;
-			}
+		// check whether this is an archive indexer change
+		if (ignoreArchive
+				&& (change.getType() == IndexerChangeType.PRODUCT_ARCHIVED
+				|| change.getType() == IndexerChangeType.EVENT_ARCHIVED)) {
+			return false;
 		}
 
 		// see if preferred event parameters have changed

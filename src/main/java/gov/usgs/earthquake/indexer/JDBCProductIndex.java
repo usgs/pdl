@@ -1741,26 +1741,26 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 		// getDouble() returns 0 if the value was actually NULL. In this case,
 		// we are going to set the value to null
-		double latitude = results.getDouble(SUMMARY_EVENT_LATITUDE);
-		if (results.wasNull()) {
+		String latitude = results.getString(SUMMARY_EVENT_LATITUDE);
+		if (latitude == null) {
 			p.setEventLatitude(null);
 		} else {
 			p.setEventLatitude(new BigDecimal(latitude));
 		}
-		double longitude = results.getDouble(SUMMARY_EVENT_LONGITUDE);
-		if (results.wasNull()) {
+		String longitude = results.getString(SUMMARY_EVENT_LONGITUDE);
+		if (longitude == null) {
 			p.setEventLongitude(null);
 		} else {
 			p.setEventLongitude(new BigDecimal(longitude));
 		}
-		double depth = results.getDouble(SUMMARY_EVENT_DEPTH);
-		if (results.wasNull()) {
+		String depth = results.getString(SUMMARY_EVENT_DEPTH);
+		if (depth == null) {
 			p.setEventDepth(null);
 		} else {
 			p.setEventDepth(new BigDecimal(depth));
 		}
-		double magnitude = results.getDouble(SUMMARY_EVENT_MAGNITUDE);
-		if (results.wasNull()) {
+		String magnitude = results.getString(SUMMARY_EVENT_MAGNITUDE);
+		if (magnitude == null) {
 			p.setEventMagnitude(null);
 		} else {
 			p.setEventMagnitude(new BigDecimal(magnitude));

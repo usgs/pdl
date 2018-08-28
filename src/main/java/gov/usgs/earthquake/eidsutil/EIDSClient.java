@@ -160,17 +160,18 @@ public class EIDSClient implements EIDSListener {
 		client.startup();
 
 		// if this is the first time through
-		if (clientRestartTimer == null) {
-			if (clientRestartInterval > 0) {
-				clientRestartTimer = new Timer();
-				clientRestartTimer.schedule(new TimerTask() {
-					public void run() {
-						reinitConnection();
-					}
-				}, clientRestartInterval, // before first execution
-						clientRestartInterval // between subsequent executions
-						);
-			}
+		if (clientRestartTimer == null && clientRestartInterval > 0) {
+			clientRestartTimer = new Timer();
+			clientRestartTimer.schedule(
+					new TimerTask() {
+						public void run() {
+							reinitConnection();
+						}
+					},
+					// before first execution
+					clientRestartInterval,
+					// between subsequent executions
+					clientRestartInterval);
 		}
 	}
 
