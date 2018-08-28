@@ -73,10 +73,10 @@ public class SearchXMLTest {
 		ProductsSummaryQuery query = new ProductsSummaryQuery(piQuery);
 		ProductSummary summary = new ProductSummary();
 		summary.setId(new ProductId("us", "test-product", "test2", new Date()));
-		summary.setEventDepth(new BigDecimal(10));
-		summary.setEventLatitude(new BigDecimal(0));
-		summary.setEventLongitude(new BigDecimal(0));
-		summary.setEventMagnitude(new BigDecimal(1));
+		summary.setEventDepth(BigDecimal.TEN);
+		summary.setEventLatitude(BigDecimal.ZERO);
+		summary.setEventLongitude(BigDecimal.ZERO);
+		summary.setEventMagnitude(BigDecimal.ONE);
 		summary.setEventSource("us");
 		summary.setEventSourceCode("test1");
 		summary.setEventTime(new Date());

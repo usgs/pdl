@@ -321,19 +321,19 @@ public class DefaultAssociatorTest {
 
 		// Make a product with location and time
 		ProductSummary product = new ProductSummary();
-		product.setEventLatitude(new BigDecimal(lat));
-		product.setEventLongitude(new BigDecimal(lon));
+		product.setEventLatitude(BigDecimal.valueOf(lat));
+		product.setEventLongitude(BigDecimal.valueOf(lon));
 		product.setEventTime(d);
 
 		// Make 3 events with similar locations and times
-		Event e1 = createEvent("test", "1", new BigDecimal(lat + 0.1), new BigDecimal(
-				lon + 0.1), new Date(d.getTime() + 10));
+		Event e1 = createEvent("test", "1", BigDecimal.valueOf(lat + 0.1),
+				BigDecimal.valueOf(lon + 0.1), new Date(d.getTime() + 10));
 
-		Event e2 = createEvent("test", "2", new BigDecimal(lat - 0.5), new BigDecimal(lon),
-				new Date(d.getTime() + 50));
+		Event e2 = createEvent("test", "2", BigDecimal.valueOf(lat - 0.5),
+				BigDecimal.valueOf(lon), new Date(d.getTime() + 50));
 
-		Event e3 = createEvent("test", "3", new BigDecimal(lat + 1),
-				new BigDecimal(lon + 1), d);
+		Event e3 = createEvent("test", "3", BigDecimal.valueOf(lat + 1),
+				BigDecimal.valueOf(lon + 1), d);
 
 		// Now add the events to a list, and find the most similar
 		List<Event> events = new ArrayList<Event>();
@@ -356,28 +356,30 @@ public class DefaultAssociatorTest {
 
 		// Make a product with location and time
 		ProductSummary product = new ProductSummary();
-		product.setEventLatitude(new BigDecimal(lat));
-		product.setEventLongitude(new BigDecimal(lon));
+		product.setEventLatitude(BigDecimal.valueOf(lat));
+		product.setEventLongitude(BigDecimal.valueOf(lon));
 		product.setEventTime(d);
 		product.setId(new ProductId("us", "origin", "c0001234"));
 		product.setEventSource("us");
 		product.setEventSourceCode("c0001234");
 
 		// Make 3 events with similar locations and times
-		Event e1 = createDifferentEvent(new BigDecimal(lat + 0.1), new BigDecimal(
-				lon + 0.1), new Date(d.getTime() + 10), "us", "origin", "c0002222");
+		Event e1 = createDifferentEvent(BigDecimal.valueOf(lat + 0.1),
+				BigDecimal.valueOf(lon + 0.1), new Date(d.getTime() + 10),
+				"us", "origin", "c0002222");
 
-		Event e2 = createDifferentEvent(new BigDecimal(lat - 0.5), new BigDecimal(lon),
-				new Date(d.getTime() + 50), "nc", "origin", "11112222");
+		Event e2 = createDifferentEvent(BigDecimal.valueOf(lat - 0.5),
+				BigDecimal.valueOf(lon), new Date(d.getTime() + 50),
+				"nc", "origin", "11112222");
 
-		Event e3 = createDifferentEvent(new BigDecimal(lat + 1),
-				new BigDecimal(lon + 1), d, "ci", "origin", "aaaa2222");
+		Event e3 = createDifferentEvent(BigDecimal.valueOf(lat + 1),
+				BigDecimal.valueOf(lon + 1), d, "ci", "origin", "aaaa2222");
 
-		Event e4 = createDifferentEvent(new BigDecimal(lat),
-				new BigDecimal(lon), d, "uw", "origin", "00005555");
+		Event e4 = createDifferentEvent(BigDecimal.valueOf(lat),
+				BigDecimal.valueOf(lon), d, "uw", "origin", "00005555");
 		
-		Event e5 = createDifferentEvent(new BigDecimal(lat),
-				new BigDecimal(lon), d, "us", "origin", "00005555");
+		Event e5 = createDifferentEvent(BigDecimal.valueOf(lat),
+				BigDecimal.valueOf(lon), d, "us", "origin", "00005555");
 
 		// Now add the events to a list, and find the most similar
 		List<Event> events = new ArrayList<Event>();
