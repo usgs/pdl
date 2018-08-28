@@ -1,5 +1,5 @@
 /**
- * Product and Content data model objects.
+ * <strong>Product</strong> objects that are distributed.
  *
  * A Product consists of Contents and metadata.
  *
