@@ -374,10 +374,10 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			product1.setEventSource("NOTus");
 			product1.setEventSourceCode("testproduct-one");
 			product1.setEventTime(theDate);
-			product1.setMagnitude(new BigDecimal(5.0));
-			product1.setLatitude(new BigDecimal(35.0)); // LA area
-			product1.setLongitude(new BigDecimal(-118.0));
-			product1.setDepth(new BigDecimal(50.0));
+			product1.setMagnitude(BigDecimal.valueOf(5.0));
+			product1.setLatitude(BigDecimal.valueOf(35.0)); // LA area
+			product1.setLongitude(BigDecimal.valueOf(-118.0));
+			product1.setDepth(BigDecimal.valueOf(50.0));
 			product1.setTrackerURL(new URL("http://localhost/tracker"));
 			product1.setVersion("one");
 
@@ -396,10 +396,10 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			product2.setEventSource("us");
 			product2.setEventSourceCode("testproduct-two");
 			product2.setEventTime(theDate);
-			product2.setMagnitude(new BigDecimal(5.0));
-			product2.setLatitude(new BigDecimal(37.0)); // SF area
-			product2.setLongitude(new BigDecimal(-122.0));
-			product2.setDepth(new BigDecimal(50.0));
+			product2.setMagnitude(BigDecimal.valueOf(5.0));
+			product2.setLatitude(BigDecimal.valueOf(37.0)); // SF area
+			product2.setLongitude(BigDecimal.valueOf(-122.0));
+			product2.setDepth(BigDecimal.valueOf(50.0));
 			product2.setTrackerURL(new URL("http://localhost/tracker"));
 			product2.setVersion("one");
 
@@ -420,10 +420,10 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			product3.setEventSource("us");
 			product3.setEventSourceCode("testproduct-two");
 			product3.setEventTime(theDate);
-			product3.setMagnitude(new BigDecimal(5.0));
-			product3.setLatitude(new BigDecimal(35.0)); // LA area
-			product3.setLongitude(new BigDecimal(-118.0));
-			product3.setDepth(new BigDecimal(50.0));
+			product3.setMagnitude(BigDecimal.valueOf(5.0));
+			product3.setLatitude(BigDecimal.valueOf(35.0)); // LA area
+			product3.setLongitude(BigDecimal.valueOf(-118.0));
+			product3.setDepth(BigDecimal.valueOf(50.0));
 			product3.setTrackerURL(new URL("http://localhost/tracker"));
 			product3.setVersion("two");
 
@@ -491,8 +491,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			product1.setEventSource(source);
 			product1.setEventSourceCode(code);
 			product1.setEventTime(time);
-			product1.setMagnitude(new BigDecimal(5.0));
-			product1.setDepth(new BigDecimal(50.0));
+			product1.setMagnitude(BigDecimal.valueOf(5.0));
+			product1.setDepth(BigDecimal.valueOf(50.0));
 			product1.setTrackerURL(new URL(trackerString));
 			product1.setVersion("one");
 
@@ -511,14 +511,14 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			product2.setEventSource(source);
 			product2.setEventSourceCode(code);
 			product2.setEventTime(time);
-			product2.setMagnitude(new BigDecimal(6.0));
-			product2.setDepth(new BigDecimal(10.0));
+			product2.setMagnitude(BigDecimal.valueOf(6.0));
+			product2.setDepth(BigDecimal.valueOf(10.0));
 			product2.setTrackerURL(new URL(trackerString));
 			product2.setVersion("two");
 
 			// Add a location so it can create an event (LA area)
-			product2.setLatitude(new BigDecimal(35.0));
-			product2.setLongitude(new BigDecimal(-118.0));
+			product2.setLatitude(BigDecimal.valueOf(35.0));
+			product2.setLongitude(BigDecimal.valueOf(-118.0));
 
 			indexer.onProduct(product2);
 			synchronized (syncObject) {
@@ -559,8 +559,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	public void onProductSplitTest1() {
 		try {
 			Date eventTime = new Date();
-			BigDecimal latitude = new BigDecimal(35.0);
-			BigDecimal longitude = new BigDecimal(-118.0);
+			BigDecimal latitude = BigDecimal.valueOf(35.0);
+			BigDecimal longitude = BigDecimal.valueOf(-118.0);
 			URL url = new URL("http://localhost/tracker");
 
 			// Step 1. A product arrives with a laittude, longitude, time, and
@@ -672,10 +672,10 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	@Test
 	public void onProductSplitTest2() {
 
-		BigDecimal oldLat = new BigDecimal(35.0);
-		BigDecimal oldLng = new BigDecimal(-118.0);
-		BigDecimal newLat = new BigDecimal(37.7);
-		BigDecimal newLng = new BigDecimal(-122.4);
+		BigDecimal oldLat = BigDecimal.valueOf(35.0);
+		BigDecimal oldLng = BigDecimal.valueOf(-118.0);
+		BigDecimal newLat = BigDecimal.valueOf(37.7);
+		BigDecimal newLng = BigDecimal.valueOf(-122.4);
 		Date eventTime = new Date();
 		String urlString = "http://localhost/tracker";
 
@@ -817,9 +817,9 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		Date eventTime = new Date();
 		String trackerURL = "http://localhost/tracker/";
 
-		BigDecimal epsilon = new BigDecimal(0.000001);
-		BigDecimal glueLat = new BigDecimal(0.0);
-		BigDecimal glueLng = new BigDecimal(0.0);
+		BigDecimal epsilon = BigDecimal.valueOf(0.000001);
+		BigDecimal glueLat = BigDecimal.valueOf(0.0);
+		BigDecimal glueLng = BigDecimal.valueOf(0.0);
 
 		ProductIndexQuery locationQuery = indexer.getAssociator()
 				.getLocationQuery(eventTime, glueLat, glueLng);
@@ -832,8 +832,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		BigDecimal rightLng = locationQuery.getMaxEventLongitude().subtract(
 				epsilon);
 
-		BigDecimal antiGlueLat = new BigDecimal(10.0);
-		BigDecimal antiGlueLng = new BigDecimal(10.0);
+		BigDecimal antiGlueLat = BigDecimal.valueOf(10.0);
+		BigDecimal antiGlueLng = BigDecimal.valueOf(10.0);
 
 		try {
 			// Step 1. A product arrives with a latitude, longitude, time, and
@@ -1168,10 +1168,10 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		product1.setEventSource("notus");
 		product1.setEventSourceCode("testproduct-one");
 		product1.setEventTime(theDate);
-		product1.setMagnitude(new BigDecimal(5.0));
-		product1.setLatitude(new BigDecimal(35.0)); // LA area
-		product1.setLongitude(new BigDecimal(-118.0));
-		product1.setDepth(new BigDecimal(50.0));
+		product1.setMagnitude(BigDecimal.valueOf(5.0));
+		product1.setLatitude(BigDecimal.valueOf(35.0)); // LA area
+		product1.setLongitude(BigDecimal.valueOf(-118.0));
+		product1.setDepth(BigDecimal.valueOf(50.0));
 		product1.setTrackerURL(new URL("http://localhost/tracker"));
 		product1.setVersion("one");
 
@@ -1190,10 +1190,10 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		product2.setEventSource("us");
 		product2.setEventSourceCode("testproduct-two");
 		product2.setEventTime(theDate);
-		product2.setMagnitude(new BigDecimal(5.0));
-		product2.setLatitude(new BigDecimal(37.0)); // SF area
-		product2.setLongitude(new BigDecimal(-122.0));
-		product2.setDepth(new BigDecimal(50.0));
+		product2.setMagnitude(BigDecimal.valueOf(5.0));
+		product2.setLatitude(BigDecimal.valueOf(37.0)); // SF area
+		product2.setLongitude(BigDecimal.valueOf(-122.0));
+		product2.setDepth(BigDecimal.valueOf(50.0));
 		product2.setTrackerURL(new URL("http://localhost/tracker"));
 		product2.setVersion("one");
 
@@ -1268,10 +1268,10 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		product1.setEventSource("us");
 		product1.setEventSourceCode("testproduct-one");
 		product1.setEventTime(theDate);
-		product1.setMagnitude(new BigDecimal(5.0));
-		product1.setLatitude(new BigDecimal(35.0)); // LA area
-		product1.setLongitude(new BigDecimal(-118.0));
-		product1.setDepth(new BigDecimal(50.0));
+		product1.setMagnitude(BigDecimal.valueOf(5.0));
+		product1.setLatitude(BigDecimal.valueOf(35.0)); // LA area
+		product1.setLongitude(BigDecimal.valueOf(-118.0));
+		product1.setDepth(BigDecimal.valueOf(50.0));
 		product1.setTrackerURL(new URL("http://localhost/tracker"));
 		product1.setVersion("one");
 
@@ -1290,10 +1290,10 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		product2.setEventSource("us");
 		product2.setEventSourceCode("testproduct-two");
 		product2.setEventTime(theDate);
-		product2.setMagnitude(new BigDecimal(5.0));
-		product2.setLatitude(new BigDecimal(35.1)); // still LA area
-		product2.setLongitude(new BigDecimal(-118.0));
-		product2.setDepth(new BigDecimal(50.0));
+		product2.setMagnitude(BigDecimal.valueOf(5.0));
+		product2.setLatitude(BigDecimal.valueOf(35.1)); // still LA area
+		product2.setLongitude(BigDecimal.valueOf(-118.0));
+		product2.setDepth(BigDecimal.valueOf(50.0));
 		product2.setTrackerURL(new URL("http://localhost/tracker"));
 		product2.setVersion("one");
 
@@ -1361,10 +1361,10 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		product1.setEventSource("us");
 		product1.setEventSourceCode("event1");
 		product1.setEventTime(theDate);
-		product1.setMagnitude(new BigDecimal(5.0));
-		product1.setLatitude(new BigDecimal(35.0)); // LA area
-		product1.setLongitude(new BigDecimal(-118.0));
-		product1.setDepth(new BigDecimal(50.0));
+		product1.setMagnitude(BigDecimal.valueOf(5.0));
+		product1.setLatitude(BigDecimal.valueOf(35.0)); // LA area
+		product1.setLongitude(BigDecimal.valueOf(-118.0));
+		product1.setDepth(BigDecimal.valueOf(50.0));
 		product1.setTrackerURL(new URL("http://localhost/tracker"));
 		product1.setVersion("one");
 
@@ -1383,10 +1383,10 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		product2.setEventSource("us");
 		product2.setEventSourceCode("event2");
 		product2.setEventTime(theDate);
-		product2.setMagnitude(new BigDecimal(5.0));
-		product2.setLatitude(new BigDecimal(35.1)); // still LA area
-		product2.setLongitude(new BigDecimal(-118.0));
-		product2.setDepth(new BigDecimal(50.0));
+		product2.setMagnitude(BigDecimal.valueOf(5.0));
+		product2.setLatitude(BigDecimal.valueOf(35.1)); // still LA area
+		product2.setLongitude(BigDecimal.valueOf(-118.0));
+		product2.setDepth(BigDecimal.valueOf(50.0));
 		product2.setTrackerURL(new URL("http://localhost/tracker"));
 		product2.setVersion("one");
 
@@ -1404,10 +1404,10 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		product3.setEventSource("notus");
 		product3.setEventSourceCode("otherevent");
 		product3.setEventTime(theDate);
-		product3.setMagnitude(new BigDecimal(5.0));
-		product3.setLatitude(new BigDecimal(35.2)); // still LA area, closer to event2 than event1
-		product3.setLongitude(new BigDecimal(-118.0));
-		product3.setDepth(new BigDecimal(50.0));
+		product3.setMagnitude(BigDecimal.valueOf(5.0));
+		product3.setLatitude(BigDecimal.valueOf(35.2)); // still LA area, closer to event2 than event1
+		product3.setLongitude(BigDecimal.valueOf(-118.0));
+		product3.setDepth(BigDecimal.valueOf(50.0));
 		product3.setTrackerURL(new URL("http://localhost/tracker"));
 		product3.setVersion("one");
 
@@ -1456,8 +1456,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		rootLogger.setLevel(Level.FINEST);
 
 		Date eventTime = new Date();
-		BigDecimal latitude = new BigDecimal(35.0);
-		BigDecimal longitude = new BigDecimal(-118.0);
+		BigDecimal latitude = BigDecimal.valueOf(35.0);
+		BigDecimal longitude = BigDecimal.valueOf(-118.0);
 		URL url = new URL("http://localhost/tracker");
 
 		// Step 1. A product arrives with a laittude, longitude, time, and
@@ -1552,8 +1552,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			rootLogger.setLevel(Level.FINEST);
 
 			Date eventTime = new Date();
-			BigDecimal latitude = new BigDecimal(35.0);
-			BigDecimal longitude = new BigDecimal(-118.0);
+			BigDecimal latitude = BigDecimal.valueOf(35.0);
+			BigDecimal longitude = BigDecimal.valueOf(-118.0);
 			URL url = new URL("http://localhost/tracker");
 
 			// Step 1. A product arrives with a latitude, longitude, time, and
@@ -1726,8 +1726,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	 */
 	private Product createProduct() {
 		Product product = createUnassociatableProduct();
-		product.setLatitude(new BigDecimal(0.0));
-		product.setLongitude(new BigDecimal(0.0));
+		product.setLatitude(BigDecimal.valueOf(0.0));
+		product.setLongitude(BigDecimal.valueOf(0.0));
 		product.setEventTime(new Date());
 		ProductId id = product.getId();
 		product.setEventSource(id.getSource());
@@ -1838,8 +1838,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		rootLogger.setLevel(Level.FINEST);
 
 		Date eventTime = new Date();
-		BigDecimal latitude = new BigDecimal(35.0);
-		BigDecimal longitude = new BigDecimal(-118.0);
+		BigDecimal latitude = BigDecimal.valueOf(35.0);
+		BigDecimal longitude = BigDecimal.valueOf(-118.0);
 		URL url = new URL("http://localhost/tracker");
 
 		// Step 1. A product arrives with a laittude, longitude, time, and

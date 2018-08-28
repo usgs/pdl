@@ -58,7 +58,7 @@ public class SocketProductSenderTest {
 		server.start();
 
 		SocketProductSender sender = new SocketProductSender();
-		sender.setHost("127.0.0.1");
+		sender.setHost("localhost");
 		sender.setPort(1984);
 		sender.setBinaryFormat(binaryFormat);
 		sender.setEnableDeflate(enableDeflate);
