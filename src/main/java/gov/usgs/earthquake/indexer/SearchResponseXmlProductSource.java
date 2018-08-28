@@ -106,50 +106,49 @@ public class SearchResponseXmlProductSource extends XmlProductSource {
 			throws SAXException {
 		boolean startElementAlreadySent = false;
 
-		if (uri.equals(XmlProductHandler.PRODUCT_XML_NAMESPACE)) {
-			if (localName.equals(XmlProductHandler.PRODUCT_ELEMENT)) {
-				// save these to write lock can be acquired by correct thread.
-				this.uri = uri;
-				this.localName = localName;
-				this.qName = qName;
-				this.attributes = attributes;
+		if (uri.equals(XmlProductHandler.PRODUCT_XML_NAMESPACE)
+			&& localName.equals(XmlProductHandler.PRODUCT_ELEMENT)) {
+			// save these to write lock can be acquired by correct thread.
+			this.uri = uri;
+			this.localName = localName;
+			this.qName = qName;
+			this.attributes = attributes;
 
-				// starting a product, set up the storage handler/thread
-				// reference used by storage thread to set product
-				final SearchResponseXmlProductSource thisSource = this;
-				storageThread = new Thread() {
-					public void run() {
-						try {
-							ProductId id = storage
-									.storeProductSource(thisSource);
-							thisSource.setProduct(storage.getProduct(id));
-						} catch (Exception e) {
-							LOGGER.log(Level.WARNING,
-									"Exception while storing product", e);
-							thisSource.setProduct(null);
-						}
-					}
-				};
-
-				synchronized (waitForSetHandlerSync) {
-					storageThread.start();
+			// starting a product, set up the storage handler/thread
+			// reference used by storage thread to set product
+			final SearchResponseXmlProductSource thisSource = this;
+			storageThread = new Thread() {
+				public void run() {
 					try {
-						// wait for storage thread to call streamTo with
-						// handler
-						waitForSetHandlerSync.wait();
-					} catch (InterruptedException e) {
-						// ignore
+						ProductId id = storage
+								.storeProductSource(thisSource);
+						thisSource.setProduct(storage.getProduct(id));
+					} catch (Exception e) {
+						LOGGER.log(Level.WARNING,
+								"Exception while storing product", e);
+						thisSource.setProduct(null);
 					}
-					// handler set, ready to continue parsing
+				}
+			};
 
-					// signal that we've already sent the startElement
-					startElementAlreadySent = true;
+			synchronized (waitForSetHandlerSync) {
+				storageThread.start();
+				try {
+					// wait for storage thread to call streamTo with
+					// handler
+					waitForSetHandlerSync.wait();
+				} catch (InterruptedException e) {
+					// ignore
+				}
+				// handler set, ready to continue parsing
 
-					// if an exception was generated in background thread, throw
-					// it here
-					if (exception != null) {
-						throw exception;
-					}
+				// signal that we've already sent the startElement
+				startElementAlreadySent = true;
+
+				// if an exception was generated in background thread, throw
+				// it here
+				if (exception != null) {
+					throw exception;
 				}
 			}
 		}
@@ -166,24 +165,26 @@ public class SearchResponseXmlProductSource extends XmlProductSource {
 		// forward call to parser
 		super.endElement(uri, localName, qName);
 
-		if (uri.equals(XmlProductHandler.PRODUCT_XML_NAMESPACE)) {
-			if (localName.equals(XmlProductHandler.PRODUCT_ELEMENT)) {
-				// done parsing the product
+		if (!uri.equals(XmlProductHandler.PRODUCT_XML_NAMESPACE)) {
+			return;
+		}
 
-				synchronized (waitForStreamToSync) {
-					// notify storageThread streamTo is complete
-					waitForStreamToSync.notify();
-				}
+		if (localName.equals(XmlProductHandler.PRODUCT_ELEMENT)) {
+			// done parsing the product
 
-				try {
-					// wait for storageThread to complete so storage will have
-					// called setProduct before returning
-					storageThread.join();
-				} catch (InterruptedException e) {
-					// ignore
-				} finally {
-					storageThread = null;
-				}
+			synchronized (waitForStreamToSync) {
+				// notify storageThread streamTo is complete
+				waitForStreamToSync.notify();
+			}
+
+			try {
+				// wait for storageThread to complete so storage will have
+				// called setProduct before returning
+				storageThread.join();
+			} catch (InterruptedException e) {
+				// ignore
+			} finally {
+				storageThread = null;
 			}
 		}
 	}

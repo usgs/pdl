@@ -735,16 +735,12 @@ public class QuakemlProductCreator implements ProductCreator {
 		if (!Product.STATUS_DELETE.equals(product.getStatus())) {
 			// if not deleting, do some validation
 			String type = product.getId().getType();
-			if (type.equals("focal-mechanism")) {
-				if (planes == null) {
-					LOGGER.warning("Focal mechanism missing nodal planes");
-					return null;
-				}
-			} else if (type.equals("moment-tensor")) {
-				if (tensor == null) {
-					LOGGER.warning("Moment tensor missing tensor parameters");
-					return null;
-				}
+			if ("focal-mechanism".equals(type) && planes == null) {
+				LOGGER.warning("Focal mechanism missing nodal planes");
+				return null;
+			} else if ("moment-tensor".equals(type) && tensor == null) {
+				LOGGER.warning("Moment tensor missing tensor parameters");
+				return null;
 			}
 		}
 

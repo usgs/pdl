@@ -352,10 +352,8 @@ public class Indexer extends DefaultNotificationListener {
 
 		// Can't rely on event.getSummary because that might be null
 		ProductSummary theSummary = event.getSummary();
-		if (theSummary == null) {
-			if (event.getEvents().size() > 0) {
-				theSummary = event.getEvents().get(0).getEventIdProduct();
-			}
+		if (theSummary == null && event.getEvents().size() > 0) {
+			theSummary = event.getEvents().get(0).getEventIdProduct();
 		}
 
 		if (theSummary != null) {
@@ -404,12 +402,10 @@ public class Indexer extends DefaultNotificationListener {
 
 			List<ProductSummary> existingSummary = productIndex
 					.getProducts(alreadyProcessedQuery);
-			if (existingSummary.size() > 0) {
-				// why wouldn't the next be true
-				if (existingSummary.get(0).getId().equals(id)) {
-					// it is in the product index
-					return true;
-				}
+			if (existingSummary.size() > 0 &&
+					existingSummary.get(0).getId().equals(id)) {
+				// it is in the product index
+				return true;
 			}
 		} catch (Exception wtf) {
 			LOGGER.log(Level.WARNING, "[" + getName()
@@ -922,15 +918,14 @@ public class Indexer extends DefaultNotificationListener {
 			trumpCode = persistentTrump.getProperties().get("trump-code");
 		}
 
-		if (!associatingTrump) {
-			// if a non-trump product is coming in,
-			// only continue processing if it is affected by persistentTrump.
-			// (otherwise weights should already be set)
-			if (!productSummary.getSource().equals(trumpSource) ||
-					!productSummary.getCode().equals(trumpCode)) {
-				// not affected by trump
-				return event;
-			}
+		// if a non-trump product is coming in,
+		// only continue processing if it is affected by persistentTrump.
+		// (otherwise weights should already be set)
+		if (!associatingTrump &&
+				!(productSummary.getSource().equals(trumpSource)
+				&& productSummary.getCode().equals(trumpCode))) {
+			// not affected by trump
+			return event;
 		}
 
 		// update products affected by trump
@@ -1413,16 +1408,12 @@ public class Indexer extends DefaultNotificationListener {
 			candidateSummaries = productIndex.getUnassociatedProducts(query);
 		}
 
-		if (candidateSummaries != null) {
-			if (candidateSummaries.size() > 0) {
-				prevSummary = candidateSummaries.get(0);
-				if (candidateSummaries.size() != 1) {
-					LOGGER.warning(String
-							.format("["
-									+ getName()
-									+ "] %s: More than one existing summary is claiming to be most recent.",
-									summary.getId().toString()));
-				}
+		if (candidateSummaries != null && candidateSummaries.size() > 0) {
+			prevSummary = candidateSummaries.get(0);
+			if (candidateSummaries.size() != 1) {
+				LOGGER.warning(
+						"[" + getName() + "] " + summary.getId().toString() +
+						": More than one existing summary is claiming to be most recent.");
 			}
 		}
 		return prevSummary;

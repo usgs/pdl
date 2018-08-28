@@ -118,13 +118,11 @@ public class FileContent extends AbstractContent {
 
 		// verify file length
 		Long length = getLength();
-		if (length > 0) {
-			if (!length.equals(toWrite.length())) {
-				throw new IOException("Written file length ("
-						+ toWrite.length()
-						+ ") does not match non-zero content length (" + length
-						+ ")");
-			}
+		if (length > 0 && !length.equals(toWrite.length())) {
+			throw new IOException("Written file length ("
+					+ toWrite.length()
+					+ ") does not match non-zero content length (" + length
+					+ ")");
 		}
 
 		// length may still be <= 0 if content was input stream.

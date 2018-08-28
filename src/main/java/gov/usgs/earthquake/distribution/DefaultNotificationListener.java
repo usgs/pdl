@@ -152,17 +152,15 @@ public class DefaultNotificationListener extends AbstractListener implements
 	 */
 	protected boolean onBeforeProcessNotification(
 			final Notification notification) throws Exception {
-		if (!processDuplicates) {
-			// only check if we care
-			if (this.notificationIndex != null) {
-				List<Notification> notifications = this.notificationIndex
-						.findNotifications(notification.getProductId());
-				if (notifications.size() > 0) {
-					LOGGER.finer("[" + getName()
-							+ "] skipping existing product "
-							+ notification.getProductId().toString());
-					return false;
-				}
+		// only check if we care
+		if (!processDuplicates && this.notificationIndex != null) {
+			List<Notification> notifications = this.notificationIndex
+					.findNotifications(notification.getProductId());
+			if (notifications.size() > 0) {
+				LOGGER.finer("[" + getName()
+						+ "] skipping existing product "
+						+ notification.getProductId().toString());
+				return false;
 			}
 		}
 

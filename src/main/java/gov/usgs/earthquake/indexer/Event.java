@@ -916,11 +916,10 @@ public class Event implements Comparable<Event> {
 		while (iter.hasNext()) {
 			ProductSummary next = iter.next();
 
-			if (preferredNotNullProperty != null) {
-				// ignore products that don't have the preferredNotNullProperty
-				if (next.getProperties().get(preferredNotNullProperty) == null) {
-					continue;
-				}
+			// ignore products that don't have the preferredNotNullProperty
+			if (preferredNotNullProperty != null
+					&& next.getProperties().get(preferredNotNullProperty) == null) {
+				continue;
 			}
 
 			if (mostPreferred == null) {

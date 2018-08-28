@@ -148,11 +148,9 @@ public class StreamUtils {
 			File file = (File) obj;
 			// create parent directory first, if needed
 			File parent = file.getAbsoluteFile().getParentFile();
-			if (!parent.exists()) {
-				if (!parent.mkdirs()) {
-					throw new IOException("Unable to create directory "
-							+ parent.getAbsolutePath());
-				}
+			if (!parent.exists() && !parent.mkdirs()) {
+				throw new IOException("Unable to create directory "
+						+ parent.getAbsolutePath());
 			}
 			if (!parent.canWrite()) {
 				throw new IOException(

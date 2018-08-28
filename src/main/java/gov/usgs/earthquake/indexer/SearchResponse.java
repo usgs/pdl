@@ -3,6 +3,7 @@ package gov.usgs.earthquake.indexer;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Results from a SearchRequest.
@@ -57,6 +58,14 @@ public class SearchResponse {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Also override hashCode, using hash of result objects.
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.getResults().toArray());
 	}
 
 	/**

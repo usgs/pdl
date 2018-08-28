@@ -272,12 +272,10 @@ public class Bootstrap {
 		// configure whether tracker updates are sent.
 		String enableTrackerProperty = config
 				.getProperty(ENABLE_TRACKER_PROPERTY_NAME);
-		if (enableTrackerProperty != null) {
-			if (enableTrackerProperty.equals("true")) {
-				LOGGER.warning("Enabled tracker updates,"
-						+ " this is usually not a good idea.");
-				ProductTracker.setTrackerEnabled(true);
-			}
+		if (Boolean.valueOf(enableTrackerProperty)) {
+			LOGGER.warning("Enabled tracker updates,"
+					+ " this is usually not a good idea.");
+			ProductTracker.setTrackerEnabled(true);
 		}
 
 		// lookup main class
