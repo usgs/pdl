@@ -18,10 +18,10 @@ import org.junit.Test;
 
 public class JDBCProductIndexTest {
 
-	private static final BigDecimal TEST_SUMMARY_LATITUDE = new BigDecimal(0.0);
-	private static final BigDecimal TEST_SUMMARY_LONGITUDE = new BigDecimal(0.0);
+	private static final BigDecimal TEST_SUMMARY_LATITUDE = BigDecimal.ZERO;
+	private static final BigDecimal TEST_SUMMARY_LONGITUDE = BigDecimal.ZERO;
 	private static final BigDecimal TEST_SUMMARY_DENORMALIZED_LONGITUDE = new BigDecimal(
-			190.0);
+			"190.0");
 	private static final String INDEX_DB_FILE = "productIndex.db";
 
 	// The test for this is commented out!
@@ -129,9 +129,9 @@ public class JDBCProductIndexTest {
 		query.setEventSourceCode(summary.getEventSourceCode());
 		// Use a longitude span that wraps around the world
 		query.setMinEventLongitude(TEST_SUMMARY_DENORMALIZED_LONGITUDE
-				.add(new BigDecimal(10.0)));
+				.add(BigDecimal.TEN));
 		query.setMaxEventLongitude(TEST_SUMMARY_DENORMALIZED_LONGITUDE
-				.add(new BigDecimal(5.0)));
+				.add(new BigDecimal("5.0")));
 		query.setMinEventDepth(summary.getEventDepth());
 		query.setMaxEventDepth(summary.getEventDepth());
 		query.setMinEventMagnitude(summary.getEventMagnitude());

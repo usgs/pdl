@@ -32,7 +32,7 @@ public class SocketTimeoutTest {
 		// wait for server to start
 		Thread.sleep(50L);
 
-		Socket socket = new Socket("127.0.0.1", 1234);
+		Socket socket = new Socket("localhost", 1234);
 		try {
 			System.err.println(new String(StreamUtils.readStream(socket
 					.getInputStream())));
@@ -61,7 +61,7 @@ public class SocketTimeoutTest {
 		// wait for server to start
 		Thread.sleep(50L);
 
-		Socket socket = new Socket("127.0.0.1", 1234);
+		Socket socket = new Socket("localhost", 1234);
 		try {
 			socket.setSoTimeout(50);
 			System.err.println(new String(StreamUtils.readStream(socket
@@ -92,7 +92,7 @@ public class SocketTimeoutTest {
 		// wait for server to start
 		Thread.sleep(50L);
 
-		Socket socket = new Socket("127.0.0.1", 1234);
+		Socket socket = new Socket("localhost", 1234);
 		try {
 			// set read timeout to be after server shuts down
 			socket.setSoTimeout(200);
@@ -117,7 +117,7 @@ public class SocketTimeoutTest {
 		Thread.sleep(50L);
 		byte[] tosend = ("abcdefghijklmnopqrstuvwxyz"
 				+ "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "0123456789").getBytes();
-		Socket socket = new Socket("127.0.0.1", 1234);
+		Socket socket = new Socket("localhost", 1234);
 		socket.setSendBufferSize(100);
 		long sent = 0;
 		TimeoutOutputStream out = null;
