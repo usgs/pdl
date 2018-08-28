@@ -46,7 +46,7 @@
  * <br><br>
  * The {@link DefaultNotificationListener} processes in a different thread,
  * the {@link ExternalNotificationListener} executes an external process,
- * and {@link RelayNotificationListener} forwards products over a socket.
+ * and {@link RelayProductListener} forwards products over a socket.
  * </dd>
  * </dl>
  *

@@ -1,5 +1,5 @@
 /**
- * Utility classes from the Quake Data Merge (QDM) application.
+ * Regions from the Quake Data Merge (QDM) application.
  * 
  * These are primarily used by {@link gov.usgs.earthquake.indexer.DefaultIndexerModule}
  * to implement ANSS Authoritative Region logic.
