@@ -12,6 +12,38 @@
 
 <h2>Receive Mode</h2>
 
+<h3 id="java10_modules">NoClassDefFoundError</h3>
+
+<p>Example exception from log:</p>
+<div class="code"><pre>
+<strong>Exception in thread "main" java.lang.NoClassDefFoundError:
+org/w3c/dom/ls/DocumentLS</strong>
+  at java.base/java.lang.ClassLoader.defineClass1(Native Method)
+  at java.base/java.lang.ClassLoader.defineClass(ClassLoader.java:1009)
+  at java.base/java.security.SecureClassLoader.defineClass(SecureClassLoader.java:174)
+  at java.base/jdk.internal.loader.BuiltinClassLoader.defineClass(BuiltinClassLoader.java:801)
+  at java.base/jdk.internal.loader.BuiltinClassLoader.findClassOnClassPathOrNull(BuiltinClassLoader.java:699)
+  at java.base/jdk.internal.loader.BuiltinClassLoader.loadClassOrNull(BuiltinClassLoader.java:622)
+</pre></div>
+
+<p>
+  Several modules are no longer enabled by default in Java 9 and Java 10,
+  and need to be re-enabled with an argument to the JRE.
+
+  A patch is in-progress, and you can take the following steps with existing
+  versions.
+</p>
+
+<p>Steps to fix:</p>
+<ol>
+	<li>Stop the client, and comment any cron entry that may
+    automatically restart the client.</li>
+  <li>Update the <code>init.sh</code> or <code>run.bat</code> java command
+    to include <strong><code>--add-modules java.se.ee</code></strong>
+  </li>
+</ol>
+
+
 <h3>Database is locked</h3>
 
 <p>Example exception from log:</p>
