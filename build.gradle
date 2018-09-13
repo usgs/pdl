@@ -77,21 +77,23 @@ test {
 
 // clean up after tests
 task testCleanup {
-  delete("bin")
-  delete("EIDSClient_tracking.dat")
-  delete("heartbeat.dat")
-  delete("log")
-  delete("productIndex.db")
-  delete("pd_index.db")
-  delete("storage")
-  delete("T")
-  delete("test_index.db")
-  delete("test-index.db")
-  delete("testReceiverIndex.db")
-  delete("testReceiverStorage")
-  delete("testSenderIndex.db")
-  delete("testSenderPolldir")
-  delete("testSenderStorage")
+  doLast {
+    delete("bin")
+    delete("EIDSClient_tracking.dat")
+    delete("heartbeat.dat")
+    delete("log")
+    delete("productIndex.db")
+    delete("pd_index.db")
+    delete("storage")
+    delete("T")
+    delete("test_index.db")
+    delete("test-index.db")
+    delete("testReceiverIndex.db")
+    delete("testReceiverStorage")
+    delete("testSenderIndex.db")
+    delete("testSenderPolldir")
+    delete("testSenderStorage")
+  }
 }
 clean.dependsOn testCleanup
 test.dependsOn testCleanup
@@ -174,13 +176,13 @@ buildScan {
 // .travis.yml uses this to upload coverage
 task sendCoverageToCodacy(type: JavaExec, dependsOn: jacocoTestReport) {
   description = "Upload coverage to codacy (used by TravisCI)"
-    main = "com.codacy.CodacyCoverageReporter"
-    classpath = configurations.codacy
-    args = [
-        "report",
-        "-l",
-        "Java",
-        "-r",
-        "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-    ]
+  main = "com.codacy.CodacyCoverageReporter"
+  classpath = configurations.codacy
+  args = [
+    "report",
+    "-l",
+    "Java",
+    "-r",
+    "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+  ]
 }
