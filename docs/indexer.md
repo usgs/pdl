@@ -24,13 +24,13 @@ Each PDL Product has a unique identifier called a `Product ID`, which consists o
 - `code`
 
   A unique identifier (when combined with `source` and `type`) for a specific product.
-  
+
   > `source`, `type`, and `code` are reused when sending updates to existing inforation (see `updateTime`).
 
 - `updateTime`
 
   Time when information was created (usually).
-  
+
   Update time is used by PDL as a version number.  Two products with the same `source`, `type`, and `code` (and different `updateTime`) are considered to be two versions of the same product.  The version of the product with the more recent update time **supersedes** any older version of the same product.
 
 ### Product Status
