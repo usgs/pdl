@@ -1,32 +1,46 @@
-
 language: java
+# local ssh seems to require sudo
+sudo: required
 
 jdk:
+  - openjdk8
+  - openjdk9
+  - openjdk10
+  - openjdk11
   - oraclejdk8
-  - openjdk7
+  - oraclejdk9
+  # - oraclejdk10
+  - oraclejdk11
 
-before_install:
-  - sudo apt-get install ant-optional
-  - sudo apt-get install jq
-  - wget -O ~/codacy-coverage-reporter-assembly-latest.jar $(curl https://api.github.com/repos/codacy/codacy-coverage-reporter/releases/latest | jq -r .assets[0].browser_download_url)
+# gradle caching
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+    - "$HOME/.gradle/caches/"
+    - "$HOME/.gradle/wrapper/"
 
+# tests depend on local ssh
 install:
   - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N '' -b 4096
   - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
   - chmod 700 ~/.ssh/authorized_keys
-
 addons:
   ssh_known_hosts:
-  - 127.0.0.1
-  - localhost
+    - 127.0.0.1
+    - localhost
 
 script:
-  - ant coverage
+  - ./gradlew --info build
+  # use --scan to post output online
+  # - ./gradlew build --scan
 
+# upload coverage
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-  - java -cp ~/codacy-coverage-reporter-assembly-latest.jar com.codacy.CodacyCoverageReporter -l Java -r dist/reports/coverage-xml/coverage.xml
+  - "./gradlew sendCoverageToCodacy"
 
 env:
-  CODACY_PROJECT_TOKEN:
-    secure: PO6Zdc7e/x021brgk55kG1zTUPSNnvQ8BKNDJJK8cZJ4dgLgzbvxW5eoNPSn2CW5/C5YqkLgUVPkVy15zUVNpdM/RXYgzPiFTyg2GFXLQL9DbfQOz2zD8/iSySxTjUGfd7VNJZPG8XlFmzUIvY+4Eykj4UBsTFknZmro1kC/PS5E/bTtOrYGUKg9mfQz3t4/Tx7n8mw5CO5IVaHvklpbUTgaW0d8Et0qxQZ/Ks2xnlEP/4OcmSLMDeeyeYKVJc9KajgU27r1qtSoWtqL5InyW+L/8MU0soFDPO71KCphB0dbLJ6sdkzCWPIWfA/zeVlf+54K9zveXdbtdJs1Btzw73sTruoq2z/YTUZVIUdLG5yenMLPX0ayWpWc7AT4dDkSNXrwy+wWvjcF7mMddffvvGH//38FtkQ8fvm2o2tq/PIua2mQb8otsS7IKhOgmDFV+C2ygsMtTq/Wn7ny/0Yb+vUswNZUEZiK5IMEGF73OMIriDFKIvc4tJnJ2xKw2SY5cnratxeWzpsPH3IRIIG+bIfAGvN+g6/f97+xemR5YVO9FuZKR8IEBPl0jM+s8G2T1PpSG9LsfDPYSLIYC95GUEi9dFcFX7FP5y3a0rxyCyCcu+YoSBQXTsb/mCcb+IKoMugSh88hdUhqbDWbHA252ryBCmW7lTQI8C4S3B0NKBA=
+  # CODACY_PROJECT_TOKEN
+  secure: PO6Zdc7e/x021brgk55kG1zTUPSNnvQ8BKNDJJK8cZJ4dgLgzbvxW5eoNPSn2CW5/C5YqkLgUVPkVy15zUVNpdM/RXYgzPiFTyg2GFXLQL9DbfQOz2zD8/iSySxTjUGfd7VNJZPG8XlFmzUIvY+4Eykj4UBsTFknZmro1kC/PS5E/bTtOrYGUKg9mfQz3t4/Tx7n8mw5CO5IVaHvklpbUTgaW0d8Et0qxQZ/Ks2xnlEP/4OcmSLMDeeyeYKVJc9KajgU27r1qtSoWtqL5InyW+L/8MU0soFDPO71KCphB0dbLJ6sdkzCWPIWfA/zeVlf+54K9zveXdbtdJs1Btzw73sTruoq2z/YTUZVIUdLG5yenMLPX0ayWpWc7AT4dDkSNXrwy+wWvjcF7mMddffvvGH//38FtkQ8fvm2o2tq/PIua2mQb8otsS7IKhOgmDFV+C2ygsMtTq/Wn7ny/0Yb+vUswNZUEZiK5IMEGF73OMIriDFKIvc4tJnJ2xKw2SY5cnratxeWzpsPH3IRIIG+bIfAGvN+g6/f97+xemR5YVO9FuZKR8IEBPl0jM+s8G2T1PpSG9LsfDPYSLIYC95GUEi9dFcFX7FP5y3a0rxyCyCcu+YoSBQXTsb/mCcb+IKoMugSh88hdUhqbDWbHA252ryBCmW7lTQI8C4S3B0NKBA=

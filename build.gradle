@@ -1,0 +1,191 @@
+/**
+ * Gradle Build Script.
+ *
+ * Use Gradle 4.9+.
+ */
+
+plugins {
+  id "java"
+  id "jacoco"                                     // code coverage
+  id "pmd"                                        // static code analysis
+  id "com.gradle.build-scan" version "1.16"       // post build results online
+  id "org.ajoberstar.grgit" version "2.3.0"       // git repo information
+  id "org.ajoberstar.git-publish" version "1.0.1" // publish gh-pages branch
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+  mavenCentral()
+}
+
+configurations {
+  codacy
+}
+
+dependencies {
+  codacy "com.codacy:codacy-coverage-reporter:4.0+"
+
+  // javax.json
+  compile "javax.json:javax.json-api:1.1"
+  compile "org.glassfish:javax.json:1.1"
+  // javax.xml (for MessageUtils)
+  compile "javax.activation:activation:1.1.1"
+  compile "javax.xml.bind:jaxb-api:2.3+"
+  compile "org.glassfish.jaxb:jaxb-runtime:2.3+"
+  // database drivers
+  compile "mysql:mysql-connector-java:5.1.47"
+  compile "org.xerial:sqlite-jdbc:3.23.1"
+  // ssh keys
+  compile "ch.ethz.ganymed:ganymed-ssh2:262"
+
+  compile files("lib/MessageUtils.jar")
+  compile files("lib/QWFileOutClient.jar")
+  // XMLVerifier uses this, but is excluded for now
+  // compile files("lib/cap-library-r11.jar")
+
+  testCompile "junit:junit-dep:4.11"
+}
+
+sourceSets {
+  main {
+    java.excludes = ["**/XmlVerifier*"]
+  }
+}
+
+// show compile warnings
+tasks.withType(JavaCompile) {
+  options.setDeprecation(true);
+  options.setWarnings(true);
+}
+
+// coverage reports
+jacoco {
+  toolVersion "0.8.2"
+}
+jacocoTestReport {
+  reports {
+    html.enabled true
+    xml.enabled true
+  }
+}
+check.dependsOn jacocoTestReport
+
+test {
+  filter {
+    includeTestsMatching "*Test"
+  }
+}
+
+// clean up after tests
+task testCleanup {
+  doLast {
+    delete("bin")
+    delete("EIDSClient_tracking.dat")
+    delete("heartbeat.dat")
+    delete("log")
+    delete("productIndex.db")
+    delete("pd_index.db")
+    delete("storage")
+    delete("T")
+    delete("test_index.db")
+    delete("test-index.db")
+    delete("testReceiverIndex.db")
+    delete("testReceiverStorage")
+    delete("testSenderIndex.db")
+    delete("testSenderPolldir")
+    delete("testSenderStorage")
+  }
+}
+clean.dependsOn testCleanup
+test.dependsOn testCleanup
+
+
+// Tasks for building releases
+
+// create javadocs
+javadoc {
+  excludes = ['com/isti/**']
+  options.addBooleanOption('html5', true)
+}
+
+// create jar file
+jar {
+  baseName = "ProductClient"
+  manifest {
+    attributes "Git-Commit": grgit.head().id
+    attributes "Main-Class": "gov.usgs.earthquake.distribution.Bootstrap"
+  }
+  from {
+    // classes and dependencies
+    configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
+  }
+  from (".") {
+    // resources
+    include "etc/config/config.ini"
+    include "etc/config/regions.xml"
+    include "etc/schema/notificationIndex.db"
+    include "etc/schema/productIndex.db"
+  }
+}
+
+// create zip bundle
+task createZip(type: Zip, dependsOn: jar) {
+  archiveName "ProductClient.zip"
+  // init scripts and README
+  from "etc/examples/default"
+  // example listeners
+  from ("etc/examples/client/bin") { include "ExampleListener.*" }
+  // ProductClient.jar
+  from jar
+}
+
+// publish documentation and reports to gh-pages
+// use after every release
+gitPublish {
+  repoUri = "git@github.com:usgs/pdl.git"
+  branch = "gh-pages"
+
+  contents {
+    from "docs"
+    from createZip
+    from jar
+    from (javadoc) {
+      into "javadoc"
+    }
+    from (test) {
+      into "test"
+      exclude "*.bin"
+      exclude "*.idx"
+      exclude "*.xml"
+    }
+    from (jacocoTestReport) {
+      into "coverage"
+      exclude "*.xml"
+    }
+  }
+}
+
+
+// Tasks for TravisCI
+
+// run with "gradle build --scan" to post build output online
+buildScan {
+  termsOfServiceUrl = "https://gradle.com/terms-of-service"
+  termsOfServiceAgree = "yes"
+}
+
+// .travis.yml uses this to upload coverage
+task sendCoverageToCodacy(type: JavaExec, dependsOn: jacocoTestReport) {
+  description = "Upload coverage to codacy (used by TravisCI)"
+  main = "com.codacy.CodacyCoverageReporter"
+  classpath = configurations.codacy
+  args = [
+    "report",
+    "-l",
+    "Java",
+    "-r",
+    "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+  ]
+}

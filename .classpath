@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/cap-library-r11.jar"/>
-	<classpathentry kind="lib" path="lib/QDM.jar"/>
-	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.14-bin.jar"/>
-	<classpathentry kind="lib" path="lib/MessageUtils.jar"/>
-	<classpathentry kind="lib" path="lib/QWFileOutClient.jar"/>
-	<classpathentry kind="lib" path="lib/ganymed-ssh2-build251beta1.jar"/>
-	<classpathentry kind="lib" path="lib/sqlitejdbc-v056.jar"/>
-	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/junit-4.11.jar"/>
-	<classpathentry kind="lib" path="lib/hamcrest-core-1.3.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry excluding="**/XmlVerifier*" kind="src" output="bin/main" path="src/main/java">
+		<attributes>
+			<attribute name="gradle_scope" value="main"/>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="bin/test" path="src/test/java">
+		<attributes>
+			<attribute name="gradle_scope" value="test"/>
+			<attribute name="gradle_used_by_scope" value="test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/"/>
+	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
+	<classpathentry kind="output" path="bin/default"/>
 </classpath>
