@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>trump Product Documentation</title>
+<link rel="stylesheet" href="../userguide.css" />
+</head>
+
+<body>
+<h1>trump Product Documentation</h1>
+<p><a href="index.html">&laquo; Back to Products Documentation</a></p>
+
+<p>This product is primarily used by the indexer.</p>
+
+
+<h2>Version Specific Trump</h2>
+<p>Alter the preferred weight of a specific version of a reference product</p>
+
+<h3>Types</h3>
+<dl>
+	<dt>trump</dt>
+	<dd>Alters the preferred weight of a specific version of a
+	reference product. If the trump is deleted, the default preferred
+	weight is used. If the reference product is updated, the default
+	preferred weight is used.
+
+	<p>Trump products are only processed when the reference product is
+	associated with an event. Trump deletes are only processed when both
+	the original trump and the reference product are still in the index.</p>
+	</dd>
+</dl>
+
+<h3>Sources</h3>
+<dl>
+	<dt>admin</dt>
+	<dd>Event Admin Web Pages (URL TBD)</dd>
+	<dd>Public Key</dd>
+</dl>
+
+<h3>Status</h3>
+<dl>
+	<dt>UPDATE</dt>
+	<dd>Updates trump product. Preferred weight of reference product
+	is updated to value indicated by this product. Most recent trump
+	product for a given reference product will determine preferred weight.
+	</dd>
+	<dt>DELETE</dt>
+	<dd>Removes an existing trump product. Preferred weight of
+	reference product returns to <em>original</em> value.</dd>
+</dl>
+
+<h3>Properties</h3>
+<dl>
+	<dt>weight</dt>
+	<dd>
+		{Integer}
+		The new preferred weight for the reference product.
+	</dd>
+</dl>
+
+<h3>Links</h3>
+<dl>
+	<dt>product</dt>
+	<dd>
+		{String}
+		The product id (URN) for the product to which this trump should be
+		applied.
+	</dd>
+</dl>
+
+<h2>Contents</h2>
+<dl>
+	<dt>&ldquo;&rdquo; (inline content)</dt>
+	<dd>Comment explaining why the trump was sent.</dd>
+</dl>
+
+
+<h2>Persistent Trump</h2>
+
+<h3>Types</h3>
+<dl>
+	<dt>trump-<em>TYPE</em></dt>
+	<dd>Alter the preferred weight of a reference product persistently.
+	The <em>TYPE</em> portion of the product type is the Type of the product
+	receiving trump, case-sensitive.  Only one product of each type is actively
+	trumped.
+	
+	<p>If the trump is deleted, the default preferred weight of the reference
+	product is restored.  If the reference product is updated, it inherits
+	this trump.  Weight is set to a fixed value of 100,000,000.</p>
+	</dd>
+</dl>
+
+<h3>Sources</h3>
+<dl>
+	<dt>admin</dt>
+	<dd>Event Admin Web Pages (URL TBD)</dd>
+	<dd>Public Key</dd>
+</dl>
+
+<h3>Status</h3>
+<dl>
+	<dt>UPDATE</dt>
+	<dd>Updates trump product. Preferred weight of reference product
+	is updated, and preferred weights of any previously trumped products are
+	reset to their default. The most recent trump product for a given product
+	type determines the product that is preferred.
+	</dd>
+	<dt>DELETE</dt>
+	<dd>Removes an existing trump product. Preferred weight of
+	reference product returns to <em>original</em> value.  If this unmasks an
+	older trump product that had been superseded, the older trump will take
+	effect.</dd>
+</dl>
+
+<h3>Properties</h3>
+<dl>
+	<dt>trump-source</dt>
+	<dd>
+		{String}
+		Source of the product receiving trump, case-sensitive.
+	</dd>
+	
+	<dt>trump-code</dt>
+	<dd>
+		{String}
+		Code of the product receiving trump, case-sensitive.
+	</dd>
+</li>
+
+<h3>Contents</h3>
+<dl>
+	<dt>&ldquo;&rdquo; (inline content)</dt>
+	<dd>Comment explaining why the trump was sent.</dd>
+</dl>
+
+
+</body>
+</html>

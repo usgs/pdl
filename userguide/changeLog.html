@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Change Log</title>
+<link rel="stylesheet" href="userguide.css" />
+</head>
+
+<body>
+	<h1>Change Log</h1>
+	<p>
+		<a href="../index.html#documentation">&laquo; Back to User Guide</a>
+	</p>
+
+	<p><strong>
+		NOTE: change logs for versions after 1.11.0 are now maintained
+		as github release notes: https://github.com/usgs/pdl/releases
+	</strong></p>
+
+	<h2>Version 1.11.0 2017-01-11</h2>
+	<ul>
+		<li>Update authoritative region for "hv" contributor.</li>
+	</ul>
+
+	<h2>Version 1.10.1 2016-04-07</h2>
+	<ul>
+		<li>Add "pdl-client-version" property to products sent using
+			ProductBuilder (which includes EIDSInputWedge) or CLIProductBuilder</li>
+		<li>Update moment tensor indexer module to use derived-magnitude-type
+			property.</li>
+		<li>Add support for java's "simple" and "xml" log formatters
+				(as an alternative to the default "pdl" formatter).</li>
+	</ul>
+
+	<h2>Version 1.10.0 2016-02-11</h2>
+	<ul>
+		<li>
+			Improved support for internal-TYPE, TYPE-scenario, and
+			internal-TYPE-scenario product variants.
+		</li>
+		<li>
+			Updated how ShakeMap properties are handled when received as both product
+			properties and specified in XML.
+		</li>
+		<li>
+			Implemented customized algorithm for computing preferred weight on
+			moment tensor products.
+		</li>
+	</ul>
+
+	<h2>Version 1.9.7 2015-04-30</h2>
+	<ul>
+		<li>Fix broken link in 1.9.6 change log.</li>
+		<li>Update QuakemlProductCreator handling of focalMechanism element:
+			add support for catalog:datatype;
+			delete product when evaluation status is rejected;
+			require nodal-planes for focal-mechanism;
+			require tensor for moment-tensor.</li>
+	</ul>
+
+	<h2>Version 1.9.6 2015-04-29</h2>
+	<ul>
+		<li>Add support for separate keychain configuration file,
+			<a href="configuration.html#ProductStorage">see ProductStorage
+			configuration</a>.</li>
+		<li>Update init script to wait up to 15 seconds for process to stop.</li>
+		<li>Update MessageUtils to latest version, supports MWW/MWP mapping to
+			CUBE magnitude type "O".</li>
+	</ul>
+
+	<h2>Version 1.9.5 2015-04-06</h2>
+	<ul>
+		<li>Update EIDSInputWedge to delete phase-data and origin product when
+			a quakeml delete message is processed.</li>
+		<li>Update which event codes are considered to be active (some were
+			hidden by deleted origins) when evaluating event associations.</li>
+		<li>Add support for persistent trump to Indexer.</li>
+		<li>Disable product tracker by default in embedded configuration.</li>
+		<li>Fix broken link to contents.xsd in user guide.</li>
+	</ul>
+
+	<h2>Version 1.9.4 2015-03-18</h2>
+	<ul>
+		<li>Preserve sender precision in arguments passed to listeners.</li>
+		<li>Added --test argument to EIDSInputWedge to preview generated
+			products.</li>
+		<li>Preserve sender formatting (exponential notation) of moment tensor
+			and axis values</li>
+		<li>Add configurable size limit to socket product receiver</li>
+		<li>Add "No space left on device" exception to troubleshooting page</li>
+		<li>Disable product tracker by default.</li>
+		<li>Fix logic error in polling time calculation for EIDSInputWedge</li>
+		<li>Improve indexer exception handling (when event unable to update,
+			don't mark product as processed).</li>
+		<li>Archive products and events inside transactions</li>
+		<li>Fix quakeml based product properties to use quakeml string with
+			spaces, instead of java enumeration with underscores</li>
+		<li>Update current/superseded product definition, current now includes
+			most recent non-delete version of product which may define event.</li>
+		<li>Eliminate repeated selection of preferred origin product</li>
+		<li>Added associateUsingCurrentProducts option to indexer, improves
+			indexing when event has hundreds of old versions of products</li>
+		<li>Better log messages when there are errors parsing CUBE messages.</li>
+		<li>Update tectonic summary indexer module to prefer reviewed summaries
+			</li>
+		<li>Remove NE authoritative polygon from regions.xml</li>
+		<li>Update documentation of associate and link products</li>
+		<li>Log warning when tracker is enabled.</li>
+		<li>Enable indexer listener options ignoreArchive and autoArchive
+			by default</li>
+		<li>Add optional "roundrobin" listener notifier.</li>
+	</ul>
+
+	<h2>Version 1.9.3 2014-09-19</h2>
+	<ul>
+		<li>Fix bug using EQMessageProductCreator parser with EIDSInputWedge</li>
+	</ul>
+
+	<h2>Version 1.9.2 2014-09-17</h2>
+	<ul>
+		<li>QuakemlProductCreator
+			<ul>
+				<li>Make moment-tensor and focal-mechanism depth property
+					kilometers instead of meters.</li>
+				<li>Send impact-text product for "felt report" event description.
+					</li>
+			</ul>
+		</li>
+		<li>Update indexer handling of event splits to only consider latest
+			version of products.</li>
+		<li>Use standard list of mime types for file extensions "atom", "css",
+			"gif", "gz", "html", "jpg", "js", "json", "kml", "kmz", "pdf", "png",
+			"ps", "txt", "xml", and "zip".</li>
+		<li>NotificationReceiver
+			<ul>
+				<li>Update to use "storageAge", and deprecated "storageage".</li>
+				<li>Changed storageAge default from 15 minutes to 1 hour</li>
+			</ul>
+		</li>
+		<li>Add batch loading support to ProductResender</li>
+	</ul>
+
+	<h2>Version 1.9.1 2014-06-04</h2>
+	<ul>
+		<li>Fix bug introduced in 1.9.0 for selection of preferred origin product.</li>
+	</ul>
+
+	<h2>Version 1.9.0 2014-05-27</h2>
+	<ul>
+		<li>Updated indexer handling of preferred event products and properties:
+			<ul>
+				<li>Minimum properties to create event are
+					<em>id</em> (eventsource, eventsourcecode),
+					<em>location</em> (latitude, longitude),
+					and <em>time</em> (eventtime).</li>
+				<li>Preferred origin-like product is used for all properties
+					including lat/lng/time/mag/depth.</li>
+			</ul>
+		</li>
+		<li>More explicit exception message when origin uncertainty preferred
+			description is "horizontal uncertainty" without a horizontal
+			uncertainty value.</li>
+		<li>FileProductStorage accesses product contents more reliably, especially
+			when storage directory is moved and reconfigured.</li>
+		<li>Set origin product "title" property when Quakeml "earthquake name"
+			event description is included.</li>
+		<li>Added pollCarefully option to EIDSInputWedge, ensures files are at
+			least "interval" milliseconds old before processing; for producers
+			who must write files directly into poll directory (instead of moving
+			into place).</li>
+		<li>Log java environment properties at startup, at CONFIG log level.</li>
+	</ul>
+
+	<h2>Version 1.8.9 2014-01-29</h2>
+	<ul>
+		<li>Added "enablePdlProtocol" option (default true) to
+			SocketProductSender, to explicitly check if hub has product before
+			sending. Other exceptions that occur are now better reported.</li>
+	</ul>
+
+	<h2>Version 1.8.8 2013-11-25</h2>
+	<ul>
+		<li>Added <code>writeTimeout</code> configuration for
+			SocketProductSender.
+		</li>
+		<li>Updated to new MessageUtils.jar with fix for null pointer
+			exception when converting quakeml to cube, and quakeml doesn't
+			include originUncertainty.</li>
+	</ul>
+
+	<h2>Version 1.8.7 2013-11-22</h2>
+	<ul>
+		<li>Added <code>readTimeout</code> configuration for
+			SocketProductSender and SocketProductReceiver.
+		</li>
+		<li>Updated indexer handling of deleted products to
+			<ul>
+				<li>Prefer non-deleted products when determining preferred
+					event id.</li>
+				<li>Ignore deleted products when evaluating possible event
+					merges. This makes the indexer automatically merge an event that
+					had split due to multiple event ids from the same source, by
+					deleting the products with offending event ids.</li>
+				<li>Handle null pointer exception when deleting a trump product
+					that references an already deleted product.</li>
+			</ul>
+		</li>
+		<li>Changed EIDSClient restart to call underlying
+			QWConnectionMgr.reinitConnection(), instead of creating new client.</li>
+		<li>Updated to new MessageUtils.jar with support for internal and
+			scenario Quakeml products.</li>
+	</ul>
+
+	<h2>Version 1.8.6 2013-11-18</h2>
+	<ul>
+		<li>Added <code>includePaths</code>, <code>excludePaths</code>
+			configuration properties to DefaultNotificationListener.
+		</li>
+		<li>Added <code>legacyStorages</code> configuration property to
+			FileProductStorage, to support migration between incompatible product
+			storage configurations.
+		</li>
+		<li>Added <code>autoArchive</code> configuration property to
+			ExternalIndexerListener
+		</li>
+		<li>Fixed configuration bugs for
+			<ul>
+				<li>AbstractListener <code>retryDelay</code> property
+				</li>
+				<li>EIDSInputWedge <code>sendOriginWhenPhasesExist</code>, <code>sendMechanismWhenPhasesExist</code>,
+					<code>createInternalProducts</code>, and <code>createScenarioProducts</code>
+					properties
+				</li>
+				<li>HeartbeatListener <code>heartbeatFile</code> and <code>storageTimeout</code>
+					properties
+				</li>
+			</ul>
+		</li>
+		<li>Added --disableDeflate argument to CLIProductBuilder
+			(ProductClient --send option). Updated command line arguments
+			documentation.</li>
+		<li>Added --disableDeflate and --binaryFormat arguments to
+			ProductResender.</li>
+		<li>Moved auto-detect of format and compression to IOUtil, and
+			updated EIDSNotificationReceiver to use same logic as
+			SocketProductReceiver.</li>
+	</ul>
+
+	<h2>Version 1.8.5 2013-11-15</h2>
+	<ul>
+		<li>Updated SocketProductSender
+			<ul>
+				<li>Added <code>enableDeflate</code> and <code>deflateLevel</code>
+					options.
+				</li>
+				<li>Documented <code>binaryFormat</code> option.
+				</li>
+				<li>Added utility for testing deflate options, described in <a
+					href="sending.html#compression">Sending &gt; Compression</a></li>
+			</ul>
+		</li>
+		<li>Updated SocketProductReceiver to auto-detect format and
+			compression, so clients can choose own compression and format
+			settings</li>
+		<li>Set sun.awt.X11.timeoutTask.XToolkit logging level to INFO</li>
+	</ul>
+
+	<h2>Version 1.8.4 2013-11-05</h2>
+	<ul>
+		<li>Updated FileContent to escape base directory paths using
+			java.util.regex.Pattern#escape . Directories with special regex
+			characters (+,*,?,etc...) were not matching correctly.</li>
+	</ul>
+
+	<h2>Version 1.8.3 2013-11-05</h2>
+	<ul>
+		<li>Changed java.io.File#getAbsolute(Path|File) to
+			getCanonical(Path|File), to fix bug in sending products using a path
+			containing "..".</li>
+		<li>Added embedded PDL client example,
+			gov.usgs.earthquake.distribution.EmbeddedPDLClient</li>
+		<li>Fixed configuration bug in ContentListener, for outputFormat
+			and tempDirectory. Added description to configuration.html.</li>
+		<li>Updated install.html description of crontab PATH
+			configuration.</li>
+		<li>Changed ShakeMap Product source description from PN to UW.</li>
+	</ul>
+
+	<h2>Version 1.8.2 2013-09-26</h2>
+	<ul>
+		<li>Updated MessageUtils library, with safer null handling for
+			quakeml and eqxml to cube conversions.</li>
+	</ul>
+
+	<h2>Version 1.8.1 2013-09-17</h2>
+	<ul>
+		<li>EIDSInputWedge improvements
+			<ul>
+				<li>Added "--internal" and "--scenario" options to
+					EIDSInputWedge</li>
+				<li>Preserve original message content when input is EQXML, or
+					Quakeml (without custom parser argument).</li>
+				<li>Added "--validate" option</li>
+				<li>Added "--sendMechanismWhenPhasesExist" argument; <strong>
+						changed default behavior to not send mechanism products when
+						phase-data exists, to be consistent with
+						--sendOriginWhenPhasesExist</strong>.
+				</li>
+				<li>Added config file options for validate,
+					sendOriginWhenPhasesExist, sendMechanismWhenPhasesExist.</li>
+				<li>Throw explicit ConfigurationException when parser is
+					incorrectly configured.</li>
+			</ul>
+		</li>
+		<li>QuakemlProductCreator improvements
+			<ul>
+				<li>Send "broadband-depth" type product, instead of
+					"moment-tensor", when moment tensor's derived magnitude type is
+					"Mwd".</li>
+				<li>Updated how lightweight origin, focal-mechanism,
+					moment-tensor, and broadband-depth products are created.</li>
+			</ul>
+		</li>
+		<li>Added example external listener scripts to distribution, and
+			added ExternalIndexerListener support to python example.</li>
+		<li>Added ContentListener, that can be configured to listen for
+			specific content paths in products; like "quakeml.xml".</li>
+		<li>Added "depth-type" property to origin and phase-data
+			products.</li>
+		<li>Updated log message when product download from hub fails.</li>
+		<li>Updated log message when indexer has multiple candidate
+			events, which may require manual review of associations.</li>
+	</ul>
+
+	<h2>Version 1.8.0 2013-07-30</h2>
+	<ul>
+		<li>added "retryDelay" configuration setting for listeners, used
+			in combination with "maxTries"</li>
+		<li>added methods for programmatic configuration of listener
+			properties "includeInternals", "includeScenarios", "includeTests",
+			and "includeDevelopments"</li>
+		<li>fixed association issue near date line.</li>
+		<li>added "connect timeout" warning when EIDSInputWedge is unable
+			to connect to a server.</li>
+		<li>fixed indexer archive policy bug that orphaned superseded and
+			deleted products.</li>
+		<li>fixed indexer delete processing bug that loaded all events
+			into memory when delete did not include event id.</li>
+	</ul>
+
+	<h2>Version 1.7.9 2013-03-12</h2>
+	<ul>
+		<li>Added utility that can resend existing products.</li>
+		<li>Updated QWFileOutClient.jar dependency from version 1.5 to
+			1.7</li>
+		<li>Updated MessageUtils.jar dependency with latest updates to
+			quakeml 1.2</li>
+		<li>Updated conversion from Quakeml to Product:
+			<ul>
+				<li>Set "review-status" property for focal-mechanism and
+					moment-tensor products</li>
+				<li>Set "eventParametersPublicID" property for all products</li>
+			</ul>
+		</li>
+		<li>Updated EIDSInputWedge command line usage to include
+			"--sendOriginWhenPhasesExist" argument.</li>
+	</ul>
+
+
+	<h2>Version 1.7.8 2013-02-25</h2>
+	<ul>
+		<li>Revert to previous version of SQLite library.</li>
+	</ul>
+
+	<h2>Version 1.7.7 2013-02-12</h2>
+	<ul>
+		<li>Fix for bug in ProductArchivePolicy that caused new versions
+			of products to disassociate from their event, when an old version of
+			the product was archived.</li>
+		<li>Updated api default for onlySuperseded in
+			ProductArchivePolicy to match configuration default.</li>
+		<li>Changes to QWEmbeddedClient to suppress startup and shutdown
+			messages, and attempt to reduce memory footprint.</li>
+	</ul>
+
+	<h2>Version 1.7.6 2012-12-11</h2>
+	<ul>
+		<li>Throw configuration exception when a sender is not configured
+			correctly.</li>
+		<li>Using github eqmessageutils for quakeml parsing (
+			http://github.com/usgs/eqmessageutils ).</li>
+		<li>Updates for Quakeml to Product conversion:
+			<ul>
+				<li>Fixed check and removal of phase data from "phase-data" xml
+					when creating lightweight "origin". Also removes arrival,
+					amplitude, stationMagnitude, stationMagnitudeContribution, in
+					addition to picks.</li>
+				<li>&lt;focalMechanism&gt; element processing:
+					<ul>
+						<li>"derived-depth" property as kilometers (instead of
+							meters)</li>
+						<li>"beachball-source" property read from
+							focalMechanism/creationInfo/agencyID, if it exists.</li>
+						<li>When &lt;focalMechanism&gt; element exists:
+							"moment-tensor" product created when &lt;tensor&gt; element
+							exists; otherwise, "focal-mechanism" product created when
+							&lt;nodalPlanes&gt; element exists; otherwise, no product
+							created.</li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+		<li>Updated ShakeMapIndexerModule to read maximum mmi value from
+			info.xml. Updated onEventUpdate trigger to prefer ShakeMap maxmmi
+			property over LossPAGER maxmmi property.</li>
+		<li>Indexer Archive Policy bug fixes:
+			<ul>
+				<li>ProductArchivePolicy now extends ArchivePolicy, to support
+					archiving products based on event attributes.</li>
+				<li>ArchivePolicy corrected to also remove productSummary from
+					index.</li>
+				<li>ProductArchivePolicy now updates any associated events (and
+					removes event if last associated product).</li>
+			</ul>
+		</li>
+		<li>ArchivePolicy now supports ISO8601 or millisecond epoch
+			timestamp for minEventTime,maxEventTime,minProductTime,maxProductTime
+			configuration properties.</li>
+		<li>Fixed bug in SearchResponseParser when searching Indexer
+			programatically.</li>
+		<li>Fixed bug in EIDSInputWedge, error directory wasn't being
+			created.</li>
+	</ul>
+
+
+	<h2>Version 1.7.5 2012-05-31</h2>
+	<ul>
+		<li>Fixed memory leaks in JDBCConnection, JDBCNotificationIndex,
+			and JDBCProductIndex. Dynamic Statements and ResultSets are now
+			closed immediately after use.</li>
+	</ul>
+
+	<h2>Version 1.7.4 2012-05-18</h2>
+	<ul>
+		<li>Fixed bug in CLIProductBuilder which prevented command line
+			product senders from sending links or properties with values
+			containing equals (=)</li>
+		<li>New command executor for handling timeouts for
+			ShakemapIndexerWedge</li>
+		<li>Updated NotificationIndex to reconnect to database when
+			connection is interrupted.</li>
+		<li>Updated MessageUtils with latest Quakeml changes.</li>
+		<li>Added documentation of EQXML,Quakeml to Product conversions.</li>
+		<li>Added --attach argument for EIDSInputWedge, when running in
+			push mode</li>
+		<li>Updated handling of Quakeml CreationInfo for determining
+			product update time</li>
+		<li>Fixed NullPointerException processing EVENT_DELETED indexer
+			events by DefaultIndexerListener (and ExternalIndexerListener).</li>
+		<li>Updated JDBCProductIndex to not clear event properties from
+			the event table when an event is deleted.</li>
+	</ul>
+
+	<h2>Version 1.7.3 2012-03-26</h2>
+	<ul>
+		<li>Better archiving handling in ExternalIndexerListener.</li>
+		<li>Removed notification queues, supported by alternate listener
+			index feature.</li>
+	</ul>
+
+
+	<h2>Version 1.7.2 2012-03-23</h2>
+	<ul>
+		<li>Corrected an indexer bug in choosing the preferred magnitude
+			for an event.</li>
+		<li>Changed event handling so if an event ever had an origin, and
+			all origins are deleted, it is considered deleted. This change does
+			not affect events with no origin product.</li>
+	</ul>
+	<div class="code">
+		<p>
+			<strong>Indexer Users</strong>: <a href="schema/fixPre1_7_2Index.sql">SQL
+				Script to fix existing events in SQLite or Mysql Index</a> <br /> For
+			SQLite, be sure the ProductClient is not running.
+		</p>
+		<p>
+			<strong>Senders</strong>: Make sure senders and tracker url are
+			properly configured in the config file or on the command line.
+		</p>
+	</div>
+
+
+	<h2>Version 1.7.1 2012-03-08</h2>
+	<ul>
+		<li>Added listener index option to more robustly process
+			products.</li>
+		<li>Added indexer "trump" support.</li>
+		<li>Updated userguide based on user feedback.</li>
+		<li>Minor changes to QuakeML to Product converter.</li>
+		<li>EIDSNotificationSender now uses "listenerIndex" instead of
+			"index" as its configuration property.
+	</ul>
+
+
+	<h2>Version 1.7 2012-01-25</h2>
+	<ul>
+		<li>Fixed indexer handling of "associate" admin product, to force
+			2 events to associate.</li>
+		<li>Fixed shakemap eventsource and eventsourcecode handling:
+			honor sender eventsource and eventsourcecode properties when they do
+			not match grid.xml.</li>
+		<li>Fixed handling of inline content when using Directory product
+			format.</li>
+		<li>Fixed argument parsing bug that ignored contentType for
+			inline content.</li>
+		<li>Added ExternalIndexerListener property
+			processOnlyWhenEventChanged</li>
+		<li>Incorporated updated JavaUtils, with URL timeouts of
+			15seconds for connect and read.</li>
+		<li>Added EIDSInputWedge for polling a directory for
+			CUBE/EQXML/Quakeml</li>
+		<li>Added EIDSOutputWedge for outputting CUBE/EQXML/Quakeml to a
+			directory</li>
+		<li>Incorporated updated MessageUtils, with quakeml support.</li>
+		<li>Added Quakeml to Product converter.</li>
+		<li>Updated EQXML to Product converter.</li>
+		<li>Added IndexerListener "processOnlyWhenEventChanged" option,
+			to only trigger processing when an event's magnitude, latitude,
+			longitude, depth, or time change.</li>
+		<li>Minor refactoring of IndexerListener and
+			NotificationListener.</li>
+		<li>Added Bootstrap class to handle configuration and startup.</li>
+	</ul>
+
+	<h2>Version 1.6.5 - 2011-09-07</h2>
+	<ul>
+		<li>Added JMX MBean for monitoring queuing.</li>
+	</ul>
+
+	<h2>Version 1.6.4 - 2011-09-02</h2>
+	<ul>
+		<li>Removed synchronization around key pieces of ExecutorTask.
+			This dead-locked leading to notification queuing.</li>
+		<li>Make connectTimeout and readTimeout configurable for
+			receivers downloading products.</li>
+		<li>Fix for contentTypes bug in 1.6.3</li>
+	</ul>
+
+	<h2>Version 1.6.3 - 2011-07-26</h2>
+	<ul>
+		<li>Fixed bug in JDBCProductIndex search logic: when searching
+			for minLongitude and maxLongitude, and minLongitude&lt;maxLongitude,
+			only minLongitude was included in the search.</li>
+		<li>Found bug where content types are not preserved, leading to
+			potential problems with signatures. For now, all based contents mime
+			types are labeled text/plain.</li>
+	</ul>
+
+	<h2>Version 1.6.2 - 2011-07-25</h2>
+	<ul>
+		<li>Updated ExternalIndexerListener to support same properties as
+			DefaultNotificationListener. Added support for processPreferredOnly
+			(which was previously ignored).</li>
+		<li>Fixed configuration for EIDSNotificationSender,
+			RelayProductSender so DefaultNotificationListener properties are
+			properly configured.</li>
+		<li>Added indexes to sqlite NotificationIndex.</li>
+		<li>Added contents.xml for EQXML derived products.</li>
+		<li>Removed sending of addon type products, addons are not
+			products.</li>
+	</ul>
+
+	<h2>Version 1.6.1 - 2011-06-30</h2>
+	<ul>
+		<li>Fixed product tracker logging of listener exceptions</li>
+		<li>Added indexer ProductArchivePolicy, modified archive policy
+			handling.</li>
+		<li>Updated indexer to use product source for authoritativeness
+			(was event source).</li>
+		<li>Configuration options to include scenario, test, development,
+			or internal products (now excluded by default).</li>
+	</ul>
+
+
+	<h2>Version 1.6 - 2011-06-16</h2>
+	<ul>
+		<li>Improved logging to include component name.</li>
+		<li>Fix for bug receiving product from multiple sources.</li>
+		<li>Fix for bug with listener includeTypes, excludeTypes,
+			includeSources, and excludeSources</li>
+		<li>Changed indexer logic for detecting already processed
+			products</li>
+		<li>Added indexes to SQLite ProductIndex</li>
+	</ul>
+
+	<h2>Version 1.5.2 - 2011-02-15</h2>
+	<ul>
+		<li>Better exception handling during startup and shutdown.</li>
+	</ul>
+
+
+	<h2>Version 1.5.1 - 2011-02-10</h2>
+	<ul>
+		<li>Improvements to indexer merge and split methods.</li>
+		<li>Better logging of sender exceptions.</li>
+		<li>New partial failure exit status (4), when at least one sender
+			succeeds.</li>
+		<li>Oracle schema for JDBCProductIndex.</li>
+	</ul>
+
+
+	<h2>Version 1.5 - r???? - 2011-01-28</h2>
+	<ul>
+		<li>Updates to indexer
+			<ul>
+				<li>New association algorithm. eventids are used before
+					location in space and time.</li>
+				<li>"associate" and "disassociate" type products to override
+					automatic associations.</li>
+				<li>Indexer events now have one or more associated changes.</li>
+				<li>Added re-association step, to check for splits and merges.
+					New EVENT_SPLIT and EVENT_MERGE change types.</li>
+				<li>Indexer search interface, using XML via socket, or Command
+					Line.</li>
+				<li>PHP index search application.</li>
+			</ul>
+		</li>
+
+		<li>Re-added cryptography libraries used for keypairs and
+			signatures.</li>
+
+		<li>Minor changes to EQXML product generator.
+			<ul>
+				<li>Addon and Comment products no longer include raw XML
+					(magnitude and origin still do).</li>
+				<li>raw XML now stored in "eqxml.xml" content, instead of empty
+					path "".</li>
+			</ul>
+		</li>
+	</ul>
+
+
+	<h2>Version 1.4.2 - r8665 - 2010-12-29</h2>
+	<ul>
+		<li>Escaping of properties that include XML unfriendly characters
+			(&quot;, &apos;, &lt;, &gt;, whitespace).</li>
+	</ul>
+
+
+	<h2>Version 1.4.1 - r8627 - 2010-12-20</h2>
+	<ul>
+		<li>Added ZabbixAgent for zabbix monitoring support.</li>
+
+		<li>Minor changes to ensure streams are closed asap.</li>
+
+		<li>Improvements in indexer stability. (still not production
+			ready).</li>
+	</ul>
+
+
+	<h2>Version 1.4 - r7878 - 2010-10-28</h2>
+	<ul>
+		<li>Minimum version of Java changed to 1.6.</li>
+
+		<li>Split CLIProductBuilder <code>--eventid</code> argument into
+			<code>--eventsource</code> and <code>--eventsourcecode</code>. While
+			eventsource and eventsourcecode combine to form an eventid, they must
+			be tracked separately so it is possible to tell when the same source
+			has sent distinct events.
+		</li>
+
+		<li>Initial implementation of Indexer. <em>Not recommended
+				for production yet.</em>
+			<ul>
+				<li>Core indexer framework.</li>
+				<li>Basic product summaries for all products.</li>
+				<li>ShakeMap product summaries.</li>
+				<li>Adds products to index, and associates when possible.</li>
+			</ul>
+		</li>
+	</ul>
+
+
+	<h2>Version 1.3 - r7736 - 2010-10-13</h2>
+	<ul>
+		<li>Updated bundled QWFileOutClient.jar to fix EIDS memory leak.</li>
+		<li>Updated EIDSClient to automatically reconnect once per day.</li>
+		<li>Updated DefaultNotificationReceiver to reject already expired
+			notifications</li>
+		<li>Fix for FileContent when running on windows.</li>
+	</ul>
+
+	<h2>Version 1.2 - r6692 - 2010-08-27</h2>
+	<ul>
+		<li>Updated bundled usgs_utils.jar to fix XML datetime handling.
+			All xml datetimes are now normalized to UTC.</li>
+		<li>New logging handler, one log file per day.</li>
+		<li>Added logdirectory configuration parameter, replaces logfile
+			configuration parameter.</li>
+	</ul>
+
+</body>
+</html>

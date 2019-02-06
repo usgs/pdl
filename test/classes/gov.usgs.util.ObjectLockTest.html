@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - Class gov.usgs.util.ObjectLockTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>Class gov.usgs.util.ObjectLockTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/gov.usgs.util.html">gov.usgs.util</a> &gt; ObjectLockTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">3</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">9.488s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="tabs">
+<ul class="tabLinks">
+<li>
+<a href="#tab0">Tests</a>
+</li>
+<li>
+<a href="#tab1">Standard output</a>
+</li>
+<li>
+<a href="#tab2">Standard error</a>
+</li>
+</ul>
+<div id="tab0" class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">readLockBlocksUntilWriteLockIsReleased</td>
+<td class="success">8.992s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testWithLocks</td>
+<td class="success">0.371s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testWithoutLocks</td>
+<td class="success">0.125s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div id="tab1" class="tab">
+<h2>Standard output</h2>
+<span class="code">
+<pre>The below numbers should be strictly increasing, but need not be sequential. However the displayed logic statements should (at least periodically) evaluate to false.
+1 == 4
+5 == 7
+8 == 10
+The below numbers should be strictly increasing, but need not be sequential. However the displayed logic statements should always evaluate to true.
+1 == 1
+2 == 2
+3 == 3
+4 == 4
+5 == 5
+6 == 6
+7 == 7
+8 == 8
+9 == 9
+</pre>
+</span>
+</div>
+<div id="tab2" class="tab">
+<h2>Standard error</h2>
+<span class="code">
+<pre>Starting threads
+thread 19 acquiring read lock
+thread 20 acquiring read lock
+thread 19 acquired read lock
+thread 21 acquiring write lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 21 acquired write lock
+thread 19 acquiring read lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 22 acquired write lock
+thread 21 acquiring write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 20 acquired read lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 21 acquired write lock
+thread 19 acquiring read lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 22 acquired write lock
+thread 21 acquiring write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 20 acquired read lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 22 acquired write lock
+thread 21 acquiring write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 20 acquired read lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 22 acquired write lock
+thread 21 acquiring write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 19 acquired read lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 21 acquired write lock
+thread 19 acquiring read lock
+thread 21 releasing write lock
+thread 22 acquired write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 19 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 22 acquired write lock
+thread 21 acquiring write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 19 acquired read lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 22 acquired write lock
+thread 21 acquiring write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 19 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 22 acquired write lock
+thread 21 acquiring write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 22 acquiring write lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 21 acquired write lock
+thread 19 acquiring read lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 22 acquired write lock
+thread 21 acquiring write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 20 acquired read lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 19 acquired read lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 22 acquired write lock
+thread 21 acquiring write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 20 acquired read lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 19 acquired read lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 21 acquired write lock
+thread 19 acquiring read lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 19 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 22 acquired write lock
+thread 21 acquiring write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 20 acquired read lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 21 acquired write lock
+thread 20 acquiring read lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 19 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 19 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 22 acquired write lock
+thread 21 acquiring write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 21 acquired write lock
+thread 19 acquiring read lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 19 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 22 acquired write lock
+thread 21 acquiring write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 20 acquired read lock
+thread 19 acquired read lock
+thread 22 acquiring write lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 21 acquired write lock
+thread 20 acquiring read lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 22 acquired write lock
+thread 21 acquiring write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 19 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 19 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 19 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 19 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 22 acquired write lock
+thread 21 acquiring write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 19 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 19 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 19 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 19 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 19 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 19 acquired read lock
+thread 22 acquiring write lock
+thread 20 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 19 acquiring read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 20 acquiring read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 21 acquiring write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+thread 22 acquiring write lock
+thread 19 acquired read lock
+thread 20 acquired read lock
+thread 19 releasing read lock
+thread 19 released read lock
+thread 20 releasing read lock
+thread 20 released read lock
+thread 21 acquired write lock
+thread 21 releasing write lock
+thread 21 released write lock
+thread 22 acquired write lock
+thread 22 releasing write lock
+thread 22 released write lock
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="http://www.gradle.org">Gradle 4.10</a> at Feb 5, 2019, 4:47:44 PM</p>
+</div>
+</div>
+</body>
+</html>

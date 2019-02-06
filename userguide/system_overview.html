@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>System Overview</title>
+<link rel="stylesheet" type="text/css" href="userguide.css" />
+</head>
+
+<body>
+<h1 id="overview">System Overview</h1>
+<p><a href="../index.html">&laquo; Back to User Guide</a></p>
+
+
+<h2>Navigation</h2>
+<ul>
+		<li><a href="#productsandnotifications">Products and
+		Notifications</a></li>
+		<li><a href="#distribution">Distribution</a></li>
+		<li><a href="#storage">Product Processing and Storage Formats</a>
+		<ul>
+			<li><a href="#storagemodel">The PDL Storage Model</a></li>
+			<li><a href="#indexer">Indexer</a></li>
+			<li><a href="#architecture">High Level Architecture</a></li>
+			<li><a href="#pdlbenefits">PDL Benefits</a></li>
+		</ul>		
+		</li>		
+		<li><a href="#receivers">Notification Receivers</a></li>
+		<li><a href="#listeners">NotificationListeners</a>
+		<ul>
+			<li><a href="#externalnotificationlistener">ExternalNotificationListener</a></li>
+			<li><a href="#externalindexerlistener">ExternalIndexerListener</a></li>
+		</ul>
+		</li>
+		<li><a href="#senders">Product Senders</a></li>
+		<li><a href="#java">Java Integration</a></li>
+
+</ul>
+
+
+<hr />
+
+<h3 id="productsandnotifications">Products and Notifications</h3>
+
+<h4>Product</h4>
+<p>A Product is a group of files or content concerning seismic events. Examples of 
+product types include ShakeMap, Moment Tensor and Origin. A product usually consists 
+of a directory of files, but may also include a stream of bytes, 
+links to internet resources, and key/value pairs. Products provide a standard method 
+for bundling textual and multimedia data, where each product is uniquely identified 
+by source, type, code, and update time. These key attributes are described as follows:</p>
+<dl class="indented">
+	<dt>source</dt>
+	<dd>The product creator. Usually a network code, such as &quot;us&quot; for
+	the USGS National Earthquake Information Center or &quot;ci&quot; for the
+	Southern California Seismic Network at Caltech.</dd>
+
+	<dt>type</dt>
+	<dd>The type of product, such as &quot;helicorder&quot;, &quot;text&quot;, or &quot;moment-tensor&quot;. Multiple sources may create the same type
+	of product.</dd>
+
+	<dt>code</dt>
+	<dd>A unique code, for a given <code>source</code> and <code>type</code>
+	combination.</dd>
+
+	<dt>update time</dt>
+	<dd>When this version of content was created. Two products with
+	the same <code>source</code>, <code>type</code>, and <code>code</code>,
+	but different <code>update time</code>s are different versions of the
+	same product.</dd>
+</dl>
+
+<p>While some products can be associated with a single seismic event, others are not. 
+The harmonic tremors detected by a particular helicorder, for example, could easily have 
+originated from several seismic events.</p>
+
+<p>Products are created by USGS and non-USGS clients, distributed using PDL, 
+and utilized by various USGS and non-USGS automated systems such as Real-time 
+Earthquake Maps, the Comprehensive Catalog of seismic events (Comcat), ShakeMaps, 
+the PAGER earthquake alert system and the Earthquake Notification Service. PDL is 
+designed to support both existing and future needs for seismic information.</p>
+
+<p>PDL focuses on distribution and triggering, and integrates with other systems 
+for processing.  After a product is created it is sent to a distribution hub.  
+The distribution hub creates a notification that includes a URL where the full
+product can be downloaded.  Clients connect to the distribution hub and receive 
+notifications about available products.  Based on configuration, a client may 
+choose to download and process a product.</p>
+
+<p>How received products are utilized is very system dependent.  PDL provides two 
+primary alternatives: a java API for direct integration, and a command line api 
+for applications to be executed when products are received.</p>
+ 
+
+<h5>Versions</h5>
+<p>Products with the same source, type, and code, but different update times are
+considered different versions of the same product. Later updates to the
+same product replace previous versions, where older versions are retained according 
+to PDL's configurable archive policies.</p>
+
+<h5>Status</h5>
+<p>A brief status code. Typically <code>UPDATE</code> or <code>DELETE</code>.
+Any value that is not <code>DELETE</code> is considered an update. A product 
+status may have different meanings depending on product type. "DELETE" always 
+has the same meaning: that a product has been cancelled. </p>
+
+<h5>Properties</h5>
+<p>Properties are optional name/value pairs that describe the
+product. They are used to quickly identify characteristics of a product
+without needing to parse its content. Examples include the "alertlevel" 
+property of the PAGER product, and the "magnitude-type" property of the 
+origin product.</p>
+<p>Name/value pair definitions of product properties are generated when a client 
+system sends a product to a hub. Properties can originate in two forms: as 
+parameters in PDL Java command-line execution, or through a java process using 
+the PDL API.</p>
+
+<h5>Links</h5>
+<p>Links are optional and are a <abbr
+	title="Uniform Resource Identifier">URI</a> with a relation that
+describes how the resource is related to the product. Because the link
+is a URI, it can be either a URN or URL. One example would be including
+a "background" related link for a product. Another example would be
+identifying a related product that was used as an input.</p>
+
+
+<h4>Notification</h4>
+<p>A Notification is a small message with Product's source, type,
+code, update time, URL for download, and URL expiration date. Notifications 
+are broadcast when a product becomes available for download. Typically client 
+systems use notifications as a basis for making product download requests from 
+hubs.</p>
+
+<p>When a source deletes a product, the delete is technically equivalent to 
+sending a product, except the status is now "DELETE" and contents of the sent 
+product are optional. This deleted version of the product is distributed the 
+same way as any other update.</p>
+
+
+<h3 id="distribution">Distribution</h3>
+<p>Product Distribution provides a standard solution for data
+distribution.</p>
+
+<p>Data producers and consumers are loosely coupled. Producers
+broadcast a product, via redundant hubs, and all clients are notified it
+is available. Only clients that are interested download the full content
+for processing. This simplifies both sending and receiving data because
+all producers and consumers only need to communicate with the hubs.
+Because producers and consumers initiate connections to the hubs, most
+users do not need to reconfigure firewalls.</p>
+
+<p>Producers use a private key to sign products when they are sent.
+Hubs verify this signature using a public key before distributing
+products to ensure only authorized producers are able to send products.
+Clients may optionally verify these signatures as well.</p>
+
+<p>Clients can be configured to trigger processing when new products
+arrive, either using command line arguments or a Java API, eliminating
+polling latency. In many cases this has reduced processing time from
+minutes to seconds.</p>
+
+<h3 id="storage">Product Processing and Storage Formats</h3>
+<h4 id="storagemodel">The PDL Storage Model</h4>
+<p>The Product Distribution Layer (PDL) is an improvement over an earlier system
+called the Earthquake Information Distribution System (EIDS).  EIDS distributes 
+XML products, but does not support large files or binary content like images. While 
+PDL uses EIDS as an option for distributing notifications, it improves on EIDS' XML 
+mechanism by providing for <i>any</i> type of content, including images, large files 
+and whole directory structures.</p>
+
+<h4 id="architecture">High Level Architecture</h4>
+<p>The following diagram illustrates the creation and distribution of a product:</p>
+<ol>
+<li>The producer creates the product on her client machine. She then sends 
+the product to a PDL hub via a HTTP request, executed via PDL's Java-implemented API.</li>
+<li>The PDL hub stores the product and makes it available at a specific URL.</li>
+<li>The hub broadcasts a notification of the product update to clients, also sending 
+a product status update to the Product Tracker.</li>
+<li>Clients receive the product status notification.</li>
+<li>Interested clients request a product download via a HTTP request.</li>
+</ol>
+<img src="PDL_Architecture.jpg" alt="PDL High Level Architecture" title="PDL High Level Architecture" />
+
+<h4 id="indexer">Indexer</h4>
+<p>The PDL Indexer associates related products into events. The indexer
+uses authoritative regions to choose preferred products when multiple
+sources contribute the same type of product for the same event. It replaces
+an earlier indexing system named QDM (Quake Data Merge), which processed 
+fixed-length CUBE messages. The Indexer:</p>
+
+<ul class="spaced-list">
+	<li><b>Determines product authoritativeness</b>
+	<br />Products may define custom authoritativeness rules</li>
+	<li><b>Maintains a catalog of products</b>
+	<br />Producers do not need to know any of the consumers</li>
+	<li><b>Triggers processing when its catalog changes</b></li>
+</ul>
+
+<h4 id="pdlbenefits">PDL Benefits</h4>
+<p>PDL's processing model provides several distinct advantages:</p>
+<ul class="spaced-list">
+	<li><b>Integrates with existing systems</b>
+	<br />Cross-platform command line program or Java API</li>
+	<li><b>Is loosely coupled</b>
+	<br />Producers do not need to know any of the consumers</li>
+	<li><b>Eliminates polling latency</b></li>
+	<li><b>Uses digital signatures</b>
+	<br />Provides authentication and integrity</li>
+	<li><b>Tracks distribution and processing process</b>
+</ul>
+
+<h3 id="receivers">Notification Receivers</h3>
+
+<p>A NotificationReceiver receives Notifications for products and
+keeps a NotificationIndex of all received notifications. Whenever a
+notification is received, it is queued for processing by each
+NotificationListener. Each listener has a separate queue, and uses a
+separate thread to process queued notifications one at a time. This
+prevents a slow listener from blocking a fast listener.</p>
+
+<p>When a listener processes a notification, it may request the
+product from the receiver. Any number of listeners may request the same
+product, but the receiver will only download once. Once the receiver has
+retrieved the product, the listener processes its contents.</p>
+
+<p>Periodically, the receiver will remove expired notifications from
+its index, and downloaded products that are no longer needed. By default
+a receiver only keeps downloaded products for 15 minutes, just long
+enough for listeners to process, to minimize disk usage.</p>
+
+
+
+
+<h3 id="listeners">Notification Listeners</h3>
+
+<h4 id="externalnotificationlistener">ExternalNotificationListener</h4>
+<p>ExternalNotificationListeners process products by executing an
+external command line process for each received product. The
+ExternalNotificationListener does not associate related products
+together, for that functionality use the Indexer.</p>
+
+
+<h5>Example ExternalNotificationListener command line arguments</h5>
+<div class="code">/path/to/executable
+--directory=/Users/jmfee/Desktop/ProductClient/data/listener_example_storage/origin/nc71742550/nc/1330975200000
+--type=origin --code=nc71742550 --source=nc
+--updateTime=2012-03-05T19:20:00.000Z --status=UPDATE
+--trackerURL=http://ehppdl1.cr.usgs.gov/tracker/
+"--property-eventtime=2012-03-05T19:18:22.500Z"
+"--property-cube-magnitude-type=D" "--property-magnitude-type=Md"
+"--property-eids-feeder=ncss3.ncss-mp.cisn.org"
+"--property-azimuthal-gap=46.8" "--property-magnitude=1.8"
+"--property-eventsource=nc" "--property-eventsourcecode=71742550"
+"--property-eids-feeder-sequence=208382"
+"--property-location-method-class=Unknown" "--property-depth=2.4"
+"--property-version=1" "--property-magnitude-error=0.2"
+"--property-horizontal-error=0.2" "--property-num-phases-used=37"
+"--property-magnitude-num-stations-used=14"
+"--property-vertical-error=0.3" "--property-minimum-distance=0.00898315"
+"--property-longitude=-122.8205" "--property-latitude=38.8177"
+"--property-location-method-algorithm=B"
+"--property-cube-location-method=B" "--property-standard-error=0.06"
+"--property-review-status=AUTOMATIC"
+--signature=MCwCFCT2On3fJ6dydk+MIoPp8zZ3ChbAAhQY01euDYqi6xaOD660dbYIML8qKQ==
+</div>
+
+<p><a href="receiving.html">See Receiving Products for more information</a></p>
+
+
+<h5>Indexer Listeners</h5>
+<p>Every time the Indexer changes the index, it notifies IndexerListeners about
+the change. IndexerListeners are similar to NotificationListeners but listen
+to Indexer changes (which are triggered by products) instead of
+listening to notifications for products. Because the indexer keeps track
+of previously processed products, duplicate and non-preferred
+information can be filtered. Additionally, updates that do not change an
+event's location or magnitude can also be filtered.</p>
+
+
+<h5 id="externalindexerlistener">Example ExternalIndexerListener command line arguments</h5>
+<div class="code">/path/to/executable
+--directory=/Users/jmfee/Desktop/ProductClient/data/indexerlistener_storage/origin/nc71742550/nc/1330975200000
+--type=origin --code=nc71742550 --source=nc
+--updateTime=2012-03-05T19:20:00.000Z --status=UPDATE
+--trackerURL=http://ehppdl1.cr.usgs.gov/tracker/
+"--property-magnitude-type=Md" "--property-eventsourcecode=71742550"
+"--property-location-method-class=Unknown" "--property-version=1"
+"--property-horizontal-error=0.2"
+"--property-magnitude-num-stations-used=14"
+"--property-minimum-distance=0.00898315"
+"--property-longitude=-122.8205" "--property-cube-location-method=B"
+"--property-standard-error=0.06"
+"--property-eventtime=2012-03-05T19:18:22.500Z"
+"--property-cube-magnitude-type=D"
+"--property-eids-feeder=ncss3.ncss-mp.cisn.org"
+"--property-azimuthal-gap=46.8" "--property-eventsource=nc"
+"--property-magnitude=1.8" "--property-eids-feeder-sequence=208382"
+"--property-depth=2.4" "--property-magnitude-error=0.2"
+"--property-num-phases-used=37" "--property-vertical-error=0.3"
+"--property-latitude=38.8177" "--property-location-method-algorithm=B"
+"--property-review-status=AUTOMATIC" --action=EVENT_UPDATED
+--preferred-eventid=nc71742550 --preferred-eventsource=nc
+--preferred-eventsourcecode=71742550 --eventids=nc71742550
+--preferred-magnitude=1.8 --preferred-latitude=38.8177
+--preferred-longitude=-122.8205 --preferred-depth=2.4
+--preferred-eventtime=2012-03-05T19:18:22.500Z
+--signature=MCwCFCT2On3fJ6dydk+MIoPp8zZ3ChbAAhQY01euDYqi6xaOD660dbYIML8qKQ==
+</div>
+
+<p><a href="indexer.html">See Indexer for more information</a></p>
+
+
+
+
+<h3 id="senders">Product Senders</h3>
+<p>A SocketProductSender sends a product directly to a ProductHub,
+which stores the product and sends a Notification to all connected
+NotificationReceivers. Product hubs register a public key for each
+sender, and verify product signatures to ensure only known senders may
+distribute products.</p>
+
+<p><a href="sending.html">See Sending Products for more information</a></p>
+
+
+<h3 id="java">Java API</h3>
+<p>Custom Notification and Indexer Listeners can be integrated with
+PDL using the Java API. Other languages need to use the
+ExternalNotificationListener and ExternalIndexerListener.</p>
+
+<p>NotificationListeners must implement the
+gov.usgs.earthquake.distribution.NotificationListener interface. Most
+users can extend the
+gov.usgs.earthquake.distribution.DefaultNotificationListener class.</p>
+
+<p>IndexerListeners must implement the
+gov.usgs.earthquake.indexer.IndexerListener interface. Most users can
+extend the gov.usgs.earthquake.indexer.DefaultIndexerListener class.</p>
+
+
+<p><a href="/javadoc/">See the Java API Documentation for more information.</a></p>
+
+
+<hr />
+
+</body>
+</html>

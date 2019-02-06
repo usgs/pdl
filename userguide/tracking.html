@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Tracking Products</title>
+<link rel="stylesheet" href="userguide.css" />
+</head>
+
+<body>
+<h1>Tracking Products</h1>
+<p><a href="../index.html#documentation">&laquo; Back to User Guide</a></p>
+
+
+<div class="alert warning">
+NOTE: the tracker is no longer centrally supported.  And is not recommended.
+</div>
+
+<p>Components throughout the Product Distribution System send status
+messages to a Tracker. Senders can use this information to confirm their
+products were received, and identifty potential distribution problems.</p>
+
+<h2>Navigation</h2>
+<ul>
+	<li><a href="#web">Using a Web Browser</a></li>
+	<li><a href="#commandline">Using the Command Line to Track Products</a>
+	<ul>
+		<li><a href="#commandline_arguments">Track Arguments</a></li>
+		<li><a href="#commandline_examples">Track Examples</a></li>
+	</ul>
+	</li>
+</ul>
+
+
+<h2 id="web">Using a Web Browser</h2>
+<p>Visit <a href="http://ehppdl1.cr.usgs.gov/tracker/">http://ehppdl1.cr.usgs.gov/tracker/</a></p>
+
+
+<h2 id="commandline">Using the Command Line to Track Products</h2>
+<div class="code"><pre>
+java -jar ProductClient.jar --track [track arguments]
+</pre></div>
+
+<h3 id="commandline_arguments">Track Arguments</h3>
+<dl>
+	<dt>--search</dt>
+	<dd>Search the tracker. At least one additional argument is
+	required. XML containing all the matching updates is written to STDOUT.
+	<dl>
+		<dt>[--source=&lt;SOURCE&gt;]</dt>
+		<dd>The product source to search.</dd>
+
+		<dt>[--type=&lt;TYPE&gt;]</dt>
+		<dd>The product type to search.</dd>
+
+		<dt>[--code=&lt;CODE&gt;]</dt>
+		<dd>The product code to search</dd>
+
+		<dt>[--updateTime=&lt;TIME&gt;]</dt>
+		<dd>The product updateTime to search. Examples include <code>2010-01-14T14:11:28.691-07:00</code>
+		and <code>2010-01-14T21:11:28.691Z</code>.</dd>
+
+		<dt>[--startid=&lt;SEQ&gt;]</dt>
+		<dd>Search for updates with ID >= SEQ.</dd>
+
+		<dt>[--class=&lt;MODULE&gt;]</dt>
+		<dd>A module name that sent the message.</dd>
+	</dl>
+	</dd>
+
+	<dt>--update</dt>
+	<dd>Send an update to a tracker. The message sent to the tracker
+	is read from STDIN.
+	<dl>
+		<dt>--productid=&lt;URN&gt;</dt>
+		<dd>The product id of the product to find, or being updated.</dd>
+
+		<dt>--class=&lt;MODULE&gt;</dt>
+		<dd>A module name that is sending this message.</dd>
+	</dl>
+	</dd>
+
+	<dt>--trackerURL=&lt;URL&gt;</dt>
+	<dd>URL of the tracker. By default this is <code>http://ehppdl1.cr.usgs.gov/tracker/</code></dd>
+</dl>
+
+
+<h3 id="commandline_examples">Track Examples</h3>
+
+<h4>Searching the tracker using the command line</h4>
+<h5>Command</h5>
+<div class="code"><pre>
+java -jar ProductClient.jar --track --search --source=us --type=losspager --code=usa00043nx
+</pre></div>
+<h5>Output</h5>
+<p>XML containing search results.</p>
+<p><em>Newlines added for readability, use an XML parser.</em></p>
+<div class="code output"><pre>
+&lt;?xml version="1.0"?&gt;
+&lt;updates&gt;
+&lt;update 
+	sequenceNumber="41882" 
+	created="2010-10-25T15:10:24+00:00" 
+	host="136.177.24.95" 
+	source="us" 
+	type="losspager" 
+	code="usa00043nx" 
+	updateTime="2010-10-25T15:15:02+00:00" 
+	className="gov.usgs.earthquake.distribution.SocketProductSender"
+&gt;&lt;![CDATA[Product Created]]&gt;&lt;/update&gt;
+&lt;update 
+	sequenceNumber="41884" 
+	created="2010-10-25T15:10:27+00:00" 
+	host="137.227.227.215" 
+	source="us" 
+	type="losspager" 
+	code="usa00043nx" 
+	updateTime="2010-10-25T15:15:02+00:00" 
+	className="gov.usgs.earthquake.distribution.SocketProductReceiver"
+&gt;&lt;![CDATA[Product Received]]&gt;&lt;/update&gt;
+&lt;update 
+	sequenceNumber="41885" 
+	created="2010-10-25T15:10:27+00:00" 
+	host="137.227.227.215" 
+	source="us" 
+	type="losspager" 
+	code="usa00043nx" 
+	updateTime="2010-10-25T15:15:02+00:00" 
+	className="gov.usgs.earthquake.distribution.EIDSNotificationSender"
+&gt;&lt;![CDATA[Notification Sent]]&gt;&lt;/update&gt;
+&lt;/updates&gt;
+</pre></div>
+
+<h4>Updating the tracker using the command line</h4>
+<h5>Command</h5>
+<p>The arguments --trackerURL, --source, --type, --code, and
+--updateTime are all based on the product being tracked. The echo
+command is used to send the message to STDIN.</p>
+<p><em>Line continuation characters (\) added for readability,
+all arguments would appear on one line.</em></p>
+<div class="code""><pre>
+echo "My custom message" | java -jar ProductClient.jar --track \
+	--update \
+	--trackerURL=http://ehppdl1.cr.usgs.gov/tracker/ \
+	--source=us \
+	--type=losspager \
+	--code=usa00043nx \
+	--updateTime=2010-10-25T15:15:02+00:00 \
+	"--class=My Process Name"
+</pre></div>
+
+<h5>Output</h5>
+<p>XML containing the update that was sent, including the assigned
+sequence number.</p>
+<p><em>Newlines added for readability, use an XML parser.</em></p>
+<div class="code"><pre>
+&lt;?xml version="1.0"?&gt;
+&lt;updates&gt;
+&lt;update 
+	sequenceNumber="44186" 
+	created="2010-10-26T17:22:17+00:00" 
+	host="XXX.XXX.XXX.XXX" 
+	source="us" 
+	type="losspager" 
+	code="usa00043nx" 
+	updateTime="2010-10-25T15:15:02+00:00" 
+	className="My Process Name"
+&gt;&lt;![CDATA[My custom message]]&gt;&lt;/update&gt;
+&lt;/updates&gt;
+</pre></div>
+
+
+</body>
+</html>

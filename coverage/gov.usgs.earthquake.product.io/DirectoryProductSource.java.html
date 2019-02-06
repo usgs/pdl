@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DirectoryProductSource.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product.io</a> &gt; <span class="el_source">DirectoryProductSource.java</span></div><h1>DirectoryProductSource.java</h1><pre class="source lang-java linenums">/*
+ * DirectoryProductSource
+ */
+package gov.usgs.earthquake.product.io;
+
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.FileContent;
+import gov.usgs.earthquake.product.URLContent;
+
+import gov.usgs.util.StreamUtils;
+
+import java.io.File;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Load a product from a Directory.
+ * 
+ * Usually a directory is created using DirectoryProductOutput. It should
+ * contain a product xml file named &quot;product.xml&quot;. All other files are treated
+ * as attachments.
+ */
+public class DirectoryProductSource implements ProductSource {
+
+	/** The directory this product input references. */
+	private File directory;
+
+<span class="fc" id="L31">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L32">			.getLogger(DirectoryProductSource.class.getName());</span>
+
+	/**
+	 * Construct a new DirectoryProductSource object.
+	 * 
+	 * @param directory
+	 *            the directory containing a product.
+	 */
+<span class="fc" id="L40">	public DirectoryProductSource(final File directory) {</span>
+<span class="fc" id="L41">		this.directory = directory;</span>
+<span class="fc" id="L42">	}</span>
+
+	/**
+	 * Load Product from a directory, then send product events to the
+	 * ProductOutput.
+	 * 
+	 * @param out
+	 *            the ProductOutput that will receive the product.
+	 */
+	public void streamTo(ProductHandler out) throws Exception {
+<span class="fc" id="L52">		InputStream in = null;</span>
+
+		try {
+<span class="fc" id="L55">			in = StreamUtils.getInputStream(new File(directory,</span>
+					DirectoryProductHandler.PRODUCT_XML_FILENAME));
+
+			// load product from xml
+<span class="fc" id="L59">			Product product = ObjectProductHandler</span>
+<span class="fc" id="L60">					.getProduct(new XmlProductSource(in));</span>
+
+			// Convert URLContent to FileContent
+<span class="fc" id="L63">			Map&lt;String, Content&gt; contents = product.getContents();</span>
+			Content urlContent;
+<span class="fc" id="L65">			boolean foundURLContent = false;</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">			for (String key : contents.keySet()) {</span>
+<span class="fc" id="L67">				urlContent = contents.get(key);</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">				if (urlContent instanceof URLContent) {</span>
+<span class="fc" id="L69">					File filePath = new File(directory, key);</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">					if (filePath.exists()) {</span>
+<span class="fc" id="L71">						FileContent fileContent = new FileContent(filePath);</span>
+<span class="fc" id="L72">						fileContent.setContentType(urlContent.getContentType());</span>
+<span class="fc" id="L73">						fileContent.setLastModified(urlContent.getLastModified());</span>
+<span class="fc" id="L74">						fileContent.setLength(urlContent.getLength());</span>
+						// go direct to file based on key
+<span class="fc" id="L76">						contents.put(key, fileContent);</span>
+<span class="fc" id="L77">					} else {</span>
+						// old way
+<span class="fc" id="L79">						contents.put(key, new FileContent((URLContent) urlContent));</span>
+					}
+<span class="fc" id="L81">					foundURLContent = true;</span>
+				}
+<span class="fc" id="L83">			}</span>
+
+<span class="fc bfc" id="L85" title="All 2 branches covered.">			if (!foundURLContent) {</span>
+<span class="fc" id="L86">				LOGGER.log(Level.FINER,</span>
+						&quot;[DirectoryProductSource] Product does not have any &quot;
+								+ &quot; URLContent. Scraping directory for files.&quot;);
+
+				// load contents from directory
+<span class="fc" id="L91">				contents.putAll(FileContent.getDirectoryContents(directory));</span>
+
+				// except for product.xml which is the product, not its content
+<span class="fc" id="L94">				contents.remove(DirectoryProductHandler.PRODUCT_XML_FILENAME);</span>
+			}
+
+			// now use ObjectProductInput to send loaded product
+<span class="fc" id="L98">			new ObjectProductSource(product).streamTo(out);</span>
+		} finally {
+<span class="fc" id="L100">			StreamUtils.closeStream(in);</span>
+		}
+<span class="fc" id="L102">	}</span>
+
+
+	/**
+	 * Free any resources associated with this source.
+	 */
+	@Override
+	public void close() {
+<span class="fc" id="L110">		directory = null;</span>
+<span class="fc" id="L111">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

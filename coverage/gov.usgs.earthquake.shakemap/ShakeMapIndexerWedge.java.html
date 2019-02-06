@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ShakeMapIndexerWedge.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.shakemap</a> &gt; <span class="el_source">ShakeMapIndexerWedge.java</span></div><h1>ShakeMapIndexerWedge.java</h1><pre class="source lang-java linenums">/*
+ * ShakemapIndexerWedge
+ */
+package gov.usgs.earthquake.shakemap;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import gov.usgs.earthquake.distribution.Command;
+import gov.usgs.earthquake.distribution.Command.CommandTimeout;
+import gov.usgs.earthquake.distribution.DefaultNotificationListener;
+import gov.usgs.earthquake.distribution.NotificationListenerException;
+import gov.usgs.earthquake.distribution.ProductTracker;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.product.io.DirectoryProductHandler;
+import gov.usgs.earthquake.product.io.DirectoryProductSource;
+import gov.usgs.earthquake.product.io.ObjectProductHandler;
+import gov.usgs.earthquake.product.io.ObjectProductSource;
+import gov.usgs.util.Config;
+import gov.usgs.util.FileUtils;
+
+/**
+ * Legacy interface to trigger pre-Indexer ShakeMap processing.
+ * 
+ * The Old ShakeMap Indexer is no longer used,
+ * and this class is deprecated.
+ * 
+ * When a shakemap product arrives, it is only processed if one of these is
+ * true:
+ * &lt;ul&gt;
+ * &lt;li&gt;doesn't already exist&lt;/li&gt;
+ * &lt;li&gt;from preferred source (product source = eventsource)&lt;/li&gt;
+ * &lt;li&gt;from same source as before&lt;/li&gt;
+ * &lt;/ul&gt;
+ * 
+ * When processing a shakemap:
+ * &lt;ol&gt;
+ * &lt;li&gt;remove previous version&lt;/li&gt;
+ * &lt;li&gt;unpack new version, if not a delete&lt;/li&gt;
+ * &lt;li&gt;trigger legacy indexer&lt;/li&gt;
+ * &lt;li&gt;send tracker update&lt;/li&gt;
+ * &lt;/ol&gt;
+ * 
+ * Configurable properties:
+ * &lt;dl&gt;
+ * &lt;dt&gt;indexerCommand&lt;/dt&gt;
+ * &lt;dd&gt;The shakemap indexer command to run. Defaults to
+ * &lt;code&gt;/home/www/vhosts/earthquake/cron/shakemap_indexer.php&lt;/code&gt; .&lt;/dd&gt;
+ * 
+ * &lt;dt&gt;shakemapDirectory&lt;/dt&gt;
+ * &lt;dd&gt;The shakemap event directory. Defaults to
+ * &lt;code&gt;/home/www/vhosts/earthquake/htdocs/earthquakes/shakemap&lt;/code&gt; .&lt;/dd&gt;
+ * 
+ * &lt;dt&gt;timeout&lt;/dt&gt;
+ * &lt;dd&gt;How long in milliseconds the indexer is allowed to run before being
+ * terminated.&lt;/dd&gt;
+ * &lt;/dl&gt;
+ */
+@Deprecated()
+public class ShakeMapIndexerWedge extends DefaultNotificationListener {
+
+	/** Logging object. */
+<span class="nc" id="L67">	private static final Logger LOGGER = Logger</span>
+<span class="nc" id="L68">			.getLogger(ShakeMapIndexerWedge.class.getName());</span>
+
+	/** Translate from event source to old style shakemap source. */
+<span class="nc" id="L71">	private static final Map&lt;String, String&gt; SOURCE_TRANSLATION_MAP = new HashMap&lt;String, String&gt;();</span>
+	static {
+<span class="nc" id="L73">		SOURCE_TRANSLATION_MAP.put(&quot;ci&quot;, &quot;sc&quot;);</span>
+<span class="nc" id="L74">		SOURCE_TRANSLATION_MAP.put(&quot;us&quot;, &quot;global&quot;);</span>
+<span class="nc" id="L75">		SOURCE_TRANSLATION_MAP.put(&quot;uu&quot;, &quot;ut&quot;);</span>
+<span class="nc" id="L76">		SOURCE_TRANSLATION_MAP.put(&quot;uw&quot;, &quot;pn&quot;);</span>
+<span class="nc" id="L77">	}</span>
+
+	/** Configurable property. */
+	public static final String SHAKEMAP_INDEXER_COMMAND_PROPERTY = &quot;indexerCommand&quot;;
+
+	/** The shakemap indexer command to execute. */
+	public static final String DEFAULT_SHAKEMAP_INDEXER_COMMAND = &quot;/home/www/vhosts/earthquake/cron/shakemap_indexer.php&quot;;
+
+	/** Configurable property for command timeout. */
+	public static final String COMMAND_TIMEOUT_PROPERTY = &quot;timeout&quot;;
+
+	/** Default command timeout. */
+	public static final String DEFAULT_COMMAND_TIMEOUT = &quot;100000&quot;;
+
+	/** Configurable property for shakemap directory. */
+	public static final String SHAKEMAP_DIRECTORY_PROPERTY = &quot;shakemapDirectory&quot;;
+
+	/** Default shakemap directory. */
+	public static final String DEFAULT_SHAKEMAP_DIRECTORY = &quot;/home/www/vhosts/earthquake/htdocs/earthquakes/shakemap&quot;;
+
+	/** The indexer command to run. */
+<span class="nc" id="L98">	private String indexerCommand = DEFAULT_SHAKEMAP_INDEXER_COMMAND;</span>
+
+	/** Base event directory for shakemap storage. */
+<span class="nc" id="L101">	private File baseEventDirectory = new File(DEFAULT_SHAKEMAP_DIRECTORY);</span>
+
+	/** Timeout when running indexer command, in milliseconds. */
+<span class="nc" id="L104">	private long indexerTimeout = Long.valueOf(DEFAULT_COMMAND_TIMEOUT);</span>
+
+	/**
+	 * Create a new ShakeMapIndexerWedge.
+	 * 
+	 * Sets up the includeTypes list to contain &quot;shakemap&quot;.
+	 */
+<span class="nc" id="L111">	public ShakeMapIndexerWedge() {</span>
+<span class="nc" id="L112">		this.getIncludeTypes().add(&quot;shakemap&quot;);</span>
+<span class="nc" id="L113">	}</span>
+
+	/**
+	 * Receive a ShakeMap from Product Distribution.
+	 * 
+	 * @param product
+	 *            a shakemap type product.
+	 */
+	@Override
+	public void onProduct(final Product product) throws Exception {
+<span class="nc" id="L123">		ProductId productId = product.getId();</span>
+
+		// convert this product to a ShakeMap product, which has more
+		// information
+<span class="nc" id="L127">		ShakeMap shakemap = new ShakeMap(product);</span>
+
+		// get the legacy directory
+<span class="nc" id="L130">		File legacyDirectory = getEventDirectory(shakemap);</span>
+
+		// check for a previous version of this shakemap
+<span class="nc bnc" id="L133" title="All 2 branches missed.">		if (legacyDirectory.exists()) {</span>
+<span class="nc" id="L134">			LOGGER.info(&quot;Shakemap directory exists &quot;</span>
+<span class="nc" id="L135">					+ legacyDirectory.getCanonicalPath());</span>
+
+			try {
+<span class="nc" id="L138">				ShakeMap previousShakemap = new ShakeMap(</span>
+						ObjectProductHandler
+<span class="nc" id="L140">								.getProduct(new DirectoryProductSource(</span>
+										legacyDirectory)));
+<span class="nc" id="L142">				ProductId previousId = previousShakemap.getId();</span>
+
+				// same version?
+<span class="nc bnc" id="L145" title="All 2 branches missed.">				if (productId.equals(previousId)) {</span>
+					// already have this version of shakemap
+<span class="nc" id="L147">					LOGGER.info(&quot;Shakemap already processed &quot;</span>
+<span class="nc" id="L148">							+ productId.toString());</span>
+<span class="nc" id="L149">					return;</span>
+				} else {
+<span class="nc" id="L151">					LOGGER.info(&quot;Shakemap is different, previous is &quot;</span>
+<span class="nc" id="L152">							+ previousId.toString());</span>
+				}
+
+<span class="nc bnc" id="L155" title="All 2 branches missed.">				if (!productId.getSource().equals(shakemap.getEventSource())</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">						&amp;&amp; !productId.getSource().equals(previousId.getSource())) {</span>
+					// incoming is not from preferred source
+<span class="nc" id="L158">					LOGGER.info(&quot;Skipping non-preferred shakemap, previous source='&quot;</span>
+<span class="nc" id="L159">							+ previousId.getSource()</span>
+							+ &quot;' incoming source='&quot;
+<span class="nc" id="L161">							+ productId.getSource()</span>
+							+ &quot;'&quot;);
+<span class="nc" id="L163">					return;</span>
+				}
+<span class="nc" id="L165">			} catch (Exception e) {</span>
+				// unable to load as a product, may be just a shakemap directory
+				// received via rsync instead of a shakemap product directory
+
+<span class="nc bnc" id="L169" title="All 2 branches missed.">				if (!productId.getSource().equals(shakemap.getEventSource())) {</span>
+					// only process if product source matches event source
+<span class="nc" id="L171">					LOGGER.info(&quot;Shakemap directory already exists, skipping non-preferred source '&quot;</span>
+<span class="nc" id="L172">							+ productId.getSource() + &quot;'&quot;);</span>
+<span class="nc" id="L173">					return;</span>
+				}
+<span class="nc" id="L175">			}</span>
+
+			// remove previous version
+<span class="nc" id="L178">			FileUtils.deleteTree(legacyDirectory);</span>
+		}
+
+		// passed filtering, so do what the product says
+<span class="nc" id="L182">		String source = translateShakeMapSource(shakemap.getEventSource());</span>
+<span class="nc" id="L183">		String code = shakemap.getEventSourceCode();</span>
+<span class="nc" id="L184">		boolean delete = false;</span>
+
+<span class="nc bnc" id="L186" title="All 2 branches missed.">		if (!shakemap.isDeleted()) {</span>
+			// write the original product, not the modified ShakeMap product.
+<span class="nc" id="L188">			new ObjectProductSource(product)</span>
+<span class="nc" id="L189">					.streamTo(new DirectoryProductHandler(legacyDirectory));</span>
+		} else {
+			// need to delete the shakemap, everywhere
+			// the indexer will handle the everywhere part...
+<span class="nc" id="L193">			delete = true;</span>
+		}
+
+		// run the indexer to update shakemap pages
+<span class="nc" id="L197">		int exitCode = runIndexer(source, code, delete);</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">		if (exitCode == 0) {</span>
+<span class="nc" id="L199">			new ProductTracker(product.getTrackerURL()).productIndexed(</span>
+<span class="nc" id="L200">					this.getName(), productId);</span>
+		} else {
+<span class="nc" id="L202">			throw new NotificationListenerException(&quot;[&quot; + getName()</span>
+					+ &quot;] command exited with status &quot; + exitCode);
+		}
+<span class="nc" id="L205">	}</span>
+
+	/**
+	 * Run the shakemap indexer.
+	 * 
+	 * If network and code are omitted, all events are updated.
+	 * 
+	 * @param network
+	 *            the network to update.
+	 * @param code
+	 *            the code to update.
+	 * @param delete
+	 *            whether indexer is handling a delete (true) or update (false).
+	 * @return -1 if indexer does not complete within max(1, getAttemptCount())
+	 *         times, or exit code if indexer completes.
+	 * @throws IOException
+	 */
+	public int runIndexer(final String network, final String code,
+			final boolean delete) throws Exception {
+		// build indexer command
+<span class="nc" id="L225">		StringBuffer updateCommand = new StringBuffer(indexerCommand);</span>
+<span class="nc bnc" id="L226" title="All 4 branches missed.">		if (network != null &amp;&amp; code != null) {</span>
+<span class="nc" id="L227">			updateCommand.append(&quot; --network=&quot;).append(network);</span>
+<span class="nc" id="L228">			updateCommand.append(&quot; --code=&quot;).append(code);</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">			if (delete) {</span>
+<span class="nc" id="L230">				updateCommand.append(&quot; --delete&quot;);</span>
+			}
+		}
+
+		// now run command
+<span class="nc" id="L235">		String productCommand = updateCommand.toString();</span>
+
+<span class="nc" id="L237">		Command command = new Command();</span>
+<span class="nc" id="L238">		command.setCommand(productCommand);</span>
+<span class="nc" id="L239">		command.setTimeout(indexerTimeout);</span>
+		try {
+<span class="nc" id="L241">			LOGGER.fine(&quot;[&quot; + getName() + &quot;] running command '&quot;</span>
+					+ productCommand + &quot;'&quot;);
+<span class="nc" id="L243">			command.execute();</span>
+
+<span class="nc" id="L245">			int exitCode = command.getExitCode();</span>
+<span class="nc" id="L246">			LOGGER.info(&quot;[&quot; + getName() + &quot;] command '&quot; + productCommand</span>
+					+ &quot;' exited with status '&quot; + exitCode + &quot;'&quot;);
+<span class="nc" id="L248">			return exitCode;</span>
+<span class="nc" id="L249">		} catch (CommandTimeout ct) {</span>
+<span class="nc" id="L250">			LOGGER.warning(&quot;[&quot; + getName() + &quot;] command '&quot; + productCommand</span>
+					+ &quot;' timed out&quot;);
+<span class="nc" id="L252">			return -1;</span>
+		}
+	}
+
+	/**
+	 * Get the directory for a particular shakemap.
+	 * 
+	 * @param shakemap
+	 *            the shakemap to find a directory for.
+	 * @return the shakemap directory.
+	 */
+	public File getEventDirectory(final ShakeMap shakemap) throws Exception {
+<span class="nc" id="L264">		String source = translateShakeMapSource(shakemap.getEventSource());</span>
+<span class="nc" id="L265">		String code = shakemap.getEventSourceCode();</span>
+
+<span class="nc" id="L267">		return new File(baseEventDirectory, source + &quot;/shake/&quot; + code);</span>
+	}
+
+	/**
+	 * Translate from an event source to the old style shakemap source.
+	 * 
+	 * Driven by the SOURCE_TRANSLATION_MAP.
+	 * 
+	 * @param eventSource
+	 *            the event network.
+	 * @return the shakemap network.
+	 */
+	public String translateShakeMapSource(final String eventSource) {
+<span class="nc bnc" id="L280" title="All 2 branches missed.">		if (SOURCE_TRANSLATION_MAP.containsKey(eventSource)) {</span>
+<span class="nc" id="L281">			return SOURCE_TRANSLATION_MAP.get(eventSource);</span>
+		}
+<span class="nc" id="L283">		return eventSource;</span>
+	}
+
+	/**
+	 * Configure this shakemap indexer.
+	 */
+	@Override
+	public void configure(final Config config) throws Exception {
+<span class="nc" id="L291">		super.configure(config);</span>
+
+<span class="nc" id="L293">		baseEventDirectory = new File(config.getProperty(</span>
+				SHAKEMAP_DIRECTORY_PROPERTY, DEFAULT_SHAKEMAP_DIRECTORY));
+<span class="nc" id="L295">		LOGGER.config(&quot;Shakemap event directory &quot;</span>
+<span class="nc" id="L296">				+ baseEventDirectory.getCanonicalPath());</span>
+
+<span class="nc" id="L298">		indexerCommand = config.getProperty(SHAKEMAP_INDEXER_COMMAND_PROPERTY,</span>
+				DEFAULT_SHAKEMAP_INDEXER_COMMAND);
+<span class="nc" id="L300">		LOGGER.config(&quot;Shakemap indexer command &quot; + indexerCommand);</span>
+
+<span class="nc" id="L302">		indexerTimeout = Long.valueOf(config.getProperty(</span>
+				COMMAND_TIMEOUT_PROPERTY, DEFAULT_COMMAND_TIMEOUT));
+<span class="nc" id="L304">		LOGGER.config(&quot;Shakemap indexer command timeout &quot; + indexerTimeout);</span>
+<span class="nc" id="L305">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

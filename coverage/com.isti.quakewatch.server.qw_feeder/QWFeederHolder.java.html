@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QWFeederHolder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">com.isti.quakewatch.server.qw_feeder</a> &gt; <span class="el_source">QWFeederHolder.java</span></div><h1>QWFeederHolder.java</h1><pre class="source lang-java linenums">package com.isti.quakewatch.server.qw_feeder;
+
+/**
+ * Holder class for : QWFeeder
+ * 
+ * @author OpenORB Compiler
+ */
+final public class QWFeederHolder
+        implements org.omg.CORBA.portable.Streamable
+{
+    /**
+     * Internal QWFeeder value
+     */
+    public com.isti.quakewatch.server.qw_feeder.QWFeeder value;
+
+    /**
+     * Default constructor
+     */
+    public QWFeederHolder()
+<span class="nc" id="L20">    { }</span>
+
+    /**
+     * Constructor with value initialisation
+     * @param initial the initial value
+     */
+    public QWFeederHolder(com.isti.quakewatch.server.qw_feeder.QWFeeder initial)
+<span class="nc" id="L27">    {</span>
+<span class="nc" id="L28">        value = initial;</span>
+<span class="nc" id="L29">    }</span>
+
+    /**
+     * Read QWFeeder from a marshalled stream
+     * @param istream the input stream
+     */
+    public void _read(org.omg.CORBA.portable.InputStream istream)
+    {
+<span class="nc" id="L37">        value = QWFeederHelper.read(istream);</span>
+<span class="nc" id="L38">    }</span>
+
+    /**
+     * Write QWFeeder into a marshalled stream
+     * @param ostream the output stream
+     */
+    public void _write(org.omg.CORBA.portable.OutputStream ostream)
+    {
+<span class="nc" id="L46">        QWFeederHelper.write(ostream,value);</span>
+<span class="nc" id="L47">    }</span>
+
+    /**
+     * Return the QWFeeder TypeCode
+     * @return a TypeCode
+     */
+    public org.omg.CORBA.TypeCode _type()
+    {
+<span class="nc" id="L55">        return QWFeederHelper.type();</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>associate Product Documentation</title>
+<link rel="stylesheet" href="../userguide.css" />
+</head>
+
+<body>
+<h1>associate Product Documentation</h1>
+<p><a href="index.html">&laquo; Back to Products Documentation</a></p>
+
+<p>This product is primarily used by the indexer.</p>
+
+<h2>Types</h2>
+<dl>
+	<dt>associate</dt>
+	<dd>Force an association between two events that may not associate
+	automatically.</dd>
+</dl>
+
+<h2>Sources</h2>
+<dl>
+	<dt>admin</dt>
+	<dd>Event Admin Web Pages (URL TBD)</dd>
+	<dd>Public Key</dd>
+</dl>
+
+<h2>Status</h2>
+<dl>
+	<dt>UPDATE</dt>
+	<dd>Add or update an association between two events.</dd>
+	<dt>DELETE</dt>
+	<dd>Remove a forced association between two events. NOTE: this
+	does NOT mean the events are unrelated, but the association between the
+	two events SHOULD be re-evaluated. (see also <a
+		href="disassociate.html">disassociate</a>).</dd>
+</dl>
+
+<h2>Properties</h2>
+<dl>
+	<dt>eventsource</dt>
+	<dd>The network code to which this product is related.</dd>
+
+	<dt>eventsourcecode</dt>
+	<dd>The network event code to which this product is related.</dd>
+
+	<dt>othereventsource</dt>
+	<dd>The network code of the event that should be associated.</dd>
+
+	<dt>othereventsourcecode</dt>
+	<dd>The network event code of the event that should be associated.</dd>
+</dl>
+
+<h2>Contents</h2>
+<dl>
+	<dt>""</dt>
+	<dd>A comment describing the reason for this association.</dd>
+</dl>
+
+<h2>Example</h2>
+<div class="code">
+	<code>
+		java -jar ProductClient.jar --send --type=associate --eventsource=&lt;eventsource&gt; --eventsourcecode=&lt;eventsourcecode&gt; --source=&lt;source&gt; --code=&lt;code&gt; --property-othereventsource=&lt;othereventsource&gt; --property-othereventsourcecode=&lt;othereventsourcecode&gt; 
+	</code>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EmbeddedPDLClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">EmbeddedPDLClient.java</span></div><h1>EmbeddedPDLClient.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.cube.CubeMessage;
+import gov.usgs.earthquake.eids.LegacyConverter;
+import gov.usgs.earthquake.eidsutil.EIDSClient;
+import gov.usgs.earthquake.product.Product;
+
+import java.io.File;
+
+/**
+ * An example of an embedded PDL client.
+ * 
+ * Creates a notification receiver, which store it's information in a specified
+ * directory. Listeners can be added to this receiver before its startup()
+ * method is called, which starts the distribution process.
+ */
+public class EmbeddedPDLClient {
+
+	/** name for embedded receiver, appears in log files. */
+	public static final String EMBEDDED_NAME = &quot;embeddedPDL&quot;;
+	/** name for eids tracking file, in data directory. */
+	public static final String EMBEDDED_TRACKING_FILE = &quot;receiver_tracking.dat&quot;;
+	/** name for notification index file, in data directory. */
+	public static final String EMBEDDED_INDEX_FILE = &quot;receiver_index.db&quot;;
+	/** name for receiver storage directory, in data directory. */
+	public static final String EMBEDDED_STORAGE_DIRECTORY = &quot;receiver_storage&quot;;
+
+	/** The notification receiver. */
+	private EIDSNotificationReceiver eidsReceiver;
+
+	/**
+	 * Construct an embedded PDL client.
+	 * 
+	 * @param dataDirectory
+	 *            directory where receiver files are stored.
+	 * @param serverHost
+	 *            PDL hub hostname.
+	 * @param serverPort
+	 *            PDL hub port.
+	 * @param alternateServersList
+	 *            comma separated list of &quot;hostname:port&quot; alternate pdl hubs.
+	 * @throws Exception
+	 */
+	public EmbeddedPDLClient(final File dataDirectory, final String serverHost,
+			final Integer serverPort, final String alternateServersList)
+<span class="nc" id="L46">			throws Exception {</span>
+<span class="nc" id="L47">		EIDSClient client = new EIDSClient();</span>
+<span class="nc" id="L48">		client.setServerHost(serverHost);</span>
+<span class="nc" id="L49">		client.setServerPort(serverPort);</span>
+<span class="nc" id="L50">		client.setAlternateServersList(alternateServersList);</span>
+<span class="nc" id="L51">		client.setTrackingFileName(new File(dataDirectory,</span>
+<span class="nc" id="L52">				EMBEDDED_TRACKING_FILE).getCanonicalPath());</span>
+
+		
+<span class="nc" id="L55">		eidsReceiver = new EIDSNotificationReceiver();</span>
+<span class="nc" id="L56">		eidsReceiver.setName(EMBEDDED_NAME);</span>
+<span class="nc" id="L57">		eidsReceiver.setNotificationIndex(new JDBCNotificationIndex(new File(</span>
+<span class="nc" id="L58">				dataDirectory, EMBEDDED_INDEX_FILE).getCanonicalPath()));</span>
+<span class="nc" id="L59">		eidsReceiver.setProductStorage(new FileProductStorage(new File(</span>
+				dataDirectory, EMBEDDED_STORAGE_DIRECTORY)));
+		// default these to 15 minutes
+<span class="nc" id="L62">		eidsReceiver.setProductStorageMaxAge(900000L);</span>
+<span class="nc" id="L63">		eidsReceiver.setReceiverCleanupInterval(900000L);</span>
+<span class="nc" id="L64">		eidsReceiver.setClient(client);</span>
+<span class="nc" id="L65">		client.addListener(eidsReceiver);</span>
+<span class="nc" id="L66">	}</span>
+
+	/**
+	 * Get the embedded EIDSNotificationReceiver object for further
+	 * configuration, adding/removing listeners, and starting/stopping
+	 * distribution.
+	 * 
+	 * @return the embedded EIDSNotificationReceiver object.
+	 */
+	public EIDSNotificationReceiver getReceiver() {
+<span class="nc" id="L76">		return eidsReceiver;</span>
+	}
+
+	/**
+	 * Example main method that uses the EmbeddedPDLClient.
+	 * 
+	 * @param args
+	 *            not used.
+	 * @throws Exception
+	 */
+	public static void main(final String[] args) throws Exception {
+		// disable product tracker messages
+<span class="nc" id="L88">		ProductTracker.setTrackerEnabled(false);</span>
+
+		// client for production hub
+<span class="nc" id="L91">		File dataDirectory = new File(&quot;embeddedStorage&quot;);</span>
+<span class="nc" id="L92">		String hostname = &quot;prod01-pdl01.cr.usgs.gov&quot;;</span>
+<span class="nc" id="L93">		Integer port = 39977;</span>
+<span class="nc" id="L94">		String alternateServers = &quot;prod02-pdl01.wr.usgs.gov:39977&quot;;</span>
+
+		// create embedded client
+<span class="nc" id="L97">		final EmbeddedPDLClient client = new EmbeddedPDLClient(dataDirectory,</span>
+				hostname, port, alternateServers);
+
+		// create a listener that tries to convert messages to cube
+<span class="nc" id="L101">		final DefaultNotificationListener listener = new DefaultNotificationListener() {</span>
+			// convert a product to a cube message, if possible
+<span class="nc" id="L103">			private final LegacyConverter converter = LegacyConverter</span>
+<span class="nc" id="L104">					.cubeConverter();</span>
+
+			@Override
+			public void onProduct(final Product product) {
+<span class="nc" id="L108">				System.err.println(&quot;Processing product &quot;</span>
+<span class="nc" id="L109">						+ product.getId().toString());</span>
+				try {
+<span class="nc" id="L111">					byte[] cubeBytes = converter.convert(product);</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">					if (cubeBytes != null) {</span>
+<span class="nc" id="L113">						CubeMessage cubeMessage = CubeMessage.parse(new String(</span>
+								cubeBytes));
+						// CubeMessage instanceof CubeEvent
+						// or CubeMessage instanceof CubeDelete
+<span class="nc" id="L117">						System.err.println(cubeMessage.toCUBE());</span>
+					}
+<span class="nc" id="L119">				} catch (Exception e) {</span>
+					// ignore
+<span class="nc" id="L121">				}</span>
+<span class="nc" id="L122">			}</span>
+		};
+		// only listen for origin messages
+<span class="nc" id="L125">		listener.getIncludeTypes().add(&quot;origin&quot;);</span>
+		// name appears in log messages
+<span class="nc" id="L127">		listener.setName(&quot;embeddedListener&quot;);</span>
+		// add listener index for more reliable notification across restarts
+<span class="nc" id="L129">		listener.setNotificationIndex(new JDBCNotificationIndex(new File(</span>
+<span class="nc" id="L130">				dataDirectory, &quot;embedded_listener_index.db&quot;).getCanonicalPath()));</span>
+
+		// add listener to receiver
+<span class="nc" id="L133">		client.getReceiver().addNotificationListener(listener);</span>
+
+		// start
+<span class="nc" id="L136">		listener.startup();</span>
+<span class="nc" id="L137">		client.getReceiver().startup();</span>
+
+<span class="nc" id="L139">		Runtime.getRuntime().addShutdownHook(new Thread() {</span>
+			public void run() {
+				try {
+<span class="nc" id="L142">					client.getReceiver().shutdown();</span>
+<span class="nc" id="L143">					listener.shutdown();</span>
+<span class="nc" id="L144">				} catch (Exception e) {</span>
+<span class="nc" id="L145">					e.printStackTrace();</span>
+<span class="nc" id="L146">				}</span>
+<span class="nc" id="L147">			}</span>
+		});
+<span class="nc" id="L149">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

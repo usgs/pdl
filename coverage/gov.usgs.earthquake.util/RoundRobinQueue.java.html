@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RoundRobinQueue.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.util</a> &gt; <span class="el_source">RoundRobinQueue.java</span></div><h1>RoundRobinQueue.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.util;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Queue;
+
+/**
+ * An abstract base class for round-robin queueing.
+ * 
+ * Sub classes should implement the {@link #getQueueId(Object)} to control how
+ * objects are added to queues.
+ * 
+ * @param &lt;T&gt;
+ *            type of object being queued.
+ */
+public class RoundRobinQueue&lt;T&gt; implements Queue&lt;T&gt; {
+
+	/**
+	 * Map of queues, keyed by queue id (as determined by
+	 * {@link #getQueueId(Object)}).
+	 */
+<span class="pc" id="L27">	private final HashMap&lt;String, LinkedList&lt;T&gt;&gt; queueMap = new HashMap&lt;String, LinkedList&lt;T&gt;&gt;();</span>
+
+	/**
+	 * List of queues, same as in map, in round-robin order.
+	 */
+<span class="pc" id="L32">	private final LinkedList&lt;LinkedList&lt;T&gt;&gt; queueList = new LinkedList&lt;LinkedList&lt;T&gt;&gt;();</span>
+
+	/** Default constructor. */
+<span class="fc" id="L35">	public RoundRobinQueue() {</span>
+<span class="fc" id="L36">	}</span>
+
+	/**
+	 * This method determines which queue an object uses.
+	 * 
+	 * @param object
+	 *            the object being added.
+	 * @return id of the queue where object should be added.
+	 */
+	protected String getQueueId(T object) {
+<span class="nc" id="L46">		return object.toString();</span>
+	}
+
+	/** ===================== BLOCKING QUEUE METHODS ======================= **/
+
+	/**
+	 * Add an item to the queue.
+	 * 
+	 * @param e
+	 *            item to add
+	 * @return true if added.
+	 */
+	@Override
+	public boolean add(T e) {
+		// find queue
+<span class="fc" id="L61">		String queueId = getQueueId(e);</span>
+<span class="fc" id="L62">		LinkedList&lt;T&gt; queue = queueMap.get(queueId);</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">		if (queue == null) {</span>
+			// create queue
+<span class="fc" id="L65">			queue = new LinkedList&lt;T&gt;();</span>
+<span class="fc" id="L66">			queueMap.put(queueId, queue);</span>
+<span class="fc" id="L67">			queueList.add(queue);</span>
+		}
+		// add to queue
+<span class="fc" id="L70">		return queue.add(e);</span>
+	}
+
+	/**
+	 * Add an item to the queue, if possible.
+	 * 
+	 * @param e
+	 *            item to add
+	 * @return true if added, false otherwise.
+	 */
+	@Override
+	public boolean offer(T e) {
+		try {
+			// this could in theory throw an unchecked exception
+<span class="nc" id="L84">			return this.add(e);</span>
+<span class="nc" id="L85">		} catch (Exception ex) {</span>
+<span class="nc" id="L86">			return false;</span>
+		}
+	}
+
+	/**
+	 * Retrieves and removes the head of this queue.
+	 * 
+	 * @return first element in queue.
+	 * @throws NoSuchElementException
+	 *             if queue is empty.
+	 */
+	@Override
+	public T remove() {
+<span class="fc bfc" id="L99" title="All 2 branches covered.">		if (queueList.size() == 0) {</span>
+<span class="fc" id="L100">			throw new NoSuchElementException();</span>
+		}
+
+<span class="fc" id="L103">		T next = null;</span>
+		// find queue
+<span class="fc" id="L105">		LinkedList&lt;T&gt; nextQueue = queueList.removeFirst();</span>
+		// take first item
+<span class="fc" id="L107">		next = nextQueue.removeFirst();</span>
+		// reschedule queue
+<span class="fc bfc" id="L109" title="All 2 branches covered.">		if (nextQueue.size() == 0) {</span>
+			// queue is empty, remove
+<span class="fc" id="L111">			String queueId = getQueueId(next);</span>
+<span class="fc" id="L112">			queueMap.remove(queueId);</span>
+<span class="fc" id="L113">		} else {</span>
+			// move to end of round robin list
+<span class="fc" id="L115">			queueList.add(nextQueue);</span>
+		}
+<span class="fc" id="L117">		return next;</span>
+	}
+
+	/**
+	 * Retrieves, but does not remove, the head of this queue. This method
+	 * differs from the {@link #peek()} method only in that it throws an
+	 * exception if this queue is empty.
+	 * 
+	 * @return the head of this queue.
+	 * @throws NoSuchElementException
+	 *             if this queue is empty.
+	 */
+	@Override
+	public T element() {
+<span class="nc bnc" id="L131" title="All 2 branches missed.">		if (queueList.size() == 0) {</span>
+<span class="nc" id="L132">			throw new NoSuchElementException();</span>
+		}
+<span class="nc" id="L134">		LinkedList&lt;T&gt; nextQueue = queueList.getFirst();</span>
+<span class="nc" id="L135">		return nextQueue.getFirst();</span>
+	}
+
+	/**
+	 * Retrieves and removes the head of this queue.
+	 * 
+	 * @return the head of this queue, or null if this queue is empty.
+	 */
+	@Override
+	public T poll() {
+		try {
+<span class="nc" id="L146">			return remove();</span>
+<span class="fc" id="L147">		} catch (NoSuchElementException nsee) {</span>
+<span class="fc" id="L148">			return null;</span>
+		}
+	}
+
+	/**
+	 * Retrieves, but does not remove, the head of this queue, returning null if
+	 * this queue is empty.
+	 * 
+	 * @return the head of this queue, or null if this queue is empty.
+	 */
+	@Override
+	public T peek() {
+		try {
+<span class="nc" id="L161">			return element();</span>
+<span class="nc" id="L162">		} catch (NoSuchElementException nsee) {</span>
+<span class="nc" id="L163">			return null;</span>
+		}
+	}
+
+	/** ======================= COLLECTION METHODS ========================= **/
+
+	@Override
+	public boolean addAll(Collection&lt;? extends T&gt; c) {
+<span class="nc" id="L171">		Iterator&lt;? extends T&gt; iter = c.iterator();</span>
+<span class="nc" id="L172">		boolean added = false;</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc bnc" id="L174" title="All 4 branches missed.">			added = add(iter.next()) || added;</span>
+		}
+<span class="nc" id="L176">		return added;</span>
+	}
+
+	@Override
+	public void clear() {
+<span class="nc" id="L181">		queueList.clear();</span>
+<span class="nc" id="L182">		queueMap.clear();</span>
+<span class="nc" id="L183">	}</span>
+
+	@Override
+	public boolean containsAll(Collection&lt;?&gt; c) {
+<span class="nc" id="L187">		Iterator&lt;?&gt; iter = c.iterator();</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">			if (!contains(iter.next())) {</span>
+<span class="nc" id="L190">				return false;</span>
+			}
+		}
+<span class="nc" id="L193">		return true;</span>
+	}
+
+	@Override
+	public boolean isEmpty() {
+<span class="fc" id="L198">		return queueList.isEmpty();</span>
+	}
+
+	@Override
+	public boolean removeAll(Collection&lt;?&gt; c) {
+<span class="nc" id="L203">		Iterator&lt;?&gt; iter = c.iterator();</span>
+<span class="nc" id="L204">		boolean removed = false;</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc bnc" id="L206" title="All 4 branches missed.">			removed = remove(iter.next()) || removed;</span>
+		}
+<span class="nc" id="L208">		return removed;</span>
+	}
+
+	@Override
+	public int size() {
+<span class="fc" id="L213">		int size = 0;</span>
+<span class="fc" id="L214">		Iterator&lt;LinkedList&lt;T&gt;&gt; iter = queueList.iterator();</span>
+<span class="fc bfc" id="L215" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L216">			size = size + iter.next().size();</span>
+		}
+<span class="fc" id="L218">		return size;</span>
+	}
+
+	@Override
+	public boolean contains(Object o) {
+		try {
+			@SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L225">			String queueId = getQueueId((T) o);</span>
+<span class="nc" id="L226">			LinkedList&lt;T&gt; queue = queueMap.get(queueId);</span>
+<span class="nc" id="L227">			return queue.contains(o);</span>
+<span class="nc" id="L228">		} catch (Exception e) {</span>
+<span class="nc" id="L229">			return false;</span>
+		}
+	}
+
+	@Override
+	public boolean remove(Object o) {
+		try {
+			@SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L237">			String queueId = getQueueId((T) o);</span>
+<span class="nc" id="L238">			LinkedList&lt;T&gt; queue = queueMap.get(queueId);</span>
+<span class="nc" id="L239">			boolean removed = queue.remove(o);</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">			if (queue.isEmpty()) {</span>
+<span class="nc" id="L241">				queueMap.remove(queueId);</span>
+<span class="nc" id="L242">				queueList.remove(queue);</span>
+			}
+<span class="nc" id="L244">			return removed;</span>
+<span class="nc" id="L245">		} catch (Exception e) {</span>
+<span class="nc" id="L246">			return false;</span>
+		}
+	}
+
+	/** ==================== HORRIBLY INEFFICIENT =========================== */
+
+	/**
+	 * Deep copy of another RoundRobinQueue.
+	 * 
+	 * This method is used for semi-destructive iteration methods.
+	 * 
+	 * NOTE: this assumes {@link #getQueueId(Object)} behaves the same for this
+	 * and that.
+	 * 
+	 * @param that
+	 */
+<span class="nc" id="L262">	public RoundRobinQueue(final RoundRobinQueue&lt;T&gt; that) {</span>
+<span class="nc" id="L263">		Iterator&lt;LinkedList&lt;T&gt;&gt; iter = that.queueList.iterator();</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+			// copy list
+<span class="nc" id="L266">			LinkedList&lt;T&gt; copy = new LinkedList&lt;T&gt;(iter.next());</span>
+			// add to round robin list
+<span class="nc" id="L268">			this.queueList.add(copy);</span>
+			// add to map
+<span class="nc" id="L270">			String queueId = that.getQueueId(copy.get(0));</span>
+<span class="nc" id="L271">			this.queueMap.put(queueId, copy);</span>
+<span class="nc" id="L272">		}</span>
+<span class="nc" id="L273">	}</span>
+
+	/**
+	 * Flatten queue to a list.
+	 * 
+	 * Creates a copy (see {@link #RoundRobinQueue(RoundRobinQueue)}, then
+	 * builds list by polling until it is empty.
+	 * 
+	 * @return list of all items currently in queue.
+	 */
+	public List&lt;T&gt; toList() {
+<span class="nc" id="L284">		ArrayList&lt;T&gt; list = new ArrayList&lt;T&gt;(this.size());</span>
+<span class="nc" id="L285">		RoundRobinQueue&lt;T&gt; copy = new RoundRobinQueue&lt;T&gt;(this);</span>
+		while (true) {
+<span class="nc" id="L287">			T next = copy.poll();</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">			if (next == null) {</span>
+				// done
+<span class="nc" id="L290">				break;</span>
+			}
+<span class="nc" id="L292">			list.add(next);</span>
+<span class="nc" id="L293">		}</span>
+<span class="nc" id="L294">		return list;</span>
+	}
+
+	@Override
+	public Iterator&lt;T&gt; iterator() {
+<span class="nc" id="L299">		return this.toList().iterator();</span>
+	}
+
+	@Override
+	public Object[] toArray() {
+<span class="nc" id="L304">		return this.toList().toArray();</span>
+	}
+
+	@Override
+	public &lt;T2&gt; T2[] toArray(T2[] array) {
+<span class="nc" id="L309">		return this.toList().toArray(array);</span>
+	}
+
+	@Override
+	public boolean retainAll(Collection&lt;?&gt; c) {
+<span class="nc" id="L314">		List&lt;T&gt; toremove = this.toList();</span>
+<span class="nc" id="L315">		toremove.removeAll(c);</span>
+<span class="nc" id="L316">		return this.removeAll(toremove);</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

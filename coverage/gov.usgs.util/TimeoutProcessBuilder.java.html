@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TimeoutProcessBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util</a> &gt; <span class="el_source">TimeoutProcessBuilder.java</span></div><h1>TimeoutProcessBuilder.java</h1><pre class="source lang-java linenums">/*
+ * TimeoutProcessBuilder
+ * 
+ * $Id$
+ * $URL$
+ */
+package gov.usgs.util;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+
+/**
+ * The TimeoutProcessBuilder wraps a ProcessBuilder, adding support for a
+ * command time out.
+ * 
+ * This class does not support a full command String complete with arguments.
+ * You can use the StringUtils.split method to get around this.
+ * 
+ * @see java.lang.ProcessBuilder
+ * @see TimeoutProcess
+ */
+public class TimeoutProcessBuilder {
+
+	/** The wrapped process builder. */
+<span class="pc" id="L29">	private ProcessBuilder builder = null;</span>
+	/** The timeout for this process. */
+<span class="pc" id="L31">	private long timeout = -1;</span>
+
+	/**
+	 * Create a new TimeoutProcessBuilder with a timeout and an array of
+	 * strings.
+	 * 
+	 * @param timeout
+	 *            timeout in milliseconds for process, or &amp;lt;= 0 for no timeout.
+	 * @param command
+	 *            array of strings that represent command. The first element
+	 *            must be the full path to the executable, without arguments.
+	 */
+<span class="nc" id="L43">	public TimeoutProcessBuilder(long timeout, String... command) {</span>
+<span class="nc" id="L44">		builder = new ProcessBuilder(command);</span>
+<span class="nc" id="L45">		this.timeout = timeout;</span>
+<span class="nc" id="L46">	}</span>
+
+	/**
+	 * Create a new TimeoutProcessBuilder with a timeout and an array of
+	 * strings.
+	 * 
+	 * @param timeout
+	 *            timeout in milliseconds for process, or &amp;lt;= 0 for no timeout.
+	 * @param command
+	 *            list of strings that represent command.
+	 */
+<span class="fc" id="L57">	public TimeoutProcessBuilder(long timeout, List&lt;String&gt; command) {</span>
+<span class="fc" id="L58">		builder = new ProcessBuilder(command);</span>
+<span class="fc" id="L59">		this.timeout = timeout;</span>
+
+<span class="fc" id="L61">	}</span>
+
+	/**
+	 * This signature is preserved, but calls the alternate constructor with
+	 * argument order swapped.
+	 */
+	@Deprecated
+	public TimeoutProcessBuilder(List&lt;String&gt; command, long timeout) {
+<span class="nc" id="L69">		this(timeout, command);</span>
+<span class="nc" id="L70">	}</span>
+
+	public List&lt;String&gt; command() {
+<span class="nc" id="L73">		return builder.command();</span>
+	}
+
+	public TimeoutProcessBuilder command(List&lt;String&gt; command) {
+<span class="nc" id="L77">		builder.command(command);</span>
+<span class="nc" id="L78">		return this;</span>
+	}
+
+	public TimeoutProcessBuilder command(String command) {
+<span class="nc" id="L82">		builder.command(command);</span>
+<span class="nc" id="L83">		return this;</span>
+	}
+
+	public File directory() {
+<span class="nc" id="L87">		return builder.directory();</span>
+	}
+
+	public TimeoutProcessBuilder directory(File directory) {
+<span class="fc" id="L91">		builder.directory(directory);</span>
+<span class="fc" id="L92">		return this;</span>
+	}
+
+	public Map&lt;String, String&gt; environment() {
+<span class="nc" id="L96">		return builder.environment();</span>
+	}
+
+	public boolean redirectErrorStream() {
+<span class="nc" id="L100">		return builder.redirectErrorStream();</span>
+	}
+
+	public TimeoutProcessBuilder redirectErrorStream(boolean redirectErrorStream) {
+<span class="nc" id="L104">		builder.redirectErrorStream(redirectErrorStream);</span>
+<span class="nc" id="L105">		return this;</span>
+	}
+
+	public TimeoutProcess start() throws IOException {
+<span class="fc" id="L109">		final TimeoutProcess process = new TimeoutProcess(builder.start());</span>
+
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">		if (timeout &gt; 0) {</span>
+			// set up the timeout for this process
+<span class="nc" id="L113">			final Timer timer = new Timer();</span>
+<span class="nc" id="L114">			timer.schedule(new TimerTask() {</span>
+				@Override
+				public void run() {
+<span class="nc" id="L117">					process.setTimeoutElapsed(true);</span>
+<span class="nc" id="L118">					process.destroy();</span>
+<span class="nc" id="L119">				}</span>
+			}, timeout);
+<span class="nc" id="L121">			process.setTimer(timer);</span>
+		}
+
+<span class="fc" id="L124">		return process;</span>
+	}
+
+	public long getTimeout() {
+<span class="nc" id="L128">		return this.timeout;</span>
+	}
+
+	public void setTimeout(final long timeout) {
+<span class="nc" id="L132">		this.timeout = timeout;</span>
+<span class="nc" id="L133">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

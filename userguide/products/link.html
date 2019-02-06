@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Link Products</title>
+  <link rel="stylesheet" type="text/css" href="../userguide.css" />
+</head>
+<body>
+  <h1>Link Products</h1>
+  <a href="index.html">&laquo; Back to Products Documentation</a>
+
+  <hr/>
+
+
+  <h2>Introduction</h2>
+  <p>
+    Link products reference web pages where additional information can be found
+    about an event.  These should usually only be used when the content cannot
+    be sent as a product.  There are limited other suggested uses.
+  </p>
+
+
+  <h2>Types</h2>
+  <dl>
+    <dt>general-link</dt>
+    <dd>
+      Displayed under the "For More Information" heading at the bottom of the
+          General Summary section of the event page.
+
+      <p>These addon codes can be used with <code>general-link</code>:</p>
+      <ul>
+        <li>Aftershock</li>
+        <li>AfterWarn</li>
+        <li>ASW</li>
+        <li>GeneralMisc</li>
+      </ul>
+    </dd>
+
+    <dt>scitech-link</dt>
+    <dd>
+      Displayed under the "For More Information" heading at the bottom of the
+          Scientific Summary section of the event page.
+
+      <p>These addon codes can be used with <code>scitech-link</code>:</p>
+      <ul>
+        <li>Energy</li>
+        <li>FocalMech</li>
+        <li>HistMomentTensor</li>
+        <li>FiniteFault</li>
+        <li>MomentTensor</li>
+        <li>Phase</li>
+        <li>SeisCrossSec</li>
+        <li>SeisRecSec</li>
+        <li>TravelTimes</li>
+        <li>Waveform</li>
+        <li>Seismograms</li>
+        <li>SciTechMisc</li>
+      </ul>
+    </dd>
+
+    <dt>impact-link</dt>
+    <dd>
+      Displayed under the "For More Information" heading at the bottom of the
+          Impact Summary section of the event page.
+
+      <p>
+        <code>impact-link</code> products using addon code
+            <code>TsunamiLinks</code> are not currently displayed on the event
+            page and instead result in a tsunami icon linking to tsunami.gov
+            in the Quick Summary section of the event page.
+      </p>
+
+      <p>These addon codes can be used with <code>impact-link</code>:</p>
+      <ul>
+        <li>TsunamiLinks</li>
+        <li>ImpactMisc</li>
+      </ul>
+    </dd>       
+  </dl>
+
+
+  <h2>Properties</h2>
+  <dl>
+    <dt>addon-type</dt>
+    <dd>
+      This property is only required for compatibility with CISN Display.
+      Value should be <code>LinkURL</code>.
+    </dd>
+
+    <dt>addon-code</dt>
+    <dd>
+      This property is only required for compatibility with CISN Display.
+
+      Value should begin with one of the addon codes listed above.
+      Within an event each addon-code should be unique from a given source.
+      To send multiple links with the same addon code, use a sequence number
+          as a suffix, for example<code>FocalMech01</code>
+    </dd>
+
+    <dt>url</dt>
+    <dd>
+      The URL href for the link.
+      This should be an absolute URL including protocol, such as
+          <code>http://www.google.com/</code>.
+    </dd>
+
+    <dt>text</dt>
+    <dd>The display text for the link.</dd>
+  </dl>
+
+
+  <h2>Contents</h2>
+  <p><em>Not applicable</em></p>
+
+
+  <h2>Example</h2>
+
+  <h3>Send Command</h3>
+  <em>NOTE: backslashes added for readability, command is one line.</em>
+  <div class="code"><pre>java -jar ProductClient.jar \
+    --send \
+    --source=nc \
+    --type=scitech-link \
+    --code=nc1234_FocalMech01 \
+    --property-eventsource=nc \
+    --property-eventsourcecode=1234 \
+    --property-addon-type=LinkURL \
+    --property-addon-code=FocalMech01 \
+    "--property-text=NCSS First Motion Mechanism 1" \
+    --property-url=http://www.ncedc.org/recenteqs/QuakeAddons/nc72398140.ncfm1.html</pre></div>
+
+  <h3>Resulting Link</h3>
+  <p>This link would be displayed at the bottom of the Scientific Summary section of the event page:</p>
+
+  <div class="code"><pre><a
+    href="http://www.ncedc.org/recenteqs/QuakeAddons/nc72398140.ncfm1.html"
+    >NCSS First Motion Mechanism 1</a></pre></div>
+
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Monitoring</title>
+<link rel="stylesheet" href="userguide.css" />
+</head>
+
+<body>
+<h1>Monitoring</h1>
+<p><a href="../index.html#documentation">&laquo; Back to User Guide</a></p>
+
+<h2>JMX - java management api</h2>
+<h3>Configuration</h3>
+<p>Local processes can be monitored using <code>jconsole</code></p>
+
+<p>Enable remote JMX monitoring by adding arguments to the java
+command in init.sh(unix) or run.bat(windows). <em>NOTE: when
+editing the init script, be sure the process is NOT currently running
+(./init.sh stop) and will not be restarted by cron during editing.</em></p>
+
+<p>These arguments enable remote monitoring using a socket with no
+encryption or authentication:</p>
+<div class="code"><pre>
+-Dcom.sun.management.jmxremote=true
+-Dcom.sun.management.jmxremote.port=11237
+-Dcom.sun.management.jmxremote.ssl=false
+-Dcom.sun.management.jmxremote.authenticate=false
+</pre></div>
+<p>For more advanced configuration, see <a
+	href="http://download.oracle.com/javase/1.5.0/docs/guide/management/agent.html">http://download.oracle.com/javase/1.5.0/docs/guide/management/agent.html</a></p>
+
+
+<h3>MBean</h3>
+<p>The ProductClient provides an MBean for JMX monitoring.</p>
+
+<dt>Object Name</dt>
+<dd>ProductClient:name=jmx</dd>
+
+<dt>Attributes</dt>
+
+<dd>
+<dl>
+	<dt>ListenerQueueStatus</dt>
+	<dd>Tab delimited text summary of listener queue sizes. Format is
+	<pre>queueSize&lt;tab&gt;listener&lt;tab&gt;receiver</pre></dd>
+
+	<dt>MaxMemory</dt>
+	<dd>Value of Runtime.maxMemory()</dd>
+
+	<dt>FreeMemory</dt>
+	<dd>value of Runtime.freeMemory()</dd>
+
+	<dt>Version</dt>
+	<dd>build version of client</dd>
+</dd>
+</dl>
+
+
+
+<h2>Nagios</h2>
+
+<p>Nagios integrates with JMX using a plugin from <a
+	href="http://snippets.syabru.ch/nagios-jmx-plugin/">http://snippets.syabru.ch/nagios-jmx-plugin/</a>.
+</p>
+
+<p>Example usage</p>
+<div class="code"><pre>
+java -jar ../nagios-jmx-plugin-1.2.3/check_jmx.jar -U service:jmx:rmi:///jndi/rmi://localhost:11237/jmxrmi -O ProductClient:name=jmx -A ListenerQueueStatus
+</pre></div>
+
+<dl>
+	<dt>java -jar ../nagios-jmx-plugin-1.2.3/check_jmx.jar</dt>
+	<dd>Run check_jmx.jar using java. Run the jar file with no
+	arguments for usage.</dd>
+
+	<dt>-U service:jmx:rmi:///jndi/rmi://localhost:11237/jmxrmi</dt>
+	<dd>The service url. Additional arguments may be needed if a
+	username/password is configured.</dd>
+
+	<dt>-O ProductClient:name=jmx</dt>
+	<dd>Object name</dd>
+
+	<dt>-A ListenerQueueStatus</dt>
+	<dd>Attribute name</dd>
+</dl>
+
+
+<h2>Zabbix</h2>
+
+<p>Add or change the enableZabbix setting to config.ini and restart
+the client.</p>
+<div class="code"><pre>
+enableZabbix=true
+</pre></div>
+
+<p>See <a href="http://www.kjkoster.org/zapcat/How_To.html">http://www.kjkoster.org/zapcat/How_To.html</a>
+for information on how to configure the application in zabbix.</p>
+</body>
+</html>

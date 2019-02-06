@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>URLNotificationParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">URLNotificationParser.java</span></div><h1>URLNotificationParser.java</h1><pre class="source lang-java linenums">/*
+ * URLNotificationParser
+ */
+package gov.usgs.earthquake.distribution;
+
+import java.net.URL;
+import java.util.Date;
+
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.SAXAdapter;
+import gov.usgs.util.XmlUtils;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
+public class URLNotificationParser extends SAXAdapter {
+
+	public static final String PRODUCT_XML_NAMESPACE = &quot;http://earthquake.usgs.gov/distribution/product&quot;;
+
+	public static final String NOTIFICATION_ELEMENT = &quot;notification&quot;;
+	public static final String ATTRIBUTE_PRODUCT_ID = &quot;id&quot;;
+	public static final String ATTRIBUTE_PRODUCT_UPDATED = &quot;updated&quot;;
+	public static final String ATTRIBUTE_TRACKER_URL = &quot;trackerURL&quot;;
+	public static final String ATTRIBUTE_EXPIRES = &quot;expires&quot;;
+	public static final String ATTRIBUTE_URL = &quot;url&quot;;
+
+	/** The parsed notification. */
+	private URLNotification notification;
+
+	/**
+	 * Construct a URLNotificationParser. This class is not intended to be
+	 * instantiated directly. Instead, use the static URLNotification.parse
+	 * method.
+	 */
+<span class="fc" id="L35">	protected URLNotificationParser() {</span>
+<span class="fc" id="L36">	}</span>
+
+	/**
+	 * @return the parsed notification
+	 */
+	public URLNotification getNotification() {
+<span class="fc" id="L42">		return notification;</span>
+	}
+
+	/**
+	 * SAXAdapter start element handler.
+	 * 
+	 * @param uri
+	 *            element uri.
+	 * @param localName
+	 *            element localName.
+	 * @param qName
+	 *            element qName.
+	 * @param attributes
+	 *            element attributes.
+	 * @throws SAXException
+	 *             if there is an error.
+	 */
+	public void onStartElement(final String uri, final String localName,
+			final String qName, final Attributes attributes)
+			throws SAXException {
+
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">		if (!uri.equals(PRODUCT_XML_NAMESPACE)) {</span>
+<span class="nc" id="L64">			return;</span>
+		}
+
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">		if (localName.equals(NOTIFICATION_ELEMENT)) {</span>
+<span class="fc" id="L68">			ProductId id = ProductId.parse(XmlUtils.getAttribute(</span>
+					attributes, uri, ATTRIBUTE_PRODUCT_ID));
+<span class="fc" id="L70">			id.setUpdateTime(XmlUtils.getDate(XmlUtils.getAttribute(</span>
+					attributes, uri, ATTRIBUTE_PRODUCT_UPDATED)));
+
+<span class="fc" id="L73">			URL trackerURL = null;</span>
+			try {
+<span class="fc" id="L75">				trackerURL = new URL(XmlUtils.getAttribute(attributes, uri,</span>
+						ATTRIBUTE_TRACKER_URL));
+<span class="nc" id="L77">			} catch (Exception e) {</span>
+<span class="nc" id="L78">				throw new SAXException(&quot;Unable to parse tracker url&quot;, e);</span>
+<span class="fc" id="L79">			}</span>
+
+<span class="fc" id="L81">			Date expirationDate = XmlUtils.getDate(XmlUtils.getAttribute(</span>
+					attributes, uri, ATTRIBUTE_EXPIRES));
+
+<span class="fc" id="L84">			URL productURL = null;</span>
+			try {
+<span class="fc" id="L86">				productURL = new URL(XmlUtils.getAttribute(attributes, uri,</span>
+						ATTRIBUTE_URL));
+<span class="nc" id="L88">			} catch (Exception e) {</span>
+<span class="nc" id="L89">				throw new SAXException(&quot;Unable to parse product url&quot;, e);</span>
+<span class="fc" id="L90">			}</span>
+
+<span class="fc" id="L92">			notification = new URLNotification(id, expirationDate,</span>
+					trackerURL, productURL);
+		}
+<span class="fc" id="L95">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

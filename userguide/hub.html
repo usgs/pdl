@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PDL Hub Setup Instructions</title>
+<link rel="stylesheet" type="text/css" href="userguide.css" />
+<style>
+@media print {
+	a:after {
+		content: " (" attr(href) ")";
+		font-size: smaller;
+	}
+}
+</style>
+</head>
+
+<body>
+	<h1>PDL Hub Setup Instructions</h1>
+	<p>
+		<a href="../index.html">&laquo; Back to User Guide</a>
+	</p>
+
+	<h2>Navigation</h2>
+	<ul>
+		<li><a href="#dependencies">Dependencies</a></li>
+		<li><a href="#firewall">PDL Client Downloads</a></li>
+		<li><a href="#install">Install</a></li>
+		<li><a href="#crontab">Automatic Scheduling</a></li>
+	</ul>
+
+	<hr />
+
+
+	<h2 id="dependencies">Dependencies</h2>
+	<ul>
+		<li><a href="install.html#requirements">PDL System
+				Requirements</a></li>
+		<li>EIDS Server</li>
+		<li>HTTP Server<br /> <small>These instructions assume
+				Apache with mod_alias and mod_deflate are installed.</small></li>
+		<li>Linux/Unix Operating System<br /> <small>While this
+				is not a requirement, it is a strong recommendation.</small></li>
+	</ul>
+
+
+	<h2 id="firewall">Firewall ports</h2>
+	<p>These are the default ports that are required to run a PDL Hub.
+		If you use not standard ports, then adjust your rules accordingly.</p>
+	<dl>
+		<dt>
+			Contribute Products<br /> <small>Access to this port can be
+				restricted to known senders.</small>
+		</dt>
+		<dd>TCP 11235 - Senders upload products to this port.</dd>
+
+		<dt>
+			Receive Products<br /> <small>Access to these ports can be
+				restricted to known clients.</small>
+		</dt>
+		<dd>TCP 39977, 39988 - Clients receive notifications using EIDS.</dd>
+		<dd>TCP 80 - Clients download products using HTTP.</dd>
+	</dl>
+
+
+	<h2 id="install">Installation</h2>
+
+	<p>Before starting installation, determine the following
+		information.</p>
+	<ul>
+		<li>Public IP of server "IP".</li>
+		<li>Public hostname of server "FQDN".</li>
+		<li>Public hostname of any peer hubs "PEER_FQDN".</li>
+		<li>An install directory for components "INSTALL".</li>
+	</ul>
+
+	<h3>User Account</h3>
+	<p>
+		It is recommended run the PDL and EIDS processes in a dedicated
+		service account. Additionally, PDL and EIDS are resource hogs and <strong>will</strong>
+		exceed default file handle limits. <a
+			href="https://access.redhat.com/site/documentation/en-US/Red_Hat_Directory_Server/8.2/html/Performance_Tuning_Guide/system-tuning.html#system-shell-settings">These
+			can be changed in limits.conf on linux systems</a>. A limit not less than
+		65000 open files is recommended.
+	</p>
+
+	<h3>PDL</h3>
+	<p>
+			Download ProductClient.zip from the
+			<a href="https://github.com/usgs/pdl/releases">PDL GitHub releases page</a>
+			and unzip into the "INSTALL" directory.
+	</p>
+
+	<p>
+		Any configuration changes require a process restart, which can be done
+		using the command
+		<code>INSTALL/init.sh restart</code>
+		. In a group of several peer hubs, it is recommended that clients
+		configure one primary hub, and a list of alternateServers. Then an
+		individual hub in the group can be restarted for maintenance and
+		clients will automatically fail over to another hub.
+	</p>
+
+	<p>Several pieces that must be customized are in bold:</p>
+	<ul>
+		<li>PEER_FQDN if other peer hubs are being configured; and the
+			entire peer_receiver section should be duplicated (with a different
+			name) for each peer hub as opposed to adding other servers to the
+			alternateServers list. This ensures that if a product is sent to any
+			one server in the group, all servers are connected and will receive
+			that product. If no peer hubs are desired, remove <code>peer_receiver_1</code>
+			from the <code>receivers</code> list and it will not be loaded.
+		</li>
+		<li>The FQDN in the hub_sender_storage must be configured</li>
+		<li>The keychain in the hub_receiver_storage, and individual
+			sections for each key must be configured. If other hubs up/down
+			stream from this hub will be distributing products, they will also
+			need the keys configured because each hub verifies the signature of
+			all products distributed before distribution. <a href="sending.html">Additional
+				information for Product Keys</a>.
+		</li>
+		<li><a href="configuration.html">PDL Userguide Configuration page</a>.</li>
+	</ul>
+
+
+	<div class="code">
+		<pre>
+;; PDL Hub Example Configuration
+
+; list of receivers, hub_receiver should always be here.
+; peer receivers can be added or removed from this list as needed.
+receivers = hub_receiver, peer_receiver_1
+
+
+; list of listeners, hub_sender sends notifications to users
+listeners = hub_sender
+
+
+; logging configuration
+logdirectory = data/log
+loglevel = FINE
+redirectconsole = true
+enableTracker = false
+
+
+
+;; receive products directly from senders
+[hub_receiver]
+type = gov.usgs.earthquake.distribution.SocketProductReceiver
+storage = receiver_storage
+index = receiver_index
+port = 11235
+;; only configure cleanupInterval on one receiver
+; how long to wait before checking for expired products
+; 900000 milliseconds = 15 minutes
+cleanupInterval = 900000
+; how old products are before considered expired
+; 900000 milliseconds = 15 minutes
+storageage = 3600000
+
+
+;; receive products from a peer hub
+[peer_receiver_1]
+type = gov.usgs.earthquake.distribution.EIDSNotificationReceiver
+storage = receiver_storage
+index = receiver_index
+serverHost = <strong>PEER_FQDN</strong>
+serverPort = 39977
+alternateServers = 
+trackingfile = data/receiver_peer_1_tracking.dat
+; the index and storage are shared by both receivers
+; 0 milliseconds = disable this receiver's cleanup thread
+cleanupInterval = 0
+; how old products are before considered expired
+; 900000 milliseconds = 15 minutes
+storageage = 3600000
+
+
+;; this listener is used by hubs to send notifications to clients
+[hub_sender]
+type = gov.usgs.earthquake.distribution.EIDSNotificationSender
+listenerIndex = hub_sender_index
+storage = hub_sender_storage
+serverHost = localhost
+serverPort = 38800
+serverPolldir = EIDS/polldir
+; how long to wait before checking for expired products
+; 3600000 milliseconds = 1 hour
+cleanupInterval = 3600000
+; how old products are before considered expired
+; 604800000 milliseconds = 1 week
+storageage = 604800000
+includeScenarios = true
+
+[hub_sender_index]
+type = gov.usgs.earthquake.distribution.JDBCNotificationIndex
+indexfile = data/sender_index.db
+
+[hub_sender_storage]
+type = gov.usgs.earthquake.distribution.URLProductStorage
+url = http://<strong>FQDN</strong>/products/
+directory = data/htdocs
+
+
+; these components are shared by all receivers
+[receiver_index]
+type = gov.usgs.earthquake.distribution.JDBCNotificationIndex
+indexfile = data/receiver_index.db
+
+[receiver_storage]
+type = gov.usgs.earthquake.distribution.FileProductStorage
+directory = data/receiver_storage
+verifySignatures = true
+; each item in the keychain refers to a key configured in a section below
+keychain = <strong>key_sender_1, key_sender_N</strong>
+<strong>
+[key_sender_1]
+type = gov.usgs.earthquake.distribution.ProductKey
+sources = us
+types = losspager
+key = ssh-dss AAAAB3NzaC1kc3M....FzN5qskQ= key comment
+
+[key_sender_N]
+type = gov.usgs.earthquake.distribution.ProductKey
+sources = nc
+types = shakemap, shakemap-scenario
+key = ssh-dss AAAAB3NzaC1kc3M....FzN5qskQ= key comment</strong>
+</pre>
+	</div>
+
+	<p>Note that receiver_storage and hub_sender_storage are
+		automatically cleaned up based on configured intervals. Log files
+		however are not, and administrators may wish to periodically remove
+		old log files.</p>
+
+
+	<h3>HTTP</h3>
+	<p>Add this configuration to your configuration file, to mount the
+		data directory at the url in web space. This example uses apache's
+		mod_alias and mod_deflate. It is recommended to place this
+		configuration in a file "INSTALL/httpd.conf, and then use the apache
+		Include directive to include in the primary httpd.conf:</p>
+	<div class="code">
+		<pre>
+Alias /products/ INSTALL/data/htdocs/
+
+&lt;Directory INSTALL/data/htdocs/&gt;
+	# allow access to directory for serving products
+	Order allow,deny
+	Allow from all
+
+	# minimize request overhead
+	AllowOverride none
+	FileETag None
+
+	# compress products to minimize bandwidth usage
+	SetOutputFilter DEFLATE
+&lt;/Directory&gt;
+</pre>
+	</div>
+
+	<h3>EIDS</h3>
+	<p>
+		Install EIDS into the folder "INSTALL/EIDS". <a
+			href="http://earthquake.usgs.gov/research/software/eids/EIDSInstaller.jar">Download
+			the EIDS Server Installer</a> and follow instructions for <a
+			href="http://earthquake.usgs.gov/research/software/eids/EIDSInstallerREADME.html#install_server">Installing
+			an EIDS Server</a>. If there will be multiple network routes to your eids
+		server, read the section "Running an EIDS Server in a NAT
+		environment".
+	</p>
+
+	<p>In addition to any other installation instructions, configure a
+		"CORBA Feeder" by adding this configuration to your servers
+		"feeders.xml" configuration file:</p>
+	<div class="code">
+		<pre>
+&lt;!--
+CORBA FEEDER.
+--&gt;
+&lt;QWFeederMod Name=&quot;corba&quot;
+		Class=&quot;com.isti.quakewatch.server.QWCorbaFeeder&quot;
+		LogFileName=&quot;log/corba.log&quot;
+		LogFileLevel=&quot;Info&quot;
+		ConsoleLevel=&quot;Debug&quot;&gt;
+	&lt;QWFeederSettings&gt;
+		feederPortNumber = 38800
+	&lt;/QWFeederSettings&gt;
+&lt;/QWFeederMod&gt;
+</pre>
+	</div>
+
+	<p>When the CORBA feeder is unavailable, PDL places notifications
+		in a configured polldir; however using CORBA allows pdl to "push"
+		notifications into EIDS and eliminates one step of potential latency
+		in the distribution process.</p>
+
+	<h4>EIDS Memory Limits</h4>
+	<p>EIDS keeps a lot of information in memory, and has been known to
+		exceed default java heap sizes. You can modify the EIDS
+		server_init.sh, or PDL init.sh, script (when the processes aren't
+		running), and allocate more than the default memory using custom java
+		heap size arguments. These limits vary system to system, but these may
+		be useful starting points:</p>
+	<dl>
+		<dt>EIDS ISTINotifServer.jar</dt>
+		<dd>-Xms512m -Xmx1024m</dd>
+		<dt>EIDS QWServer.jar</dt>
+		<dd>-Xms1024m -Xmx2048m</dd>
+	</dl>
+
+
+	<h2 id="crontab">Automatic restart after system reboot</h2>
+	<p>
+		The <a
+			href="https://usgs.github.io/pdl/userguide/install.html#crontab">PDL
+			User Guide Install Instructions</a> describe how to automatically restart
+		the PDL process after system reboot. EIDS processes can be started
+		similarly, using its init script at "INSTALL/EIDS/server_init.sh".
+		HTTP should be managed using chkconfig, or other Linux style process
+		management.
+	</p>
+
+</body>
+</html>

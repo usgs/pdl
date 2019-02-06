@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>EQXML to Product Conversion</title>
+<link rel="stylesheet" href="userguide.css" />
+</head>
+
+<body>
+	<h1>EQXML to Product Conversion</h1>
+	<p>
+		<a href="./index.html">&laquo; Back to User Guide</a>
+	</p>
+
+
+	<h2>What is EQXML?</h2>
+
+	<p>
+		EQXML is an XML format that is a superset of information contained by
+		the CUBE format. It is most commonly used with the Earthquake
+		Information Distribution System (EIDS). The XSD schema for EQXML is
+		available at <a
+			href="http://www.isti2.com/QWIDS/current_dist/ANSS_EQ_XML/">http://www.isti2.com/QWIDS/current_dist/ANSS_EQ_XML/</a>.
+	</p>
+
+	<p>EQXML will eventually be replaced by Quakeml, an emerging
+		international standard XML representation for earthquake information.</p>
+
+
+
+
+
+	<h2>How is EQXML Converted to Products?</h2>
+	<p>All EQXML (and CUBE) messages sent via EIDS are received by the
+		Product Distribution Hubs and converted to products using the rules
+		described below. As a general rule, information that can be
+		represented as EQXML/CUBE should be generated using these formats.</p>
+
+	<p>Product creators can also run this conversion locally using the
+		EIDSInputWedge, with the
+		gov.usgs.earthquake.eids.EQMessageProductCreator parser class.</p>
+
+	<p>Not all EQXML messages have corresponding product
+		representations.
+	<h2>Comparison of EQXML to Product format</h2>
+
+	<p>EQXML and Product formats differ significantly. EQXML allows you
+		to send many types of information in one message, and consumers must
+		keep and merge all received EQXML messages to determine the latest
+		information of each type. The Product format requires each type of
+		information to be a separate product, which is updated over time.
+		While this can be more complicated when creating the information, it
+		simplifies the organization of the resulting information.</p>
+
+
+
+
+
+	<h2>EQXML Product Attributes</h2>
+
+	<dl>
+		<dt>Product source</dt>
+		<dd>
+			<code>EQMessage/Source</code>
+			converted to lower case.
+		</dd>
+
+		<dt>Product type</dt>
+		<dd>
+			These are the product types that can be produced from EQXML,
+			depending on the information that is present.
+			<ul>
+				<li>origin, phase-data</li>
+				<li>focal-mechanism, moment-tensor</li>
+				<li>general-link, scitech-link, impact-link</li>
+				<li>impact-text</li>
+			</ul>
+
+			<p>
+				When
+				<code>Event/Usage</code>
+				is not "Actual", the product type adds it as a suffix. For example,
+				a "Scenario" usage would change the type
+				<code>origin</code>
+				to
+				<code>origin-scenario</code>
+				.
+			</p>
+
+			<p>
+				When
+				<code>Event/Scope</code>
+				is not "Public", the product type adds it as a prefix. For example,
+				a "Internal" scope would change the type
+				<code>origin</code>
+				to
+				<code>internal-origin</code>
+				.
+			</p>
+		</dd>
+
+		<dt>Product code</dt>
+		<dd>
+			Generally
+			<code>Event/DataSource</code>
+			+
+			<code>Event/EventID</code>
+			converted to lower case.
+			<p>Because code must be unique for a given source+type,
+				non-origin products append additional information to support
+				multiple products of the same type from the same source for the same
+				event.</p>
+		</dd>
+
+		<dt>Product update time</dt>
+		<dd>
+			<code>EQMessage/Sent</code>
+			when present (usually). Current time if omitted.
+		</dd>
+
+		<dt>Product status</dt>
+		<dd>
+			When the
+			<code>Action</code>
+			is "Delete", the product status is "DELETE". Otherwise, the product
+			status is "UPDATE".
+
+			<p>
+				Generally, this comes from
+				<code>Event/Action</code>
+				, but a more specific
+				<code>Action</code>
+				element can override this. For example,
+				<code>ProductLink/Action</code>
+				="Delete" will override
+				<code>Event/Action</code>
+				="Update"
+			</p>
+		</dd>
+
+		<dt>Product version</dt>
+		<dd>
+			<code>Version</code>
+			. <strong>NOTE: version is informational only. The most
+				recent product update time determines which information is used.</strong>
+			<p>
+				Generally, this comes from
+				<code>Event/Version</code>
+				, but a more specific
+				<code>Version</code>
+				element can override this. For example,
+				<code>ProductLink/Version</code>
+				will override
+				<code>Event/Version</code>
+				.
+			</p>
+		</dd>
+
+		<dt>Product properties</dt>
+		<dd>Varies depending on the type of content. See below for more
+			details.</dd>
+
+		<dt>Product contents</dt>
+		<dd>
+			Usually contains a content with path
+			<code>eqxml.xml</code>
+			with the original EQXML message. Some products, from links or
+			comments, do not include the EQXML content.
+		</dd>
+	</dl>
+
+
+
+
+
+	<h3>Origin</h3>
+
+	<p>
+		<code>origin</code>
+		type products represent a sources preferred location and, optionally,
+		magnitude for an event. A source may include multiple locations and
+		magnitudes, but the properties for the product are derived from the
+		preferred information. Users can use this preferred information to
+		find an origin product, and then must inspect the bundled EQXML for
+		less/non-preferred information.
+	</p>
+
+	<p>An origin is considered preferred, and will be converted to a
+		product, when:</p>
+	<ol>
+		<li>It is the first Origin element in the message.</li>
+		<li>It contains a PreferredFlag element whose value is True.</li>
+	</ol>
+
+	<p>
+		<code>phase-data</code>
+		is identical to
+		<code>origin</code>
+		, except that it includes phase information. This is separate from
+		regular origin products because phase-data is often large, and many
+		consumers are not interested in this detailed information. The product
+		is sent as
+		<code>phase-data</code>
+		, instead of
+		<code>origin</code>
+		, if the
+		<code>Origin</code>
+		element contains any
+		<code>Phase</code>
+		elements.
+	</p>
+
+	<h4>Properties</h4>
+	<dl>
+		<dt>latitude</dt>
+		<dd>
+			<code>Origin/Latitude</code>
+			, required.
+		</dd>
+
+		<dt>longitude</dt>
+		<dd>
+			<code>Origin/Longitude</code>
+			, required.
+		</dd>
+
+		<dt>eventtime</dt>
+		<dd>
+			<code>Origin/Time</code>
+			, required.
+		</dd>
+
+		<dt>depth</dt>
+		<dd>
+			<code>Origin/Depth</code>
+		</dd>
+
+		<dt>event-type</dt>
+		<dd>
+			<code>Event/Type</code>
+			, lower case. Default is "earthquake".
+		</dd>
+
+		<dt>origin-source</dt>
+		<dd>
+			<code>Origin/SourceKey</code>
+		</dd>
+
+		<dt>azimuthal-gap</dt>
+		<dd>
+			<code>Origin/AzimGap</code>
+		</dd>
+
+		<dt>depth-error</dt>
+		<dd>
+			<code>Origin/DepthError</code>
+		</dd>
+
+		<dt>horizontal-error</dt>
+		<dd>
+			<code>Origin/Errh</code>
+		</dd>
+
+		<dt>vertical-error</dt>
+		<dd>
+			<code>Origin/Errz</code>
+		</dd>
+
+		<dt>latitude-error</dt>
+		<dd>
+			<code>Origin/LatError</code>
+		</dd>
+
+		<dt>longitude-error</dt>
+		<dd>
+			<code>Origin/LonError</code>
+		</dd>
+
+		<dt>minimum-distance</dt>
+		<dd>
+			<code>Origin/MinDist</code>
+		</dd>
+
+		<dt>num-phases-used</dt>
+		<dd>
+			<code>Origin/NumPhaUsed</code>
+		</dd>
+
+		<dt>num-stations-used</dt>
+		<dd>
+			<code>Origin/NumStaUsed</code>
+		</dd>
+
+		<dt>region</dt>
+		<dd>
+			<code>Origin/Region</code>
+		</dd>
+
+		<dt>review-status</dt>
+		<dd>
+			<code>Origin/Status</code>
+		</dd>
+
+		<dt>standard-error</dt>
+		<dd>
+			<code>Origin/StdError</code>
+		</dd>
+
+		<dt>location-method-class</dt>
+		<dd>
+			<code>Origin/Method/Clazz</code>
+		</dd>
+
+		<dt>location-method-algorithm</dt>
+		<dd>
+			<code>Origin/Method/Algorithm</code>
+		</dd>
+
+		<dt>location-method-model</dt>
+		<dd>
+			<code>Origin/Method/Model</code>
+		</dd>
+
+		<dt>cube-location-method</dt>
+		<dd>
+			<code>Origin/Method/Comment[TypeKey=CUBE_Code]</code>
+		</dd>
+
+		<dt>magnitude</dt>
+		<dd>
+			<code>Origin/Magnitude/Value</code>
+		</dd>
+
+		<dt>magnitude-source</dt>
+		<dd>
+			<code>Origin/Magnitude/SourceKey</code>
+		</dd>
+
+		<dt>magnitude-type</dt>
+		<dd>
+			<code>Origin/Magnitude/TypeKey</code>
+		</dd>
+
+		<dt>magnitude-azimuthal-gap</dt>
+		<dd>
+			<code>Origin/Magnitude/AzimGap</code>
+		</dd>
+
+		<dt>magnitude-error</dt>
+		<dd>
+			<code>Origin/Magnitude/Error</code>
+		</dd>
+
+		<dt>magnitude-num-stations-used</dt>
+		<dd>
+			<code>Origin/Magnitude/NumStations</code>
+		</dd>
+
+		<dt>cube-magnitude-type</dt>
+		<dd>
+			<code>Origin/Magnitude/Comment[TypeKey=CUBE_Code]</code>
+		</dd>
+	</dl>
+
+	<h4>Contents</h4>
+	<dl>
+		<dt>"eqxml.xml"</dt>
+		<dd>The entire EQMessage element this product was created from.</dd>
+		<dt>"contents.xml"</dt>
+		<dd>A contents.xml that makes the "eqxml.xml" file appear in the
+			downloads list on the event page.</dd>
+	</dl>
+
+
+	<h4>A note on CUBE_Code</h4>
+	<p>CUBE_Code is a convention established by ISTI for preserving
+		characters used by CUBE that do not uniformly map to the same EQXML
+		code. For example, magnitude types "C" and "D" both refer to duration
+		magnitude "Md" in EQXML. An example Cube_Code comment is below.</p>
+
+
+	<h4>Example Origin</h4>
+
+	<h5>EQXML</h5>
+	<div class="code">
+		<pre>
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;EQMessage xmlns=&quot;http://www.usgs.gov/ansseqmsg&quot;&gt;
+    &lt;Source&gt;US&lt;/Source&gt;
+    &lt;Sender&gt;USGS, NEIS, Golden, Colorado (and predecessors)&lt;/Sender&gt;
+    &lt;Module&gt;Bulletin Hydra Version 1.7.5&lt;/Module&gt;
+    &lt;MsgSrc&gt;US&lt;/MsgSrc&gt;
+    &lt;Sent&gt;2012-05-07T04:57:43.985Z&lt;/Sent&gt;
+    &lt;Event&gt;
+        &lt;DataSource&gt;US&lt;/DataSource&gt;
+        &lt;EventID&gt;B0009JH5&lt;/EventID&gt;
+        &lt;Version&gt;8&lt;/Version&gt;
+        &lt;Action&gt;Update&lt;/Action&gt;
+        &lt;Type&gt;Earthquake&lt;/Type&gt;
+        &lt;Origin&gt;
+            &lt;SourceKey&gt;NEIC&lt;/SourceKey&gt;
+            &lt;Action&gt;Update&lt;/Action&gt;
+            &lt;Region&gt;AZERBAIJAN&lt;/Region&gt;
+            &lt;Time&gt;2012-05-07T04:40:29.610Z&lt;/Time&gt;
+            &lt;Latitude&gt;41.5411&lt;/Latitude&gt;
+            &lt;Longitude&gt;46.7661&lt;/Longitude&gt;
+            &lt;Depth&gt;23.30&lt;/Depth&gt;
+            &lt;StdError&gt;0.94&lt;/StdError&gt;
+            &lt;AzimGap&gt;28&lt;/AzimGap&gt;
+            &lt;MinDist&gt;1.53&lt;/MinDist&gt;
+            &lt;Errh&gt;12.88&lt;/Errh&gt;
+            &lt;Errz&gt;6.26&lt;/Errz&gt;
+            &lt;OTError&gt;1.90&lt;/OTError&gt;
+            &lt;LatError&gt;7.50&lt;/LatError&gt;
+            &lt;LonError&gt;6.30&lt;/LonError&gt;
+            &lt;DepthError&gt;5.00&lt;/DepthError&gt;
+            &lt;ErrorAxes&gt;
+                &lt;Axis&gt;
+                    &lt;Azimuth&gt;237&lt;/Azimuth&gt;
+                    &lt;Plunge&gt;43&lt;/Plunge&gt;
+                    &lt;Length&gt;6.00&lt;/Length&gt;
+                    &lt;LengthUnit&gt;km&lt;/LengthUnit&gt;
+                &lt;/Axis&gt;
+                &lt;Axis&gt;
+                    &lt;Azimuth&gt;50&lt;/Azimuth&gt;
+                    &lt;Plunge&gt;46&lt;/Plunge&gt;
+                    &lt;Length&gt;8.70&lt;/Length&gt;
+                    &lt;LengthUnit&gt;km&lt;/LengthUnit&gt;
+                &lt;/Axis&gt;
+                &lt;Axis&gt;
+                    &lt;Azimuth&gt;144&lt;/Azimuth&gt;
+                    &lt;Plunge&gt;3&lt;/Plunge&gt;
+                    &lt;Length&gt;12.90&lt;/Length&gt;
+                    &lt;LengthUnit&gt;km&lt;/LengthUnit&gt;
+                &lt;/Axis&gt;
+            &lt;/ErrorAxes&gt;
+            &lt;NumPhaUsed&gt;151&lt;/NumPhaUsed&gt;
+            &lt;NumPhaAssoc&gt;152&lt;/NumPhaAssoc&gt;
+            &lt;NumStaUsed&gt;150&lt;/NumStaUsed&gt;
+            &lt;NumStaAssoc&gt;150&lt;/NumStaAssoc&gt;
+            &lt;DepthMethod&gt;Free&lt;/DepthMethod&gt;
+            &lt;Status&gt;Reviewed&lt;/Status&gt;
+            &lt;PreferredFlag&gt;true&lt;/PreferredFlag&gt;
+            &lt;Comment&gt;
+                &lt;SourceKey&gt;US&lt;/SourceKey&gt;
+                &lt;TypeKey&gt;NearestCities&lt;/TypeKey&gt;
+                &lt;Text&gt;
+    14 km (8 miles) SE of Zaqatala (Zakataly), Azerbaijan (pop 26000)
+101 km (62 miles) NNE of Ganca (Kirovabad), Azerbaijan (pop 300000)
+114 km (70 miles) ESE of T&#x27;elavi, Georgia (pop 21000)
+291 km (180 miles) WNW of BAKU, Azerbaijan (pop 1817000)
+
+    &lt;/Text&gt;
+            &lt;/Comment&gt;
+            &lt;Magnitude&gt;
+                &lt;SourceKey&gt;NEIC&lt;/SourceKey&gt;
+                &lt;TypeKey&gt;mb&lt;/TypeKey&gt;
+                &lt;Action&gt;Update&lt;/Action&gt;
+                &lt;Value&gt;5.6&lt;/Value&gt;
+                &lt;PreferredFlag&gt;true&lt;/PreferredFlag&gt;
+                &lt;Comment&gt;
+                    &lt;TypeKey&gt;CUBE_Code&lt;/TypeKey&gt;
+                    &lt;Text&gt;CUBE_Code B&lt;/Text&gt;
+                &lt;/Comment&gt;
+            &lt;/Magnitude&gt;
+            &lt;Method&gt;
+                &lt;Class&gt;Rank-sum&lt;/Class&gt;
+                &lt;Algorithm&gt;Hydra&lt;/Algorithm&gt;
+                &lt;Model&gt;AK135&lt;/Model&gt;
+            &lt;/Method&gt;
+        &lt;/Origin&gt;
+    &lt;/Event&gt;
+&lt;/EQMessage&gt;
+</pre>
+	</div>
+
+
+	<h5>Product</h5>
+	<div class="code">
+		<pre>
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;product xmlns=&quot;http://earthquake.usgs.gov/distribution/product&quot; id=&quot;urn:usgs-product:us:origin:usb0009jh5:1336366663000&quot; updateTime=&quot;2012-05-07T04:57:43.000Z&quot; status=&quot;UPDATE&quot; trackerURL=&quot;http://ehppdl1.cr.usgs.gov/tracker/&quot;&gt;
+    &lt;property name=&quot;azimuthal-gap&quot; value=&quot;28&quot;/&gt;
+    &lt;property name=&quot;cube-magnitude-type&quot; value=&quot;B&quot;/&gt;
+    &lt;property name=&quot;depth&quot; value=&quot;23.30&quot;/&gt;
+    &lt;property name=&quot;depth-error&quot; value=&quot;5.00&quot;/&gt;
+    &lt;property name=&quot;depth-method&quot; value=&quot;Free&quot;/&gt;
+    &lt;property name=&quot;eids-feeder&quot; value=&quot;gvoutput1.anss.gs.ad&quot;/&gt;
+    &lt;property name=&quot;eids-feeder-sequence&quot; value=&quot;14844&quot;/&gt;
+    &lt;property name=&quot;event-type&quot; value=&quot;earthquake&quot;/&gt;
+    &lt;property name=&quot;eventsource&quot; value=&quot;us&quot;/&gt;
+    &lt;property name=&quot;eventsourcecode&quot; value=&quot;b0009jh5&quot;/&gt;
+    &lt;property name=&quot;eventtime&quot; value=&quot;2012-05-07T04:40:29.610Z&quot;/&gt;
+    &lt;property name=&quot;horizontal-error&quot; value=&quot;12.88&quot;/&gt;
+    &lt;property name=&quot;latitude&quot; value=&quot;41.5411&quot;/&gt;
+    &lt;property name=&quot;latitude-error&quot; value=&quot;7.50&quot;/&gt;
+    &lt;property name=&quot;location-method-algorithm&quot; value=&quot;Hydra&quot;/&gt;
+    &lt;property name=&quot;location-method-class&quot; value=&quot;Rank-sum&quot;/&gt;
+    &lt;property name=&quot;location-method-model&quot; value=&quot;AK135&quot;/&gt;
+    &lt;property name=&quot;longitude&quot; value=&quot;46.7661&quot;/&gt;
+    &lt;property name=&quot;longitude-error&quot; value=&quot;6.30&quot;/&gt;
+    &lt;property name=&quot;magnitude&quot; value=&quot;5.6&quot;/&gt;
+    &lt;property name=&quot;magnitude-source&quot; value=&quot;NEIC&quot;/&gt;
+    &lt;property name=&quot;magnitude-type&quot; value=&quot;mb&quot;/&gt;
+    &lt;property name=&quot;minimum-distance&quot; value=&quot;1.53&quot;/&gt;
+    &lt;property name=&quot;num-phases-used&quot; value=&quot;151&quot;/&gt;
+    &lt;property name=&quot;num-stations-used&quot; value=&quot;150&quot;/&gt;
+    &lt;property name=&quot;origin-source&quot; value=&quot;NEIC&quot;/&gt;
+    &lt;property name=&quot;region&quot; value=&quot;AZERBAIJAN&quot;/&gt;
+    &lt;property name=&quot;review-status&quot; value=&quot;REVIEWED&quot;/&gt;
+    &lt;property name=&quot;standard-error&quot; value=&quot;0.94&quot;/&gt;
+    &lt;property name=&quot;version&quot; value=&quot;8&quot;/&gt;
+    &lt;property name=&quot;vertical-error&quot; value=&quot;6.26&quot;/&gt;
+    &lt;content path=&quot;contents.xml&quot; type=&quot;text/plain&quot; length=&quot;272&quot; modified=&quot;2012-05-07T04:57:43.000Z&quot; href=&quot;file:/home/www/data/ProductClient/indexer_storage/origin/usb0009jh5/us/1336366663000/contents.xml&quot;/&gt;
+    &lt;content path=&quot;eqxml.xml&quot; type=&quot;text/plain&quot; length=&quot;2002&quot; modified=&quot;2012-05-07T04:57:43.000Z&quot; href=&quot;file:/home/www/data/ProductClient/indexer_storage/origin/usb0009jh5/us/1336366663000/eqxml.xml&quot;/&gt;
+    &lt;signature&gt;
+    MCwCFBJIqixIaCOH1fw7vxyzzzRSDmQsAhQSlNvFp6r4smPKyuVKnFEu/YKrgA==
+    &lt;/signature&gt;
+&lt;/product&gt;
+</pre>
+	</div>
+
+
+
+
+
+	<h3>Focal Mechanism and Moment Tensor</h3>
+
+	<p>
+		<code>focal-mechanism</code>
+		and
+		<code>moment-tensor</code>
+		and products are identical, except the
+		<code>focal-mechanism</code>
+		doesn't include any tensor properties. The product is sent as a
+		<code>moment-tensor</code>
+		instead of
+		<code>focal-mechanism</code>
+		, if the
+		<code>MomentTensor</code>
+		element contains a
+		<code>Tensor</code>
+		element.
+	</p>
+
+	<p>
+		When
+		<code>MomentTensor/TypeKey</code>
+		is present, the product code is
+		<code>Event/DataSource</code>
+		+
+		<code>Event/EventID</code>
+		+ "-" +
+		<code>MomentTensor/SourceKey</code>
+		+ "-" +
+		<code>MomentTensor/TypeKey</code>
+		. When not present, the default product code is used (and thus only
+		one moment-tensor or focal-mechanism product per event).
+	</p>
+
+	<p>For display on the new event pages and comcat, only the 6 tensor
+		parameters (for moment-tensor) or the 2 nodal planes (for
+		focal-mechanism) are required for display. Other values are computed
+		based on these values.</p>
+
+	<h4>Properties</h4>
+	<dl>
+		<dt>beachball-source</dt>
+		<dd>
+			<code>MomentTensor/SourceKey</code>
+		</dd>
+
+		<dt>beachball-type</dt>
+		<dd>
+			<code>MomentTensor/TypeKey</code>
+		</dd>
+
+		<dt>magnitude</dt>
+		<dd>
+			<code>MomentTensor/MagMw</code>
+		</dd>
+
+		<dt>scalar-moment</dt>
+		<dd>
+			<code>MomentTensor/M0</code>
+		</dd>
+
+		<dt>derived-eventtime</dt>
+		<dd>
+			<code>MomentTensor/DerivedOriginTime</code>
+		</dd>
+
+		<dt>derived-latitude</dt>
+		<dd>
+			<code>MomentTensor/DerivedLatitude</code>
+		</dd>
+
+		<dt>derived-longitude</dt>
+		<dd>
+			<code>MomentTensor/DerivedLongitude</code>
+		</dd>
+
+		<dt>derived-depth</dt>
+		<dd>
+			<code>MomentTensor/DerivedDepth</code>
+		</dd>
+
+		<dt>percent-double-couple</dt>
+		<dd>
+			<code>MomentTensor/PerDblCpl</code>
+		</dd>
+
+		<dt>num-stations-used</dt>
+		<dd>
+			<code>MomentTensor/NumObs</code>
+		</dd>
+
+		<dt>tensor-mtt</dt>
+		<dd>
+			<code>MomentTensor/Tensor/Mtt</code>
+		</dd>
+
+		<dt>tensor-mpp</dt>
+		<dd>
+			<code>MomentTensor/Tensor/Mpp</code>
+		</dd>
+
+		<dt>tensor-mrr</dt>
+		<dd>
+			<code>MomentTensor/Tensor/Mrr</code>
+		</dd>
+
+		<dt>tensor-mtp</dt>
+		<dd>
+			<code>MomentTensor/Tensor/Mtp</code>
+		</dd>
+
+		<dt>tensor-mrp</dt>
+		<dd>
+			<code>MomentTensor/Tensor/Mrp</code>
+		</dd>
+
+		<dt>tensor-mrt</dt>
+		<dd>
+			<code>MomentTensor/Tensor/Mrt</code>
+		</dd>
+
+		<dt>nodal-plane-1-dip</dt>
+		<dd>
+			<code>MomentTensor/NodalPlanes/Fault[0]/Dip</code>
+		</dd>
+
+		<dt>nodal-plane-1-slip</dt>
+		<dd>
+			<code>MomentTensor/NodalPlanes/Fault[0]/Slip</code>
+		</dd>
+
+		<dt>nodal-plane-1-strike</dt>
+		<dd>
+			<code>MomentTensor/NodalPlanes/Fault[0]/Strike</code>
+		</dd>
+
+		<dt>nodal-plane-2-dip</dt>
+		<dd>
+			<code>MomentTensor/NodalPlanes/Fault[1]/Dip</code>
+		</dd>
+
+		<dt>nodal-plane-2-slip</dt>
+		<dd>
+			<code>MomentTensor/NodalPlanes/Fault[1]/Slip</code>
+		</dd>
+
+		<dt>nodal-plane-2-strike</dt>
+		<dd>
+			<code>MomentTensor/NodalPlanes/Fault[1]/Strike</code>
+		</dd>
+	</dl>
+
+	<h4>Contents</h4>
+	<dl>
+		<dt>"eqxml.xml"</dt>
+		<dd>The entire EQMessage element this product was created from.</dd>
+		<dt>"contents.xml"</dt>
+		<dd>A contents.xml that makes the "eqxml.xml" file appear in the
+			downloads list on the event page.</dd>
+	</dl>
+
+
+	<h4>Example Moment Tensor</h4>
+
+	<h5>EQXML</h5>
+	<div class="code">
+		<pre>
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;EQMessage xmlns=&quot;http://www.usgs.gov/ansseqmsg&quot;&gt;
+    &lt;Source&gt;US&lt;/Source&gt;
+    &lt;Sender&gt;USGS, NEIS, Golden, Colorado (and predecessors)&lt;/Sender&gt;
+    &lt;Module&gt;Bulletin Hydra Version 1.7.5&lt;/Module&gt;
+    &lt;MsgSrc&gt;US&lt;/MsgSrc&gt;
+    &lt;Sent&gt;2012-05-07T14:47:07.838Z&lt;/Sent&gt;
+    &lt;Event&gt;
+        &lt;DataSource&gt;US&lt;/DataSource&gt;
+        &lt;EventID&gt;B0009JH5&lt;/EventID&gt;
+        &lt;Version&gt;4&lt;/Version&gt;
+        &lt;Action&gt;Update&lt;/Action&gt;
+        &lt;Type&gt;Earthquake&lt;/Type&gt;
+        &lt;Origin&gt;
+            &lt;MomentTensor&gt;
+                &lt;SourceKey&gt;NEIC&lt;/SourceKey&gt;
+                &lt;TypeKey&gt;Mwb&lt;/TypeKey&gt;
+                &lt;Action&gt;Update&lt;/Action&gt;
+                &lt;MagMw&gt;5.635&lt;/MagMw&gt;
+                &lt;M0&gt;356000000000000000&lt;/M0&gt;
+                &lt;Tensor&gt;
+                    &lt;Mrr&gt;90830000000000000&lt;/Mrr&gt;
+                    &lt;Mtt&gt;-93830000000000000&lt;/Mtt&gt;
+                    &lt;Mpp&gt;3000000000000000&lt;/Mpp&gt;
+                    &lt;Mrt&gt;305680000000000000&lt;/Mrt&gt;
+                    &lt;Mrp&gt;-155150000000000000&lt;/Mrp&gt;
+                    &lt;Mtp&gt;31380000000000000&lt;/Mtp&gt;
+                &lt;/Tensor&gt;
+                &lt;NodalPlanes&gt;
+                    &lt;Fault&gt;
+                        &lt;Strike&gt;273.95&lt;/Strike&gt;
+                        &lt;Slip&gt;67.59&lt;/Slip&gt;
+                        &lt;Dip&gt;8.4&lt;/Dip&gt;
+                    &lt;/Fault&gt;
+                    &lt;Fault&gt;
+                        &lt;Strike&gt;116.58&lt;/Strike&gt;
+                        &lt;Slip&gt;93.22&lt;/Slip&gt;
+                        &lt;Dip&gt;82.24&lt;/Dip&gt;
+                    &lt;/Fault&gt;
+                &lt;/NodalPlanes&gt;
+                &lt;DerivedDepth&gt;11.00&lt;/DerivedDepth&gt;
+                &lt;PerDblCpl&gt;95.14&lt;/PerDblCpl&gt;
+                &lt;NumObs&gt;107&lt;/NumObs&gt;
+                &lt;PreferredFlag&gt;true&lt;/PreferredFlag&gt;
+            &lt;/MomentTensor&gt;
+        &lt;/Origin&gt;
+    &lt;/Event&gt;
+&lt;/EQMessage&gt;
+</pre>
+	</div>
+
+	<h5>Product</h5>
+	<div class="code">
+		<pre>
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;product xmlns=&quot;http://earthquake.usgs.gov/distribution/product&quot; id=&quot;urn:usgs-product:us:moment-tensor:usb0009jh5-neic-mwb:1336402027000&quot; updateTime=&quot;2012-05-07T14:47:07.000Z&quot; status=&quot;UPDATE&quot; trackerURL=&quot;http://ehppdl1.cr.usgs.gov/tracker/&quot;&gt;
+    &lt;property name=&quot;beachball-source&quot; value=&quot;NEIC&quot;/&gt;
+    &lt;property name=&quot;beachball-type&quot; value=&quot;Mwb&quot;/&gt;
+    &lt;property name=&quot;derived-depth&quot; value=&quot;11.00&quot;/&gt;
+    &lt;property name=&quot;eventsource&quot; value=&quot;us&quot;/&gt;
+    &lt;property name=&quot;eventsourcecode&quot; value=&quot;b0009jh5&quot;/&gt;
+    &lt;property name=&quot;magnitude&quot; value=&quot;5.635&quot;/&gt;
+    &lt;property name=&quot;nodal-plane-1-dip&quot; value=&quot;8.4&quot;/&gt;
+    &lt;property name=&quot;nodal-plane-1-slip&quot; value=&quot;67.59&quot;/&gt;
+    &lt;property name=&quot;nodal-plane-1-strike&quot; value=&quot;273.95&quot;/&gt;
+    &lt;property name=&quot;nodal-plane-2-dip&quot; value=&quot;82.24&quot;/&gt;
+    &lt;property name=&quot;nodal-plane-2-slip&quot; value=&quot;93.22&quot;/&gt;
+    &lt;property name=&quot;nodal-plane-2-strike&quot; value=&quot;116.58&quot;/&gt;
+    &lt;property name=&quot;num-stations-used&quot; value=&quot;107&quot;/&gt;
+    &lt;property name=&quot;percent-double-couple&quot; value=&quot;95.14&quot;/&gt;
+    &lt;property name=&quot;scalar-moment&quot; value=&quot;3.56E+17&quot;/&gt;
+    &lt;property name=&quot;tensor-mpp&quot; value=&quot;3E+15&quot;/&gt;
+    &lt;property name=&quot;tensor-mrp&quot; value=&quot;-1.5515E+17&quot;/&gt;
+    &lt;property name=&quot;tensor-mrr&quot; value=&quot;9.083E+16&quot;/&gt;
+    &lt;property name=&quot;tensor-mrt&quot; value=&quot;3.0568E+17&quot;/&gt;
+    &lt;property name=&quot;tensor-mtp&quot; value=&quot;3.138E+16&quot;/&gt;
+    &lt;property name=&quot;tensor-mtt&quot; value=&quot;-9.383E+16&quot;/&gt;
+    &lt;property name=&quot;version&quot; value=&quot;4&quot;/&gt;
+    &lt;content path=&quot;contents.xml&quot; type=&quot;text/plain&quot; length=&quot;272&quot; modified=&quot;2012-05-07T14:47:07.000Z&quot; href=&quot;file:/home/www/data/ProductClient/indexer_storage/moment-tensor/usb0009jh5-neic-mwb/us/1336402027000/contents.xml&quot;/&gt;
+    &lt;content path=&quot;eqxml.xml&quot; type=&quot;application/xml&quot; length=&quot;1019&quot; modified=&quot;2012-05-07T14:47:07.000Z&quot; href=&quot;file:/home/www/data/ProductClient/indexer_storage/moment-tensor/usb0009jh5-neic-mwb/us/1336402027000/eqxml.xml&quot;/&gt;
+    &lt;signature&gt;
+    MC0CFCWBK4J9UdynGJwMj8W5AIUAfuhGAhUAjyzRwG761H4jKL4Zjy/g2o54nKI=
+    &lt;/signature&gt;
+&lt;/product&gt;
+</pre>
+	</div>
+
+
+
+
+
+	<h3>ProductLink</h3>
+
+	<p>Link type products are designed to support links to web pages
+		that contain information that does not have a standard representation
+		as EQXML or Product. For example, a link to a CNN web page describing
+		the impact of an event. Information that can be represented in a
+		standard way, like a moment tensor, should be contributed in that
+		format so it can be processed programatically.</p>
+
+	<p>
+		<code>general-link</code>
+		are currently displayed on the Summary page for the event. These
+		products are created when
+		<code>ProductLink/Code</code>
+		starts with case insensitively: "Aftershock", "AfterWarn", "ASW",
+		"GeneralMisc".
+	</p>
+
+	<p>
+		<code>scitech-link</code>
+		are currently displayed on the Technical page for the event. These
+		products are created when
+		<code>ProductLink/Code</code>
+		starts with case insensitively: "Energy", "FocalMech", "ncfm"
+		(deprecated, use FocalMech instead), "HistMomentTensor",
+		"FiniteFault", "MomentTensor", "mtensor" (deprecated, use MomentTensor
+		instead), "Phase", "SeisCrossSec", "SeisRecSec", "TravelTimes",
+		"Waveform", "Seismograms", "SciTechMisc".
+	</p>
+
+	<p>
+		<code>impact-link</code>
+		are currently displayed on the Impact page for the event. These
+		products are created when
+		<code>ProductLink/Code</code>
+		starts with case insensitively: "TsunamiLinks", "ImpactMisc".
+	</p>
+
+	<h4>Properties</h4>
+	<dl>
+		<dt>url</dt>
+		<dd>
+			<code>ProductLink/Link</code>
+		</dd>
+
+		<dt>text</dt>
+		<dd>
+			<code>ProductLink/Note</code>
+		</dd>
+
+		<dt>addon-code</dt>
+		<dd>
+			<code>ProductLink/Code</code>
+		</dd>
+
+		<dt>addon-type</dt>
+		<dd>
+			<code>ProductLink/TypeKey</code>
+		</dd>
+	</dl>
+
+	<h4>Contents</h4>
+	<p>None.</p>
+
+
+	<h4>Example ProductLink</h4>
+
+	<h5>EQXML</h5>
+	<div class="code">
+		<pre>
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;EQMessage xmlns=&quot;http://www.usgs.gov/ansseqmsg&quot;&gt;
+    &lt;Source&gt;NC&lt;/Source&gt;
+    &lt;Module&gt;QuakeWatch Server, Version 1.0&lt;/Module&gt;
+    &lt;Sent&gt;2012-05-05T19:03:39.626Z&lt;/Sent&gt;
+    &lt;Event&gt;
+        &lt;DataSource&gt;NC&lt;/DataSource&gt;
+        &lt;EventID&gt;71776130&lt;/EventID&gt;
+        &lt;ProductLink&gt;
+            &lt;TypeKey&gt;LinkURL&lt;/TypeKey&gt;
+            &lt;Version&gt;1&lt;/Version&gt;
+            &lt;Action&gt;Update&lt;/Action&gt;
+            &lt;Code&gt;MomentTensor_NC&lt;/Code&gt;
+            &lt;Note&gt;NCSS Moment Tensor Solution&lt;/Note&gt;
+            &lt;Link&gt;http://www.ncedc.org/mt/nc71776130_MT.html&lt;/Link&gt;
+        &lt;/ProductLink&gt;
+    &lt;/Event&gt;
+&lt;/EQMessage&gt;
+</pre>
+	</div>
+
+	<h5>Product</h5>
+	<div class="code">
+		<pre>
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;product xmlns=&quot;http://earthquake.usgs.gov/distribution/product&quot; id=&quot;urn:usgs-product:nc:scitech-link:nc71776130-momenttensor_nc:1336244619000&quot; updateTime=&quot;2012-05-05T19:03:39.000Z&quot; status=&quot;UPDATE&quot; trackerURL=&quot;http://ehppdl1.cr.usgs.gov/tracker/&quot;&gt;
+    &lt;property name=&quot;addon-code&quot; value=&quot;MomentTensor_NC&quot;/&gt;
+    &lt;property name=&quot;addon-type&quot; value=&quot;LinkURL&quot;/&gt;
+    &lt;property name=&quot;eids-feeder&quot; value=&quot;ucbpp.ncss-ucb.cisn.org&quot;/&gt;
+    &lt;property name=&quot;eids-feeder-sequence&quot; value=&quot;91812&quot;/&gt;
+    &lt;property name=&quot;eventsource&quot; value=&quot;nc&quot;/&gt;
+    &lt;property name=&quot;eventsourcecode&quot; value=&quot;71776130&quot;/&gt;
+    &lt;property name=&quot;text&quot; value=&quot;NCSS Moment Tensor Solution&quot;/&gt;
+    &lt;property name=&quot;url&quot; value=&quot;http://www.ncedc.org/mt/nc71776130_MT.html&quot;/&gt;
+    &lt;property name=&quot;version&quot; value=&quot;1&quot;/&gt;
+    &lt;signature&gt;
+    MC0CFQCO+no9PPkjzyQrb8hhuFJVUNoK+wIUNAvb14GhoQAnwI05et3oQtvgZtQ=
+    &lt;/signature&gt;
+&lt;/product&gt;
+
+</pre>
+	</div>
+
+
+
+
+
+	<h3>Comment</h3>
+
+	<p>Comment type products are designed to support free-form text,
+		for ad-hoc additions to event pages. Frequently used comment type
+		products should be promoted to a specific product type.</p>
+
+	<p>
+		<code>general-text</code>
+		type products are currently displayed at the bottom of the Summary
+		page for the event.
+	</p>
+
+	<p>
+		<code>scitech-text</code>
+		type products are currently displayed at the bottom of the Technical
+		page for the event.
+	</p>
+
+	<p>
+		<code>impact-text</code>
+		type products are current displayed at the bottom of the Technical
+		page for the event. These products are created when
+		<code>Comment/TypeKey</code>
+		starts with case insensitively: "FeltReports".
+	</p>
+
+	<h4>Properties</h4>
+	<dl>
+		<dt>code</dt>
+		<dd>
+			<code>Comment/TypeKey</code>
+		</dd>
+
+		<dt>addon-type</dt>
+		<dd>"comment"</dd>
+	</dl>
+
+	<h4>Contents</h4>
+	<dl>
+		<dt>""</dt>
+		<dd>
+			Addon text, read from
+			<code>Comment/Text</code>
+		</dd>
+	</dl>
+
+
+	<h4>Example Comment</h4>
+
+	<h5>EQXML</h5>
+	<div class="code">
+		<pre>
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;EQMessage xmlns=&quot;http://www.usgs.gov/ansseqmsg&quot;&gt;
+    &lt;Source&gt;US&lt;/Source&gt;
+    &lt;Sender&gt;USGS, NEIS, Golden, Colorado (and predecessors)&lt;/Sender&gt;
+    &lt;Module&gt;Bulletin Hydra Version 1.7.5&lt;/Module&gt;
+    &lt;MsgSrc&gt;US&lt;/MsgSrc&gt;
+    &lt;MsgIdent&gt;B0009HZ4_20120505_172412&lt;/MsgIdent&gt;
+    &lt;Sent&gt;2012-05-05T17:24:12.076Z&lt;/Sent&gt;
+    &lt;Event&gt;
+        &lt;DataSource&gt;US&lt;/DataSource&gt;
+        &lt;EventID&gt;B0009HZ4&lt;/EventID&gt;
+        &lt;Version&gt;E&lt;/Version&gt;
+        &lt;Action&gt;Update&lt;/Action&gt;
+        &lt;Type&gt;Earthquake&lt;/Type&gt;
+        &lt;Comment&gt;
+            &lt;SourceKey&gt;US&lt;/SourceKey&gt;
+            &lt;TypeKey&gt;FeltReports&lt;/TypeKey&gt;
+            &lt;Text&gt;&lt;![CDATA[Felt (V) at Dibrugarh and (III) at Tinsukia.  Also felt at Naharkatia.&amp;#10;]]&gt;&lt;/Text&gt;
+        &lt;/Comment&gt;
+    &lt;/Event&gt;
+&lt;/EQMessage&gt;
+</pre>
+	</div>
+
+	<h5>Product</h5>
+	<div class="code">
+		<pre>
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;product xmlns=&quot;http://earthquake.usgs.gov/distribution/product&quot; id=&quot;urn:usgs-product:us:impact-text:usb0009hz4_feltreports:1336238652000&quot; updateTime=&quot;2012-05-05T17:24:12.000Z&quot; status=&quot;UPDATE&quot; trackerURL=&quot;http://ehppdl1.cr.usgs.gov/tracker/&quot;&gt;
+    &lt;property name=&quot;addon-type&quot; value=&quot;comment&quot;/&gt;
+    &lt;property name=&quot;code&quot; value=&quot;FeltReports&quot;/&gt;
+    &lt;property name=&quot;eids-feeder&quot; value=&quot;gvoutput1.anss.gs.ad&quot;/&gt;
+    &lt;property name=&quot;eids-feeder-sequence&quot; value=&quot;14789&quot;/&gt;
+    &lt;property name=&quot;eventsource&quot; value=&quot;us&quot;/&gt;
+    &lt;property name=&quot;eventsourcecode&quot; value=&quot;b0009hz4&quot;/&gt;
+    &lt;property name=&quot;version&quot; value=&quot;E&quot;/&gt;
+    &lt;content path=&quot;&quot; type=&quot;text/plain&quot; length=&quot;75&quot; modified=&quot;2012-05-05T17:24:14.000Z&quot; encoded=&quot;true&quot;&gt;
+    RmVsdCAoVikgYXQgRGlicnVnYXJoIGFuZCAoSUlJKSBhdCBUaW5zdWtpYS4gIEFsc28gZmVsdCBhdCBOYWhhcmthdGlhLiYjMTA7
+    &lt;/content&gt;
+    &lt;signature&gt;
+    MCwCFFHQP+la2FgYe95no3wWCZZNKdDSAhRemoeikagSokEKuuzML6MFoDuK+A==
+    &lt;/signature&gt;
+&lt;/product&gt;
+</pre>
+	</div>
+
+</body>
+</html>

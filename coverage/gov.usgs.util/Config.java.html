@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Config.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util</a> &gt; <span class="el_source">Config.java</span></div><h1>Config.java</h1><pre class="source lang-java linenums">/*
+ * Config
+ */
+package gov.usgs.util;
+
+import java.util.Properties;
+import java.util.Map;
+import java.util.HashMap;
+
+import gov.usgs.util.Ini;
+
+import java.lang.ref.WeakReference;
+
+/**
+ * The configuration object used for distribution.
+ *
+ * This object holds a singleton reference to the global configuration. Users
+ * should use the static method getConfig() to retrieve the loaded
+ * configuration.
+ *
+ * Objects are loaded from Config objects using the property &quot;type&quot;. The value
+ * of the property &quot;type&quot; should be a fully qualified class name. This can be
+ * used for Any type of object that has a constructor with no arguments. If the
+ * loaded object implements the Configurable interface, its &quot;configure&quot; method
+ * is called using the Config object.
+ *
+ * &lt;pre&gt;
+ * [objectName]
+ * type = fully.qualified.Classname
+ * ... other object properties
+ *
+ * [anotherObject]
+ * ...
+ * &lt;/pre&gt;
+ *
+ * Some objects refer to other named configured objects. These named objects
+ * correspond to sections in the global configuration object. These objects are
+ * loaded using the getObject() method:
+ *
+ * &lt;pre&gt;
+ * Classname obj = (Classname) Config.getConfig().getObject(&amp;quot;objectName&amp;quot;);
+ * &lt;/pre&gt;
+ *
+ * or
+ *
+ * &lt;pre&gt;
+ * Classname obj = (Classname) new Config(Config.getConfig().getSection(
+ * 		&amp;quot;objectName&amp;quot;)).getObject();
+ * &lt;/pre&gt;
+ *
+ */
+public class Config extends Ini {
+
+	/** Serialization version number. */
+	private static final long serialVersionUID = 1L;
+
+	/** Property name that specifies the object type. */
+	public static final String OBJECT_TYPE_PROPERTY = &quot;type&quot;;
+
+	/** Map from short configuration types to fully qualified class names. */
+<span class="fc" id="L61">	public static final Map&lt;String, String&gt; OBJECT_TYPE_MAP = new HashMap&lt;String, String&gt;();</span>
+
+	/** Singleton configuration object. */
+<span class="fc" id="L64">	private static Config SINGLETON = null;</span>
+
+	/**
+	 * Weak references to already loaded objects. WeakReferences are cleared
+	 * more aggressively than SoftReferences, the idea is finalize as soon as no
+	 * one else holds a reference.
+	 */
+<span class="fc" id="L71">	private Map&lt;String, WeakReference&lt;Object&gt;&gt; loadedObjects = new HashMap&lt;String, WeakReference&lt;Object&gt;&gt;();</span>
+
+	/**
+	 * Create an empty Config object.
+	 */
+	public Config() {
+<span class="fc" id="L77">		super();</span>
+<span class="fc" id="L78">	}</span>
+
+	/**
+	 * Create a Config object using properties for defaults.
+	 *
+	 * @param properties
+	 *            the default properties.
+	 */
+	public Config(Properties properties) {
+<span class="fc" id="L87">		super(properties);</span>
+<span class="fc" id="L88">	}</span>
+
+	/**
+	 * Load a configured object.
+	 *
+	 * Uses the property &quot;type&quot; to determine which type of object to load. If
+	 * the loaded object implements the Configurable interface, its configure
+	 * method is called before returning.
+	 *
+	 * @return the loaded object
+	 * @throws Exception
+	 *             if any errors occur.
+	 */
+	public Object getObject() throws Exception {
+<span class="fc" id="L102">		String className = getProperty(OBJECT_TYPE_PROPERTY);</span>
+		// must specify type
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">		if (className == null) {</span>
+<span class="nc" id="L105">			return null;</span>
+		}
+
+		// config defines shortnames that can be used for common classes
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">		if (OBJECT_TYPE_MAP.containsKey(className)) {</span>
+<span class="nc" id="L110">			className = OBJECT_TYPE_MAP.get(className);</span>
+		}
+
+<span class="fc" id="L113">		Object obj = Class.forName(className)</span>
+<span class="fc" id="L114">				.getConstructor().newInstance();</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">		if (obj instanceof Configurable) {</span>
+<span class="fc" id="L116">			((Configurable) obj).configure(this);</span>
+		}
+<span class="fc" id="L118">		return obj;</span>
+	}
+
+	/**
+	 * Get a section as a Config object.
+	 *
+	 * @param name
+	 *            name of config section.
+	 * @return section properties as a Config object.
+	 * @throws Exception
+	 *             if any errors occur.
+	 */
+	public Object getObject(final String name) throws Exception {
+<span class="fc" id="L131">		Object object = null;</span>
+
+		// check if already loaded
+<span class="fc" id="L134">		WeakReference&lt;Object&gt; ref = loadedObjects.get(name);</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">		if (ref != null) {</span>
+			// already loaded, if not still in memory this returns null
+<span class="fc" id="L137">			object = ref.get();</span>
+		}
+
+<span class="fc bfc" id="L140" title="All 2 branches covered.">		if (object == null) {</span>
+			// not loaded yet
+<span class="fc" id="L142">			Properties props = getSections().get(name);</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">			if (props != null) {</span>
+<span class="fc" id="L144">				object = new Config(props).getObject();</span>
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">				if (object instanceof Configurable) {</span>
+<span class="fc" id="L146">					((Configurable)object).setName(name);</span>
+				}
+<span class="fc" id="L148">				loadedObjects.put(name, new WeakReference&lt;Object&gt;(object));</span>
+			}
+		}
+
+<span class="fc" id="L152">		return object;</span>
+	}
+
+	/**
+	 * Get the global configuration object.
+	 *
+	 * Users are encouraged to not maintain a reference to the returned object,
+	 * in case it is updated.
+	 *
+	 * @return the global configuration object.
+	 */
+	public static Config getConfig() {
+<span class="fc" id="L164">		return SINGLETON;</span>
+	}
+
+	/**
+	 * Set the global configuration object.
+	 *
+	 * @param config
+	 *            the new global configuration object.
+	 */
+	public static void setConfig(final Config config) {
+<span class="fc" id="L174">		SINGLETON = config;</span>
+<span class="fc" id="L175">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

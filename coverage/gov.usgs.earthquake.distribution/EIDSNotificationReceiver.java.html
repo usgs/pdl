@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EIDSNotificationReceiver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">EIDSNotificationReceiver.java</span></div><h1>EIDSNotificationReceiver.java</h1><pre class="source lang-java linenums">/*
+ * EIDSNotificationReceiver
+ */
+package gov.usgs.earthquake.distribution;
+
+import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import gov.usgs.earthquake.eidsutil.EIDSClient;
+import gov.usgs.earthquake.eidsutil.EIDSListener;
+import gov.usgs.earthquake.eidsutil.EIDSMessageEvent;
+import gov.usgs.util.Config;
+import gov.usgs.util.StreamUtils;
+
+/**
+ * Receive XML notifications using EIDS.
+ * 
+ * 
+ * This class implements the Configurable interface, and has the following
+ * options:
+ * &lt;dl&gt;
+ * &lt;dt&gt;serverHost&lt;/dt&gt;
+ * &lt;dd&gt;The EIDS Server hostname or IP address.&lt;/dd&gt;
+ * &lt;dt&gt;serverPort&lt;/dt&gt;
+ * &lt;dd&gt;The EIDS Server listen port, usually 39977.&lt;/dd&gt;
+ * &lt;dt&gt;alternateServers&lt;/dt&gt;
+ * &lt;dd&gt;A comma separated list of HOST:PORT pairs. The EIDSClient will attempt to
+ * connect to these servers when unable to connect to the primary
+ * serverHost:serverPort.&lt;/dd&gt;
+ * &lt;dt&gt;trackingFile&lt;/dt&gt;
+ * &lt;dd&gt;A file name used for tracking connection state. This is used to receive
+ * missed messages when (re)connecting.&lt;/dd&gt;
+ * &lt;/dl&gt;
+ */
+<span class="nc" id="L36">public class EIDSNotificationReceiver extends DefaultNotificationReceiver</span>
+		implements EIDSListener {
+
+	/** Logging object. */
+<span class="nc" id="L40">	private static final Logger LOGGER = Logger</span>
+<span class="nc" id="L41">			.getLogger(EIDSNotificationReceiver.class.getName());</span>
+
+	/** Property name for eids server host address. */
+	public static final String EIDS_SERVER_HOST_PROPERTY = &quot;serverHost&quot;;
+
+	/** Property name for eids server port. */
+	public static final String EIDS_SERVER_PORT = &quot;serverPort&quot;;
+
+	/** Property name for eids server alternate servers list. */
+	public static final String EIDS_ALTERNATE_SERVERS = &quot;alternateServers&quot;;
+
+	/** Property name for eids client tracking file. */
+	public static final String EIDS_TRACKING_FILE = &quot;trackingfile&quot;;
+
+	/** Property name for eids client log level. */
+	public static final String EIDS_DEBUG = &quot;eidsDebug&quot;;
+
+	/** EIDSClient that receives notifications. */
+	private EIDSClient client;
+
+	/**
+	 * Implement the EIDSListener interface to process messages from EIDS.
+	 * 
+	 * Checks to make sure message has Correct namespace and root element before
+	 * parsing.
+	 */
+	public void onEIDSMessage(EIDSMessageEvent event) {
+<span class="nc bnc" id="L68" title="All 2 branches missed.">		if (URLNotificationParser.PRODUCT_XML_NAMESPACE.equals(event</span>
+<span class="nc" id="L69">				.getRootNamespace())</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">				&amp;&amp; URLNotificationParser.NOTIFICATION_ELEMENT.equals(event</span>
+<span class="nc" id="L71">						.getRootElement())) {</span>
+<span class="nc" id="L72">			InputStream in = null;</span>
+			try {
+<span class="nc" id="L74">				in = StreamUtils.getInputStream(event.getMessage());</span>
+				// this is a notification message
+<span class="nc" id="L76">				URLNotification notification = URLNotification.parse(in);</span>
+				// process the notification
+<span class="nc" id="L78">				receiveNotification(notification);</span>
+<span class="nc" id="L79">			} catch (Exception e) {</span>
+<span class="nc" id="L80">				LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+						+ &quot;] exception while parsing URLNotification&quot;, e);
+			} finally {
+<span class="nc" id="L83">				StreamUtils.closeStream(in);</span>
+			}
+<span class="nc" id="L85">		} else {</span>
+<span class="nc" id="L86">			LOGGER.info(&quot;[&quot; + getName() + &quot;] ignoring message type &quot;</span>
+<span class="nc" id="L87">					+ event.getRootNamespace() + &quot;:&quot; + event.getRootElement());</span>
+<span class="nc" id="L88">			LOGGER.info(&quot;[&quot; + getName() + &quot;] message content: &quot;</span>
+<span class="nc" id="L89">					+ event.getMessage());</span>
+		}
+<span class="nc" id="L91">	}</span>
+
+	public void configure(Config config) throws Exception {
+<span class="nc" id="L94">		super.configure(config);</span>
+		// configure eids client
+<span class="nc" id="L96">		client = new EIDSClient();</span>
+<span class="nc" id="L97">		client.addListener(this);</span>
+
+<span class="nc" id="L99">		String serverHost = config.getProperty(EIDS_SERVER_HOST_PROPERTY,</span>
+				EIDSClient.DEFAULT_SERVER_HOST);
+<span class="nc" id="L101">		LOGGER.config(&quot;[&quot; + getName() + &quot;] EIDS server host is '&quot; + serverHost</span>
+				+ &quot;'&quot;);
+<span class="nc" id="L103">		client.setServerHost(serverHost);</span>
+
+<span class="nc" id="L105">		Integer serverPort = Integer.valueOf(config.getProperty(</span>
+				EIDS_SERVER_PORT,
+<span class="nc" id="L107">				Integer.toString(EIDSClient.DEFAULT_SERVER_PORT)));</span>
+<span class="nc" id="L108">		LOGGER.config(&quot;[&quot; + getName() + &quot;] EIDS server port is '&quot; + serverPort</span>
+				+ &quot;'&quot;);
+<span class="nc" id="L110">		client.setServerPort(serverPort);</span>
+
+<span class="nc" id="L112">		String alternateServers = config</span>
+<span class="nc" id="L113">				.getProperty(EIDS_ALTERNATE_SERVERS, &quot;&quot;);</span>
+<span class="nc" id="L114">		LOGGER.config(&quot;[&quot; + getName() + &quot;] EIDS alternate servers '&quot;</span>
+				+ alternateServers + &quot;'&quot;);
+<span class="nc" id="L116">		client.setAlternateServersList(alternateServers);</span>
+
+<span class="nc" id="L118">		String trackingFile = config.getProperty(EIDS_TRACKING_FILE);</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">		if (trackingFile != null) {</span>
+<span class="nc" id="L120">			LOGGER.config(&quot;[&quot; + getName() + &quot;] EIDS tracking file is '&quot;</span>
+					+ trackingFile + &quot;'&quot;);
+<span class="nc" id="L122">			client.setTrackingFileName(trackingFile);</span>
+		}
+
+<span class="nc" id="L125">		String debug = config.getProperty(EIDS_DEBUG);</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">		if (debug != null) {</span>
+<span class="nc" id="L127">			LOGGER.config(&quot;[&quot; + getName() + &quot;] EIDS debug mode = '&quot; + debug</span>
+					+ &quot;'&quot;);
+<span class="nc" id="L129">			client.setDebug(Boolean.parseBoolean(debug));</span>
+		}
+<span class="nc" id="L131">	}</span>
+
+	public void shutdown() throws Exception {
+<span class="nc" id="L134">		client.shutdown();</span>
+<span class="nc" id="L135">		super.shutdown();</span>
+<span class="nc" id="L136">	}</span>
+
+	public void startup() throws Exception {
+<span class="nc" id="L139">		super.startup();</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">		if (client == null) {</span>
+<span class="nc" id="L141">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+					+ &quot;] EIDS client is not properly configured&quot;);
+		}
+<span class="nc" id="L144">		client.startup();</span>
+<span class="nc" id="L145">	}</span>
+
+	public EIDSClient getClient() {
+<span class="nc" id="L148">		return client;</span>
+	}
+
+	public void setClient(EIDSClient client) {
+<span class="nc" id="L152">		this.client = client;</span>
+<span class="nc" id="L153">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

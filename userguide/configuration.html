@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Configuration</title>
+<link rel="stylesheet" href="userguide.css" />
+</head>
+
+<body>
+	<h1>Configuration</h1>
+	<p>
+		<a href="../index.html#documentation">&laquo; Back to User Guide</a>
+	</p>
+
+	<h2>Navigation</h2>
+	<ul>
+		<li><a href="#format">Format</a></li>
+		<li><a href="#client">ProductClient Configuration</a></li>
+
+		<li><a href="#distributionconfig">Distribution Components</a>
+			<ul>
+				<li><a href="#NotificationIndex">NotificationIndex</a></li>
+				<li><a href="#NotificationListener">NotificationListener</a></li>
+				<li><a href="#NotificationReceiver">NotificationReceiver</a></li>
+				<li><a href="#ProductSender">ProductSender</a></li>
+				<li><a href="#ProductStorage">ProductStorage</a></li>
+				<li><a href="#ProductKey">ProductKey</a></li>
+			</ul></li>
+
+		<li><a href="#indexerconfig">Indexer Components</a>
+			<ul>
+				<li><a href="#Indexer">Indexer</a>
+				<li><a href="#ArchivePolicy">ArchivePolicy</a></li>
+				<li><a href="#IndexerListener">IndexerListener</a></li>
+				<li><a href="#IndexerModule">IndexerModule</a></li>
+				<li><a href="#ProductIndex">ProductIndex</a></li>
+			</ul></li>
+
+		<li><a href="reliable.html">Reliable Listener Configuration</a></li>
+	</ul>
+
+	<h2 id="format">Format</h2>
+	<p>The configuration file uses an INI style syntax for properties.
+		Any lines that begin with a semi-colon are treated as comments and
+		ignored.</p>
+
+	<div class="code">
+		<pre>
+	globalproperty1 = globalvalue1
+	globalproperty2 = globalvalue2
+
+	[section1]
+	section1property1 = section1value1
+
+	[section2]
+	section2property1 = section2value1
+</pre>
+	</div>
+
+	<h3>Configured Objects</h3>
+	<p>Each INI section represents an Object that is loaded by the
+		application. The section name is used as an object name</p>
+
+	<p>
+		The
+		<code>type</code>
+		property in a section determines what type of object this section will
+		be loaded as. The properties that each object requires differ, and are
+		defined elsewhere on this page.
+	</p>
+
+	<p>
+		The properties in this discussion refers to configuration of objects
+		such as listeners and receivers. This is not to be confused with the
+		configuration of properties for <i>products</i>, such as the
+		"magnitude-type" property of the <i>origin</i> product.
+	<p>
+	<h4>Configured Object Example</h4>
+
+	<div class="code">
+		<pre>
+	listeners = listener1, listener2, listener3
+
+	...
+
+	[listener1]
+	type = gov.usgs.earthquake.distribution.ExternalNotificationListener
+	command = /path/to/executable
+	storage = storageX
+
+	[storageX]
+	type = gov.usgs.earthquake.distribution.FileProductStorage
+	directory = /path/to/storage/directory
+</pre>
+	</div>
+
+	<h5>Explanation</h5>
+	<p>
+		When ProductClient.jar is run with the
+		<code>--receive</code>
+		argument, it checks for the global property
+		<code>listeners</code>
+		. It finds the name
+		<code>listener1</code>
+		in the list of listeners, and next looks for a matching configuration
+		section named
+		<code>listener1</code>
+		.
+	</p>
+
+	<p>
+		It finds the section
+		<code>listener1</code>
+		, sees it is an ExternalNotificationListener, and continues loading.
+		The ExternalNotificationListener type of object requires a
+		<code>command</code>
+		property, which is the path to a executable program to run, and a
+		<code>storage</code>
+		property which refers to another configuration object.
+	</p>
+
+	<p>
+		In this case, the
+		<code>storage</code>
+		property refers to a configuration object named
+		<code>storageX</code>
+		. The loading process finds the section
+		<code>storageX</code>
+		, sees it is a FileProductStorage, and continues loading. The
+		FileProductStorage requires a
+		<code>directory</code>
+		property, which is a filesystem path to a directory.
+	</p>
+
+	<p>
+		At this point, the listener
+		<code>listener1</code>
+		has been loaded, and the application loads any other configured
+		objects before running.
+	</p>
+
+	<h2 id="client">Product Client Configuration</h2>
+
+	<p>The product client includes an embedded configuration with
+		defaults for sending and receiving products. User configuration is
+		combined with the embedded configuration, and user settings override
+		any defaults.</p>
+
+	<p>By default the product client tries to load the user
+		configuration from a file named 'config.ini' in the current working
+		directory. You can override this default user configuration location
+		using the "--configFile=&lt;configFile&gt;" argument.</p>
+
+	<p>
+		Once again, <i>product client</i> configurations are not to be
+		confused with the properties of <i>products</i>, which is a different
+		subject altogether.
+	</p>
+
+	<h3>Global Properties</h3>
+	<dl>
+		<dt>logdirectory</dt>
+		<dd>
+			A directory where log files are created. The default value is "log".
+			Log files rotate once per day and are named
+			"ProductClient_YYYYMMDD.log". <br /> <em>NOTE: this replaces
+				the "logfile" property.</em>
+		</dd>
+
+		<dt>logformat</dt>
+		<dd>format for logs.
+			Possible values are "pdl" (default), "simple", and "xml".</dd>
+
+		<dt>loglevel</dt>
+		<dd>How verbose of logging. Default is INFO. Possible values are
+			SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.</dd>
+
+		<dt>redirectconsole</dt>
+		<dd>Whether to redirect console output (STDOUT, STDERR) to the
+			log file. Default is false.</dd>
+
+		<dt>senders</dt>
+		<dd>
+			A comma delimited list of section names to load as senders. Items in
+			this list must implement the ProductSender interface. This property
+			is used with the
+			<code>--send</code>
+			command line argument of ProductClient.jar
+		</dd>
+
+		<dt>receivers</dt>
+		<dd>
+			A comma delimited list of section names to load as receivers. Items
+			in this list must implement the NotificationReceiver interface. This
+			property is used with the
+			<code>--receive</code>
+			command line argument of ProductClient.jar
+		</dd>
+
+		<dt>listeners</dt>
+		<dd>
+			Listeners are used by Hubs and Clients. A comma delimited list of
+			section names to load as listeners. Items in this list must implement
+			the NotificationListener interface. This property is used with the
+			<code>--receive</code>
+			command line argument of ProductClient.jar
+		</dd>
+
+		<dt class="deprecated">enableTracker</dt>
+		<dd>Whether or not to send tracker updates for sent and received
+			products. Default is disabled (false).
+			<strong>The tracker is no longer supported.</strong>
+		</dd>
+
+		<dt class="deprecated">trackerURL</dt>
+		<dd>Default tracker URL assigned to products when sending.</dd>
+
+		<dt class="deprecated">enableZabbix</dt>
+		<dd>Whether or not to enable zabbix monitoring. Default is
+			disabled (false).
+			<strong>Zabbix monitoring is no longer supported.</strong>
+
+			<p>We now recommend configuring a HeartbeatListener, and
+				using an external monitoring script
+				https://github.com/usgs/pdlmonitor
+			</p>
+		</dd>
+
+		<dt class="deprecated">zabbixPort</dt>
+		<dd>Override the default port (10052) when using zabbix
+			monitoring.</dd>
+	</dl>
+
+
+	<h2 id="distributionconfig">Distribution Components</h2>
+	<h3 id="NotificationIndex">NotificationIndex</h3>
+	<p>A notification index is used by Hubs and Clients to track
+		available products.</p>
+	<dl>
+		<dt>gov.usgs.earthquake.distribution.JDBCNotificationIndex</dt>
+		<dd>
+			<dl>
+				<dt>indexfile</dt>
+				<dd>The SQLite database file. Default is "pd_index.db".</dd>
+			</dl>
+		</dd>
+	</dl>
+	<h3 id="NotificationListener">NotificationListener</h3>
+	<p>Listeners are used by Hubs and Clients</p>
+
+	<dl>
+		<dt>includeTypes</dt>
+		<dd>(Optional) A comma delimited list of product types to
+			process. When present, only types in this list are processed.</dd>
+
+		<dt>excludeTypes</dt>
+		<dd>(Optional) A comma delmited list of product types NOT to
+			process. When present, types in this list are NOT processed.</dd>
+
+		<dt>includeSources</dt>
+		<dd>(Optional) A comma separated list of product types to
+			include. If this list is defined it constitutes an "allow" list, and
+			only types in this list are allowed.</dd>
+
+		<dt>excludeSources</dt>
+		<dd>(Optional) A comma separated list of product types to
+			exclude. If this list is defined it constitutes a "block" list, and
+			types in this list are not allowed.</dd>
+
+		<dt class="deprecated">attemptCount</dt>
+		<dt>maxTries</dt>
+		<dd>(Optional, Default 1) Number of times to attempt delivery of
+			each notification, if the listener throws a
+			ContinuableListenerException during onNotification(). A value &lt;= 1
+			means do not re-attempt.</dd>
+
+		<dt>timeout</dt>
+		<dd>(Optional, Default 0) Number of milliseconds before thread
+			running onNotification() is interrupted. A value &lt;= 0 means never
+			interrupt.</dd>
+
+		<dt>retryDelay</dt>
+		<dd>(Optional, Default 300000) Number of milliseconds to wait before attempting
+			redelivery of a notification after a listener throws a
+			ContinuableListenerException during onNotification().
+			A value &lt; = 0 means no delay.  Used with <code>maxTries</code>.</dd>
+
+		<dt>includeScenarios</dt>
+		<dd>(Optional, Default false) Flag to indicate scenario products
+			should be accepted. Set to &ldquo;true&rdquo; or &ldquo;yes&rdquo; to
+			enable.</dd>
+
+		<dt>includeActuals</dt>
+		<dd>(Optional, Default true) Flag to indicate actual products
+			should be accepted. Set to &ldquo;false&rdquo; or &ldquo;no&rdquo; to
+			disable.</dd>
+
+		<dt>includeTests</dt>
+		<dd>(Optional, Default false) Flag to indicate test products
+			should be accepted. Set to &ldquo;true&rdquo; or &ldquo;yes&rdquo; to
+			enable.</dd>
+
+		<dt>includeInternals</dt>
+		<dd>(Optional, Default false) Flag to indicate internal products
+			should be accepted. Set to &ldquo;true&rdquo; or &ldquo;yes&rdquo; to
+			enable.</dd>
+
+		<dt>includeDevelopments</dt>
+		<dd>(Optional, Default false) Flag to indicate development
+			products should be accepted. Set to &ldquo;true&rdquo; or
+			&ldquo;yes&rdquo; to enable.</dd>
+
+		<dt>listenerIndex</dt>
+		<dd>
+			Name of a configured NotificationIndex object.
+
+			<p>
+				Alternatively, a property
+				<code>listenerIndexFile</code>
+				may be used to create a SQLite JDBCNotificationIndex without further
+				configuration. This should not be used when the index is shared.
+			</p>
+		</dd>
+
+		<dt>includePaths</dt>
+		<dd>NOTE: this property does not filter product downloads, only product processing.
+			A comma separated list of content paths to include.
+			Only products with a content path in this list will be processed.</dd>
+
+		<dt>excludePaths</dt>
+		<dd>NOTE: this property does not filter product downloads, only product processing.
+			A comma separated list of content paths to exclude.
+			Products with a content path in this list will not be processed.</dd>
+	</dl>
+
+	<h4>Listener Types</h4>
+	<dl>
+		<dt>gov.usgs.earthquake.distribution.ExternalNotificationListener</dt>
+		<dd>
+			This represents a command/process to run each time a product is
+			received.
+
+			<dl>
+				<dt>storage</dt>
+				<dd>
+					Name of a configured ProductStorage. Generally, a ProductStorage
+					should not be shared between a receiver and listener. Products are
+					extracted into this storage before executing command, with a
+					--directory argument representing the stored location.
+
+					<p>
+						Alternatively, a property
+						<code>storageDirectory</code>
+						may be used to create a FileProductStorage without further
+						configuration.
+					</p>
+				</dd>
+
+				<dt>command</dt>
+				<dd>A path to an executable file and arguments</dd>
+
+				<dt>timeout</dt>
+				<dd>(Optional, default=100000) Timeout in milliseconds for an
+					execution of command. If command doesn't finish executing within
+					the timeout, the process is terminated. When timeout is set to zero
+					(0), commands are never terminated.</dd>
+			</dl>
+		</dd>
+
+		<dt>gov.usgs.earthquake.distribution.EIDSNotificationSender</dt>
+		<dd>
+			Stores products using a URL Product Storage, and sends EIDS
+			notifications with links to the products.
+
+			<dl>
+				<dt>listenerIndex</dt>
+				<dd>
+					Name of a configured NotificationIndex. This is used to track
+					notifications that are sent for later automatic cleanup. Generally,
+					a NotificationIndex should not be shared by multiple
+					EIDSNotificationSenders unless they are sending different types of
+					products that do not overlap.
+
+					<p>
+						Alternatively, a property
+						<code>listenerIndexFile</code>
+						may be used to create a SQLite JDBCNotificationIndex without
+						further configuration. This should not be use when the index is
+						shared.
+					</p>
+				</dd>
+
+				<dt>storage</dt>
+				<dd>Name of a configured URLProductStorage.</dd>
+
+				<dt>storageAge</dt>
+				<dd>(Optional, default=3600000=1 hour) Maximum time in
+					milliseconds for products to be kept before automatic cleanup.</dd>
+
+				<dt>cleanupInterval</dt>
+				<dd>(Optional, default=3600000=1 hour) How often, in
+					milliseconds, for automatic cleanup to run. When interval is set to
+					zero (0), no automatic cleanup is run.</dd>
+
+				<dt>serverHost</dt>
+				<dd>EIDS server hostname, used to attempt sending notifications
+					to EIDS via CORBA.</dd>
+
+				<dt>serverPort</dt>
+				<dd>EIDS server port, used to attempt sending notifications to
+					EIDS via CORBA</dd>
+
+				<dt>serverPolldir</dt>
+				<dd>(Optional, default=polldir) EIDS server polldir,
+					notifications are output as files when unable to send via CORBA.</dd>
+			</dl>
+		</dd>
+
+		<dt>gov.usgs.earthquake.distribution.RelayProductListener</dt>
+		<dd>Forward any received products to another
+			SocketProductReceiver. For configuration purposes, a
+			RelayProductListener is treated as a
+			gov.usgs.earthquake.distribution.SocketProductSender.</dd>
+
+		<dt>gov.usgs.earthquake.indexer.Indexer</dt>
+		<dd>
+			See <a href="#indexerconfig">Indexer Configuration</a>
+		</dd>
+
+		<dt>gov.usgs.earthquake.distribution.HeartbeatListener</dt>
+		<dd>
+			Collects status information from various components in one client
+			installation, and writes it to a file whenever a heartbeat product is
+			received.
+
+			<p>The primary purpose of this listener is monitoring. Products
+				are usually event driven, and at times are far apart. Each PDL hub
+				will generally send a heartbeat product every 5 minutes, so there is
+				a steady flow of information and problems can be detected early.</p>
+
+			<dl>
+				<dt>heartbeatFilename</dt>
+				<dd>(Optional, default=heartbeat.dat) File where heartbeat
+					information is written. The file contents are a JSON object. The
+					object keys correspond to configuration file section names, and
+					values are objects with one or more statuses that are timestamped.</dd>
+
+				<dt>heartbeatTimeout</dt>
+				<dd>(Optional, default=0) Milliseconds. When zero, disables
+					automatic removal of status information (which is not usually
+					needed). Used in combination with cleanupInterval to remove old
+					heartbeat status information after timeout.</dd>
+			</dl>
+		</dd>
+
+		<dt>gov.usgs.earthquake.distribution.ContentListener</dt>
+		<dd>
+			A listener that listens for a specific content path.
+
+			<p>This is intended for users who wish to output specific pieces
+				of product content, such as "quakeml.xml", for products that
+				otherwise meet their configured NotificationListener criteria.</p>
+
+			<dl>
+				<dt>includePaths</dt>
+				<dd>Comma separate list of content paths to output when
+					received. (reuses DefaultNotificationListener property).</dd>
+
+				<dt>outputDirectory</dt>
+				<dd>Directory where content is output.</dd>
+
+				<dt>tempDirectory</dt>
+				<dd>
+					(Optional, default=system temp dir) Directory where content is
+					written before being moved to
+					<code>outputDirectory</code>
+				</dd>
+
+				<dt>outputFormat</dt>
+				<dd>
+					(Optional, default=SOURCE_TYPE_CODE_UPDATETIME_PATH) Format for
+					generated filenames in output directory. This format string is
+					filled in with these attributes using string replacement:
+					<dl>
+						<dt>SOURCE</dt>
+						<dd>Product Source</dd>
+						<dt>TYPE</dt>
+						<dd>Product Type</dd>
+						<dt>CODE</dt>
+						<dd>Product Code</dd>
+						<dt>UPDATETIME</dt>
+						<dd>Product Update Time</dd>
+						<dt>PATH</dt>
+						<dd>Content Path</dd>
+					</dl>
+				</dd>
+			</dl>
+		</dd>
+	</dl>
+	<h3 id="NotificationReceiver">NotificationReceiver</h3>
+	<p>Receivers are used by Hubs and Clients.</p>
+
+	<dl>
+		<dt>index</dt>
+		<dd>
+			Name of a configured NotificationIndex. Generally one
+			NotificationIndex may be shared by all receivers. If a
+			NotificationIndex is shared, the ProductStorage must also be shared.
+
+			<p>
+				Alternatively, a property
+				<code>indexFile</code>
+				may be used to create a SQLite JDBCNotificationIndex without further
+				configuration. This should not be use when the index is shared.
+			</p>
+		</dd>
+
+		<dt>storage</dt>
+		<dd>
+			Name of a configured ProductStorage. Generally one ProductStorage may
+			be shared by all receivers. If a ProductStorage is shared, the
+			NotificationIndex must also be shared.
+
+			<p>
+				Alternatively, a property
+				<code>storageDirectory</code>
+				may be used to create a FileProductStorage without further
+				configuration. This should not be used when the storage is sharted.
+			</p>
+		</dd>
+
+		<dt>storageage</dt>
+		<dd>How long to store products in milliseconds. Default is 300000
+			milliseconds = 5 minutes.</dd>
+
+		<dt>cleanupInterval</dt>
+		<dd>How often to check for products older than storageage
+			milliseconds. Default is 300000 milliseconds = 5 minutes.</dd>
+
+		<dt>connectTimeout</dt>
+		<dd>Number of milliseconds allowed before connection attempts
+			timeout, when downloading products.</dd>
+
+		<dt>readTimeout</dt>
+		<dd>Number of milliseconds allowed before read attempts timeout,
+			when downloading products. And, for SocketProductReceiver,
+			when accepting products via socket.</dd>
+
+		<dt>listenerNotifier</dt>
+		<dd>
+			<dl>
+				<dt>executor</dt>
+				<dd>(default) Executor uses one queue per listener and
+					notifications are processed in the order they are received.
+					</dd>
+
+				<dt>roundrobin</dt>
+				<dd>Round robin uses one queue per listener for each product
+					source+type and takes one product from the front of each queue.
+					This prevents a bulk sender from slowing processing of other
+					products.</dd>
+			</dl>
+		</dd>
+	</dl>
+
+	<h4>Receiver Types</h4>
+	<dl>
+		<dt>gov.usgs.earthquake.distribution.EIDSNotificationReceiver</dt>
+		<dd>
+			This is used primarily by clients to receive notifications from EIDS.
+
+			<dl>
+				<dt>serverHost</dt>
+				<dd>The IP address or hostname where an EIDS Server with
+					notifications is running.</dd>
+
+				<dt>serverPort</dt>
+				<dd>The port where an EIDS Server with notifications is
+					running.</dd>
+
+				<dt>alternateServers</dt>
+				<dd>(Optional) A comma separated list of host:port that should
+					be used as alternate servers when serverHost is unreachable.</dd>
+			</dl>
+		</dd>
+
+		<dt>gov.usgs.earthquake.distribution.SocketProductReceiver</dt>
+		<dd>
+			This is used primarily by hubs to receive products directly.
+			<dl>
+				<dt>port</dt>
+				<dd>(Optional) Default is 11235. The port used to accept
+					connections.</dd>
+
+				<dt>sizeLimit</dt>
+				<dd>(Optional) Default is -1.  When greater than zero, limit
+					incoming products to this many bytes.  NOTE: this limit is
+					based on the number of bytes transferred instead of actual
+					product content bytes, and also applies to any metadata or
+					formatoverhead.</dd>
+
+				<dt>threads</dt>
+				<dd>(Optional) Default is 10. The size of the thread pool
+					used to process accepted connections.  Connections beyond
+					this number are queued and processed in the order they are
+					accepted.</dd>
+			</dl>
+		</dd>
+	</dl>
+	<h3 id="ProductSender">ProductSender</h3>
+	<p>Senders are used by Product Creators to send a product to a Hub.</p>
+
+	<dl>
+		<dt>gov.usgs.earthquake.distribution.SocketProductSender</dt>
+		<dd>
+			<p>See <a href="sending.html#compression">Sending products</a>
+				for suggestions on configuring compression and format settings</p>
+
+			<dl>
+				<dt>host</dt>
+				<dd>The IP address or hostname where a SocketProductReceiver is
+					listening.</dd>
+
+				<dt>port</dt>
+				<dd>The port where a SocketProductReceiver is listening.</dd>
+
+				<dt>connectTimeout</dt>
+				<dd>(Optional) Default is 15000. Milliseconds to wait for a
+					connection to succeed.</dd>
+
+				<dt>readTimeout</dt>
+				<dd>(Optional) Default is 15000. Milliseconds to wait for
+					data before timing out.</dd>
+
+				<dt>writeTimeout</dt>
+				<dd>(Optional) Default is -1.  Milliseconds to wait between
+					writes before timing out.
+
+					<p><small>NOTE: Java does not natively support write timeouts
+						for sockets in blocking mode.  This option uses a separate
+						thread to monitor socket writes, and closes the socket if
+						a write does not occur within this time.</small></p></dd>
+
+				<dt>binaryFormat</dt>
+				<dd>(Optional) Default is false.
+					Send products using binary format (true) or xml format (false).
+					Binary format avoids base64 encoding overhead, and reduces bytes
+					tranferred by ~25%.</dd>
+
+				<dt>enableDeflate</dt>
+				<dd>(Optional) Default is true.
+					Enable deflate compression during transfer (true) or disable (false).
+					Deflate compression can reduce content size by 90+%, but is also
+					CPU intensive.
+				</dd>
+
+				<dt>deflateLevel</dt>
+				<dd>(Optional) Default is 1 (best speed).
+					Only used when <code>enableDeflate</code> = true.
+					A number between 1 (best speed) and 9 (best compression).
+					-1 lets the library decide the best level, but currently implies 6.</dd>
+			</dl>
+		</dd>
+	</dl>
+	<h3 id="ProductStorage">ProductStorage</h3>
+	<p>Storage is used by Hubs and Clients to store received products.</p>
+	<dl>
+		<dt>gov.usgs.earthquake.distribution.FileProductStorage</dt>
+		<dd>
+			<dl>
+				<dt>directory</dt>
+				<dd>The directory where products are stored. Default is
+					"storage".</dd>
+
+				<dt>verifySignatures</dt>
+				<dd>
+					Whether or not to verify signatures when storing products. Should
+					be one of:
+
+					<dl>
+						<dt>off</dt>
+						<dd>(Default) Do not verify signatures</dd>
+
+						<dt>test</dt>
+						<dd>Check signatures, but do not reject products with invalid
+							signatures.</dd>
+
+						<dt>&lt;anything else&gt;</dt>
+						<dd>Verify signatures, and reject products with invalid
+							signatures.</dd>
+					</dl>
+				</dd>
+
+				<dt>keychain</dt>
+				<dd>Used when verifying signatures. A comma delimited list of
+					sections to load as ProductKeys.</dd>
+
+				<dt>keychainFile</dt>
+				<dd>An alternative to <code>keychain</code> where keychain
+					is managed in a separate config file.  File should contain
+					a global (before any sections) property named "keychain",
+					which is a comma separated list of sections to load as
+					ProductKeys.
+					</dd>
+
+				<dt>listeners</dt>
+				<dd>
+					Comma-separated list of <a href="#StorageListener">StorageListeners</a>
+					to notify when a product is added to or removed from the storage.
+				</dd>
+
+				<dt>useHashes</dt>
+				<dd>A flag indicating if the generated directory structure for
+					a product should use a simple hash of the product. Setting this to
+					&ldquo;true&rdquo; will help on ext3 file systems. Default
+					&rdquo;false&rdquo;</dd>
+
+				<dt>legacyStorages</dt>
+				<dd>Optional. Comma separated list of "legacy" ProductStorages.
+					Used when making incompatible changes to an existing storage.
+					ProductStorages in this list are used when the primary storage (i.e. that has the legacyStorages property configured) does not contain a product, and are only used to access or remove products; never store newly added products.</dd>
+			</dl>
+		</dd>
+
+		<dt>gov.usgs.earthquake.distribution.URLProductStorage</dt>
+		<dd>
+			<p>A URLProductStorage is configured just like a
+				FileProductStorage, with the following additional property</p>
+			<dl>
+				<dt>url</dt>
+				<dd>
+					A fully qualified (including http://) base url corresponding to
+					<code>directory</code>
+					.
+					<p>To map a directory onto a url in Apache, use an Alias.</p>
+				</dd>
+			</dl>
+		</dd>
+	</dl>
+	<h3 id="StorageListener">StorageListener</h3>
+	<p>Listeners are notified when products are added-to, or removed
+		from the ProductStorage.</p>
+	<dl>
+		<dt>gov.usgs.earthquake.distribution.DefaultStorageListener</dt>
+		<dd>Provides simple dispatch functionality to allow sub-classes
+			to listen optionally to only onProductStored or onProductRemoved if
+			desired.</dd>
+
+		<dt>gov.usgs.earthquake.distribution.ReplicationStorageListener</dt>
+		<dd>
+			A replication storage listener that will replicate the local <a
+				href="#ProductStorage">ProductStorage</a> to a directory on a remote
+			server. Note, this listener will only respond to notifications from a
+			gov.usgs.earthquake.distribution.ProductFileStorage.
+
+			<dl>
+				<dt>archiveSync</dt>
+				<dd>&ldquo;true&rdquo; or &ldquo;false&rdquo; Flag indicating
+					if the replication should be done using the archive flag on the
+					replication command.</dd>
+
+				<dt>rsync</dt>
+				<dd>The name of the replication command to use. (Generally
+					&ldquo;rsync&rdquo;). Should use the fully-qualified path name.</dd>
+
+				<dt>maxTries</dt>
+				<dd>Integer. Number of times to try the sync if it fails.</dd>
+
+				<dt>timeout</dt>
+				<dd>Integer. How long to wait (in milliseconds) before assuming
+					the replication process is hung.</dd>
+
+				<dt>targetHosts</dt>
+				<dd>Comma-separated list of target hosts to which the storage
+					should be replicated. Format for this value is
+					&ldquo;user@host:path&rdquo;. Care should be taken when setting
+					this value. The remote user must have a public key set up on the
+					remote host. The remote path must already exist.</dd>
+			</dl>
+		</dd>
+	</dl>
+	<h3 id="ProductKey">ProductKey</h3>
+	<p>Keys are used to verify signed products, and more specifically
+		by FileProductStorage.</p>
+	<dl>
+		<dt>gov.usgs.earthquake.distribution.ProductKey</dt>
+		<dd>
+			<dl>
+				<dt>key</dt>
+				<dd>An OpenSSH format public key (similar to
+					.ssh/authorized_keys).</dd>
+
+				<dt>types</dt>
+				<dd>A comma delimited list of product types for which this key
+					is valid. Default = all.</dd>
+
+				<dt>sources</dt>
+				<dd>A comma delimited list of product sources for which this
+					key is valid. Default = all.</dd>
+			</dl>
+		</dd>
+	</dl>
+
+
+
+	<h2 id="indexerconfig">Indexer Components</h2>
+	<h3 id="Indexer">Indexer</h3>
+	<p>The indexer is a specialized NotificationListener that
+		associates related products into events.</p>
+	<dl>
+		<dt>gov.usgs.earthquake.indexer.Indexer</dt>
+		<dd>
+			Builds and index of received products. Associates groups of related
+			products into events.
+
+			<dl>
+				<dt>associator</dt>
+				<dd>Name of a configured Associator.</dd>
+
+				<dt>archivePolicy</dt>
+				<dd>
+					A comma delimited list of configured
+					<code>
+						<a href="#ArchivePolicy"> ArchivePolicy</a>
+					</code>
+					objects.
+				</dd>
+
+				<dt>archiveInterval</dt>
+				<dd>Interval, in milliseconds, between executing archive
+					policies.</dd>
+
+				<dt>storage</dt>
+				<dd>
+					Name of a configured ProductStorage.
+
+					<p>
+						Alternatively, a property
+						<code>storageDirectory</code>
+						may be used to create a FileProductStorage without further
+						configuration.
+					</p>
+				</dd>
+
+				<dt>index</dt>
+				<dd>
+					Name of a configured gov.usgs.earthquake.indexer.ProductIndex.
+
+					<p>
+						Alternatively, a property
+						<code>indexFile</code>
+						may be used to create a SQLite JDBCNotificationIndex without
+						further configuration.
+					</p>
+				</dd>
+
+				<dt>modules</dt>
+				<dd>
+					A comma delimited list of configured
+					<code>IndexerModule</code>
+					.
+				</dd>
+
+				<dt>listeners</dt>
+				<dd>
+					A comma delimited list of configured
+					<code>IndexerListener</code>
+				</dd>
+
+				<dt>enableSearch</dt>
+				<dd>(Default false). Whether or not to listen for searches using
+					a socket.</dd>
+
+				<dt>searchPort</dt>
+				<dd>(Default 11236) Which port to bind to listen for searches.
+					Only used when enableSearch=true.</dd>
+
+				<dt>searchThreads</dt>
+				<dd>(Default 5) How large a thread pool to use for searches. 1
+					thread is used for each connection, so 5 allows 5 concurrent
+					searches.</dd>
+
+				<dt>associateUsingCurrentProducts</dt>
+				<dd>(Default false) Only consider "current" versions of products
+					when associating new products to events.  This improves
+					association performance for events with many products.</dd>
+			</dl>
+		</dd>
+	</dl>
+
+	<h3 id="ArchivePolicy">ArchivePolicy</h3>
+	<p>
+		An archive policy is used to generate a
+		<code>
+			<a href="#todo"> ProductIndexQuery</a>
+		</code>
+		. The query is then used to search the
+		<code>
+			<a href="#ProductIndex">ProductIndex</a>
+		</code>
+		. Products and/or events that are returned using this query are
+		archived (generally meaning removed) from the index.
+	</p>
+
+	<dl>
+		<dt>gov.usgs.earthquake.indexer.ArchivePolicy</dt>
+		<dd>
+			Archive events in the index based on their preferred properties. All
+			associated products are also archived when an event is archived.
+
+			<dl>
+				<dt>
+					minAge <strong>Deprecated</strong> See: minEventAge
+				</dt>
+				<dd>Age in milliseconds. Products younger than (occurring
+					since) this time will match the generated product index query. (You
+					generally don't want to set this parameter).</dd>
+
+				<dt>
+					maxAge <strong>Deprecated</strong> See: maxEventAge
+				</dt>
+				<dd>Age in milliseconds. Products older than (occurring before)
+					this time will match the generated product index query.</dd>
+
+				<dt>minEventAge</dt>
+				<dd>
+					Event age in milliseconds. Events older than (occurring before)
+					this time will match the generated product index query. If both the
+					minEventAge and maxEventTime are specified, the minEventAge is
+					ignored and the maxEventTime is used. <a href="age_vs_time.png">What&rsquo;s
+						the difference between <em>Age</em> and <em>Time</em>?
+					</a>
+				</dd>
+
+				<dt>maxEventAge</dt>
+				<dd>
+					Event age in milliseconds. Events newer than (occurring since) this
+					time will match the generated product index query. (You generally
+					do not want to set this parameter without a corresponding
+					minEventAge). If both the maxEventAge and minEventTime are
+					specified, the maxEventAge is ignored and the minEventTime is used.
+					<a href="age_vs_time.png">What&rsquo;s the difference between <em>Age</em>
+						and <em>Time</em>?
+					</a>
+				</dd>
+
+				<dt>minEventTime</dt>
+				<dd>
+					Event time in milliseconds. Events occurring after this time will
+					match the generated product index query. (You generally do not want
+					to set this parameter without a corresponding maxEventTime). If
+					both the maxEventAge and minEventTime are specified, the
+					maxEventAge is ignored and the minEventTime is used. <a
+						href="age_vs_time.png">What&rsquo;s the difference between <em>Age</em>
+						and <em>Time</em>?
+					</a>.
+
+					<p>
+						minEventTime can also be configured using ISO8601 formatted dates,
+						e.g.
+						<code>2012-12-11T01:02:03.123Z</code>
+					</p>
+				</dd>
+
+				<dt>maxEventTime</dt>
+				<dd>
+					Event time in milliseconds. Events occurring before this time will
+					match the generated product index query. If both the minEventAge
+					and maxEventTime are specified, the minEventAge is ignored and the
+					maxEventTime is used. <a href="age_vs_time.png">What&rsquo;s
+						the difference between <em>Age</em> and <em>Time</em>?
+					</a>
+
+					<p>
+						maxEventTime can also be configured using ISO8601 formatted dates,
+						e.g.
+						<code>2012-12-11T01:02:03.123Z</code>
+					</p>
+				</dd>
+
+				<dt>minDepth</dt>
+				<dd>Decimal depth value in kilometers. Positive values indicate
+					positions below the earth's surface. Products with depth greater
+					(deeper) than this value will match the generated product index
+					query.</dd>
+
+				<dt>maxDepth</dt>
+				<dd>Decimal depth value in kilometers. Positive values indicate
+					positions below the earth's surface. Products with depth less
+					(shallower) than this value will match the generated product index
+					query.</dd>
+
+				<dt>minLat</dt>
+				<dd>Decimal degrees minimum product latitude. Products with
+					latitude north of this value will match the generated product index
+					query.</dd>
+
+				<dt>maxLat</dt>
+				<dd>Decimal degrees maximum product latitude. Products with
+					latitude south of this value will match the generated product index
+					query.</dd>
+
+				<dt>minLng</dt>
+				<dd>Decimal degrees minimum product longitude. Products with
+					latitude east of this value will match the generated product index
+					query.</dd>
+
+				<dt>maxLng</dt>
+				<dd>Decimal degrees maximum product longitude. Products with
+					latitude west of this value will match the generated product index
+					query.</dd>
+
+				<dt>minMag</dt>
+				<dd>Decimal value for minimum magnitude. Products with
+					magnitude greater than this value will match the generated product
+					index query.</dd>
+
+				<dt>maxMag</dt>
+				<dd>Decimal value for maximum magnitude. Products with
+					magnitude less than this value will match the generated product
+					index query.</dd>
+
+				<dt>eventSource</dt>
+				<dd>The preferred source of the event to archive. When omitted
+					all sources are included.</dd>
+
+			</dl>
+		</dd>
+
+		<dt>gov.usgs.earthquake.indexer.ProductArchivePolicy</dt>
+		<dd>
+			Archive products in the index based on their properties. Any
+			properties from regular ArchivePolicy may be used, and at least one
+			must be used. When they don't seem meaningful it is recommended to
+			use "maxAge=1".
+
+			<dl>
+				<dt>minProductAge</dt>
+				<dd>
+					Product age in milliseconds; computed using product update time.
+					Products older (occurring before) this time will match the
+					generated product index query. If both the minProductAge and
+					maxProductTime are specified, the minProductAge is ignored and the
+					maxProductTime is used. <a href="age_vs_time.png">What&rsquo;s
+						the difference between <em>Age</em> and <em>Time</em>?
+					</a>
+				</dd>
+
+				<dt>maxProductAge</dt>
+				<dd>
+					Product age in milliseconds; computed using product update time.
+					Products newer (occurring since) this time will match the generated
+					product index query. You generally do not want to specify this
+					parameter without also specifying a corresponding minProductAge. If
+					both the maxProductAge and minProductTime are specified, the
+					maxProductAge is ignored and the minProductTime is used. <a
+						href="age_vs_time.png">What&rsquo;s the difference between <em>Age</em>
+						and <em>Time</em>?
+					</a>
+				</dd>
+
+				<dt>minProductTime</dt>
+				<dd>
+					Product update time in milliseconds. Products updated after this
+					time will match the generated product index query. You generally do
+					not want to specify this parameter without also specifying a
+					corresponding maxProductTime. If both the maxProductAge and
+					minProductTime are specified, the maxProductAge is ignored and the
+					minProductTime is used. <a href="age_vs_time.png">What&rsquo;s
+						the difference between <em>Age</em> and <em>Time</em>?
+					</a>
+
+					<p>
+						minProductTime can also be configured using ISO8601 formatted
+						dates, e.g.
+						<code>2012-12-11T01:02:03.123Z</code>
+					</p>
+				</dd>
+
+				<dt>maxProductTime</dt>
+				<dd>
+					Product update time in milliseconds. Products updated before this
+					time will match the generated product index query. If both the
+					minProductAge and maxProductTime are specified, the minProductAge
+					is ignored and the maxProductTime is used. <a
+						href="age_vs_time.png">What&rsquo;s the difference between <em>Age</em>
+						and <em>Time</em>?
+					</a>
+
+					<p>
+						maxProductTime can also be configured using ISO8601 formatted
+						dates, e.g.
+						<code>2012-12-11T01:02:03.123Z</code>
+					</p>
+				</dd>
+
+				<dt>productType</dt>
+				<dd>The type of product to archive. When omitted all types are
+					included.</dd>
+
+				<dt>productSource</dt>
+				<dd>The source of product to archive. When omitted all sources
+					are included.</dd>
+
+				<dt>onlySuperseded</dt>
+				<dd>Only remove superseded versions of products. When omitted
+					all versions are included.</dd>
+
+				<dt>onlyUnassociated</dt>
+				<dd>Only remove products not associated to an event.</dd>
+
+				<dt>productStatus</dt>
+				<dd>Only remove products whose status matches this status.</dd>
+			</dl>
+		</dd>
+	</dl>
+
+	<h3 id="IndexerListener">IndexerListener</h3>
+	<dl>
+		<dt>gov.usgs.earthquake.indexer.ExternalIndexerListener</dt>
+		<dd>
+			<p>Uses the commandLine API to execute an external command when
+				the index is updated. Provides additional arguments that describe
+				how products are related to events in the index.</p>
+
+			<p>
+				Supports the same configuration parameters as <a
+					href="#NotificationListener">ExternalNotificationListener</a>, and
+				in addition:
+			</p>
+
+			<dl>
+				<dt>processPreferredOnly</dt>
+				<dd>(Optional, default=false) Whether to ignore non-preferred
+					products. All unassociated products are considered preferred, and
+					may be filtered separately using processUnassociated.</dd>
+
+				<dt>processUnassociated</dt>
+				<dd>(Optional, default=true) Whether to ignore unassociated
+					products. Products that are currently unassociated may later be
+					associated as other information arrives.</dd>
+
+				<dt>processOnlyWhenEventChanged</dt>
+				<dd>(Optional, default=false) Whether to ignore updates that do
+					not change an events preferred location (time, latitude, longitude,
+					depth, magnitude).</dd>
+
+				<dt>ignoreArchive</dt>
+				<dd>(Optional, Default = true) Whether or not to ignore
+					EVENT_ARCHIVED and PRODUCT_ARCHIVED indexer events. Value values
+					are "true" and "false".</dd>
+
+				<dt>autoArchive</dt>
+				<dd>(Optional, Default = true) Whether or not to remove products from the configured ProductStorage in response to indexer PRODUCT_ARCHIVED and EVENT_ARCHIVED events.  This is independent of <code>ignoreArchive</code> configuration.</dd>
+			</dl>
+		</dd>
+	</dl>
+
+	<h3 id="IndexerModule">IndexerModule</h3>
+	<dl>
+		<dt>gov.usgs.earthquake.shakemap.ShakeMapIndexerModule</dt>
+		<dd>
+			Provides support for
+			<code>shakemap</code>
+			type products. There are no configuration parameters for this module.
+		</dd>
+		<dt>gov.usgs.earthquake.momenttensor.MTIndexerModule</dt>
+			<dd>
+				Provides support for
+				<code>moment-tensor</code>
+				and adjusts the weight of a given product. There are no configuration
+				parameters for this module.
+			</dd>
+	</dl>
+
+	<h3 id="ProductIndex">ProductIndex</h3>
+	<dl>
+		<dt>gov.usgs.earthquake.indexer.JDBCProductIndex</dt>
+		<dd>
+			<dl>
+				<dt>indexfile</dt>
+				<dd>
+					The filename to use for a SQLite database. If the file does not
+					exist, one is created. Only required if the
+					<code>driver</code>
+					parameter is set to the default value "org.sqlite.JDBC".
+				</dd>
+			</dl>
+			<dl>
+				<dt>driver</dt>
+				<dd>
+					The JDBC database driver class to use. This allows the
+					JDBCProductIndex to use any type of relational database, provided a
+					suitable driver is available. Default value is "org.sqlite.JDBC".
+					For a MySQL database, you should use "com.mysql.jdbc.Driver". See <a
+						href="configureMySQL.html">Configuring ProductIndex to Use
+						MySQL</a>.
+				</dd>
+			</dl>
+			<dl>
+				<dt>url</dt>
+				<dd>
+					JDBC connection URL. Usually, this url is prefixed with the
+					database type and includes a host, schema to use, username and
+					password. For example to connect to a MySQL database called
+					"productIndex" on localhost with username "foo" and password "bar",
+					the URL would look like:
+					"jdbc:mysql://127.0.0.1/productIndex?user=foo&amp;password=bar".
+					This parameter is <strong>ignored for SQLite databases</strong>.
+			</dl>
+		</dd>
+	</dl>
+</body>
+</html>

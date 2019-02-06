@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>disassociate Product Documentation</title>
+<link rel="stylesheet" href="../userguide.css" />
+</head>
+
+<body>
+<h1>disassociate Product Documentation</h1>
+<p><a href="index.html">&laquo; Back to Products Documentation</a></p>
+
+<p>This product is primarily used by the indexer.</p>
+
+<h2>Types</h2>
+<dl>
+	<dt>disassociate</dt>
+	<dd>Break an association between two events that may associate
+	automatically.</dd>
+</dl>
+
+<h2>Sources</h2>
+<dl>
+	<dt>admin</dt>
+	<dd>Event Admin Web Pages (URL TBD)</dd>
+	<dd>Public Key</dd>
+</dl>
+
+<h2>Status</h2>
+<dl>
+	<dt>UPDATE</dt>
+	<dd>Force the disassociation of two events that automatically
+	associated.</dd>
+
+	<dt>DELETE</dt>
+	<dd>Remove a forced disassociation between two events. NOTE: this
+	does NOT mean the events are related, but the disassociation between
+	the two events SHOULD be re-evaluated. (see also <a
+		href="associate.html">associate</a>).</dd>
+</dl>
+
+<h2>Properties</h2>
+<dl>
+	<dt>eventsource</dt>
+	<dd>The network code to which this product is related.</dd>
+
+	<dt>eventsourcecode</dt>
+	<dd>The network event code to which this product is related.</dd>
+
+	<dt>othereventsource</dt>
+	<dd>The network code of the event that should be disassociated.</dd>
+
+	<dt>othereventsourcecode</dt>
+	<dd>The network event code of the event that should be
+	disassociated.</dd>
+</dl>
+
+<h2>Contents</h2>
+<dl>
+	<dt>""</dt>
+	<dd>A comment describing the reason for this disassociation.</dd>
+</dl>
+
+<h2>Example</h2>
+<div class="code">
+	<code>
+		java -jar ProductClient.jar --send --type=disassociate --eventsource=&lt;eventsource&gt; --eventsourcecode=&lt;eventsourcecode&gt; --source=&lt;source&gt; --code=&lt;code&gt; --property-othereventsource=&lt;othereventsource&gt; --property-othereventsourcecode=&lt;othereventsourcecode&gt; 
+	</code>
+</div>
+
+</body>
+</html>

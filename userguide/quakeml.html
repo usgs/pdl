@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>QuakeML to Product Conversion (DRAFT)</title>
+<link rel="stylesheet" href="userguide.css" />
+</head>
+
+<body>
+	<h1>Quakeml to Product Conversion (DRAFT)</h1>
+	<p>
+		<a href="./index.html">&laquo; Back to User Guide</a>
+	</p>
+
+	<p>
+		<em>ANSS is still evaluating and planning the transition to
+			Quakeml, and there is only limited support in production. This
+			document represents the current mapping from Quakeml to Product,
+			which may change. </em>
+	</p>
+
+
+	<h2>What is Quakeml?</h2>
+
+	<p>
+		Quakeml is an emerging international standard XML representation for
+		earthquake information. Quakeml will eventually be the preferred
+		format for ANSS seismological data, and supersede the CUBE and EQXML
+		formats. The XSD schema for Quakeml is available at <a
+			href="https://quake.ethz.ch/quakeml/Documents">https://quake.ethz.ch/quakeml/Documents</a>.
+	</p>
+
+
+
+
+
+	<h2>How is QuakeML Converted to Products?</h2>
+	<p>QuakeML is currently only converted to products using the
+		EIDSInputWedge, with the gov.usgs.earthquake.event.EidsToQuakemlConverter
+		parser class, using the rules described below.</p>
+	<p>Not all Quakeml messages have a product representation.</p>
+
+
+
+
+
+	<h2>Comparison of QuakeML to Product format</h2>
+
+	<p>QuakeML and Product formats differ significantly. QuakeML allows
+		you to send many types of information in one message, and consumers
+		must keep and merge all received QuakeML messages to determine the
+		latest information of each type. The Product format requires each type
+		of information to be a separate product, which is updated over time.
+		While this can be more complicated when creating the information, it
+		simplifies the organization of the resulting information.</p>
+
+
+	<h2>ANSS Quakeml Extensions</h2>
+
+	<p>
+		ANSS uniquely identifies events to simplify cataloging, using two
+		attributes. These attributes must be used on each
+		<code>event</code>
+		element, and optionally may be used on
+		<code>origin</code>
+		,
+		<code>magnitude</code>
+		, and
+		<code>momentTensor</code>
+		elements
+	</p>
+
+	<dl>
+		<dt>anss:datasource</dt>
+		<dd>A 2 character network identifier</dd>
+
+		<dt>anss:eventid</dt>
+		<dd>
+			An (up to) 8 character, alpha-numeric event identifier.
+			<code>event id</code>
+			must be unique from the
+			<code>data source</code>
+			.
+		</dd>
+	</dl>
+
+	<h3>ANSS Event ID Rules</h3>
+	<ol>
+		<li>The same <code>event id</code> from a <code>data
+				source</code> always refers to the same event.
+		</li>
+		<li>A different <code>event id</code> from a <code>data
+				source</code> always refers to a different event.
+		</li>
+		<li>Two events from different <code>data source</code>s are
+			considered to be the same event when
+			<ol>
+				<li>The epicenter latitude and longitude of each event are
+					within 100 kilometers.</li>
+				<li>The epicenter time is within 16 seconds</li>
+			</ol>
+		</li>
+	</ol>
+
+	<h2>QuakeML Product Attributes</h2>
+
+	<dl>
+		<dt>Product source</dt>
+		<dd>
+			<code>quakeml/eventParameters/event[@anss:datasource]</code>
+		</dd>
+
+		<dt>Product type</dt>
+		<dd>
+			These are the product types that can be produced from QuakeML,
+			depending on the information that is present.
+			<ul>
+				<li>origin, phase-data</li>
+				<li>focal-mechanism, moment-tensor</li>
+				<li>impact-text</li>
+			</ul>
+		</dd>
+
+		<dt>Product code</dt>
+		<dd>
+			<code>quakeml/eventParameters/event[@anss:datasource]</code>
+			+
+			<code>quakeml/eventParameters/event[@anss:eventid]</code>
+		</dd>
+
+		<dt>Product update time</dt>
+		<dd>
+			The product update time comes from the most specific
+			<code>creationInfo/creationTime</code>
+			element.
+			<p>
+				For example: if a creationInfo element exists in the
+				<code>event</code>
+				element, and in the
+				<code>origin</code>
+				element, and a origin product is being created, the origin
+				creationInfo is used.
+			</p>
+		</dd>
+
+		<dt>Product status</dt>
+		<dd>
+			When the
+			<code>event/type</code>
+			is "not existing", an origin type product with status "DELETE" is
+			sent.
+
+			<p>
+				NOTE: there is currently no support for deleting other products. One
+				option is to use
+				<code>evaluationStatus</code>
+				=
+				<code>rejected</code>
+				.
+			</p>
+		</dd>
+
+		<dt>Product version</dt>
+		<dd>
+			<strong>NOTE: The most recent product update time determines
+				which information is used.</strong>
+			<p>
+				The version property is assigned based on the most specific
+				<code>creationInfo/version</code>
+				(see updateTime).
+			</p>
+		</dd>
+
+		<dt>Product properties</dt>
+		<dd>Varies depending on the type of content. See below for more
+			details.</dd>
+
+	</dl>
+
+
+
+
+
+	<h3>Origin</h3>
+
+	<p>
+		<code>origin</code>
+		type products represent a sources preferred location for an event. A
+		source may include multiple locations, but the properties for the
+		product are derived from the preferred information. Users can use this
+		preferred information to find an origin product, and then must inspect
+		the bundled QuakeML for less/non-preferred information.
+	</p>
+
+	<p>An origin is considered preferred, and will be converted to a
+		product, when:</p>
+	<ol>
+		<li>It is part of the first <code>event</code> element in the
+			document.
+		</li>
+		<li>The <code>event/prigin[@publicID]</code> matches the <code>event/preferredOriginID</code></li>
+	</ol>
+	<p>
+		All magnitude properties come from the preferred magnitude for the
+		event, the magnitude element where
+		<code>event/magnitude[@publicID]</code>
+		matches
+		<code>event/preferredMagnitudeID</code>
+	</p>
+
+	<p>
+		<code>phase-data</code>
+		is identical to
+		<code>origin</code>
+		, except that it includes phase information. This is separate from
+		regular origin products because phase-data is often large, and many
+		consumers are not interested in this detailed information. The product
+		is sent as
+		<code>phase-data</code>
+		, instead of
+		<code>origin</code>
+		, if the
+		<code>event</code>
+		element contains any
+		<code>pick</code>
+		elements.
+	</p>
+
+	<h4>Properties</h4>
+	<dl>
+		<dt>latitude</dt>
+		<dd>
+			<code>origin/latitude/value</code>
+			, required.
+		</dd>
+
+		<dt>longitude</dt>
+		<dd>
+			<code>origin/longitude/value</code>
+			, required.
+		</dd>
+
+		<dt>eventtime</dt>
+		<dd>
+			<code>origin/time/value</code>
+			, required.
+		</dd>
+
+		<dt>depth</dt>
+		<dd>
+			<code>origin/depth/value</code>
+		</dd>
+
+		<dt>event-type</dt>
+		<dd>
+			<code>event/type</code>
+			, lower cased. Default is "earthquake".
+		</dd>
+
+		<dt>origin-source</dt>
+		<dd>
+			<code>creationInfo/agencyID</code>
+			, from the most specific creationInfo.
+		</dd>
+
+		<dt>azimuthal-gap</dt>
+		<dd>
+			<code>origin/quality/azimuthalGap</code>
+		</dd>
+
+		<dt>horizontal-error</dt>
+		<dd>
+			<code>origin/originUncertainty/horizontalUncertainty</code>
+		</dd>
+
+		<dt>vertical-error</dt>
+		<dd>
+			<code>origin/depth/uncertainty</code>
+		</dd>
+
+		<dt>latitude-error</dt>
+		<dd>
+			<code>origin/latitude/uncertainty</code>
+		</dd>
+
+		<dt>longitude-error</dt>
+		<dd>
+			<code>origin/longitude/uncertainty</code>
+		</dd>
+
+		<dt>minimum-distance</dt>
+		<dd>
+			<code>origin/quality/minimumDistance</code>
+		</dd>
+
+		<dt>num-phases-used</dt>
+		<dd>
+			<code>origin/quality/usedPhaseCount</code>
+		</dd>
+
+		<dt>num-stations-used</dt>
+		<dd>
+			<code>origin/quality/usedStationCount</code>
+		</dd>
+
+		<dt>region</dt>
+		<dd>
+			<code>origin/region</code>
+		</dd>
+
+		<dt>review-status</dt>
+		<dd>
+			When
+			<code>origin/evaluationMode</code>
+			="manual", "reviewed"; Otherwise "automatic".
+		</dd>
+
+		<dt>standard-error</dt>
+		<dd>
+			<code>origin/quality/standardError</code>
+		</dd>
+
+		<dt>magnitude</dt>
+		<dd>
+			<code>magnitude/mag/value</code>
+		</dd>
+
+		<dt>magnitude-source</dt>
+		<dd>
+			<code>creationInfo/agencyID</code>
+		</dd>
+
+		<dt>magnitude-type</dt>
+		<dd>
+			<code>magnitude/methodID</code>
+		</dd>
+
+		<dt>magnitude-azimuthal-gap</dt>
+		<dd>
+			<code>magnitude/azimuthalGap</code>
+		</dd>
+
+		<dt>magnitude-error</dt>
+		<dd>
+			<code>magnitude/mag/uncertainty</code>
+		</dd>
+
+		<dt>magnitude-num-stations-used</dt>
+		<dd>
+			<code>magnitude/stationCount</code>
+		</dd>
+	</dl>
+
+	<h4>Contents</h4>
+	<dl>
+		<dt>"quakeml.xml"</dt>
+		<dd>The entire quakeml element this product was created from.</dd>
+		<dt>"contents.xml"</dt>
+		<dd>A contents.xml that makes the "QuakeML.xml" file appear in
+			the downloads list on the event page.</dd>
+	</dl>
+
+
+
+
+	<h3>Focal Mechanism and Moment Tensor</h3>
+
+	<p>
+		<code>focal-mechanism</code>
+		and
+		<code>moment-tensor</code>
+		and products are identical, except the
+		<code>focal-mechanism</code>
+		doesn't include any tensor properties. The product is sent as a
+		<code>moment-tensor</code>
+		instead of
+		<code>focal-mechanism</code>
+		, if the
+		<code>focalMechanims</code>
+		element contains a
+		<code>momentTensor</code>
+		element.
+	</p>
+
+	<p>
+		When
+		<code>momentTensor/methodID</code>
+		is present, the product code is
+		<code>event[@anss:datasource]</code>
+		+
+		<code>event[@anss:eventid]</code>
+		+
+		<code>momentTensor/methodID</code>
+		. When not present, the default product code is used (and thus only
+		one moment-tensor or focal-mechanism product per event).
+	</p>
+
+	<p>For display on the new event pages and comcat, only the 6 tensor
+		parameters (for moment-tensor) or the 2 nodal planes (for
+		focal-mechanism) are required for display. Other values are computed
+		based on these values.</p>
+
+	<h4>Properties</h4>
+	<dl>
+		<dt>beachball-source</dt>
+		<dd>
+			<code>creationInfo/agencyID</code>
+		</dd>
+
+
+		<dt>derived-eventtime</dt>
+		<dd>
+			<code>event/origin[@publicID=focalMechanism/triggeringOriginID]/time/value</code>
+		</dd>
+
+		<dt>derived-latitude</dt>
+		<dd>
+			<code>event/origin[@publicID=focalMechanism/triggeringOriginID]/latitude/value</code>
+		</dd>
+
+		<dt>derived-longitude</dt>
+		<dd>
+			<code>event/origin[@publicID=focalMechanism/triggeringOriginID]/longitude/value</code>
+		</dd>
+
+		<!--  focal mechanism properties -->
+		<dt>nodal-plane-1-dip</dt>
+		<dd>
+			<code>focalMechanism/nodalPlanes/nodalPlane1/dip/value</code>
+		</dd>
+
+		<dt>nodal-plane-1-slip</dt>
+		<dd>
+			<code>focalMechanism/nodalPlanes/nodalPlane1/rake/value</code>
+		</dd>
+
+		<dt>nodal-plane-1-strike</dt>
+		<dd>
+			<code>focalMechanism/nodalPlanes/nodalPlane1/strike/value</code>
+		</dd>
+
+		<dt>nodal-plane-2-dip</dt>
+		<dd>
+			<code>focalMechanism/nodalPlanes/nodalPlane2/dip/value</code>
+		</dd>
+
+		<dt>nodal-plane-2-slip</dt>
+		<dd>
+			<code>focalMechanism/nodalPlanes/nodalPlane2/rake/value</code>
+		</dd>
+
+		<dt>nodal-plane-2-strike</dt>
+		<dd>
+			<code>focalMechanism/nodalPlanes/nodalPlane2/strike/value</code>
+		</dd>
+
+
+		<!--  moment tensor properties -->
+		<dt>beachball-type</dt>
+		<dd>
+			<code>focalMechanism/momentTensor/methodID</code>
+		</dd>
+
+		<dt>scalar-moment</dt>
+		<dd>
+			<code>focalMechanism/momentTensor/scalarMoment</code>
+		</dd>
+
+		<dt>derived-eventtime</dt>
+		<dd>
+			<code>event/origin[@publicID=focalMechanism/momentTensor/derivedOriginID]/time/value</code>
+		</dd>
+
+		<dt>derived-latitude</dt>
+		<dd>
+			<code>event/origin[@publicID=focalMechanism/momentTensor/derivedOriginID]/latitude/value</code>
+		</dd>
+
+		<dt>derived-longitude</dt>
+		<dd>
+			<code>event/origin[@publicID=focalMechanism/momentTensor/derivedOriginID]/longitude/value</code>
+		</dd>
+
+		<dt>derived-depth</dt>
+		<dd>
+			<code>event/origin[@publicID=focalMechanism/momentTensor/derivedOriginID]/depth/value</code>
+		</dd>
+
+		<dt>percent-double-couple</dt>
+		<dd>
+			<code>focalMechanism/momentTensor/doubleCouple</code>
+		</dd>
+
+		<dt>tensor-mtt</dt>
+		<dd>
+			<code>focalMechanism/momentTensor/tensor/mtt/value</code>
+		</dd>
+
+		<dt>tensor-mpp</dt>
+		<dd>
+			<code>focalMechanism/momentTensor/tensor/mpp/value</code>
+		</dd>
+
+		<dt>tensor-mrr</dt>
+		<dd>
+			<code>focalMechanism/momentTensor/tensor/mrr/value</code>
+		</dd>
+
+		<dt>tensor-mtp</dt>
+		<dd>
+			<code>focalMechanism/momentTensor/tensor/mtp/value</code>
+		</dd>
+
+		<dt>tensor-mrp</dt>
+		<dd>
+			<code>focalMechanism/momentTensor/tensor/mrp/value</code>
+		</dd>
+
+		<dt>tensor-mrt</dt>
+		<dd>
+			<code>focalMechanism/momentTensor/tensor/mrt/value</code>
+		</dd>
+
+		<dt>derived-magnitude</dt>
+		<dd>
+			<code>event/magnitude[@publicID=momentTensor/momentMagnitudeID]/mag</code>
+		</dd>
+
+		<dt>derived-magnitude-type</dt>
+		<dd>
+			<code>event/magnitude[@publicID=momentTensor/momentMagnitudeID]/type</code>
+		</dd>
+
+	</dl>
+
+	<h4>Contents</h4>
+	<dl>
+		<dt>"QuakeML.xml"</dt>
+		<dd>The entire EQMessage element this product was created from.</dd>
+		<dt>"contents.xml"</dt>
+		<dd>A contents.xml that makes the "QuakeML.xml" file appear in
+			the downloads list on the event page.</dd>
+	</dl>
+
+
+</body>
+</html>

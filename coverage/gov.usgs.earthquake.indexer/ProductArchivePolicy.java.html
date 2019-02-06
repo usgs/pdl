@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductArchivePolicy.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">ProductArchivePolicy.java</span></div><h1>ProductArchivePolicy.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.indexer;
+
+import java.util.Date;
+import java.util.logging.Logger;
+
+import gov.usgs.earthquake.distribution.ConfigurationException;
+import gov.usgs.util.Config;
+
+/**
+ * An archive policy for products, instead of events.
+ * 
+ * Allows removal of superseded products, preserving latest versions. Also
+ * allows targeting unassociated products.
+ */
+<span class="fc" id="L15">public class ProductArchivePolicy extends ArchivePolicy {</span>
+
+<span class="fc" id="L17">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L18">			.getLogger(ProductArchivePolicy.class.getName());</span>
+
+	// --------------------------------------------------------------------
+	// Names of configurable parameters
+	// --------------------------------------------------------------------
+
+	public static final String ARCHIVE_MIN_PRODUCT_AGE_PROPERTY = &quot;minProductAge&quot;;
+	public static final String ARCHIVE_MAX_PRODUCT_AGE_PROPERTY = &quot;maxProductAge&quot;;
+
+	public static final String ARCHIVE_MIN_PRODUCT_TIME_PROPERTY = &quot;minProductTime&quot;;
+	public static final String ARCHIVE_MAX_PRODUCT_TIME_PROPERTY = &quot;maxProductTime&quot;;
+
+	public static final String ARCHIVE_TYPE_PROPERTY = &quot;productType&quot;;
+	public static final String ARCHIVE_SOURCE_PROPERTY = &quot;productSource&quot;;
+	public static final String ARCHIVE_SUPERSEDED_PROPERTY = &quot;onlySuperseded&quot;;
+	public static final String ARCHIVE_UNASSOCIATED_PROPERTY = &quot;onlyUnassociated&quot;;
+	public static final String ARCHIVE_STATUS_PROPERTY = &quot;productStatus&quot;;
+
+	public static final String DEFAULT_ARCHIVE_SUPERSEDED = &quot;true&quot;;
+	public static final String DEFAULT_ARCHIVE_UNASSOCIATED = &quot;false&quot;;
+	// --------------------------------------------------------------------
+	// Configured parameters.
+	// --------------------------------------------------------------------
+
+<span class="fc" id="L42">	protected Long minProductAge = null;</span>
+<span class="fc" id="L43">	protected Long maxProductAge = null;</span>
+<span class="fc" id="L44">	protected Long minProductTime = null;</span>
+<span class="fc" id="L45">	protected Long maxProductTime = null;</span>
+
+<span class="fc" id="L47">	protected String productType = null;</span>
+<span class="fc" id="L48">	protected String productSource = null;</span>
+<span class="fc" id="L49">	protected boolean onlySuperseded = true;</span>
+<span class="fc" id="L50">	protected boolean onlyUnassociated = false;</span>
+<span class="fc" id="L51">	protected String productStatus = null;</span>
+
+	@SuppressWarnings(&quot;deprecation&quot;)
+	@Override
+	public void configure(Config config) throws Exception {
+<span class="fc" id="L56">		super.configure(config);</span>
+
+<span class="fc" id="L58">		minProductAge = parseLong(config, ARCHIVE_MIN_PRODUCT_AGE_PROPERTY);</span>
+<span class="fc" id="L59">		maxProductAge = parseLong(config, ARCHIVE_MAX_PRODUCT_AGE_PROPERTY);</span>
+
+<span class="fc" id="L61">		minProductTime = parseDateOrLong(config, ARCHIVE_MIN_PRODUCT_TIME_PROPERTY);</span>
+<span class="fc" id="L62">		maxProductTime = parseDateOrLong(config, ARCHIVE_MAX_PRODUCT_TIME_PROPERTY);</span>
+
+<span class="pc bpc" id="L64" title="1 of 4 branches missed.">		if (minProductAge != null &amp;&amp; maxProductTime != null) {</span>
+<span class="nc" id="L65">			LOGGER.config(&quot;Both minProductAge and maxProductTime were specified. &quot;</span>
+					+
+					&quot;Ignoring minProductAge. Only maxProductTime will be used.&quot;);
+		}
+<span class="pc bpc" id="L69" title="1 of 4 branches missed.">		if (maxProductAge != null &amp;&amp; minProductTime != null) {</span>
+<span class="nc" id="L70">			LOGGER.config(&quot;Both maxProductAge and minProductTime were specified. &quot;</span>
+					+
+					&quot;Ignoring maxProductAge. Only minProductTime will be used.&quot;);
+		}
+
+<span class="pc bpc" id="L75" title="2 of 12 branches missed.">		if ((minAge != null || maxAge != null) &amp;&amp;</span>
+				(minProductAge != null || maxProductAge != null ||
+				 minProductTime != null || maxProductTime != null)) {
+			/*
+			 * Do we need to log in addition to throwing the exception?
+			 * LOGGER.severe(&quot;Configuration mismatch. Can not specify both &quot; +
+			 * &quot;minAge/maxAge (legacy) properties as well as &quot; +
+			 * &quot;minEventAge/maxEventAge.&quot;);
+			 */
+<span class="fc" id="L84">			ConfigurationException ce = new ConfigurationException(</span>
+					&quot;Configuration mismatch. Can not specify both &quot; +
+							&quot;minAge/maxAge (legacy) properties as well as &quot; +
+							&quot;minProductAge/maxProductAge.&quot;);
+<span class="fc" id="L88">			ce.fillInStackTrace();</span>
+<span class="fc" id="L89">			throw ce;</span>
+		}
+
+<span class="fc bfc" id="L92" title="All 4 branches covered.">		if ((minProductAge != null &amp;&amp; maxProductAge != null) &amp;&amp;</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">				(minProductAge  &gt; maxProductAge)) {</span>
+
+<span class="fc" id="L95">			ConfigurationException ce = new ConfigurationException(</span>
+					&quot;Configuration mismatch. minProductAge &quot; +
+							&quot;greater than maxProductAge.&quot;);
+<span class="fc" id="L98">			ce.fillInStackTrace();</span>
+<span class="fc" id="L99">			throw ce;</span>
+		}		
+
+<span class="pc bpc" id="L102" title="1 of 4 branches missed.">		if ((minProductTime != null &amp;&amp; maxProductTime != null) &amp;&amp;</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">				(minProductTime  &gt; maxProductTime)) {</span>
+
+<span class="fc" id="L105">			ConfigurationException ce = new ConfigurationException(</span>
+					&quot;Configuration mismatch. minProductTime &quot; +
+							&quot;greater than maxProductTime.&quot;);
+<span class="fc" id="L108">			ce.fillInStackTrace();</span>
+<span class="fc" id="L109">			throw ce;</span>
+		}				
+		
+<span class="fc" id="L112">		productType = config.getProperty(ARCHIVE_TYPE_PROPERTY);</span>
+<span class="fc" id="L113">		productSource = config.getProperty(ARCHIVE_SOURCE_PROPERTY);</span>
+<span class="fc" id="L114">		onlySuperseded = Boolean.valueOf(config.getProperty(</span>
+				ARCHIVE_SUPERSEDED_PROPERTY, DEFAULT_ARCHIVE_SUPERSEDED));
+<span class="fc" id="L116">		onlyUnassociated = Boolean.valueOf(config.getProperty(</span>
+				ARCHIVE_UNASSOCIATED_PROPERTY, DEFAULT_ARCHIVE_UNASSOCIATED));
+
+<span class="fc" id="L119">		productStatus = config.getProperty(ARCHIVE_STATUS_PROPERTY);</span>
+<span class="fc" id="L120">	}</span>
+
+	@SuppressWarnings(&quot;deprecation&quot;)
+	@Override
+	public ProductIndexQuery getIndexQuery() {
+<span class="fc" id="L125">		ProductIndexQuery productIndexQuery = super.getIndexQuery();</span>
+<span class="fc" id="L126">		Date now = new Date();</span>
+
+		// Order of minAge, minProductAge, minProductTime is important here.
+		// Preference order is minProductTime &gt; minProductAge &gt; minAge
+		// Similar for max* properties.
+
+<span class="fc bfc" id="L132" title="All 2 branches covered.">		if (minAge != null) {</span>
+			// min age corresponds to minimum product created time
+<span class="fc" id="L134">			productIndexQuery.setMinProductUpdateTime(new Date(now.getTime()</span>
+<span class="fc" id="L135">					- minAge.longValue()));</span>
+<span class="fc" id="L136">			productIndexQuery.setMinEventTime(null);</span>
+		}
+<span class="fc bfc" id="L138" title="All 2 branches covered.">		if (maxAge != null) {</span>
+			// max age corresponds to maximum product created time
+<span class="fc" id="L140">			productIndexQuery.setMaxProductUpdateTime(new Date(now.getTime()</span>
+<span class="fc" id="L141">					- maxAge.longValue()));</span>
+<span class="fc" id="L142">			productIndexQuery.setMaxEventTime(null);</span>
+		}
+
+		// See ASCII art in ArchivePolicy.getIndexQuery if you are confused by
+		// maxAge --&gt; minTime differences.
+
+<span class="fc bfc" id="L148" title="All 2 branches covered.">		if (maxProductAge != null) {</span>
+<span class="fc" id="L149">			productIndexQuery.setMinProductUpdateTime(new Date(now.getTime()</span>
+<span class="fc" id="L150">					- maxProductAge.longValue()));</span>
+		}
+<span class="fc bfc" id="L152" title="All 2 branches covered.">		if (minProductAge != null) {</span>
+<span class="fc" id="L153">			productIndexQuery.setMaxProductUpdateTime(new Date(now.getTime()</span>
+<span class="fc" id="L154">					- minProductAge.longValue()));</span>
+		}
+
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">		if (minProductTime != null) {</span>
+<span class="nc" id="L158">			productIndexQuery.setMinProductUpdateTime(new Date(minProductTime</span>
+<span class="nc" id="L159">					.longValue()));</span>
+		}
+<span class="fc bfc" id="L161" title="All 2 branches covered.">		if (maxProductTime != null) {</span>
+<span class="fc" id="L162">			productIndexQuery.setMaxProductUpdateTime(new Date(maxProductTime</span>
+<span class="fc" id="L163">					.longValue()));</span>
+		}
+
+		// search for products of a specific type
+<span class="fc" id="L167">		productIndexQuery.setProductType(productType);</span>
+		// search for products from a specific source
+<span class="fc" id="L169">		productIndexQuery.setProductSource(productSource);</span>
+
+<span class="pc bpc" id="L171" title="1 of 2 branches missed.">		if (onlySuperseded) {</span>
+			// remove only old versions of products (keep the latest)
+<span class="fc" id="L173">			productIndexQuery</span>
+<span class="fc" id="L174">					.setResultType(ProductIndexQuery.RESULT_TYPE_SUPERSEDED);</span>
+		} else {
+			// otherwise include all products
+<span class="nc" id="L177">			productIndexQuery.setResultType(ProductIndexQuery.RESULT_TYPE_ALL);</span>
+		}
+
+<span class="fc" id="L180">		productIndexQuery.setProductStatus(productStatus);</span>
+
+		// this archive policy searches products, so this shouldn't matter, but
+		// just to be safe in case the default changes
+<span class="fc" id="L184">		productIndexQuery</span>
+<span class="fc" id="L185">				.setEventSearchType(ProductIndexQuery.SEARCH_EVENT_PRODUCTS);</span>
+
+<span class="fc" id="L187">		return productIndexQuery;</span>
+	}
+
+	@Override
+	public boolean isValidPolicy() {
+<span class="nc" id="L192">		boolean valid = super.isValidPolicy();</span>
+<span class="nc bnc" id="L193" title="All 16 branches missed.">		return valid || (minProductAge != null || maxProductAge != null</span>
+				|| minProductTime != null || maxProductTime != null
+				|| productType != null || productSource != null
+				|| productStatus != null);
+	}
+
+	public Long getMinProductAge() {
+<span class="nc" id="L200">		return minProductAge;</span>
+	}
+
+	public void setMinProductAge(Long minProductAge) {
+<span class="nc" id="L204">		this.minProductAge = minProductAge;</span>
+<span class="nc" id="L205">	}</span>
+
+	public Long getMaxProductAge() {
+<span class="nc" id="L208">		return maxProductAge;</span>
+	}
+
+	public void setMaxProductAge(Long maxProductAge) {
+<span class="fc" id="L212">		this.maxProductAge = maxProductAge;</span>
+<span class="fc" id="L213">	}</span>
+
+	public Long getMinProductTime() {
+<span class="nc" id="L216">		return minProductTime;</span>
+	}
+
+	public void setMinProductTime(Long minProductTime) {
+<span class="nc" id="L220">		this.minProductTime = minProductTime;</span>
+<span class="nc" id="L221">	}</span>
+
+	public Long getMaxProductTime() {
+<span class="nc" id="L224">		return maxProductTime;</span>
+	}
+
+	public void setMaxProductTime(Long maxProductTime) {
+<span class="nc" id="L228">		this.maxProductTime = maxProductTime;</span>
+<span class="nc" id="L229">	}</span>
+
+	public String getProductType() {
+<span class="nc" id="L232">		return productType;</span>
+	}
+
+	public void setProductType(String productType) {
+<span class="nc" id="L236">		this.productType = productType;</span>
+<span class="nc" id="L237">	}</span>
+
+	public String getProductSource() {
+<span class="nc" id="L240">		return productSource;</span>
+	}
+
+	public void setProductSource(String productSource) {
+<span class="nc" id="L244">		this.productSource = productSource;</span>
+<span class="nc" id="L245">	}</span>
+
+	public boolean isOnlySuperseded() {
+<span class="nc" id="L248">		return onlySuperseded;</span>
+	}
+
+	public void setOnlySuperseded(boolean onlySuperseded) {
+<span class="fc" id="L252">		this.onlySuperseded = onlySuperseded;</span>
+<span class="fc" id="L253">	}</span>
+
+	public boolean isOnlyUnassociated() {
+<span class="fc" id="L256">		return onlyUnassociated;</span>
+	}
+
+	public void setOnlyUnassociated(boolean onlyUnassociated) {
+<span class="nc" id="L260">		this.onlyUnassociated = onlyUnassociated;</span>
+<span class="nc" id="L261">	}</span>
+
+	public String getProductStatus() {
+<span class="nc" id="L264">		return productStatus;</span>
+	}
+
+	public void setProductStatus(String productStatus) {
+<span class="nc" id="L268">		this.productStatus = productStatus;</span>
+<span class="nc" id="L269">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GridXMLHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.shakemap</a> &gt; <span class="el_source">GridXMLHandler.java</span></div><h1>GridXMLHandler.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.shakemap;
+
+import gov.usgs.util.XmlUtils;
+
+import java.util.HashMap;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+/**
+ * Parser for ShakeMap grid.xml metadata.
+ * 
+ * Accepts a ShakeMap object and updates the properties of that product based on
+ * the product's grid.xml file.
+ */
+public class GridXMLHandler extends DefaultHandler {
+	
+	// ShakeMap grid parameters
+		public static final String SHAKEMAPGRID_ELEMENT = &quot;shakemap_grid&quot;;
+		public static final String SHAKEMAPGRID_ID = &quot;shakemap_id&quot;;
+		public static final String SHAKEMAPGRID_ORIGINATOR = &quot;shakemap_originator&quot;;
+		public static final String SHAKEMAPGRID_TIMESTAMP = &quot;process_timestamp&quot;;
+		public static final String SHAKEMAPGRID_VERSION = &quot;shakemap_version&quot;;
+		public static final String SHAKEMAPGRID_EVENT_TYPE = &quot;shakemap_event_type&quot;;
+		public static final String SHAKEMAPGRID_EVENT_STATUS = &quot;map_status&quot;;
+
+		// ShakeMap event parameters
+		public static final String EVENT_ELEMENT = &quot;event&quot;;
+		public static final String EVENT_LATITUDE = &quot;lat&quot;;
+		public static final String EVENT_LONGITUDE = &quot;lon&quot;;
+		public static final String EVENT_MAGNITUDE = &quot;magnitude&quot;;
+		public static final String EVENT_TIMESTAMP = &quot;event_timestamp&quot;;
+		public static final String EVENT_DESCRIPTION = &quot;event_description&quot;;
+		public static final String EVENT_DEPTH = &quot;depth&quot;;
+		// These are new parameters used by GSM when it is contributing to a
+		// different
+		// network as a backup
+		public static final String EVENT_NETWORK = &quot;event_network&quot;;
+		public static final String EVENT_ID = &quot;event_id&quot;;
+		
+		// ShakeMap gridspec parameters
+		public static final String GRIDSPEC_ELEMENT = &quot;grid_specification&quot;;
+		public static final String GRIDSPEC_LONMIN = &quot;lon_min&quot;;
+		public static final String GRIDSPEC_LONMAX = &quot;lon_max&quot;;
+		public static final String GRIDSPEC_LATMIN = &quot;lat_min&quot;;
+		public static final String GRIDSPEC_LATMAX = &quot;lat_max&quot;;
+			
+		public static final String SHAKEMAPGRID_ELEMENT_XML = SHAKEMAPGRID_ELEMENT;
+		public static final String SHAKEMAPGRID_ID_XML =  SHAKEMAPGRID_ELEMENT+ &quot;[&quot; + SHAKEMAPGRID_ID + &quot;]&quot;;
+		public static final String SHAKEMAPGRID_ORIGINATOR_XML = SHAKEMAPGRID_ELEMENT + &quot;[&quot; + SHAKEMAPGRID_ORIGINATOR + &quot;]&quot;;
+		public static final String SHAKEMAPGRID_TIMESTAMP_XML = SHAKEMAPGRID_ELEMENT + &quot;[&quot; + SHAKEMAPGRID_TIMESTAMP + &quot;]&quot;;
+		public static final String SHAKEMAPGRID_VERSION_XML = SHAKEMAPGRID_ELEMENT+ &quot;[&quot; + SHAKEMAPGRID_VERSION + &quot;]&quot;;
+		public static final String SHAKEMAPGRID_EVENT_TYPE_XML = SHAKEMAPGRID_ELEMENT+ &quot;[&quot; + SHAKEMAPGRID_EVENT_TYPE + &quot;]&quot;;
+		public static final String SHAKEMAPGRID_EVENT_STATUS_XML = SHAKEMAPGRID_ELEMENT+ &quot;[&quot; + SHAKEMAPGRID_EVENT_STATUS + &quot;]&quot;;
+
+		public static final String EVENT_ELEMENT_XML = EVENT_ELEMENT;
+		public static final String EVENT_LATITUDE_XML = EVENT_ELEMENT + &quot;[&quot; + EVENT_LATITUDE + &quot;]&quot;;
+		public static final String EVENT_LONGITUDE_XML = EVENT_ELEMENT+ &quot;[&quot; + EVENT_LONGITUDE + &quot;]&quot;;
+		public static final String EVENT_MAGNITUDE_XML = EVENT_ELEMENT+ &quot;[&quot; + EVENT_MAGNITUDE + &quot;]&quot;;
+		public static final String EVENT_TIMESTAMP_XML = EVENT_ELEMENT+ &quot;[&quot; + EVENT_TIMESTAMP + &quot;]&quot;;
+		public static final String EVENT_DESCRIPTION_XML = EVENT_ELEMENT+ &quot;[&quot; + EVENT_DESCRIPTION + &quot;]&quot;;
+		public static final String EVENT_DEPTH_XML = EVENT_ELEMENT+ &quot;[&quot; + EVENT_DEPTH + &quot;]&quot;;
+		public static final String EVENT_NETWORK_XML = EVENT_ELEMENT + &quot;[&quot; + EVENT_NETWORK + &quot;]&quot;;
+		public static final String EVENT_ID_XML = EVENT_ELEMENT + &quot;[&quot; + EVENT_ID + &quot;]&quot;;
+		
+		public static final String GRIDSPEC_ELEMENT_XML = GRIDSPEC_ELEMENT;
+		public static final String GRIDSPEC_LONMIN_XML = GRIDSPEC_ELEMENT+ &quot;[&quot; + GRIDSPEC_LONMIN + &quot;]&quot;;
+		public static final String GRIDSPEC_LONMAX_XML = GRIDSPEC_ELEMENT+ &quot;[&quot; + GRIDSPEC_LONMAX + &quot;]&quot;;
+		public static final String GRIDSPEC_LATMIN_XML = GRIDSPEC_ELEMENT+ &quot;[&quot; + GRIDSPEC_LATMIN + &quot;]&quot;;
+		public static final String GRIDSPEC_LATMAX_XML = GRIDSPEC_ELEMENT+ &quot;[&quot; + GRIDSPEC_LATMAX + &quot;]&quot;;
+			
+	// ShakeMap griddata parameters
+	public static final String GRIDDATA_ELEMENT = &quot;grid_data&quot;;
+	public static final String STOP_PARSING_BEFORE_GRIDDATA =
+			&quot;Stop parsing before grid data.&quot;;
+
+<span class="fc" id="L78">	private HashMap&lt;String, String&gt; grid = new HashMap&lt;String, String&gt;();</span>
+
+	/**
+	 * Construct a new SAX Handler for an grid.xml document.
+	 */
+<span class="fc" id="L83">	public GridXMLHandler() {}</span>
+
+	/**
+	 * @param in
+	 *            - the file or stream to parse
+	 * @return the ShakeMap associated with this XML handler
+	 * @throws Exception
+	 */
+	public HashMap&lt;String, String&gt; parse(final Object in) throws Exception {
+		try {
+<span class="nc" id="L93">			XmlUtils.parse(in, this);</span>
+<span class="fc" id="L94">		} catch (Exception se) {</span>
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">			if (!se.getMessage().equals(STOP_PARSING_BEFORE_GRIDDATA)) {</span>
+<span class="nc" id="L96">				throw se;</span>
+			}
+<span class="nc" id="L98">		}</span>
+<span class="fc" id="L99">		return this.grid;</span>
+	}
+
+	/**
+	 * @return the parsed info.
+	 */
+	public HashMap&lt;String, String&gt; getInfo() {
+<span class="nc" id="L106">		return this.grid;</span>
+	}
+
+
+	/**
+	 * Read grid, event, and gridspec element attributes.
+	 *
+     * @param uri namespace of element.
+     * @param localName name of element.
+     * @param qName qualified name of element.
+     * @param attributes element attributes.
+	 * @throws SAXException when griddata element is reached, to stop parsing.
+	 */
+	public final void startElement(final String uri, final String localName,
+			final String qName, final Attributes attributes)
+			throws SAXException {
+
+<span class="pc bpc" id="L123" title="1 of 4 branches missed.">		if (localName != null &amp;&amp; GRIDDATA_ELEMENT.equals(localName)) {</span>
+			// don't read the whole grid
+<span class="fc" id="L125">			throw new SAXException(STOP_PARSING_BEFORE_GRIDDATA);</span>
+		}
+
+<span class="fc bfc" id="L128" title="All 2 branches covered.">		if (localName.equals(SHAKEMAPGRID_ELEMENT)) {</span>
+<span class="fc" id="L129">			this.grid.put(SHAKEMAPGRID_ORIGINATOR_XML, attributes.getValue(SHAKEMAPGRID_ORIGINATOR));</span>
+<span class="fc" id="L130">			this.grid.put(SHAKEMAPGRID_ID_XML, attributes.getValue(SHAKEMAPGRID_ID));</span>
+<span class="fc" id="L131">			this.grid.put(SHAKEMAPGRID_TIMESTAMP_XML, attributes.getValue(SHAKEMAPGRID_TIMESTAMP));</span>
+<span class="fc" id="L132">			this.grid.put(SHAKEMAPGRID_VERSION_XML, attributes.getValue(SHAKEMAPGRID_VERSION));</span>
+<span class="fc" id="L133">			this.grid.put(SHAKEMAPGRID_EVENT_TYPE_XML, attributes.getValue(SHAKEMAPGRID_EVENT_TYPE));</span>
+<span class="fc" id="L134">			this.grid.put(SHAKEMAPGRID_EVENT_STATUS_XML, attributes.getValue(SHAKEMAPGRID_EVENT_STATUS));</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">		} else if (localName.equals(EVENT_ELEMENT)) {</span>
+<span class="fc" id="L136">			this.grid.put(EVENT_LATITUDE_XML, attributes.getValue(EVENT_LATITUDE));</span>
+<span class="fc" id="L137">			this.grid.put(EVENT_LONGITUDE_XML, attributes.getValue(EVENT_LONGITUDE));</span>
+<span class="fc" id="L138">			this.grid.put(EVENT_MAGNITUDE_XML , attributes.getValue(EVENT_MAGNITUDE));</span>
+<span class="fc" id="L139">			this.grid.put(EVENT_DEPTH_XML, attributes.getValue(EVENT_DEPTH));</span>
+<span class="fc" id="L140">			this.grid.put(EVENT_TIMESTAMP_XML, attributes.getValue(EVENT_TIMESTAMP));</span>
+<span class="fc" id="L141">			this.grid.put(EVENT_DESCRIPTION_XML, attributes.getValue(EVENT_DESCRIPTION));</span>
+<span class="fc" id="L142">			this.grid.put(EVENT_NETWORK_XML, attributes.getValue(EVENT_NETWORK));</span>
+<span class="fc" id="L143">			this.grid.put(EVENT_ID_XML, attributes.getValue(EVENT_ID));</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">		} else if (localName.equals(GRIDSPEC_ELEMENT)) {</span>
+<span class="fc" id="L145">			this.grid.put(GRIDSPEC_LONMIN_XML, attributes.getValue(GRIDSPEC_LONMIN));</span>
+<span class="fc" id="L146">			this.grid.put(GRIDSPEC_LATMIN_XML, attributes.getValue(GRIDSPEC_LATMIN));</span>
+<span class="fc" id="L147">			this.grid.put(GRIDSPEC_LONMAX_XML, attributes.getValue(GRIDSPEC_LONMAX));</span>
+<span class="fc" id="L148">			this.grid.put(GRIDSPEC_LATMAX_XML, attributes.getValue(GRIDSPEC_LATMAX));</span>
+		}
+<span class="fc" id="L150">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

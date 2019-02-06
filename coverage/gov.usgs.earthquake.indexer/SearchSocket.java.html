@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchSocket.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">SearchSocket.java</span></div><h1>SearchSocket.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.indexer;
+
+import gov.usgs.earthquake.distribution.FileProductStorage;
+import gov.usgs.util.StreamUtils;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
+
+/**
+ * Client side of search socket interface.
+ */
+public class SearchSocket {
+
+	/** The remote host to connect. */
+	private final InetAddress host;
+
+	/** The remote port to connect. */
+	private final int port;
+
+	/**
+	 * Construct a new SearchSocket.
+	 * 
+	 * @param host
+	 *            the remote host.
+	 * @param port
+	 *            the remote port.
+	 */
+<span class="fc" id="L36">	public SearchSocket(final InetAddress host, final int port) {</span>
+<span class="fc" id="L37">		this.host = host;</span>
+<span class="fc" id="L38">		this.port = port;</span>
+<span class="fc" id="L39">	}</span>
+
+	/**
+	 * Send a search request, converting the response to a java object.
+	 * 
+	 * @param request
+	 *            the request to send.
+	 * @param storage
+	 *            where received products are stored.
+	 * @return the response.
+	 * @throws Exception
+	 */
+	public SearchResponse search(final SearchRequest request, final FileProductStorage storage) throws Exception {
+<span class="fc" id="L52">		final PipedInputStream pipedIn = new PipedInputStream();</span>
+<span class="fc" id="L53">		final PipedOutputStream pipedOut = new PipedOutputStream(pipedIn);</span>
+
+		// parse response in background, while searching
+<span class="fc" id="L56">		ResponseParserThread thread = new ResponseParserThread(pipedIn, storage);</span>
+<span class="fc" id="L57">		thread.start();</span>
+
+		// start search, sending response xml to response parser thread
+<span class="fc" id="L60">		search(request, pipedOut);</span>
+
+		// wait for parsing to complete
+<span class="fc" id="L63">		thread.join();</span>
+
+		// either return parsed object, or raise parse exception
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">		if (thread.getSearchResponse() != null) {</span>
+<span class="fc" id="L67">			return thread.getSearchResponse();</span>
+		} else {
+<span class="nc" id="L69">			throw thread.getParseError();</span>
+		}
+	}
+
+	/**
+	 * Send a search request, writing the response to an outputstream.
+	 * 
+	 * @param request
+	 *            the request to send.
+	 * @param responseOut
+	 *            the outputstream to write.
+	 * @throws Exception
+	 */
+	public void search(final SearchRequest request,
+			final OutputStream responseOut) throws Exception {
+<span class="fc" id="L84">		Socket socket = null;</span>
+<span class="fc" id="L85">		DeflaterOutputStream out = null;</span>
+<span class="fc" id="L86">		InputStream in = null;</span>
+
+		try {
+			// connect to the configured endpoint
+<span class="fc" id="L90">			socket = new Socket(host, port);</span>
+
+			// send the request as compressed xml
+<span class="fc" id="L93">			out = new DeflaterOutputStream(new BufferedOutputStream(</span>
+<span class="fc" id="L94">					socket.getOutputStream()));</span>
+<span class="fc" id="L95">			SearchXML.toXML(request,</span>
+					new StreamUtils.UnclosableOutputStream(out));
+
+			// must finish and flush to complete Deflater stream
+<span class="fc" id="L99">			out.finish();</span>
+<span class="fc" id="L100">			out.flush();</span>
+
+			// now read response
+<span class="fc" id="L103">			in = new InflaterInputStream(new BufferedInputStream(</span>
+<span class="fc" id="L104">					socket.getInputStream()));</span>
+<span class="fc" id="L105">			StreamUtils.transferStream(in, responseOut);</span>
+		} finally {
+			// make sure socket is closed
+			try {
+<span class="fc" id="L109">				socket.close();</span>
+<span class="nc" id="L110">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L112">			}</span>
+		}
+<span class="fc" id="L114">	}</span>
+
+	/**
+	 * Thread used for parsing search response in background.
+	 */
+	private static class ResponseParserThread extends Thread {
+
+		/** Input stream being parsed. */
+<span class="fc" id="L122">		private InputStream in = null;</span>
+
+		/** Storage where received products are stored. */
+<span class="fc" id="L125">		private FileProductStorage storage = null;</span>
+
+		/** The parsed search response. */
+<span class="fc" id="L128">		private SearchResponse searchResponse = null;</span>
+
+		/** Parse error, if one happened. */
+<span class="fc" id="L131">		private Exception parseError = null;</span>
+
+<span class="fc" id="L133">		public ResponseParserThread(final InputStream in, final FileProductStorage storage) {</span>
+<span class="fc" id="L134">			this.in = in;</span>
+<span class="fc" id="L135">			this.storage = storage;</span>
+<span class="fc" id="L136">		}</span>
+
+		public void run() {
+			try {
+<span class="fc" id="L140">				searchResponse = SearchXML.parseResponse(in, storage);</span>
+<span class="nc" id="L141">			} catch (Exception e) {</span>
+<span class="nc" id="L142">				searchResponse = null;</span>
+<span class="nc" id="L143">				parseError = e;</span>
+<span class="fc" id="L144">			}</span>
+<span class="fc" id="L145">		}</span>
+
+		public SearchResponse getSearchResponse() {
+<span class="fc" id="L148">			return searchResponse;</span>
+		}
+
+		public Exception getParseError() {
+<span class="nc" id="L152">			return parseError;</span>
+		}
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

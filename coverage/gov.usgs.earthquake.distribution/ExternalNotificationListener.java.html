@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExternalNotificationListener.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">ExternalNotificationListener.java</span></div><h1>ExternalNotificationListener.java</h1><pre class="source lang-java linenums">/*
+ * ExternalNotificationListener
+ */
+package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.Config;
+import gov.usgs.util.StreamUtils;
+import gov.usgs.util.XmlUtils;
+
+import java.io.File;
+
+import java.net.URI;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * An external process that is called when new products arrive.
+ * 
+ * The ExternalNotificationListener implements the Configurable interface and
+ * can use the following configuration parameters:
+ * 
+ * &lt;dl&gt;
+ * &lt;dt&gt;command&lt;/dt&gt;
+ * &lt;dd&gt;(Required) The command to execute. This must be an executable command and
+ * may include arguments. Any product specific arguments are appended at the end
+ * of command.&lt;/dd&gt;
+ * 
+ * &lt;dt&gt;storage&lt;/dt&gt;
+ * &lt;dd&gt;(Required) A directory used to store all products. Each product is
+ * extracted into a separate directory within this directory and is referenced
+ * by the --directory=/path/to/directory argument when command is executed.&lt;/dd&gt;
+ * &lt;/dl&gt;
+ * 
+ */
+public class ExternalNotificationListener extends DefaultNotificationListener {
+
+	/** Logging object. */
+<span class="fc" id="L47">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L48">			.getLogger(ExternalNotificationListener.class.getName());</span>
+
+	/** Configuration parameter for storage directory product. */
+	public static final String STORAGE_NAME_PROPERTY = &quot;storage&quot;;
+
+	/** Configuration parameter for command. */
+	public static final String COMMAND_PROPERTY = &quot;command&quot;;
+
+	/** Argument used to pass signature to external process. */
+	public static final String SIGNATURE_ARGUMENT = &quot;--signature=&quot;;
+
+	private static final String STORAGE_DIRECTORY_PROPERTY = &quot;storageDirectory&quot;;
+
+	/** Where products are stored in extracted form. */
+	private FileProductStorage storage;
+
+	/** Command that is executed after a product is stored. */
+	private String command;
+
+	/**
+	 * Construct a new ExternalNotificationListener.
+	 * 
+	 * The listener must be configured with a FileProductStorage and command to
+	 * function.
+	 */
+<span class="fc" id="L73">	public ExternalNotificationListener() {</span>
+<span class="fc" id="L74">	}</span>
+
+	/**
+	 * Configure an ExternalNotificationListener using a Config object.
+	 * 
+	 * @param config
+	 *            the config containing a
+	 */
+	public void configure(Config config) throws Exception {
+<span class="fc" id="L83">		super.configure(config);</span>
+
+<span class="fc" id="L85">		command = config.getProperty(COMMAND_PROPERTY);</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">		if (command == null) {</span>
+<span class="nc" id="L87">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+					+ &quot;] 'command' is a required configuration property&quot;);
+		}
+<span class="fc" id="L90">		LOGGER.config(&quot;[&quot; + getName() + &quot;] command is '&quot; + command + &quot;'&quot;);</span>
+
+		// storage references an object in the global configuration
+<span class="fc" id="L93">		String storageName = config.getProperty(STORAGE_NAME_PROPERTY);</span>
+<span class="fc" id="L94">		String storageDirectory = config</span>
+<span class="fc" id="L95">				.getProperty(STORAGE_DIRECTORY_PROPERTY);</span>
+<span class="pc bpc" id="L96" title="3 of 4 branches missed.">		if (storageName == null &amp;&amp; storageDirectory == null) {</span>
+<span class="nc" id="L97">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+					+ &quot;] 'storage' is a required configuration property.&quot;);
+		}
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">		if (storageName != null) {</span>
+<span class="fc" id="L101">			LOGGER.config(&quot;[&quot; + getName() + &quot;] loading FileProductStorage '&quot;</span>
+					+ storageName + &quot;'&quot;);
+<span class="fc" id="L103">			storage = (FileProductStorage) Config.getConfig().getObject(</span>
+					storageName);
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">			if (storage == null) {</span>
+<span class="nc" id="L106">				throw new ConfigurationException(&quot;[&quot; + getName()</span>
+						+ &quot;] unable to load FileProductStorage '&quot; + storageName
+						+ &quot;'&quot;);
+			}
+		} else {
+<span class="nc" id="L111">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using storage directory '&quot;</span>
+					+ storageDirectory + &quot;'&quot;);
+<span class="nc" id="L113">			storage = new FileProductStorage(new File(storageDirectory));</span>
+		}
+<span class="fc" id="L115">	}</span>
+
+	/**
+	 * Called when client is shutting down.
+	 */
+	public void shutdown() throws Exception {
+<span class="nc" id="L121">		super.shutdown();</span>
+		// maybe make current process a member and kill process?
+		// or find way of detaching so client process can exit but product
+		// process can complete?
+<span class="nc" id="L125">		storage.shutdown();</span>
+<span class="nc" id="L126">	}</span>
+
+	/**
+	 * Called after client has been configured and should begin processing.
+	 */
+	public void startup() throws Exception {
+		// no background threads to start or objects to create
+<span class="nc" id="L133">		storage.startup();</span>
+<span class="nc" id="L134">		super.startup();</span>
+<span class="nc" id="L135">	}</span>
+
+	/**
+	 * Append product arguments to the base command.
+	 * 
+	 * @param product
+	 *            the product used to generate arguments.
+	 * @return command as a string.
+	 * @throws Exception
+	 */
+	public String getProductCommand(final Product product) throws Exception {
+<span class="nc" id="L146">		StringBuffer buf = new StringBuffer(command);</span>
+
+<span class="nc" id="L148">		ProductId id = product.getId();</span>
+
+		// get path to product in storage, should be a directory
+<span class="nc" id="L151">		File productDirectory = storage.getProductFile(id);</span>
+
+<span class="nc" id="L153">		buf.append(&quot; &quot;).append(CLIProductBuilder.DIRECTORY_ARGUMENT)</span>
+<span class="nc" id="L154">				.append(productDirectory.getCanonicalPath());</span>
+
+<span class="nc" id="L156">		buf.append(&quot; &quot;).append(CLIProductBuilder.TYPE_ARGUMENT)</span>
+<span class="nc" id="L157">				.append(id.getType());</span>
+<span class="nc" id="L158">		buf.append(&quot; &quot;).append(CLIProductBuilder.CODE_ARGUMENT)</span>
+<span class="nc" id="L159">				.append(id.getCode());</span>
+<span class="nc" id="L160">		buf.append(&quot; &quot;).append(CLIProductBuilder.SOURCE_ARGUMENT)</span>
+<span class="nc" id="L161">				.append(id.getSource());</span>
+<span class="nc" id="L162">		buf.append(&quot; &quot;).append(CLIProductBuilder.UPDATE_TIME_ARGUMENT)</span>
+<span class="nc" id="L163">				.append(XmlUtils.formatDate(id.getUpdateTime()));</span>
+<span class="nc" id="L164">		buf.append(&quot; &quot;).append(CLIProductBuilder.STATUS_ARGUMENT)</span>
+<span class="nc" id="L165">				.append(product.getStatus());</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">		if (product.isDeleted()) {</span>
+<span class="nc" id="L167">			buf.append(&quot; &quot;).append(CLIProductBuilder.DELETE_ARGUMENT);</span>
+		}
+
+<span class="nc bnc" id="L170" title="All 2 branches missed.">		if (product.getTrackerURL() != null) {</span>
+<span class="nc" id="L171">			buf.append(&quot; &quot;).append(CLIProductBuilder.TRACKER_URL_ARGUMENT)</span>
+<span class="nc" id="L172">					.append(product.getTrackerURL().toString());</span>
+		}
+
+<span class="nc" id="L175">		Map&lt;String, String&gt; props = product.getProperties();</span>
+<span class="nc" id="L176">		Iterator&lt;String&gt; iter = props.keySet().iterator();</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L178">			String name = iter.next();</span>
+<span class="nc" id="L179">			buf.append(&quot; \&quot;&quot;).append(CLIProductBuilder.PROPERTY_ARGUMENT)</span>
+<span class="nc" id="L180">					.append(name).append(&quot;=&quot;)</span>
+<span class="nc" id="L181">					.append(props.get(name).replace(&quot;\&quot;&quot;, &quot;\\\&quot;&quot;)).append(&quot;\&quot;&quot;);</span>
+<span class="nc" id="L182">		}</span>
+
+<span class="nc" id="L184">		Map&lt;String, List&lt;URI&gt;&gt; links = product.getLinks();</span>
+<span class="nc" id="L185">		iter = links.keySet().iterator();</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L187">			String relation = iter.next();</span>
+<span class="nc" id="L188">			Iterator&lt;URI&gt; iter2 = links.get(relation).iterator();</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">			while (iter2.hasNext()) {</span>
+<span class="nc" id="L190">				buf.append(&quot; &quot;).append(CLIProductBuilder.LINK_ARGUMENT)</span>
+<span class="nc" id="L191">						.append(relation).append(&quot;=&quot;)</span>
+<span class="nc" id="L192">						.append(iter2.next().toString());</span>
+			}
+<span class="nc" id="L194">		}</span>
+
+<span class="nc" id="L196">		Content content = product.getContents().get(&quot;&quot;);</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">		if (content != null) {</span>
+<span class="nc" id="L198">			buf.append(&quot; &quot;).append(CLIProductBuilder.CONTENT_ARGUMENT);</span>
+<span class="nc" id="L199">			buf.append(&quot; &quot;).append(CLIProductBuilder.CONTENT_TYPE_ARGUMENT)</span>
+<span class="nc" id="L200">					.append(content.getContentType());</span>
+		}
+
+<span class="nc bnc" id="L203" title="All 2 branches missed.">		if (product.getSignature() != null) {</span>
+<span class="nc" id="L204">			buf.append(&quot; &quot;).append(SIGNATURE_ARGUMENT)</span>
+<span class="nc" id="L205">					.append(product.getSignature());</span>
+		}
+
+<span class="nc" id="L208">		return buf.toString();</span>
+	}
+
+	/**
+	 * Split a command string into a command array.
+	 * 
+	 * This version uses a StringTokenizer to split arguments. Quoted arguments
+	 * are supported (single or double), with quotes removed before passing to
+	 * runtime. Double quoting arguments will preserve quotes when passing to
+	 * runtime.
+	 * 
+	 * @param command
+	 *            command to run.
+	 * @return Array of arguments suitable for passing to
+	 *         Runtime.exec(String[]).
+	 */
+	protected static String[] splitCommand(final String command) {
+<span class="fc" id="L225">		List&lt;String&gt; arguments = new LinkedList&lt;String&gt;();</span>
+<span class="fc" id="L226">		String currentArgument = null;</span>
+
+		// use a tokenizer because that's how Runtime.exec does it currently...
+<span class="fc" id="L229">		StringTokenizer tokens = new StringTokenizer(command);</span>
+<span class="fc bfc" id="L230" title="All 2 branches covered.">		while (tokens.hasMoreTokens()) {</span>
+<span class="fc" id="L231">			String token = tokens.nextToken();</span>
+
+<span class="fc bfc" id="L233" title="All 2 branches covered.">			if (currentArgument == null) {</span>
+<span class="fc" id="L234">				currentArgument = token;</span>
+			} else {
+				// continuing previous argument, that was split on whitespace
+<span class="fc" id="L237">				currentArgument = currentArgument + &quot; &quot; + token;</span>
+			}
+
+<span class="fc bfc" id="L240" title="All 2 branches covered.">			if (currentArgument.startsWith(&quot;\&quot;&quot;)) {</span>
+				// double quoted argument
+<span class="fc bfc" id="L242" title="All 2 branches covered.">				if (currentArgument.endsWith(&quot;\&quot;&quot;)) {</span>
+					// that has balanced quotes
+					// remove quotes and add argument
+<span class="fc" id="L245">					currentArgument = currentArgument.substring(1,</span>
+<span class="fc" id="L246">							currentArgument.length() - 1);</span>
+				} else {
+					// unbalanced quotes, keep going
+					continue;
+				}
+<span class="pc bpc" id="L251" title="1 of 2 branches missed.">			} else if (currentArgument.startsWith(&quot;'&quot;)) {</span>
+				// single quoted argument
+<span class="nc bnc" id="L253" title="All 2 branches missed.">				if (currentArgument.endsWith(&quot;'&quot;)) {</span>
+					// that has balanced quotes
+					// remove quotes and add argument
+<span class="nc" id="L256">					currentArgument = currentArgument.substring(1,</span>
+<span class="nc" id="L257">							currentArgument.length() - 1);</span>
+				} else {
+					// unbalanced quotes, keep going
+					continue;
+				}
+			}
+
+<span class="fc" id="L264">			arguments.add(currentArgument);</span>
+<span class="fc" id="L265">			currentArgument = null;</span>
+<span class="fc" id="L266">		}</span>
+
+<span class="pc bpc" id="L268" title="1 of 2 branches missed.">		if (currentArgument != null) {</span>
+			// weird, but add argument anyways
+<span class="nc" id="L270">			arguments.add(currentArgument);</span>
+		}
+
+<span class="fc" id="L273">		return arguments.toArray(new String[] {});</span>
+	}
+
+	/**
+	 * Call the external process for this product.
+	 * 
+	 * @param product
+	 * @throws Exception
+	 */
+	public void onProduct(final Product product) throws Exception {
+		// store product
+		try {
+<span class="nc" id="L285">			storage.storeProduct(product);</span>
+<span class="nc" id="L286">		} catch (ProductAlreadyInStorageException e) {</span>
+<span class="nc" id="L287">			LOGGER.info(&quot;[&quot; + getName() + &quot;] product already in storage &quot;</span>
+<span class="nc" id="L288">					+ product.getId().toString());</span>
+<span class="nc" id="L289">		}</span>
+
+		// now run command
+<span class="nc" id="L292">		String productCommand = null;</span>
+<span class="nc" id="L293">		Process process = null;</span>
+<span class="nc" id="L294">		int exitValue = -1;</span>
+
+		try {
+<span class="nc" id="L297">			productCommand = getProductCommand(product);</span>
+<span class="nc" id="L298">			LOGGER.info(&quot;[&quot; + getName() + &quot;] running command &quot; + productCommand);</span>
+<span class="nc" id="L299">			process = Runtime.getRuntime().exec(productCommand);</span>
+
+			// inline product content, may or may not be null
+<span class="nc" id="L302">			Content content = product.getContents().get(&quot;&quot;);</span>
+<span class="nc bnc" id="L303" title="All 2 branches missed.">			if (content != null) {</span>
+<span class="nc" id="L304">				StreamUtils.transferStream(content.getInputStream(),</span>
+<span class="nc" id="L305">						process.getOutputStream());</span>
+			} else {
+				// need to close process stdin either way
+<span class="nc" id="L308">				StreamUtils.closeStream(process.getOutputStream());</span>
+			}
+
+			// maybe log/capture process input/error streams
+			// or switch to &quot;Command&quot;
+
+<span class="nc" id="L314">			exitValue = process.waitFor();</span>
+<span class="nc" id="L315">		} catch (Exception e) {</span>
+<span class="nc bnc" id="L316" title="All 2 branches missed.">			if (process != null) {</span>
+				// make sure to kill zombies
+<span class="nc" id="L318">				process.destroy();</span>
+			}
+
+			// signal that process did not exit normally
+<span class="nc" id="L322">			exitValue = -1;</span>
+
+			// give subclasses chance to handle exception
+<span class="nc" id="L325">			commandException(product, productCommand, e);</span>
+<span class="nc" id="L326">		}</span>
+
+		// if process exited normally
+<span class="nc bnc" id="L329" title="All 2 branches missed.">		if (exitValue != -1) {</span>
+			// give subclasses chance to handle exitValue, which may be non-zero
+<span class="nc" id="L331">			commandComplete(product, productCommand, exitValue);</span>
+		}
+<span class="nc" id="L333">	}</span>
+
+	/**
+	 * Called when the command finishes executing normally.
+	 * 
+	 * This implementation throws a NotificationListenerException if the
+	 * exitValue is non-zero.
+	 * 
+	 * @param product
+	 *            the product being processed.
+	 * @param command
+	 *            the generated command, as a string.
+	 * @param exitValue
+	 *            the exit status of the process.
+	 * @throws Exception
+	 *             When re-notification should occur, based on maxTries, or none
+	 *             if done.
+	 */
+	public void commandComplete(final Product product, final String command,
+			final int exitValue) throws Exception {
+<span class="nc" id="L353">		LOGGER.info(&quot;[&quot; + getName() + &quot;] command '&quot; + command</span>
+				+ &quot;' exited with status '&quot; + exitValue + &quot;'&quot;);
+
+		// send heartbeat info
+<span class="nc" id="L357">		HeartbeatListener.sendHeartbeatMessage(getName(), &quot;command&quot;, command);</span>
+<span class="nc" id="L358">		HeartbeatListener.sendHeartbeatMessage(getName(), &quot;exit value&quot;,</span>
+<span class="nc" id="L359">				Integer.toString(exitValue));</span>
+
+<span class="nc bnc" id="L361" title="All 2 branches missed.">		if (exitValue != 0) {</span>
+<span class="nc" id="L362">			throw new NotificationListenerException(&quot;[&quot; + getName()</span>
+					+ &quot;] command exited with status &quot; + exitValue);
+		}
+<span class="nc" id="L365">	}</span>
+
+	/**
+	 * Called when an exception occurs while running command.
+	 * 
+	 * This implementation throws a NotificationListenerException with exception
+	 * as the cause.
+	 * 
+	 * @param product
+	 *            product being processed
+	 * @param productCommand
+	 *            command that was built
+	 * @param exception
+	 *            exception that was thrown during execution. This will be an
+	 *            InterruptedException if the process timed out.
+	 * @throws Exception
+	 *             When re-notification should occur, based on maxTries, or none
+	 *             if done.
+	 */
+	public void commandException(final Product product,
+			final String productCommand, final Exception exception)
+			throws Exception {
+<span class="nc bnc" id="L387" title="All 2 branches missed.">		if (exception instanceof InterruptedException) {</span>
+<span class="nc" id="L388">			LOGGER.warning(&quot;[&quot; + getName() + &quot;] command '&quot; + productCommand</span>
+					+ &quot;' timed out&quot;);
+		} else {
+<span class="nc" id="L391">			LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+					+ &quot;] exception running command '&quot; + productCommand + &quot;'&quot;,
+					exception);
+		}
+
+		// send heartbeat info
+<span class="nc" id="L397">		HeartbeatListener.sendHeartbeatMessage(getName(), &quot;exception&quot;,</span>
+				productCommand);
+<span class="nc" id="L399">		HeartbeatListener.sendHeartbeatMessage(getName(), &quot;exception class&quot;,</span>
+<span class="nc" id="L400">				exception.getClass().getName());</span>
+
+<span class="nc" id="L402">		throw new NotificationListenerException(exception);</span>
+	}
+
+	/**
+	 * @return the storage
+	 */
+	public FileProductStorage getStorage() {
+<span class="fc" id="L409">		return storage;</span>
+	}
+
+	/**
+	 * @param storage
+	 *            the storage to set
+	 */
+	public void setStorage(FileProductStorage storage) {
+<span class="nc" id="L417">		this.storage = storage;</span>
+<span class="nc" id="L418">	}</span>
+
+	/**
+	 * @return the command
+	 */
+	public String getCommand() {
+<span class="fc" id="L424">		return command;</span>
+	}
+
+	/**
+	 * @param command
+	 *            the command to set
+	 */
+	public void setCommand(String command) {
+<span class="nc" id="L432">		this.command = command;</span>
+<span class="nc" id="L433">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

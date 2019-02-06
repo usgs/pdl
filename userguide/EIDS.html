@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>EIDS Products</title>
+<link rel="stylesheet" href="userguide.css" />
+</head>
+
+<body>
+<h1>EIDS Products</h1>
+<p><a href="./index.html">&laquo; Back to User Guide</a></p>
+
+
+<p>Most messages currently sent using EIDS are converted
+automatically into products. CUBE messages are automatically converted
+to EQXML when sent using EIDS. This page currently describes the mapping
+from EQXML to product. It will eventually contain the mapping from
+Quakeml to product.</p>
+
+
+<h2>EQXML</h2>
+
+
+<h3>Origin</h3>
+
+<p>If the first Origin element in the message has
+isPreferredFlag=true, it will be converted to a product:
+<div class="code"><pre>
+&lt;Origin&gt;
+	&hellip;
+	&lt;isPreferredFlag&gt;true&lt;/isPreferredFlag&gt;
+&lt;/Origin&gt;
+</pre></div>
+
+<p>If the Origin also contains Phase elements, it is converted to a
+<code>phase-data</code> type product. Otherwise, it is converted to an <code>origin</code>
+type product. The product source is <code>Event/DataSource</code> (e.g.
+"nc"), and the product code is <code>Event/DataSource+Event/EventID</code>
+(e.g. "nc12345678").</p>
+
+<p>CUBE "E " messages converted to EQXML contain one origin, with
+isPreferredFlag=true, and so are converted to an <code>origin</code>
+product.</p>
+
+
+<h3>ProductLink (CUBE LI)</h3>
+
+<p>ProductLinks that use a known Code (see below) are automatically
+converted into <code>general-link</code>, <code>scitech-link</code>, and
+<code>impact-link</code> type products.</p>
+
+<p>The product source is <code>Event/DataSource</code>, and the
+product code is <code>Event/DataSource+Event/EventID+"-"+ProductLink/Code</code>
+lowercased (E.g. nc12345678-focalmech1).</p>
+
+<h4>Properties</h4>
+<dl>
+	<dt>url</dt>
+	<dd>ProductLink/Link</dd>
+	<dt>text</dt>
+	<dd>ProductLink/Note</dd>
+	<dt>addon-code</dt>
+	<dd>ProductLink/Code</dd>
+	<dt>addon-type</dt>
+	<dd>ProductLink/TypeKey</dd>
+</dl>
+
+<p>CUBE "LI" messages converted to EQXML use addon type for Code,
+and "LinkURL" for TypeKey.</p>
+
+
+<h4>Codes</h4>
+<p>To be automatically converted to a product, the Code must start
+with one of these values, case-insensitively.</p>
+
+<h5>general-link</h5>
+<div class="code">AfterWarn</div>
+<h5>scitech-link</h5>
+<div class="code">Energy, FocalMech, HistMomentTensor,
+FiniteFault, MomentTensor, Phase, SeisCrossSec, SeisRecSec, TravelTimes,
+Waveform, Seismograms</div>
+<h5>impact-link</h5>
+<div class="code">TsunamiLink</div>
+
+<h4>Repeating Codes</h4>
+<p>Sometimes you may want to send multiple links of the same type,
+but to be considered a separate product, the addon code must be unique.
+To do this append a sequence number or other unique id:</p>
+
+<div class="code">FocalMech1<br />
+FocalMech2</div>
+
+<div class="code">MomentTensor_berkeley<br />
+MomentTensor_menlo</div>
+
+
+<h4>Sending a link product directly to PDL</h4>
+<p>NOTE: Products sent directly to PDL are not currently delivered
+to EIDS clients.</p>
+
+<div class="code">echo "Comment about link" | java -jar
+ProductClient.jar --configFile=config.ini --send --source=nc
+--type=scitech-link --code=nc12345678-focalmech1 --eventsource=nc
+--eventsourcecode=12345678 --property-addon-code=FocalMech1
+--property-url=http://www.ncedc.org/recenteqs/QuakeAddons/nc71749275.ncfm1.html
+'--property-text=NCSS First Motion Mechanism 1' --content</div>
+
+
+<h3>MomentTensor</h3>
+
+<p>Moment tensors are converted into <code>moment-tensor</code> type
+products.</p>
+
+
+
+</body>
+</html>

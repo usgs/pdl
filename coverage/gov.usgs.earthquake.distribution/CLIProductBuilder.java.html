@@ -1,0 +1,580 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CLIProductBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">CLIProductBuilder.java</span></div><h1>CLIProductBuilder.java</h1><pre class="source lang-java linenums">/*
+ * CLIProductBuilder
+ */
+package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.ByteContent;
+import gov.usgs.earthquake.product.FileContent;
+import gov.usgs.earthquake.product.InputStreamContent;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.Config;
+import gov.usgs.util.CryptoUtils;
+import gov.usgs.util.DefaultConfigurable;
+import gov.usgs.util.StreamUtils;
+import gov.usgs.util.XmlUtils;
+import gov.usgs.util.StringUtils;
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.net.URI;
+import java.net.URL;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Command Line Interface Product Builder.
+ *
+ * This class is used to build and send products. It is typically called by
+ * using the --build argument with the standard ProductClient.
+ *
+ * The CLIProductBuilder implements the Configurable interface and uses the
+ * following configuration parameters:
+ *
+ * &lt;dl&gt;
+ * &lt;dt&gt;senders&lt;/dt&gt;
+ * &lt;dd&gt;(Required). A comma separated list of section names that should be loaded
+ * as ProductSender objects. Each sender in this list will be used to send any
+ * built products. See each type of ProductSender for more configuration
+ * details.&lt;/dd&gt;
+ * &lt;/dl&gt;
+ */
+public class CLIProductBuilder extends DefaultConfigurable {
+
+	/** Logging object. */
+<span class="fc" id="L52">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L53">			.getLogger(CLIProductBuilder.class.getName());</span>
+
+	/** Exit code used when an invalid combination of arguments is used. */
+	public static final int EXIT_INVALID_ARGUMENTS = 1;
+
+	/** Exit code used when unable to build a product. */
+	public static final int EXIT_UNABLE_TO_BUILD = 2;
+
+	/** Exit code used when errors occur while sending. */
+	public static final int EXIT_UNABLE_TO_SEND = 3;
+
+	/** Exit code when errors occur while sending, but not to all senders. */
+	public static final int EXIT_PARTIALLY_SENT = 4;
+
+	// product id arguments
+	public static final String TYPE_ARGUMENT = &quot;--type=&quot;;
+	public static final String CODE_ARGUMENT = &quot;--code=&quot;;
+	public static final String SOURCE_ARGUMENT = &quot;--source=&quot;;
+	public static final String UPDATE_TIME_ARGUMENT = &quot;--updateTime=&quot;;
+
+	// product status arguments
+	public static final String STATUS_ARGUMENT = &quot;--status=&quot;;
+	public static final String DELETE_ARGUMENT = &quot;--delete&quot;;
+
+	// tracking url
+	public static final String TRACKER_URL_ARGUMENT = &quot;--trackerURL=&quot;;
+
+	// product properties
+	public static final String PROPERTY_ARGUMENT = &quot;--property-&quot;;
+	public static final String EVENTID_ARGUMENT = &quot;--eventid=&quot;;
+	public static final String EVENTSOURCE_ARGUMENT = &quot;--eventsource=&quot;;
+	public static final String EVENTSOURCECODE_ARGUMENT = &quot;--eventsourcecode=&quot;;
+	public static final String EVENTCODE_ARGUMENT = &quot;--eventcode=&quot;;
+	public static final String EVENTTIME_ARGUMENT = &quot;--eventtime=&quot;;
+	public static final String LATITUDE_ARGUMENT = &quot;--latitude=&quot;;
+	public static final String LONGITUDE_ARGUMENT = &quot;--longitude=&quot;;
+	public static final String DEPTH_ARGUMENT = &quot;--depth=&quot;;
+	public static final String MAGNITUDE_ARGUMENT = &quot;--magnitude=&quot;;
+	public static final String VERSION_ARGUMENT = &quot;--version=&quot;;
+
+	// product links
+	public static final String LINK_ARGUMENT = &quot;--link-&quot;;
+
+	// product content arguments
+	public static final String CONTENT_ARGUMENT = &quot;--content&quot;;
+	public static final String CONTENT_TYPE_ARGUMENT = &quot;--contentType=&quot;;
+	public static final String DIRECTORY_ARGUMENT = &quot;--directory=&quot;;
+	public static final String FILE_ARGUMENT = &quot;--file=&quot;;
+
+	// private key used for signature
+	public static final String PRIVATE_KEY_ARGUMENT = &quot;--privateKey=&quot;;
+
+	/** Property name used for configuring a tracker url. */
+	public static final String TRACKER_URL_CONFIG_PROPERTY = &quot;trackerURL&quot;;
+
+	/** Property name used for configuring the list of senders. */
+	public static final String SENDERS_CONFIG_PROPERTY = &quot;senders&quot;;
+
+	/** Arguments for configuring servers and connectTimeouts. */
+	public static final String SERVERS_ARGUMENT = &quot;--servers=&quot;;
+	public static final String CONNECT_TIMEOUT_ARGUMENT = &quot;--connectTimeout=&quot;;
+<span class="fc" id="L114">	public static final Integer DEFAULT_CONNECT_TIMEOUT = 15000;</span>
+	public static final String BINARY_FORMAT_ARGUMENT = &quot;--binaryFormat&quot;;
+	public static final String DISABLE_DEFLATE = &quot;--disableDeflate&quot;;
+
+	/** Tracker URL that is used when not overriden by an argument. */
+	private URL defaultTrackerURL;
+
+	/** ProductSenders that send the product after it is built. */
+<span class="fc" id="L122">	private List&lt;ProductSender&gt; senders = new LinkedList&lt;ProductSender&gt;();</span>
+
+	/** The command line arguments being parsed. */
+	private String[] args;
+
+<span class="fc" id="L127">	private Integer connectTimeout = DEFAULT_CONNECT_TIMEOUT;</span>
+
+	/**
+	 * This class is not intended to be instantiated directly. f
+	 */
+<span class="fc" id="L132">	protected CLIProductBuilder(final String[] args) {</span>
+<span class="fc" id="L133">		this.args = args;</span>
+<span class="fc" id="L134">	}</span>
+
+	/**
+	 * @return the senders
+	 */
+	public List&lt;ProductSender&gt; getSenders() {
+<span class="fc" id="L140">		return senders;</span>
+	}
+
+	/**
+	 * @return the defaultTrackerURL
+	 */
+	public URL getDefaultTrackerURL() {
+<span class="nc" id="L147">		return defaultTrackerURL;</span>
+	}
+
+	/**
+	 * @param defaultTrackerURL
+	 *            the defaultTrackerURL to set
+	 */
+	public void setDefaultTrackerURL(URL defaultTrackerURL) {
+<span class="nc" id="L155">		this.defaultTrackerURL = defaultTrackerURL;</span>
+<span class="nc" id="L156">	}</span>
+
+	/**
+	 * Load ProductSenders that will send any built Products.
+	 *
+	 * There should be a property &quot;senders&quot; containing a comma delimited list of
+	 * sender names to be loaded.
+	 *
+	 * @param config
+	 *            the Config to load.
+	 */
+	public void configure(final Config config) throws Exception {
+<span class="nc" id="L168">		Iterator&lt;String&gt; iter = StringUtils.split(</span>
+<span class="nc" id="L169">				config.getProperty(SENDERS_CONFIG_PROPERTY), &quot;,&quot;).iterator();</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L171">			String senderName = iter.next();</span>
+
+<span class="nc" id="L173">			LOGGER.config(&quot;Loading sender '&quot; + senderName + &quot;'&quot;);</span>
+			// names reference global configuration objects.
+
+<span class="nc" id="L176">			ProductSender sender = (ProductSender) Config.getConfig()</span>
+<span class="nc" id="L177">					.getObject(senderName);</span>
+
+<span class="nc bnc" id="L179" title="All 2 branches missed.">			if (sender == null) {</span>
+<span class="nc" id="L180">				throw new ConfigurationException(&quot;Sender '&quot; + senderName</span>
+						+ &quot;' is not properly configured&quot;);
+			}
+
+<span class="nc" id="L184">			senders.add(sender);</span>
+<span class="nc" id="L185">		}</span>
+
+<span class="nc" id="L187">		String trackerURLProperty = config</span>
+<span class="nc" id="L188">				.getProperty(TRACKER_URL_CONFIG_PROPERTY);</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">		if (trackerURLProperty != null) {</span>
+<span class="nc" id="L190">			defaultTrackerURL = new URL(trackerURLProperty);</span>
+		}
+<span class="nc" id="L192">	}</span>
+
+	/**
+	 * Called when the client is shutting down.
+	 */
+	public void shutdown() throws Exception {
+<span class="nc" id="L198">		Iterator&lt;ProductSender&gt; iter = senders.iterator();</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+			try {
+<span class="nc" id="L201">				iter.next().shutdown();</span>
+<span class="nc" id="L202">			} catch (Exception e) {</span>
+<span class="nc" id="L203">				LOGGER.log(Level.WARNING, &quot;Exception shutting down sender&quot;, e);</span>
+<span class="nc" id="L204">			}</span>
+		}
+<span class="nc" id="L206">	}</span>
+
+	/**
+	 * Called when the client is done configuring.
+	 */
+	public void startup() throws Exception {
+<span class="nc" id="L212">		Iterator&lt;ProductSender&gt; iter = senders.iterator();</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L214">			iter.next().startup();</span>
+		}
+<span class="nc" id="L216">	}</span>
+
+	/**
+	 * Send a product to all configured ProductSenders.
+	 *
+	 * @param product
+	 *            the product to send.
+	 * @return exceptions that occured while sending. If map is empty, there
+	 *         were no exceptions.
+	 */
+	public Map&lt;ProductSender, Exception&gt; sendProduct(final Product product) {
+<span class="fc" id="L227">		Map&lt;ProductSender, Exception&gt; sendExceptions = new HashMap&lt;ProductSender, Exception&gt;();</span>
+
+<span class="fc" id="L229">		Iterator&lt;ProductSender&gt; iter = senders.iterator();</span>
+<span class="fc bfc" id="L230" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L231">			ProductSender sender = iter.next();</span>
+			try {
+<span class="fc" id="L233">				sender.sendProduct(product);</span>
+<span class="nc" id="L234">			} catch (Exception e) {</span>
+<span class="nc" id="L235">				sendExceptions.put(sender, e);</span>
+<span class="fc" id="L236">			}</span>
+<span class="fc" id="L237">		}</span>
+
+<span class="fc" id="L239">		return sendExceptions;</span>
+	}
+
+	/**
+	 * Build a product using command line arguments.
+	 *
+	 * @throws Exception
+	 */
+	public Product buildProduct() throws Exception {
+		// start product id with null values, and verify they are all set after
+		// all arguments are parsed.
+<span class="fc" id="L250">		Product product = new Product(new ProductId(null, null, null));</span>
+<span class="fc" id="L251">		product.setTrackerURL(defaultTrackerURL);</span>
+
+		// These things are also processed after all arguments are parsed.
+		// used with inline content
+<span class="fc" id="L255">		boolean hasStdinContent = false;</span>
+<span class="fc" id="L256">		String contentType = null;</span>
+		// used when signing products
+<span class="fc" id="L258">		File privateKey = null;</span>
+<span class="fc" id="L259">		boolean binaryFormat = false;</span>
+<span class="fc" id="L260">		boolean enableDeflate = true;</span>
+
+<span class="fc bfc" id="L262" title="All 2 branches covered.">		for (String arg : args) {</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">			if (arg.startsWith(TYPE_ARGUMENT)) {</span>
+<span class="fc" id="L264">				product.getId().setType(arg.replace(TYPE_ARGUMENT, &quot;&quot;));</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">			} else if (arg.startsWith(CODE_ARGUMENT)) {</span>
+<span class="fc" id="L266">				product.getId().setCode(arg.replace(CODE_ARGUMENT, &quot;&quot;));</span>
+<span class="fc bfc" id="L267" title="All 2 branches covered.">			} else if (arg.startsWith(SOURCE_ARGUMENT)) {</span>
+<span class="fc" id="L268">				product.getId().setSource(arg.replace(SOURCE_ARGUMENT, &quot;&quot;));</span>
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">			} else if (arg.startsWith(UPDATE_TIME_ARGUMENT)) {</span>
+<span class="nc" id="L270">				product.getId()</span>
+<span class="nc" id="L271">						.setUpdateTime(</span>
+<span class="nc" id="L272">								XmlUtils.getDate(arg.replace(</span>
+										UPDATE_TIME_ARGUMENT, &quot;&quot;)));
+<span class="fc bfc" id="L274" title="All 2 branches covered.">			} else if (arg.startsWith(STATUS_ARGUMENT)) {</span>
+<span class="fc" id="L275">				product.setStatus(arg.replace(STATUS_ARGUMENT, &quot;&quot;));</span>
+<span class="fc bfc" id="L276" title="All 2 branches covered.">			} else if (arg.equals(DELETE_ARGUMENT)) {</span>
+<span class="fc" id="L277">				product.setStatus(Product.STATUS_DELETE);</span>
+<span class="fc bfc" id="L278" title="All 2 branches covered.">			} else if (arg.startsWith(TRACKER_URL_ARGUMENT)) {</span>
+<span class="fc" id="L279">				product.setTrackerURL(new URL(arg.replace(TRACKER_URL_ARGUMENT,</span>
+						&quot;&quot;)));
+<span class="fc bfc" id="L281" title="All 2 branches covered.">			} else if (arg.startsWith(PROPERTY_ARGUMENT)) {</span>
+<span class="fc" id="L282">				String[] props = arg.replace(PROPERTY_ARGUMENT, &quot;&quot;).split(&quot;=&quot;,</span>
+						2);
+				try {
+<span class="fc" id="L285">					product.getProperties().put(props[0], props[1]);</span>
+<span class="nc" id="L286">				} catch (IndexOutOfBoundsException ioobe) {</span>
+<span class="nc" id="L287">					throw new IllegalArgumentException(</span>
+							&quot;Invalid property argument, must have value&quot;);
+<span class="fc" id="L289">				}</span>
+<span class="pc bpc" id="L290" title="1 of 2 branches missed.">			} else if (arg.startsWith(EVENTID_ARGUMENT)) {</span>
+<span class="nc" id="L291">				String id = arg.replace(EVENTID_ARGUMENT, &quot;&quot;).toLowerCase();</span>
+<span class="nc" id="L292">				String eventNetwork = id.substring(0, 2);</span>
+<span class="nc" id="L293">				String eventNetworkId = id.substring(2);</span>
+<span class="nc" id="L294">				product.setEventId(eventNetwork, eventNetworkId);</span>
+<span class="pc bpc" id="L295" title="1 of 2 branches missed.">			} else if (arg.startsWith(EVENTSOURCE_ARGUMENT)) {</span>
+<span class="nc" id="L296">				product.setEventSource(arg.replace(EVENTSOURCE_ARGUMENT, &quot;&quot;)</span>
+<span class="nc" id="L297">						.toLowerCase());</span>
+<span class="pc bpc" id="L298" title="1 of 2 branches missed.">			} else if (arg.startsWith(EVENTSOURCECODE_ARGUMENT)) {</span>
+<span class="nc" id="L299">				product.setEventSourceCode(arg.replace(</span>
+<span class="nc" id="L300">						EVENTSOURCECODE_ARGUMENT, &quot;&quot;).toLowerCase());</span>
+<span class="pc bpc" id="L301" title="1 of 2 branches missed.">			} else if (arg.startsWith(EVENTCODE_ARGUMENT)) {</span>
+<span class="nc" id="L302">				product.setEventSourceCode(arg.replace(EVENTCODE_ARGUMENT, &quot;&quot;)</span>
+<span class="nc" id="L303">						.toLowerCase());</span>
+<span class="pc bpc" id="L304" title="1 of 2 branches missed.">			} else if (arg.startsWith(EVENTTIME_ARGUMENT)) {</span>
+<span class="nc" id="L305">				product.setEventTime(XmlUtils.getDate(arg.replace(</span>
+						EVENTTIME_ARGUMENT, &quot;&quot;)));
+<span class="pc bpc" id="L307" title="1 of 2 branches missed.">			} else if (arg.startsWith(MAGNITUDE_ARGUMENT)) {</span>
+<span class="nc" id="L308">				product.setMagnitude(new BigDecimal(arg.replace(</span>
+						MAGNITUDE_ARGUMENT, &quot;&quot;)));
+<span class="fc bfc" id="L310" title="All 2 branches covered.">			} else if (arg.startsWith(LATITUDE_ARGUMENT)) {</span>
+<span class="fc" id="L311">				product.setLatitude(new BigDecimal(arg.replace(</span>
+						LATITUDE_ARGUMENT, &quot;&quot;)));
+<span class="fc bfc" id="L313" title="All 2 branches covered.">			} else if (arg.startsWith(LONGITUDE_ARGUMENT)) {</span>
+<span class="fc" id="L314">				product.setLongitude(new BigDecimal(arg.replace(</span>
+						LONGITUDE_ARGUMENT, &quot;&quot;)));
+<span class="pc bpc" id="L316" title="1 of 2 branches missed.">			} else if (arg.startsWith(DEPTH_ARGUMENT)) {</span>
+<span class="nc" id="L317">				product.setDepth(new BigDecimal(arg.replace(DEPTH_ARGUMENT, &quot;&quot;)));</span>
+<span class="pc bpc" id="L318" title="1 of 2 branches missed.">			} else if (arg.startsWith(VERSION_ARGUMENT)) {</span>
+<span class="nc" id="L319">				product.setVersion(arg.replace(VERSION_ARGUMENT, &quot;&quot;));</span>
+<span class="fc bfc" id="L320" title="All 2 branches covered.">			} else if (arg.startsWith(LINK_ARGUMENT)) {</span>
+<span class="fc" id="L321">				String[] props = arg.replace(LINK_ARGUMENT, &quot;&quot;).split(&quot;=&quot;, 2);</span>
+				try {
+<span class="fc" id="L323">					product.addLink(props[0], new URI(props[1]));</span>
+<span class="nc" id="L324">				} catch (IndexOutOfBoundsException ioobe) {</span>
+<span class="nc" id="L325">					throw new IllegalArgumentException(</span>
+							&quot;Invalid link, must have URL as value&quot;);
+<span class="fc" id="L327">				}</span>
+<span class="fc bfc" id="L328" title="All 2 branches covered.">			} else if (arg.equals(CONTENT_ARGUMENT)) {</span>
+<span class="fc" id="L329">				hasStdinContent = true;</span>
+<span class="pc bpc" id="L330" title="1 of 2 branches missed.">			} else if (arg.startsWith(CONTENT_TYPE_ARGUMENT)) {</span>
+<span class="fc" id="L331">				contentType = arg.replace(CONTENT_TYPE_ARGUMENT, &quot;&quot;);</span>
+<span class="nc bnc" id="L332" title="All 2 branches missed.">			} else if (arg.startsWith(DIRECTORY_ARGUMENT)) {</span>
+<span class="nc" id="L333">				product.getContents().putAll(</span>
+<span class="nc" id="L334">						FileContent.getDirectoryContents(new File(arg.replace(</span>
+								DIRECTORY_ARGUMENT, &quot;&quot;))));
+<span class="nc bnc" id="L336" title="All 2 branches missed.">			} else if (arg.startsWith(FILE_ARGUMENT)) {</span>
+<span class="nc" id="L337">				File file = new File(arg.replace(FILE_ARGUMENT, &quot;&quot;));</span>
+<span class="nc" id="L338">				product.getContents()</span>
+<span class="nc" id="L339">						.put(file.getName(), new FileContent(file));</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">			} else if (arg.startsWith(PRIVATE_KEY_ARGUMENT)) {</span>
+<span class="nc" id="L341">				privateKey = new File(arg.replace(PRIVATE_KEY_ARGUMENT, &quot;&quot;));</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">			} else if (arg.startsWith(SERVERS_ARGUMENT)) {</span>
+<span class="nc" id="L343">				senders.clear();</span>
+<span class="nc" id="L344">				senders.addAll(parseServers(arg.replace(SERVERS_ARGUMENT, &quot;&quot;),</span>
+						connectTimeout, binaryFormat, enableDeflate));
+<span class="nc bnc" id="L346" title="All 2 branches missed.">			} else if (arg.startsWith(CONNECT_TIMEOUT_ARGUMENT)) {</span>
+<span class="nc" id="L347">				connectTimeout = Integer.valueOf(arg.replace(</span>
+						CONNECT_TIMEOUT_ARGUMENT, &quot;&quot;));
+<span class="nc bnc" id="L349" title="All 2 branches missed.">			} else if (arg.equals(BINARY_FORMAT_ARGUMENT)) {</span>
+<span class="nc" id="L350">				binaryFormat = true;</span>
+<span class="nc bnc" id="L351" title="All 2 branches missed.">			} else if (arg.equals(DISABLE_DEFLATE)) {</span>
+<span class="nc" id="L352">				enableDeflate = false;</span>
+			} else {
+				// not a builder argument
+			}
+		}
+
+		// validate product
+<span class="fc" id="L359">		ProductId id = product.getId();</span>
+<span class="pc bpc" id="L360" title="1 of 4 branches missed.">		if (id.getType() == null || id.getSource() == null</span>
+<span class="pc bpc" id="L361" title="2 of 4 branches missed.">				|| id.getCode() == null || id.getUpdateTime() == null) {</span>
+<span class="fc" id="L362">			throw new IllegalArgumentException(&quot;Incomplete ProductId: source=&quot;</span>
+<span class="fc" id="L363">					+ id.getSource() + &quot;, type=&quot; + id.getType() + &quot;, code=&quot;</span>
+<span class="fc" id="L364">					+ id.getCode() + &quot;, updateTime=&quot; + id.getUpdateTime());</span>
+		}
+
+		// tracker url is required
+<span class="pc bpc" id="L368" title="1 of 2 branches missed.">		if (product.getTrackerURL() == null) {</span>
+<span class="nc" id="L369">			throw new IllegalArgumentException(&quot;Tracker URL is required&quot;);</span>
+		}
+
+<span class="pc bpc" id="L372" title="1 of 2 branches missed.">		if (hasStdinContent) {</span>
+<span class="fc" id="L373">			LOGGER.info(&quot;Reading content on standard input&quot;);</span>
+
+<span class="fc" id="L375">			ByteContent stdinContent = new ByteContent(new InputStreamContent(</span>
+					System.in));
+<span class="pc bpc" id="L377" title="1 of 2 branches missed.">			if (contentType != null) {</span>
+<span class="fc" id="L378">				stdinContent.setContentType(contentType);</span>
+			}
+<span class="fc" id="L380">			product.getContents().put(&quot;&quot;, stdinContent);</span>
+		}
+
+		// products that aren't being deleted should have content
+<span class="pc bpc" id="L384" title="3 of 4 branches missed.">		if (product.getContents().size() == 0 &amp;&amp; !product.isDeleted()) {</span>
+<span class="nc" id="L385">			LOGGER.warning(&quot;Product has no content, are you sure this is intended?&quot;);</span>
+		}
+
+		// mark which version of client was used to create product
+<span class="fc" id="L389">		product.getProperties().put(ProductClient.PDL_CLIENT_VERSION_PROPERTY,</span>
+				ProductClient.RELEASE_VERSION);
+
+<span class="pc bpc" id="L392" title="1 of 2 branches missed.">		if (privateKey != null) {</span>
+<span class="nc" id="L393">			LOGGER.fine(&quot;Signing product&quot;);</span>
+<span class="nc" id="L394">			product.sign(CryptoUtils.readOpenSSHPrivateKey(StreamUtils</span>
+<span class="nc" id="L395">					.readStream(StreamUtils.getInputStream(privateKey)), null));</span>
+		}
+
+<span class="fc" id="L398">		return product;</span>
+	}
+
+	public static List&lt;ProductSender&gt; parseServers(final String servers,
+			final Integer connectTimeout, final boolean binaryFormat,
+			final boolean enableDeflate) {
+<span class="nc" id="L404">		List&lt;ProductSender&gt; senders = new ArrayList&lt;ProductSender&gt;();</span>
+
+<span class="nc" id="L406">		Iterator&lt;String&gt; iter = StringUtils.split(servers, &quot;,&quot;).iterator();</span>
+<span class="nc bnc" id="L407" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L408">			String server = iter.next();</span>
+<span class="nc" id="L409">			String[] parts = server.split(&quot;:&quot;);</span>
+<span class="nc" id="L410">			SocketProductSender sender = new SocketProductSender(parts[0],</span>
+<span class="nc" id="L411">					Integer.parseInt(parts[1]), connectTimeout);</span>
+<span class="nc" id="L412">			sender.setBinaryFormat(binaryFormat);</span>
+<span class="nc" id="L413">			sender.setEnableDeflate(enableDeflate);</span>
+<span class="nc" id="L414">			senders.add(sender);</span>
+<span class="nc" id="L415">		}</span>
+
+<span class="nc" id="L417">		return senders;</span>
+	}
+
+	/**
+	 * Entry point into CLIProductBuilder.
+	 *
+	 * Called by Main if the --build argument is present.
+	 *
+	 * @param args
+	 * @throws Exception
+	 */
+	public static void main(final String[] args) throws Exception {
+<span class="nc" id="L429">		CLIProductBuilder builder = new CLIProductBuilder(args);</span>
+<span class="nc" id="L430">		builder.configure(Config.getConfig());</span>
+<span class="nc" id="L431">		builder.startup();</span>
+
+<span class="nc" id="L433">		Product product = null;</span>
+		try {
+<span class="nc" id="L435">			product = builder.buildProduct();</span>
+<span class="nc" id="L436">		} catch (Exception e) {</span>
+<span class="nc bnc" id="L437" title="All 2 branches missed.">			if (e.getMessage() == null) {</span>
+<span class="nc" id="L438">				LOGGER.log(Level.SEVERE, &quot;Error building product&quot;, e);</span>
+			} else {
+<span class="nc" id="L440">				LOGGER.severe(&quot;Invalid arguments: &quot; + e.getMessage());</span>
+			}
+<span class="nc" id="L442">			System.exit(EXIT_INVALID_ARGUMENTS);</span>
+<span class="nc" id="L443">		}</span>
+
+<span class="nc bnc" id="L445" title="All 2 branches missed.">		if (product == null) {</span>
+<span class="nc" id="L446">			LOGGER.severe(&quot;Unable to build product&quot;);</span>
+<span class="nc" id="L447">			System.exit(EXIT_UNABLE_TO_BUILD);</span>
+		}
+
+		// send tracker update
+<span class="nc" id="L451">		new ProductTracker(product.getTrackerURL()).productCreated(</span>
+<span class="nc" id="L452">				SocketProductSender.class.getName(), product.getId());</span>
+
+		// send the product
+<span class="nc" id="L455">		Map&lt;ProductSender, Exception&gt; sendExceptions = builder</span>
+<span class="nc" id="L456">				.sendProduct(product);</span>
+
+		// handle any send exceptions
+<span class="nc bnc" id="L459" title="All 2 branches missed.">		if (sendExceptions.size() != 0) {</span>
+<span class="nc" id="L460">			Iterator&lt;ProductSender&gt; senders = sendExceptions.keySet()</span>
+<span class="nc" id="L461">					.iterator();</span>
+			// log the exceptions
+<span class="nc bnc" id="L463" title="All 2 branches missed.">			while (senders.hasNext()) {</span>
+<span class="nc" id="L464">				ProductSender sender = senders.next();</span>
+<span class="nc bnc" id="L465" title="All 2 branches missed.">				if (sender instanceof SocketProductSender) {</span>
+					// put more specific information about socket senders
+<span class="nc" id="L467">					SocketProductSender socketSender = (SocketProductSender) sender;</span>
+<span class="nc" id="L468">					LOGGER.log(</span>
+							Level.WARNING,
+							&quot;Exception sending product to &quot;
+<span class="nc" id="L471">									+ socketSender.getHost() + &quot;:&quot;</span>
+<span class="nc" id="L472">									+ socketSender.getPort(),</span>
+<span class="nc" id="L473">							sendExceptions.get(sender));</span>
+<span class="nc" id="L474">				} else {</span>
+<span class="nc" id="L475">					LOGGER.log(Level.WARNING, &quot;Exception sending product &quot;</span>
+<span class="nc" id="L476">							+ sendExceptions.get(sender));</span>
+				}
+<span class="nc" id="L478">			}</span>
+
+<span class="nc bnc" id="L480" title="All 2 branches missed.">			if (sendExceptions.size() &lt; builder.getSenders().size()) {</span>
+<span class="nc" id="L481">				LOGGER.warning(&quot;Partial failure sending product,&quot;</span>
+						+ &quot; at least one sender accepted product.&quot;
+						+ &quot; Check the tracker for more information.&quot;);
+				// still output built product id
+<span class="nc" id="L485">				System.out.println(product.getId().toString());</span>
+				// but exit with partial failure
+<span class="nc" id="L487">				System.exit(EXIT_PARTIALLY_SENT);</span>
+			} else {
+<span class="nc" id="L489">				LOGGER.severe(&quot;Total failure sending product&quot;);</span>
+<span class="nc" id="L490">				System.exit(EXIT_UNABLE_TO_SEND);</span>
+			}
+
+		}
+
+		// otherwise output built product id
+<span class="nc" id="L496">		System.out.println(product.getId().toString());</span>
+
+		// normal exit
+<span class="nc" id="L499">		builder.shutdown();</span>
+<span class="nc" id="L500">		System.exit(0);</span>
+<span class="nc" id="L501">	}</span>
+
+	public static String getUsage() {
+<span class="nc" id="L504">		StringBuffer buf = new StringBuffer();</span>
+
+<span class="nc" id="L506">		buf.append(&quot;Product identification\n&quot;);</span>
+<span class="nc" id="L507">		buf.append(&quot;--source=SOURCE          product source, e.g. us, nc\n&quot;);</span>
+<span class="nc" id="L508">		buf.append(&quot;--type=TYPE              product type, e.g. shakemap, pager\n&quot;);</span>
+<span class="nc" id="L509">		buf.append(&quot;--code=CODE              product code, e.g. us2009abcd, nc12345678\n&quot;);</span>
+<span class="nc" id="L510">		buf.append(&quot;[--updateTime=TIME]      when the product was updated\n&quot;);</span>
+<span class="nc" id="L511">		buf.append(&quot;                         e.g. 2010-02-11T15:16:17+0000\n&quot;);</span>
+<span class="nc" id="L512">		buf.append(&quot;                         default is now\n&quot;);</span>
+<span class="nc" id="L513">		buf.append(&quot;[--status=STATUS]        product status\n&quot;);</span>
+<span class="nc" id="L514">		buf.append(&quot;                         default is UPDATE\n&quot;);</span>
+<span class="nc" id="L515">		buf.append(&quot;[--delete]               same as --status=DELETE\n&quot;);</span>
+<span class="nc" id="L516">		buf.append(&quot;\n&quot;);</span>
+
+<span class="nc" id="L518">		buf.append(&quot;Product contents\n&quot;);</span>
+<span class="nc" id="L519">		buf.append(&quot;[--directory=DIR]        read content from a directory, preserves hierarchy\n&quot;);</span>
+<span class="nc" id="L520">		buf.append(&quot;[--file=FILE]            read content from a file, added at top level of product\n&quot;);</span>
+<span class="nc" id="L521">		buf.append(&quot;[--content]              read content from STDIN\n&quot;);</span>
+<span class="nc" id="L522">		buf.append(&quot;[--contentType=MIMETYPE] used with --content to specify STDIN mime type\n&quot;);</span>
+<span class="nc" id="L523">		buf.append(&quot;\n&quot;);</span>
+
+<span class="nc" id="L525">		buf.append(&quot;Product metadata\n&quot;);</span>
+<span class="nc" id="L526">		buf.append(&quot;[--link-RELATION=URI]    link to another product or resource\n&quot;);</span>
+<span class="nc" id="L527">		buf.append(&quot;[--property-NAME=VALUE]  attributes of this product\n&quot;);</span>
+<span class="nc" id="L528">		buf.append(&quot;[--latitude=LAT]         Latitude of associated event.\n&quot;);</span>
+<span class="nc" id="L529">		buf.append(&quot;                             Decimal degrees\n&quot;);</span>
+<span class="nc" id="L530">		buf.append(&quot;                             Same as --property-latitude=LAT\n&quot;);</span>
+<span class="nc" id="L531">		buf.append(&quot;[--longitude=LNG]        Longitude of associated event.\n&quot;);</span>
+<span class="nc" id="L532">		buf.append(&quot;                             Decimal degrees\n&quot;);</span>
+<span class="nc" id="L533">		buf.append(&quot;                             Same as --property-longitude=LNG\n&quot;);</span>
+<span class="nc" id="L534">		buf.append(&quot;[--eventtime=TIME]       Time of associated event.\n&quot;);</span>
+<span class="nc" id="L535">		buf.append(&quot;                             Example: 2010-02-11T15:16:17+0000\n&quot;);</span>
+<span class="nc" id="L536">		buf.append(&quot;                             Same as --property-eventtime=TIME\n&quot;);</span>
+<span class="nc" id="L537">		buf.append(&quot;[--magnitude=MAG]        Magnitude of associated event.\n&quot;);</span>
+<span class="nc" id="L538">		buf.append(&quot;                             Same as --property-magnitude=MAG\n&quot;);</span>
+<span class="nc" id="L539">		buf.append(&quot;[--depth=DEPTH]          Depth of associated event.\n&quot;);</span>
+<span class="nc" id="L540">		buf.append(&quot;                             Kilometers.\n&quot;);</span>
+<span class="nc" id="L541">		buf.append(&quot;                             Same as --property-depth=DEPTH\n&quot;);</span>
+<span class="nc" id="L542">		buf.append(&quot;[--eventsource=SOURCE]   Network of associated event.\n&quot;);</span>
+<span class="nc" id="L543">		buf.append(&quot;                             Examples: us, nc, ci\n&quot;);</span>
+<span class="nc" id="L544">		buf.append(&quot;                             Same as --property-eventsource=SOURCE\n&quot;);</span>
+<span class="nc" id="L545">		buf.append(&quot;[--eventcode=CODE]       NetworkID of associated event.\n&quot;);</span>
+<span class="nc" id="L546">		buf.append(&quot;                             Examples: 2010abcd, 12345678\n&quot;);</span>
+<span class="nc" id="L547">		buf.append(&quot;                             Same as --property-eventsourcecode=CODE\n&quot;);</span>
+<span class="nc" id="L548">		buf.append(&quot;[--eventid=EVENTID]      Deprecated, use --eventsource and --eventsourcecode.\n&quot;);</span>
+<span class="nc" id="L549">		buf.append(&quot;                             Assumes a 10 character eventid: \n&quot;);</span>
+<span class="nc" id="L550">		buf.append(&quot;                                 assigns first 2 characters as 'eventsource',\n&quot;);</span>
+<span class="nc" id="L551">		buf.append(&quot;                                 rest as 'eventsourcecode'\n&quot;);</span>
+<span class="nc" id="L552">		buf.append(&quot;[--version=VERSION]      Internal product version.\n&quot;);</span>
+<span class="nc" id="L553">		buf.append(&quot;                             Same as --property-version=VERSION\n&quot;);</span>
+<span class="nc" id="L554">		buf.append(&quot;\n&quot;);</span>
+
+<span class="nc" id="L556">		buf.append(&quot;[--trackerURL=URL]       tracker url\n&quot;);</span>
+<span class="nc" id="L557">		buf.append(&quot;                         Override a configured default trackerURL\n&quot;);</span>
+<span class="nc" id="L558">		buf.append(&quot;[--privateKey=FILE]      OpenSSH DSA private key used to sign products\n&quot;);</span>
+<span class="nc" id="L559">		buf.append(&quot;                         A product signature may or may not be optional\n&quot;);</span>
+<span class="nc" id="L560">		buf.append(&quot;\n&quot;);</span>
+
+<span class="nc" id="L562">		buf.append(&quot;Where product is sent\n&quot;);</span>
+<span class="nc" id="L563">		buf.append(&quot;[--connectTimeout=15000] Connect timeout in milliseconds\n&quot;);</span>
+<span class="nc" id="L564">		buf.append(&quot;                         Only used with --servers argument\n&quot;);</span>
+<span class="nc" id="L565">		buf.append(&quot;                         Must appear before --servers argument.\n&quot;);</span>
+<span class="nc" id="L566">		buf.append(&quot;[--binaryFormat]         Send to hub using binary format.\n&quot;);</span>
+<span class="nc" id="L567">		buf.append(&quot;                         Only used with --servers argument\n&quot;);</span>
+<span class="nc" id="L568">		buf.append(&quot;                         Must appear before --servers argument.\n&quot;);</span>
+<span class="nc" id="L569">		buf.append(&quot;[--disableDeflate]       Send to hub without using deflate compression.\n&quot;);</span>
+<span class="nc" id="L570">		buf.append(&quot;                         Only used with --servers argument\n&quot;);</span>
+<span class="nc" id="L571">		buf.append(&quot;                         Must appear before --servers argument.\n&quot;);</span>
+<span class="nc" id="L572">		buf.append(&quot;[--servers=SERVERLIST]   server:port[,server:port]\n&quot;);</span>
+<span class="nc" id="L573">		buf.append(&quot;                         Overrides any configured senders\n&quot;);</span>
+<span class="nc" id="L574">		buf.append(&quot;                         Example: pdldevel.cr.usgs.gov:11235\n&quot;);</span>
+<span class="nc" id="L575">		buf.append(&quot;\n&quot;);</span>
+
+<span class="nc" id="L577">		return buf.toString();</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

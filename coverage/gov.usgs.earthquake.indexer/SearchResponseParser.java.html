@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchResponseParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">SearchResponseParser.java</span></div><h1>SearchResponseParser.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.indexer;
+
+import java.math.BigDecimal;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import gov.usgs.earthquake.distribution.FileProductStorage;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.product.io.XmlProductHandler;
+import gov.usgs.util.XmlUtils;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+/**
+ * Parser for SearchXML response.
+ */
+public class SearchResponseParser extends DefaultHandler {
+
+<span class="fc" id="L24">	private SearchResponse response = null;</span>
+
+<span class="fc" id="L26">	private SearchQuery query = null;</span>
+
+<span class="fc" id="L28">	private ProductSummary pSummary = null;</span>
+<span class="fc" id="L29">	private EventSummary eSummary = null;</span>
+
+<span class="fc" id="L31">	private Event event = null;</span>
+
+<span class="fc" id="L33">	private boolean inQueryElement = false;</span>
+<span class="fc" id="L34">	private boolean inErrorElement = false;</span>
+
+	private FileProductStorage storage;
+<span class="fc" id="L37">	private SearchResponseXmlProductSource productHandler = null;</span>
+
+<span class="fc" id="L39">	public SearchResponseParser(final FileProductStorage storage) {</span>
+<span class="fc" id="L40">		this.storage = storage;</span>
+<span class="fc" id="L41">	}</span>
+
+	public SearchResponse getSearchResponse() {
+<span class="fc" id="L44">		return response;</span>
+	}
+
+	@Override
+	public void startElement(String uri, String localName, String qName,
+			Attributes attributes) throws SAXException {
+<span class="fc bfc" id="L50" title="All 2 branches covered.">		if (productHandler != null) {</span>
+<span class="fc" id="L51">			productHandler.startElement(uri, localName, qName, attributes);</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">		} else if (SearchXML.INDEXER_XMLNS.equals(uri)) {</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">			if (SearchXML.RESPONSE_ELEMENT.equals(localName)) {</span>
+<span class="fc" id="L54">				response = new SearchResponse();</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">			} else if (SearchXML.RESULT_ELEMENT.equals(localName)) {</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">				if (response == null)</span>
+<span class="nc" id="L57">					throw new SAXException(</span>
+							&quot;Unexpected result element without response element parent.&quot;);
+<span class="fc" id="L59">				SearchMethod method = SearchMethod.fromXmlMethodName(XmlUtils</span>
+<span class="fc" id="L60">						.getAttribute(attributes, uri,</span>
+								SearchXML.METHOD_ATTRIBUTE));
+<span class="fc" id="L62">				query = SearchQuery.getSearchQuery(method,</span>
+						new ProductIndexQuery());
+				// create results container now
+<span class="fc bfc" id="L65" title="All 2 branches covered.">				if (query instanceof EventDetailQuery) {</span>
+<span class="fc" id="L66">					((EventDetailQuery) query)</span>
+<span class="fc" id="L67">							.setResult(new ArrayList&lt;Event&gt;());</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">				} else if (query instanceof EventsSummaryQuery) {</span>
+<span class="fc" id="L69">					((EventsSummaryQuery) query)</span>
+<span class="fc" id="L70">							.setResult(new ArrayList&lt;EventSummary&gt;());</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">				} else if (query instanceof ProductDetailQuery) {</span>
+<span class="fc" id="L72">					((ProductDetailQuery) query)</span>
+<span class="fc" id="L73">							.setResult(new ArrayList&lt;Product&gt;());</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">				} else if (query instanceof ProductsSummaryQuery) {</span>
+<span class="fc" id="L75">					((ProductsSummaryQuery) query)</span>
+<span class="fc" id="L76">							.setResult(new ArrayList&lt;ProductSummary&gt;());</span>
+				}
+<span class="fc bfc" id="L78" title="All 2 branches covered.">			} else if (SearchXML.QUERY_ELEMENT.equals(localName)) {</span>
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">				if (query == null)</span>
+<span class="nc" id="L80">					throw new SAXException(</span>
+							&quot;Unexpected query element without result element parent.&quot;);
+<span class="fc" id="L82">				inQueryElement = true;</span>
+<span class="fc" id="L83">				ProductIndexQuery piQuery = query.getProductIndexQuery();</span>
+
+				// Update the ProductIndexQuery with each given attribute
+				// Event Source Attribute
+<span class="fc" id="L87">				String eventSource = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.EVENT_SOURCE_ATTRIBUTE);
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">				if (eventSource != null) {</span>
+<span class="fc" id="L90">					piQuery.setEventSource(eventSource);</span>
+				}
+				// Event Source Code Attribute
+<span class="fc" id="L93">				String eventSourceCode = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.EVENT_SOURCE_CODE_ATTRIBUTE);
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">				if (eventSourceCode != null) {</span>
+<span class="fc" id="L96">					piQuery.setEventSourceCode(eventSourceCode);</span>
+				}
+				// Max Event Depth Attribute
+<span class="fc" id="L99">				String maxEventDepth = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MAX_EVENT_DEPTH_ATTRIBUTE);
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">				if (maxEventDepth != null) {</span>
+<span class="fc" id="L102">					piQuery.setMaxEventDepth(new BigDecimal(maxEventDepth));</span>
+				}
+				// Max Event Latitude Attribute
+<span class="fc" id="L105">				String maxEventLatitude = XmlUtils.getAttribute(attributes,</span>
+						uri, SearchXML.MAX_EVENT_LATITUDE_ATTRIBUTE);
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">				if (maxEventLatitude != null) {</span>
+<span class="fc" id="L108">					piQuery.setMaxEventLatitude(new BigDecimal(maxEventLatitude));</span>
+				}
+				// Max Event Longitude Attribute
+<span class="fc" id="L111">				String maxEventLongitude = XmlUtils.getAttribute(attributes,</span>
+						uri, SearchXML.MAX_EVENT_LONGITUDE_ATTRIBUTE);
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">				if (maxEventLongitude != null) {</span>
+<span class="fc" id="L114">					piQuery.setMaxEventLongitude(new BigDecimal(</span>
+							maxEventLongitude));
+				}
+				// Max Event Magnitude Attribute
+<span class="fc" id="L118">				String maxEventMagnitude = XmlUtils.getAttribute(attributes,</span>
+						uri, SearchXML.MAX_EVENT_MAGNITUDE_ATTRIBUTE);
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">				if (maxEventMagnitude != null) {</span>
+<span class="fc" id="L121">					piQuery.setMaxEventMagnitude(new BigDecimal(</span>
+							maxEventMagnitude));
+				}
+				// Max Event Time Attribute
+<span class="fc" id="L125">				String maxEventTime = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MAX_EVENT_TIME_ATTRIBUTE);
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">				if (maxEventTime != null) {</span>
+<span class="fc" id="L128">					piQuery.setMaxEventTime(XmlUtils.getDate(maxEventTime));</span>
+				}
+				// Max Product Update Time Attribute
+<span class="fc" id="L131">				String maxProductUpdateTime = XmlUtils.getAttribute(attributes,</span>
+						uri, SearchXML.MAX_PRODUCT_UPDATE_TIME_ATTRIBUTE);
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">				if (maxProductUpdateTime != null) {</span>
+<span class="fc" id="L134">					piQuery.setMaxProductUpdateTime(XmlUtils</span>
+<span class="fc" id="L135">							.getDate(maxProductUpdateTime));</span>
+				}
+				// Min Event Depth Attribute
+<span class="fc" id="L138">				String minEventDepth = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MIN_EVENT_DEPTH_ATTRIBUTE);
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">				if (minEventDepth != null) {</span>
+<span class="fc" id="L141">					piQuery.setMinEventDepth(new BigDecimal(minEventDepth));</span>
+				}
+				// Min Event Latitude Attribute
+<span class="fc" id="L144">				String minEventLatitude = XmlUtils.getAttribute(attributes,</span>
+						uri, SearchXML.MIN_EVENT_LATITUDE_ATTRIBUTE);
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">				if (minEventLatitude != null) {</span>
+<span class="fc" id="L147">					piQuery.setMinEventLatitude(new BigDecimal(minEventLatitude));</span>
+				}
+				// Min Event Longitude Attribute
+<span class="fc" id="L150">				String minEventLongitude = XmlUtils.getAttribute(attributes,</span>
+						uri, SearchXML.MIN_EVENT_LONGITUDE_ATTRIBUTE);
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">				if (minEventLongitude != null) {</span>
+<span class="fc" id="L153">					piQuery.setMinEventLongitude(new BigDecimal(</span>
+							minEventLongitude));
+				}
+				// Min Event Magnitude Attribute
+<span class="fc" id="L157">				String minEventMagnitude = XmlUtils.getAttribute(attributes,</span>
+						uri, SearchXML.MIN_EVENT_MAGNITUDE_ATTRIBUTE);
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">				if (minEventMagnitude != null) {</span>
+<span class="fc" id="L160">					piQuery.setMinEventMagnitude(new BigDecimal(</span>
+							minEventMagnitude));
+				}
+				// Min Event Time Attribute
+<span class="fc" id="L164">				String minEventTime = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MIN_EVENT_TIME_ATTRIBUTE);
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">				if (minEventTime != null) {</span>
+<span class="fc" id="L167">					piQuery.setMinEventTime(XmlUtils.getDate(minEventTime));</span>
+				}
+				// Min Product Update Time Attribute
+<span class="fc" id="L170">				String minProductUpdateTime = XmlUtils.getAttribute(attributes,</span>
+						uri, SearchXML.MIN_PRODUCT_UPDATE_TIME_ATTRIBUTE);
+<span class="pc bpc" id="L172" title="1 of 2 branches missed.">				if (minProductUpdateTime != null) {</span>
+<span class="fc" id="L173">					piQuery.setMinProductUpdateTime(XmlUtils</span>
+<span class="fc" id="L174">							.getDate(minProductUpdateTime));</span>
+				}
+				// Product Code Attribute
+<span class="fc" id="L177">				String productCode = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.PRODUCT_CODE_ATTRIBUTE);
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">				if (productCode != null) {</span>
+<span class="fc" id="L180">					piQuery.setProductCode(productCode);</span>
+				}
+				// Product Source Attribute
+<span class="fc" id="L183">				String productSource = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.PRODUCT_SOURCE_ATTRIBUTE);
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">				if (productSource != null) {</span>
+<span class="fc" id="L186">					piQuery.setProductSource(productSource);</span>
+				}
+				// Product Status Attribute
+<span class="fc" id="L189">				String productStatus = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.PRODUCT_STATUS_ATTRIBUTE);
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">				if (productStatus != null) {</span>
+<span class="fc" id="L192">					piQuery.setProductStatus(productStatus);</span>
+				}
+				// Product Type Attribute
+<span class="fc" id="L195">				String productType = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.PRODUCT_TYPE_ATTRIBUTE);
+<span class="pc bpc" id="L197" title="1 of 2 branches missed.">				if (productType != null) {</span>
+<span class="fc" id="L198">					piQuery.setProductType(productType);</span>
+				}
+				// Product Version Attribute
+<span class="fc" id="L201">				String productVersion = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.PRODUCT_VERSION_ATTRIBUTE);
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">				if (productVersion != null) {</span>
+<span class="fc" id="L204">					piQuery.setProductVersion(productVersion);</span>
+				}
+
+				// Set result type. At the moment we ony support the &quot;current&quot;
+				// type.
+<span class="fc" id="L209">				piQuery.setResultType(ProductIndexQuery.RESULT_TYPE_CURRENT);</span>
+<span class="fc bfc" id="L210" title="All 2 branches covered.">			} else if (SearchXML.PRODUCT_SUMMARY_ELEMENT.equals(localName)) {</span>
+<span class="fc bfc" id="L211" title="All 2 branches covered.">				if (inQueryElement) {</span>
+					// This product summary is being used to pass ID information
+					// for the query
+<span class="fc" id="L214">					ProductIndexQuery piQuery = query.getProductIndexQuery();</span>
+<span class="fc" id="L215">					piQuery.getProductIds().add(</span>
+<span class="fc" id="L216">							ProductId.parse(XmlUtils.getAttribute(attributes,</span>
+									uri, SearchXML.ID_ATTRIBUTE)));
+<span class="fc" id="L218">				} else {</span>
+					// This is a more complete returned product summary
+<span class="fc" id="L220">					pSummary = new ProductSummary();</span>
+
+					// Set the attributes of the ProductSummary
+					// Depth attribute
+<span class="fc" id="L224">					String depth = XmlUtils.getAttribute(attributes, uri,</span>
+							SearchXML.DEPTH_ATTRIBUTE);
+<span class="fc bfc" id="L226" title="All 2 branches covered.">					if (depth != null) {</span>
+<span class="fc" id="L227">						pSummary.setEventDepth(new BigDecimal(depth));</span>
+					}
+					// Latitude attribute
+<span class="fc" id="L230">					String latitude = XmlUtils.getAttribute(attributes, uri,</span>
+							SearchXML.LATITUDE_ATTRIBUTE);
+<span class="fc bfc" id="L232" title="All 2 branches covered.">					if (latitude != null) {</span>
+<span class="fc" id="L233">						pSummary.setEventLatitude(new BigDecimal(latitude));</span>
+					}
+					// Longitude attribute
+<span class="fc" id="L236">					String longitude = XmlUtils.getAttribute(attributes, uri,</span>
+							SearchXML.LONGITUDE_ATTRIBUTE);
+<span class="fc bfc" id="L238" title="All 2 branches covered.">					if (longitude != null) {</span>
+<span class="fc" id="L239">						pSummary.setEventLongitude(new BigDecimal(longitude));</span>
+					}
+					// Magnitude attribute
+<span class="fc" id="L242">					String magnitude = XmlUtils.getAttribute(attributes, uri,</span>
+							SearchXML.MAGNITUDE_ATTRIBUTE);
+<span class="fc bfc" id="L244" title="All 2 branches covered.">					if (magnitude != null) {</span>
+<span class="fc" id="L245">						pSummary.setEventMagnitude(new BigDecimal(magnitude));</span>
+					}
+					// Event Source attribute
+<span class="fc" id="L248">					String eventSource = XmlUtils.getAttribute(attributes, uri,</span>
+							SearchXML.EVENT_SOURCE_ATTRIBUTE);
+<span class="pc bpc" id="L250" title="1 of 2 branches missed.">					if (eventSource != null) {</span>
+<span class="nc" id="L251">						pSummary.setEventSource(eventSource);</span>
+					}
+					// Event Source Code attribute
+<span class="fc" id="L254">					String eventSourceCode = XmlUtils.getAttribute(attributes,</span>
+							uri, SearchXML.EVENT_SOURCE_CODE_ATTRIBUTE);
+<span class="pc bpc" id="L256" title="1 of 2 branches missed.">					if (eventSourceCode != null) {</span>
+<span class="nc" id="L257">						pSummary.setEventSourceCode(eventSourceCode);</span>
+					}
+					// Time attribute
+<span class="fc" id="L260">					String time = XmlUtils.getAttribute(attributes, uri,</span>
+							SearchXML.TIME_ATTRIBUTE);
+<span class="fc bfc" id="L262" title="All 2 branches covered.">					if (time != null) {</span>
+<span class="fc" id="L263">						pSummary.setEventTime(XmlUtils.getDate(time));</span>
+					}
+					// ID attribute
+<span class="fc" id="L266">					String id = XmlUtils.getAttribute(attributes, uri,</span>
+							SearchXML.ID_ATTRIBUTE);
+<span class="pc bpc" id="L268" title="1 of 2 branches missed.">					if (id != null) {</span>
+<span class="fc" id="L269">						pSummary.setId(ProductId.parse(id));</span>
+					}
+					// Preferred Weight attribute
+<span class="fc" id="L272">					String preferredWeight = XmlUtils.getAttribute(attributes,</span>
+							uri, SearchXML.PREFERRED_WEIGHT_ATTRIBUTE);
+<span class="pc bpc" id="L274" title="1 of 2 branches missed.">					if (preferredWeight != null) {</span>
+<span class="fc" id="L275">						pSummary.setPreferredWeight(Integer</span>
+<span class="fc" id="L276">								.parseInt(preferredWeight));</span>
+					}
+					// Status attribute
+<span class="fc" id="L279">					String status = XmlUtils.getAttribute(attributes, uri,</span>
+							SearchXML.STATUS_ATTRIBUTE);
+<span class="pc bpc" id="L281" title="1 of 2 branches missed.">					if (status != null) {</span>
+<span class="fc" id="L282">						pSummary.setStatus(status);</span>
+					}
+					// Version attribute
+<span class="fc" id="L285">					String version = XmlUtils.getAttribute(attributes, uri,</span>
+							SearchXML.VERSION_ATTRIBUTE);
+<span class="fc bfc" id="L287" title="All 2 branches covered.">					if (version != null) {</span>
+<span class="fc" id="L288">						pSummary.setVersion(version);</span>
+					}
+<span class="fc" id="L290">				}</span>
+<span class="fc bfc" id="L291" title="All 2 branches covered.">			} else if (SearchXML.EVENT_ELEMENT.equals(localName)) {</span>
+<span class="fc" id="L292">				event = new Event();</span>
+				// Nothing further needs to be done here as properties are set
+				// by ProductSummaries for the event
+<span class="pc bpc" id="L295" title="1 of 2 branches missed.">			} else if (SearchXML.EVENT_SUMMARY_ELEMENT.equals(localName)) {</span>
+<span class="fc" id="L296">				eSummary = new EventSummary();</span>
+
+				// Configure EventSummary attributes
+				// Depth attribute
+<span class="fc" id="L300">				String depth = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.DEPTH_ATTRIBUTE);
+<span class="pc bpc" id="L302" title="1 of 2 branches missed.">				if (depth != null) {</span>
+<span class="fc" id="L303">					eSummary.setDepth(new BigDecimal(depth));</span>
+				}
+				// Latitude attribute
+<span class="fc" id="L306">				String latitude = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.LATITUDE_ATTRIBUTE);
+<span class="pc bpc" id="L308" title="1 of 2 branches missed.">				if (latitude != null) {</span>
+<span class="fc" id="L309">					eSummary.setLatitude(new BigDecimal(latitude));</span>
+				}
+				// Longitude attribute
+<span class="fc" id="L312">				String longitude = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.LONGITUDE_ATTRIBUTE);
+<span class="pc bpc" id="L314" title="1 of 2 branches missed.">				if (longitude != null) {</span>
+<span class="fc" id="L315">					eSummary.setLongitude(new BigDecimal(longitude));</span>
+				}
+				// Magnitude attribute
+<span class="fc" id="L318">				String magnitude = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MAGNITUDE_ATTRIBUTE);
+<span class="pc bpc" id="L320" title="1 of 2 branches missed.">				if (magnitude != null) {</span>
+<span class="fc" id="L321">					eSummary.setMagnitude(new BigDecimal(magnitude));</span>
+				}
+				// Source attribute
+<span class="fc" id="L324">				String source = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.SOURCE_ATTRIBUTE);
+<span class="pc bpc" id="L326" title="1 of 2 branches missed.">				if (source != null) {</span>
+<span class="fc" id="L327">					eSummary.setSource(source);</span>
+				}
+				// Source code attribute
+<span class="fc" id="L330">				String sourceCode = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.SOURCE_CODE_ATTRIBUTE);
+<span class="pc bpc" id="L332" title="1 of 2 branches missed.">				if (sourceCode != null) {</span>
+<span class="fc" id="L333">					eSummary.setSourceCode(sourceCode);</span>
+				}
+				// Time attribute
+<span class="fc" id="L336">				String time = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.TIME_ATTRIBUTE);
+<span class="pc bpc" id="L338" title="1 of 2 branches missed.">				if (time != null) {</span>
+<span class="fc" id="L339">					eSummary.setTime(XmlUtils.getDate(time));</span>
+				}
+<span class="pc bnc" id="L341" title="All 2 branches missed.">			} else if (SearchXML.ERROR_ELEMENT.equals(localName)) {</span>
+<span class="nc" id="L342">				inErrorElement = true;</span>
+			}
+<span class="pc bpc" id="L344" title="1 of 2 branches missed.">		} else if (XmlProductHandler.PRODUCT_XML_NAMESPACE.equals(uri)) {</span>
+<span class="fc bfc" id="L345" title="All 2 branches covered.">			if (XmlProductHandler.PROPERTY_ELEMENT.equals(localName)) {</span>
+<span class="fc bfc" id="L346" title="All 2 branches covered.">				if (pSummary != null) {</span>
+					// Currently working on a Product Summary
+<span class="fc" id="L348">					pSummary.getProperties()</span>
+<span class="fc" id="L349">							.put(XmlUtils.getAttribute(attributes, uri,</span>
+									XmlProductHandler.PROPERTY_ATTRIBUTE_NAME),
+<span class="fc" id="L351">									XmlUtils.getAttribute(</span>
+											attributes,
+											uri,
+											XmlProductHandler.PROPERTY_ATTRIBUTE_VALUE));
+<span class="pc bpc" id="L355" title="1 of 2 branches missed.">				} else if (eSummary != null) {</span>
+					// Currently working on an Event Summary
+<span class="fc" id="L357">					eSummary.getProperties()</span>
+<span class="fc" id="L358">							.put(XmlUtils.getAttribute(attributes, uri,</span>
+									XmlProductHandler.PROPERTY_ATTRIBUTE_NAME),
+<span class="fc" id="L360">									XmlUtils.getAttribute(</span>
+											attributes,
+											uri,
+											XmlProductHandler.PROPERTY_ATTRIBUTE_VALUE));
+<span class="nc bnc" id="L364" title="All 2 branches missed.">				} else if (inQueryElement) {</span>
+					// Currently working on a query
+					// This is defined in the schema, but not in the class
+					// for either query
+				} else {
+<span class="nc" id="L369">					throw new SAXException(</span>
+							&quot;Property element without appropriate parent encountered.&quot;);
+				}
+<span class="fc bfc" id="L372" title="All 2 branches covered.">			} else if (XmlProductHandler.LINK_ELEMENT.equals(localName)) {</span>
+<span class="pc bpc" id="L373" title="1 of 2 branches missed.">				if (pSummary != null) {</span>
+					// This link is occurring as part of a product summary
+<span class="fc" id="L375">					String relation = XmlUtils.getAttribute(attributes, uri,</span>
+							XmlProductHandler.LINK_ATTRIBUTE_RELATION);
+<span class="fc" id="L377">					Map&lt;String, List&lt;URI&gt;&gt; links = pSummary.getLinks();</span>
+<span class="pc bpc" id="L378" title="1 of 2 branches missed.">					if (links.containsKey(relation))</span>
+<span class="nc" id="L379">						links.get(relation)</span>
+<span class="nc" id="L380">								.add(URI.create(XmlUtils.getAttribute(</span>
+										attributes, uri,
+										XmlProductHandler.LINK_ATTRIBUTE_HREF)));
+					else {
+<span class="fc" id="L384">						List&lt;URI&gt; newList = new ArrayList&lt;URI&gt;();</span>
+<span class="fc" id="L385">						newList.add(URI.create(XmlUtils.getAttribute(</span>
+								attributes, uri,
+								XmlProductHandler.LINK_ATTRIBUTE_HREF)));
+<span class="fc" id="L388">						links.put(relation, newList);</span>
+					}
+<span class="fc" id="L390">				} else {</span>
+<span class="nc" id="L391">					throw new SAXException(</span>
+							&quot;Link element without appropriate parent encountered.&quot;);
+				}
+<span class="pc bpc" id="L394" title="1 of 2 branches missed.">			} else if (XmlProductHandler.PRODUCT_ELEMENT.equals(localName)) {</span>
+				// We are starting to process a product and need to pass data
+				// through
+				// until that is complete.
+<span class="fc" id="L398">				productHandler = new SearchResponseXmlProductSource(storage);</span>
+<span class="fc" id="L399">				productHandler.startElement(uri, localName, qName, attributes);</span>
+			}
+		}
+<span class="fc" id="L402">	}</span>
+
+	@Override
+	public void endElement(String uri, String localName, String qName)
+			throws SAXException {
+<span class="fc bfc" id="L407" title="All 2 branches covered.">		if (productHandler != null) {</span>
+<span class="fc" id="L408">			productHandler.endElement(uri, localName, qName);</span>
+<span class="fc bfc" id="L409" title="All 2 branches covered.">			if (XmlProductHandler.PRODUCT_ELEMENT.equals(localName)) {</span>
+<span class="fc" id="L410">				ProductDetailQuery pdQuery = (ProductDetailQuery) query;</span>
+<span class="fc" id="L411">				pdQuery.getResult().add(productHandler.getProduct());</span>
+<span class="fc" id="L412">				productHandler = null;</span>
+<span class="fc" id="L413">			}</span>
+<span class="fc bfc" id="L414" title="All 2 branches covered.">		} else if (SearchXML.INDEXER_XMLNS.equals(uri)) {</span>
+<span class="fc bfc" id="L415" title="All 2 branches covered.">			if (SearchXML.RESPONSE_ELEMENT.equals(localName)) {</span>
+				// Do nothing, this is the end element of the document.
+<span class="fc bfc" id="L417" title="All 2 branches covered.">			} else if (SearchXML.RESULT_ELEMENT.equals(localName)) {</span>
+				// One of the results has completed
+<span class="pc bpc" id="L419" title="1 of 2 branches missed.">				if (response == null)</span>
+<span class="nc" id="L420">					throw new SAXException(</span>
+							&quot;result element found without response parent&quot;);
+				else {
+<span class="fc" id="L423">					response.addResult(query);</span>
+<span class="fc" id="L424">					query = null;</span>
+				}
+<span class="fc bfc" id="L426" title="All 2 branches covered.">			} else if (SearchXML.QUERY_ELEMENT.equals(localName)) {</span>
+				// The query element of a result has completed
+				// Because the ProductIndexQuery is part of the
+				// query object controlled by the result element
+				// nothing particular needs to be done other than
+				// set the flag for being in the query element to false
+<span class="fc" id="L432">				inQueryElement = false;</span>
+<span class="fc bfc" id="L433" title="All 2 branches covered.">			} else if (SearchXML.PRODUCT_SUMMARY_ELEMENT.equals(localName)) {</span>
+<span class="fc bfc" id="L434" title="All 2 branches covered.">				if (inQueryElement) {</span>
+					// Nothing needs to be done because this was just used
+					// to get the product ID into the list of IDs for the
+					// query.
+				} else {
+<span class="fc bfc" id="L439" title="All 2 branches covered.">					if (event != null) {</span>
+						// We're adding product summaries to events.
+<span class="fc" id="L441">						Map&lt;String, List&lt;ProductSummary&gt;&gt; eventProducts = event</span>
+<span class="fc" id="L442">								.getAllProducts();</span>
+<span class="fc" id="L443">						String productType = pSummary.getType();</span>
+<span class="pc bpc" id="L444" title="1 of 2 branches missed.">						if (eventProducts.containsKey(productType)) {</span>
+							// Key exists, so just add the product summary to it
+<span class="nc" id="L446">							eventProducts.get(productType).add(pSummary);</span>
+						} else {
+<span class="fc" id="L448">							List&lt;ProductSummary&gt; newList = new ArrayList&lt;ProductSummary&gt;();</span>
+<span class="fc" id="L449">							newList.add(pSummary);</span>
+<span class="fc" id="L450">							eventProducts.put(productType, newList);</span>
+						}
+<span class="pc bpc" id="L452" title="1 of 2 branches missed.">					} else if (query != null</span>
+<span class="pc bpc" id="L453" title="1 of 2 branches missed.">							&amp;&amp; query.getType() == SearchMethod.PRODUCTS_SUMMARY) {</span>
+						// This was a product summary query and these are its
+						// results
+<span class="fc" id="L456">						ProductsSummaryQuery psQuery = (ProductsSummaryQuery) query;</span>
+<span class="fc" id="L457">						psQuery.getResult().add(pSummary);</span>
+<span class="fc" id="L458">					} else {</span>
+<span class="nc" id="L459">						throw new SAXException(</span>
+								&quot;productSummary element encountered without recognized parent&quot;);
+					}
+<span class="fc" id="L462">					pSummary = null;</span>
+				}
+<span class="fc bfc" id="L464" title="All 2 branches covered.">			} else if (SearchXML.EVENT_ELEMENT.equals(localName)) {</span>
+<span class="pc bpc" id="L465" title="1 of 2 branches missed.">				if (query != null</span>
+<span class="pc bpc" id="L466" title="1 of 2 branches missed.">						&amp;&amp; query.getType() == SearchMethod.EVENT_DETAIL) {</span>
+					// This was an event detail query and has opened properly
+<span class="fc" id="L468">					EventDetailQuery edQuery = (EventDetailQuery) query;</span>
+<span class="fc" id="L469">					edQuery.getResult().add(event);</span>
+<span class="fc" id="L470">					event = null;</span>
+<span class="fc" id="L471">				} else {</span>
+<span class="nc" id="L472">					throw new SAXException(</span>
+							&quot;event element encountered without recognized parent&quot;);
+				}
+<span class="pc bpc" id="L475" title="1 of 2 branches missed.">			} else if (SearchXML.EVENT_SUMMARY_ELEMENT.equals(localName)) {</span>
+<span class="pc bpc" id="L476" title="1 of 2 branches missed.">				if (query != null</span>
+<span class="pc bpc" id="L477" title="1 of 2 branches missed.">						&amp;&amp; query.getType() == SearchMethod.EVENTS_SUMMARY) {</span>
+					// This was an event summary query and has opened properly
+<span class="fc" id="L479">					EventsSummaryQuery esQuery = (EventsSummaryQuery) query;</span>
+<span class="fc" id="L480">					esQuery.getResult().add(eSummary);</span>
+<span class="fc" id="L481">					esQuery = null;</span>
+<span class="fc" id="L482">				} else {</span>
+<span class="nc" id="L483">					throw new SAXException(</span>
+							&quot;eventSummary element encountered without recognized parent&quot;);
+				}
+<span class="nc bnc" id="L486" title="All 2 branches missed.">			} else if (SearchXML.ERROR_ELEMENT.equals(localName)) {</span>
+<span class="nc" id="L487">				inErrorElement = false;</span>
+			}
+<span class="pc bpc" id="L489" title="1 of 2 branches missed.">		} else if (XmlProductHandler.PRODUCT_XML_NAMESPACE.equals(uri)) {</span>
+<span class="fc bfc" id="L490" title="All 2 branches covered.">			if (XmlProductHandler.PROPERTY_ELEMENT.equals(localName)) {</span>
+				// Simple tag is handled when the start element is encountered
+<span class="pc bpc" id="L492" title="1 of 2 branches missed.">			} else if (XmlProductHandler.LINK_ELEMENT.equals(localName)) {</span>
+				// Simple tag is handled when the start element is encountered
+			}
+		}
+<span class="fc" id="L496">	}</span>
+
+	@Override
+	public void characters(char[] ch, int start, int length)
+			throws SAXException {
+<span class="fc bfc" id="L501" title="All 2 branches covered.">		if (productHandler != null) {</span>
+			// Pass through if product is being generated
+<span class="fc" id="L503">			productHandler.characters(ch, start, length);</span>
+<span class="pc bpc" id="L504" title="1 of 2 branches missed.">		} else if (inErrorElement) {</span>
+<span class="nc" id="L505">			query.setError(new String(ch));</span>
+		}
+<span class="fc" id="L507">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

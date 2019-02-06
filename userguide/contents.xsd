@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://earthquake.usgs.gov/earthquakes/event/contents"
+    xmlns:contents="http://earthquake.usgs.gov/earthquakes/event/contents"
+    elementFormDefault="qualified">
+
+<annotation><documentation><![CDATA[
+	Contents XML Schema
+
+	When sent as part of a product, the file conforming to this schema should
+	be named "contents.xml".
+
+	"contents.xml" is intended to be a table of contents for an individual product.
+	It provides a way to 
+		- describe files, using a title and caption
+		- identify files that are different formats of the same content
+		- group files into pages
+
+	This file is used by the new event pages to display products 
+	without requiring a custom module, and to generate download links.
+]]></documentation></annotation>
+
+<element name="contents" type="contents:contents">
+	<annotation><documentation>
+		The root element of ContentsXML
+	</documentation></annotation>
+</element>
+
+<complexType name="contents">
+	<sequence>
+		<element name="file" type="contents:file" minOccurs="1"
+				maxOccurs="unbounded">
+			<annotation><documentation><![CDATA[
+				Files occurring at this level should make use of the
+                "title" and "id" attributes and not the "refid" attribute.
+			]]></documentation></annotation>
+		</element>
+		<element name="page" type="contents:page" minOccurs="0"
+				maxOccurs="unbounded"/>
+	</sequence>
+</complexType>
+
+<complexType name="file">
+	<sequence>
+		<element name="caption" type="contents:caption" minOccurs="1"
+				maxOccurs="1"/>
+		<element name="format" type="contents:format" minOccurs="1"
+				maxOccurs="unbounded"/>
+	</sequence>
+
+	<attribute name="title" type="string" use="optional">
+		<annotation><documentation><![CDATA[
+			Human-readable description of the defined file. This attribute
+			should be used in conjunction with the "id" attribute when
+            defining files as direct descendents of the "contents" element.
+		]]></documentation></annotation>
+	</attribute>
+	<attribute name="id" type="string" use="optional">
+		<annotation><documentation><![CDATA[
+			Logical id of the defined file. This attribute should be used
+            in conjunction with the "title" attribute when defining files
+            as direct descendents of the "contents" element.
+		]]></documentation></annotation>
+	</attribute>
+
+	<attribute name="refid" type="string" use="optional">
+		<annotation><documentation><![CDATA[
+			Logical id of the referenced file. This attribute should be
+            used independent of other attributes and when referencing
+            files defined elsewhere in the markup; generally when used
+            in "page" elements.
+		]]></documentation></annotation>
+	</attribute>
+</complexType>
+
+<complexType name="page">
+	<sequence>
+		<element name="file" type="contents:file" minOccurs="1"
+				maxOccurs="unbounded">
+			<annotation><documentation><![CDATA[
+				Files used at this level should make use of the "refid"
+				attribute and not the "id" or "title" attributes.
+			]]></documentation></annotation>
+		</element>
+	</sequence>
+
+	<attribute name="title" type="string" use="required"/>
+	<attribute name="slug" type="string" use="required">
+		<annotation><documentation><![CDATA[
+			Must match the corresponding page slug for the desired page.
+            Does not inclucde module-name prefix.
+		]]></documentation></annotation>
+	</attribute>
+</complexType>
+
+<simpleType name="caption">
+	<restriction  base="string"/>
+</simpleType>
+
+<complexType name="format">
+	<attribute name="href" type="string" use="required"/>
+	<attribute name="type" type="string" use="required">
+		<annotation><documentation><![CDATA[
+			Pre-defined types of "thumbnail", "image", and "imagemap" have
+            been defined. Each respectively represents what one might
+            asssume and behaves appropriately in the generated page. Any
+            other value can be used as well but will not be interpreted to
+            anyting more than a simple downloadable file.
+		]]></documentation></annotation>
+	</attribute>
+</complexType>
+
+</schema>

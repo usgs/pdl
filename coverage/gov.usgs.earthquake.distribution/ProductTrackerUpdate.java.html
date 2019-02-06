@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductTrackerUpdate.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">ProductTrackerUpdate.java</span></div><h1>ProductTrackerUpdate.java</h1><pre class="source lang-java linenums">/*
+ * ProductTrackerUpdate
+ */
+package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.ProductId;
+
+import java.net.URL;
+import java.net.InetAddress;
+
+import java.util.Date;
+
+/**
+ * Represents a single update sent to a product tracker.
+ */
+public class ProductTrackerUpdate {
+
+	public static final String PRODUCT_CREATED = &quot;Product Created&quot;;
+	public static final String PRODUCT_RECEIVED = &quot;Product Received&quot;;
+	public static final String PRODUCT_EXCEPTION = &quot;Exception&quot;;
+	public static final String NOTIFICATION_SENT = &quot;Notification Sent&quot;;
+	public static final String NOTIFICATION_RECEIVED = &quot;Notification Received&quot;;
+	public static final String PRODUCT_DOWNLOADED = &quot;Product Downloaded&quot;;
+	public static final String PRODUCT_INDEXED = &quot;Product Indexed&quot;;
+
+	/** Which ProductTracker stored this update. */
+	private URL trackerURL;
+
+	// Assigned by the ProductTracker
+	/** A sequence number assigned by the ProductTracker. */
+	private Long sequenceNumber;
+
+	/** When the update was received by the tracker. */
+	private Date created;
+
+	/** The host that sent the update to the tracker. */
+	private InetAddress host;
+
+	// Assigned by the component
+	/** Product to which this update refers. */
+	private ProductId id;
+
+	/** The software component that is sending the update. */
+	private String className;
+
+	/** The update being sent. */
+	private String message;
+
+	/**
+	 * Create a tracker update for submission. Calls other constructor with null
+	 * arguments for those that are not included.
+	 * 
+	 * @param trackerURL
+	 * @param id
+	 * @param className
+	 * @param message
+	 */
+	public ProductTrackerUpdate(final URL trackerURL, final ProductId id,
+			final String className, final String message) {
+<span class="fc" id="L60">		this(trackerURL, null, null, null, id, className, message);</span>
+<span class="fc" id="L61">	}</span>
+
+	/**
+	 * Create a new ProductTrackerUpdate object.
+	 * 
+	 * @param trackerURL
+	 * @param sequenceNumber
+	 * @param created
+	 * @param host
+	 * @param id
+	 * @param className
+	 * @param message
+	 */
+	public ProductTrackerUpdate(final URL trackerURL,
+			final Long sequenceNumber, final Date created,
+			final InetAddress host, final ProductId id, final String className,
+<span class="fc" id="L77">			final String message) {</span>
+<span class="fc" id="L78">		this.trackerURL = trackerURL;</span>
+<span class="fc" id="L79">		this.sequenceNumber = sequenceNumber;</span>
+<span class="fc" id="L80">		this.created = created;</span>
+<span class="fc" id="L81">		this.host = host;</span>
+<span class="fc" id="L82">		this.id = id;</span>
+<span class="fc" id="L83">		this.className = className;</span>
+<span class="fc" id="L84">		this.message = message;</span>
+<span class="fc" id="L85">	}</span>
+
+	/**
+	 * @return the trackerURL
+	 */
+	public URL getTrackerURL() {
+<span class="fc" id="L91">		return trackerURL;</span>
+	}
+
+	/**
+	 * @param trackerURL
+	 *            the trackerURL to set
+	 */
+	public void setTrackerURL(URL trackerURL) {
+<span class="nc" id="L99">		this.trackerURL = trackerURL;</span>
+<span class="nc" id="L100">	}</span>
+
+	/**
+	 * @return the sequenceNumber
+	 */
+	public Long getSequenceNumber() {
+<span class="fc" id="L106">		return sequenceNumber;</span>
+	}
+
+	/**
+	 * @param sequenceNumber
+	 *            the sequenceNumber to set
+	 */
+	public void setSequenceNumber(Long sequenceNumber) {
+<span class="nc" id="L114">		this.sequenceNumber = sequenceNumber;</span>
+<span class="nc" id="L115">	}</span>
+
+	/**
+	 * @return the created
+	 */
+	public Date getCreated() {
+<span class="nc" id="L121">		return created;</span>
+	}
+
+	/**
+	 * @param created
+	 *            the created to set
+	 */
+	public void setCreated(Date created) {
+<span class="nc" id="L129">		this.created = created;</span>
+<span class="nc" id="L130">	}</span>
+
+	/**
+	 * @return the host
+	 */
+	public InetAddress getHost() {
+<span class="nc" id="L136">		return host;</span>
+	}
+
+	/**
+	 * @param host
+	 *            the host to set
+	 */
+	public void setHost(InetAddress host) {
+<span class="nc" id="L144">		this.host = host;</span>
+<span class="nc" id="L145">	}</span>
+
+	/**
+	 * @return the id
+	 */
+	public ProductId getId() {
+<span class="fc" id="L151">		return id;</span>
+	}
+
+	/**
+	 * @param id
+	 *            the id to set
+	 */
+	public void setId(ProductId id) {
+<span class="nc" id="L159">		this.id = id;</span>
+<span class="nc" id="L160">	}</span>
+
+	/**
+	 * @return the className
+	 */
+	public String getClassName() {
+<span class="fc" id="L166">		return className;</span>
+	}
+
+	/**
+	 * @param className
+	 *            the className to set
+	 */
+	public void setClassName(String className) {
+<span class="nc" id="L174">		this.className = className;</span>
+<span class="nc" id="L175">	}</span>
+
+	/**
+	 * @return the message
+	 */
+	public String getMessage() {
+<span class="fc" id="L181">		return message;</span>
+	}
+
+	/**
+	 * @param message
+	 *            the message to set
+	 */
+	public void setMessage(String message) {
+<span class="nc" id="L189">		this.message = message;</span>
+<span class="nc" id="L190">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

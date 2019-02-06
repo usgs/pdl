@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SimpleLogFormatter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util.logging</a> &gt; <span class="el_source">SimpleLogFormatter.java</span></div><h1>SimpleLogFormatter.java</h1><pre class="source lang-java linenums">/*
+ * SimpleLogFormatter
+ *
+ * $Id$
+ * $HeadURL$
+ */
+package gov.usgs.util.logging;
+
+import java.util.Date;
+
+import java.util.logging.Formatter;
+import java.util.logging.LogRecord;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
+/**
+ * Simple(r) log formatter for java.util.logging messages.
+ * 
+ * Outputs unique dates once, with all messages sharing that time tab indented below.
+ * 
+ * Example Format:
+ * &lt;pre&gt;
+ * Wed Sep 30 19:31:48 GMT 2009
+ * INFO    Exit code=0
+ * Wed Sep 30 19:32:52 GMT 2009
+ * INFO    [polldir] duplicate product id=urn:earthquake-usgs-gov:shakemap-scraper:global:2009medd:1
+ * Wed Sep 30 19:32:53 GMT 2009
+ * INFO    [polldir] received urn:earthquake-usgs-gov:shakemap-scraper:global:2009medd:1
+ * INFO    [losspager] filtering type 'shakemap-scraper', not allowed
+ * INFO    [logging_client] received urn:earthquake-usgs-gov:shakemap-scraper:global:2009medd:1
+ * INFO    [shakemap] received urn:earthquake-usgs-gov:shakemap-scraper:global:2009medd:1
+ * &lt;/pre&gt;
+ * 
+ */
+public class SimpleLogFormatter extends Formatter {
+
+    /** Milliseconds in a second. */
+    public static final long MILLIS_PER_SECOND = 1000;
+
+    /** When the last LogRecord was processed. */
+<span class="fc" id="L42">    private long lastMillis = 0;</span>
+
+    /** Default constructor. */
+<span class="fc" id="L45">    public SimpleLogFormatter() {</span>
+<span class="fc" id="L46">    }</span>
+
+    /**
+     * Format a LogRecord for output.
+     * 
+     * @param record
+     *            LogRecord to format.
+     * @return formatted LogRecord as String.
+     */
+    public final String format(final LogRecord record) {
+<span class="fc" id="L56">        StringBuffer buf = new StringBuffer();</span>
+
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        if (lastMillis == 0) {</span>
+            // first run...
+<span class="fc" id="L60">            buf.append(&quot;\n###\n&quot;);</span>
+        }
+
+        // chop to nearest second, not outputting millis...
+<span class="fc" id="L64">        long millis = (record.getMillis() / MILLIS_PER_SECOND)</span>
+                * MILLIS_PER_SECOND;
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (millis != lastMillis) {</span>
+<span class="fc" id="L67">            lastMillis = millis;</span>
+            // add date
+<span class="fc" id="L69">            buf.append(new Date(lastMillis).toString()).append(&quot;\n&quot;);</span>
+        }
+
+        // add log message
+<span class="fc" id="L73">        buf.append(record.getLevel().toString());</span>
+<span class="fc" id="L74">        buf.append(&quot;\tthread=&quot;).append(record.getThreadID());</span>
+<span class="fc" id="L75">        buf.append(&quot;\t&quot;).append(record.getMessage());</span>
+<span class="fc" id="L76">        buf.append(&quot;\n&quot;);</span>
+
+        // output any associated exception
+<span class="fc" id="L79">        Throwable thrown = record.getThrown();</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        if (thrown != null) {</span>
+<span class="fc" id="L81">            ByteArrayOutputStream out = new ByteArrayOutputStream();</span>
+<span class="fc" id="L82">            thrown.printStackTrace(new PrintStream(out, true));</span>
+<span class="fc" id="L83">            buf.append(new String(out.toByteArray()));</span>
+        }
+
+<span class="fc" id="L86">        return buf.toString();</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

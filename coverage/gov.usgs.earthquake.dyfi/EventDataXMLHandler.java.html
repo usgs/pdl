@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventDataXMLHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.dyfi</a> &gt; <span class="el_source">EventDataXMLHandler.java</span></div><h1>EventDataXMLHandler.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.dyfi;
+
+import gov.usgs.util.XmlUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+/**
+ * Parser for DYFI &quot;eventdata.xml&quot; metadata.
+ */
+public class EventDataXMLHandler extends DefaultHandler {
+
+	// XML Element Names
+	public static final String DYFI_EVENTDATA_ELEMENT = &quot;event_data&quot;;
+	public static final String DYFI_EVENT_ELEMENT = &quot;event&quot;;
+	public static final String DYFI_CDI_SUMMARY_ELEMENT = &quot;cdi_summary&quot;;
+	public static final String DYFI_PRODUCTS_ELEMENT = &quot;products&quot;;
+
+	public static final String DYFI_STOP_PARSING_BEFORE_PRODUCTS = &quot;Stop parsing before list of product files.&quot;;
+
+	// XML Attributes
+<span class="fc" id="L26">	public static final Map&lt;String, String[]&gt; DYFI_ELEMENT_ATTRIBUTES = new HashMap&lt;String, String[]&gt;();</span>
+	static {
+		// Statically add all these attributes and associate them to their
+		// corresponding elements
+
+		// Currently we only care about the max MMI and number of responses.
+<span class="fc" id="L32">		DYFI_ELEMENT_ATTRIBUTES.put(DYFI_CDI_SUMMARY_ELEMENT, new String[] {</span>
+				DYFIProduct.DYFI_NUM_RESP_PROPERTY,
+				DYFIProduct.DYFI_MAX_MMI_PROPERTY });
+<span class="fc" id="L35">	}</span>
+
+<span class="fc" id="L37">	private DYFIProduct dyfi = null;</span>
+
+<span class="fc" id="L39">	public EventDataXMLHandler(final DYFIProduct dyfi) {</span>
+<span class="fc" id="L40">		this.dyfi = dyfi;</span>
+<span class="fc" id="L41">	}</span>
+
+	public DYFIProduct getDYFI() {
+<span class="fc" id="L44">		return this.dyfi;</span>
+	}
+
+	public void setDYFI(final DYFIProduct dyfi) {
+<span class="nc" id="L48">		this.dyfi = dyfi;</span>
+<span class="nc" id="L49">	}</span>
+
+	public DYFIProduct parse(final Object in) throws Exception {
+		try {
+<span class="nc" id="L53">			XmlUtils.parse(in, this);</span>
+<span class="fc" id="L54">		} catch (Exception e) {</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">			if (!DYFI_STOP_PARSING_BEFORE_PRODUCTS.equals(e.getMessage())) {</span>
+<span class="nc" id="L56">				throw e;</span>
+			}
+<span class="nc" id="L58">		}</span>
+<span class="fc" id="L59">		return getDYFI();</span>
+	}
+
+	public final void startElement(final String uri, final String localName,
+			final String qName, final Attributes attributes)
+			throws SAXException {
+
+<span class="pc bpc" id="L66" title="1 of 4 branches missed.">		if (localName != null &amp;&amp; DYFI_PRODUCTS_ELEMENT.equals(localName)) {</span>
+			// We don't need the list of product files at this time.
+<span class="fc" id="L68">			throw new SAXException(DYFI_STOP_PARSING_BEFORE_PRODUCTS);</span>
+		}
+
+<span class="fc bfc" id="L71" title="All 2 branches covered.">		if (DYFI_CDI_SUMMARY_ELEMENT.equals(localName)) {</span>
+<span class="fc" id="L72">			dyfi.setNumResponses(attributes</span>
+<span class="fc" id="L73">					.getValue(DYFIProduct.DYFI_NUM_RESP_ATTRIBUTE));</span>
+<span class="fc" id="L74">			dyfi.setMaxMMI(attributes</span>
+<span class="fc" id="L75">					.getValue(DYFIProduct.DYFI_MAX_MMI_ATTRIBUTE));</span>
+		}
+<span class="fc" id="L77">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

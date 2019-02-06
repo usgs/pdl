@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractListener.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product</a> &gt; <span class="el_source">AbstractListener.java</span></div><h1>AbstractListener.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.product;
+
+import gov.usgs.util.Config;
+import gov.usgs.util.DefaultConfigurable;
+import gov.usgs.util.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+
+/**
+ * A base listener implementation for both NotificationListener and
+ * IndexerListener implementations.
+ *
+ * The AbstractListener implements the Configurable interface and defines the
+ * following configuration parameters:
+ *
+ * &lt;dl&gt;
+ * &lt;dt&gt;includeTypes&lt;/dt&gt;
+ * &lt;dd&gt;(Optional) A comma separated list of product types to include. If this
+ * list is defined it constitutes an &quot;allow&quot; list, and only types in this list
+ * are allowed.&lt;/dd&gt;
+ *
+ * &lt;dt&gt;excludeTypes&lt;/dt&gt;
+ * &lt;dd&gt;(Optional) A comma separated list of product types to exclude. If this
+ * list is defined it constitutes a &quot;block&quot; list, and types in this list are not
+ * allowed.&lt;/dd&gt;
+ *
+ * &lt;dt&gt;includeSources&lt;/dt&gt;
+ * &lt;dd&gt;(Optional) A comma separated list of product types to include. If this
+ * list is defined it constitutes an &quot;allow&quot; list, and only types in this list
+ * are allowed.&lt;/dd&gt;
+ *
+ * &lt;dt&gt;excludeSources&lt;/dt&gt;
+ * &lt;dd&gt;(Optional) A comma separated list of product types to exclude. If this
+ * list is defined it constitutes a &quot;block&quot; list, and types in this list are not
+ * allowed.&lt;/dd&gt;
+ *
+ * &lt;dt&gt;includeTests&lt;/dt&gt;
+ * &lt;dd&gt;(Optional, Default false) Flag to indicate test products should be
+ * accepted. Set to &quot;true&quot; or &quot;yes&quot; to enable.&lt;/dd&gt;
+ *
+ * &lt;dt&gt;includeScenarios&lt;/dt&gt;
+ * &lt;dd&gt;(Optional, Default false) Flag to indicate scenario products should be
+ * accepted. Set to &quot;true&quot; or &quot;yes&quot; to enable.&lt;/dd&gt;
+ *
+ * &lt;dt&gt;includeActuals&lt;/dt&gt;
+ * &lt;dd&gt;(Optional, Default true) Flag to indicate Actual products should be
+ * accepted. Set to &quot;true&quot; or &quot;yes&quot; to enable.&lt;/dd&gt;
+ *
+ * &lt;dt&gt;includeInternals&lt;/dt&gt;
+ * &lt;dd&gt;(Optional, Default false) Flag to indicate internal products should be
+ * accepted. Set to &quot;true&quot; or &quot;yes&quot; to enable.&lt;/dd&gt;
+ *
+ * &lt;dt&gt;includeDevelopments&lt;/dt&gt;
+ * &lt;dd&gt;(Optional, Default false) Flag to indicate development products should be
+ * accepted. Set to &quot;true&quot; or &quot;yes&quot; to enable.&lt;/dd&gt;
+ *
+ * &lt;dt&gt;maxTries&lt;/dt&gt;
+ * &lt;dd&gt;(Optional, Default 1) Number of times to attempt delivery of each
+ * notification, if the listener throws a ContinuableListenerException during
+ * onNotification(). A value &amp;lt;= 1 means do not re-attempt.&lt;/dd&gt;
+ *
+ * &lt;dt&gt;timeout&lt;/dt&gt;
+ * &lt;dd&gt;(Optional, Default 0) Number of milliseconds before thread running
+ * onNotification() is interrupted. A value &amp;lt;= 0 means never interrupt.&lt;/dd&gt;
+ *
+ * &lt;dt&gt;retryDelay&lt;/dt&gt;
+ * &lt;dd&gt;(Optional, Default 0) Number of milliseconds to wait before re-attempting
+ * processing of a notification, if the listener throws a
+ * ContinuableListenerException during onNotification().
+ * A value &amp;lt;= 0 means no delay.&lt;/dd&gt;
+ * &lt;/dl&gt;
+ *
+ * &lt;p&gt;
+ * When excludeTypes (or sources) and includeTypes (or sources) are defined,
+ * excludes are processed first. This is usually not recommended.
+ * &lt;/p&gt;
+ */
+<span class="fc" id="L80">public class AbstractListener extends DefaultConfigurable {</span>
+
+	/** Logging object. */
+<span class="fc" id="L83">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L84">			.getLogger(AbstractListener.class.getName());</span>
+
+	// --------------------------------------------------
+	// Configurable property names
+	// --------------------------------------------------
+
+	/** Configuration parameter for include types list. */
+	public static final String INCLUDE_TYPES_PROPERTY = &quot;includeTypes&quot;;
+
+	/** Configuration parameter for exclude types list. */
+	public static final String EXCLUDE_TYPES_PROPERTY = &quot;excludeTypes&quot;;
+
+	/** Configuration parameter for include sources list. */
+	public static final String INCLUDE_SOURCES_PROPERTY = &quot;includeSources&quot;;
+
+	/** Configuration parameter for exclude sources list. */
+	public static final String EXCLUDE_SOURCES_PROPERTY = &quot;excludeSources&quot;;
+
+	/** Flag to indicate if scenario type products should be included **/
+	public static final String INCLUDE_TESTS_PROPERTY = &quot;includeTests&quot;;
+
+	/** Flag to indicate if scenario type products should be included **/
+	public static final String INCLUDE_SCENARIOS_PROPERTY = &quot;includeScenarios&quot;;
+	
+	/** Flag to indicate if actual type products should be included **/
+	public static final String INCLUDE_ACTUALS_PROPERTY = &quot;includeActuals&quot;;
+
+	/** Flag to indicate if scenario type products should be included **/
+	public static final String INCLUDE_INTERNALS_PROPERTY = &quot;includeInternals&quot;;
+
+	/** Flag to indicate if scenario type products should be included **/
+	public static final String INCLUDE_DEVELOPMENTS_PROPERTY = &quot;includeDevelopments&quot;;
+
+	/**
+	 * Configuration parameters for attemptCount.
+	 *
+	 * @deprecated Use MAX_TRIES_PROPERTY instead.
+	 */
+	public static final String ATTEMPT_COUNT_PROPERTY = &quot;attemptCount&quot;;
+
+	/** Configuration parameters for maxTries. */
+	public static final String MAX_TRIES_PROPERTY = &quot;maxTries&quot;;
+
+	/** Configuration parameter for timeout. */
+	public static final String TIMEOUT_PROPERTY = &quot;timeout&quot;;
+
+	/** Configuration parameter for retryDelay. */
+	public static final String RETRY_DELAY_PROPERTY = &quot;retryDelay&quot;;
+
+	// --------------------------------------------------
+	// Default values for configurable settings
+	// --------------------------------------------------
+
+	// Default setting for include/exclude types/sources variables are to
+	// remain empty lists. Default interpretation of this setting is defined in
+	// the &quot;accept&quot; method and will accept all types/sources. This can be
+	// overridden in a subclass.
+
+	/** Default, do not include tests */
+	private static final boolean DEFAULT_INCLUDE_TESTS = false;
+
+	/** Default, do not include scenarios */
+	private static final boolean DEFAULT_INCLUDE_SCENARIOS = false;
+	
+	/** Default, do include actuals */
+	private static final boolean DEFAULT_INCLUDE_ACTUALS = true;
+
+	/** Default, do not include internals */
+	private static final boolean DEFAULT_INCLUDE_INTERNALS = false;
+
+	/** Default, do not include developments */
+	private static final boolean DEFAULT_INCLUDE_DEVELOPMENTS = false;
+
+	/** Default attempt count value is 1 = don't retry. */
+	public static final int DEFAULT_ATTEMPT_COUNT = 1;
+
+	/** Default timeout is 0 = infinity. */
+	public static final long DEFAULT_TIMEOUT = 0L;
+
+	/** Default delay is 300000ms = 5 minute delay. */
+	public static final long DEFAULT_RETRY_DELAY = 300000L;
+
+	// --------------------------------------------------
+	// Member variables
+	// --------------------------------------------------
+
+	/** Types of products to allow. */
+<span class="fc" id="L171">	private final ArrayList&lt;String&gt; includeTypes = new ArrayList&lt;String&gt;();</span>
+
+	/** Types of products to block. */
+<span class="fc" id="L174">	private final ArrayList&lt;String&gt; excludeTypes = new ArrayList&lt;String&gt;();</span>
+
+	/** Sources of products to allow. */
+<span class="fc" id="L177">	private final ArrayList&lt;String&gt; includeSources = new ArrayList&lt;String&gt;();</span>
+
+	/** Sources of products to block. */
+<span class="fc" id="L180">	private final ArrayList&lt;String&gt; excludeSources = new ArrayList&lt;String&gt;();</span>
+
+	/** Whether or not to include test type products */
+<span class="fc" id="L183">	private boolean includeTests = DEFAULT_INCLUDE_TESTS;</span>
+
+	/** Whether or not to include scenario type products */
+<span class="fc" id="L186">	private boolean includeScenarios = DEFAULT_INCLUDE_SCENARIOS;</span>
+	
+	/** Whether or not to include actual type products */
+<span class="fc" id="L189">	private boolean includeActuals = DEFAULT_INCLUDE_ACTUALS;</span>
+
+	/** Whether or not to include internal type products */
+<span class="fc" id="L192">	private boolean includeInternals = DEFAULT_INCLUDE_INTERNALS;</span>
+
+	/** Whether or not to include development type products */
+<span class="fc" id="L195">	private boolean includeDevelopments = DEFAULT_INCLUDE_DEVELOPMENTS;</span>
+
+	/** Number of retries when a continuable listener exception is thrown. */
+<span class="fc" id="L198">	private int maxTries = DEFAULT_ATTEMPT_COUNT;</span>
+
+	/** Number of milliseconds before the onNotification thread is interrupted. */
+<span class="fc" id="L201">	private long timeout = DEFAULT_TIMEOUT;</span>
+
+	/** Number of milliseconds before retries, after the first attempt fails. */
+<span class="fc" id="L204">	private long retryDelay = DEFAULT_RETRY_DELAY;</span>
+
+	/**
+	 * Determines if a listener accepts a message based on the incoming product
+	 * id.
+	 *
+	 * @param id
+	 *            The incoming id of the product that triggered the message.
+	 *
+	 * @return True if the message should be processed, false otherwise.
+	 */
+	public boolean accept(ProductId id) {
+<span class="fc" id="L216">		String type = id.getType();</span>
+<span class="fc" id="L217">		String source = id.getSource();</span>
+
+		// excluded type
+<span class="fc bfc" id="L220" title="All 4 branches covered.">		if (excludeTypes.size() &gt; 0 &amp;&amp; excludeTypes.contains(type)) {</span>
+<span class="fc" id="L221">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] product type '&quot; + type</span>
+					+ &quot;' excluded&quot;);
+<span class="fc" id="L223">			return false;</span>
+		}
+
+		// not included type
+<span class="fc bfc" id="L227" title="All 4 branches covered.">		if (includeTypes.size() &gt; 0 &amp;&amp; !includeTypes.contains(type)) {</span>
+<span class="fc" id="L228">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] product type '&quot; + type</span>
+					+ &quot;' not included&quot;);
+<span class="fc" id="L230">			return false;</span>
+		}
+
+		// excluded source
+<span class="pc bpc" id="L234" title="3 of 4 branches missed.">		if (excludeSources.size() &gt; 0 &amp;&amp; excludeSources.contains(source)) {</span>
+<span class="nc" id="L235">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] product source '&quot; + source</span>
+					+ &quot;' excluded&quot;);
+<span class="nc" id="L237">			return false;</span>
+		}
+
+		// not included source
+<span class="pc bpc" id="L241" title="3 of 4 branches missed.">		if (includeSources.size() &gt; 0 &amp;&amp; !includeSources.contains(source)) {</span>
+<span class="nc" id="L242">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] product source '&quot; + source</span>
+					+ &quot;' not included&quot;);
+<span class="nc" id="L244">			return false;</span>
+		}
+
+<span class="pc bpc" id="L247" title="3 of 4 branches missed.">		if (type.endsWith(&quot;-test&quot;) &amp;&amp; !includeTests) {</span>
+<span class="nc" id="L248">			LOGGER.finer(&quot;[&quot; + getName()</span>
+					+ &quot;] product type was test. Not included.&quot;);
+<span class="nc" id="L250">			return false;</span>
+		}
+
+<span class="fc bfc" id="L253" title="All 4 branches covered.">		if (type.endsWith(&quot;-scenario&quot;) &amp;&amp; !includeScenarios) {</span>
+<span class="fc" id="L254">			LOGGER.finer(&quot;[&quot; + getName()</span>
+					+ &quot;] product type was scenario. Not included.&quot;);
+<span class="fc" id="L256">			return false;</span>
+		}
+		
+<span class="fc bfc" id="L259" title="All 2 branches covered.">		if (!includeActuals &amp;&amp;</span>
+<span class="fc bfc" id="L260" title="All 2 branches covered.">			    !type.endsWith(&quot;-scenario&quot;) &amp;&amp;</span>
+<span class="pc bpc" id="L261" title="1 of 2 branches missed.">			    !type.startsWith(&quot;internal-&quot;) &amp;&amp;</span>
+<span class="pc bpc" id="L262" title="1 of 2 branches missed.">			    !type.endsWith(&quot;-devel&quot;)</span>
+			) {
+<span class="fc" id="L264">			LOGGER.finer(&quot;[&quot; + getName()</span>
+					+ &quot;] product type was actual. Not included.&quot;);
+<span class="fc" id="L266">			return false;</span>
+		}
+
+<span class="fc bfc" id="L269" title="All 4 branches covered.">		if (type.startsWith(&quot;internal-&quot;) &amp;&amp; !includeInternals) {</span>
+<span class="fc" id="L270">			LOGGER.finer(&quot;[&quot; + getName()</span>
+					+ &quot;] product type was internal. Not included.&quot;);
+<span class="fc" id="L272">			return false;</span>
+		}
+
+<span class="fc bfc" id="L275" title="All 4 branches covered.">		if (type.endsWith(&quot;-devel&quot;) &amp;&amp; !includeDevelopments) {</span>
+<span class="fc" id="L276">			LOGGER.finer(&quot;[&quot; + getName()</span>
+					+ &quot;] product type was development version. Not included.&quot;);
+<span class="fc" id="L278">			return false;</span>
+		}
+
+		// otherwise accept
+<span class="fc" id="L282">		return true;</span>
+	}
+
+	/**
+	 * Read the include and exclude types from config.
+	 */
+	public void configure(final Config config) throws Exception {
+<span class="fc" id="L289">		String includeTypeNames = config.getProperty(INCLUDE_TYPES_PROPERTY);</span>
+<span class="pc bpc" id="L290" title="1 of 2 branches missed.">		if (includeTypeNames != null) {</span>
+<span class="nc" id="L291">			includeTypes.addAll(StringUtils.split(includeTypeNames, &quot;,&quot;));</span>
+<span class="nc" id="L292">			LOGGER.config(&quot;[&quot; + getName() + &quot;] includeTypes = &quot;</span>
+					+ includeTypeNames);
+		}
+<span class="fc" id="L295">		String excludeTypeNames = config.getProperty(EXCLUDE_TYPES_PROPERTY);</span>
+<span class="pc bpc" id="L296" title="1 of 2 branches missed.">		if (excludeTypeNames != null) {</span>
+<span class="nc" id="L297">			excludeTypes.addAll(StringUtils.split(excludeTypeNames, &quot;,&quot;));</span>
+<span class="nc" id="L298">			LOGGER.config(&quot;[&quot; + getName() + &quot;] excludeTypes = &quot;</span>
+					+ excludeTypeNames);
+		}
+
+<span class="fc" id="L302">		String includeSourceNames = config</span>
+<span class="fc" id="L303">				.getProperty(INCLUDE_SOURCES_PROPERTY);</span>
+<span class="pc bpc" id="L304" title="1 of 2 branches missed.">		if (includeSourceNames != null) {</span>
+<span class="nc" id="L305">			includeSources.addAll(StringUtils.split(includeSourceNames, &quot;,&quot;));</span>
+<span class="nc" id="L306">			LOGGER.config(&quot;[&quot; + getName() + &quot;] includeSources = &quot;</span>
+					+ includeSourceNames);
+		}
+<span class="fc" id="L309">		String excludeSourceNames = config</span>
+<span class="fc" id="L310">				.getProperty(EXCLUDE_SOURCES_PROPERTY);</span>
+<span class="pc bpc" id="L311" title="1 of 2 branches missed.">		if (excludeSourceNames != null) {</span>
+<span class="nc" id="L312">			excludeSources.addAll(StringUtils.split(excludeSourceNames, &quot;,&quot;));</span>
+<span class="nc" id="L313">			LOGGER.config(&quot;[&quot; + getName() + &quot;] excludeSources = &quot;</span>
+					+ excludeSourceNames);
+		}
+
+<span class="fc" id="L317">		String includeFlag = config.getProperty(INCLUDE_TESTS_PROPERTY);</span>
+<span class="pc bpc" id="L318" title="1 of 2 branches missed.">		if (includeFlag != null) {</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">			includeTests = (includeFlag.equalsIgnoreCase(&quot;yes&quot;) ||</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">					includeFlag.equalsIgnoreCase(&quot;true&quot;));</span>
+<span class="nc" id="L321">			LOGGER.config(&quot;[&quot; + getName() + &quot;] includeTests = &quot;</span>
+					+ includeTests);
+		} else {
+<span class="fc" id="L324">			includeDevelopments = DEFAULT_INCLUDE_TESTS;</span>
+		}
+
+<span class="fc" id="L327">		includeFlag = config.getProperty(INCLUDE_SCENARIOS_PROPERTY);</span>
+<span class="pc bpc" id="L328" title="1 of 2 branches missed.">		if (includeFlag != null) {</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">			includeScenarios = (includeFlag.equalsIgnoreCase(&quot;yes&quot;) ||</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">					includeFlag.equalsIgnoreCase(&quot;true&quot;));</span>
+<span class="nc" id="L331">			LOGGER.config(&quot;[&quot; + getName() + &quot;] includeScenarios = &quot;</span>
+					+ includeScenarios);
+		} else {
+<span class="fc" id="L334">			includeDevelopments = DEFAULT_INCLUDE_SCENARIOS;</span>
+		}
+		
+<span class="fc" id="L337">		includeFlag = config.getProperty(INCLUDE_ACTUALS_PROPERTY);</span>
+<span class="fc bfc" id="L338" title="All 2 branches covered.">		if (includeFlag != null) {</span>
+<span class="fc bfc" id="L339" title="All 2 branches covered.">			includeActuals = !(includeFlag.equalsIgnoreCase(&quot;no&quot;) ||</span>
+<span class="pc bpc" id="L340" title="1 of 2 branches missed.">					includeFlag.equalsIgnoreCase(&quot;false&quot;));</span>
+<span class="fc" id="L341">			LOGGER.config(&quot;[&quot; + getName() + &quot;] includeActuals = &quot;</span>
+					+ includeActuals);
+		}
+
+<span class="fc" id="L345">		includeFlag = config.getProperty(INCLUDE_INTERNALS_PROPERTY);</span>
+<span class="pc bpc" id="L346" title="1 of 2 branches missed.">		if (includeFlag != null) {</span>
+<span class="nc bnc" id="L347" title="All 2 branches missed.">			includeInternals = (includeFlag.equalsIgnoreCase(&quot;yes&quot;) ||</span>
+<span class="nc bnc" id="L348" title="All 2 branches missed.">					includeFlag.equalsIgnoreCase(&quot;true&quot;));</span>
+<span class="nc" id="L349">			LOGGER.config(&quot;[&quot; + getName() + &quot;] includeInternals = &quot;</span>
+					+ includeInternals);
+		} else {
+<span class="fc" id="L352">			includeDevelopments = DEFAULT_INCLUDE_INTERNALS;</span>
+		}
+
+<span class="fc" id="L355">		includeFlag = config.getProperty(INCLUDE_DEVELOPMENTS_PROPERTY);</span>
+<span class="pc bpc" id="L356" title="1 of 2 branches missed.">		if (includeFlag != null) {</span>
+<span class="nc bnc" id="L357" title="All 2 branches missed.">			includeDevelopments = (includeFlag.equalsIgnoreCase(&quot;yes&quot;) ||</span>
+<span class="nc bnc" id="L358" title="All 2 branches missed.">					includeFlag.equalsIgnoreCase(&quot;true&quot;));</span>
+<span class="nc" id="L359">			LOGGER.config(&quot;[&quot; + getName() + &quot;] includeDevelopments = &quot;</span>
+					+ includeDevelopments);
+		} else {
+<span class="fc" id="L362">			includeDevelopments = DEFAULT_INCLUDE_DEVELOPMENTS;</span>
+		}
+
+<span class="fc" id="L365">		String maxTriesStr = config.getProperty(ATTEMPT_COUNT_PROPERTY);</span>
+<span class="pc bpc" id="L366" title="1 of 2 branches missed.">		if (maxTriesStr != null) {</span>
+<span class="nc" id="L367">			maxTries = Integer.parseInt(maxTriesStr);</span>
+<span class="nc" id="L368">			LOGGER.config(&quot;[&quot; + getName() + &quot;] Configured using deprecated '&quot; +</span>
+					ATTEMPT_COUNT_PROPERTY +
+					&quot;' property. Prefer to use the new '&quot; + MAX_TRIES_PROPERTY +
+					&quot;' instead. Support for the deprecated property may be &quot; +
+					&quot;removed in a subsequent release.&quot;);
+		}
+<span class="fc" id="L374">		LOGGER.config(&quot;[&quot; + getName() + &quot;] maxTries = &quot; + maxTries);</span>
+
+		// By checking for this parameter after the ATTEMPT_COUNT_PROPERTY, the
+		// value of the MAX_TRIES_PROPERTY (if specified) will take precedence.
+<span class="fc" id="L378">		maxTriesStr = config.getProperty(MAX_TRIES_PROPERTY);</span>
+<span class="fc bfc" id="L379" title="All 2 branches covered.">		if (maxTriesStr != null) {</span>
+<span class="fc" id="L380">			maxTries = Integer.parseInt(maxTriesStr);</span>
+		}
+<span class="fc" id="L382">		LOGGER.config(&quot;[&quot; + getName() + &quot;] maxTries = &quot; + maxTries);</span>
+
+<span class="fc" id="L384">		String timeoutStr = config.getProperty(TIMEOUT_PROPERTY);</span>
+<span class="fc bfc" id="L385" title="All 2 branches covered.">		if (timeoutStr != null) {</span>
+<span class="fc" id="L386">			timeout = Long.parseLong(timeoutStr);</span>
+		}
+<span class="fc" id="L388">		LOGGER.config(&quot;[&quot; + getName() + &quot;] timeout = &quot; + timeout + &quot;ms&quot;);</span>
+
+<span class="fc" id="L390">		String retryDelayStr = config.getProperty(RETRY_DELAY_PROPERTY);</span>
+<span class="pc bpc" id="L391" title="1 of 2 branches missed.">		if (retryDelayStr != null) {</span>
+<span class="nc" id="L392">			retryDelay = Long.parseLong(retryDelayStr);</span>
+		}
+<span class="fc" id="L394">		LOGGER.config(&quot;[&quot; + getName() + &quot;] retry delay = &quot; + retryDelay + &quot;ms&quot;);</span>
+<span class="fc" id="L395">	}</span>
+
+	/**
+	 * @return the includeTypes
+	 */
+	public List&lt;String&gt; getIncludeTypes() {
+<span class="fc" id="L401">		return includeTypes;</span>
+	}
+
+	/**
+	 * @return the excludeTypes
+	 */
+	public List&lt;String&gt; getExcludeTypes() {
+<span class="fc" id="L408">		return excludeTypes;</span>
+	}
+
+	/**
+	 * @return the includeSources
+	 */
+	public List&lt;String&gt; getIncludeSources() {
+<span class="nc" id="L415">		return includeSources;</span>
+	}
+
+	/**
+	 * @return the excludeSources
+	 */
+	public List&lt;String&gt; getExcludeSources() {
+<span class="nc" id="L422">		return excludeSources;</span>
+	}
+
+	/**
+	 * Number of tries to deliver notification, when an Exception is thrown
+	 * during onNotification().
+	 *
+	 * @return the attemptCount. A value &amp;lt; 1 means never try to deliver.
+	 */
+	public int getMaxTries() {
+<span class="fc" id="L432">		return maxTries;</span>
+	}
+
+	/**
+	 * Set the maxTries.
+	 *
+	 * @param maxTries
+	 *            the maxTries. A value &amp;lt; 1 means never try to deliver.
+	 */
+	public void setMaxTries(final int maxTries) {
+<span class="fc" id="L442">		this.maxTries = maxTries;</span>
+<span class="fc" id="L443">	}</span>
+
+	/**
+	 * Number of milliseconds onNotification is allowed to run before being
+	 * interrupted.
+	 *
+	 * @return the timeout in milliseconds. A value &amp;lt;= 0 means never timeout.
+	 */
+	public long getTimeout() {
+<span class="fc" id="L452">		return timeout;</span>
+	}
+
+	/**
+	 * Set the timeout.
+	 *
+	 * @param timeout
+	 *            the timeout in milliseconds. A value &amp;lt;= 0 means never timeout.
+	 */
+	public void setTimeout(final long timeout) {
+<span class="nc" id="L462">		this.timeout = timeout;</span>
+<span class="nc" id="L463">	}</span>
+
+	/**
+	 * @return the includeTests
+	 */
+	public boolean isIncludeTests() {
+<span class="nc" id="L469">		return includeTests;</span>
+	}
+
+	/**
+	 * @param includeTests the includeTests to set
+	 */
+	public void setIncludeTests(boolean includeTests) {
+<span class="nc" id="L476">		this.includeTests = includeTests;</span>
+<span class="nc" id="L477">	}</span>
+
+	/**
+	 * @return the includeScenarios
+	 */
+	public boolean isIncludeScenarios() {
+<span class="nc" id="L483">		return includeScenarios;</span>
+	}
+
+	/**
+	 * @param includeScenarios the includeScenarios to set
+	 */
+	public void setIncludeScenarios(boolean includeScenarios) {
+<span class="fc" id="L490">		this.includeScenarios = includeScenarios;</span>
+<span class="fc" id="L491">	}</span>
+	
+	/**
+	 * @return the includeActuals
+	 */
+	public boolean isIncludeActuals() {
+<span class="nc" id="L497">		return includeActuals;</span>
+	}
+
+	/**
+	 * @param includeActuals the includeActuals to set
+	 */
+	public void setIncludeActuals(boolean includeActuals) {
+<span class="fc" id="L504">		this.includeActuals = includeActuals;</span>
+<span class="fc" id="L505">	}</span>
+
+	/**
+	 * @return the includeInternals
+	 */
+	public boolean isIncludeInternals() {
+<span class="nc" id="L511">		return includeInternals;</span>
+	}
+
+	/**
+	 * @param includeInternals the includeInternals to set
+	 */
+	public void setIncludeInternals(boolean includeInternals) {
+<span class="fc" id="L518">		this.includeInternals = includeInternals;</span>
+<span class="fc" id="L519">	}</span>
+
+	/**
+	 * @return the includeDevelopments
+	 */
+	public boolean isIncludeDevelopments() {
+<span class="nc" id="L525">		return includeDevelopments;</span>
+	}
+
+	/**
+	 * @param includeDevelopments the includeDevelopments to set
+	 */
+	public void setIncludeDevelopments(boolean includeDevelopments) {
+<span class="fc" id="L532">		this.includeDevelopments = includeDevelopments;</span>
+<span class="fc" id="L533">	}</span>
+
+	/**
+	 * @return the retryDelay
+	 */
+	public long getRetryDelay() {
+<span class="fc" id="L539">		return retryDelay;</span>
+	}
+
+	/**
+	 * @param retryDelay the retryDelay to set
+	 */
+	public void setRetryDelay(long retryDelay) {
+<span class="fc" id="L546">		this.retryDelay = retryDelay;</span>
+<span class="fc" id="L547">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

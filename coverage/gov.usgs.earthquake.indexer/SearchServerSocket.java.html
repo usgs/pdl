@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchServerSocket.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">SearchServerSocket.java</span></div><h1>SearchServerSocket.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.indexer;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.InputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
+
+import gov.usgs.earthquake.distribution.ConfigurationException;
+import gov.usgs.util.Config;
+import gov.usgs.util.DefaultConfigurable;
+import gov.usgs.util.SocketAcceptor;
+import gov.usgs.util.SocketListenerInterface;
+import gov.usgs.util.StreamUtils;
+
+/**
+ * Server side of socket search interface.
+ */
+public class SearchServerSocket extends DefaultConfigurable implements
+		SocketListenerInterface {
+
+	/** Logging object. */
+<span class="fc" id="L28">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L29">			.getLogger(SearchServerSocket.class.getName());</span>
+
+	/** The configuration property used for listen port. */
+	public static final String SEARCH_PORT_PROPERTY = &quot;port&quot;;
+
+	/** The default listen port, as a string. */
+	public static final String DEFAULT_SEARCH_PORT = &quot;11236&quot;;
+
+	/** The configuration property used for listen thread count. */
+	public static final String THREAD_POOL_SIZE_PROPERTY = &quot;threads&quot;;
+
+	/** The default number of threads, as a string. */
+	public static final String DEFAULT_THREAD_POOL_SIZE = &quot;10&quot;;
+
+	/** The configuration property used to reference a ProductIndex. */
+	public static final String PRODUCT_INDEXER_PROPERTY = &quot;indexer&quot;;
+
+	/** The configuration property used to reference a URLProductStorage. */
+	public static final String PRODUCT_STORAGE_PROPERTY = &quot;storage&quot;;
+
+	/** The port to bind. */
+<span class="fc" id="L50">	private int port = -1;</span>
+
+	/** The number of threads to use. */
+<span class="fc" id="L53">	private int threads = -1;</span>
+
+	/** The server socket accept thread. */
+	private SocketAcceptor acceptor;
+
+	/** The indexer that will be searched. */
+	private Indexer indexer;
+
+	/**
+	 * Construct a new SearchServerSocket using defaults.
+	 */
+<span class="fc" id="L64">	public SearchServerSocket() {</span>
+<span class="fc" id="L65">		this.port = Integer.parseInt(DEFAULT_SEARCH_PORT);</span>
+<span class="fc" id="L66">		this.threads = Integer.parseInt(DEFAULT_THREAD_POOL_SIZE);</span>
+<span class="fc" id="L67">	}</span>
+
+	/**
+	 * Method to perform search.
+	 * 
+	 * Calls Indexer.search(SearchRequest). Simplifies testing.
+	 * 
+	 * @param request
+	 *            the search to execute.
+	 * @return the search response.
+	 * @throws Exception
+	 */
+	protected SearchResponse search(final SearchRequest request)
+			throws Exception {
+<span class="nc" id="L81">		return indexer.search(request);</span>
+	}
+
+	/**
+	 * This method is called each time a SearchSocket connects.
+	 */
+	@Override
+	public void onSocket(Socket socket) {
+<span class="fc" id="L89">		LOGGER.info(&quot;[&quot; + getName() + &quot;] accepted search connection &quot;</span>
+<span class="fc" id="L90">				+ socket.toString());</span>
+
+<span class="fc" id="L92">		InputStream in = null;</span>
+<span class="fc" id="L93">		DeflaterOutputStream out = null;</span>
+
+		try {
+<span class="fc" id="L96">			in = socket.getInputStream();</span>
+<span class="fc" id="L97">			in = new InflaterInputStream(new BufferedInputStream(</span>
+					new StreamUtils.UnclosableInputStream(in)));
+			// read request
+<span class="fc" id="L100">			SearchRequest request = SearchXML</span>
+<span class="fc" id="L101">					.parseRequest(new StreamUtils.UnclosableInputStream(in));</span>
+
+			// do search
+<span class="fc" id="L104">			SearchResponse response = this.search(request);</span>
+
+			// send response
+<span class="fc" id="L107">			out = new DeflaterOutputStream(new BufferedOutputStream(</span>
+<span class="fc" id="L108">					socket.getOutputStream()));</span>
+<span class="fc" id="L109">			SearchXML.toXML(response, new StreamUtils.UnclosableOutputStream(</span>
+					out));
+
+			// finish compression
+<span class="fc" id="L113">			out.finish();</span>
+<span class="fc" id="L114">			out.flush();</span>
+<span class="nc" id="L115">		} catch (Exception ex) {</span>
+<span class="nc" id="L116">			LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+					+ &quot;] exception while processing search&quot;, ex);
+		} finally {
+<span class="fc" id="L119">			StreamUtils.closeStream(in);</span>
+<span class="fc" id="L120">			StreamUtils.closeStream(out);</span>
+
+			try {
+<span class="nc" id="L123">				socket.shutdownInput();</span>
+<span class="fc" id="L124">			} catch (Exception e) {</span>
+				// ignore
+<span class="nc" id="L126">			}</span>
+			try {
+<span class="nc" id="L128">				socket.shutdownOutput();</span>
+<span class="fc" id="L129">			} catch (Exception e) {</span>
+				// ignore
+<span class="nc" id="L131">			}</span>
+
+			try {
+<span class="fc" id="L134">				socket.close();</span>
+<span class="nc" id="L135">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L137">			}</span>
+		}
+
+<span class="fc" id="L140">		LOGGER.info(&quot;[&quot; + getName() + &quot;] closed search connection &quot;</span>
+<span class="fc" id="L141">				+ socket.toString());</span>
+<span class="fc" id="L142">	}</span>
+
+	@Override
+	public void configure(Config config) throws Exception {
+<span class="nc" id="L146">		port = Integer.parseInt(config.getProperty(SEARCH_PORT_PROPERTY,</span>
+				DEFAULT_SEARCH_PORT));
+<span class="nc" id="L148">		LOGGER.config(&quot;[&quot; + getName() + &quot;] search port is &quot; + port);</span>
+
+<span class="nc" id="L150">		threads = Integer.parseInt(config.getProperty(</span>
+				THREAD_POOL_SIZE_PROPERTY, DEFAULT_THREAD_POOL_SIZE));
+<span class="nc" id="L152">		LOGGER.config(&quot;[&quot; + getName() + &quot;] number of threads is &quot; + threads);</span>
+
+<span class="nc" id="L154">		String indexerName = config.getProperty(PRODUCT_INDEXER_PROPERTY);</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">		if (indexerName == null) {</span>
+<span class="nc" id="L156">			throw new ConfigurationException(&quot;[&quot; + getName() + &quot;] '&quot;</span>
+					+ PRODUCT_INDEXER_PROPERTY
+					+ &quot;' is a required configuration property&quot;);
+		}
+<span class="nc" id="L160">		LOGGER.config(&quot;[&quot; + getName() + &quot;] loading indexer '&quot; + indexerName</span>
+				+ &quot;'&quot;);
+<span class="nc" id="L162">		indexer = (Indexer) Config.getConfig().getObject(indexerName);</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">		if (indexer == null) {</span>
+<span class="nc" id="L164">			throw new ConfigurationException(&quot;[&quot; + getName() + &quot;] indexer '&quot;</span>
+					+ indexerName + &quot;' is not configured properly&quot;);
+		}
+<span class="nc" id="L167">	}</span>
+
+	@Override
+	public void shutdown() throws Exception {
+		// stop accepting connections
+<span class="nc" id="L172">		acceptor.stop();</span>
+<span class="nc" id="L173">		acceptor = null;</span>
+<span class="nc" id="L174">	}</span>
+
+	@Override
+	public void startup() throws Exception {
+<span class="fc" id="L178">		ServerSocket socket = new ServerSocket(port);</span>
+<span class="fc" id="L179">		socket.setReuseAddress(true);</span>
+<span class="fc" id="L180">		acceptor = new SocketAcceptor(socket, this,</span>
+<span class="fc" id="L181">				Executors.newFixedThreadPool(threads));</span>
+		// start accepting connections via socket
+<span class="fc" id="L183">		acceptor.start();</span>
+<span class="fc" id="L184">	}</span>
+
+	public int getPort() {
+<span class="nc" id="L187">		return port;</span>
+	}
+
+	public void setPort(int port) {
+<span class="fc" id="L191">		this.port = port;</span>
+<span class="fc" id="L192">	}</span>
+
+	public int getThreads() {
+<span class="nc" id="L195">		return threads;</span>
+	}
+
+	public void setThreads(int threads) {
+<span class="nc" id="L199">		this.threads = threads;</span>
+<span class="nc" id="L200">	}</span>
+
+	public Indexer getIndexer() {
+<span class="nc" id="L203">		return indexer;</span>
+	}
+
+	public void setIndex(Indexer indexer) {
+<span class="nc" id="L207">		this.indexer = indexer;</span>
+<span class="nc" id="L208">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

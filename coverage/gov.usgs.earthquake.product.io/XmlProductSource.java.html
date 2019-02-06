@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XmlProductSource.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product.io</a> &gt; <span class="el_source">XmlProductSource.java</span></div><h1>XmlProductSource.java</h1><pre class="source lang-java linenums">/*
+ * XmlProductSource
+ */
+package gov.usgs.earthquake.product.io;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.net.URI;
+import java.net.URL;
+import java.util.Base64;
+import java.util.Date;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+import gov.usgs.util.StreamUtils;
+import gov.usgs.util.XmlUtils;
+
+import gov.usgs.earthquake.product.InputStreamContent;
+import gov.usgs.earthquake.product.URLContent;
+import gov.usgs.earthquake.product.ProductId;
+
+
+/**
+ * Load a product from an InputStream containing XML.
+ */
+public class XmlProductSource extends DefaultHandler implements ProductSource {
+
+	/** The input stream where xml is read. */
+	private InputStream in;
+
+	/** The ProductOutput where events are sent. */
+	private ProductHandler out;
+
+	/** The Product being parsed. */
+	private ProductId id;
+
+	/** Used to read content in ProductOutput while parsing continues. */
+	private ContentOutputThread contentOutputThread;
+
+	/** Used to send content to ProductOutput as it is read. */
+	private PipedOutputStream contentOutputStream;
+
+	/** Content being read. */
+	private InputStreamContent content;
+
+	/** Used for signature ProductOutput. */
+	private StringBuffer signatureBuffer;
+
+	/**
+	 * Create a new XmlProductSource.
+	 * 
+	 * @param in
+	 *            the input stream where xml is read.
+	 */
+<span class="fc" id="L59">	public XmlProductSource(final InputStream in) {</span>
+<span class="fc" id="L60">		this.in = in;</span>
+<span class="fc" id="L61">	}</span>
+
+	/**
+	 * Create a new XmlProductSource for embedding in another default handler.
+	 * 
+	 * @param out
+	 *            the ProductHandler to receive product events.
+	 */
+<span class="fc" id="L69">	public XmlProductSource(final ProductHandler out) {</span>
+<span class="fc" id="L70">		this.out = out;</span>
+<span class="fc" id="L71">	}</span>
+
+	/**
+	 * Begin reading the input stream, sending events to out.
+	 * 
+	 * @param out
+	 *            the receiving ProductOutput.
+	 */
+	public synchronized void streamTo(ProductHandler out) throws Exception {
+		try {
+<span class="fc" id="L81">			this.out = out;</span>
+<span class="fc" id="L82">			XmlUtils.parse(in, this);</span>
+		} finally {
+<span class="fc" id="L84">			StreamUtils.closeStream(in);</span>
+		}
+<span class="fc" id="L86">	}</span>
+
+	/**
+	 * Override DefaultHandler startElement. Adds a new element content buffer
+	 * and calls onStartElement.
+	 * 
+	 * @param uri
+	 *            element uri.
+	 * @param localName
+	 *            element localName.
+	 * @param qName
+	 *            element qName.
+	 * @param attributes
+	 *            element attributes.
+	 * @throws SAXException
+	 *             if onStartElement throws a SAXException.
+	 */
+	public synchronized void startElement(final String uri,
+			final String localName, final String qName,
+			final Attributes attributes) throws SAXException {
+
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">		if (XmlProductHandler.PRODUCT_XML_NAMESPACE.equals(uri)) {</span>
+			// PRODUCT
+<span class="fc bfc" id="L109" title="All 2 branches covered.">			if (XmlProductHandler.PRODUCT_ELEMENT.equals(localName)) {</span>
+<span class="fc" id="L110">				id = ProductId.parse(XmlUtils.getAttribute(attributes, uri,</span>
+						XmlProductHandler.PRODUCT_ATTRIBUTE_ID));
+<span class="fc" id="L112">				id.setUpdateTime(XmlUtils.getDate(XmlUtils.getAttribute(</span>
+						attributes, uri,
+						XmlProductHandler.PRODUCT_ATTRIBUTE_UPDATED)));
+
+<span class="fc" id="L116">				String status = XmlUtils.getAttribute(attributes, uri,</span>
+						XmlProductHandler.PRODUCT_ATTRIBUTE_STATUS);
+
+<span class="fc" id="L119">				URL trackerURL = null;</span>
+				try {
+<span class="fc" id="L121">					trackerURL = new URL(XmlUtils.getAttribute(attributes, uri,</span>
+							XmlProductHandler.PRODUCT_ATTRIBUTE_TRACKER_URL));
+<span class="fc" id="L123">				} catch (Exception e) {</span>
+					// ignore
+<span class="fc" id="L125">				}</span>
+
+				try {
+<span class="fc" id="L128">					out.onBeginProduct(id, status, trackerURL);</span>
+<span class="nc" id="L129">				} catch (Exception e) {</span>
+<span class="nc" id="L130">					throw new SAXException(e);</span>
+<span class="fc" id="L131">				}</span>
+<span class="fc" id="L132">			}</span>
+			// PROPERTY
+<span class="fc bfc" id="L134" title="All 2 branches covered.">			else if (XmlProductHandler.PROPERTY_ELEMENT.equals(localName)) {</span>
+<span class="fc" id="L135">				String name = XmlUtils.getAttribute(attributes, uri,</span>
+						XmlProductHandler.PROPERTY_ATTRIBUTE_NAME);
+<span class="fc" id="L137">				String value = XmlUtils.getAttribute(attributes, uri,</span>
+						XmlProductHandler.PROPERTY_ATTRIBUTE_VALUE);
+
+				try {
+<span class="fc" id="L141">					out.onProperty(id, name, value);</span>
+<span class="nc" id="L142">				} catch (Exception e) {</span>
+<span class="nc" id="L143">					throw new SAXException(e);</span>
+<span class="fc" id="L144">				}</span>
+<span class="fc" id="L145">			}</span>
+			// LINK
+<span class="fc bfc" id="L147" title="All 2 branches covered.">			else if (XmlProductHandler.LINK_ELEMENT.equals(localName)) {</span>
+<span class="fc" id="L148">				String relation = XmlUtils.getAttribute(attributes, uri,</span>
+						XmlProductHandler.LINK_ATTRIBUTE_RELATION);
+<span class="fc" id="L150">				URI href = null;</span>
+				try {
+<span class="fc" id="L152">					href = new URI(XmlUtils.getAttribute(attributes, uri,</span>
+							XmlProductHandler.LINK_ATTRIBUTE_HREF));
+<span class="nc" id="L154">				} catch (Exception e) {</span>
+<span class="nc" id="L155">					return;</span>
+<span class="fc" id="L156">				}</span>
+
+				try {
+<span class="fc" id="L159">					out.onLink(id, relation, href);</span>
+<span class="nc" id="L160">				} catch (Exception e) {</span>
+<span class="nc" id="L161">					throw new SAXException(e);</span>
+<span class="fc" id="L162">				}</span>
+<span class="fc" id="L163">			}</span>
+			// CONTENT
+<span class="fc bfc" id="L165" title="All 2 branches covered.">			else if (XmlProductHandler.CONTENT_ELEMENT.equals(localName)) {</span>
+				try {
+<span class="fc" id="L167">					String type = XmlUtils.getAttribute(attributes, uri,</span>
+							XmlProductHandler.CONTENT_ATTRIBUTE_TYPE);
+<span class="fc" id="L169">					Long length = Long.valueOf(XmlUtils.getAttribute(</span>
+							attributes, uri,
+							XmlProductHandler.CONTENT_ATTRIBUTE_LENGTH));
+<span class="fc" id="L172">					Date modified = XmlUtils.getDate(XmlUtils.getAttribute(</span>
+							attributes, uri,
+							XmlProductHandler.CONTENT_ATTRIBUTE_MODIFIED));
+<span class="fc" id="L175">					String path = XmlUtils.getAttribute(attributes, uri,</span>
+							XmlProductHandler.CONTENT_ATTRIBUTE_PATH);
+<span class="fc" id="L177">					String encoded = XmlUtils.getAttribute(attributes, uri,</span>
+							XmlProductHandler.CONTENT_ATTRIBUTE_ENCODED);
+<span class="fc" id="L179">					String href = XmlUtils.getAttribute(attributes, uri,</span>
+							XmlProductHandler.CONTENT_ATTRIBUTE_HREF);
+
+<span class="fc bfc" id="L182" title="All 2 branches covered.">					if (href != null) {</span>
+						// URL CONTENT
+<span class="fc" id="L184">						URL url = null;</span>
+						try {
+<span class="fc" id="L186">							url = new URL(href);</span>
+<span class="nc" id="L187">						} catch (Exception e) {</span>
+<span class="nc" id="L188">							throw new SAXException(e);</span>
+<span class="fc" id="L189">						}</span>
+<span class="fc" id="L190">						URLContent content = new URLContent(url);</span>
+<span class="fc" id="L191">						content.setContentType(type);</span>
+<span class="fc" id="L192">						content.setLength(length);</span>
+<span class="fc" id="L193">						content.setLastModified(modified);</span>
+
+<span class="fc" id="L195">						out.onContent(id, path, content);</span>
+<span class="fc" id="L196">						return;</span>
+					}
+
+					else {
+						// EMBEDDED CONTENT
+						// set up a piped stream
+<span class="pc bpc" id="L202" title="1 of 2 branches missed.">						InputStream contentInputStream = openContentStream(</span>
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">								encoded != null &amp;&amp; &quot;true&quot;.equals(encoded));</span>
+
+<span class="fc" id="L205">						content = new InputStreamContent(</span>
+								contentInputStream);
+<span class="fc" id="L207">						content.setContentType(type);</span>
+<span class="fc" id="L208">						content.setLength(length);</span>
+<span class="fc" id="L209">						content.setLastModified(modified);</span>
+
+						// call onContent in separate thread so parsing thread
+						// can continue. Element content is fed during the
+						// characters method.
+<span class="fc" id="L214">						contentOutputThread = new ContentOutputThread(out, id, path, content);</span>
+<span class="fc" id="L215">						contentOutputThread.start();</span>
+					}
+
+<span class="nc" id="L218">				} catch (Exception e) {</span>
+<span class="nc" id="L219">					closeContent();</span>
+<span class="nc" id="L220">					throw new SAXException(e);</span>
+<span class="fc" id="L221">				}</span>
+			}
+			// SIGNATURE
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">			else if (XmlProductHandler.SIGNATURE_ELEMENT.equals(localName)) {</span>
+<span class="fc" id="L225">				signatureBuffer = new StringBuffer();</span>
+			}
+		}
+<span class="fc" id="L228">	}</span>
+
+	/**
+	 * Override DefaultHandler endElement. Retrieves element content buffer and
+	 * passes it to onEndElement.
+	 * 
+	 * @param uri
+	 *            element uri.
+	 * @param localName
+	 *            element localName.
+	 * @param qName
+	 *            element qName.
+	 * @throws SAXException
+	 *             if onEndElement throws a SAXException.
+	 */
+	public synchronized void endElement(final String uri,
+			final String localName, final String qName) throws SAXException {
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">		if (XmlProductHandler.PRODUCT_XML_NAMESPACE.equals(uri)) {</span>
+			try {
+<span class="fc bfc" id="L247" title="All 2 branches covered.">				if (XmlProductHandler.CONTENT_ELEMENT.equals(localName)) {</span>
+					// done reading content content, close piped stream to
+					// signal EOF.
+<span class="fc" id="L250">					closeContent();</span>
+<span class="fc" id="L251">				} else if (XmlProductHandler.SIGNATURE_ELEMENT</span>
+<span class="fc bfc" id="L252" title="All 2 branches covered.">						.equals(localName)) {</span>
+<span class="fc" id="L253">					String signature = signatureBuffer.toString();</span>
+<span class="fc" id="L254">					signatureBuffer = null;</span>
+<span class="fc" id="L255">					out.onSignature(id, signature);</span>
+<span class="fc bfc" id="L256" title="All 2 branches covered.">				} else if (XmlProductHandler.PRODUCT_ELEMENT.equals(localName)) {</span>
+<span class="fc" id="L257">					out.onEndProduct(id);</span>
+				}
+<span class="nc" id="L259">			} catch (Exception e) {</span>
+<span class="nc" id="L260">				closeContent();</span>
+<span class="nc" id="L261">				throw new SAXException(e);</span>
+<span class="fc" id="L262">			}</span>
+		}
+<span class="fc" id="L264">	}</span>
+
+	/**
+	 * Override DefaultHandler characters. Appends content to current element
+	 * buffer, or skips if before first element.
+	 * 
+	 * @param ch
+	 *            content.
+	 * @param start
+	 *            position in content to read.
+	 * @param length
+	 *            lenth of content to read.
+	 * @throws SAXException
+	 *             never.
+	 */
+	public synchronized void characters(final char[] ch, final int start,
+			final int length) throws SAXException {
+<span class="fc" id="L281">		String chars = new String(ch, start, length);</span>
+<span class="fc bfc" id="L282" title="All 2 branches covered.">		if (contentOutputStream != null) {</span>
+			try {
+<span class="fc" id="L284">				contentOutputStream.write(chars.getBytes());</span>
+<span class="nc" id="L285">			} catch (Exception e) {</span>
+				// close the piped stream if there was an exception
+<span class="nc" id="L287">				closeContent();</span>
+<span class="nc" id="L288">				throw new SAXException(e);</span>
+<span class="fc" id="L289">			}</span>
+<span class="fc bfc" id="L290" title="All 2 branches covered.">		} else if (signatureBuffer != null) {</span>
+<span class="fc" id="L291">			signatureBuffer.append(chars);</span>
+		} else {
+			// ignore, only interested in content or signature
+		}
+<span class="fc" id="L295">	}</span>
+
+	protected synchronized ProductHandler getHandler() {
+<span class="nc" id="L298">		return out;</span>
+	}
+
+	protected synchronized void setHandler(ProductHandler out) {
+<span class="fc" id="L302">		this.out = out;</span>
+<span class="fc" id="L303">	}</span>
+
+
+	/**
+	 * Free any resources associated with this handler.
+	 */
+	@Override
+	public void close() {
+<span class="fc" id="L311">		closeContent();</span>
+
+<span class="fc" id="L313">		StreamUtils.closeStream(in);</span>
+<span class="fc bfc" id="L314" title="All 2 branches covered.">		if (out != null) {</span>
+<span class="fc" id="L315">			out.close();</span>
+		}
+<span class="fc" id="L317">	}</span>
+
+	/**
+	 * Set up a piped output stream used during parsing.
+	 *
+	 * The XmlProductSource parsing thread starts a background thread
+	 * to deliver content to the handler, then continues parsing XML
+	 * and delivers parsed content via the piped streams.
+	 *
+	 * If xml parsing completes as expected, the parsing thread
+	 * will close the connection in {@link #closeContent()}.  If
+	 * errors occur, the objects handling the product source object
+	 * call closeContent to ensure the resource is closed.
+	 */
+	@SuppressWarnings(&quot;resource&quot;)
+	public InputStream openContentStream(boolean encoded) throws IOException {
+		// EMBEDDED CONTENT
+<span class="fc" id="L334">		contentOutputStream = new PipedOutputStream();</span>
+<span class="fc" id="L335">		InputStream contentInputStream = new PipedInputStream(</span>
+				contentOutputStream);
+
+		// decode base 64 encoded content
+<span class="pc bpc" id="L339" title="1 of 2 branches missed.">		if (encoded) {</span>
+			// this stream is closed by closeContent()
+			// either in this thread if everything succeeds,
+			// or by the objects using the ProductSource.
+<span class="fc" id="L343">			contentInputStream = Base64.getDecoder()</span>
+<span class="fc" id="L344">					.wrap(contentInputStream);</span>
+		}
+
+<span class="fc" id="L347">		return contentInputStream;</span>
+	}
+
+	public void closeContent() {
+<span class="fc" id="L351">		StreamUtils.closeStream(contentOutputStream);</span>
+<span class="fc" id="L352">		contentOutputStream = null;</span>
+<span class="fc bfc" id="L353" title="All 2 branches covered.">		if (contentOutputThread != null) {</span>
+			try {
+<span class="fc" id="L355">				contentOutputThread.join();</span>
+<span class="nc" id="L356">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L358">			}</span>
+		}
+<span class="fc" id="L360">		contentOutputThread = null;</span>
+<span class="fc bfc" id="L361" title="All 2 branches covered.">		if (content != null) {</span>
+<span class="fc" id="L362">			content.close();</span>
+		}
+<span class="fc" id="L364">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

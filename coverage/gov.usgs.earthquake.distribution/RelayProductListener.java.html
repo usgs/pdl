@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RelayProductListener.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">RelayProductListener.java</span></div><h1>RelayProductListener.java</h1><pre class="source lang-java linenums">/*
+ * RelayProductListener
+ */
+package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.util.Config;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Listen for products and use a product sender (SocketProductSender by default)
+ * to send products as they are received.
+ */
+public class RelayProductListener extends DefaultNotificationListener {
+
+	/** Logging object. */
+<span class="nc" id="L19">	private static final Logger LOGGER = Logger</span>
+<span class="nc" id="L20">			.getLogger(RelayProductListener.class.getName());</span>
+
+	/** Sender used to send products. */
+	private ProductSender sender;
+
+	/**
+	 * Empty constructor for configurable, will configure as a
+	 * SocketProductSender.
+	 */
+<span class="nc" id="L29">	public RelayProductListener() {</span>
+<span class="nc" id="L30">	}</span>
+
+	/**
+	 * Construct a RelayProductListener using a custom ProductSender.
+	 * 
+	 * @param sender
+	 *            the sender to use.
+	 */
+<span class="nc" id="L38">	public RelayProductListener(final ProductSender sender) {</span>
+<span class="nc" id="L39">		this.sender = sender;</span>
+<span class="nc" id="L40">	}</span>
+
+	/**
+	 * Send a product.
+	 */
+	public void onProduct(final Product product) {
+<span class="nc" id="L46">		LOGGER.info(&quot;Relaying product &quot; + product.getId().toString() + &quot; &quot;</span>
+<span class="nc" id="L47">				+ product.getId().getUpdateTime());</span>
+
+		try {
+<span class="nc" id="L50">			sender.sendProduct(product);</span>
+<span class="nc" id="L51">		} catch (Exception e) {</span>
+<span class="nc" id="L52">			LOGGER.log(Level.WARNING, &quot;Error relaying product&quot;, e);</span>
+<span class="nc" id="L53">		}</span>
+<span class="nc" id="L54">	}</span>
+
+	/**
+	 * Creates a SocketProductSender and uses its configure method.
+	 */
+	public void configure(Config config) throws Exception {
+		// read DefaultNotificationListener properties
+<span class="nc" id="L61">		super.configure(config);</span>
+
+<span class="nc" id="L63">		sender = new SocketProductSender();</span>
+<span class="nc" id="L64">		sender.configure(config);</span>
+<span class="nc" id="L65">	}</span>
+
+	/**
+	 * Call the sender shutdown method.
+	 */
+	public void shutdown() throws Exception {
+<span class="nc" id="L71">		sender.shutdown();</span>
+<span class="nc" id="L72">	}</span>
+
+	/**
+	 * Call the sender startup method.
+	 */
+	public void startup() throws Exception {
+<span class="nc" id="L78">		sender.startup();</span>
+<span class="nc" id="L79">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

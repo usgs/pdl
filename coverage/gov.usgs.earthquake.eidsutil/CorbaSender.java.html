@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CorbaSender.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.eidsutil</a> &gt; <span class="el_source">CorbaSender.java</span></div><h1>CorbaSender.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.eidsutil;
+
+import com.isti.quakewatch.server.qw_feeder.QWFeeder;
+import com.isti.quakewatch.server.qw_feeder.QWFeederHelper;
+
+import org.omg.CORBA.ORB;
+//import org.omg.CORBA.Object;
+import org.omg.CORBA.ORBPackage.InvalidName;
+import org.omg.PortableServer.POA;
+import org.omg.PortableServer.POAHelper;
+import org.omg.PortableServer.POAManager;
+import org.omg.PortableServer.POAManagerPackage.AdapterInactive;
+
+/**
+ * A &lt;code&gt;CorbaSender&lt;/code&gt; is essentially a client-side wrapper for the
+ * &lt;code&gt;QWFeeder&lt;/code&gt; IDL file specified by ISTI. This class is designed to
+ * provide simplified CORBA interaction with a QWServer (EIDS) machine. All the
+ * varied methods of sending messages are provided, however they are wrapped
+ * into a single method, namely, &lt;code&gt;sendMessage&lt;/code&gt;. See the method
+ * documentation for details.
+ *
+ * @since 0.0.1
+ * @author &lt;a href=&quot;mailto:emartinez@usgs.gov&quot;&gt;Eric Martinez&lt;/a&gt;
+ */
+public class CorbaSender {
+
+	//---------------------------------------------------------------------------
+	// Member Variables
+	//---------------------------------------------------------------------------
+
+	/** This is the URL used to obtain the underlying QWFeeder object. */
+<span class="nc" id="L32">	private String url = null;</span>
+
+	/**
+	 * This is the underlying &lt;code&gt;QWFeeder&lt;/code&gt; used to send the messages to
+	 * the server. The interface specification can be found in the
+	 * &lt;code&gt;QWFeeder.idl&lt;/code&gt; file from ISTI.
+	 */
+<span class="nc" id="L39">	private QWFeeder feeder = null;</span>
+
+<span class="nc" id="L41">	private ORB orb = null;</span>
+<span class="nc" id="L42">	private POA poa = null;</span>
+<span class="nc" id="L43">	private POAManager poaManager = null;</span>
+<span class="nc" id="L44">	private org.omg.CORBA.Object object = null;</span>
+
+	//---------------------------------------------------------------------------
+	// Constructors
+	//---------------------------------------------------------------------------
+
+	/**
+	 * Initializes the &lt;code&gt;CorbaSender&lt;/code&gt; such that it is ready to send a
+	 * message to the specified &lt;code&gt;host&lt;/code&gt; over the specified
+	 * &lt;code&gt;port&lt;/code&gt;. This uses the &lt;code&gt;QWFeeder&lt;/code&gt; idl specified by
+	 * ISTI as the underlying feeder. After instantiating a
+	 * &lt;code&gt;CorbaSender&lt;/code&gt; through this constructor, the instance is 100%
+	 * ready to use. One downside is one cannot reuse that instance to send
+	 * messages to another host; for such a feature one must instantiate a new
+	 * object.
+	 *
+	 * @param host The host machine (ip or cname) to which you want to send the
+	 * messages using this &lt;code&gt;CorbaSender&lt;/code&gt;.
+	 * @param port The port number to send messages to on the host.
+	 *
+	 * @throws InvalidName If the RootPOA is not aware of the type of object we 
+	 * request from it.
+	 * @throws AdapterInactive If the poaManager is not active.
+	 */
+	public CorbaSender(String host, String port) 
+<span class="nc" id="L69">			throws InvalidName, AdapterInactive {</span>
+
+		// Create the corbaloc url
+<span class="nc" id="L72">		url = &quot;corbaloc:iiop:1.2@&quot; + host + &quot;:&quot; + port + &quot;/QWFeeder&quot;;</span>
+
+		// Initialize the ORB
+<span class="nc" id="L75">		orb = ORB.init((new String[0]), null);</span>
+
+		// Get the Root POA
+<span class="nc" id="L78">		poa = POAHelper.narrow(orb.resolve_initial_references(&quot;RootPOA&quot;));</span>
+
+		// Activate the POAManager
+<span class="nc" id="L81">		poaManager = poa.the_POAManager();</span>
+<span class="nc" id="L82">		poaManager.activate();</span>
+
+		// Get the generic object reference from the orb
+<span class="nc" id="L85">		object = orb.string_to_object(url);</span>
+
+		// Narrow the generic object down to our a QWFeeder
+<span class="nc" id="L88">		feeder = QWFeederHelper.narrow(object);</span>
+
+<span class="nc" id="L90">	} // END: constructor CorbaSender</span>
+
+	public void destroy() {
+<span class="nc" id="L93">		try { feeder._release(); } catch (Exception ex) { /* ignore */ }</span>
+<span class="nc" id="L94">		try { object._release(); } catch (Exception ex) { /* ignore */ }</span>
+<span class="nc" id="L95">		try { orb.shutdown(true); } catch (Exception ex) { /* ignore */ }</span>
+<span class="nc" id="L96">		try { orb.destroy(); } catch (Exception ex) { /* ignore */ }</span>
+		
+<span class="nc" id="L98">		feeder = null;</span>
+<span class="nc" id="L99">		object = null;</span>
+<span class="nc" id="L100">		poaManager = null;</span>
+<span class="nc" id="L101">		poa = null;</span>
+<span class="nc" id="L102">		orb = null;</span>
+<span class="nc" id="L103">	}</span>
+
+	/**
+	 * Retrieve a QWFeeder object associated with this CorbaSender.
+	 * 
+	 * First checks if the object is &quot;non_existent&quot;, and if so re-narrows the object.
+	 * @return QWFeeder object, or null if unable to narrow.
+	 */
+	protected QWFeeder getFeeder() {
+<span class="nc bnc" id="L112" title="All 2 branches missed.">		if (feeder != null) {</span>
+			try {
+<span class="nc bnc" id="L114" title="All 2 branches missed.">				if (feeder._non_existent()) {</span>
+<span class="nc" id="L115">					feeder = null;</span>
+<span class="nc" id="L116">					object = null;</span>
+				}
+<span class="nc" id="L118">			} catch (org.omg.CORBA.OBJECT_NOT_EXIST e) {</span>
+				// feeder._non_existent throws the OBJECT_NOT_EXIST exception 
+				// instead of returning true...
+<span class="nc" id="L121">				feeder = null;</span>
+<span class="nc" id="L122">				object = null;</span>
+<span class="nc" id="L123">			}</span>
+		}
+
+<span class="nc bnc" id="L126" title="All 2 branches missed.">		if (feeder == null) {</span>
+			//recreate the object, must string_to_object AND narrow
+<span class="nc" id="L128">			object = orb.string_to_object(url);</span>
+<span class="nc" id="L129">			feeder = QWFeederHelper.narrow(object);</span>
+		}
+
+<span class="nc" id="L132">		return feeder;</span>
+	}
+
+	//---------------------------------------------------------------------------
+	// Static Methods
+	//---------------------------------------------------------------------------
+
+	/* None at this time. */
+
+	//---------------------------------------------------------------------------
+	// Public Methods
+	//---------------------------------------------------------------------------
+
+	/**
+	 * Sends a data event message. If the event data does not begin with a
+	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded 
+	 * with one. The &amp;ldquo;sendSourced...&amp;rdquo; methods are preferred because 
+	 * the feeder-source host name and message number are used for improved 
+	 * message tracking.
+	 *
+	 * @param message The data event message string.
+	 * @return &lt;code&gt;true&lt;/code&gt; after the message has been successfully stored
+	 * and processed; &lt;code&gt;false&lt;/code&gt; if an error occurred.
+	 */
+	public boolean sendMessage(String message) {
+<span class="nc" id="L157">		return getFeeder().sendMessage(message);</span>
+	}
+	
+	/**
+	 * Sends a data event message. If the event data does not begin with a
+	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded 
+	 * with one. The &amp;ldquo;sendSourced...&amp;rdquo; methods are preferred because 
+	 * the feeder-source host name and message number are used for improved 
+	 * message tracking.
+	 *
+	 * @param domain The domain name to use.
+	 * @param type The type name to use.
+	 * @param message The data event message string.
+	 *
+	 * @return &lt;code&gt;true&lt;/code&gt; after the message has been successfully stored
+	 * and processed; &lt;code&gt;false&lt;/code&gt; if an error occurred.
+	 */
+	public boolean sendMessage(String domain, String type, String message) {
+<span class="nc" id="L175">		return getFeeder().sendDomainTypeMessage(domain, type, message);</span>
+	}
+
+
+	/**
+	 * Sends a data event message. If the event data does not begin with a
+	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded 
+	 * with one. The &amp;ldquo;sendSourced...&amp;rdquo; methods are preferred because 
+	 * the feeder-source host name and message number are used for improved 
+	 * message tracking.
+	 *
+	 * @param domain The domain name to use.
+	 * @param type The type name to use.
+	 * @param name The event name to use.
+	 * @param message The data event message string.
+	 *
+	 * @return &lt;code&gt;true&lt;/code&gt; after the message has been successfully stored
+	 * and processed; &lt;code&gt;false&lt;/code&gt; if an error occurred.
+	 */
+	public boolean sendMessage(String domain, String type, String name,
+			String message) {
+<span class="nc" id="L196">		return getFeeder().sendDomainTypeNameMessage(domain, type, name, message);</span>
+	}
+	
+	/**
+	 * Sends a data event message. If the event data does not begin with a
+	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded
+	 * with one. The &amp;ldquo;sendSourced...&amp;rdquo; methods are preferred because
+	 * the feeder-source host name and message number are used for improved
+	 * message tracking.
+	 *
+	 * @param message The data event message string.
+	 * @param feederSourceHost The data-source host string for the message.
+	 * @param feederSrcHostMsgId the message-ID number from the data source
+	 * (positive value incremented after each message).
+	 *
+	 * @return &lt;code&gt;true&lt;/code&gt; after the message has been successfully stored
+	 * and processed; &lt;code&gt;false&lt;/code&gt; if an error occurred.
+	 */
+	public boolean sendMessage(String message, String feederSourceHost, 
+			long feederSrcHostMsgId) {
+<span class="nc" id="L216">		return getFeeder().sendSourcedMsg(message, feederSourceHost, </span>
+				feederSrcHostMsgId);
+	}
+
+	/**
+	 * Sends a data event message. If the event data does not begin with a
+	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded 
+	 * with one. The &amp;ldquo;sendSourced...&amp;rdquo; methods are preferred because 
+	 * the feeder-source host name and message number are used for improved 
+	 * message tracking.
+	 *
+	 * @param domain The domain name to use.
+	 * @param type The type name to use.
+	 * @param message The data event message string.
+	 * @param feederSourceHost The data-source host string for the message.
+	 * @param feederSrcHostMsgId The message-ID number from the data source
+	 * (positive value incremented after each message).
+	 *
+	 * @return &lt;code&gt;true&lt;/code&gt; after the message has been successfully stored
+	 * and processed; &lt;code&gt;false&lt;/code&gt; if an error occurred.
+	 */
+	public boolean sendMessage(String domain, String type, String message, 
+			String feederSourceHost, long feederSrcHostMsgId) {
+<span class="nc" id="L239">		return getFeeder().sendSourcedDomainTypeMsg(domain, type, message,</span>
+				feederSourceHost, feederSrcHostMsgId);
+	}
+
+	/**
+	 * Sends a data event message. If the event data does not begin with a
+	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded 
+	 * with one. The &amp;ldquo;sendSourced...&amp;rdquo; methods are preferred because 
+	 * the feeder-source host name and message number are used for improved 
+	 * message tracking.
+	 *
+	 * @param domain The domain name to use.
+	 * @param type The type name to use.
+	 * @param name The event name to use.
+	 * @param message The data event message string.
+	 * @param feederSourceHost The data-source host string for the message.
+	 * @param feederSrcHostMsgId The message-ID number from the data source
+	 * (positive value incremented after each message).
+	 *
+	 * @return &lt;code&gt;true&lt;/code&gt; after the message has been successfully stored
+	 * and processed; &lt;code&gt;false&lt;/code&gt; if an error occurred.
+	 */
+	public boolean sendMessage(String domain, String type, String name, 
+			String message, String feederSourceHost, long feederSrcHostMsgId) {
+<span class="nc" id="L263">		return getFeeder().sendSourcedDomainTypeNameMsg(domain, type, name, message,</span>
+				feederSourceHost, feederSrcHostMsgId);
+	}
+
+	//---------------------------------------------------------------------------
+	// Private Methods
+	//---------------------------------------------------------------------------
+
+	/* None at this time. */
+
+} // END: class CorbaSender
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FilterProductHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product.io</a> &gt; <span class="el_source">FilterProductHandler.java</span></div><h1>FilterProductHandler.java</h1><pre class="source lang-java linenums">/*
+ * FilterProductHandler
+ */
+package gov.usgs.earthquake.product.io;
+
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.ProductId;
+
+import java.net.URI;
+import java.net.URL;
+
+/**
+ * Filter calls to another ProductHandler.
+ * 
+ * By default, calls are passed directly on to the wrapped ProductOutput.
+ */
+public class FilterProductHandler implements ProductHandler {
+
+	/** The product output being filtered. */
+	private ProductHandler output;
+
+	/**
+	 * Create a new FilterProductHandler.
+	 * 
+	 * A ProductOutput should be set using setProductOutput before any calls to
+	 * other methods.
+	 */
+<span class="fc" id="L28">	public FilterProductHandler() {</span>
+<span class="fc" id="L29">	}</span>
+
+	/**
+	 * Create a new FilterProductHandler using and existing ProductOutput.
+	 * 
+	 * @param output
+	 *            the ProductOutput to wrap.
+	 */
+<span class="nc" id="L37">	public FilterProductHandler(final ProductHandler output) {</span>
+<span class="nc" id="L38">		setProductOutput(output);</span>
+<span class="nc" id="L39">	}</span>
+
+	/**
+	 * Set the wrapped ProductOutput.
+	 * 
+	 * @param output
+	 *            the ProductOutput being wrapped.
+	 */
+	public void setProductOutput(final ProductHandler output) {
+<span class="fc" id="L48">		this.output = output;</span>
+<span class="fc" id="L49">	}</span>
+
+	/**
+	 * Calls the wrapped ProductOutput onBeginProduct method.
+	 */
+	public void onBeginProduct(ProductId id, String status, URL trackerURL)
+			throws Exception {
+<span class="fc" id="L56">		output.onBeginProduct(id, status, trackerURL);</span>
+<span class="fc" id="L57">	}</span>
+
+	/**
+	 * Calls the wrapped ProductOutput onContent method.
+	 */
+	public void onContent(ProductId id, String path, Content content)
+			throws Exception {
+<span class="fc" id="L64">		output.onContent(id, path, content);</span>
+<span class="fc" id="L65">	}</span>
+
+	/**
+	 * Calls the wrapped ProductOutput onEndProduct method.
+	 */
+	public void onEndProduct(ProductId id) throws Exception {
+<span class="fc" id="L71">		output.onEndProduct(id);</span>
+<span class="fc" id="L72">	}</span>
+
+	/**
+	 * Calls the wrapped ProductOutput onLink method.
+	 */
+	public void onLink(ProductId id, String relation, URI href)
+			throws Exception {
+<span class="fc" id="L79">		output.onLink(id, relation, href);</span>
+<span class="fc" id="L80">	}</span>
+
+	/**
+	 * Calls the wrapped ProductOutput onProperty method.
+	 */
+	public void onProperty(ProductId id, String name, String value)
+			throws Exception {
+<span class="fc" id="L87">		output.onProperty(id, name, value);</span>
+<span class="fc" id="L88">	}</span>
+
+	/**
+	 * Calls the wrapped ProductOutput onSignature method.
+	 */
+	public void onSignature(ProductId id, String signature) throws Exception {
+<span class="fc" id="L94">		output.onSignature(id, signature);</span>
+<span class="fc" id="L95">	}</span>
+
+
+	/**
+	 * Free any resources associated with this source.
+	 */
+	@Override
+	public void close() {
+<span class="fc bfc" id="L103" title="All 2 branches covered.">		if (output != null) {</span>
+<span class="fc" id="L104">			output.close();</span>
+		}
+<span class="fc" id="L106">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

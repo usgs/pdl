@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EIDSClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.eidsutil</a> &gt; <span class="el_source">EIDSClient.java</span></div><h1>EIDSClient.java</h1><pre class="source lang-java linenums">/*
+ * EIDSClient
+ */
+package gov.usgs.earthquake.eidsutil;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Timer;
+import java.util.TimerTask;
+
+/**
+ * An EIDS client that is a java event source.
+ */
+public class EIDSClient implements EIDSListener {
+
+	/** Property name for eids server host address. */
+	public static final String EIDS_SERVER_HOST_PROPERTY = &quot;serverHost&quot;;
+
+	/** Property name for eids server port. */
+	public static final String EIDS_SERVER_PORT = &quot;serverPort&quot;;
+
+	/** Property name for eids server alternate servers list. */
+	public static final String EIDS_ALTERNATE_SERVERS = &quot;alternateServers&quot;;
+
+	/** Property name for objects to load and add as EIDSListeners. */
+	public static final String EIDS_LISTENERS = &quot;listeners&quot;;
+
+	/** Version string for program. */
+	public static final String PROGRAM_VERSION = &quot;0.2&quot;;
+
+	/** Name string for program. */
+	public static final String PROGRAM_NAME = &quot;EIDSClient&quot;;
+
+	/** Default server host. */
+	public static final String DEFAULT_SERVER_HOST = &quot;eids1.cr.usgs.gov&quot;;
+
+	/** Default server port number. */
+<span class="fc" id="L39">	public static final Integer DEFAULT_SERVER_PORT = 39977;</span>
+
+	/** Default maxServerEventAgeDays parameter. */
+<span class="fc" id="L42">	public static final Double DEFAULT_MAX_SERVER_EVENT_AGE_DAYS = 3.0;</span>
+
+	/** Default Tracking filename. */
+	public static final String DEFAULT_TRACKING_FILE_NAME = &quot;EIDSClient_tracking.dat&quot;;
+
+	/** Default client restart interval */
+<span class="fc" id="L48">	public static final Long DEFAULT_CLIENT_RESTART_INTERVAL = 86400000L;</span>
+
+	/** Server host name. */
+	private String serverHost;
+
+	/** Server port number. */
+	private Integer serverPort;
+
+	/** Comma delimited list of host:port s. */
+	private String alternateServersList;
+
+	/** The decimal age in days. */
+	private Double maxServerEventAgeDays;
+
+	/** Tracking file for EIDS client. */
+	private String trackingFileName;
+
+	/** The actual client this object wraps. */
+	private QWEmbeddedClient client;
+
+	/** Listeners to notify when a message is received. */
+<span class="fc" id="L69">	private List&lt;EIDSListener&gt; listeners = new LinkedList&lt;EIDSListener&gt;();</span>
+
+	/** A timer used to periodically restart the client. */
+	private Timer clientRestartTimer;
+
+	/** How often to periodically restart the client, in milliseconds. */
+	private Long clientRestartInterval;
+
+	/** Whether we are debugging or not. Affects log level. */
+	private boolean debug;
+
+	public EIDSClient() {
+<span class="nc" id="L81">		this(DEFAULT_SERVER_HOST, DEFAULT_SERVER_PORT);</span>
+<span class="nc" id="L82">	}</span>
+
+	/**
+	 * Construct an EIDSClient using only server host and port.
+	 * 
+	 * Calls other constructor with null values for other parameters.
+	 * 
+	 * @param serverHost
+	 * @param serverPort
+	 */
+	public EIDSClient(final String serverHost, final Integer serverPort) {
+<span class="fc" id="L93">		this(serverHost, serverPort, &quot;&quot;);</span>
+<span class="fc" id="L94">	}</span>
+
+	/**
+	 * Construct an EIDSClient using serverHost, serverPort, and
+	 * alternateServersList.
+	 * 
+	 * @param serverHost
+	 * @param serverPort
+	 * @param alternateServersList
+	 */
+	public EIDSClient(final String serverHost, final Integer serverPort,
+			final String alternateServersList) {
+<span class="fc" id="L106">		this(serverHost, serverPort, alternateServersList,</span>
+				DEFAULT_MAX_SERVER_EVENT_AGE_DAYS, DEFAULT_TRACKING_FILE_NAME,
+				DEFAULT_CLIENT_RESTART_INTERVAL);
+<span class="fc" id="L109">	}</span>
+
+	/**
+	 * Constructor with all options.
+	 * 
+	 * @param serverHost
+	 *            the eids server host or ip address.
+	 * @param serverPort
+	 *            the eids server port.
+	 * @param alternateServersList
+	 *            a comma delimited list of host:port that are used when unable
+	 *            to connect to the primary serverHost and serverPort.
+	 * @param maxServerEventAgeDays
+	 *            number of days worth of messages to retrieve on first connect.
+	 * @param trackingFileName
+	 *            location where tracking file is stored. This file is used to
+	 *            track which messages have been received.
+	 */
+	public EIDSClient(final String serverHost, final Integer serverPort,
+			final String alternateServersList,
+			final Double maxServerEventAgeDays, final String trackingFileName,
+<span class="fc" id="L130">			final Long clientRestartInterval) {</span>
+<span class="fc" id="L131">		this.serverHost = serverHost;</span>
+<span class="fc" id="L132">		this.serverPort = serverPort;</span>
+<span class="fc" id="L133">		this.alternateServersList = alternateServersList;</span>
+<span class="fc" id="L134">		this.maxServerEventAgeDays = maxServerEventAgeDays;</span>
+<span class="fc" id="L135">		this.trackingFileName = trackingFileName;</span>
+<span class="fc" id="L136">		this.clientRestartInterval = clientRestartInterval;</span>
+<span class="fc" id="L137">	}</span>
+
+	/**
+	 * Runs the client.
+	 * 
+	 * Any listeners should be added before calling this method.
+	 */
+	public void startup() {
+		// were we already running?
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">		if (client != null) {</span>
+<span class="nc" id="L147">			client.shutdown();</span>
+<span class="nc" id="L148">			client = null;</span>
+		}
+
+		// start the client
+<span class="fc" id="L152">		client = new QWEmbeddedClient(serverHost, serverPort,</span>
+				alternateServersList, maxServerEventAgeDays, trackingFileName);
+<span class="fc" id="L154">		client.addListener(this);</span>
+
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">		if (debug) {</span>
+<span class="nc" id="L157">			client.setConsoleLogLevel(&quot;Debug5&quot;);</span>
+		}
+
+<span class="fc" id="L160">		client.startup();</span>
+
+		// if this is the first time through
+<span class="pc bpc" id="L163" title="2 of 4 branches missed.">		if (clientRestartTimer == null &amp;&amp; clientRestartInterval &gt; 0) {</span>
+<span class="fc" id="L164">			clientRestartTimer = new Timer();</span>
+<span class="fc" id="L165">			clientRestartTimer.schedule(</span>
+<span class="fc" id="L166">					new TimerTask() {</span>
+						public void run() {
+<span class="nc" id="L168">							reinitConnection();</span>
+<span class="nc" id="L169">						}</span>
+					},
+					// before first execution
+<span class="fc" id="L172">					clientRestartInterval,</span>
+					// between subsequent executions
+<span class="fc" id="L174">					clientRestartInterval);</span>
+		}
+<span class="fc" id="L176">	}</span>
+
+	/**
+	 * Shuts down a running client.
+	 * 
+	 * Does not call system.exit.
+	 */
+	public void shutdown() {
+<span class="pc bpc" id="L184" title="1 of 2 branches missed.">		if (clientRestartTimer != null) {</span>
+<span class="fc" id="L185">			clientRestartTimer.cancel();</span>
+		}
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">		if (client != null) {</span>
+<span class="fc" id="L188">			client.shutdown();</span>
+<span class="fc" id="L189">			client = null;</span>
+		}
+<span class="fc" id="L191">	}</span>
+
+	/**
+	 * Add a listener.
+	 * 
+	 * @param listener
+	 *            the listener to add.
+	 */
+	public synchronized void addListener(final EIDSListener listener) {
+<span class="fc" id="L200">		this.listeners.add(listener);</span>
+<span class="fc" id="L201">	}</span>
+
+	/**
+	 * Remove a listener.
+	 * 
+	 * @param listener
+	 *            the listener to remove.
+	 */
+	public synchronized void removeListener(final EIDSListener listener) {
+<span class="nc" id="L210">		this.listeners.remove(listener);</span>
+<span class="nc" id="L211">	}</span>
+
+	public void onEIDSMessage(EIDSMessageEvent event) {
+		// iterate over a copy of the listeners list
+<span class="fc" id="L215">		Iterator&lt;EIDSListener&gt; iter = new LinkedList&lt;EIDSListener&gt;(listeners)</span>
+<span class="fc" id="L216">				.iterator();</span>
+<span class="fc bfc" id="L217" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L218">			iter.next().onEIDSMessage(event);</span>
+		}
+<span class="fc" id="L220">	}</span>
+
+	/**
+	 * @return the serverHost
+	 */
+	public String getServerHost() {
+<span class="nc" id="L226">		return serverHost;</span>
+	}
+
+	/**
+	 * @param serverHost
+	 *            the serverHost to set
+	 */
+	public void setServerHost(String serverHost) {
+<span class="nc" id="L234">		this.serverHost = serverHost;</span>
+<span class="nc" id="L235">	}</span>
+
+	/**
+	 * @return the serverPort
+	 */
+	public Integer getServerPort() {
+<span class="nc" id="L241">		return serverPort;</span>
+	}
+
+	/**
+	 * @param serverPort
+	 *            the serverPort to set
+	 */
+	public void setServerPort(Integer serverPort) {
+<span class="nc" id="L249">		this.serverPort = serverPort;</span>
+<span class="nc" id="L250">	}</span>
+
+	/**
+	 * @return the alternateServersList
+	 */
+	public String getAlternateServersList() {
+<span class="nc" id="L256">		return alternateServersList;</span>
+	}
+
+	/**
+	 * @param alternateServersList
+	 *            the alternateServersList to set
+	 */
+	public void setAlternateServersList(String alternateServersList) {
+<span class="nc" id="L264">		this.alternateServersList = alternateServersList;</span>
+<span class="nc" id="L265">	}</span>
+
+	/**
+	 * @return the maxServerEventAgeDays
+	 */
+	public Double getMaxServerEventAgeDays() {
+<span class="nc" id="L271">		return maxServerEventAgeDays;</span>
+	}
+
+	/**
+	 * @param maxServerEventAgeDays
+	 *            the maxServerEventAgeDays to set
+	 */
+	public void setMaxServerEventAgeDays(Double maxServerEventAgeDays) {
+<span class="nc" id="L279">		this.maxServerEventAgeDays = maxServerEventAgeDays;</span>
+<span class="nc" id="L280">	}</span>
+
+	/**
+	 * @return the trackingFileName
+	 */
+	public String getTrackingFileName() {
+<span class="nc" id="L286">		return trackingFileName;</span>
+	}
+
+	/**
+	 * @param trackingFileName
+	 *            the trackingFileName to set
+	 */
+	public void setTrackingFileName(String trackingFileName) {
+<span class="nc" id="L294">		this.trackingFileName = trackingFileName;</span>
+<span class="nc" id="L295">	}</span>
+
+	public Long getClientRestartInterval() {
+<span class="nc" id="L298">		return clientRestartInterval;</span>
+	}
+
+	public void setClientRestartInterval(Long clientRestartInterval) {
+<span class="nc" id="L302">		this.clientRestartInterval = clientRestartInterval;</span>
+<span class="nc" id="L303">	}</span>
+
+	public void setDebug(boolean debug) {
+<span class="nc" id="L306">		this.debug = debug;</span>
+<span class="nc" id="L307">	}</span>
+
+	public boolean isDebug() {
+<span class="nc" id="L310">		return debug;</span>
+	}
+
+	public boolean reinitConnection() {
+<span class="nc bnc" id="L314" title="All 2 branches missed.">		if (client != null) {</span>
+<span class="nc" id="L315">			return client.getConnManagerObj().reinitConnection();</span>
+		}
+<span class="nc" id="L317">		return false;</span>
+	}
+
+	/**
+	 * A method to test the EIDSClient.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
+	public static void main(final String[] args) throws Exception {
+<span class="nc" id="L327">		EIDSListener listener = new EIDSListener() {</span>
+			public void onEIDSMessage(EIDSMessageEvent event) {
+<span class="nc" id="L329">				System.err.println(event.getServerHost() + &quot; &quot;</span>
+<span class="nc" id="L330">						+ event.getServerSequence());</span>
+<span class="nc" id="L331">				System.err.println(event.getMessage());</span>
+<span class="nc" id="L332">			}</span>
+		};
+
+<span class="nc" id="L335">		String host = &quot;eids1.cr.usgs.gov&quot;;</span>
+<span class="nc" id="L336">		int port = 39977;</span>
+<span class="nc" id="L337">		boolean debug = false;</span>
+
+<span class="nc bnc" id="L339" title="All 2 branches missed.">		for (String arg : args) {</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">			if (arg.startsWith(&quot;--host=&quot;)) {</span>
+<span class="nc" id="L341">				host = arg.replace(&quot;--host=&quot;, &quot;&quot;);</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">			} else if (arg.startsWith(&quot;--port=&quot;)) {</span>
+<span class="nc" id="L343">				port = Integer.parseInt(arg.replace(&quot;--port=&quot;, &quot;&quot;));</span>
+<span class="nc bnc" id="L344" title="All 2 branches missed.">			} else if (arg.equals(&quot;--debug&quot;)) {</span>
+<span class="nc" id="L345">				debug = true;</span>
+			}
+		}
+
+<span class="nc" id="L349">		EIDSClient client = new EIDSClient(host, port);</span>
+<span class="nc" id="L350">		client.setClientRestartInterval(10000L);</span>
+<span class="nc" id="L351">		client.setDebug(debug);</span>
+<span class="nc" id="L352">		client.addListener(listener);</span>
+<span class="nc" id="L353">		client.startup();</span>
+<span class="nc" id="L354">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

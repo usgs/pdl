@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IOUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product.io</a> &gt; <span class="el_source">IOUtil.java</span></div><h1>IOUtil.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.product.io;
+
+import gov.usgs.util.StreamUtils;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.InflaterInputStream;
+import java.util.zip.ZipException;
+
+/**
+ * Class with main method for converting from one product format to another.
+ */
+<span class="nc" id="L15">public class IOUtil {</span>
+
+	public static final String INFILE_ARGUMENT = &quot;--infile=&quot;;
+	public static final String INFORMAT_ARGUMENT = &quot;--informat=&quot;;
+
+	public static final String OUTFILE_ARGUMENT = &quot;--outfile=&quot;;
+	public static final String OUTFORMAT_ARGUMENT = &quot;--outformat=&quot;;
+
+	public static final String ZIP_FORMAT = &quot;zip&quot;;
+	public static final String XML_FORMAT = &quot;xml&quot;;
+	public static final String DIRECTORY_FORMAT = &quot;directory&quot;;
+	public static final String BINARY_FORMAT = &quot;binary&quot;;
+
+	public static ProductHandler getProductHandler(final String outformat,
+			final File outfile) throws IOException {
+<span class="nc" id="L30">		ProductHandler out = null;</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">		if (outformat.equals(XML_FORMAT)) {</span>
+<span class="nc" id="L32">			out = new XmlProductHandler(StreamUtils.getOutputStream(outfile));</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">		} else if (outformat.equals(ZIP_FORMAT)) {</span>
+<span class="nc" id="L34">			out = new ZipProductHandler(StreamUtils.getOutputStream(outfile));</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">		} else if (outformat.equals(DIRECTORY_FORMAT)) {</span>
+<span class="nc" id="L36">			out = new DirectoryProductHandler(outfile);</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">		} else if (outformat.equals(BINARY_FORMAT)) {</span>
+<span class="nc" id="L38">			out = new BinaryProductHandler(StreamUtils.getOutputStream(outfile));</span>
+		} else {
+<span class="nc" id="L40">			throw new IllegalArgumentException(&quot;unknown product format '&quot;</span>
+					+ outformat + &quot;'&quot;);
+		}
+<span class="nc" id="L43">		return out;</span>
+	}
+
+	public static ProductSource getProductSource(final String informat,
+			final File infile) throws IllegalArgumentException, IOException {
+<span class="nc" id="L48">		ProductSource in = null;</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">		if (informat.equals(XML_FORMAT)) {</span>
+<span class="nc" id="L50">			in = new XmlProductSource(StreamUtils.getInputStream(infile));</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">		} else if (informat.equals(ZIP_FORMAT)) {</span>
+<span class="nc" id="L52">			in = new ZipProductSource(infile);</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">		} else if (informat.equals(DIRECTORY_FORMAT)) {</span>
+<span class="nc" id="L54">			in = new DirectoryProductSource(infile);</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">		} else if (informat.equals(BINARY_FORMAT)) {</span>
+<span class="nc" id="L56">			in = new BinaryProductSource(StreamUtils.getInputStream(infile));</span>
+		} else {
+<span class="nc" id="L58">			throw new IllegalArgumentException(&quot;unknown product format '&quot;</span>
+					+ informat + &quot;'&quot;);
+		}
+<span class="nc" id="L61">		return in;</span>
+	}
+
+	/**
+	 * Auto detect an Xml or Binary product source, that is optionally deflated.
+	 * 
+	 * @param in
+	 *            input stream containing optionally deflated xml or binary
+	 *            product stream.
+	 * @return ProductSource object.
+	 * @throws IOException
+	 *             if neither binary or xml product source is in stream.
+	 */
+	public static ProductSource autoDetectProductSource(final InputStream in)
+			throws IOException {
+<span class="fc" id="L76">		BufferedInputStream bufferedIn = autoDetectDeflate(in);</span>
+<span class="fc" id="L77">		int ch = -1;</span>
+
+<span class="fc" id="L79">		bufferedIn.mark(1024);</span>
+		// peek at first character in stream
+<span class="fc" id="L81">		ch = bufferedIn.read();</span>
+<span class="fc" id="L82">		bufferedIn.reset();</span>
+
+<span class="fc" id="L84">		ProductSource productSource = null;</span>
+		// determine product format based on first character in stream
+<span class="fc bfc" id="L86" title="All 2 branches covered.">		if (((char) ch) == '&lt;') {</span>
+			// xml format
+<span class="fc" id="L88">			productSource = new XmlProductSource(bufferedIn);</span>
+		} else {
+			// binary format
+<span class="fc" id="L91">			productSource = new BinaryProductSource(bufferedIn);</span>
+		}
+
+<span class="fc" id="L94">		return productSource;</span>
+	}
+
+	/**
+	 * Auto detect an optionally deflated stream.
+	 * 
+	 * @param in
+	 *            input stream containing optionally deflated xml or binary
+	 *            product stream.
+	 * @return ProductSource object.
+	 * @throws IOException
+	 *             if neither binary or xml product source is in stream.
+	 */
+	public static BufferedInputStream autoDetectDeflate(final InputStream in)
+			throws IOException {
+		// stream used to read product
+<span class="fc" id="L110">		BufferedInputStream bufferedIn = new BufferedInputStream(in);</span>
+
+		// detect whether incoming stream is compressed
+<span class="fc" id="L113">		bufferedIn.mark(1024);</span>
+		try {
+<span class="fc" id="L115">			InflaterInputStream iis = new InflaterInputStream(bufferedIn);</span>
+<span class="fc" id="L116">			iis.read();</span>
+			// must be a deflated stream, reset for reading
+<span class="fc" id="L118">			bufferedIn.reset();</span>
+<span class="fc" id="L119">			bufferedIn = new BufferedInputStream(new InflaterInputStream(bufferedIn));</span>
+<span class="fc" id="L120">		} catch (ZipException ze) {</span>
+			// not a deflated stream
+<span class="fc" id="L122">			bufferedIn.reset();</span>
+<span class="fc" id="L123">		}</span>
+
+<span class="fc" id="L125">		return bufferedIn;</span>
+	}
+
+	public static void main(final String[] args) throws Exception {
+<span class="nc" id="L129">		File infile = null;</span>
+<span class="nc" id="L130">		File outfile = null;</span>
+<span class="nc" id="L131">		String informat = null;</span>
+<span class="nc" id="L132">		String outformat = null;</span>
+
+		// parse arguments
+<span class="nc bnc" id="L135" title="All 2 branches missed.">		for (String arg : args) {</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">			if (arg.startsWith(INFILE_ARGUMENT)) {</span>
+<span class="nc" id="L137">				infile = new File(arg.replace(INFILE_ARGUMENT, &quot;&quot;));</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">			} else if (arg.startsWith(OUTFILE_ARGUMENT)) {</span>
+<span class="nc" id="L139">				outfile = new File(arg.replace(OUTFILE_ARGUMENT, &quot;&quot;));</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">			} else if (arg.startsWith(INFORMAT_ARGUMENT)) {</span>
+<span class="nc" id="L141">				informat = arg.replace(INFORMAT_ARGUMENT, &quot;&quot;);</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">			} else if (arg.startsWith(OUTFORMAT_ARGUMENT)) {</span>
+<span class="nc" id="L143">				outformat = arg.replace(OUTFORMAT_ARGUMENT, &quot;&quot;);</span>
+			}
+		}
+
+<span class="nc bnc" id="L147" title="All 4 branches missed.">		if (infile == null || informat == null) {</span>
+<span class="nc" id="L148">			printUsage();</span>
+<span class="nc" id="L149">			System.exit(1);</span>
+		}
+
+<span class="nc bnc" id="L152" title="All 4 branches missed.">		if (outfile == null || outformat == null) {</span>
+<span class="nc" id="L153">			printUsage();</span>
+<span class="nc" id="L154">			System.exit(1);</span>
+		}
+
+<span class="nc" id="L157">		ProductSource in = getProductSource(informat, infile);</span>
+<span class="nc" id="L158">		ProductHandler out = getProductHandler(outformat, outfile);</span>
+<span class="nc" id="L159">		in.streamTo(out);</span>
+<span class="nc" id="L160">	}</span>
+
+	public static void printUsage() {
+<span class="nc" id="L163">		System.err</span>
+<span class="nc" id="L164">				.println(&quot;IOUtil --infile=FILE --informat=(xml|directory|zip|binary) --outfile=FILE --outformat=(xml|directory|zip|binary)&quot;);</span>
+<span class="nc" id="L165">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

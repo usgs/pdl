@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Receiving Products</title>
+<link rel="stylesheet" href="userguide.css" />
+</head>
+
+<body>
+<h1>Receiving Products</h1>
+<p><a href="../index.html#documentation">&laquo; Back to User Guide</a></p>
+
+<h2>Navigation</h2>
+<ul>
+	<li><a href="indexer.html">Indexer</a></li>
+	<li><a href="eidsoutputwedge.html">EIDS OutputWedge</a></li>
+
+</ul>
+
+<h2>Configuring a Listener</h2>
+
+<p>To configure an external notification listener, or an external indexer
+listener, follow the steps below:</p>
+
+<ol>
+<li>Open the config.ini file in the bin subdirectory of your ProductClient
+installation path. (bin/config.ini)</li>
+<li>Add a new section with a unique name, placing the section name in
+square braces "[]". By convention, the suffix "_exec" is added for a
+section defining an external listener.</li>
+<li>Under this section you should first define the type of listener
+interface that is expected by the external process, either
+gov.usgs.earthquake.distribution.ExternalNotificationListener or
+gov.usgs.earthquake.distribution.ExternalIndexerListener</li>
+<li>
+	<p>You should then define all of the configuration arguments for
+the type of listener selected.</p>
+	<p>The storage argument for listeners should be set to a section name
+	in this config.ini that sets the storage parameters, not specifically
+	to a storage type itself.</p>
+	<p>Note: Listeners cannot share the same storage configuration.
+</li>
+<li>To configure a new storage object for a listener, create a new
+section of the config.ini file. By convention, the suffix "_storage" is
+added for a section defining a storage object. The storage section
+definition for external listeners should always have a type value of
+gov.usgs.earthquake.distribution.FileProductStorage, and the path should
+be the absolute path to the desired root storage directory for the
+received products.</li>
+<li>When both sections are complete, the section name for the listener
+should be added to the listeners value in the config.ini file, separated
+by commas.</li>
+<li>After editing the config.ini file, restart the ProductClient to load
+the new configuration settings.</li>
+</ol>
+
+<h3>Config Example</h3>
+<pre>
+listeners = losspager_exec
+
+[losspager_exec]
+type=gov.usgs.earthquake.distribution.ExternalNotificationListener
+command=/home/www/apps/LossPager/indexer/lossindex.py
+storage=losspager_storage
+includeTypes=losspager
+
+[losspager_storage]
+type=gov.usgs.earthquake.distribution.FileProductStorage
+directory=/home/www/data/LossPager/products
+</pre>
+
+<h3>ExternalNotificationListener Arguments</h3>
+
+<h4>Configuration Arguments</h4>
+<dl>
+<dt>command</dt>
+<dd>(Required) The command to execute. This must be an executable command and
+may include arguments. Any product specific arguments are appended at the end
+of command.</dd>
+
+<dt>storage</dt>
+<dd>(Required) A directory used to store all products. Each product is
+extracted into a separate directory within this directory and is referenced
+by the --directory=/path/to/directory argument when command is executed.</dd>
+
+<dt>timeout</dt>
+<dd>(Optional, Default = 100000 = 100 seconds) The command timeout in
+milliseconds. If timeout is less than zero, the process will be allowed to
+run indefinitely.</dd>
+
+<dt>includeTypes</dt>
+<dd>(Optional) This should be a comma-separated list of product types to
+specifically use to trigger this command. Product types not included in
+this list will not be sent to this listener. If this is not defined, the
+listener will receive all products not specifically excluded with the
+configuration below.</dd>
+
+<dt>excludeTypes</dt>
+<dd>(Optional) this should be a comma-separated list of product types that
+specifically should not be sent to this listener. Product types included in
+this list will not be sent to this listener.</dd>
+</dl>
+
+<h4>Outgoing Arguments</h4>
+<dl>
+<dt>--directory=[/path/to/file]</dt>
+<dd>An absolute path to where product data is stored related to this
+notification.</dd>
+
+<dt>--type=[type]</dt>
+<dd>The type of product associated with this notification.</dd>
+
+<dt>--code=[code]</dt>
+<dd>The product code, without source network, for the product associated
+with this notification.</dd>
+
+<dt>--source=[source]</dt>
+<dd>The source network for the product associated with this notification.</dd>
+
+<dt>--updateTime=[time]</dt>
+<dd>The update time of the product associated with this notification in
+standard XML date format. (e.g. 2000-01-01T00:00:00Z)</dd>
+
+<dt>--status=[status]</dt>
+<dd>The status of the product related to this notification. It can be any of
+the following:
+	<dl>
+	<dt>UPDATE</dt>
+	<dd>The product has been created or updates an existing product.</dd>
+	
+	<dt>DELETE</dt>
+	<dd>The product has been marked to be deleted.</dd>
+	</dl>
+</dd>
+
+<dt>--delete</dt>
+<dd>(Optional) This argument will appear only when the value
+of the --status argument is "DELETE".</dd>
+
+<dt>--trackerURL=[url]</dt>
+<dd>(Optional) The location for the tracker for this product
+in product distribution.</dd>
+
+<dt>"--property-[name]=[value]"</dt>
+<dd>(Optional) A series of these arguments will be appended,
+one for each defined property in the summary of this product.</dd>
+
+<dt>"--link-[relation]=[value]"</dt>
+<dd>(Optional) A series of these arguments will be appended,
+one for each defined link in the summary of this product.</dd>
+
+<dt>--content</dt>
+<dd>(Optional) Indicates that non-file content will be sent
+to the command over its stdin.</dd>
+
+<dt>--contentType=[type]</dt>
+<dd>(Optional) Indicates the MIME type of the content that
+will be sent over stdin. Will always appear when the --content argument
+appears.</dd>
+
+<dt>--signature=[signature]</dt>
+<dd>(Optional) The signature key of the product creator, if
+it was provided.</dd>
+</dl>
+
+<h3>ExternalIndexerListener Arguments</h3>
+All arguments for the ExternalNotificationListener are used and included with
+the following additional arguments.
+
+<dl>
+<dt>processDuplicateProducts</dt>
+<dd>(Optional, default=false) Will process duplicate products if the value
+is "true".</dd>
+<dd>processPreferredOnly</dd>
+<dd>(Optional, default=false) Will process only the preferred product of
+this type for a given event at the time notification is received if the value
+is "true".</dd>
+</dl>
+
+<h4>Outgoing Arguments</h4>
+<dl>
+<dt>--action=[action]</dt>
+<dd>The change related to this indexer event. It may be any one of the
+following values:
+	<dl>
+	<dt>EVENT_ADDED</dt>
+	<dd>A new event has been added to the index.</dd>
+	
+	<dt>EVENT_UPDATED</dt>
+	<dd>The indexed event has been updated.</dd>
+	
+	<dt>EVENT_DELETED</dt>
+	<dd>The indexed event has been deleted.</dd>
+	
+	<dt>EVENT_ARCHIVED</dt>
+	<dd>The indexed event has been archived.</dd>
+	
+	<dt>PRODUCT_ADDED</dt>
+	<dd>A new product was added that is not currently associated to an
+	event.</dd>
+	
+	<dt>PRODUCT_UPDATED</dt>
+	<dd>A product that is not currently associated to an event has been
+	updated.</dd>
+	
+	<dt>PRODUCT_DELETED</dt>
+	<dd>A product that is not currently associated to an event has been
+	deleted.</dd>
+	
+	<dt>PRODUCT_ARCHIVED</dt>
+	<dd>A product that is not currently associated to an event has been
+	archived.</dd>
+	</dl>
+</dd>
+<dt>--eventids=[ids]</dt>
+<dd>(Optional) The known event IDs associated with the indexer event. These
+will include the event IDs separated by commas. This argument will not appear
+on a product not associated to an event.</dd>
+<dt>--preferred-eventid=[id]</dt>
+<dd>(Optional) The preferred event ID associated with this indexer event. This
+will be the event source network followed by the source's assigned code. This
+argument will not appear on a product not associated to an event.</dd>
+<dt>--preferred-magnitude=[magnitude]</dt>
+<dd>(Optional) The preferred magnitude associated with the event received. This
+argument will not appear on a product not associated to an event.</dd>
+<dt>--preferred-longitude=[longitude]</dt>
+<dd>(Optional) The preferred longitude associated with the event received. This
+argument will not appear on a product not associated to an event.</dd>
+<dt>--preferred-latitude=[latitude]</dt>
+<dd>(Optional) The preferred latitude associated with the event received. This
+argument will not appear on a product not associated to an event.</dd>
+<dt>--preferred-depth=[depth]</dt>
+<dd>(Optional) The preferred depth associated with the event received. This
+argument will not appear on a product not associated to an event.</dd>
+<dt>--preferred-eventtime=[time]</dt>
+<dd>(Optional) The preferred origin time associated with the event received. This
+argument will not appear on a product not associated to an event.</dd>
+</dl>
+</body>
+</html>
