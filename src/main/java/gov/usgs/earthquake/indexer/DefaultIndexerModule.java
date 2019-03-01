@@ -4,16 +4,12 @@
 package gov.usgs.earthquake.indexer;
 
 import gov.usgs.earthquake.distribution.SignatureVerifier;
+import gov.usgs.earthquake.geoserve.ANSSRegionsFactory;
 import gov.usgs.earthquake.product.Product;
-import gov.usgs.earthquake.qdm.RegionsHandler;
 import gov.usgs.earthquake.qdm.Point;
 import gov.usgs.earthquake.qdm.Regions;
-import gov.usgs.util.StreamUtils;
 
-import java.io.File;
-import java.io.InputStream;
 import java.math.BigDecimal;
-import java.net.URL;
 import java.util.logging.Logger;
 
 
@@ -30,8 +26,6 @@ public class DefaultIndexerModule implements IndexerModule {
 	private static final Logger LOGGER = Logger
 			.getLogger(DefaultIndexerModule.class.getName());
 
-	public static final String REGIONS_XML = "etc/config/regions.xml";
-
 	/** Initial preferred weight. */
 	public static final long DEFAULT_PREFERRED_WEIGHT = 1;
 
@@ -43,41 +37,6 @@ public class DefaultIndexerModule implements IndexerModule {
 
 	/** Weight added when product refers to an authoritative event. */
 	public static final long AUTHORITATIVE_EVENT_WEIGHT = 50;
-
-	/** ANSS Authoritative Regions. */
-	public static Regions REGIONS = null;
-	static {
-
-		InputStream in;
-		try {
-			// first try loading out of the jar (etc/regions.xml)
-			URL regionsXmlURL = DefaultIndexerModule.class.getClassLoader()
-					.getResource(REGIONS_XML);
-			in = StreamUtils.getInputStream(regionsXmlURL);
-			try {
-				RegionsHandler regionsHandler = new RegionsHandler();
-				regionsHandler.parse(in);
-				REGIONS = regionsHandler.regions;
-			} finally {
-				StreamUtils.closeStream(in);
-			}
-		} catch (Exception e) {
-			try {
-				// now try the file system (etc/regions.xml)
-				in = StreamUtils.getInputStream(new File(REGIONS_XML));
-				try {
-					RegionsHandler regionsHandler = new RegionsHandler();
-					regionsHandler.parse(in);
-					REGIONS = regionsHandler.regions;
-				} finally {
-					StreamUtils.closeStream(in);
-				}
-			} catch (Exception e2) {
-				// now try regions.xml
-				REGIONS = new Regions();
-			}
-		}
-	}
 
 	/** Signature verifier, configured by indexer. */
 	private SignatureVerifier signatureVerifier = new SignatureVerifier();
@@ -125,6 +84,7 @@ public class DefaultIndexerModule implements IndexerModule {
 	 * @return the absolute preferred weight.
 	 */
 	protected long getPreferredWeight(final ProductSummary summary) {
+		Regions regions = ANSSRegionsFactory.getFactory().getRegions();
 		long preferredWeight = DEFAULT_PREFERRED_WEIGHT;
 
 		String source = summary.getId().getSource();
@@ -139,11 +99,11 @@ public class DefaultIndexerModule implements IndexerModule {
 
 		// authoritative check
 		if (location != null) {
-			if (REGIONS.isAuthor(source, location)) {
+			if (regions.isAuthor(source, location)) {
 				// based on product source, who authored this product.
 				preferredWeight += AUTHORITATIVE_WEIGHT;
 			}
-			if (eventSource != null && REGIONS.isAuthor(eventSource, location)) {
+			if (eventSource != null && regions.isAuthor(eventSource, location)) {
 				// based on event source, which event this product is about
 				preferredWeight += AUTHORITATIVE_EVENT_WEIGHT;
 			}
