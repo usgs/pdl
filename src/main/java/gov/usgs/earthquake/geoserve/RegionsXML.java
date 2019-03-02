@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.TreeSet;
 
-import gov.usgs.earthquake.geoserve.GeoserveLayersService;
 import gov.usgs.earthquake.qdm.Point;
 import gov.usgs.earthquake.qdm.Region;
 import gov.usgs.earthquake.qdm.Regions;

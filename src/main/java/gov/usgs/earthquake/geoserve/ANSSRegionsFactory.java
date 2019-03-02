@@ -27,8 +27,41 @@ import gov.usgs.util.XmlUtils;
  */
 public class ANSSRegionsFactory {
 
+    // logging object
+    public static final Logger LOGGER = Logger.getLogger(ANSSRegionsFactory.class.getName());
+
+    // milliseconds per day
+    public static final long MILLISECONDS_PER_DAY = 86400000L;
+
+    // path to write regions.json
+    public static final String REGIONS_JSON = "regions.json";
+
     // global factory object
     private static ANSSRegionsFactory SINGLETON;
+
+    // service used to load regions
+    private GeoserveLayersService geoserveLayersService;
+
+    // the current regions object.
+    private Regions regions;
+
+    // timer used to auto fetch region updates
+    private Timer updateTimer = new Timer();
+
+
+    /**
+     * Use default GeoserveLayersService.
+     */
+    public ANSSRegionsFactory () {
+        this(new GeoserveLayersService());
+    }
+
+    /**
+     * Use custom GeoserveLayersService.
+     */
+    public ANSSRegionsFactory (final GeoserveLayersService geoserveLayersService) {
+        this.geoserveLayersService = geoserveLayersService;
+    }
 
     /**
      * Get the global ANSSRegionsFactory, 
@@ -54,39 +87,6 @@ public class ANSSRegionsFactory {
             SINGLETON.shutdown();
         }
         SINGLETON = factory;
-    }
-
-    // logging object
-    public static final Logger LOGGER = Logger.getLogger(ANSSRegionsFactory.class.getName());
-
-    // milliseconds per day
-    public static final long MILLISECONDS_PER_DAY = 86400000L;
-
-    // path to write regions.json
-    public static final String REGIONS_JSON = "regions.json";
-
-    // service used to load regions
-    private GeoserveLayersService geoserveLayersService;
-
-    // the current regions object.
-    private Regions regions;
-
-    // timer used to auto fetch region updates
-    private Timer updateTimer = new Timer();
-
-
-    /**
-     * Use default GeoserveLayersService.
-     */
-    public ANSSRegionsFactory () {
-        this(new GeoserveLayersService());
-    }
-
-    /**
-     * Use custom GeoserveLayersService.
-     */
-    public ANSSRegionsFactory (final GeoserveLayersService geoserveLayersService) {
-        this.geoserveLayersService = geoserveLayersService;
     }
 
     /**
