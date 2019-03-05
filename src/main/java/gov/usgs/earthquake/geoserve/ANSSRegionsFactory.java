@@ -23,7 +23,8 @@ import gov.usgs.util.XmlUtils;
  * Simplest usage:
  *     ANSSRegionsFactory.getFactory().getRegions()
  * 
- * Regions are not fetched until is called.
+ * Regions are not fetched until {@link #startup()}
+ * (or {@link #fetchRegions()}) is called.
  */
 public class ANSSRegionsFactory {
 
@@ -130,27 +131,38 @@ public class ANSSRegionsFactory {
                     new File(REGIONS_JSON + ".temp"),
                     regionsJson,
                     json.toString().getBytes());
-            LOGGER.finer("Storing ANSS Authoritative Regions to " + REGIONS_JSON);
+            LOGGER.finer("Storing ANSS Authoritative Regions to "
+                    + REGIONS_JSON);
             // everything worked
             return;
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error updating ANSS Authoritative Regions", e);
+            LOGGER.log(Level.WARNING,
+                    "Error updating ANSS Authoritative Regions",
+                    e);
         }
 
         // maybe network error, does local json file exist?
         if (regionsJson.exists()) {
-            LOGGER.finer("Loading ANSS Authoritative Regions from " + REGIONS_JSON);
+            LOGGER.finer("Loading ANSS Authoritative Regions from "
+                    + REGIONS_JSON);
             try (InputStream in = StreamUtils.getInputStream(regionsJson)) {
-                JsonObject json = Json.createParser(in).getObject();
+                JsonObject json = Json.createReader(in).readObject();
                 this.regions = new RegionsJSON().parseRegions(json);
                 // regions loaded
-                LOGGER.fine("Loaded ANSS Authoritative Regions from " + REGIONS_JSON +
-                        ", last modified=" + XmlUtils.formatDate(new Date(regionsJson.lastModified())));
+                LOGGER.fine("Loaded ANSS Authoritative Regions from "
+                        + REGIONS_JSON
+                        + ", last modified=" + XmlUtils.formatDate(
+                                new Date(regionsJson.lastModified())));
                 return;
             } catch (Exception e) {
-                LOGGER.warning("Error loading ANSS Authoritative Regions from " + REGIONS_JSON);
+                LOGGER.log(Level.WARNING,
+                        "Error loading ANSS Authoritative Regions from "
+                                + REGIONS_JSON,
+                        e);
             }
         }
+
+        LOGGER.warning("Unable to load ANSS Authoritative Regions");
     }
 
     /**
