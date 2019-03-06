@@ -22,7 +22,7 @@ public class ANSSRegionsFactoryTest {
 
     @Before
     public void before() {
-        localRegions = new File(ANSSRegionsFactory.REGIONS_JSON);
+        localRegions = new File(ANSSRegionsFactory.DEFAULT_REGIONS_JSON);
         try (InputStream in = StreamUtils.getInputStream(new File("etc/config/example_regions.json"))) {
             serviceData = Json.createReader(in).readObject();
         } catch (Exception e) {

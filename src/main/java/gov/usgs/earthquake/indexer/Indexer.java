@@ -9,6 +9,7 @@ import gov.usgs.earthquake.distribution.FileProductStorage;
 import gov.usgs.earthquake.distribution.HeartbeatListener;
 import gov.usgs.earthquake.distribution.ProductAlreadyInStorageException;
 import gov.usgs.earthquake.distribution.ProductStorage;
+import gov.usgs.earthquake.geoserve.ANSSRegionsFactory;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.earthquake.util.CompareUtil;
@@ -93,6 +94,11 @@ public class Indexer extends DefaultNotificationListener {
 	/** Property name to configure listeners. */
 	public static final String LISTENERS_CONFIG_PROPERTY = "listeners";
 
+	/** Property name to configure local regions file. */
+	public static final String LOCAL_REGIONS_PROPERTY = "localRegionsFile";
+	/** Path to local regions file. */
+	public static final String DEFAULT_LOCAL_REGIONS = "regions.json";
+
 	/** Property name to enable search socket. */
 	public static final String ENABLE_SEARCH_PROPERTY = "enableSearch";
 	/** Property name for search socket port. */
@@ -124,6 +130,9 @@ public class Indexer extends DefaultNotificationListener {
 
 	/** Listeners listen for changes to the event index. */
 	private Map<IndexerListener, ExecutorService> listeners = new HashMap<IndexerListener, ExecutorService>();
+
+	/** Local file where regions are stored. */
+	private File localRegionsFile = new File(DEFAULT_LOCAL_REGIONS);
 
 	/** Timer for archive policy thread. */
 	private Timer archiveTimer = null;
@@ -1653,6 +1662,12 @@ public class Indexer extends DefaultNotificationListener {
 					+ "] no indexer listeners configured.");
 		}
 
+		String localRegions = config.getProperty(LOCAL_REGIONS_PROPERTY,
+				DEFAULT_LOCAL_REGIONS);
+		this.localRegionsFile = new File(localRegions);
+		LOGGER.config("[" + getName() + "] Local regions file: "
+				+ this.localRegionsFile);
+
 		String enableSearch = config.getProperty(ENABLE_SEARCH_PROPERTY,
 				DEFAULT_ENABLE_SEARCH);
 		if (Boolean.valueOf(enableSearch)) {
@@ -1766,6 +1781,11 @@ public class Indexer extends DefaultNotificationListener {
 				((Configurable) listener).startup();
 			}
 		}
+
+		// configure regions factory before modules
+		ANSSRegionsFactory factory = ANSSRegionsFactory.getFactory(false);
+		factory.setLocalRegions(localRegionsFile);
+		factory.startup();
 
 		Iterator<IndexerModule> modules = this.modules.iterator();
 		while (modules.hasNext()) {

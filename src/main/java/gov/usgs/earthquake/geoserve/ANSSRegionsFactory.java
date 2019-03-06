@@ -2,6 +2,7 @@ package gov.usgs.earthquake.geoserve;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.IOException;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -35,16 +36,23 @@ public class ANSSRegionsFactory {
     public static final long MILLISECONDS_PER_DAY = 86400000L;
 
     // path to write regions.json
-    public static final String REGIONS_JSON = "regions.json";
+    public static final String DEFAULT_REGIONS_JSON = "regions.json";
 
     // global factory object
     private static ANSSRegionsFactory SINGLETON;
 
+
     // service used to load regions
     private GeoserveLayersService geoserveLayersService;
 
-    // the current regions object.
+    // path to local regions file
+    private File localRegions = new File(DEFAULT_REGIONS_JSON);
+
+    // the current regions object
     private Regions regions;
+
+    // shutdown hook registered by startup
+    private Thread shutdownHook;
 
     // timer used to auto fetch region updates
     private Timer updateTimer = new Timer();
@@ -68,13 +76,16 @@ public class ANSSRegionsFactory {
      * Get the global ANSSRegionsFactory, 
      * creating and starting if needed.
      */
-    public static ANSSRegionsFactory getFactory() {
+    public static synchronized ANSSRegionsFactory getFactory() {
+        return getFactory(true);
+    }
+
+    public static synchronized ANSSRegionsFactory getFactory(final boolean startup) {
         if (SINGLETON == null) {
             SINGLETON = new ANSSRegionsFactory();
-            SINGLETON.startup();
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                SINGLETON.shutdown();
-            }));
+            if (startup) {
+                SINGLETON.startup();
+            }
         }
         return SINGLETON;
     }
@@ -83,11 +94,136 @@ public class ANSSRegionsFactory {
      * Set the global ANSSRegionsFactory,
      * shutting down any existing factory if needed.
      */
-    public static void setFactory(final ANSSRegionsFactory factory) {
+    public static synchronized void setFactory(final ANSSRegionsFactory factory) {
         if (SINGLETON != null) {
             SINGLETON.shutdown();
         }
         SINGLETON = factory;
+    }
+
+    /**
+     * Download regions from geoserve.
+     *
+     * Writes out to "regions.json" in current working directory and,
+     * if unable to update, reads in local copy.
+     */
+    public void fetchRegions () {
+        try {
+            // try loading from geoserve
+            this.regions = loadFromGeoserve();
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING,
+                    "Error fetching ANSS Regions from geoserve",
+                    e);
+            try {
+                // fall back to local cache
+                this.regions = loadFromFile();
+            } catch (Exception e2) {
+                LOGGER.log(Level.WARNING,
+                        "Error fetching ANSS Regions from local file",
+                        e);
+            }
+        }
+    }
+
+    /**
+     * Read regions from local regions file.
+     */
+    protected Regions loadFromFile() throws IOException {
+        try (InputStream in = StreamUtils.getInputStream(this.localRegions)) {
+            JsonObject json = Json.createReader(in).readObject();
+            Regions regions = new RegionsJSON().parseRegions(json);
+            // regions loaded
+            LOGGER.fine("Loaded ANSS Authoritative Regions from "
+                    + this.localRegions
+                    + ", last modified=" + XmlUtils.formatDate(
+                            new Date(this.localRegions.lastModified())));
+            return regions;
+        }
+    }
+
+    /**
+     * Read regions from geoserve service.
+     */
+    protected Regions loadFromGeoserve() throws IOException {
+        LOGGER.fine("Fetching ANSS Authoritative Regions from Geoserve");
+        JsonObject json = this.geoserveLayersService.getLayer("anss");
+        Regions regions = new RegionsJSON().parseRegions(json);
+        LOGGER.finer("Loaded ANSS Authoritative Regions from Geoserve");
+        try {
+            saveToFile(this.localRegions, json);
+        } catch (IOException e) {
+            // log for now, since saving is value added
+            LOGGER.log(Level.INFO, "Error saving local regions", e);
+        }
+        return regions;
+    }
+
+    /**
+     * Store json to local regions file.
+     *
+     * @param json json response to store locally.
+     */
+    protected void saveToFile(final File regionsFile, final JsonObject json) throws IOException {
+        LOGGER.fine("Storing ANSS Authoritative Regions to " + regionsFile);
+        // save regions if needed later
+        FileUtils.writeFileThenMove(
+                new File(regionsFile.toString() + ".temp"),
+                regionsFile,
+                json.toString().getBytes());
+        LOGGER.finer("Stored ANSS Regions to " + regionsFile);
+    }
+
+    /**
+     * Start updating regions.
+     */
+    public void startup() {
+        if (this.shutdownHook != null) {
+            // already started
+            return;
+        }
+
+        // do initial fetch
+        fetchRegions();
+
+        // schedule periodic fetch
+        long now = new Date().getTime();
+        long nextMidnight = MILLISECONDS_PER_DAY - (now % MILLISECONDS_PER_DAY);
+        updateTimer.scheduleAtFixedRate(
+                new TimerTask() {
+                    @Override
+                    public void run() {
+                        fetchRegions();
+                    }
+                },
+                // firstt time at midnight
+                nextMidnight,
+                // once per day
+                MILLISECONDS_PER_DAY);
+
+        // register shutdown hook
+        this.shutdownHook = new Thread(() -> {
+            // stop periodic fetch
+            this.updateTimer.cancel();
+        });
+        Runtime.getRuntime().addShutdownHook(this.shutdownHook);
+    }
+
+    /**
+     * Stop updating regions.
+     */
+    public void shutdown() {
+        if (this.shutdownHook == null) {
+            // not started or already stopped
+            return;
+        }
+
+        // stop periodic fetch
+        this.updateTimer.cancel();
+
+        // remove shutdown hook
+        Runtime.getRuntime().removeShutdownHook(this.shutdownHook);
+        this.shutdownHook = null;
     }
 
     /**
@@ -105,93 +241,24 @@ public class ANSSRegionsFactory {
     }
 
     /**
+     * Get the local regions file.
+     */
+    public File getLocalRegions() {
+        return this.localRegions;
+    }
+
+    /**
+     * Set the local regions file.
+     */
+    public void setLocalRegions(final File localRegions) {
+        this.localRegions = localRegions;
+    }
+
+    /**
      * Get the most recently fetched Regions.
      */
     public Regions getRegions () {
-        return regions;
-    }
-
-    /**
-     * Download regions from geoserve.
-     *
-     * Writes out to "regions.json" in current working directory and,
-     * if unable to update, reads in local copy.
-     */
-    public void fetchRegions () {
-        LOGGER.info("Fetching ANSS Authoritative Regions from Geoserve");
-        File regionsJson = new File(REGIONS_JSON);
-
-        // try loading from geoserve
-        try {
-            JsonObject json = this.geoserveLayersService.getLayer("anss");
-            this.regions = new RegionsJSON().parseRegions(json);
-            LOGGER.info("Loaded ANSS Authoritative Regions from Geoserve");
-            // save regions if needed later
-            FileUtils.writeFileThenMove(
-                    new File(REGIONS_JSON + ".temp"),
-                    regionsJson,
-                    json.toString().getBytes());
-            LOGGER.finer("Storing ANSS Authoritative Regions to "
-                    + REGIONS_JSON);
-            // everything worked
-            return;
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING,
-                    "Error updating ANSS Authoritative Regions",
-                    e);
-        }
-
-        // maybe network error, does local json file exist?
-        if (regionsJson.exists()) {
-            LOGGER.finer("Loading ANSS Authoritative Regions from "
-                    + REGIONS_JSON);
-            try (InputStream in = StreamUtils.getInputStream(regionsJson)) {
-                JsonObject json = Json.createReader(in).readObject();
-                this.regions = new RegionsJSON().parseRegions(json);
-                // regions loaded
-                LOGGER.fine("Loaded ANSS Authoritative Regions from "
-                        + REGIONS_JSON
-                        + ", last modified=" + XmlUtils.formatDate(
-                                new Date(regionsJson.lastModified())));
-                return;
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING,
-                        "Error loading ANSS Authoritative Regions from "
-                                + REGIONS_JSON,
-                        e);
-            }
-        }
-
-        LOGGER.warning("Unable to load ANSS Authoritative Regions");
-    }
-
-    /**
-     * Start updating regions.
-     */
-    public void startup() {
-        // do initial fetch
-        fetchRegions();
-
-        long now = new Date().getTime();
-        long nextMidnight = MILLISECONDS_PER_DAY - (now % MILLISECONDS_PER_DAY);
-        updateTimer.scheduleAtFixedRate(
-                new TimerTask() {
-                    @Override
-                    public void run() {
-                        fetchRegions();
-                    }
-                },
-                // firstt time at midnight
-                nextMidnight,
-                // once per day
-                MILLISECONDS_PER_DAY);
-    }
-
-    /**
-     * Stop updating regions.
-     */
-    public void shutdown() {
-        updateTimer.cancel();
+        return this.regions;
     }
 
 }
