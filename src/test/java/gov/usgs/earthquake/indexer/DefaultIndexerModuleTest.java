@@ -22,7 +22,7 @@ public class DefaultIndexerModuleTest {
 	 * (and hence US is).
 	 */
 	@Test
-	public void testDefaultAuthoritativeSummaryWeight() {
+	public void testDefaultAuthoritativeSummaryWeight() throws Exception {
 		ProductSummary summary = new ProductSummary();
 		summary.setId(new ProductId("us", "type", "code"));
 		summary.setEventSource("doesn't matter");
@@ -42,7 +42,7 @@ public class DefaultIndexerModuleTest {
 	 * Test in the middle of Southern California (LA).
 	 */
 	@Test
-	public void testAuthoritativeSummaryWeight() {
+	public void testAuthoritativeSummaryWeight() throws Exception {
 		ProductSummary summary = new ProductSummary();
 		summary.setId(new ProductId("ci", "type", "code"));
 		summary.setEventSource("doesn't matter");
@@ -62,7 +62,7 @@ public class DefaultIndexerModuleTest {
 	 * Test in the middle of not-Northern California (0,0).
 	 */
 	@Test
-	public void testNonAuthoritativeSummaryWeight() {
+	public void testNonAuthoritativeSummaryWeight() throws Exception {
 		ProductSummary summary = new ProductSummary();
 		summary.setId(new ProductId("nc", "type", "code"));
 		summary.setEventSource("doesn't matter");
@@ -82,7 +82,7 @@ public class DefaultIndexerModuleTest {
 	 * match.
 	 */
 	@Test
-	public void testSameSourceWeight() {
+	public void testSameSourceWeight() throws Exception {
 		ProductSummary summary = new ProductSummary();
 		summary.setId(new ProductId("nc", "type", "code"));
 		summary.setEventSource("nc");

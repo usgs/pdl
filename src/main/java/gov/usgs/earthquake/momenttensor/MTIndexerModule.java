@@ -113,7 +113,8 @@ public class MTIndexerModule extends DefaultIndexerModule {
 	 * 		otherwise, {@link IndexerModule#LEVEL_UNSUPPORTED}
 	 */
 	@Override
-	protected long getPreferredWeight(ProductSummary summary) {
+	protected long getPreferredWeight(ProductSummary summary)
+			throws Exception {
 		// Get the default preferred weight value from the parent class
 		long weight = super.getPreferredWeight(summary);
 

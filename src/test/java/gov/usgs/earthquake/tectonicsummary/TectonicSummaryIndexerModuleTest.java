@@ -32,7 +32,7 @@ public class TectonicSummaryIndexerModuleTest {
 	private ProductSummary summary = null;
 	
 	@Test
-	public void testTectonicSummaryWeightOver() {
+	public void testTectonicSummaryWeightOver() throws Exception {
 		ProductSummary summary = new ProductSummary();
 		Map<String, String> map = new HashMap<String, String>();
 		summary.setId(new ProductId("us", "tectonic-summary", "code"));
@@ -49,7 +49,7 @@ public class TectonicSummaryIndexerModuleTest {
 	}	
 	
 	@Test
-	public void testTectonicSummaryWeightUnder() {
+	public void testTectonicSummaryWeightUnder() throws Exception {
 		ProductSummary summary = new ProductSummary();
 		Map<String, String> map = new HashMap<String, String>();
 		summary.setId(new ProductId("us", "tectonic-summary", "code"));
