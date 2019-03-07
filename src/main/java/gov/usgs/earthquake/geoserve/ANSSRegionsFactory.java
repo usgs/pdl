@@ -116,8 +116,10 @@ public class ANSSRegionsFactory {
                     "Error fetching ANSS Regions from geoserve",
                     e);
             try {
-                // fall back to local cache
-                this.regions = loadFromFile();
+                if (this.regions == null) {
+                    // fall back to local cache
+                    this.regions = loadFromFile();
+                }
             } catch (Exception e2) {
                 LOGGER.log(Level.WARNING,
                         "Error fetching ANSS Regions from local file",

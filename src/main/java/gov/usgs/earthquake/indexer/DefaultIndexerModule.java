@@ -3,6 +3,7 @@
  */
 package gov.usgs.earthquake.indexer;
 
+import gov.usgs.earthquake.distribution.ContinuableListenerException;
 import gov.usgs.earthquake.distribution.SignatureVerifier;
 import gov.usgs.earthquake.geoserve.ANSSRegionsFactory;
 import gov.usgs.earthquake.product.Product;
@@ -83,8 +84,14 @@ public class DefaultIndexerModule implements IndexerModule {
 	 *            the summary to calculate a preferred weight.
 	 * @return the absolute preferred weight.
 	 */
-	protected long getPreferredWeight(final ProductSummary summary) {
+	protected long getPreferredWeight(final ProductSummary summary)
+			throws Exception {
 		Regions regions = ANSSRegionsFactory.getFactory().getRegions();
+		if (regions == null) {
+			throw new ContinuableListenerException(
+					"Unable to load ANSS Authoritative Regions");
+		}
+
 		long preferredWeight = DEFAULT_PREFERRED_WEIGHT;
 
 		String source = summary.getId().getSource();

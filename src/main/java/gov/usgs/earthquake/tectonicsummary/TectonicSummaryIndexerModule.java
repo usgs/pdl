@@ -29,7 +29,8 @@ public class TectonicSummaryIndexerModule extends DefaultIndexerModule {
 	}
 
 	@Override
-	protected long getPreferredWeight(final ProductSummary summary) {
+	protected long getPreferredWeight(final ProductSummary summary)
+			throws Exception {
 		long preferredWeight = super.getPreferredWeight(summary);
 		String reviewStatus = summary.getProperties().get("review-status");
 
