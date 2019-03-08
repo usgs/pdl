@@ -8,7 +8,7 @@ import gov.usgs.earthquake.qdm.Regions;
 import gov.usgs.util.XmlUtils;
 
 /**
- * Custom formatting for {@link gov.usgs.earthquake.qdm.Regions()}.
+ * Custom formatting for gov.usgs.earthquake.qdm.Regions.
  */
 public class RegionsKML {
 

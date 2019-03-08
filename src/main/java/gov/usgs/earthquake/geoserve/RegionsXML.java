@@ -13,7 +13,7 @@ import gov.usgs.earthquake.qdm.RegionsHandler;
 import gov.usgs.util.XmlUtils;
 
 /**
- * Legacy Regions XML formatting for {@link gov.usgs.earthquake.qdm.Regions()}.
+ * Legacy Regions XML formatting for gov.usgs.earthquake.qdm.Regions.
  *
  */
 public class RegionsXML {
