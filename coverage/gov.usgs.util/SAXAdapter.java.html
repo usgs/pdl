@@ -128,10 +128,10 @@ import org.xml.sax.helpers.DefaultHandler;
      */
     public final void characters(final char[] ch, final int start,
             final int length) throws SAXException {
-<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        if (buffers.size() &gt; 0) {</span>
-<span class="fc" id="L132">            buffers.getLast().append(ch, start, length);</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        if (buffers.size() &gt; 0) {</span>
+<span class="nc" id="L132">            buffers.getLast().append(ch, start, length);</span>
         }
-<span class="fc" id="L134">    }</span>
+<span class="nc" id="L134">    }</span>
 
     /**
      * Use this handler to parse a string. Wraps string bytes in a

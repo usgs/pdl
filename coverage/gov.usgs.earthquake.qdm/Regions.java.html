@@ -79,9 +79,9 @@ public class Regions {
 <span class="fc bfc" id="L79" title="All 2 branches covered.">        if (this.isDefaultNetID(netid)) {</span>
             // default region is authoritative where others are not.
 <span class="fc bfc" id="L81" title="All 2 branches covered.">            for (Region region : this.regions) {</span>
-<span class="fc bfc" id="L82" title="All 2 branches covered.">                if (region.netid.equalsIgnoreCase(netid)) {</span>
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">                if (region.netid.equalsIgnoreCase(netid)) {</span>
                     // default region includes all points
-<span class="fc" id="L84">                    continue;</span>
+<span class="nc" id="L84">                    continue;</span>
                 }
 <span class="fc bfc" id="L86" title="All 2 branches covered.">                if (region.inpoly(p)) {</span>
                     // if any region is authoritative, default is not

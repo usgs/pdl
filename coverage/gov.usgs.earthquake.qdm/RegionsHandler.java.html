@@ -27,21 +27,21 @@ import gov.usgs.util.XmlUtils;
  * return handler.regions;
  * }&lt;/pre&gt;
  */
-<span class="fc" id="L30">public class RegionsHandler extends SAXAdapter {</span>
+<span class="nc" id="L30">public class RegionsHandler extends SAXAdapter {</span>
 
-<span class="fc" id="L32">    public static final Logger LOGGER = Logger.getLogger(RegionsHandler.class.getName());</span>
+<span class="nc" id="L32">    public static final Logger LOGGER = Logger.getLogger(RegionsHandler.class.getName());</span>
 
     // the regions that have been parsed
-<span class="fc" id="L35">    public Regions regions = new Regions();</span>
+<span class="nc" id="L35">    public Regions regions = new Regions();</span>
     // update timestamp
-<span class="fc" id="L37">    public Date updated = null;</span>
+<span class="nc" id="L37">    public Date updated = null;</span>
     // reported format version (no version-specific logic implemented)
-<span class="fc" id="L39">    public String formatVersion = null;</span>
+<span class="nc" id="L39">    public String formatVersion = null;</span>
     
     // variables for tracking state
-<span class="fc" id="L42">    private boolean inRegions = false;</span>
-<span class="fc" id="L43">    private String netid = null;</span>
-<span class="fc" id="L44">    private Region region = null;</span>
+<span class="nc" id="L42">    private boolean inRegions = false;</span>
+<span class="nc" id="L43">    private String netid = null;</span>
+<span class="nc" id="L44">    private Region region = null;</span>
     
     /**
      * Start Element handler.
@@ -57,40 +57,40 @@ import gov.usgs.util.XmlUtils;
     public void onStartElement(final String uri, final String localName,
             final String qName, final Attributes attributes)
             throws SAXException {
-<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (&quot;regions&quot;.equals(localName)) {</span>
-<span class="fc" id="L61">            this.inRegions = true;</span>
-<span class="fc" id="L62">            LOGGER.finer(&quot;Parsing regions xml&quot;);</span>
-<span class="pc bpc" id="L63" title="1 of 2 branches missed.">        } else if (!inRegions) {</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        if (&quot;regions&quot;.equals(localName)) {</span>
+<span class="nc" id="L61">            this.inRegions = true;</span>
+<span class="nc" id="L62">            LOGGER.finer(&quot;Parsing regions xml&quot;);</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        } else if (!inRegions) {</span>
 <span class="nc" id="L64">            throw new SAXException(&quot;Expected 'regions' root element&quot;);</span>
-<span class="fc bfc" id="L65" title="All 2 branches covered.">        } else if (&quot;update&quot;.equals(localName)) {</span>
-<span class="fc" id="L66">            this.updated = XmlUtils.getDate(attributes.getValue(&quot;date&quot;));</span>
-<span class="fc" id="L67">            LOGGER.finer(&quot;\tupdated &quot; + XmlUtils.formatDate(updated));</span>
-<span class="fc bfc" id="L68" title="All 2 branches covered.">        } else if (&quot;format&quot;.equals(localName)) {</span>
-<span class="fc" id="L69">            this.formatVersion = attributes.getValue(&quot;version&quot;);</span>
-<span class="fc" id="L70">            LOGGER.finer(&quot;\tversion &quot; + formatVersion);</span>
-<span class="fc bfc" id="L71" title="All 2 branches covered.">        } else if (&quot;net&quot;.equals(localName)) {</span>
-<span class="pc bpc" id="L72" title="1 of 2 branches missed.">            if (this.region != null) {</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        } else if (&quot;update&quot;.equals(localName)) {</span>
+<span class="nc" id="L66">            this.updated = XmlUtils.getDate(attributes.getValue(&quot;date&quot;));</span>
+<span class="nc" id="L67">            LOGGER.finer(&quot;\tupdated &quot; + XmlUtils.formatDate(updated));</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        } else if (&quot;format&quot;.equals(localName)) {</span>
+<span class="nc" id="L69">            this.formatVersion = attributes.getValue(&quot;version&quot;);</span>
+<span class="nc" id="L70">            LOGGER.finer(&quot;\tversion &quot; + formatVersion);</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        } else if (&quot;net&quot;.equals(localName)) {</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">            if (this.region != null) {</span>
 <span class="nc" id="L73">                throw new SAXException(&quot;Unexpected 'net' element inside 'region'&quot;);</span>
             }
-<span class="fc" id="L75">            this.netid = attributes.getValue(&quot;code&quot;);</span>
-<span class="fc" id="L76">            LOGGER.finer(&quot;\tnetid=&quot; + netid);</span>
-<span class="fc bfc" id="L77" title="All 2 branches covered.">        } else if (&quot;region&quot;.equals(localName)) {</span>
-<span class="pc bpc" id="L78" title="1 of 2 branches missed.">            if (this.region != null) {</span>
+<span class="nc" id="L75">            this.netid = attributes.getValue(&quot;code&quot;);</span>
+<span class="nc" id="L76">            LOGGER.finer(&quot;\tnetid=&quot; + netid);</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        } else if (&quot;region&quot;.equals(localName)) {</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">            if (this.region != null) {</span>
 <span class="nc" id="L79">                throw new SAXException(&quot;Unexpected 'region' element inside 'region'&quot;);</span>
             }
-<span class="fc" id="L81">            String regionid = attributes.getValue(&quot;code&quot;);</span>
-<span class="fc" id="L82">            this.region = new Region(netid, regionid);</span>
-<span class="fc" id="L83">            LOGGER.finer(&quot;\t\tregionid=&quot; + regionid);</span>
-<span class="fc bfc" id="L84" title="All 2 branches covered.">        } else if (&quot;coordinate&quot;.equals(localName)) {</span>
-<span class="pc bpc" id="L85" title="1 of 2 branches missed.">            if (region == null) {</span>
+<span class="nc" id="L81">            String regionid = attributes.getValue(&quot;code&quot;);</span>
+<span class="nc" id="L82">            this.region = new Region(netid, regionid);</span>
+<span class="nc" id="L83">            LOGGER.finer(&quot;\t\tregionid=&quot; + regionid);</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        } else if (&quot;coordinate&quot;.equals(localName)) {</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">            if (region == null) {</span>
 <span class="nc" id="L86">                throw new SAXException(&quot;Unexpected 'coordinate' element outside 'region'&quot;);</span>
             }
-<span class="fc" id="L88">            Double latitude = Double.valueOf(attributes.getValue(&quot;latitude&quot;));</span>
-<span class="fc" id="L89">            Double longitude = Double.valueOf(attributes.getValue(&quot;longitude&quot;));</span>
-<span class="fc" id="L90">            this.region.points.add(new Point(longitude, latitude));</span>
-<span class="fc" id="L91">            LOGGER.finer(&quot;\t\t\tcoordinate = &quot; + latitude + &quot;, &quot; + longitude);</span>
+<span class="nc" id="L88">            Double latitude = Double.valueOf(attributes.getValue(&quot;latitude&quot;));</span>
+<span class="nc" id="L89">            Double longitude = Double.valueOf(attributes.getValue(&quot;longitude&quot;));</span>
+<span class="nc" id="L90">            this.region.points.add(new Point(longitude, latitude));</span>
+<span class="nc" id="L91">            LOGGER.finer(&quot;\t\t\tcoordinate = &quot; + latitude + &quot;, &quot; + longitude);</span>
         }
-<span class="fc" id="L93">    }</span>
+<span class="nc" id="L93">    }</span>
 
     /**
      * End element handler.
@@ -105,19 +105,19 @@ import gov.usgs.util.XmlUtils;
     @Override
     public void onEndElement(final String uri, final String localName,
             final String qName, final String content) throws SAXException {
-<span class="fc bfc" id="L108" title="All 2 branches covered.">        if (&quot;region&quot;.equals(localName)) {</span>
-<span class="pc bpc" id="L109" title="1 of 2 branches missed.">            if (this.region == null) {</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        if (&quot;region&quot;.equals(localName)) {</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">            if (this.region == null) {</span>
 <span class="nc" id="L110">                throw new SAXException(&quot;Unexpected closing 'region' element&quot;);</span>
             }
-<span class="fc" id="L112">            regions.regions.add(this.region);</span>
-<span class="fc bfc" id="L113" title="All 2 branches covered.">            if (this.region.points.size() == 0) {</span>
-<span class="fc" id="L114">                regions.defaultNetid = this.region.netid;</span>
+<span class="nc" id="L112">            regions.regions.add(this.region);</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">            if (this.region.points.size() == 0) {</span>
+<span class="nc" id="L114">                regions.defaultNetid = this.region.netid;</span>
             }
-<span class="fc" id="L116">            this.region = null;</span>
-<span class="fc bfc" id="L117" title="All 2 branches covered.">        } else if (&quot;regions&quot;.equals(localName)) {</span>
-<span class="fc" id="L118">            this.inRegions = false;</span>
+<span class="nc" id="L116">            this.region = null;</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        } else if (&quot;regions&quot;.equals(localName)) {</span>
+<span class="nc" id="L118">            this.inRegions = false;</span>
         }
-<span class="fc" id="L120">    }</span>
+<span class="nc" id="L120">    }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

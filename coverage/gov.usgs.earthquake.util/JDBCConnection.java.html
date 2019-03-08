@@ -97,13 +97,13 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 <span class="pc bpc" id="L97" title="1 of 2 branches missed.">			if (connection.isClosed()) {</span>
 <span class="nc" id="L98">				shutdown();</span>
 			}
-<span class="fc" id="L100">		} catch (Exception e) {</span>
-<span class="fc" id="L101">			shutdown();</span>
+<span class="nc" id="L100">		} catch (Exception e) {</span>
+<span class="nc" id="L101">			shutdown();</span>
 <span class="fc" id="L102">		}</span>
 
-<span class="fc bfc" id="L104" title="All 2 branches covered.">		if (connection == null) {</span>
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">		if (connection == null) {</span>
 			// connection is null after shutdown()
-<span class="fc" id="L106">			startup();</span>
+<span class="nc" id="L106">			startup();</span>
 		}
 
 		// isClosed() doesn't check if we can still communicate with the server.

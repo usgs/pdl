@@ -199,10 +199,10 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 <span class="fc" id="L199">				LOGGER.finer(&quot;[&quot; + getName()</span>
 						+ &quot;] Change product is null. Probably archiving.&quot;);
 			}
-<span class="fc" id="L202">		} catch (ProductAlreadyInStorageException paise) {</span>
-<span class="fc" id="L203">			LOGGER.info(&quot;[&quot; + getName() + &quot;] product already in storage&quot;);</span>
+<span class="nc" id="L202">		} catch (ProductAlreadyInStorageException paise) {</span>
+<span class="nc" id="L203">			LOGGER.info(&quot;[&quot; + getName() + &quot;] product already in storage&quot;);</span>
 			// keep going anyways, but load from local storage
-<span class="fc" id="L205">			listenerProduct = getStorage().getProduct(product.getId());</span>
+<span class="nc" id="L205">			listenerProduct = getStorage().getProduct(product.getId());</span>
 <span class="fc" id="L206">		}</span>
 
 <span class="fc" id="L208">		return listenerProduct;</span>
@@ -334,7 +334,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 <span class="fc" id="L334">						.append(content.getContentType());</span>
 			}
 
-<span class="fc bfc" id="L337" title="All 2 branches covered.">			if (product.getSignature() != null) {</span>
+<span class="pc bpc" id="L337" title="1 of 2 branches missed.">			if (product.getSignature() != null) {</span>
 <span class="fc" id="L338">				indexerCommand</span>
 <span class="fc" id="L339">						.append(&quot; &quot;)</span>
 <span class="fc" id="L340">						.append(ExternalNotificationListener.SIGNATURE_ARGUMENT)</span>
@@ -374,8 +374,8 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 <span class="fc bfc" id="L374" title="All 2 branches covered.">			while (sourceCodeIter.hasNext()) {</span>
 <span class="fc" id="L375">				String sourceCode = sourceCodeIter.next();</span>
 <span class="fc" id="L376">				buf.append(source).append(sourceCode);</span>
-<span class="pc bpc" id="L377" title="1 of 4 branches missed.">				if (sourceCodeIter.hasNext() || sourceIter.hasNext()) {</span>
-<span class="fc" id="L378">					buf.append(&quot;,&quot;);</span>
+<span class="pc bpc" id="L377" title="2 of 4 branches missed.">				if (sourceCodeIter.hasNext() || sourceIter.hasNext()) {</span>
+<span class="nc" id="L378">					buf.append(&quot;,&quot;);</span>
 				}
 <span class="fc" id="L380">			}</span>
 <span class="fc" id="L381">		}</span>

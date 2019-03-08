@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RegionsKML.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.geoserve</a> &gt; <span class="el_source">RegionsKML.java</span></div><h1>RegionsKML.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.geoserve;
+
+import java.util.Date;
+
+import gov.usgs.earthquake.qdm.Point;
+import gov.usgs.earthquake.qdm.Region;
+import gov.usgs.earthquake.qdm.Regions;
+import gov.usgs.util.XmlUtils;
+
+/**
+ * Custom formatting for gov.usgs.earthquake.qdm.Regions.
+ */
+<span class="nc" id="L13">public class RegionsKML {</span>
+
+    /**
+     * Output ANSS Authoritative Regions in KML format.
+     */
+    public String formatKML(final Regions regions) {
+<span class="nc" id="L19">        StringBuffer kml = new StringBuffer(String.join(&quot;\n&quot;,</span>
+            &quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot;?&gt;&quot;,
+            &quot;&lt;kml xmlns=\&quot;http://www.opengis.net/kml/2.2\&quot;&gt;&quot;,
+            &quot;&lt;Document id=\&quot;regions_xml\&quot;&gt;&quot;,
+            &quot;  &lt;name&gt;ANSS Authoritative Regions&lt;/name&gt;&quot;,
+            &quot;  &lt;description&gt;&quot;
+<span class="nc" id="L25">                    + XmlUtils.formatDate(new Date())</span>
+                    + &quot;&lt;/description&gt;&quot;,
+            &quot;  &lt;open&gt;1&lt;/open&gt;&quot;,
+            &quot;  &lt;Style id=\&quot;RegionStyle\&quot;&gt;&quot;,
+            &quot;    &lt;LabelStyle&gt;&quot;,
+            &quot;      &lt;color&gt;00000000&lt;/color&gt;&quot;,
+            &quot;      &lt;scale&gt;0.000000&lt;/scale&gt;&quot;,
+            &quot;    &lt;/LabelStyle&gt;&quot;,
+            &quot;    &lt;LineStyle&gt;&quot;,
+            &quot;      &lt;color&gt;ff0000ff&lt;/color&gt;&quot;,
+            &quot;      &lt;width&gt;2.000000&lt;/width&gt;&quot;,
+            &quot;    &lt;/LineStyle&gt;&quot;,
+            &quot;    &lt;PolyStyle&gt;&quot;,
+            &quot;      &lt;color&gt;00ffffff&lt;/color&gt;&quot;,
+            &quot;      &lt;outline&gt;1&lt;/outline&gt;&quot;,
+            &quot;    &lt;/PolyStyle&gt;&quot;,
+            &quot;  &lt;/Style&gt;&quot;,
+            &quot;&quot;
+        ));
+
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        for (final Region region : regions.regions) {</span>
+<span class="nc" id="L46">            kml.append(&quot;\n&lt;Placemark id=\&quot;region_&quot;).append(region.regionid).append(&quot;\&quot;&gt;\n&quot;);</span>
+<span class="nc" id="L47">            kml.append(&quot;&lt;name&gt;&quot;).append(region.regionid).append(&quot;&lt;/name&gt;\n&quot;);</span>
+<span class="nc" id="L48">            kml.append(&quot;&lt;styleUrl&gt;#RegionStyle&lt;/styleUrl&gt;\n&quot;);</span>
+<span class="nc" id="L49">            kml.append(&quot;&lt;MultiGeometry&gt;&lt;Polygon&gt;&lt;outerBoundaryIs&gt;&lt;LinearRing&gt;&lt;coordinates&gt;\n&quot;);</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">            for (final Point point : region.points) {</span>
+<span class="nc" id="L51">                kml.append(&quot;  &quot;).append(point.x).append(&quot;,&quot;).append(point.y).append(&quot;\n&quot;);</span>
+<span class="nc" id="L52">            }</span>
+<span class="nc" id="L53">            kml.append(&quot;&lt;/coordinates&gt;&lt;/LinearRing&gt;&lt;/outerBoundaryIs&gt;&lt;/Polygon&gt;&lt;/MultiGeometry&gt;\n&quot;);</span>
+<span class="nc" id="L54">            kml.append(&quot;&lt;/Placemark&gt;\n&quot;);</span>
+<span class="nc" id="L55">        }</span>
+
+<span class="nc" id="L57">        kml.append(String.join(&quot;\n&quot;,</span>
+            &quot;&quot;,
+            &quot;&lt;/Document&gt;&quot;,
+            &quot;&lt;/kml&gt;&quot;,
+            &quot;&quot;
+        ));
+
+<span class="nc" id="L64">        return kml.toString();</span>
+    }
+
+    /**
+     * Download ANSS Authoritative Regions,
+     * and print to console in Regions KML format.
+     */
+    public static void main(final String[] args) throws Exception {
+<span class="nc" id="L72">        Regions regions = ANSSRegionsFactory.getFactory().getRegions();</span>
+<span class="nc" id="L73">        String kml = new RegionsKML().formatKML(regions);</span>
+<span class="nc" id="L74">        System.out.println(kml);</span>
+<span class="nc" id="L75">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

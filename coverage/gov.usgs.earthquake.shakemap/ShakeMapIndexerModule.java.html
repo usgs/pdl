@@ -86,64 +86,65 @@ import gov.usgs.util.StreamUtils;
 	}
 
 	@Override
-	protected long getPreferredWeight(ProductSummary summary) {
+	protected long getPreferredWeight(ProductSummary summary)
+			throws Exception {
 		// Get the default preferred weight value from the parent class
-<span class="fc" id="L91">		long weight = super.getPreferredWeight(summary);</span>
+<span class="fc" id="L92">		long weight = super.getPreferredWeight(summary);</span>
 
-<span class="fc bfc" id="L93" title="All 2 branches covered.">		if (SHAKEMAP_ATLAS_SOURCE.equals(summary.getSource())) {</span>
-<span class="fc" id="L94">			weight += SHAKEMAP_ATLAS_WEIGHT;</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">		if (SHAKEMAP_ATLAS_SOURCE.equals(summary.getSource())) {</span>
+<span class="fc" id="L95">			weight += SHAKEMAP_ATLAS_WEIGHT;</span>
 		}
 
 		// check that shakemap has event properties and map extents
-<span class="fc" id="L98">		Map&lt;String, String&gt; properties = summary.getProperties();</span>
-<span class="fc bfc" id="L99" title="All 2 branches covered.">		if (summary.getEventLatitude() == null ||</span>
-<span class="pc bpc" id="L100" title="1 of 2 branches missed.">				summary.getEventLongitude() == null ||</span>
-<span class="pc bpc" id="L101" title="1 of 2 branches missed.">				properties.get(ShakeMap.MINIMUM_LATITUDE_PROPERTY) == null ||</span>
-<span class="pc bpc" id="L102" title="1 of 2 branches missed.">				properties.get(ShakeMap.MAXIMUM_LATITUDE_PROPERTY) == null ||</span>
-<span class="pc bpc" id="L103" title="1 of 2 branches missed.">				properties.get(ShakeMap.MINIMUM_LONGITUDE_PROPERTY) == null ||</span>
-<span class="pc bpc" id="L104" title="1 of 2 branches missed.">				properties.get(ShakeMap.MAXIMUM_LONGITUDE_PROPERTY) == null) {</span>
-<span class="fc" id="L105">			return weight;</span>
+<span class="fc" id="L99">		Map&lt;String, String&gt; properties = summary.getProperties();</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">		if (summary.getEventLatitude() == null ||</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">				summary.getEventLongitude() == null ||</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">				properties.get(ShakeMap.MINIMUM_LATITUDE_PROPERTY) == null ||</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">				properties.get(ShakeMap.MAXIMUM_LATITUDE_PROPERTY) == null ||</span>
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">				properties.get(ShakeMap.MINIMUM_LONGITUDE_PROPERTY) == null ||</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">				properties.get(ShakeMap.MAXIMUM_LONGITUDE_PROPERTY) == null) {</span>
+<span class="fc" id="L106">			return weight;</span>
 		}
 
 		// Get properties for comparison to alter authoritative weight
-<span class="fc" id="L109">		BigDecimal eventLat = summary.getEventLatitude();</span>
-<span class="fc" id="L110">		BigDecimal eventLon = summary.getEventLongitude();</span>
-<span class="fc" id="L111">		BigDecimal minLat = new BigDecimal(properties.get(</span>
+<span class="fc" id="L110">		BigDecimal eventLat = summary.getEventLatitude();</span>
+<span class="fc" id="L111">		BigDecimal eventLon = summary.getEventLongitude();</span>
+<span class="fc" id="L112">		BigDecimal minLat = new BigDecimal(properties.get(</span>
 				ShakeMap.MINIMUM_LATITUDE_PROPERTY));
-<span class="fc" id="L113">		BigDecimal maxLat = new BigDecimal(properties.get(</span>
+<span class="fc" id="L114">		BigDecimal maxLat = new BigDecimal(properties.get(</span>
 				ShakeMap.MAXIMUM_LATITUDE_PROPERTY));
-<span class="fc" id="L115">		BigDecimal minLon = new BigDecimal(properties.get(</span>
+<span class="fc" id="L116">		BigDecimal minLon = new BigDecimal(properties.get(</span>
 				ShakeMap.MINIMUM_LONGITUDE_PROPERTY));
-<span class="fc" id="L117">		BigDecimal maxLon = new BigDecimal(properties.get(</span>
+<span class="fc" id="L118">		BigDecimal maxLon = new BigDecimal(properties.get(</span>
 				ShakeMap.MAXIMUM_LONGITUDE_PROPERTY));
-<span class="fc" id="L119">		BigDecimal centerLat = minLat.add(maxLat).divide(new BigDecimal(2));</span>
-<span class="fc" id="L120">		BigDecimal centerLon = minLon.add(maxLon).divide(new BigDecimal(2));</span>
+<span class="fc" id="L120">		BigDecimal centerLat = minLat.add(maxLat).divide(new BigDecimal(2));</span>
+<span class="fc" id="L121">		BigDecimal centerLon = minLon.add(maxLon).divide(new BigDecimal(2));</span>
 
 		// Calculate delta in degrees between map center and event epicenter
-<span class="fc" id="L123">		double latDelta = Math.abs(centerLat.doubleValue() - eventLat.doubleValue());</span>
-<span class="fc" id="L124">		double lonDelta = Math.abs(centerLon.doubleValue() - eventLon.doubleValue());</span>
-<span class="fc" id="L125">		double locationDelta = (double) Math.sqrt(Math.pow(latDelta, 2)</span>
-<span class="fc" id="L126">				+ Math.pow(lonDelta, 2));</span>
+<span class="fc" id="L124">		double latDelta = Math.abs(centerLat.doubleValue() - eventLat.doubleValue());</span>
+<span class="fc" id="L125">		double lonDelta = Math.abs(centerLon.doubleValue() - eventLon.doubleValue());</span>
+<span class="fc" id="L126">		double locationDelta = (double) Math.sqrt(Math.pow(latDelta, 2)</span>
+<span class="fc" id="L127">				+ Math.pow(lonDelta, 2));</span>
 
 		// Increase weight dynamically if the map center is within
 		// MAX_DELTA_DEGREES of the event epicenter
-<span class="pc bpc" id="L130" title="1 of 2 branches missed.">		if (locationDelta &lt;= MAX_DELTA_DEGREES) {</span>
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">		if (locationDelta &lt;= MAX_DELTA_DEGREES) {</span>
 			// Add more weight based on the map center being closer to
 			// the event epicenter
-<span class="fc" id="L133">			weight += Math.round((1 - (locationDelta / MAX_DELTA_DEGREES))</span>
+<span class="fc" id="L134">			weight += Math.round((1 - (locationDelta / MAX_DELTA_DEGREES))</span>
 					* CENTERED_ON_EPICENTER_WEIGHT);
 		}
 
 		// Increase weight further if the map contains the epicenter within
 		// its boundaries.
-<span class="fc bfc" id="L139" title="All 2 branches covered.">		if (eventLat.longValue() &lt; maxLat.longValue()</span>
-<span class="pc bpc" id="L140" title="1 of 2 branches missed.">				&amp;&amp; eventLat.longValue() &gt; minLat.longValue()</span>
-<span class="pc bpc" id="L141" title="1 of 2 branches missed.">				&amp;&amp; eventLon.longValue() &lt; maxLon.longValue()</span>
-<span class="pc bpc" id="L142" title="1 of 2 branches missed.">				&amp;&amp; eventLon.longValue() &gt; minLon.longValue()) {</span>
-<span class="fc" id="L143">			weight += CONTAINS_EPICENTER_WEIGHT;</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">		if (eventLat.longValue() &lt; maxLat.longValue()</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">				&amp;&amp; eventLat.longValue() &gt; minLat.longValue()</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">				&amp;&amp; eventLon.longValue() &lt; maxLon.longValue()</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">				&amp;&amp; eventLon.longValue() &gt; minLon.longValue()) {</span>
+<span class="fc" id="L144">			weight += CONTAINS_EPICENTER_WEIGHT;</span>
 		}
 
-<span class="fc" id="L146">		return weight;</span>
+<span class="fc" id="L147">		return weight;</span>
 	}
 
 }

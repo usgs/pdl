@@ -119,8 +119,8 @@ import java.util.zip.GZIPInputStream;
 		// get response
 <span class="fc" id="L120">		in = conn.getInputStream();</span>
 <span class="fc" id="L121">		String contentEncoding = conn.getContentEncoding();</span>
-<span class="pc bpc" id="L122" title="3 of 4 branches missed.">		if (contentEncoding != null &amp;&amp; contentEncoding.equals(&quot;gzip&quot;)) {</span>
-<span class="nc" id="L123">			in = new GZIPInputStream(in);</span>
+<span class="pc bpc" id="L122" title="1 of 4 branches missed.">		if (contentEncoding != null &amp;&amp; contentEncoding.equals(&quot;gzip&quot;)) {</span>
+<span class="fc" id="L123">			in = new GZIPInputStream(in);</span>
 		}
 
 <span class="fc" id="L126">		return in;</span>

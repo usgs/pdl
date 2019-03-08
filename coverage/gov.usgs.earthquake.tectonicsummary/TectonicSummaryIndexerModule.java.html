@@ -29,15 +29,16 @@ import gov.usgs.earthquake.product.Product;
 	}
 
 	@Override
-	protected long getPreferredWeight(final ProductSummary summary) {
-<span class="fc" id="L33">		long preferredWeight = super.getPreferredWeight(summary);</span>
-<span class="fc" id="L34">		String reviewStatus = summary.getProperties().get(&quot;review-status&quot;);</span>
+	protected long getPreferredWeight(final ProductSummary summary)
+			throws Exception {
+<span class="fc" id="L34">		long preferredWeight = super.getPreferredWeight(summary);</span>
+<span class="fc" id="L35">		String reviewStatus = summary.getProperties().get(&quot;review-status&quot;);</span>
 
-<span class="fc bfc" id="L36" title="All 2 branches covered.">		if (&quot;REVIEWED&quot;.equalsIgnoreCase(reviewStatus)) {</span>
-<span class="fc" id="L37">			preferredWeight += REVIEWED_TECTONIC_SUMMARY_WEIGHT;</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">		if (&quot;REVIEWED&quot;.equalsIgnoreCase(reviewStatus)) {</span>
+<span class="fc" id="L38">			preferredWeight += REVIEWED_TECTONIC_SUMMARY_WEIGHT;</span>
 		}
 
-<span class="fc" id="L40">		return preferredWeight;</span>
+<span class="fc" id="L41">		return preferredWeight;</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
