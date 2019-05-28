@@ -438,8 +438,9 @@ public class Indexer extends DefaultNotificationListener {
 	public boolean accept(final ProductId id) {
 		final boolean superAccept = super.accept(id);
 
-		if (!superAccept) {
+		if (!superAccept && isIncludeActuals()) {
 			// automatically accept products that affect association
+			// (if processing non-scenario products)
 			final String type = id.getType();
 			if (Event.ORIGIN_PRODUCT_TYPE.equals(type) ||
 					Event.ASSOCIATE_PRODUCT_TYPE.equals(type) ||
