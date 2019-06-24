@@ -1,14 +1,14 @@
 /**
  * Gradle Build Script.
  *
- * Use Gradle 4.9+.
+ * Use Gradle 5.0+.
  */
 
 plugins {
   id "java"
   id "jacoco"                                     // code coverage
   id "pmd"                                        // static code analysis
-  id "com.gradle.build-scan" version "1.16"       // post build results online
+  id "com.gradle.build-scan" version "2.0.2"       // post build results online
   id "org.ajoberstar.grgit" version "2.3.0"       // git repo information
   id "org.ajoberstar.git-publish" version "1.0.1" // publish gh-pages branch
 }
@@ -71,6 +71,12 @@ jacocoTestReport {
   }
 }
 check.dependsOn jacocoTestReport
+
+pmd {
+  ruleSets = [
+    'java-basic'
+  ]
+}
 
 test {
   filter {
