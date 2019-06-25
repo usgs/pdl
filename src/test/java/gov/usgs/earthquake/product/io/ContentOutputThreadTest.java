@@ -14,7 +14,7 @@ public class ContentOutputThreadTest {
 
 	
 	@Test
-	public void testHandlerException() {
+	public void testHandlerException() throws Exception {
 		ProductHandler testHandler = new ObjectProductHandler() {
 			@Override
 			public void onContent(final ProductId id, final String path,
@@ -27,7 +27,8 @@ public class ContentOutputThreadTest {
 
 		ContentOutputThread testThread = new ContentOutputThread(
 				testHandler, null, null, testContent);
-		testThread.run();
+		testThread.start();
+		testThread.join();
 		Assert.assertTrue("close called even after exception", testContent.closeCalled);
 	}
 	
