@@ -142,6 +142,15 @@ public class ProductIndexQuery implements Comparable<ProductIndexQuery> {
 	/** The product status */
 	private String productStatus;
 
+	/** The product index ID; unique per productIndex */
+	private Long minProductIndexId;
+
+	/** The max number of results */
+	private Integer limit;
+
+	/** List of columns to order by */
+	private String orderBy;
+
 	/**
 	 * Construct a new ProductIndexQuery.
 	 */
@@ -325,6 +334,30 @@ public class ProductIndexQuery implements Comparable<ProductIndexQuery> {
 
 	public String getProductStatus() {
 		return productStatus;
+	}
+
+	public void setMinProductIndexId(final Long minProductIndexId) {
+		this.minProductIndexId = minProductIndexId;
+	}
+
+	public Long getMinProductIndexId() {
+		return this.minProductIndexId;
+	}
+
+	public void setLimit(final Integer limit) {
+		this.limit = limit;
+	}
+
+	public Integer getLimit() {
+		return this.limit;
+	}
+
+	public void setOrderBy(final String orderBy) {
+		this.orderBy = orderBy;
+	}
+
+	public String getOrderBy() {
+		return this.orderBy;
 	}
 
 	@Override

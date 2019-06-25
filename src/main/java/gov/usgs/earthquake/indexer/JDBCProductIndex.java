@@ -101,7 +101,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	private static final String SUMMARY_TABLE = "productSummary";
 	private static final String SUMMARY_TABLE_ALIAS = "p";
 	private static final String SUMMARY_CREATED = "created";
-	private static final String SUMMARY_PRODUCT_INDEX_ID = "id";
+	public static final String SUMMARY_PRODUCT_INDEX_ID = "id";
 	private static final String SUMMARY_PRODUCT_ID = "productId";
 	private static final String SUMMARY_EVENT_ID = "eventId";
 	private static final String SUMMARY_TYPE = "type";
@@ -1400,6 +1400,16 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			sql.append(clauseIter.next());
 		}
 
+		String orderBy = query.getOrderBy();
+		if (orderBy != null) {
+			sql.append(" ORDER BY " + orderBy);
+		}
+
+		Integer limit = query.getLimit();
+		if (limit != null) {
+			sql.append(" LIMIT " + limit);
+		}
+
 		Statement statement = null;
 		ResultSet results = null;
 		try {
@@ -1636,6 +1646,11 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		String status = query.getProductStatus();
 		if (status != null) {
 			clauseList.add(String.format("%s='%s'", SUMMARY_STATUS, status));
+		}
+
+		Long minProductIndexId = query.getMinProductIndexId();
+		if (minProductIndexId != null) {
+			clauseList.add(String.format("%s>=%d", SUMMARY_PRODUCT_INDEX_ID, minProductIndexId));
 		}
 
 		BigDecimal minLon = query.getMinEventLongitude();

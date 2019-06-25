@@ -4,10 +4,11 @@
 
 package gov.usgs.earthquake.indexer;
 
-import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import gov.usgs.earthquake.distribution.ConfigurationException;
 import gov.usgs.util.Config;
 
 public class ExtentIndexerListener extends DefaultIndexerListener implements IndexerListener, Runnable {
@@ -21,6 +22,8 @@ public class ExtentIndexerListener extends DefaultIndexerListener implements Ind
 
   private Object syncObject;
   private Thread processThread;
+
+  private ProductIndex productIndex;
 
   //Constructor
   //Just uses super configure for now
@@ -36,6 +39,19 @@ public class ExtentIndexerListener extends DefaultIndexerListener implements Ind
   //Will set up thread and then tell it to chill (probably)
   public void configure(Config config) throws Exception {
     super.configure(config);
+
+    String indexName = config.getProperty(Indexer.INDEX_CONFIG_PROPERTY);
+		if (indexName != null) {
+			LOGGER.config("[" + getName() + "] loading ProductIndex '"
+					+ indexName + "'");
+			productIndex = (ProductIndex) Config.getConfig().getObject(
+					indexName);
+			
+    }
+    if (productIndex == null) {
+      throw new ConfigurationException("[" + getName()
+          + "] ProductIndex is required");
+    }
   }
 
   //Called when indexer does something
@@ -53,12 +69,15 @@ public class ExtentIndexerListener extends DefaultIndexerListener implements Ind
     //Run until we're told not to
     while (!stopThread) {
 
-      List<ProductSummary> productList;
+      List<ProductSummary> productList = null;
 
       synchronized (syncObject) {
-        productList = getNextProducts();
-
-        if (productList.size() == 0) {
+        try {
+          productList = getNextProducts();
+        } catch (Exception e) {
+          LOGGER.log(Level.WARNING, "[" + getName() + "] Exception getting next products", e);
+        }
+        if (productList == null || productList.size() == 0) {
           try {
             syncObject.wait();
           } catch (InterruptedException ignore) {
@@ -72,8 +91,18 @@ public class ExtentIndexerListener extends DefaultIndexerListener implements Ind
         if (stopThread) {
           break;
         }
-        this.processProduct(summary);
-        this.setLastIndexId(summary.getIndexId());
+        try {
+          if (accept(summary.getId())) {
+            this.processProduct(summary);
+          }
+          this.setLastIndexId(summary.getIndexId());
+        } catch (Exception e) {
+          try {
+            this.onProcessException(summary,e);
+          } catch(Exception e2) {
+            break;
+          }
+        }
       }
 
     }
@@ -101,8 +130,12 @@ public class ExtentIndexerListener extends DefaultIndexerListener implements Ind
 
   //Stubs for subclasses
 
-  protected void onBeforeProcessThreadStart() throws Exception{
+  protected void onBeforeProcessThreadStart() throws Exception {
     //Do database call to update lastIndexId
+  }
+
+  protected void onProcessException(ProductSummary product, Exception e) throws Exception {
+    LOGGER.log(Level.WARNING, "[" + getName() + "] Exception processing product " + product.getId(), e);
   }
 
   public long getLastIndexId() {
@@ -113,11 +146,16 @@ public class ExtentIndexerListener extends DefaultIndexerListener implements Ind
     this.lastIndexId = lastIndexId;
   } 
 
-  public List<ProductSummary> getNextProducts() {
-    return new LinkedList<ProductSummary>();
+  public List<ProductSummary> getNextProducts() throws Exception{
+    ProductIndexQuery query = new ProductIndexQuery();
+    query.setLimit(10);
+    query.setOrderBy(JDBCProductIndex.SUMMARY_PRODUCT_INDEX_ID);
+    query.setMinProductIndexId(this.getLastIndexId()+1);
+
+    return productIndex.getProducts(query);
   }
 
-  public void processProduct(final ProductSummary product) {
+  public void processProduct(final ProductSummary product) throws Exception {
     //Do stuff
     LOGGER.info("[" + getName() + "] processing product " + product.getId());
   }
