@@ -5,6 +5,7 @@
 package gov.usgs.earthquake.indexer;
 
 import gov.usgs.util.Config;
+import gov.usgs.earthquake.indexer.ProductSummary;
 
 public class ExtentIndexerListener extends ReliableIndexerListener {
   
