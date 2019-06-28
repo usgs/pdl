@@ -1,5 +1,5 @@
 /**
- * Extent Index Query
+ * ExtentSummary
  */
 
 package gov.usgs.earthquake.indexer;
@@ -11,6 +11,9 @@ import java.util.Map;
 import gov.usgs.earthquake.indexer.ProductSummary;
 import gov.usgs.util.XmlUtils;
 
+/**
+ * Stores ExtentSummary information for products.
+ */
 public class ExtentSummary {
   private Long id;
   private Date startTime;
@@ -24,11 +27,19 @@ public class ExtentSummary {
     //Do nothing; this is if member vars are to be set manually
   }
 
+  /**
+   * Builds an extentSummary from product properties. If the product has none of the properties, the ExtentSummary is still built.
+   * 
+   * @param product the productSummary to build from
+   */
   public ExtentSummary(ProductSummary product) {
     Map<String,String> properties = product.getProperties();
 
     id = product.getIndexId();
     
+    //As per jmfee, this is not a good way to do this
+    //TODO: Either iterate over the keySet or just check if the get is null before parsing
+    //TODO: Use CONST.equals(dynamic) instead of == (which wont' work)
     Iterator<String> iterator = properties.keySet().iterator();
     while (iterator.hasNext()) {
       String property = iterator.next();
@@ -48,6 +59,9 @@ public class ExtentSummary {
     }
   }
 
+  /**
+   * Returns TRUE if this extent should be put in the extentSummary table (at least one property is not null)
+   */
   public boolean isValid() {
     return 
       startTime != null || 

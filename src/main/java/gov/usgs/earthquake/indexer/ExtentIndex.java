@@ -1,7 +1,6 @@
 /**
  * Extent Index
  */
-
 package gov.usgs.earthquake.indexer;
 
 import java.sql.Connection;
@@ -11,7 +10,9 @@ import java.util.logging.Logger;
 
 import gov.usgs.earthquake.indexer.JDBCProductIndex;
 
-
+/**
+ * ExtentIndex is a type of JDBCProductIndex that can also send updates to the extentSummary table.
+ */
 public class ExtentIndex extends JDBCProductIndex {
 
   private static final Logger LOGGER = Logger.getLogger(ExtentIndex.class.getName());
@@ -23,10 +24,15 @@ public class ExtentIndex extends JDBCProductIndex {
   public static final String EXTENT_MAX_LONG = "maxlongitude";
   public static final String EXTENT_MIN_LONG = "minlongitude";
 
-  public ExtentIndex() throws Exception{
+  public ExtentIndex() throws Exception {
     super();
   }
 
+  /**
+   * Queries extentSummary table for the largest index id.
+   * 
+   * @throws Exception if something goes wrong with database transaction
+   */
   public long getLastExtentIndexId() throws Exception{
     long lastIndex;
 
@@ -44,8 +50,8 @@ public class ExtentIndex extends JDBCProductIndex {
       lastIndex = results.getLong(JDBCProductIndex.SUMMARY_PRODUCT_INDEX_ID);
     } else {
       //No index in extentSummary table
-      lastIndex = 1;
-      LOGGER.info("[" + getName() + "] no products in extentSummary table; using index 1");
+      lastIndex = 0;
+      LOGGER.info("[" + getName() + "] no products in extentSummary table; using index 0");
     }
 
     //Cleanup
@@ -53,6 +59,13 @@ public class ExtentIndex extends JDBCProductIndex {
     return lastIndex;
   }
 
+  /**
+   * Inserts valid ExtentSummary products into extentSummary table
+   * 
+   * @param product the product to be added
+   * 
+   * @throws Exception if something goes wrong with the database transaction
+   */
   public void addExtentSummary(ExtentSummary product) throws Exception {
     if (!product.isValid()) {
       LOGGER.info("[" + getName() + "] product " + product.getId() + " has no extent information; won't add to extent table");

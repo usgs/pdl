@@ -1,7 +1,6 @@
-/**
+/*
  * Reliable Indexer Listener
  */
-
 package gov.usgs.earthquake.indexer;
 
 import java.util.List;
@@ -16,11 +15,13 @@ import gov.usgs.util.Config;
  * 
  * This class does little more than output logs for the products it has seen; it is designed to be extended.
  * 
- * Several useful methods are availble to be overridden:
- *    - onBeforeProcessThreadStart
- *    - onProcessException
- *    - getNextProducts
- *    - processProducts
+ * Several useful methods are availble to be overridden or otherwise used:
+ * <ul>
+ * <li>onBeforeProcessThreadStart</li>
+ * <li>onProcessException</li>
+ * <li>getNextProducts</li>
+ * <li>processProducts</li>
+ * </ul>
  * 
  * This class accepts an index for querying in config:
  * 
