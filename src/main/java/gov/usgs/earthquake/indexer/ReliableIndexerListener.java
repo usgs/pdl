@@ -41,7 +41,7 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
   private Object syncObject = new Object();
 
   private Thread processThread;
-  private ProductIndex productIndex;
+  protected ProductIndex productIndex;
 
   //Constructor
   public ReliableIndexerListener() {
