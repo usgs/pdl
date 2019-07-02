@@ -5,7 +5,6 @@
 package gov.usgs.earthquake.indexer;
 
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Map;
 
 import gov.usgs.earthquake.indexer.ProductSummary;
@@ -36,27 +35,6 @@ public class ExtentSummary {
     Map<String,String> properties = product.getProperties();
 
     id = product.getIndexId();
-    
-    //As per jmfee, this is not a good way to do this
-    //TODO: Either iterate over the keySet or just check if the get is null before parsing
-    //TODO: Use CONST.equals(dynamic) instead of == (which wont' work)
-    Iterator<String> iterator = properties.keySet().iterator();
-    while (iterator.hasNext()) {
-      String property = iterator.next();
-      if (property == ExtentIndex.EXTENT_START_TIME) {
-        startTime = XmlUtils.getDate(properties.get(ExtentIndex.EXTENT_START_TIME));
-      } else if (property == ExtentIndex.EXTENT_END_TIME) {
-        endTime = XmlUtils.getDate(properties.get(ExtentIndex.EXTENT_END_TIME));
-      } else if (property == ExtentIndex.EXTENT_MAX_LAT) {
-        maxLatitude = Double.parseDouble(properties.get(ExtentIndex.EXTENT_MAX_LAT));
-      } else if (property == ExtentIndex.EXTENT_MAX_LONG) {
-        maxLongitude = Double.parseDouble(properties.get(ExtentIndex.EXTENT_MAX_LONG));
-      } else if (property == ExtentIndex.EXTENT_MIN_LAT) {
-        minLatitude = Double.parseDouble(properties.get(ExtentIndex.EXTENT_MIN_LAT));
-      } else if (property == ExtentIndex.EXTENT_MIN_LONG) {
-        minLongitude = Double.parseDouble(properties.get(ExtentIndex.EXTENT_MIN_LONG));
-      } 
-    }
 
     if (properties.get(ExtentIndex.EXTENT_START_TIME) != null) {
       startTime = XmlUtils.getDate(properties.get(ExtentIndex.EXTENT_START_TIME));

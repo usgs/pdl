@@ -102,7 +102,7 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
         }
         if (productList == null || productList.size() == 0) {
           try {
-            //Wait when there are no mroe products to process
+            //Wait when there are no more products to process
             syncObject.wait();
           } catch (InterruptedException ignore) {
             //Ignore because it's most likely we get interrupted by shutdown
