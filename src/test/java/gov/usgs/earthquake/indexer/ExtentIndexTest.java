@@ -29,11 +29,12 @@ public class ExtentIndexTest {
   }
 
   @Test
-  public void addRemoveTest() throws Exception{
+  public void addExistsTest() throws Exception{
     long testIndex = 9;
 
     ExtentSummary product = new ExtentSummary();
     product.setId(testIndex);
+    product.setMaxLatitude(0.); //Add at least one parameter to pass validity check
 
     index.addExtentSummary(product);
     long response = index.getLastExtentIndexId();

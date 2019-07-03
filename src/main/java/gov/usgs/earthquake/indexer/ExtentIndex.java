@@ -6,6 +6,7 @@ package gov.usgs.earthquake.indexer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.logging.Logger;
 
 import gov.usgs.earthquake.indexer.JDBCProductIndex;
@@ -39,14 +40,13 @@ public class ExtentIndex extends JDBCProductIndex {
     //Prepare statement
     Connection connection = connect();
     PreparedStatement getLastIndex = connection.prepareStatement(
-      "SELECT TOP 1 " + JDBCProductIndex.SUMMARY_PRODUCT_INDEX_ID + 
-      " FROM " + EXTENT_TABLE + 
-      " ORDER BY " + JDBCProductIndex.SUMMARY_PRODUCT_INDEX_ID + 
-      " DESC");
+      "SELECT MAX(" + JDBCProductIndex.SUMMARY_PRODUCT_INDEX_ID +
+      ") AS " + JDBCProductIndex.SUMMARY_PRODUCT_INDEX_ID +
+      " FROM " + EXTENT_TABLE);
 
     //Parse Results
     ResultSet results = getLastIndex.executeQuery();
-    if (results.first()) {
+    if (results.next()) {
       lastIndex = results.getLong(JDBCProductIndex.SUMMARY_PRODUCT_INDEX_ID);
     } else {
       //No index in extentSummary table
@@ -79,22 +79,46 @@ public class ExtentIndex extends JDBCProductIndex {
       "(" + 
       JDBCProductIndex.SUMMARY_PRODUCT_INDEX_ID + "," + 
       EXTENT_START_TIME + "," + 
-      EXTENT_END_TIME + "," + 
-      EXTENT_MAX_LAT + "," + 
-      EXTENT_MIN_LAT + "," + 
-      EXTENT_MAX_LONG + "," + 
-      EXTENT_MIN_LONG + 
+      EXTENT_END_TIME + "," +
+      EXTENT_MIN_LAT + "," +
+      EXTENT_MAX_LAT + "," +
+      EXTENT_MIN_LONG + "," +
+      EXTENT_MAX_LONG +
       ") VALUES (?, ?, ?, ?, ?, ?, ?)" );
 
     //Add values
 
     addProduct.setLong(1, product.getId());
-    addProduct.setLong(2, product.getStartTime().getTime());
-    addProduct.setLong(3, product.getEndTime().getTime());
-    addProduct.setDouble(4, product.getMaxLatitude());
-    addProduct.setDouble(5, product.getMinLatitude());
-    addProduct.setDouble(6, product.getMaxLongitude());
-    addProduct.setDouble(7, product.getMinLongitude());
+    if (product.getStartTime() != null) {
+      addProduct.setLong(2, product.getStartTime().getTime());
+    } else {
+      addProduct.setNull(2,Types.BIGINT);
+    }
+    if (product.getEndTime() != null) {
+      addProduct.setLong(3, product.getEndTime().getTime());
+    } else {
+      addProduct.setNull(3,Types.BIGINT);
+    }
+    if (product.getMinLatitude() != null) {
+      addProduct.setDouble(4, product.getMinLatitude());
+    } else {
+      addProduct.setNull(4,Types.DECIMAL);
+    }
+    if (product.getMaxLatitude() != null) {
+      addProduct.setDouble(5, product.getMaxLatitude());
+    } else {
+      addProduct.setNull(5, Types.DECIMAL);
+    }
+    if (product.getMinLongitude() != null) {
+      addProduct.setDouble(6, product.getMinLongitude());
+    } else {
+      addProduct.setNull(6,Types.DECIMAL);
+    }
+    if (product.getMaxLongitude() != null) {
+      addProduct.setDouble(7, product.getMaxLongitude());
+    } else {
+      addProduct.setNull(7,Types.DECIMAL);
+    }
 
     //Add to extentSummary table
     addProduct.executeUpdate();
