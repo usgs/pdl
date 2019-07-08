@@ -33,8 +33,8 @@ import gov.usgs.util.Config;
 
 public class ReliableIndexerListener extends DefaultIndexerListener implements IndexerListener, Runnable {
 
-  private static final Logger LOGGER = Logger
-  .getLogger(ReliableIndexerListener.class.getName());
+  public static final Logger LOGGER = Logger
+  .getLogger(ReliableIndexerListener.class.getName()); //TODO: Make private again
   private static int PRODUCTS_PER_QUERY = 10;
 
   private boolean stopThread = false;
@@ -59,11 +59,10 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
 
     //Getting indexer for queries
     String indexName = config.getProperty(Indexer.INDEX_CONFIG_PROPERTY);
-		if (indexName != null) {
-			LOGGER.config("[" + getName() + "] loading ProductIndex '"
-					+ indexName + "'");
-			productIndex = (ProductIndex) Config.getConfig().getObject(
-					indexName);
+    if (indexName != null) {
+      LOGGER.config("[" + getName() + "] loading ProductIndex '"
+        + indexName + "'");
+      productIndex = (ProductIndex) Config.getConfig().getObject(indexName);
     }
     if (productIndex == null) {
       throw new ConfigurationException("[" + getName()
@@ -81,6 +80,7 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
     synchronized (syncObject) {
       syncObject.notify();
     }
+    LOGGER.log(Level.FINEST,"[" + getName() + "] done being notified");
   }
 
   /**
@@ -106,6 +106,7 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
             syncObject.wait();
           } catch (InterruptedException ignore) {
             //Ignore because it's most likely we get interrupted by shutdown
+            LOGGER.log(Level.FINE,"[" + getName() + "] was told to stop, or something went wrong");
           }
           continue;
         }
@@ -113,13 +114,16 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
 
       //Process the products we have
       for(ProductSummary summary : productList) {
+        LOGGER.log(Level.FINEST,"[" + getName() + "] preparing to process product " + summary.getIndexId());
         //Check for shutdown every iteration so we don't hog shutdown time
         if (stopThread) {
           break;
         }
         try {
           //Process the product types we're told to in configuration
+          LOGGER.log(Level.FINEST,"[" + getName() + "] determining if we can process product " + summary.getIndexId());
           if (accept(summary.getId())) {
+            LOGGER.log(Level.FINEST,"[" + getName() + "] attempting to process product " + summary.getIndexId());
             this.processProduct(summary);
           }
           //Update internal storage so we don't reprocess products
@@ -155,15 +159,18 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
    * Closes thread
    */
   @Override
-  public void shutdown() throws Exception{
-    stopThread = true;
-    //When the thread is ready, tell it to stop
-    synchronized (syncObject) {
-      this.processThread.interrupt();
+  public void shutdown() throws Exception {
+    try {
+      LOGGER.log(Level.FINEST,"[" + getName() + "] trying to shut down...");
+      stopThread = true;
+      //When the thread is ready, tell it to stop
+      synchronized (syncObject) {
+        this.processThread.interrupt();
+      }
+      this.processThread.join();
+    } finally {
+      super.shutdown();
     }
-    this.processThread.join();
-
-    super.shutdown();
   }
 
 
@@ -216,7 +223,12 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
    */
   public void processProduct(final ProductSummary product) throws Exception {
     //Do stuff
-    LOGGER.info("[" + getName() + "] processing product " + product.getId());
+    LOGGER.log(Level.FINE,"[" + getName() + "] processing product " + product.getId());
+  }
+
+  @Override
+  public String getName() {
+    return "ReliableIndexerListener";
   }
    
 }

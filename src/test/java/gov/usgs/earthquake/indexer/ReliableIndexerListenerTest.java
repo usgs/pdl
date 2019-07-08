@@ -7,14 +7,18 @@ package gov.usgs.earthquake.indexer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import junit.framework.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import gov.usgs.earthquake.indexer.ProductSummary;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.util.Config;
 import gov.usgs.earthquake.indexer.ProductIndexQuery;
+import gov.usgs.earthquake.product.ProductId;
 
 public class ReliableIndexerListenerTest {
 
@@ -26,25 +30,29 @@ public class ReliableIndexerListenerTest {
   private Object productProcessed = new Object();
   private boolean waitForProducts = false;
 
-  //@Test
+
+  @Before
+  public void prepareTests() {
+    synchronizeListener = new TestIndexerListener();
+    products.clear();
+  }
+
+  @Test
   public void synchronizeTest() throws Exception {
     long testIndex = 7;
 
-    //make sure products list is empty
-    products.clear();
+    //make wait flag true so we block
+    waitForProducts = true;
+
     //start up synchronized listener
-    synchronizeListener = new TestIndexerListener();
     synchronizeListener.startup();
 
-    //in synchronized:
-    //  make wait flag true
-    //  trigger indexer event
-    synchronized (nextProducts) {
-      waitForProducts = true;
-    }
-
-    //start new indexer event thread (basically queue new event)
+    //in synchronized, trigger indexer event
     Thread tr = new Thread(new IndexerEventThread());
+    synchronized (nextProducts) {
+      //start indexer event thread (basically queue new event)
+      tr.start();
+    }
 
     //in synchronized:
     //  notify getNextProducts -> returns empty list
@@ -52,8 +60,6 @@ public class ReliableIndexerListenerTest {
       nextProducts.notify();
     }
     //because of queued indexerevent, getNextProducts blocks again
-
-    tr.join();
 
     //sync on process
     //  sync on next
@@ -64,7 +70,9 @@ public class ReliableIndexerListenerTest {
       synchronized (nextProducts) {
         ProductSummary product = new ProductSummary();
         product.setIndexId(testIndex);
+        product.setId(new ProductId("test","test","test"));
         products.add(product);
+        waitForProducts = false; //Turn off wait so we don't block anymore
         nextProducts.notify();
       }
       productProcessed.wait();
@@ -73,22 +81,24 @@ public class ReliableIndexerListenerTest {
     //confirm last index is the one we handed
     Assert.assertEquals(testIndex,synchronizeListener.getLastIndexId());
 
+    tr.join(); //join indexer event thread
     synchronizeListener.shutdown();
-    waitForProducts = false;
   }
 
-  //@Test
+  @Test
   public void indexTest() throws Exception {
-    products.clear();
     long testIndex = 8;
 
     //start up listener
     synchronizeListener.startup();
 
     //update product list
-    ProductSummary product = new ProductSummary();
-    product.setIndexId(testIndex);
-    products.add(product);
+    synchronized (nextProducts) {
+      ProductSummary product = new ProductSummary();
+      product.setIndexId(testIndex);
+      product.setId(new ProductId("test","test","test"));
+      products.add(product);
+    }
 
     //hand in new event, wait until processed
     synchronized (productProcessed) {
@@ -112,9 +122,10 @@ public class ReliableIndexerListenerTest {
   //@Test
   public void queryTest() throws Exception {
     long testIndex = 9;
+    //TODO: properties need to be done in sections, and we need a listener section, indexer, index... lots of stuff. Either include that here or write your own .ini file
     //set up config properties (maybe don't do it this way)
     Properties props = new Properties();
-    ProductIndex index = new TestIndex();
+    //ProductIndex index = new TestIndex();
     props.setProperty(Indexer.INDEX_CONFIG_PROPERTY,"gov.usgs.earthquake.ReliableIndexerTest.TestIndexer");
     Config config = new Config(props);
 
@@ -145,17 +156,21 @@ public class ReliableIndexerListenerTest {
     public List<ProductSummary> getNextProducts() throws InterruptedException{
       synchronized (nextProducts) {
         if (waitForProducts) {
+          LOGGER.log(Level.FINEST,"[" + getName() + "] waiting for products...");
           nextProducts.wait();
         }
+        LOGGER.log(Level.FINEST,"[" + getName() + "] done waiting for products.");
       }
-      return products;
+      return new ArrayList<>(products);
     }
 
     @Override
-    public void processProduct(ProductSummary product) throws InterruptedException {
+    public void processProduct(ProductSummary product) throws Exception{
+      super.processProduct(product);
       synchronized (productProcessed) {
         currentIndex = product.getIndexId();
         setLastIndexId(product.getIndexId());
+        products.clear(); //So we don't get caught processing the same products always
         productProcessed.notify();
       }
     }
@@ -164,11 +179,6 @@ public class ReliableIndexerListenerTest {
     @Override
     public void onBeforeProcessThreadStart() {
       setLastIndexId(currentIndex);
-    }
-
-    //Escapes the state so we can confirm
-    public Thread.State getState() {
-      return this.getState();
     }
 
   }
