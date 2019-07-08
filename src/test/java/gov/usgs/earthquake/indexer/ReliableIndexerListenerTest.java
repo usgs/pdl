@@ -25,7 +25,7 @@ public class ReliableIndexerListenerTest {
   private TestIndexerListener synchronizeListener = new TestIndexerListener();
   private ArrayList<ProductSummary> products = new ArrayList<ProductSummary>();
   private long currentIndex = 0;
-  private ProductIndexQuery lastQuery;
+  private long lastQueryIndexId;
   private Object nextProducts = new Object();
   private Object productProcessed = new Object();
   private boolean waitForProducts = false;
@@ -102,7 +102,7 @@ public class ReliableIndexerListenerTest {
 
     //hand in new event, wait until processed
     synchronized (productProcessed) {
-      synchronizeListener.onIndexerEvent(new IndexerEvent(new Indexer())); 
+      synchronizeListener.onIndexerEvent(new IndexerEvent(new Indexer()));
       productProcessed.wait();
     }
 
@@ -119,35 +119,33 @@ public class ReliableIndexerListenerTest {
 
   }
 
-  //@Test
+  @Test
   public void queryTest() throws Exception {
     long testIndex = 9;
-    //TODO: properties need to be done in sections, and we need a listener section, indexer, index... lots of stuff. Either include that here or write your own .ini file
-    //set up config properties (maybe don't do it this way)
-    Properties props = new Properties();
-    //ProductIndex index = new TestIndex();
-    props.setProperty(Indexer.INDEX_CONFIG_PROPERTY,"gov.usgs.earthquake.ReliableIndexerTest.TestIndexer");
-    Config config = new Config(props);
 
     //start new reliablelistener, call config
     ReliableIndexerListener listener = new ReliableIndexerListener();
-    listener.configure(config);
+    listener.setProductIndex(new TestIndex());
     listener.startup();
 
     //create new product
-    products.clear();
     ProductSummary product = new ProductSummary();
     product.setIndexId(testIndex);
+    product.setId(new ProductId("test","test","test"));
     products.add(product);
     
     //notify of new product (with index)
-    synchronized (productProcessed) {
-      listener.onIndexerEvent(new IndexerEvent(new Indexer())); 
-      productProcessed.wait();
+    listener.onIndexerEvent(new IndexerEvent(new Indexer()));
+
+    //Clear list of products
+    synchronized(nextProducts) {
+      products.clear();
     }
 
     //confirm correct query for product
-    Assert.assertEquals(testIndex,lastQuery.getMinProductIndexId().longValue());
+    Assert.assertEquals(testIndex+1,lastQueryIndexId);
+
+    listener.shutdown();
   }
 
   public class TestIndexerListener extends ReliableIndexerListener {
@@ -168,9 +166,9 @@ public class ReliableIndexerListenerTest {
     public void processProduct(ProductSummary product) throws Exception{
       super.processProduct(product);
       synchronized (productProcessed) {
+        products.clear();
         currentIndex = product.getIndexId();
         setLastIndexId(product.getIndexId());
-        products.clear(); //So we don't get caught processing the same products always
         productProcessed.notify();
       }
     }
@@ -204,8 +202,10 @@ public class ReliableIndexerListenerTest {
 
     @Override
     public List<ProductSummary> getProducts(ProductIndexQuery query) {
-      lastQuery = query;
-      return products;
+      synchronized(nextProducts) {
+        lastQueryIndexId = query.getMinProductIndexId();
+        return products;
+      }
     }
     
   }

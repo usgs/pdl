@@ -173,6 +173,19 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
     }
   }
 
+  @Override
+  public String getName() {
+    return "ReliableIndexerListener";
+  }
+
+  public ProductIndex getProductIndex() {
+    return this.productIndex;
+  }
+
+  public void setProductIndex(ProductIndex productIndex) {
+    this.productIndex = productIndex;
+  }
+
 
   ////////////////////////
   //Stubs for subclasses//
@@ -226,9 +239,6 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
     LOGGER.log(Level.FINE,"[" + getName() + "] processing product " + product.getId());
   }
 
-  @Override
-  public String getName() {
-    return "ReliableIndexerListener";
-  }
+
    
 }
