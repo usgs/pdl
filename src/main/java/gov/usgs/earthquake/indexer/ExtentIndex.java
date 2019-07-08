@@ -18,6 +18,7 @@ public class ExtentIndex extends JDBCProductIndex {
 
   private static final Logger LOGGER = Logger.getLogger(ExtentIndex.class.getName());
   private static final String EXTENT_TABLE = "extentSummary";
+  public static final String EXTENT_INDEX_ID = "productid";
   public static final String EXTENT_START_TIME = "starttime";
   public static final String EXTENT_END_TIME = "endtime";
   public static final String EXTENT_MAX_LAT = "maxlatitude";
@@ -40,14 +41,14 @@ public class ExtentIndex extends JDBCProductIndex {
     //Prepare statement
     Connection connection = connect();
     PreparedStatement getLastIndex = connection.prepareStatement(
-      "SELECT MAX(" + JDBCProductIndex.SUMMARY_PRODUCT_INDEX_ID +
-      ") AS " + JDBCProductIndex.SUMMARY_PRODUCT_INDEX_ID +
+      "SELECT MAX(" + EXTENT_INDEX_ID +
+      ") AS " + EXTENT_INDEX_ID +
       " FROM " + EXTENT_TABLE);
 
     //Parse Results
     ResultSet results = getLastIndex.executeQuery();
     if (results.next()) {
-      lastIndex = results.getLong(JDBCProductIndex.SUMMARY_PRODUCT_INDEX_ID);
+      lastIndex = results.getLong(EXTENT_INDEX_ID);
     } else {
       //No index in extentSummary table
       lastIndex = 0;
@@ -77,7 +78,7 @@ public class ExtentIndex extends JDBCProductIndex {
     PreparedStatement addProduct = connection.prepareStatement(
       "INSERT INTO " + EXTENT_TABLE +
       "(" + 
-      JDBCProductIndex.SUMMARY_PRODUCT_INDEX_ID + "," + 
+      EXTENT_INDEX_ID + "," +
       EXTENT_START_TIME + "," + 
       EXTENT_END_TIME + "," +
       EXTENT_MIN_LAT + "," +

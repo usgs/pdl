@@ -1,5 +1,5 @@
 CREATE TABLE extentSummary (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  productid INTEGER PRIMARY KEY AUTOINCREMENT,
   starttime INTEGER,
   endtime INTEGER,
   minlatitude REAL,

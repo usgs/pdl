@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS extentSummary (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  productid BIGINT PRIMARY KEY AUTO_INCREMENT,
   starttime BIGINT,
   endtime BIGINT,
   minlatitude DOUBLE,
