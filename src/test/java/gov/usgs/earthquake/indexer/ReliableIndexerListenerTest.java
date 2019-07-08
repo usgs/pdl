@@ -6,18 +6,12 @@ package gov.usgs.earthquake.indexer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import gov.usgs.earthquake.indexer.ProductSummary;
-import gov.usgs.earthquake.product.Product;
-import gov.usgs.util.Config;
-import gov.usgs.earthquake.indexer.ProductIndexQuery;
 import gov.usgs.earthquake.product.ProductId;
 
 public class ReliableIndexerListenerTest {
