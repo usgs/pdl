@@ -44,11 +44,6 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
   private Thread processThread;
   protected ProductIndex productIndex;
 
-  //Constructor
-  public ReliableIndexerListener() {
-    super();
-  }
-
   /**
    * Sets up an object on start
    * 

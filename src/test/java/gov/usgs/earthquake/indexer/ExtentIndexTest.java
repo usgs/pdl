@@ -24,7 +24,7 @@ public class ExtentIndexTest {
   }
 
   @After
-  public void teardown() throws Exception{
+  public void shutdown() throws Exception{
     index.shutdown();
   }
 
