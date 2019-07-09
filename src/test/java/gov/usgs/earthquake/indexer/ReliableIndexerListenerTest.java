@@ -117,7 +117,7 @@ public class ReliableIndexerListenerTest {
   public void queryTest() throws Exception {
     long testIndex = 9;
 
-    //start new reliablelistener, call config
+    //start new reliablelistener, hand index
     ReliableIndexerListener listener = new ReliableIndexerListener();
     listener.setProductIndex(new TestIndex());
     listener.startup();
@@ -129,11 +129,14 @@ public class ReliableIndexerListenerTest {
     products.add(product);
     
     //notify of new product (with index)
-    listener.onIndexerEvent(new IndexerEvent(new Indexer()));
+    synchronized (nextProducts) {
+      listener.onIndexerEvent(new IndexerEvent(new Indexer()));
+      nextProducts.wait(); //wait until listener has the product
+    }
 
-    //Clear list of products
+    //wait to ask for another product
     synchronized(nextProducts) {
-      products.clear();
+      nextProducts.wait();
     }
 
     //confirm correct query for product
@@ -197,8 +200,11 @@ public class ReliableIndexerListenerTest {
     @Override
     public List<ProductSummary> getProducts(ProductIndexQuery query) {
       synchronized(nextProducts) {
+        nextProducts.notify();
         lastQueryIndexId = query.getMinProductIndexId();
-        return products;
+        List<ProductSummary> ret = new ArrayList<>(products); //Get copy of products
+        products.clear(); //Clear products so we don't loop infinitely
+        return ret;
       }
     }
     
