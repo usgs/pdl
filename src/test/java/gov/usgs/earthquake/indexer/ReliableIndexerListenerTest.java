@@ -200,10 +200,10 @@ public class ReliableIndexerListenerTest {
     @Override
     public List<ProductSummary> getProducts(ProductIndexQuery query) {
       synchronized(nextProducts) {
-        nextProducts.notify();
         lastQueryIndexId = query.getMinProductIndexId();
         List<ProductSummary> ret = new ArrayList<>(products); //Get copy of products
         products.clear(); //Clear products so we don't loop infinitely
+        nextProducts.notify();
         return ret;
       }
     }

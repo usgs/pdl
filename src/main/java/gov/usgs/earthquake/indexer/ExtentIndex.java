@@ -17,7 +17,7 @@ import gov.usgs.earthquake.indexer.JDBCProductIndex;
 public class ExtentIndex extends JDBCProductIndex {
 
   private static final Logger LOGGER = Logger.getLogger(ExtentIndex.class.getName());
-  private static final String EXTENT_TABLE = "extentSummary";
+  public static final String EXTENT_TABLE = "extentSummary";
   public static final String EXTENT_INDEX_ID = "productid";
   public static final String EXTENT_START_TIME = "starttime";
   public static final String EXTENT_END_TIME = "endtime";
