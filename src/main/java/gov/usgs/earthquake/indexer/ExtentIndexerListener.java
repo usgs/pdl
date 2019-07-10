@@ -42,12 +42,6 @@ public class ExtentIndexerListener extends ReliableIndexerListener {
     setLastIndexId(((ExtentIndex)productIndex).getLastExtentIndexId());
   }
 
-  //Remove if not planning on using it
-  @Override
-  protected void onProcessException(ProductSummary product, Exception e) throws Exception{
-    super.onProcessException(product,e);
-  }
-
   /**
    * Hands product to index to be added to table
    * 
