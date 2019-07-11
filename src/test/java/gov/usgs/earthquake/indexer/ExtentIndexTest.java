@@ -15,11 +15,9 @@ import java.sql.PreparedStatement;
 
 public class ExtentIndexTest {
 
-  private ExtentIndex index;
-
   @Test
   public void addExistsTest() throws Exception{
-    index = new ExtentIndex();
+    ExtentIndex index = new ExtentIndex();
     index.configure(new Config());
     index.startup();
 
