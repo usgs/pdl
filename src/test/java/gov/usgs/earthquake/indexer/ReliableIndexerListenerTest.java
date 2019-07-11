@@ -113,27 +113,32 @@ public class ReliableIndexerListenerTest {
     synchronizeListener.shutdown();
 
   }
-
-  //TODO: Still fails sometimes - love concurrency
+  
   @Test
   public void queryTest() throws Exception {
+    //create new product
     long testIndex = 9;
+    ProductSummary product = new ProductSummary();
+    product.setIndexId(testIndex);
+    product.setId(new ProductId("test","test","test"));
+    products.add(product);
 
     //start new reliablelistener, hand index
     ReliableIndexerListener listener = new ReliableIndexerListener();
     listener.setProductIndex(new TestIndex());
     listener.startup();
-
-    //create new product
-    ProductSummary product = new ProductSummary();
-    product.setIndexId(testIndex);
-    product.setId(new ProductId("test","test","test"));
-    products.add(product);
     
     //notify of new product (with index)
     synchronized (nextProducts) {
       listener.onIndexerEvent(new IndexerEvent(new Indexer()));
-      nextProducts.wait(); //wait until listener has the product
+
+      //wait 5 seconds for product to be processed (not a good way to do this, but only consistent way to pass test)
+      for (int i = 0; i < 5; i++) {
+        nextProducts.wait(1000);
+        if (lastQueryIndexId != 0) {
+          break;
+        }
+      }
     }
 
     //confirm correct query for product
@@ -200,7 +205,6 @@ public class ReliableIndexerListenerTest {
         lastQueryIndexId = query.getMinProductIndexId();
         List<ProductSummary> ret = new ArrayList<>(products); //Get copy of products
         products.clear(); //Clear products so we don't loop infinitely
-        nextProducts.notify();
         return ret;
       }
     }
