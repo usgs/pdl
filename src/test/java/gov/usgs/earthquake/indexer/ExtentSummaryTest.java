@@ -16,12 +16,12 @@ public class ExtentSummaryTest {
   @Test
   public void constructTest() {
     HashMap<String,String> properties = new HashMap<>();
-    properties.put(ExtentIndex.EXTENT_START_TIME,"2019-07-01");
-    properties.put(ExtentIndex.EXTENT_END_TIME,"2019-07-04");
-    properties.put(ExtentIndex.EXTENT_MIN_LAT,"0");
-    properties.put(ExtentIndex.EXTENT_MAX_LAT,"45");
-    properties.put(ExtentIndex.EXTENT_MIN_LONG,"0");
-    properties.put(ExtentIndex.EXTENT_MAX_LONG,"90");
+    properties.put(ExtentSummary.EXTENT_START_TIME_PROPERTY,"2019-07-01");
+    properties.put(ExtentSummary.EXTENT_END_TIME_PROPERTY,"2019-07-04");
+    properties.put(ExtentSummary.EXTENT_MIN_LAT_PROPERTY,"0");
+    properties.put(ExtentSummary.EXTENT_MAX_LAT_PROPERTY,"45");
+    properties.put(ExtentSummary.EXTENT_MIN_LONG_PROPERTY,"0");
+    properties.put(ExtentSummary.EXTENT_MAX_LONG_PROPERTY,"90");
 
     ProductSummary productSummary = new ProductSummary();
     productSummary.setIndexId((long)5);
@@ -35,6 +35,17 @@ public class ExtentSummaryTest {
     Assert.assertEquals(45.,extentSummary.getMaxLatitude());
     Assert.assertEquals(0.,extentSummary.getMinLongitude());
     Assert.assertEquals(90.,extentSummary.getMaxLongitude());
+  }
+
+  @Test
+  public void validTest() {
+    ExtentSummary summary = new ExtentSummary();
+
+    Assert.assertFalse(summary.isValid());
+
+    summary.setMinLongitude(0.);
+
+    Assert.assertTrue(summary.isValid());
   }
 
 }

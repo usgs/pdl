@@ -7,7 +7,6 @@ package gov.usgs.earthquake.indexer;
 import java.util.Date;
 import java.util.Map;
 
-import gov.usgs.earthquake.indexer.ProductSummary;
 import gov.usgs.util.XmlUtils;
 
 /**
@@ -21,6 +20,14 @@ public class ExtentSummary {
   private Double minLatitude;
   private Double maxLongitude;
   private Double minLongitude;
+
+  public static final String EXTENT_START_TIME_PROPERTY = "start-time";
+  public static final String EXTENT_END_TIME_PROPERTY = "end-time";
+  public static final String EXTENT_MAX_LAT_PROPERTY = "max-latitude";
+  public static final String EXTENT_MIN_LAT_PROPERTY = "min-latitude";
+  public static final String EXTENT_MAX_LONG_PROPERTY = "max-longitude";
+  public static final String EXTENT_MIN_LONG_PROPERTY = "min-longitude";
+
 
   public ExtentSummary() {
     //Do nothing; this is if member vars are to be set manually
@@ -36,23 +43,24 @@ public class ExtentSummary {
 
     id = product.getIndexId();
 
-    if (properties.get(ExtentIndex.EXTENT_START_TIME) != null) {
-      startTime = XmlUtils.getDate(properties.get(ExtentIndex.EXTENT_START_TIME));
+    //TODO: Determine if the different versions should be stored as vars
+    if (properties.get(EXTENT_START_TIME_PROPERTY) != null) {
+      startTime = XmlUtils.getDate(properties.get(EXTENT_START_TIME_PROPERTY));
     }
-    if (properties.get(ExtentIndex.EXTENT_END_TIME) != null) {
-      endTime = XmlUtils.getDate(properties.get(ExtentIndex.EXTENT_END_TIME));
+    if (properties.get(EXTENT_END_TIME_PROPERTY) != null) {
+      endTime = XmlUtils.getDate(properties.get(EXTENT_END_TIME_PROPERTY));
     }
-    if (properties.get(ExtentIndex.EXTENT_MAX_LAT) != null) {
-      maxLatitude = Double.parseDouble(properties.get(ExtentIndex.EXTENT_MAX_LAT));
+    if (properties.get(EXTENT_MAX_LAT_PROPERTY) != null) {
+      maxLatitude = Double.parseDouble(properties.get(EXTENT_MAX_LAT_PROPERTY));
     }
-    if (properties.get(ExtentIndex.EXTENT_MAX_LONG) != null) {
-      maxLongitude = Double.parseDouble(properties.get(ExtentIndex.EXTENT_MAX_LONG));
+    if (properties.get(EXTENT_MAX_LONG_PROPERTY) != null) {
+      maxLongitude = Double.parseDouble(properties.get(EXTENT_MAX_LONG_PROPERTY));
     }
-    if (properties.get(ExtentIndex.EXTENT_MIN_LAT) != null) {
-      minLatitude = Double.parseDouble(properties.get(ExtentIndex.EXTENT_MIN_LAT));
+    if (properties.get(EXTENT_MIN_LAT_PROPERTY) != null) {
+      minLatitude = Double.parseDouble(properties.get(EXTENT_MIN_LAT_PROPERTY));
     }
-    if (properties.get(ExtentIndex.EXTENT_MIN_LONG) != null) {
-      minLongitude = Double.parseDouble(properties.get(ExtentIndex.EXTENT_MIN_LONG));
+    if (properties.get(EXTENT_MIN_LONG_PROPERTY) != null) {
+      minLongitude = Double.parseDouble(properties.get(EXTENT_MIN_LONG_PROPERTY));
     }
   }
 
