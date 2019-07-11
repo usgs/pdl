@@ -23,10 +23,10 @@ public class ExtentSummary {
 
   public static final String EXTENT_START_TIME_PROPERTY = "start-time";
   public static final String EXTENT_END_TIME_PROPERTY = "end-time";
-  public static final String EXTENT_MAX_LAT_PROPERTY = "max-latitude";
-  public static final String EXTENT_MIN_LAT_PROPERTY = "min-latitude";
-  public static final String EXTENT_MAX_LONG_PROPERTY = "max-longitude";
-  public static final String EXTENT_MIN_LONG_PROPERTY = "min-longitude";
+  public static final String EXTENT_MAX_LAT_PROPERTY = "maximum-latitude";
+  public static final String EXTENT_MIN_LAT_PROPERTY = "minimum-latitude";
+  public static final String EXTENT_MAX_LONG_PROPERTY = "maximum-longitude";
+  public static final String EXTENT_MIN_LONG_PROPERTY = "minimum-longitude";
 
 
   public ExtentSummary() {
