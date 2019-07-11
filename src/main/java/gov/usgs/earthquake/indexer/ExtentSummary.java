@@ -38,15 +38,20 @@ public class ExtentSummary {
 
     if (properties.get(ExtentIndex.EXTENT_START_TIME) != null) {
       startTime = XmlUtils.getDate(properties.get(ExtentIndex.EXTENT_START_TIME));
-    } else if (properties.get(ExtentIndex.EXTENT_END_TIME) != null) {
+    }
+    if (properties.get(ExtentIndex.EXTENT_END_TIME) != null) {
       endTime = XmlUtils.getDate(properties.get(ExtentIndex.EXTENT_END_TIME));
-    } else if (properties.get(ExtentIndex.EXTENT_MAX_LAT) != null) {
+    }
+    if (properties.get(ExtentIndex.EXTENT_MAX_LAT) != null) {
       maxLatitude = Double.parseDouble(properties.get(ExtentIndex.EXTENT_MAX_LAT));
-    } else if (properties.get(ExtentIndex.EXTENT_MAX_LONG) != null) {
+    }
+    if (properties.get(ExtentIndex.EXTENT_MAX_LONG) != null) {
       maxLongitude = Double.parseDouble(properties.get(ExtentIndex.EXTENT_MAX_LONG));
-    } else if (properties.get(ExtentIndex.EXTENT_MIN_LAT) != null) {
+    }
+    if (properties.get(ExtentIndex.EXTENT_MIN_LAT) != null) {
       minLatitude = Double.parseDouble(properties.get(ExtentIndex.EXTENT_MIN_LAT));
-    } else if (properties.get(ExtentIndex.EXTENT_MIN_LONG) != null) {
+    }
+    if (properties.get(ExtentIndex.EXTENT_MIN_LONG) != null) {
       minLongitude = Double.parseDouble(properties.get(ExtentIndex.EXTENT_MIN_LONG));
     }
   }

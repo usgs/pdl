@@ -6,7 +6,6 @@ package gov.usgs.earthquake.indexer;
 
 import gov.usgs.util.Config;
 import gov.usgs.earthquake.distribution.ConfigurationException;
-import gov.usgs.earthquake.indexer.ProductSummary;
 
 /**
  * ExtentIndexerListener is an extension of the ReliableIndexerListener. It populates the ExtentSummary table with viable products.
@@ -30,7 +29,7 @@ public class ExtentIndexerListener extends ReliableIndexerListener {
   public void configure(Config config) throws Exception {
     super.configure(config);
     if (!(productIndex instanceof ExtentIndex)) {
-      throw new ConfigurationException("[" + getName() + "] index must be of type ExtentIndex");
+      throw new ConfigurationException("[" + getName() + "] index must be of type ExtentIndex. Given type " + productIndex.getClass().getName());
     }
   }
 

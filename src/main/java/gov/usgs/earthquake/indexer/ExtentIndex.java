@@ -9,12 +9,12 @@ import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.logging.Logger;
 
-import gov.usgs.earthquake.indexer.JDBCProductIndex;
+import org.sqlite.SQLiteException;
 
 /**
  * ExtentIndex is a type of JDBCProductIndex that can also send updates to the extentSummary table.
  */
-public class ExtentIndex extends JDBCProductIndex {
+public class ExtentIndex extends JDBCProductIndex { //TODO: Make log info log fine or similar
 
   private static final Logger LOGGER = Logger.getLogger(ExtentIndex.class.getName());
   public static final String EXTENT_TABLE = "extentSummary";
@@ -40,10 +40,15 @@ public class ExtentIndex extends JDBCProductIndex {
 
     //Prepare statement
     Connection connection = connect();
-    PreparedStatement getLastIndex = connection.prepareStatement(
-      "SELECT MAX(" + EXTENT_INDEX_ID +
-      ") AS " + EXTENT_INDEX_ID +
-      " FROM " + EXTENT_TABLE);
+    PreparedStatement getLastIndex;
+    try {
+      getLastIndex = connection.prepareStatement(
+              "SELECT MAX(" + EXTENT_INDEX_ID +
+                      ") AS " + EXTENT_INDEX_ID +
+                      " FROM " + EXTENT_TABLE);
+    } catch (SQLiteException e) {
+      throw new SQLiteException(e.getMessage() + ". SQL query was: SELECT MAX(" + EXTENT_INDEX_ID + ") AS " + EXTENT_INDEX_ID + " FROM " + EXTENT_TABLE, e.getResultCode());
+    }
 
     //Parse Results
     ResultSet results = getLastIndex.executeQuery();

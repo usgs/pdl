@@ -113,6 +113,7 @@ public class ReliableIndexerListenerTest {
 
   }
 
+  //TODO: Fix me, still broken
   @Test
   public void queryTest() throws Exception {
     long testIndex = 9;
