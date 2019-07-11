@@ -7,7 +7,6 @@ package gov.usgs.earthquake.indexer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import junit.framework.Assert;
 import org.junit.Before;
@@ -113,7 +112,7 @@ public class ReliableIndexerListenerTest {
     synchronizeListener.shutdown();
 
   }
-  
+
   @Test
   public void queryTest() throws Exception {
     //create new product

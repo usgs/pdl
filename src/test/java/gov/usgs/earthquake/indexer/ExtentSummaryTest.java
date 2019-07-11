@@ -7,6 +7,7 @@ package gov.usgs.earthquake.indexer;
 import junit.framework.Assert;
 import org.junit.Test;
 
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 
 public class ExtentSummaryTest {
@@ -27,8 +28,11 @@ public class ExtentSummaryTest {
 
     ExtentSummary extentSummary = new ExtentSummary(productSummary);
 
-    Assert.assertEquals(1561960800000l,extentSummary.getStartTime().getTime());
-    Assert.assertEquals(1562220000000l,extentSummary.getEndTime().getTime());
+    GregorianCalendar startDate = new GregorianCalendar(2019,6,1);
+    GregorianCalendar endDate = new GregorianCalendar(2019,6,4);
+
+    Assert.assertEquals(startDate.getTime().getTime(),extentSummary.getStartTime().getTime());
+    Assert.assertEquals(endDate.getTime().getTime(),extentSummary.getEndTime().getTime());
     Assert.assertEquals(0.,extentSummary.getMinLatitude());
     Assert.assertEquals(45.,extentSummary.getMaxLatitude());
     Assert.assertEquals(0.,extentSummary.getMinLongitude());
