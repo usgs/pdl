@@ -43,7 +43,6 @@ public class ExtentSummary {
 
     id = product.getIndexId();
 
-    //TODO: Determine if the different versions should be stored as vars
     if (properties.get(EXTENT_START_TIME_PROPERTY) != null) {
       startTime = XmlUtils.getDate(properties.get(EXTENT_START_TIME_PROPERTY));
     }

@@ -48,7 +48,7 @@ public class ExtentIndexerListener extends ReliableIndexerListener {
    */
   @Override
   public void processProduct(ProductSummary product) throws Exception{
-    LOGGER.info("[" + getName() + "] processing product with id " + product.getIndexId() + " and type " + product.getType() + ". Its properties are: " + product.getProperties());
+    super.processProduct(product);
     ExtentSummary extent = new ExtentSummary(product);
 
     ((ExtentIndex)productIndex).addExtentSummary(extent);

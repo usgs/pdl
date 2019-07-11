@@ -4,11 +4,9 @@
 
 package gov.usgs.earthquake.indexer;
 
-import gov.usgs.earthquake.product.ProductId;
 import junit.framework.Assert;
 import org.junit.Test;
 
-import java.util.Date;
 import java.util.HashMap;
 
 public class ExtentSummaryTest {

@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.sqlite.SQLiteException;
@@ -14,7 +15,7 @@ import org.sqlite.SQLiteException;
 /**
  * ExtentIndex is a type of JDBCProductIndex that can also send updates to the extentSummary table.
  */
-public class ExtentIndex extends JDBCProductIndex { //TODO: Make log info log fine or similar
+public class ExtentIndex extends JDBCProductIndex {
 
   private static final Logger LOGGER = Logger.getLogger(ExtentIndex.class.getName());
   public static final String EXTENT_TABLE = "extentSummary";
@@ -57,7 +58,7 @@ public class ExtentIndex extends JDBCProductIndex { //TODO: Make log info log fi
     } else {
       //No index in extentSummary table
       lastIndex = 0;
-      LOGGER.info("[" + getName() + "] no products in extentSummary table; using index 0");
+      LOGGER.log(Level.FINEST,"[" + getName() + "] no products in extentSummary table; using index 0");
     }
 
     //Cleanup
@@ -74,7 +75,7 @@ public class ExtentIndex extends JDBCProductIndex { //TODO: Make log info log fi
    */
   public void addExtentSummary(ExtentSummary product) throws Exception {
     if (!product.isValid()) {
-      LOGGER.info("[" + getName() + "] product " + product.getId() + " has no extent information; won't add to extent table");
+      LOGGER.log(Level.FINE,"[" + getName() + "] product " + product.getId() + " has no extent information; won't add to extent table");
       return;
     }
 

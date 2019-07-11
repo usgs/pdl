@@ -113,7 +113,7 @@ public class ReliableIndexerListenerTest {
 
   }
 
-  //TODO: Fix me, still broken
+  //TODO: Still fails sometimes - love concurrency
   @Test
   public void queryTest() throws Exception {
     long testIndex = 9;
