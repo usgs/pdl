@@ -7,6 +7,7 @@ package gov.usgs.earthquake.indexer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import junit.framework.Assert;
 import org.junit.Before;
@@ -133,11 +134,6 @@ public class ReliableIndexerListenerTest {
     synchronized (nextProducts) {
       listener.onIndexerEvent(new IndexerEvent(new Indexer()));
       nextProducts.wait(); //wait until listener has the product
-    }
-
-    //wait to ask for another product
-    synchronized(nextProducts) {
-      nextProducts.wait();
     }
 
     //confirm correct query for product

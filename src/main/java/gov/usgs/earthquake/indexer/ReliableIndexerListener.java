@@ -34,7 +34,8 @@ import gov.usgs.util.Config;
 public class ReliableIndexerListener extends DefaultIndexerListener implements IndexerListener, Runnable {
 
   protected static final Logger LOGGER = Logger
-  .getLogger(ReliableIndexerListener.class.getName());
+          .getLogger(ReliableIndexerListener.class.getName());
+
   private static int PRODUCTS_PER_QUERY = 10;
 
   private boolean stopThread = false;
