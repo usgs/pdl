@@ -1,7 +1,6 @@
 /**
  * ExtentSummary
  */
-
 package gov.usgs.earthquake.indexer;
 
 import java.util.Date;

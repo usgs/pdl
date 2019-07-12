@@ -1,7 +1,6 @@
 /**
  * Extent Indexer Listener
  */
-
 package gov.usgs.earthquake.indexer;
 
 import gov.usgs.util.Config;
@@ -35,6 +34,8 @@ public class ExtentIndexerListener extends ReliableIndexerListener {
 
   /**
    * Loads the last index id in the extent table before the listener has to use it
+   *
+   * @throws Exception if ExtentIndex can't do database transaction
    */
   @Override
   protected void onBeforeProcessThreadStart() throws Exception {
@@ -45,6 +46,8 @@ public class ExtentIndexerListener extends ReliableIndexerListener {
    * Hands product to index to be added to table
    * 
    * @param product the product to be added
+   *
+   * @throws Exception if ExtentIndex can't do database transaction
    */
   @Override
   public void processProduct(ProductSummary product) throws Exception{

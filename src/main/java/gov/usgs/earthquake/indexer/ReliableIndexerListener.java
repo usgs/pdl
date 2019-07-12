@@ -49,6 +49,8 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
    * Sets up an object on start
    * 
    * @param config configuration
+   *
+   * @throws Exception if missing product index
    */
   public void configure(Config config) throws Exception {
     super.configure(config);
@@ -70,6 +72,8 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
    * Wakes thread when indexer makes changes
    * 
    * @param delta Indexer Event - not used
+   *
+   * @throws Exception if something goes wrong
    */ 
   public void onIndexerEvent(IndexerEvent delta) throws Exception {
     //Synchronized on the syncObject so we don't miss events
@@ -94,7 +98,8 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
         try {
           productList = getNextProducts();
         } catch (Exception e) {
-          LOGGER.log(Level.WARNING, "[" + getName() + "] Exception getting next products", e); //Not a phenomenal way to handle this exception
+          //Not a phenomenal way to handle this exception
+          LOGGER.log(Level.WARNING, "[" + getName() + "] Exception getting next products", e);
         }
         if (productList == null || productList.size() == 0) {
           try {
@@ -142,6 +147,9 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
    * Starts thread
    * 
    * Calls onBeforeProcessThreadStart() in case subclasses want to add functionality
+   *
+   * @throws Exception if there's a thread issue
+   * @throws Exception if thread start fails
    */
   @Override
   public void startup() throws Exception{
@@ -153,6 +161,8 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
 
   /**
    * Closes thread
+   *
+   * @throws Exception if there's a thread issue
    */
   @Override
   public void shutdown() throws Exception {
@@ -203,13 +213,17 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
 
   /**
    * Run before thread start.
+   *
+   * @throws Exception available for subclasses
    */
   protected void onBeforeProcessThreadStart() throws Exception {
     //Do database call to update lastIndexId
   }
 
   /**
-   * Exception handling for product processing. Throws an exception in case we can't handle it.
+   * Exception handling for product processing.
+   *
+   * @throws Exception in case we can't handle the first exception.
    */
   protected void onProcessException(ProductSummary product, Exception e) throws Exception {
     LOGGER.log(Level.WARNING, "[" + getName() + "] Exception processing product " + product.getId(), e);
@@ -217,6 +231,8 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
 
   /**
    * Gets the next products using the index provided in Config
+   *
+   * @throws Exception if we have a database issue
    */
   public List<ProductSummary> getNextProducts() throws Exception{
     ProductIndexQuery query = new ProductIndexQuery();
@@ -229,6 +245,8 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
 
   /**
    * Does a task with each product
+   *
+   * @throws Exception available for subclasses
    */
   public void processProduct(final ProductSummary product) throws Exception {
     //Do stuff

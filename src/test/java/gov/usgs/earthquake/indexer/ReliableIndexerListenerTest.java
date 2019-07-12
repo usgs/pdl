@@ -1,7 +1,6 @@
 /*
  * Reliable Indexer Listener Test
  */
-
 package gov.usgs.earthquake.indexer;
 
 import java.util.ArrayList;
@@ -18,15 +17,16 @@ public class ReliableIndexerListenerTest {
 
   private TestIndexerListener synchronizeListener = new TestIndexerListener();
   private ArrayList<ProductSummary> products = new ArrayList<ProductSummary>();
-  private long currentIndex = 0;
-  private long lastQueryIndexId;
   private Object nextProducts = new Object();
   private Object productProcessed = new Object();
   private boolean waitForProducts = false;
+  private long currentIndex = 0;
+  private long lastQueryIndexId;
 
 
   @Before
   public void prepareTests() {
+    //Reinitialize and clean up
     synchronizeListener = new TestIndexerListener();
     products.clear();
   }
@@ -147,7 +147,7 @@ public class ReliableIndexerListenerTest {
   }
 
   public class TestIndexerListener extends ReliableIndexerListener {
-    //Grabs up to 10 products from product list
+
     @Override
     public List<ProductSummary> getNextProducts() throws InterruptedException{
       synchronized (nextProducts) {
@@ -171,7 +171,6 @@ public class ReliableIndexerListenerTest {
       }
     }
 
-    //Updates the index on start like the extent should
     @Override
     public void onBeforeProcessThreadStart() {
       setLastIndexId(currentIndex);

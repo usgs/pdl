@@ -62,7 +62,7 @@ public class ExtentIndex extends JDBCProductIndex {
     }
 
     //Cleanup
-    getLastIndex.close(); //Never needed again
+    getLastIndex.close(); //Never needed again (if callers are doing their job)
     return lastIndex;
   }
 
