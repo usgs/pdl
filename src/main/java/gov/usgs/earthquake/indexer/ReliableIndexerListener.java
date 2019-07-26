@@ -179,11 +179,6 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
     }
   }
 
-  @Override
-  public String getName() {
-    return "ReliableIndexerListener";
-  }
-
   public ProductIndex getProductIndex() {
     return this.productIndex;
   }

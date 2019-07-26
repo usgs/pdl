@@ -58,10 +58,5 @@ public class ExtentIndexerListener extends ReliableIndexerListener {
     setLastIndexId(product.getIndexId());
   }
 
-  @Override
-  public String getName() {
-    return "ExtentIndexerListener";
-  }
-
   
 }
