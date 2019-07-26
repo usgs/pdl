@@ -98,8 +98,12 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
         try {
           productList = getNextProducts();
         } catch (Exception e) {
-          //Not a phenomenal way to handle this exception
-          LOGGER.log(Level.WARNING, "[" + getName() + "] Exception getting next products", e);
+          try {
+            //Handle exception if we can
+            this.onProductGetException(e);
+          } catch (Exception e2) {
+              //Do nothing if we can't
+          }
         }
         if (productList == null || productList.size() == 0) {
           try {
@@ -216,7 +220,20 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
   }
 
   /**
+   * Exception handling for product fetch
+   *
+   * @param e the caught exception
+   * @throws Exception in case we can't handle the first exception
+   */
+  protected void onProductGetException(Exception e) throws Exception {
+    LOGGER.log(Level.WARNING, "[" + getName() + "] Exception getting next products", e);
+  }
+
+  /**
    * Exception handling for product processing.
+   *
+   * @param product the product that gave us the error
+   * @param e the caught exception
    *
    * @throws Exception in case we can't handle the first exception.
    */
