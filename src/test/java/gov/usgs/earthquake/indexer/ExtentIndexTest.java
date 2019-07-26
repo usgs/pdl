@@ -4,11 +4,12 @@
 
 package gov.usgs.earthquake.indexer;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import gov.usgs.util.Config;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
@@ -24,8 +25,8 @@ public class ExtentIndexTest {
     //create product
     long testIndex = 9;
     ExtentSummary product = new ExtentSummary();
-    product.setId(testIndex);
-    product.setMaxLatitude(0.); //Add at least one parameter to pass validity check
+    product.setIndexId(testIndex);
+    product.setMaxLatitude(new BigDecimal(0)); //Add at least one parameter to pass validity check
 
     //add product, get product
     index.addExtentSummary(product);
@@ -37,7 +38,7 @@ public class ExtentIndexTest {
 
     //clean up product
     Connection conn = index.connect();
-    PreparedStatement stmnt = conn.prepareStatement("DELETE FROM " + ExtentIndex.EXTENT_TABLE + " WHERE " + ExtentIndex.EXTENT_INDEX_ID + "=" + product.getId());
+    PreparedStatement stmnt = conn.prepareStatement("DELETE FROM " + ExtentIndex.EXTENT_TABLE + " WHERE " + ExtentIndex.EXTENT_INDEX_ID + "=" + product.getIndexId());
     stmnt.executeUpdate();
 
     index.shutdown();

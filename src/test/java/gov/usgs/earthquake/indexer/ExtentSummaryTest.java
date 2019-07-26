@@ -3,9 +3,10 @@
  */
 package gov.usgs.earthquake.indexer;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 
@@ -36,10 +37,10 @@ public class ExtentSummaryTest {
     //Verify that extentSummary was constructed correctly
     Assert.assertEquals(startDate.getTime().getTime(),extentSummary.getStartTime().getTime());
     Assert.assertEquals(endDate.getTime().getTime(),extentSummary.getEndTime().getTime());
-    Assert.assertEquals(0.,extentSummary.getMinLatitude());
-    Assert.assertEquals(45.,extentSummary.getMaxLatitude());
-    Assert.assertEquals(0.,extentSummary.getMinLongitude());
-    Assert.assertEquals(90.,extentSummary.getMaxLongitude());
+    Assert.assertEquals(new BigDecimal(0),extentSummary.getMinLatitude());
+    Assert.assertEquals(new BigDecimal(45),extentSummary.getMaxLatitude());
+    Assert.assertEquals(new BigDecimal(0),extentSummary.getMinLongitude());
+    Assert.assertEquals(new BigDecimal(90),extentSummary.getMaxLongitude());
   }
 
   @Test
@@ -49,7 +50,7 @@ public class ExtentSummaryTest {
     //Make sure extentSummary with no information is invalid
     Assert.assertFalse(summary.isValid());
 
-    summary.setMinLongitude(0.);
+    summary.setMinLongitude(new BigDecimal(0));
 
     //Make sure extentSummary with at least one information is valid
     Assert.assertTrue(summary.isValid());

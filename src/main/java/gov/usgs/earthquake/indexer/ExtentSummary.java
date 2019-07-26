@@ -3,6 +3,7 @@
  */
 package gov.usgs.earthquake.indexer;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Map;
 
@@ -15,10 +16,10 @@ public class ExtentSummary {
   private Long id;
   private Date startTime;
   private Date endTime;
-  private Double maxLatitude;
-  private Double minLatitude;
-  private Double maxLongitude;
-  private Double minLongitude;
+  private BigDecimal maxLatitude;
+  private BigDecimal minLatitude;
+  private BigDecimal maxLongitude;
+  private BigDecimal minLongitude;
 
   public static final String EXTENT_START_TIME_PROPERTY = "start-time";
   public static final String EXTENT_END_TIME_PROPERTY = "end-time";
@@ -49,16 +50,16 @@ public class ExtentSummary {
       endTime = XmlUtils.getDate(properties.get(EXTENT_END_TIME_PROPERTY));
     }
     if (properties.get(EXTENT_MAX_LAT_PROPERTY) != null) {
-      maxLatitude = Double.parseDouble(properties.get(EXTENT_MAX_LAT_PROPERTY));
+      maxLatitude = new BigDecimal(properties.get(EXTENT_MAX_LAT_PROPERTY));
     }
     if (properties.get(EXTENT_MAX_LONG_PROPERTY) != null) {
-      maxLongitude = Double.parseDouble(properties.get(EXTENT_MAX_LONG_PROPERTY));
+      maxLongitude = new BigDecimal(properties.get(EXTENT_MAX_LONG_PROPERTY));
     }
     if (properties.get(EXTENT_MIN_LAT_PROPERTY) != null) {
-      minLatitude = Double.parseDouble(properties.get(EXTENT_MIN_LAT_PROPERTY));
+      minLatitude = new BigDecimal(properties.get(EXTENT_MIN_LAT_PROPERTY));
     }
     if (properties.get(EXTENT_MIN_LONG_PROPERTY) != null) {
-      minLongitude = Double.parseDouble(properties.get(EXTENT_MIN_LONG_PROPERTY));
+      minLongitude = new BigDecimal(properties.get(EXTENT_MIN_LONG_PROPERTY));
     }
   }
 
@@ -75,10 +76,10 @@ public class ExtentSummary {
       minLongitude != null;
   }
 
-  public Long getId() {
+  public Long getIndexId() {
     return this.id;
   }
-  public void setId(Long id) {
+  public void setIndexId(Long id) {
     this.id = id;
   }
 
@@ -96,31 +97,31 @@ public class ExtentSummary {
     this.endTime = endTime;
   }
 
-  public Double getMaxLatitude() {
+  public BigDecimal getMaxLatitude() {
     return this.maxLatitude;
   }
-  public void setMaxLatitude(Double maxLatitude) {
+  public void setMaxLatitude(BigDecimal maxLatitude) {
     this.maxLatitude = maxLatitude;
   }
 
-  public Double getMinLatitude() {
+  public BigDecimal getMinLatitude() {
     return this.minLatitude;
   }
-  public void setMinLatitude(Double minLatitude) {
+  public void setMinLatitude(BigDecimal minLatitude) {
     this.minLatitude = minLatitude;
   }
 
-  public Double getMaxLongitude() {
+  public BigDecimal getMaxLongitude() {
     return this.maxLongitude;
   }
-  public void setMaxLongitude(Double maxLongitude) {
+  public void setMaxLongitude(BigDecimal maxLongitude) {
     this.maxLongitude = maxLongitude;
   }
 
-  public Double getMinLongitude() {
+  public BigDecimal getMinLongitude() {
     return this.minLongitude;
   }
-  public void setMinLongitude(Double minLongitude) {
+  public void setMinLongitude(BigDecimal minLongitude) {
     this.minLongitude = minLongitude;
   }
 

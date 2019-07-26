@@ -75,7 +75,7 @@ public class ExtentIndex extends JDBCProductIndex {
    */
   public void addExtentSummary(ExtentSummary product) throws Exception {
     if (!product.isValid()) {
-      LOGGER.log(Level.FINE,"[" + getName() + "] product " + product.getId() + " has no extent information; won't add to extent table");
+      LOGGER.log(Level.FINE,"[" + getName() + "] product " + product.getIndexId() + " has no extent information; won't add to extent table");
       return;
     }
 
@@ -95,7 +95,7 @@ public class ExtentIndex extends JDBCProductIndex {
 
     //Add values
 
-    addProduct.setLong(1, product.getId());
+    addProduct.setLong(1, product.getIndexId());
     if (product.getStartTime() != null) {
       addProduct.setLong(2, product.getStartTime().getTime());
     } else {
@@ -107,22 +107,22 @@ public class ExtentIndex extends JDBCProductIndex {
       addProduct.setNull(3,Types.BIGINT);
     }
     if (product.getMinLatitude() != null) {
-      addProduct.setDouble(4, product.getMinLatitude());
+      addProduct.setBigDecimal(4, product.getMinLatitude());
     } else {
       addProduct.setNull(4,Types.DECIMAL);
     }
     if (product.getMaxLatitude() != null) {
-      addProduct.setDouble(5, product.getMaxLatitude());
+      addProduct.setBigDecimal(5, product.getMaxLatitude());
     } else {
       addProduct.setNull(5, Types.DECIMAL);
     }
     if (product.getMinLongitude() != null) {
-      addProduct.setDouble(6, product.getMinLongitude());
+      addProduct.setBigDecimal(6, product.getMinLongitude());
     } else {
       addProduct.setNull(6,Types.DECIMAL);
     }
     if (product.getMaxLongitude() != null) {
-      addProduct.setDouble(7, product.getMaxLongitude());
+      addProduct.setBigDecimal(7, product.getMaxLongitude());
     } else {
       addProduct.setNull(7,Types.DECIMAL);
     }
