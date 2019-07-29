@@ -26,7 +26,7 @@ public class ExtentIndexTest {
     long testIndex = 9;
     ExtentSummary product = new ExtentSummary();
     product.setIndexId(testIndex);
-    product.setMaxLatitude(new BigDecimal(0)); //Add at least one parameter to pass validity check
+    product.setMaxLatitude(BigDecimal.ZERO); //Add at least one parameter to pass validity check
 
     //add product, get product
     index.addExtentSummary(product);

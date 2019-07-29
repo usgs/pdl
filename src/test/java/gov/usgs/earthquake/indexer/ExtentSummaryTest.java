@@ -37,9 +37,9 @@ public class ExtentSummaryTest {
     //Verify that extentSummary was constructed correctly
     Assert.assertEquals(startDate.getTime().getTime(),extentSummary.getStartTime().getTime());
     Assert.assertEquals(endDate.getTime().getTime(),extentSummary.getEndTime().getTime());
-    Assert.assertEquals(new BigDecimal(0),extentSummary.getMinLatitude());
+    Assert.assertEquals(BigDecimal.ZERO,extentSummary.getMinLatitude());
     Assert.assertEquals(new BigDecimal(45),extentSummary.getMaxLatitude());
-    Assert.assertEquals(new BigDecimal(0),extentSummary.getMinLongitude());
+    Assert.assertEquals(BigDecimal.ZERO,extentSummary.getMinLongitude());
     Assert.assertEquals(new BigDecimal(90),extentSummary.getMaxLongitude());
   }
 
@@ -50,7 +50,7 @@ public class ExtentSummaryTest {
     //Make sure extentSummary with no information is invalid
     Assert.assertFalse(summary.isValid());
 
-    summary.setMinLongitude(new BigDecimal(0));
+    summary.setMinLongitude(BigDecimal.ZERO);
 
     //Make sure extentSummary with at least one information is valid
     Assert.assertTrue(summary.isValid());
