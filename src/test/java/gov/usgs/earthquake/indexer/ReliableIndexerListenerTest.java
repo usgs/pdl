@@ -122,22 +122,24 @@ public class ReliableIndexerListenerTest {
     product.setId(new ProductId("test","test","test"));
     products.add(product);
 
+    Object processed = new Object();
+
     //start new reliablelistener, hand index
-    ReliableIndexerListener listener = new ReliableIndexerListener();
+    ReliableIndexerListener listener = new ReliableIndexerListener() {
+      @Override
+      public void processProduct(ProductSummary product) {
+        synchronized (processed) {
+          processed.notify();
+        }
+      }
+    };
     listener.setProductIndex(new TestIndex());
     listener.startup();
     
     //notify of new product (with index)
-    synchronized (nextProducts) {
+    synchronized (processed) {
       listener.onIndexerEvent(new IndexerEvent(new Indexer()));
-
-      //wait 5 seconds for product to be processed (not a good way to do this, but only consistent way to pass test)
-      for (int i = 0; i < 5; i++) {
-        nextProducts.wait(1000);
-        if (lastQueryIndexId != 0) {
-          break;
-        }
-      }
+      processed.wait();
     }
 
     //confirm correct query for product
