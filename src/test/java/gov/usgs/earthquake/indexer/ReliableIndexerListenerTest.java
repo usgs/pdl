@@ -140,6 +140,7 @@ public class ReliableIndexerListenerTest {
     synchronized (processed) {
       listener.onIndexerEvent(new IndexerEvent(new Indexer()));
       processed.wait();
+      processed.wait(1000);
     }
 
     //confirm correct query for product
