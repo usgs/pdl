@@ -41,7 +41,8 @@ public class ExtentIndex extends JDBCProductIndex {
 
     //Prepare statement
     Connection connection = connect();
-    try (PreparedStatement getLastIndex = connection.prepareStatement("SELECT MAX(" + EXTENT_INDEX_ID + ") AS " + EXTENT_INDEX_ID + " FROM " + EXTENT_TABLE)) {
+    String sql = "SELECT MAX(" + EXTENT_INDEX_ID + ") AS " + EXTENT_INDEX_ID + " FROM " + EXTENT_TABLE;
+    try (PreparedStatement getLastIndex = connection.prepareStatement(sql)) {
       //Parse Results
       ResultSet results = getLastIndex.executeQuery();
       if (results.next()) {
@@ -53,7 +54,7 @@ public class ExtentIndex extends JDBCProductIndex {
       }
     } catch (SQLiteException e) {
       //Throws exception with SQL for debugging
-      throw new SQLiteException(e.getMessage() + ". SQL query was: SELECT MAX(" + EXTENT_INDEX_ID + ") AS " + EXTENT_INDEX_ID + " FROM " + EXTENT_TABLE, e.getResultCode());
+      throw new SQLiteException(e.getMessage() + ". SQL query was: " + sql, e.getResultCode());
     }
     return lastIndex;
   }
@@ -67,23 +68,25 @@ public class ExtentIndex extends JDBCProductIndex {
    */
   public void addExtentSummary(ExtentSummary product) throws Exception {
     if (!product.isValid()) {
-      LOGGER.log(Level.FINE,"[" + getName() + "] product " + product.getIndexId() + " has no extent information; won't add to extent table");
+      LOGGER.log(Level.FINE,"[" + getName() + "] product " + product.getIndexId()
+          + " has no extent information; won't add to extent table");
       return;
     }
 
     //Prepare statement
     Connection connection = connect();
-    try (PreparedStatement addProduct = connection.prepareStatement(
-      "INSERT INTO " + EXTENT_TABLE +
-      "(" + 
-      EXTENT_INDEX_ID + "," +
-      EXTENT_START_TIME + "," + 
-      EXTENT_END_TIME + "," +
-      EXTENT_MIN_LAT + "," +
-      EXTENT_MAX_LAT + "," +
-      EXTENT_MIN_LONG + "," +
-      EXTENT_MAX_LONG +
-      ") VALUES (?, ?, ?, ?, ?, ?, ?)" )) {
+    String sql = "INSERT INTO " + EXTENT_TABLE +
+        "(" + 
+          EXTENT_INDEX_ID + "," +
+          EXTENT_START_TIME + "," + 
+          EXTENT_END_TIME + "," +
+          EXTENT_MIN_LAT + "," +
+          EXTENT_MAX_LAT + "," +
+          EXTENT_MIN_LONG + "," +
+          EXTENT_MAX_LONG +
+        ") VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+    try (PreparedStatement addProduct = connection.prepareStatement(sql)) {
 
       //Add values
 
