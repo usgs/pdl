@@ -41,28 +41,20 @@ public class ExtentIndex extends JDBCProductIndex {
 
     //Prepare statement
     Connection connection = connect();
-    PreparedStatement getLastIndex;
-    try {
-      getLastIndex = connection.prepareStatement(
-              "SELECT MAX(" + EXTENT_INDEX_ID +
-                      ") AS " + EXTENT_INDEX_ID +
-                      " FROM " + EXTENT_TABLE);
+    try (PreparedStatement getLastIndex = connection.prepareStatement("SELECT MAX(" + EXTENT_INDEX_ID + ") AS " + EXTENT_INDEX_ID + " FROM " + EXTENT_TABLE)) {
+      //Parse Results
+      ResultSet results = getLastIndex.executeQuery();
+      if (results.next()) {
+        lastIndex = results.getLong(EXTENT_INDEX_ID);
+      } else {
+        //No index in extentSummary table
+        lastIndex = 0;
+        LOGGER.log(Level.FINEST, "[" + getName() + "] no products in extentSummary table; using index 0");
+      }
     } catch (SQLiteException e) {
+      //Throws exception with SQL for debugging
       throw new SQLiteException(e.getMessage() + ". SQL query was: SELECT MAX(" + EXTENT_INDEX_ID + ") AS " + EXTENT_INDEX_ID + " FROM " + EXTENT_TABLE, e.getResultCode());
     }
-
-    //Parse Results
-    ResultSet results = getLastIndex.executeQuery();
-    if (results.next()) {
-      lastIndex = results.getLong(EXTENT_INDEX_ID);
-    } else {
-      //No index in extentSummary table
-      lastIndex = 0;
-      LOGGER.log(Level.FINEST,"[" + getName() + "] no products in extentSummary table; using index 0");
-    }
-
-    //Cleanup
-    getLastIndex.close(); //Never needed again (if callers are doing their job)
     return lastIndex;
   }
 
@@ -81,7 +73,7 @@ public class ExtentIndex extends JDBCProductIndex {
 
     //Prepare statement
     Connection connection = connect();
-    PreparedStatement addProduct = connection.prepareStatement(
+    try (PreparedStatement addProduct = connection.prepareStatement(
       "INSERT INTO " + EXTENT_TABLE +
       "(" + 
       EXTENT_INDEX_ID + "," +
@@ -91,48 +83,46 @@ public class ExtentIndex extends JDBCProductIndex {
       EXTENT_MAX_LAT + "," +
       EXTENT_MIN_LONG + "," +
       EXTENT_MAX_LONG +
-      ") VALUES (?, ?, ?, ?, ?, ?, ?)" );
+      ") VALUES (?, ?, ?, ?, ?, ?, ?)" )) {
 
-    //Add values
+      //Add values
 
-    addProduct.setLong(1, product.getIndexId());
-    if (product.getStartTime() != null) {
-      addProduct.setLong(2, product.getStartTime().getTime());
-    } else {
-      addProduct.setNull(2,Types.BIGINT);
-    }
-    if (product.getEndTime() != null) {
-      addProduct.setLong(3, product.getEndTime().getTime());
-    } else {
-      addProduct.setNull(3,Types.BIGINT);
-    }
-    if (product.getMinLatitude() != null) {
-      addProduct.setBigDecimal(4, product.getMinLatitude());
-    } else {
-      addProduct.setNull(4,Types.DECIMAL);
-    }
-    if (product.getMaxLatitude() != null) {
-      addProduct.setBigDecimal(5, product.getMaxLatitude());
-    } else {
-      addProduct.setNull(5, Types.DECIMAL);
-    }
-    if (product.getMinLongitude() != null) {
-      addProduct.setBigDecimal(6, product.getMinLongitude());
-    } else {
-      addProduct.setNull(6,Types.DECIMAL);
-    }
-    if (product.getMaxLongitude() != null) {
-      addProduct.setBigDecimal(7, product.getMaxLongitude());
-    } else {
-      addProduct.setNull(7,Types.DECIMAL);
-    }
+      addProduct.setLong(1, product.getIndexId());
+      if (product.getStartTime() != null) {
+        addProduct.setLong(2, product.getStartTime().getTime());
+      } else {
+        addProduct.setNull(2, Types.BIGINT);
+      }
+      if (product.getEndTime() != null) {
+        addProduct.setLong(3, product.getEndTime().getTime());
+      } else {
+        addProduct.setNull(3, Types.BIGINT);
+      }
+      if (product.getMinLatitude() != null) {
+        addProduct.setBigDecimal(4, product.getMinLatitude());
+      } else {
+        addProduct.setNull(4, Types.DECIMAL);
+      }
+      if (product.getMaxLatitude() != null) {
+        addProduct.setBigDecimal(5, product.getMaxLatitude());
+      } else {
+        addProduct.setNull(5, Types.DECIMAL);
+      }
+      if (product.getMinLongitude() != null) {
+        addProduct.setBigDecimal(6, product.getMinLongitude());
+      } else {
+        addProduct.setNull(6, Types.DECIMAL);
+      }
+      if (product.getMaxLongitude() != null) {
+        addProduct.setBigDecimal(7, product.getMaxLongitude());
+      } else {
+        addProduct.setNull(7, Types.DECIMAL);
+      }
 
-    //Add to extentSummary table
-    addProduct.executeUpdate();
-    addProduct.clearParameters();
-
-    //Cleanup
-    addProduct.close();
+      //Add to extentSummary table
+      addProduct.executeUpdate();
+      addProduct.clearParameters();
+    }
   }
 
 }

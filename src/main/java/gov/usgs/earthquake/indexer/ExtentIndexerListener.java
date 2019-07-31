@@ -27,7 +27,7 @@ public class ExtentIndexerListener extends ReliableIndexerListener {
   @Override
   public void configure(Config config) throws Exception {
     super.configure(config);
-    if (!(productIndex instanceof ExtentIndex)) {
+    if (!(this.getProductIndex() instanceof ExtentIndex)) {
       throw new ConfigurationException("[" + getName() + "] index must be of type ExtentIndex. Given type " + productIndex.getClass().getName());
     }
   }

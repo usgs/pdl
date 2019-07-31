@@ -21,8 +21,8 @@ public class ExtentSummary {
   private BigDecimal maxLongitude;
   private BigDecimal minLongitude;
 
-  public static final String EXTENT_START_TIME_PROPERTY = "start-time";
-  public static final String EXTENT_END_TIME_PROPERTY = "end-time";
+  public static final String EXTENT_START_TIME_PROPERTY = "starttime";
+  public static final String EXTENT_END_TIME_PROPERTY = "endtime";
   public static final String EXTENT_MAX_LAT_PROPERTY = "maximum-latitude";
   public static final String EXTENT_MIN_LAT_PROPERTY = "minimum-latitude";
   public static final String EXTENT_MAX_LONG_PROPERTY = "maximum-longitude";
