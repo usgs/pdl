@@ -40,7 +40,7 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
 
   private boolean stopThread = false;
   private long lastIndexId = -1;
-  private Object syncObject = new Object();
+  private final Object syncObject = new Object();
 
   private Thread processThread;
   protected ProductIndex productIndex;
