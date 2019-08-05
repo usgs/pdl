@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StreamUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util</a> &gt; <span class="el_source">StreamUtils.java</span></div><h1>StreamUtils.java</h1><pre class="source lang-java linenums">/*
+ * StreamUtils
+ *
+ * $Id$
+ * $HeadURL$
+ */
+package gov.usgs.util;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.zip.GZIPInputStream;
+
+/**
+ * Stream input, output, and transfer utilities.
+ */
+<span class="nc" id="L28">public class StreamUtils {</span>
+
+	/** Default buffer size used for stream reads and writes. */
+	public static final int DEFAULT_BUFFER_SIZE = 4096;
+
+	/** Default connect timeout for url connections. */
+	public static final int DEFAULT_URL_CONNECT_TIMEOUT = 15000;
+
+	/** Default read timeout for url connections. */
+	public static final int DEFAULT_URL_READ_TIMEOUT = 15000;
+
+	/**
+	 * Get an input stream for an Object if possible.
+	 *
+	 * @param obj
+	 *            an InputStream, File, byte[], or String.
+	 * @return an InputStream or null. If obj is a File, the stream is Buffered.
+	 * @throws IOException
+	 *             if an error occurs.
+	 * @throws IllegalArgumentException
+	 *             if obj is not an InputStream, URL, File, byte[], or String.
+	 */
+	public static InputStream getInputStream(final Object obj)
+			throws IOException, IllegalArgumentException {
+<span class="fc" id="L52">		InputStream stream = null;</span>
+<span class="fc" id="L53">		byte[] bytes = null;</span>
+
+<span class="fc bfc" id="L55" title="All 2 branches covered.">		if (obj instanceof InputStream) {</span>
+<span class="fc" id="L56">			stream = (InputStream) obj;</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">		} else if (obj instanceof URL) {</span>
+<span class="fc" id="L58">			stream = getURLInputStream((URL) obj);</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">		} else if (obj instanceof File) {</span>
+<span class="fc" id="L60">			stream = new BufferedInputStream(new FileInputStream((File) obj));</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">		} else if (obj instanceof byte[]) {</span>
+<span class="fc" id="L62">			bytes = (byte[]) obj;</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">		} else if (obj instanceof String) {</span>
+<span class="fc" id="L64">			bytes = ((String) obj).getBytes();</span>
+		} else {
+<span class="fc" id="L66">			throw new IllegalArgumentException(</span>
+					&quot;Expected an InputStream, URL, File, byte[], or String&quot;);
+		}
+
+<span class="fc bfc" id="L70" title="All 2 branches covered.">		if (bytes != null) {</span>
+<span class="fc" id="L71">			stream = new ByteArrayInputStream(bytes);</span>
+		}
+
+<span class="fc" id="L74">		return stream;</span>
+	}
+
+	/**
+	 * Get an InputStream from a URL. If URL is a HTTP url, attempts gzip
+	 * compression.
+	 *
+	 * @param url
+	 *            the url being accessed.
+	 * @return an InputStream to content at URL.
+	 * @throws IOException
+	 *             if an error occurs.
+	 */
+	public static InputStream getURLInputStream(final URL url)
+			throws IOException {
+<span class="fc" id="L89">		return getURLInputStream(url, DEFAULT_URL_CONNECT_TIMEOUT,</span>
+				DEFAULT_URL_READ_TIMEOUT);
+	}
+
+	/**
+	 * Get an InputStream from a URL. If URL is a HTTP url, attempts gzip
+	 * compression.
+	 *
+	 * @param url
+	 *            the url being accessed.
+	 * @param connectTimeout allowed time in milliseconds before connection.
+	 * @param readTimeout allowed time in milliseconds before read.
+	 * @return an InputStream to content at URL.
+	 * @throws IOException
+	 *             if an error occurs.
+	 */
+	public static InputStream getURLInputStream(final URL url,
+			final int connectTimeout, final int readTimeout)
+			throws IOException {
+<span class="fc" id="L108">		InputStream in = null;</span>
+
+		// initialize connection
+<span class="fc" id="L111">		URLConnection conn = url.openConnection();</span>
+<span class="fc" id="L112">		conn.setRequestProperty(&quot;Accept-Encoding&quot;, &quot;gzip&quot;);</span>
+<span class="fc" id="L113">		conn.setConnectTimeout(connectTimeout);</span>
+<span class="fc" id="L114">		conn.setReadTimeout(readTimeout);</span>
+
+		// connect
+<span class="fc" id="L117">		conn.connect();</span>
+
+		// get response
+<span class="fc" id="L120">		in = conn.getInputStream();</span>
+<span class="fc" id="L121">		String contentEncoding = conn.getContentEncoding();</span>
+<span class="pc bpc" id="L122" title="1 of 4 branches missed.">		if (contentEncoding != null &amp;&amp; contentEncoding.equals(&quot;gzip&quot;)) {</span>
+<span class="fc" id="L123">			in = new GZIPInputStream(in);</span>
+		}
+
+<span class="fc" id="L126">		return in;</span>
+	}
+
+	/**
+	 * Turn an object into an OutputStream if possible.
+	 *
+	 * @param obj
+	 *            an OutputStream or File.
+	 * @param append
+	 *            if obj is a file and this parameter is true, the output stream
+	 *            will be opened in append mode.
+	 * @return an OutputStream. If obj is a File, the stream is Buffered.
+	 * @throws IOException
+	 *             if an error occurs
+	 */
+	public static OutputStream getOutputStream(final Object obj,
+			final boolean append) throws IOException {
+<span class="fc" id="L143">		OutputStream stream = null;</span>
+
+<span class="fc bfc" id="L145" title="All 2 branches covered.">		if (obj instanceof OutputStream) {</span>
+<span class="fc" id="L146">			stream = (OutputStream) obj;</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">		} else if (obj instanceof File) {</span>
+<span class="fc" id="L148">			File file = (File) obj;</span>
+			// create parent directory first, if needed
+<span class="fc" id="L150">			File parent = file.getAbsoluteFile().getParentFile();</span>
+<span class="fc bfc" id="L151" title="All 4 branches covered.">			if (!parent.exists() &amp;&amp; !parent.mkdirs()) {</span>
+<span class="fc" id="L152">				throw new IOException(&quot;Unable to create directory &quot;</span>
+<span class="fc" id="L153">						+ parent.getAbsolutePath());</span>
+			}
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">			if (!parent.canWrite()) {</span>
+<span class="nc" id="L156">				throw new IOException(</span>
+						&quot;Do not have write permission for directory &quot;
+<span class="nc" id="L158">								+ parent.getAbsolutePath());</span>
+			}
+
+<span class="fc" id="L161">			stream = new BufferedOutputStream(</span>
+					new FileOutputStream(file, append));
+<span class="fc" id="L163">		} else {</span>
+<span class="nc" id="L164">			throw new IllegalArgumentException(</span>
+					&quot;Expected an OutputStream or File&quot;);
+		}
+
+<span class="fc" id="L168">		return stream;</span>
+	}
+
+	/**
+	 * Same as calling getOutputStream(obj, false). If obj is a file, it will
+	 * open a new output stream and will not append.
+	 *
+	 * @param obj
+	 *            an OutputStream or File.
+	 * @return an OutputStream. If obj is a File, the stream is Buffered.
+	 * @throws IOException
+	 *             if an error occurs.
+	 */
+	public static OutputStream getOutputStream(final Object obj)
+			throws IOException {
+<span class="fc" id="L183">		return getOutputStream(obj, false);</span>
+	}
+
+	/**
+	 * Read stream contents into a byte array.
+	 *
+	 * @param from
+	 *            stream to read.
+	 * @return byte array of file content.
+	 * @throws IOException
+	 *             if an error occurs while reading.
+	 */
+	public static byte[] readStream(final Object from) throws IOException {
+<span class="fc" id="L196">		ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L197">		transferStream(from, buffer);</span>
+<span class="fc" id="L198">		return buffer.toByteArray();</span>
+	}
+
+	/**
+	 * Transfer contents of Object from to Object to.
+	 *
+	 * Calls transferStream(from, to, DEFAULT_BUFFER_SIZE).
+	 *
+	 * @param from
+	 *            streamable source.
+	 * @param to
+	 *            streamable target.
+	 * @throws IOException
+	 */
+	public static void transferStream(final Object from, final Object to)
+			throws IOException {
+<span class="fc" id="L214">		transferStream(from, to, DEFAULT_BUFFER_SIZE);</span>
+<span class="fc" id="L215">	}</span>
+
+	/**
+	 * Transfer contents of Object from to Object to. Uses getInputStream and
+	 * getOutputStream to generate streams. Streams are closed after reading.
+	 *
+	 * @param from
+	 *            streamable source.
+	 * @param to
+	 *            streamable target.
+	 * @throws IOException
+	 *             if thrown by calls to read/write on streams.
+	 */
+	public static void transferStream(final Object from, final Object to,
+			final int bufferSize) throws IOException {
+<span class="fc" id="L230">		InputStream in = null;</span>
+<span class="fc" id="L231">		OutputStream out = null;</span>
+
+		try {
+<span class="fc" id="L234">			in = getInputStream(from);</span>
+<span class="fc" id="L235">			out = getOutputStream(to);</span>
+<span class="fc" id="L236">			byte[] buffer = new byte[bufferSize];</span>
+			int read;
+<span class="fc bfc" id="L238" title="All 2 branches covered.">			while ((read = in.read(buffer, 0, bufferSize)) != -1) {</span>
+<span class="fc" id="L239">				out.write(buffer, 0, read);</span>
+			}
+<span class="fc" id="L241">			closeStream(in);</span>
+<span class="fc" id="L242">			closeStream(out);</span>
+<span class="fc" id="L243">		} catch (Exception e) {</span>
+<span class="fc" id="L244">			closeStream(in);</span>
+<span class="fc" id="L245">			closeStream(out);</span>
+<span class="pc bpc" id="L246" title="1 of 2 branches missed.">			if (e instanceof IOException) {</span>
+<span class="fc" id="L247">				throw (IOException) e;</span>
+			}
+<span class="fc" id="L249">		}</span>
+<span class="fc" id="L250">	}</span>
+
+	/**
+	 * Close an InputStream or OutputStream.
+	 *
+	 * @param stream
+	 *            stream to close.
+	 */
+	public static void closeStream(final Object stream) {
+		try {
+<span class="fc bfc" id="L260" title="All 2 branches covered.">			if (stream instanceof OutputStream) {</span>
+<span class="fc" id="L261">				OutputStream out = (OutputStream) stream;</span>
+				try {
+<span class="fc" id="L263">					out.flush();</span>
+				} finally {
+<span class="fc" id="L265">					out.close();</span>
+				}
+<span class="fc bfc" id="L267" title="All 2 branches covered.">			} else if (stream instanceof InputStream) {</span>
+<span class="fc" id="L268">				((InputStream) stream).close();</span>
+			}
+<span class="nc" id="L270">		} catch (Exception e) {</span>
+			// ignore
+<span class="fc" id="L272">		}</span>
+<span class="fc" id="L273">	}</span>
+
+	/**
+	 * An InputStream that ignores calls to close.
+	 *
+	 * Used for methods that automatically close a stream at EOF, even though it
+	 * is undesirable for the stream to be closed, such as when using a
+	 * ZipInputStream.
+	 *
+	 * @author jmfee
+	 *
+	 */
+	public static class UnclosableInputStream extends FilterInputStream {
+
+		/**
+		 * Create a new UnclosableInputStream object.
+		 *
+		 * @param in
+		 *            the InputStream to wrap.
+		 */
+		public UnclosableInputStream(final InputStream in) {
+<span class="fc" id="L294">			super(in);</span>
+<span class="fc" id="L295">		}</span>
+
+		/**
+		 * Does not close stream.
+		 */
+		public void close() {
+			// ignore
+<span class="fc" id="L302">		}</span>
+	}
+
+	/**
+	 * An OutputStream that ignores calls to close.
+	 *
+	 * Used for methods that automatically close a stream, even though it is
+	 * undesirable for the stream to be closed, such as when using a
+	 * ZipOutputStream.
+	 *
+	 * @author jmfee
+	 *
+	 */
+	public static class UnclosableOutputStream extends FilterOutputStream {
+
+		/**
+		 * Create a new UnclosableOutputStream object.
+		 *
+		 * @param out
+		 *            the OutputStream to wrap.
+		 */
+		public UnclosableOutputStream(final OutputStream out) {
+<span class="fc" id="L324">			super(out);</span>
+<span class="fc" id="L325">		}</span>
+
+		/**
+		 * Flush written content, but does not close stream.
+		 */
+		public void close() throws IOException {
+<span class="fc" id="L331">			out.flush();</span>
+			// otherwise ignore
+<span class="fc" id="L333">		}</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

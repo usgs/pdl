@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DYFIIndexerModule.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.dyfi</a> &gt; <span class="el_source">DYFIIndexerModule.java</span></div><h1>DYFIIndexerModule.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.dyfi;
+
+import gov.usgs.earthquake.indexer.DefaultIndexerModule;
+import gov.usgs.earthquake.indexer.IndexerModule;
+import gov.usgs.earthquake.indexer.ProductSummary;
+import gov.usgs.earthquake.product.Product;
+
+/**
+ * DYFI Indexer Module.
+ * 
+ * Uses {@link DYFIProduct} class to summarize product.
+ */
+<span class="fc" id="L13">public class DYFIIndexerModule extends DefaultIndexerModule {</span>
+
+	@Override
+	public int getSupportLevel(Product product) {
+<span class="fc" id="L17">		int supportLevel = IndexerModule.LEVEL_UNSUPPORTED;</span>
+<span class="fc" id="L18">		String type = getBaseProductType(product.getId().getType());</span>
+		// support dyfi products that contain dyfi event xml
+<span class="pc bpc" id="L20" title="1 of 4 branches missed.">		if (type.equals(&quot;dyfi&quot;) &amp;&amp; product.getContents().containsKey(</span>
+				DYFIProduct.DYFI_EVENT_XML_ATTACHMENT)) {
+<span class="fc" id="L22">			supportLevel = IndexerModule.LEVEL_SUPPORTED;</span>
+		}
+<span class="fc" id="L24">		return supportLevel;</span>
+	}
+
+	@Override
+	public ProductSummary getProductSummary(Product product) throws Exception {
+		// DYFI-specific properties load through the DYFIProduct.
+<span class="fc" id="L30">		ProductSummary summary = super.getProductSummary(new DYFIProduct(</span>
+				product));
+<span class="fc" id="L32">		return summary;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

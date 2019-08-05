@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventsSummaryQuery.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">EventsSummaryQuery.java</span></div><h1>EventsSummaryQuery.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.indexer;
+
+import java.util.Iterator;
+import java.util.List;
+
+/**
+ * Search for multiple Events.
+ */
+public class EventsSummaryQuery extends SearchQuery {
+
+	private List&lt;EventSummary&gt; result;
+
+	/**
+	 * Construct an EventsSummaryQuery.
+	 * 
+	 * @param query
+	 */
+	public EventsSummaryQuery(final ProductIndexQuery query) {
+<span class="fc" id="L19">		super(SearchMethod.EVENTS_SUMMARY, query);</span>
+<span class="fc" id="L20">	}</span>
+
+	@Override
+	public List&lt;EventSummary&gt; getResult() {
+<span class="fc" id="L24">		return result;</span>
+	}
+
+	public void setResult(List&lt;EventSummary&gt; events) {
+<span class="fc" id="L28">		this.result = events;</span>
+<span class="fc" id="L29">	}</span>
+
+	@Override
+	public int compareTo(SearchQuery that) {
+		int r;
+
+<span class="pc bpc" id="L35" title="1 of 2 branches missed.">		if ((r = super.compareTo(that)) != 0) {</span>
+<span class="nc" id="L36">			return r;</span>
+		}
+
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">		if (this.result != null) {</span>
+<span class="fc" id="L40">			List&lt;EventSummary&gt; thatResult = ((EventsSummaryQuery) that).result;</span>
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">			if ((r = (thatResult.size() - this.result.size())) != 0) {</span>
+<span class="nc" id="L42">				return r;</span>
+			}
+
+<span class="fc" id="L45">			Iterator&lt;EventSummary&gt; thisIter = this.result.iterator();</span>
+<span class="fc" id="L46">			Iterator&lt;EventSummary&gt; thatIter = thatResult.iterator();</span>
+<span class="pc bpc" id="L47" title="1 of 4 branches missed.">			while (thisIter.hasNext() &amp;&amp; thatIter.hasNext()) {</span>
+				// just compare product ids for now
+<span class="fc" id="L49">				r = thisIter.next().compareTo(thatIter.next());</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">				if (r != 0) {</span>
+<span class="nc" id="L51">					return r;</span>
+				}
+			}
+		}
+
+<span class="fc" id="L56">		return 0;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

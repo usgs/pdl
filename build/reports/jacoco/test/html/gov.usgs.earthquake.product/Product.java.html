@@ -1,0 +1,612 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Product.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product</a> &gt; <span class="el_source">Product.java</span></div><h1>Product.java</h1><pre class="source lang-java linenums">/*
+ * Product
+ */
+package gov.usgs.earthquake.product;
+
+import gov.usgs.earthquake.distribution.ProductKey;
+import gov.usgs.util.CryptoUtils;
+import gov.usgs.util.XmlUtils;
+
+import java.security.PublicKey;
+import java.security.PrivateKey;
+
+import java.math.BigDecimal;
+import java.net.URI;
+import java.net.URL;
+
+import java.util.Date;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * One or more pieces of Content with metadata.
+ *
+ * &lt;dl&gt;
+ * &lt;dt&gt;&lt;strong&gt;ID&lt;/strong&gt;&lt;/dt&gt;
+ * &lt;dd&gt;
+ * Products each have a unique {@link ProductId}.
+ * &lt;/dd&gt;
+ *
+ * &lt;dt&gt;&lt;strong&gt;Versioning&lt;/strong&gt;&lt;/dt&gt;
+ * &lt;dd&gt;
+ * It is possible to create multiple versions of the same product,
+ * by reusing the same &lt;code&gt;source&lt;/code&gt;, &lt;code&gt;type&lt;/code&gt;, and
+ * &lt;code&gt;code&lt;/code&gt;, with a different &lt;code&gt;updateTime&lt;/code&gt;.
+ * &lt;br&gt;
+ * More recent (newer) &lt;code&gt;updateTime&lt;/code&gt;s &lt;strong&gt;supersede&lt;/strong&gt;
+ * Less recent (older) &lt;code&gt;updateTime&lt;/code&gt;s.
+ * &lt;/dd&gt;
+ *
+ * &lt;dt&gt;&lt;strong&gt;Status&lt;/strong&gt;&lt;/dt&gt;
+ * &lt;dd&gt;
+ * To &lt;strong&gt;delete&lt;/strong&gt; a product, create a new version (updateTime)
+ * and set it's status to {@link STATUS_DELETE}.  All other statuses
+ * ({@link STATUS_UPDATE} by default) are considered updates, and any
+ * value can be used in product-specific ways.
+ * &lt;/dd&gt;
+ *
+ * &lt;dt&gt;&lt;strong&gt;Properties&lt;/strong&gt;&lt;/dt&gt;
+ * &lt;dd&gt;
+ * Products have key/value attributes that are Strings.
+ * These can be useful to convey summary information about a product,
+ * so consumers can quickly decide whether to process before opening
+ * any product contents.
+ * &lt;/dd&gt;
+ *
+ * &lt;dt&gt;&lt;strong&gt;Links&lt;/strong&gt;&lt;/dt&gt;
+ * &lt;dd&gt;
+ * Similar to properties, links allow a Product to specify a
+ * &lt;code&gt;relation&lt;/code&gt; and one or more &lt;code&gt;link&lt;/code&gt; for each
+ * relation type.
+ * Links must be {@link java.net.URI}s, and may be {@link ProductId}s.
+ * &lt;/dd&gt;
+ *
+ * &lt;dt&gt;&lt;strong&gt;Contents&lt;/strong&gt;&lt;/dt&gt;
+ * &lt;dd&gt;
+ * Many Products start as a directory of files, and metadata is determined later.
+ * It's also possible to create products without any Contents attached,
+ * if all the necessary information can be encoded using Properties or Links.
+ * &lt;br&gt;
+ * One special &quot;empty path&quot; content, literally at the empty-string path,
+ * is handled differently; since an empty path cannot be written to a file.
+ * PDL typically reads this in from standard input, or delivers this on
+ * standard input to external processes.
+ * &lt;/dd&gt;
+ *
+ * &lt;dt&gt;&lt;strong&gt;Signature&lt;/strong&gt;&lt;/dt&gt;
+ * &lt;dd&gt;
+ * A product can have a digital signature, based on a digest of all
+ * product contents and metadata.  These are required for most purposes.
+ * {@link CryptoUtils} provides utilities for working with OpenSSH keypairs.
+ * &lt;/dd&gt;
+ *
+ * &lt;dt&gt;&lt;strong&gt;Tracker URL (Deprecated)&lt;/strong&gt;&lt;/dt&gt;
+ * &lt;dd&gt;
+ * Tracker URLs were initially used to track processing status as
+ * distribution progressed.  These are no longer supported, and often
+ * introduced new problems.
+ * &lt;/dd&gt;
+ * &lt;/dl&gt;
+ */
+public class Product {
+
+<span class="fc" id="L97">	private static final Logger LOGGER = Logger.getLogger(Product.class</span>
+<span class="fc" id="L98">			.getName());</span>
+
+	/** The status message when a product is being updated. */
+	public static final String STATUS_UPDATE = &quot;UPDATE&quot;;
+
+	/** The status message when a product is being deleted. */
+	public static final String STATUS_DELETE = &quot;DELETE&quot;;
+
+	public static final String EVENTSOURCE_PROPERTY = &quot;eventsource&quot;;
+	public static final String EVENTSOURCECODE_PROPERTY = &quot;eventsourcecode&quot;;
+	public static final String EVENTTIME_PROPERTY = &quot;eventtime&quot;;
+	public static final String MAGNITUDE_PROPERTY = &quot;magnitude&quot;;
+	public static final String LATITUDE_PROPERTY = &quot;latitude&quot;;
+	public static final String LONGITUDE_PROPERTY = &quot;longitude&quot;;
+	public static final String DEPTH_PROPERTY = &quot;depth&quot;;
+	public static final String VERSION_PROPERTY = &quot;version&quot;;
+
+	/** A unique identifier for this product. */
+	private ProductId id;
+
+	/** A terse status message. */
+	private String status;
+
+	/** Properties of this product. */
+<span class="fc" id="L122">	private Map&lt;String, String&gt; properties = new HashMap&lt;String, String&gt;();</span>
+
+	/** Links to other products and related resources. */
+<span class="fc" id="L125">	private Map&lt;String, List&lt;URI&gt;&gt; links = new HashMap&lt;String, List&lt;URI&gt;&gt;();</span>
+
+	/** Product contents. Mapping from path to content. */
+<span class="fc" id="L128">	private Map&lt;String, Content&gt; contents = new HashMap&lt;String, Content&gt;();</span>
+
+	/** A URL where status updates are sent. */
+<span class="fc" id="L131">	private URL trackerURL = null;</span>
+
+	/** A signature generated by the product creator. */
+<span class="fc" id="L134">	private String signature = null;</span>
+
+	/**
+	 * Construct a new Product with status &quot;UPDATE&quot;.
+	 * 
+	 * @param id
+	 *            the product's unique Id.
+	 */
+	public Product(final ProductId id) {
+<span class="fc" id="L143">		this(id, STATUS_UPDATE);</span>
+<span class="fc" id="L144">	}</span>
+
+	/**
+	 * Construct a new Product.
+	 * 
+	 * @param id
+	 *            the product's unique Id.
+	 * @param status
+	 *            the product's status.
+	 */
+<span class="fc" id="L154">	public Product(final ProductId id, final String status) {</span>
+<span class="fc" id="L155">		setId(id);</span>
+<span class="fc" id="L156">		setStatus(status);</span>
+<span class="fc" id="L157">	}</span>
+
+	/**
+	 * Copy constructor.
+	 * 
+	 * @param that
+	 *            the product to copy.
+	 */
+	public Product(final Product that) {
+<span class="fc" id="L166">		this(new ProductId(that.getId().getSource(), that.getId().getType(),</span>
+<span class="fc" id="L167">				that.getId().getCode(), that.getId().getUpdateTime()), that</span>
+<span class="fc" id="L168">				.getStatus());</span>
+<span class="fc" id="L169">		this.setTrackerURL(that.getTrackerURL());</span>
+<span class="fc" id="L170">		this.setProperties(that.getProperties());</span>
+<span class="fc" id="L171">		this.setLinks(that.getLinks());</span>
+<span class="fc" id="L172">		this.setContents(that.getContents());</span>
+<span class="fc" id="L173">		this.setSignature(that.getSignature());</span>
+<span class="fc" id="L174">	}</span>
+
+	/**
+	 * @return the id
+	 */
+	public ProductId getId() {
+<span class="fc" id="L180">		return id;</span>
+	}
+
+	/**
+	 * @param id
+	 *            the id to set
+	 */
+	public void setId(final ProductId id) {
+<span class="fc" id="L188">		this.id = id;</span>
+<span class="fc" id="L189">	}</span>
+
+	/**
+	 * @return the status
+	 */
+	public String getStatus() {
+<span class="fc" id="L195">		return status;</span>
+	}
+
+	/**
+	 * @param status
+	 *            the status to set
+	 */
+	public void setStatus(final String status) {
+<span class="fc" id="L203">		this.status = status;</span>
+<span class="fc" id="L204">	}</span>
+
+	/**
+	 * Product.STATUS_DELETE.equalsIgnoreCase(status).
+	 * 
+	 * @return whether this product is deleted
+	 */
+	public boolean isDeleted() {
+<span class="nc bnc" id="L212" title="All 2 branches missed.">		if (STATUS_DELETE.equalsIgnoreCase(this.status)) {</span>
+<span class="nc" id="L213">			return true;</span>
+		} else {
+<span class="nc" id="L215">			return false;</span>
+		}
+	}
+
+	/**
+	 * @return the properties
+	 */
+	public Map&lt;String, String&gt; getProperties() {
+<span class="fc" id="L223">		return properties;</span>
+	}
+
+	/**
+	 * @param properties
+	 *            the properties to set
+	 */
+	public void setProperties(final Map&lt;String, String&gt; properties) {
+<span class="fc" id="L231">		this.properties.putAll(properties);</span>
+<span class="fc" id="L232">	}</span>
+
+	/**
+	 * Returns a reference to the links map.
+	 * 
+	 * @return the links
+	 */
+	public Map&lt;String, List&lt;URI&gt;&gt; getLinks() {
+<span class="fc" id="L240">		return links;</span>
+	}
+
+	/**
+	 * Copies entries from provided map.
+	 * 
+	 * @param links
+	 *            the links to set
+	 */
+	public void setLinks(final Map&lt;String, List&lt;URI&gt;&gt; links) {
+<span class="fc" id="L250">		this.links.putAll(links);</span>
+<span class="fc" id="L251">	}</span>
+
+	/**
+	 * Add a link to a product.
+	 * 
+	 * @param relation
+	 *            how link is related to product.
+	 * @param href
+	 *            actual link.
+	 */
+	public void addLink(final String relation, final URI href) {
+<span class="fc" id="L262">		List&lt;URI&gt; relationLinks = links.get(relation);</span>
+<span class="pc bpc" id="L263" title="1 of 2 branches missed.">		if (relationLinks == null) {</span>
+<span class="fc" id="L264">			relationLinks = new LinkedList&lt;URI&gt;();</span>
+<span class="fc" id="L265">			links.put(relation, relationLinks);</span>
+		}
+<span class="fc" id="L267">		relationLinks.add(href);</span>
+<span class="fc" id="L268">	}</span>
+
+	/**
+	 * Returns a reference to the contents map.
+	 * 
+	 * @return the contents
+	 */
+	public Map&lt;String, Content&gt; getContents() {
+<span class="fc" id="L276">		return contents;</span>
+	}
+
+	/**
+	 * Copies entries from provided map.
+	 * 
+	 * @param contents
+	 *            the contents to set
+	 */
+	public void setContents(final Map&lt;String, Content&gt; contents) {
+<span class="fc" id="L286">		this.contents.clear();</span>
+<span class="fc" id="L287">		this.contents.putAll(contents);</span>
+<span class="fc" id="L288">	}</span>
+
+	/**
+	 * @return the trackerURL
+	 */
+	public URL getTrackerURL() {
+<span class="fc" id="L294">		return trackerURL;</span>
+	}
+
+	/**
+	 * @param trackerURL
+	 *            the trackerURL to set
+	 */
+	public void setTrackerURL(final URL trackerURL) {
+<span class="fc" id="L302">		this.trackerURL = trackerURL;</span>
+<span class="fc" id="L303">	}</span>
+
+	/**
+	 * @return the signature
+	 */
+	public String getSignature() {
+<span class="fc" id="L309">		return signature;</span>
+	}
+
+	/**
+	 * @param signature
+	 *            the signature to set
+	 */
+	public void setSignature(final String signature) {
+<span class="fc" id="L317">		this.signature = signature;</span>
+<span class="fc" id="L318">	}</span>
+
+	/**
+	 * Sign this product using a PrivateKey.
+	 * 
+	 * @param privateKey
+	 *            a DSAPrivateKey or RSAPrivateKey.
+	 * @throws Exception
+	 */
+	public void sign(final PrivateKey privateKey) throws Exception {
+<span class="fc" id="L328">		setSignature(CryptoUtils.sign(privateKey,</span>
+<span class="fc" id="L329">				ProductDigest.digestProduct(this)));</span>
+<span class="fc" id="L330">	}</span>
+
+	/**
+	 * Verify this product's signature.
+	 * 
+	 * When a product has no signature, this method returns false. The array of
+	 * public keys corresponds to one or more keys that may have generated the
+	 * signature. If any of the keys verify, this method returns true.
+	 * 
+	 * @param publicKeys
+	 *            an array of publicKeys to test.
+	 * @return true if valid, false otherwise.
+	 * @throws Exception
+	 */
+	public boolean verifySignature(final PublicKey[] publicKeys)
+			throws Exception {
+<span class="fc bfc" id="L346" title="All 2 branches covered.">		return verifySignatureKey(publicKeys) != null;</span>
+	}
+
+	public PublicKey verifySignatureKey(final PublicKey[] publicKeys) throws Exception {
+<span class="fc bfc" id="L350" title="All 2 branches covered.">		if (signature == null) {</span>
+<span class="fc" id="L351">			return null;</span>
+		}
+
+<span class="fc" id="L354">		byte[] digest = ProductDigest.digestProduct(this);</span>
+<span class="fc bfc" id="L355" title="All 2 branches covered.">		for (PublicKey key : publicKeys) {</span>
+			try {
+<span class="fc bfc" id="L357" title="All 2 branches covered.">				if (CryptoUtils.verify(key, digest, getSignature())) {</span>
+<span class="fc" id="L358">					return key;</span>
+				}
+<span class="nc" id="L360">			} catch (Exception e) {</span>
+<span class="nc" id="L361">				LOGGER.log(Level.FINEST, &quot;Exception while verifying signature&quot;,</span>
+								e);
+<span class="fc" id="L363">			}</span>
+		}
+<span class="fc" id="L365">		return null;</span>
+	}
+
+	/**
+	 * Get the event id.
+	 * 
+	 * The event id is the combination of event source and event source code.
+	 * 
+	 * @return the event id, or null if either event source or event source code
+	 *         is null.
+	 */
+	public String getEventId() {
+<span class="fc" id="L377">		String eventSource = getEventSource();</span>
+<span class="fc" id="L378">		String eventSourceCode = getEventSourceCode();</span>
+<span class="pc bpc" id="L379" title="1 of 4 branches missed.">		if (eventSource == null &amp;&amp; eventSourceCode == null) {</span>
+<span class="fc" id="L380">			return null;</span>
+		}
+<span class="fc" id="L382">		return (eventSource + eventSourceCode).toLowerCase();</span>
+	}
+
+	/**
+	 * Set both the network and networkId at the same time.
+	 * 
+	 * @param source
+	 *            the originating network.
+	 * @param sourceCode
+	 *            the originating network's id.
+	 */
+	public void setEventId(final String source, final String sourceCode) {
+<span class="fc" id="L394">		setEventSource(source);</span>
+<span class="fc" id="L395">		setEventSourceCode(sourceCode);</span>
+<span class="fc" id="L396">	}</span>
+
+	/**
+	 * Get the event source property.
+	 * 
+	 * @return the event source property, or null if no event source property
+	 *         set.
+	 */
+	public String getEventSource() {
+<span class="fc" id="L405">		return this.properties.get(EVENTSOURCE_PROPERTY);</span>
+	}
+
+	/**
+	 * Set the event source property.
+	 * 
+	 * @param eventSource
+	 *            the event source to set.
+	 */
+	public void setEventSource(final String eventSource) {
+<span class="fc bfc" id="L415" title="All 2 branches covered.">		if (eventSource == null) {</span>
+<span class="fc" id="L416">			this.properties.remove(EVENTSOURCE_PROPERTY);</span>
+		} else {
+<span class="fc" id="L418">			this.properties</span>
+<span class="fc" id="L419">					.put(EVENTSOURCE_PROPERTY, eventSource.toLowerCase());</span>
+		}
+<span class="fc" id="L421">	}</span>
+
+	/**
+	 * Get the event source code property.
+	 * 
+	 * @return the event source code property, or null if no event source code
+	 *         property set.
+	 */
+	public String getEventSourceCode() {
+<span class="fc" id="L430">		return this.properties.get(EVENTSOURCECODE_PROPERTY);</span>
+	}
+
+	/**
+	 * Set the event id property.
+	 * 
+	 * @param eventSourceCode
+	 *            the event id to set.
+	 */
+	public void setEventSourceCode(final String eventSourceCode) {
+<span class="fc bfc" id="L440" title="All 2 branches covered.">		if (eventSourceCode == null) {</span>
+<span class="fc" id="L441">			this.properties.remove(EVENTSOURCECODE_PROPERTY);</span>
+		} else {
+<span class="fc" id="L443">			this.properties.put(EVENTSOURCECODE_PROPERTY,</span>
+<span class="fc" id="L444">					eventSourceCode.toLowerCase());</span>
+		}
+<span class="fc" id="L446">	}</span>
+
+	/**
+	 * Get the event time property as a date.
+	 * 
+	 * @return the event time property as a date, or null if no date property
+	 *         set.
+	 */
+	public Date getEventTime() {
+<span class="fc" id="L455">		String strDate = this.properties.get(EVENTTIME_PROPERTY);</span>
+<span class="fc bfc" id="L456" title="All 2 branches covered.">		if (strDate == null) {</span>
+<span class="fc" id="L457">			return null;</span>
+		}
+<span class="fc" id="L459">		return XmlUtils.getDate(strDate);</span>
+	}
+
+	/**
+	 * Set the event time property as a date.
+	 * 
+	 * @param eventTime
+	 *            the event time to set.
+	 */
+	public void setEventTime(final Date eventTime) {
+<span class="pc bpc" id="L469" title="1 of 2 branches missed.">		if (eventTime == null) {</span>
+<span class="nc" id="L470">			this.properties.remove(EVENTTIME_PROPERTY);</span>
+		} else {
+<span class="fc" id="L472">			this.properties.put(EVENTTIME_PROPERTY,</span>
+<span class="fc" id="L473">					XmlUtils.formatDate(eventTime));</span>
+		}
+<span class="fc" id="L475">	}</span>
+
+	/**
+	 * Get the magnitude property as a big decimal.
+	 * 
+	 * @return the magnitude property as a big decimal, or null if no magnitude
+	 *         property set.
+	 */
+	public BigDecimal getMagnitude() {
+<span class="fc" id="L484">		String strMag = this.properties.get(MAGNITUDE_PROPERTY);</span>
+<span class="fc bfc" id="L485" title="All 2 branches covered.">		if (strMag == null) {</span>
+<span class="fc" id="L486">			return null;</span>
+		}
+<span class="fc" id="L488">		return new BigDecimal(strMag);</span>
+	}
+
+	/**
+	 * Set the magnitude property as a big decimal.
+	 * 
+	 * @param magnitude
+	 *            the magnitude to set.
+	 */
+	public void setMagnitude(final BigDecimal magnitude) {
+<span class="pc bpc" id="L498" title="1 of 2 branches missed.">		if (magnitude == null) {</span>
+<span class="nc" id="L499">			this.properties.remove(MAGNITUDE_PROPERTY);</span>
+		} else {
+<span class="fc" id="L501">			this.properties.put(MAGNITUDE_PROPERTY, magnitude.toPlainString());</span>
+		}
+<span class="fc" id="L503">	}</span>
+
+	/**
+	 * Get the latitude property as a big decimal.
+	 * 
+	 * @return latitude property as a big decimal, or null if no latitude
+	 *         property set.
+	 */
+	public BigDecimal getLatitude() {
+<span class="fc" id="L512">		String strLat = this.properties.get(LATITUDE_PROPERTY);</span>
+<span class="fc bfc" id="L513" title="All 2 branches covered.">		if (strLat == null) {</span>
+<span class="fc" id="L514">			return null;</span>
+		}
+<span class="fc" id="L516">		return new BigDecimal(strLat);</span>
+	}
+
+	/**
+	 * Set the latitude property as a big decimal.
+	 * 
+	 * @param latitude
+	 *            the latitude to set.
+	 */
+	public void setLatitude(final BigDecimal latitude) {
+<span class="pc bpc" id="L526" title="1 of 2 branches missed.">		if (latitude == null) {</span>
+<span class="nc" id="L527">			this.properties.remove(LATITUDE_PROPERTY);</span>
+		} else {
+<span class="fc" id="L529">			this.properties.put(LATITUDE_PROPERTY, latitude.toPlainString());</span>
+		}
+<span class="fc" id="L531">	}</span>
+
+	/**
+	 * Get the longitude property as a big decimal.
+	 * 
+	 * @return longitude property as a big decimal, or null if no longitude
+	 *         property set.
+	 */
+	public BigDecimal getLongitude() {
+<span class="fc" id="L540">		String strLon = this.properties.get(LONGITUDE_PROPERTY);</span>
+<span class="fc bfc" id="L541" title="All 2 branches covered.">		if (strLon == null) {</span>
+<span class="fc" id="L542">			return null;</span>
+		}
+<span class="fc" id="L544">		return new BigDecimal(strLon);</span>
+	}
+
+	/**
+	 * Set the longitude property as a big decimal.
+	 * 
+	 * @param longitude
+	 *            the longitude to set.
+	 */
+	public void setLongitude(final BigDecimal longitude) {
+<span class="pc bpc" id="L554" title="1 of 2 branches missed.">		if (longitude == null) {</span>
+<span class="nc" id="L555">			this.properties.remove(LONGITUDE_PROPERTY);</span>
+		} else {
+<span class="fc" id="L557">			this.properties.put(LONGITUDE_PROPERTY, longitude.toPlainString());</span>
+		}
+<span class="fc" id="L559">	}</span>
+
+	/**
+	 * Get the depth property as a big decimal.
+	 * 
+	 * @return depth property as big decimal, or null if no depth property set.
+	 */
+	public BigDecimal getDepth() {
+<span class="fc" id="L567">		String strDepth = this.properties.get(DEPTH_PROPERTY);</span>
+<span class="fc bfc" id="L568" title="All 2 branches covered.">		if (strDepth == null) {</span>
+<span class="fc" id="L569">			return null;</span>
+		}
+<span class="fc" id="L571">		return new BigDecimal(strDepth);</span>
+	}
+
+	/**
+	 * Set the depth property as a big decimal.
+	 * 
+	 * @param depth
+	 *            the depth to set.
+	 */
+	public void setDepth(final BigDecimal depth) {
+<span class="pc bpc" id="L581" title="1 of 2 branches missed.">		if (depth == null) {</span>
+<span class="nc" id="L582">			this.properties.remove(DEPTH_PROPERTY);</span>
+		} else {
+<span class="fc" id="L584">			this.properties.put(DEPTH_PROPERTY, depth.toPlainString());</span>
+		}
+<span class="fc" id="L586">	}</span>
+
+	/**
+	 * Get the version property.
+	 * 
+	 * @return the version property, or null if no version property set.
+	 */
+	public String getVersion() {
+<span class="fc" id="L594">		return this.properties.get(VERSION_PROPERTY);</span>
+	}
+
+	/**
+	 * Set the version property.
+	 * 
+	 * @param version
+	 *            the version to set.
+	 */
+	public void setVersion(final String version) {
+<span class="pc bpc" id="L604" title="1 of 2 branches missed.">		if (version == null) {</span>
+<span class="nc" id="L605">			this.properties.remove(VERSION_PROPERTY);</span>
+		} else {
+<span class="fc" id="L607">			this.properties.put(VERSION_PROPERTY, version);</span>
+		}
+<span class="fc" id="L609">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

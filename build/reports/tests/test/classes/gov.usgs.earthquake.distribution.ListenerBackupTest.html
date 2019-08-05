@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - Class gov.usgs.earthquake.distribution.ListenerBackupTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>Class gov.usgs.earthquake.distribution.ListenerBackupTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/gov.usgs.earthquake.distribution.html">gov.usgs.earthquake.distribution</a> &gt; ListenerBackupTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">1</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">9.816s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="tabs">
+<ul class="tabLinks">
+<li>
+<a href="#tab0">Tests</a>
+</li>
+<li>
+<a href="#tab1">Standard error</a>
+</li>
+</ul>
+<div id="tab0" class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">testListenerBackup</td>
+<td class="success">9.816s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div id="tab1" class="tab">
+<h2>Standard error</h2>
+<span class="code">
+<pre>50 ms reading us_shakemap_usa00040xz_1287260900624.bin
+retrieving product pool-12-thread-1
+retrieving product pool-11-thread-1
+
+###
+Mon Aug 05 16:06:52 MDT 2019
+WARNING	thread=344	[null] exception while retrieving product
+java.net.ConnectException: Connection refused (Connection refused)
+	at java.base/java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.base/java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:399)
+	at java.base/java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:242)
+	at java.base/java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:224)
+	at java.base/java.net.Socket.connect(Socket.java:591)
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:177)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:474)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:569)
+	at java.base/sun.net.www.http.HttpClient.&lt;init&gt;(HttpClient.java:242)
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:341)
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:362)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getNewHttpClient(HttpURLConnection.java:1242)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1181)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1075)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:1009)
+	at gov.usgs.util.StreamUtils.getURLInputStream(StreamUtils.java:117)
+	at gov.usgs.earthquake.distribution.DefaultNotificationReceiver.retrieveProduct(DefaultNotificationReceiver.java:303)
+	at gov.usgs.earthquake.distribution.ListenerBackupTest$TestNotificationListener.retrieveProduct(ListenerBackupTest.java:257)
+	at gov.usgs.earthquake.distribution.ListenerBackupTest$TestNotificationListener.onNotification(ListenerBackupTest.java:246)
+	at gov.usgs.earthquake.distribution.NotificationListenerCallable.call(NotificationListenerCallable.java:34)
+	at gov.usgs.earthquake.distribution.NotificationListenerCallable.call(NotificationListenerCallable.java:10)
+	at gov.usgs.util.ExecutorTask.run(ExecutorTask.java:183)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+There are 1 active/queued socket connections
+5888ms serving product urn:usgs-product:us:shakemap:usa00040xz:1287260900624
+retrieved product pool-11-thread-1
+retrieved product pool-12-thread-1
+5964ms sending urn:usgs-product:us:shakemap:usa00040xz:1287260900624
+27 ms reading us_losspager_usa00040xz_1287260989064.bin
+retrieving product pool-11-thread-1
+retrieving product pool-12-thread-1
+There are 1 active/queued socket connections
+3717ms serving product urn:usgs-product:us:losspager:usa00040xz:1287260989064
+retrieved product pool-11-thread-1
+retrieved product pool-12-thread-1
+3752ms sending urn:usgs-product:us:losspager:usa00040xz:1287260989064
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="http://www.gradle.org">Gradle 5.4.1</a> at Aug 5, 2019, 4:07:43 PM</p>
+</div>
+</div>
+</body>
+</html>

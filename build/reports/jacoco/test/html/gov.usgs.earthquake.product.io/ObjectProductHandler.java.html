@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ObjectProductHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product.io</a> &gt; <span class="el_source">ObjectProductHandler.java</span></div><h1>ObjectProductHandler.java</h1><pre class="source lang-java linenums">/*
+ * ObjectProductHandler
+ */
+package gov.usgs.earthquake.product.io;
+
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.ByteContent;
+import gov.usgs.earthquake.product.FileContent;
+import gov.usgs.earthquake.product.URLContent;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+
+import java.net.URI;
+import java.net.URL;
+
+import java.util.List;
+import java.util.LinkedList;
+
+/**
+ * Convert ProductSource events into a java Product object.
+ * 
+ * ObjectProductHandlers are not designed to handle multiple products
+ * simultaneously and separate objects must be created for each unique product
+ * id.
+ * 
+ * The static method ObjectProductHandler.getProduct(ProductInput) should
+ * usually be used instead of constructing objects manually.
+ */
+public class ObjectProductHandler implements ProductHandler {
+
+	/** The Product being created. */
+<span class="fc" id="L32">	private Product product = null;</span>
+
+	/** Whether onEndProduct has been called yet. */
+<span class="fc" id="L35">	private boolean complete = false;</span>
+
+<span class="fc" id="L37">	public ObjectProductHandler() {</span>
+<span class="fc" id="L38">	}</span>
+
+	/**
+	 * @return the product object that was created.
+	 */
+	public Product getProduct() throws Exception {
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">		if (product == null) {</span>
+<span class="nc" id="L45">			throw new IllegalArgumentException(</span>
+					&quot;Called getProduct before onBeginProduct&quot;);
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">		} else if (!complete) {</span>
+<span class="nc" id="L48">			throw new IllegalArgumentException(</span>
+					&quot;Called getProduct before onEndProduct&quot;);
+		}
+
+<span class="fc" id="L52">		return product;</span>
+	}
+
+	public void onBeginProduct(final ProductId id, final String status,
+			final URL trackerURL) throws Exception {
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">		if (product != null) {</span>
+<span class="nc" id="L58">			throw new IllegalArgumentException(</span>
+					&quot;Called onBeginProduct after onBeginProduct&quot;);
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">		} else if (complete) {</span>
+<span class="nc" id="L61">			throw new IllegalArgumentException(</span>
+					&quot;Called onBeginProduct after onEndProduct&quot;);
+		}
+
+		// System.err.println(&quot;onBeginProduct(&quot; + id.toString() + &quot;, &quot; + status
+		// + &quot;, &quot; + trackerURL + &quot;)&quot;);
+
+<span class="fc" id="L68">		product = new Product(id, status);</span>
+<span class="fc" id="L69">		product.setTrackerURL(trackerURL);</span>
+<span class="fc" id="L70">	}</span>
+
+	public void onContent(final ProductId id, final String path,
+			final Content content) throws Exception {
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">		if (product == null) {</span>
+<span class="nc" id="L75">			throw new IllegalArgumentException(</span>
+					&quot;Called onContent before onBeginProduct&quot;);
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">		} else if (complete) {</span>
+<span class="nc" id="L78">			throw new IllegalArgumentException(</span>
+					&quot;Called onContent after onEndProduct&quot;);
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">		} else if (!product.getId().equals(id)) {</span>
+<span class="nc" id="L81">			throw new IllegalArgumentException(&quot;ProductIds do not match&quot;);</span>
+		}
+
+		// System.err.println(&quot;onContent(&quot; + id.toString() + &quot;, &quot; + path + &quot;, &quot;
+		// + content.toString() + &quot;)&quot;);
+
+<span class="fc bfc" id="L87" title="All 6 branches covered.">		if (content instanceof FileContent || content instanceof ByteContent</span>
+				|| content instanceof URLContent) {
+			// these types of content do not need to be read immediately
+<span class="fc" id="L90">			product.getContents().put(path, content);</span>
+		} else {
+			// new ByteContent reads stream into byte array
+<span class="fc" id="L93">			product.getContents().put(path, new ByteContent(content));</span>
+		}
+
+<span class="fc" id="L96">	}</span>
+
+	public void onEndProduct(final ProductId id) throws Exception {
+		// System.err.println(&quot;onEndProduct(&quot; + id.toString() + &quot;)&quot;);
+
+<span class="fc" id="L101">		complete = true;</span>
+<span class="fc" id="L102">	}</span>
+
+	public void onLink(final ProductId id, final String relation, final URI href)
+			throws Exception {
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">		if (product == null) {</span>
+<span class="nc" id="L107">			throw new IllegalArgumentException(</span>
+					&quot;Called onLink before onBeginProduct&quot;);
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">		} else if (complete) {</span>
+<span class="nc" id="L110">			throw new IllegalArgumentException(</span>
+					&quot;Called onLink after onEndProduct&quot;);
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">		} else if (!product.getId().equals(id)) {</span>
+<span class="nc" id="L113">			throw new IllegalArgumentException(&quot;ProductIds do not match&quot;);</span>
+		}
+
+		// get list of links for relation
+<span class="fc" id="L117">		List&lt;URI&gt; links = product.getLinks().get(relation);</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">		if (links == null) {</span>
+			// create if doesn't already exist
+<span class="fc" id="L120">			links = new LinkedList&lt;URI&gt;();</span>
+<span class="fc" id="L121">			product.getLinks().put(relation, links);</span>
+		}
+
+		// add if doesn't already contain
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">		if (!links.contains(href)) {</span>
+<span class="fc" id="L126">			links.add(href);</span>
+		}
+<span class="fc" id="L128">	}</span>
+
+	public void onProperty(final ProductId id, final String name,
+			final String value) throws Exception {
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">		if (product == null) {</span>
+<span class="nc" id="L133">			throw new IllegalArgumentException(</span>
+					&quot;Called onProperty before onBeginProduct&quot;);
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">		} else if (complete) {</span>
+<span class="nc" id="L136">			throw new IllegalArgumentException(</span>
+					&quot;Called onProperty after onEndProduct&quot;);
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">		} else if (!product.getId().equals(id)) {</span>
+<span class="nc" id="L139">			throw new IllegalArgumentException(&quot;ProductIds do not match&quot;);</span>
+		}
+
+		// System.err.println(&quot;onProperty(&quot; + id.toString() + &quot;, &quot; + name + &quot;, &quot;
+		// + value + &quot;)&quot;);
+<span class="fc" id="L144">		product.getProperties().put(name, value);</span>
+<span class="fc" id="L145">	}</span>
+
+	public void onSignature(final ProductId id, final String signature)
+			throws Exception {
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">		if (product == null) {</span>
+<span class="nc" id="L150">			throw new IllegalArgumentException(</span>
+					&quot;Called onSignature before onBeginProduct&quot;);
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">		} else if (complete) {</span>
+<span class="nc" id="L153">			throw new IllegalArgumentException(</span>
+					&quot;Called onSignature after onEndProduct&quot;);
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">		} else if (!product.getId().equals(id)) {</span>
+<span class="nc" id="L156">			throw new IllegalArgumentException(&quot;ProductIds do not match&quot;);</span>
+		}
+
+<span class="fc" id="L159">		product.setSignature(signature);</span>
+<span class="fc" id="L160">	}</span>
+
+	/**
+	 * Convenience method to get a Product object from a ProductInput.
+	 * 
+	 * @param in
+	 *            the ProductInput to read.
+	 * @return the Product read, or null if errors occur.
+	 */
+	public static Product getProduct(final ProductSource in) throws Exception {
+<span class="fc" id="L170">		ObjectProductHandler out = new ObjectProductHandler();</span>
+		try {
+<span class="fc" id="L172">			in.streamTo(out);</span>
+		} finally {
+<span class="fc" id="L174">			in.close();</span>
+		}
+<span class="fc" id="L176">		return out.getProduct();</span>
+	}
+
+
+	/**
+	 * Free any resources associated with this handler.
+	 */
+	@Override
+	public void close() {
+		// this.product = null;
+<span class="fc" id="L186">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

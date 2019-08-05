@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductIndexQuery.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">ProductIndexQuery.java</span></div><h1>ProductIndexQuery.java</h1><pre class="source lang-java linenums">/*
+ * ProductIndexQuery
+ */
+package gov.usgs.earthquake.indexer;
+
+import gov.usgs.earthquake.product.ProductId;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Criteria for finding events.
+ * 
+ * All properties are inclusive. When a property is null, it means any value.
+ * 
+ * Expected combinations:
+ * 
+ * 1) find events based on event parameters event time event latitude event
+ * longitude
+ * 
+ * 2) find previously received update of product product source product type
+ * product code
+ * 
+ * 3) find related products/events product ids
+ * 
+ * 4) find related products/events event ids
+ */
+public class ProductIndexQuery implements Comparable&lt;ProductIndexQuery&gt; {
+
+	/**
+	 * Event search types determine whether to search only preferred event
+	 * attributes (faster), or all event attributes from any associated product
+	 * (more complete).
+	 */
+<span class="fc" id="L40">	private static enum EventSearchTypes {</span>
+		/**
+		 * Search preferred event attributes.
+		 * 
+		 * NOTE: SEARCH_EVENT_PREFERRED should ONLY be used on event queries.
+		 * Using this on product queries will more than likely break.
+		 */
+<span class="fc" id="L47">		SEARCH_EVENT_PREFERRED,</span>
+
+		/** Search event product attributes. */
+<span class="fc" id="L50">		SEARCH_EVENT_PRODUCTS</span>
+	};
+
+	/**
+	 * Result types determine which products associated to an event are
+	 * returned.
+	 */
+<span class="fc" id="L57">	private static enum ResultTypes {</span>
+		/** Only include current versions of products in the result. */
+<span class="fc" id="L59">		RESULT_TYPE_CURRENT,</span>
+
+		/** Only include superseded (old) versions of products in the result. */
+
+<span class="fc" id="L63">		RESULT_TYPE_SUPERSEDED,</span>
+
+		/**
+		 * Include both current and superseded versions of products in the
+		 * result.
+		 */
+<span class="fc" id="L69">		RESULT_TYPE_ALL;</span>
+	};
+
+<span class="fc" id="L72">	public static EventSearchTypes SEARCH_EVENT_PREFERRED = EventSearchTypes.SEARCH_EVENT_PREFERRED;</span>
+<span class="fc" id="L73">	public static EventSearchTypes SEARCH_EVENT_PRODUCTS = EventSearchTypes.SEARCH_EVENT_PRODUCTS;</span>
+
+<span class="fc" id="L75">	public static ResultTypes RESULT_TYPE_CURRENT = ResultTypes.RESULT_TYPE_CURRENT;</span>
+<span class="fc" id="L76">	public static ResultTypes RESULT_TYPE_SUPERSEDED = ResultTypes.RESULT_TYPE_SUPERSEDED;</span>
+<span class="fc" id="L77">	public static ResultTypes RESULT_TYPE_ALL = ResultTypes.RESULT_TYPE_ALL;</span>
+
+	/** Search preferred or all event attributes? */
+<span class="fc" id="L80">	private EventSearchTypes eventSearchType = SEARCH_EVENT_PRODUCTS;</span>
+
+	/** Include previous versions? */
+<span class="fc" id="L83">	private ResultTypes resultType = RESULT_TYPE_CURRENT;</span>
+
+	/** Event source */
+	private String eventSource;
+
+	/** Event source code */
+	private String eventSourceCode;
+
+	/** Minimum event time, inclusive. */
+	private Date minEventTime;
+
+	/** Maximum event time, inclusive. */
+	private Date maxEventTime;
+
+	/** Minimum event latitude. */
+	private BigDecimal minEventLatitude;
+
+	/** Maximum event latitude. */
+	private BigDecimal maxEventLatitude;
+
+	/** Minimum event longitude. */
+	private BigDecimal minEventLongitude;
+
+	/** Maximum event longitude. */
+	private BigDecimal maxEventLongitude;
+
+	/** Minimum event depth. */
+	private BigDecimal minEventDepth;
+
+	/** Maximum event depth. */
+	private BigDecimal maxEventDepth;
+
+	/** Minimum event magnitude. */
+	private BigDecimal minEventMagnitude;
+
+	/** Maximum event magnitude. */
+	private BigDecimal maxEventMagnitude;
+
+	/** A list of product ids to search. */
+<span class="fc" id="L122">	private List&lt;ProductId&gt; productIds = new LinkedList&lt;ProductId&gt;();</span>
+
+	/** Minimum product update time. */
+	private Date minProductUpdateTime;
+
+	/** Maximum product update time. */
+	private Date maxProductUpdateTime;
+
+	/** The product source. */
+	private String productSource;
+
+	/** The product type. */
+	private String productType;
+
+	/** The product code. */
+	private String productCode;
+
+	/** The product version */
+	private String productVersion;
+
+	/** The product status */
+	private String productStatus;
+
+	/** The product index ID; unique per productIndex */
+	private Long minProductIndexId;
+
+	/** The max number of results */
+	private Integer limit;
+
+	/** List of columns to order by */
+	private String orderBy;
+
+	/**
+	 * Construct a new ProductIndexQuery.
+	 */
+<span class="fc" id="L157">	public ProductIndexQuery() {</span>
+<span class="fc" id="L158">	}</span>
+
+	public void setEventSearchType(EventSearchTypes eventSearchType) {
+<span class="fc" id="L161">		this.eventSearchType = eventSearchType;</span>
+<span class="fc" id="L162">	}</span>
+
+	public EventSearchTypes getEventSearchType() {
+<span class="fc" id="L165">		return eventSearchType;</span>
+	}
+
+	public void setResultType(ResultTypes resultType) {
+<span class="fc" id="L169">		this.resultType = resultType;</span>
+<span class="fc" id="L170">	}</span>
+
+	public ResultTypes getResultType() {
+<span class="fc" id="L173">		return resultType;</span>
+	}
+
+	public void setEventSource(String eventSource) {
+<span class="fc bfc" id="L177" title="All 2 branches covered.">		this.eventSource = (eventSource == null ? null : eventSource</span>
+<span class="fc" id="L178">				.toLowerCase());</span>
+<span class="fc" id="L179">	}</span>
+
+	public String getEventSource() {
+<span class="fc" id="L182">		return eventSource;</span>
+	}
+
+	public void setEventSourceCode(String eventSourceCode) {
+<span class="fc bfc" id="L186" title="All 2 branches covered.">		this.eventSourceCode = (eventSourceCode == null ? null</span>
+<span class="fc" id="L187">				: eventSourceCode.toLowerCase());</span>
+<span class="fc" id="L188">	}</span>
+
+	public String getEventSourceCode() {
+<span class="fc" id="L191">		return eventSourceCode;</span>
+	}
+
+	public Date getMinEventTime() {
+<span class="fc" id="L195">		return minEventTime;</span>
+	}
+
+	public void setMinEventTime(Date minEventTime) {
+<span class="fc" id="L199">		this.minEventTime = minEventTime;</span>
+<span class="fc" id="L200">	}</span>
+
+	public Date getMaxEventTime() {
+<span class="fc" id="L203">		return maxEventTime;</span>
+	}
+
+	public void setMaxEventTime(Date maxEventTime) {
+<span class="fc" id="L207">		this.maxEventTime = maxEventTime;</span>
+<span class="fc" id="L208">	}</span>
+
+	public BigDecimal getMinEventLatitude() {
+<span class="fc" id="L211">		return minEventLatitude;</span>
+	}
+
+	public void setMinEventLatitude(BigDecimal minEventLatitude) {
+<span class="fc" id="L215">		this.minEventLatitude = minEventLatitude;</span>
+<span class="fc" id="L216">	}</span>
+
+	public BigDecimal getMaxEventLatitude() {
+<span class="fc" id="L219">		return maxEventLatitude;</span>
+	}
+
+	public void setMaxEventLatitude(BigDecimal maxEventLatitude) {
+<span class="fc" id="L223">		this.maxEventLatitude = maxEventLatitude;</span>
+<span class="fc" id="L224">	}</span>
+
+	public BigDecimal getMinEventLongitude() {
+<span class="fc" id="L227">		return minEventLongitude;</span>
+	}
+
+	public void setMinEventLongitude(BigDecimal minEventLongitude) {
+<span class="fc" id="L231">		this.minEventLongitude = minEventLongitude;</span>
+<span class="fc" id="L232">	}</span>
+
+	public BigDecimal getMaxEventLongitude() {
+<span class="fc" id="L235">		return maxEventLongitude;</span>
+	}
+
+	public void setMaxEventLongitude(BigDecimal maxEventLongitude) {
+<span class="fc" id="L239">		this.maxEventLongitude = maxEventLongitude;</span>
+<span class="fc" id="L240">	}</span>
+
+	public BigDecimal getMinEventDepth() {
+<span class="fc" id="L243">		return minEventDepth;</span>
+	}
+
+	public void setMinEventDepth(BigDecimal minEventDepth) {
+<span class="fc" id="L247">		this.minEventDepth = minEventDepth;</span>
+<span class="fc" id="L248">	}</span>
+
+	public BigDecimal getMaxEventDepth() {
+<span class="fc" id="L251">		return maxEventDepth;</span>
+	}
+
+	public void setMaxEventDepth(BigDecimal maxEventDepth) {
+<span class="fc" id="L255">		this.maxEventDepth = maxEventDepth;</span>
+<span class="fc" id="L256">	}</span>
+
+	public BigDecimal getMinEventMagnitude() {
+<span class="fc" id="L259">		return minEventMagnitude;</span>
+	}
+
+	public void setMinEventMagnitude(BigDecimal minEventMagnitude) {
+<span class="fc" id="L263">		this.minEventMagnitude = minEventMagnitude;</span>
+<span class="fc" id="L264">	}</span>
+
+	public BigDecimal getMaxEventMagnitude() {
+<span class="fc" id="L267">		return maxEventMagnitude;</span>
+	}
+
+	public void setMaxEventMagnitude(BigDecimal maxEventMagnitude) {
+<span class="fc" id="L271">		this.maxEventMagnitude = maxEventMagnitude;</span>
+<span class="fc" id="L272">	}</span>
+
+	public List&lt;ProductId&gt; getProductIds() {
+<span class="fc" id="L275">		return productIds;</span>
+	}
+
+	public void setProductIds(List&lt;ProductId&gt; productIds) {
+<span class="fc" id="L279">		this.productIds.clear();</span>
+<span class="fc" id="L280">		this.productIds.addAll(productIds);</span>
+<span class="fc" id="L281">	}</span>
+
+	public Date getMinProductUpdateTime() {
+<span class="fc" id="L284">		return minProductUpdateTime;</span>
+	}
+
+	public void setMinProductUpdateTime(Date minProductUpdateTime) {
+<span class="fc" id="L288">		this.minProductUpdateTime = minProductUpdateTime;</span>
+<span class="fc" id="L289">	}</span>
+
+	public Date getMaxProductUpdateTime() {
+<span class="fc" id="L292">		return maxProductUpdateTime;</span>
+	}
+
+	public void setMaxProductUpdateTime(Date maxProductUpdateTime) {
+<span class="fc" id="L296">		this.maxProductUpdateTime = maxProductUpdateTime;</span>
+<span class="fc" id="L297">	}</span>
+
+	public String getProductSource() {
+<span class="fc" id="L300">		return productSource;</span>
+	}
+
+	public void setProductSource(String productSource) {
+<span class="fc" id="L304">		this.productSource = productSource;</span>
+<span class="fc" id="L305">	}</span>
+
+	public String getProductType() {
+<span class="fc" id="L308">		return productType;</span>
+	}
+
+	public void setProductType(String productType) {
+<span class="fc" id="L312">		this.productType = productType;</span>
+<span class="fc" id="L313">	}</span>
+
+	public String getProductCode() {
+<span class="fc" id="L316">		return productCode;</span>
+	}
+
+	public void setProductCode(String productCode) {
+<span class="fc" id="L320">		this.productCode = productCode;</span>
+<span class="fc" id="L321">	}</span>
+
+	public void setProductVersion(String productVersion) {
+<span class="fc" id="L324">		this.productVersion = productVersion;</span>
+<span class="fc" id="L325">	}</span>
+
+	public String getProductVersion() {
+<span class="fc" id="L328">		return productVersion;</span>
+	}
+
+	public void setProductStatus(String productStatus) {
+<span class="fc" id="L332">		this.productStatus = productStatus;</span>
+<span class="fc" id="L333">	}</span>
+
+	public String getProductStatus() {
+<span class="fc" id="L336">		return productStatus;</span>
+	}
+
+	public void setMinProductIndexId(final Long minProductIndexId) {
+<span class="fc" id="L340">		this.minProductIndexId = minProductIndexId;</span>
+<span class="fc" id="L341">	}</span>
+
+	public Long getMinProductIndexId() {
+<span class="fc" id="L344">		return this.minProductIndexId;</span>
+	}
+
+	public void setLimit(final Integer limit) {
+<span class="fc" id="L348">		this.limit = limit;</span>
+<span class="fc" id="L349">	}</span>
+
+	public Integer getLimit() {
+<span class="fc" id="L352">		return this.limit;</span>
+	}
+
+	public void setOrderBy(final String orderBy) {
+<span class="fc" id="L356">		this.orderBy = orderBy;</span>
+<span class="fc" id="L357">	}</span>
+
+	public String getOrderBy() {
+<span class="fc" id="L360">		return this.orderBy;</span>
+	}
+
+	@Override
+	public boolean equals(Object that) {
+<span class="nc bnc" id="L365" title="All 2 branches missed.">		return (this.compareTo((ProductIndexQuery) that)) == 0;</span>
+	}
+
+	@Override
+	public int compareTo(ProductIndexQuery that) {
+<span class="fc" id="L370">		int r = 0;</span>
+
+<span class="pc bpc" id="L372" title="1 of 2 branches missed.">		if ((r = compare(this.eventSource, that.eventSource)) != 0) {</span>
+<span class="nc" id="L373">			return r;</span>
+		}
+<span class="pc bpc" id="L375" title="1 of 2 branches missed.">		if ((r = compare(this.eventSourceCode, that.eventSourceCode)) != 0) {</span>
+<span class="nc" id="L376">			return r;</span>
+		}
+<span class="pc bpc" id="L378" title="1 of 2 branches missed.">		if ((r = compare(this.maxEventDepth, that.maxEventDepth)) != 0) {</span>
+<span class="nc" id="L379">			return r;</span>
+		}
+<span class="pc bpc" id="L381" title="1 of 2 branches missed.">		if ((r = compare(this.maxEventLatitude, that.maxEventLatitude)) != 0) {</span>
+<span class="nc" id="L382">			return r;</span>
+		}
+<span class="pc bpc" id="L384" title="1 of 2 branches missed.">		if ((r = compare(this.maxEventLongitude, that.maxEventLongitude)) != 0) {</span>
+<span class="nc" id="L385">			return r;</span>
+		}
+<span class="pc bpc" id="L387" title="1 of 2 branches missed.">		if ((r = compare(this.maxEventMagnitude, that.maxEventMagnitude)) != 0) {</span>
+<span class="nc" id="L388">			return r;</span>
+		}
+<span class="pc bpc" id="L390" title="1 of 2 branches missed.">		if ((r = compare(this.maxEventTime, that.maxEventTime)) != 0) {</span>
+<span class="nc" id="L391">			return r;</span>
+		}
+<span class="pc bpc" id="L393" title="1 of 2 branches missed.">		if ((r = compare(this.maxProductUpdateTime, that.maxProductUpdateTime)) != 0) {</span>
+<span class="nc" id="L394">			return r;</span>
+		}
+
+<span class="pc bpc" id="L397" title="1 of 2 branches missed.">		if ((r = compare(this.minEventDepth, that.minEventDepth)) != 0) {</span>
+<span class="nc" id="L398">			return r;</span>
+		}
+<span class="pc bpc" id="L400" title="1 of 2 branches missed.">		if ((r = compare(this.minEventLatitude, that.minEventLatitude)) != 0) {</span>
+<span class="nc" id="L401">			return r;</span>
+		}
+<span class="pc bpc" id="L403" title="1 of 2 branches missed.">		if ((r = compare(this.minEventLongitude, that.minEventLongitude)) != 0) {</span>
+<span class="nc" id="L404">			return r;</span>
+		}
+<span class="pc bpc" id="L406" title="1 of 2 branches missed.">		if ((r = compare(this.minEventMagnitude, that.minEventMagnitude)) != 0) {</span>
+<span class="nc" id="L407">			return r;</span>
+		}
+<span class="pc bpc" id="L409" title="1 of 2 branches missed.">		if ((r = compare(this.minEventTime, that.minEventTime)) != 0) {</span>
+<span class="nc" id="L410">			return r;</span>
+		}
+<span class="pc bpc" id="L412" title="1 of 2 branches missed.">		if ((r = compare(this.minProductUpdateTime, that.minProductUpdateTime)) != 0) {</span>
+<span class="nc" id="L413">			return r;</span>
+		}
+
+<span class="pc bpc" id="L416" title="1 of 2 branches missed.">		if ((r = compare(this.productCode, that.productCode)) != 0) {</span>
+<span class="nc" id="L417">			return r;</span>
+		}
+<span class="pc bpc" id="L419" title="1 of 2 branches missed.">		if ((r = compare(this.productSource, that.productSource)) != 0) {</span>
+<span class="nc" id="L420">			return r;</span>
+		}
+<span class="pc bpc" id="L422" title="1 of 2 branches missed.">		if ((r = compare(this.productStatus, that.productStatus)) != 0) {</span>
+<span class="nc" id="L423">			return r;</span>
+		}
+<span class="pc bpc" id="L425" title="1 of 2 branches missed.">		if ((r = compare(this.productType, that.productType)) != 0) {</span>
+<span class="nc" id="L426">			return r;</span>
+		}
+<span class="pc bpc" id="L428" title="1 of 2 branches missed.">		if ((r = compare(this.productVersion, that.productVersion)) != 0) {</span>
+<span class="nc" id="L429">			return r;</span>
+		}
+
+<span class="pc bpc" id="L432" title="1 of 2 branches missed.">		if ((r = (that.productIds.size() - this.productIds.size())) != 0) {</span>
+			// different size lists
+<span class="nc" id="L434">			return r;</span>
+		} else {
+			// lists are same size, check contents
+<span class="fc" id="L437">			Iterator&lt;ProductId&gt; thisIter = this.productIds.iterator();</span>
+<span class="fc" id="L438">			Iterator&lt;ProductId&gt; thatIter = that.productIds.iterator();</span>
+<span class="pc bpc" id="L439" title="1 of 4 branches missed.">			while (thisIter.hasNext() &amp;&amp; thatIter.hasNext()) {</span>
+<span class="fc" id="L440">				r = thisIter.next().compareTo(thatIter.next());</span>
+<span class="pc bpc" id="L441" title="1 of 2 branches missed.">				if (r != 0) {</span>
+<span class="nc" id="L442">					return r;</span>
+				}
+			}
+		}
+
+<span class="fc" id="L447">		return 0;</span>
+	}
+
+	protected &lt;T extends Comparable&lt;T&gt;&gt; int compare(T o1, T o2) {
+<span class="pc bpc" id="L451" title="3 of 4 branches missed.">		if (o1 == null &amp;&amp; o2 == null) {</span>
+<span class="nc" id="L452">			return 0;</span>
+<span class="pc bpc" id="L453" title="3 of 4 branches missed.">		} else if (o1 == null &amp;&amp; o2 != null) {</span>
+<span class="nc" id="L454">			return 1;</span>
+<span class="pc bpc" id="L455" title="2 of 4 branches missed.">		} else if (o1 != null &amp;&amp; o2 == null) {</span>
+<span class="nc" id="L456">			return -1;</span>
+		} else {
+<span class="fc" id="L458">			return o1.compareTo(o2);</span>
+		}
+	}
+
+	public void log(final Logger logger) {
+<span class="fc bfc" id="L463" title="All 2 branches covered.">		if (!logger.isLoggable(Level.FINEST)) {</span>
+<span class="fc" id="L464">			return;</span>
+		}
+<span class="fc" id="L466">		StringBuffer buf = new StringBuffer(&quot;Product Index Query&quot;);</span>
+<span class="fc" id="L467">		buf.append(&quot;\neventSearchType=&quot;).append(this.eventSearchType);</span>
+<span class="fc" id="L468">		buf.append(&quot;\nresultType=&quot;).append(this.resultType);</span>
+<span class="fc bfc" id="L469" title="All 2 branches covered.">		if (this.eventSource != null) {</span>
+<span class="fc" id="L470">			buf.append(&quot;\neventSource=&quot;).append(this.eventSource);</span>
+		}
+<span class="fc bfc" id="L472" title="All 2 branches covered.">		if (this.eventSourceCode != null) {</span>
+<span class="fc" id="L473">			buf.append(&quot;\neventSourceCode=&quot;).append(this.eventSourceCode);</span>
+		}
+<span class="fc bfc" id="L475" title="All 2 branches covered.">		if (this.minEventTime != null) {</span>
+<span class="fc" id="L476">			buf.append(&quot;\nminEventTime=&quot;).append(this.minEventTime);</span>
+		}
+<span class="fc bfc" id="L478" title="All 2 branches covered.">		if (this.maxEventTime != null) {</span>
+<span class="fc" id="L479">			buf.append(&quot;\nmaxEventTime=&quot;).append(this.maxEventTime);</span>
+		}
+<span class="fc bfc" id="L481" title="All 2 branches covered.">		if (this.minEventLatitude != null) {</span>
+<span class="fc" id="L482">			buf.append(&quot;\nminEventLatitude=&quot;).append(this.minEventLatitude);</span>
+		}
+<span class="fc bfc" id="L484" title="All 2 branches covered.">		if (this.maxEventLatitude != null) {</span>
+<span class="fc" id="L485">			buf.append(&quot;\nmaxEventLatitude=&quot;).append(this.maxEventLatitude);</span>
+		}
+<span class="fc bfc" id="L487" title="All 2 branches covered.">		if (this.minEventLongitude != null) {</span>
+<span class="fc" id="L488">			buf.append(&quot;\nminEventLongitude=&quot;).append(this.minEventLongitude);</span>
+		}
+<span class="fc bfc" id="L490" title="All 2 branches covered.">		if (this.maxEventLongitude != null) {</span>
+<span class="fc" id="L491">			buf.append(&quot;\nmaxEventLongitude=&quot;).append(this.maxEventLongitude);</span>
+		}
+<span class="pc bpc" id="L493" title="1 of 2 branches missed.">		if (this.minEventDepth != null) {</span>
+<span class="nc" id="L494">			buf.append(&quot;\nminEventDepth=&quot;).append(this.minEventDepth);</span>
+		}
+<span class="pc bpc" id="L496" title="1 of 2 branches missed.">		if (this.maxEventDepth != null) {</span>
+<span class="nc" id="L497">			buf.append(&quot;\nmaxEventDepth=&quot;).append(this.maxEventDepth);</span>
+		}
+<span class="pc bpc" id="L499" title="1 of 2 branches missed.">		if (this.minEventMagnitude != null) {</span>
+<span class="nc" id="L500">			buf.append(&quot;\nminEventMagnitude=&quot;).append(this.minEventMagnitude);</span>
+		}
+<span class="pc bpc" id="L502" title="1 of 2 branches missed.">		if (this.maxEventMagnitude != null) {</span>
+<span class="nc" id="L503">			buf.append(&quot;\nmaxEventMagnitude=&quot;).append(this.maxEventMagnitude);</span>
+		}
+<span class="pc bpc" id="L505" title="1 of 2 branches missed.">		if (this.productIds.size() &gt; 0) {</span>
+<span class="nc" id="L506">			buf.append(&quot;\nproduct ids=&quot;);</span>
+<span class="nc" id="L507">			Iterator&lt;ProductId&gt; iter = this.productIds.iterator();</span>
+<span class="nc bnc" id="L508" title="All 2 branches missed.">			while (iter.hasNext()) {</span>
+<span class="nc" id="L509">				buf.append(iter.next().toString()).append(&quot; &quot;);</span>
+			}
+		}
+<span class="pc bpc" id="L512" title="1 of 2 branches missed.">		if (this.minProductUpdateTime != null) {</span>
+<span class="nc" id="L513">			buf.append(&quot;\nminProductUpdateTime=&quot;).append(</span>
+					this.minProductUpdateTime);
+		}
+<span class="pc bpc" id="L516" title="1 of 2 branches missed.">		if (this.maxProductUpdateTime != null) {</span>
+<span class="nc" id="L517">			buf.append(&quot;\nmaxProductUpdateTime=&quot;).append(</span>
+					this.maxProductUpdateTime);
+		}
+<span class="pc bpc" id="L520" title="1 of 2 branches missed.">		if (this.productSource != null) {</span>
+<span class="nc" id="L521">			buf.append(&quot;\nproductSource=&quot;).append(this.productSource);</span>
+		}
+<span class="pc bpc" id="L523" title="1 of 2 branches missed.">		if (this.productType != null) {</span>
+<span class="nc" id="L524">			buf.append(&quot;\nproductType=&quot;).append(this.productType);</span>
+		}
+<span class="pc bpc" id="L526" title="1 of 2 branches missed.">		if (this.productCode != null) {</span>
+<span class="nc" id="L527">			buf.append(&quot;\nproductCode=&quot;).append(this.productCode);</span>
+		}
+<span class="pc bpc" id="L529" title="1 of 2 branches missed.">		if (this.productVersion != null) {</span>
+<span class="nc" id="L530">			buf.append(&quot;\nproductVersion=&quot;).append(this.productVersion);</span>
+		}
+<span class="pc bpc" id="L532" title="1 of 2 branches missed.">		if (this.productStatus != null) {</span>
+<span class="nc" id="L533">			buf.append(&quot;\nproductStatus=&quot;).append(this.productStatus);</span>
+		}
+
+<span class="fc" id="L536">		logger.finest(buf.toString());</span>
+<span class="fc" id="L537">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

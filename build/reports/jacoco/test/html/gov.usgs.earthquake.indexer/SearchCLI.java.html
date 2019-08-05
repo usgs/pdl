@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchCLI.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">SearchCLI.java</span></div><h1>SearchCLI.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.indexer;
+
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.net.InetAddress;
+import java.util.logging.Logger;
+
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.XmlUtils;
+
+/**
+ * Command line interface for search socket.
+ * 
+ * This class reads arguments from the command line that represent a
+ * ProductIndexQuery. Then it connects to a configured socket, executes the
+ * search, and outputs the response xml.
+ */
+public class SearchCLI {
+
+<span class="nc" id="L21">	private static final Logger LOGGER = Logger.getLogger(SearchCLI.class</span>
+<span class="nc" id="L22">			.getName());</span>
+
+	/**
+	 * Command-line argument definitions
+	 */
+<span class="nc" id="L27">	public static String SEARCH_METHOD_ARGUMENT = &quot;--searchMethod=&quot;;</span>
+<span class="nc" id="L28">	public static String RESULT_TYPE_ARGUMENT = &quot;--resultType=&quot;;</span>
+<span class="nc" id="L29">	public static String EVENT_SOURCE_ARGUMENT = &quot;--eventSource=&quot;;</span>
+<span class="nc" id="L30">	public static String EVENT_SOURCE_CODE_ARGUMENT = &quot;--eventSourceCode=&quot;;</span>
+<span class="nc" id="L31">	public static String MIN_EVENT_TIME_ARGUMENT = &quot;--minEventTime=&quot;;</span>
+<span class="nc" id="L32">	public static String MAX_EVENT_TIME_ARGUMENT = &quot;--maxEventTime=&quot;;</span>
+<span class="nc" id="L33">	public static String MIN_EVENT_LATITUDE_ARGUMENT = &quot;--minEventLatitude=&quot;;</span>
+<span class="nc" id="L34">	public static String MIN_EVENT_LONGITUDE_ARGUMENT = &quot;--minEventLongitude=&quot;;</span>
+<span class="nc" id="L35">	public static String MAX_EVENT_LATITUDE_ARGUMENT = &quot;--maxEventLatitude=&quot;;</span>
+<span class="nc" id="L36">	public static String MAX_EVENT_LONGITUDE_ARGUMENT = &quot;--maxEventLongitude=&quot;;</span>
+<span class="nc" id="L37">	public static String MIN_EVENT_DEPTH_ARGUMENT = &quot;--minEventDepth=&quot;;</span>
+<span class="nc" id="L38">	public static String MAX_EVENT_DEPTH_ARGUMENT = &quot;--maxEventDepth=&quot;;</span>
+<span class="nc" id="L39">	public static String MIN_EVENT_MAGNITUDE_ARGUMENT = &quot;--minEventMagnitude=&quot;;</span>
+<span class="nc" id="L40">	public static String MAX_EVENT_MAGNITUDE_ARGUMENT = &quot;--maxEventMagnitude=&quot;;</span>
+<span class="nc" id="L41">	public static String PRODUCT_ID_ARGUMENT = &quot;--productId=&quot;;</span>
+<span class="nc" id="L42">	public static String MIN_PRODUCT_UPDATE_TIME_ARGUMENT = &quot;--minProductUpdateTime=&quot;;</span>
+<span class="nc" id="L43">	public static String MAX_PRODUCT_UPDATE_TIME_ARGUMENT = &quot;--maxProductUpdateTime=&quot;;</span>
+<span class="nc" id="L44">	public static String PRODUCT_SOURCE_ARGUMENT = &quot;--productSource=&quot;;</span>
+<span class="nc" id="L45">	public static String PRODUCT_TYPE_ARGUMENT = &quot;--productType=&quot;;</span>
+<span class="nc" id="L46">	public static String PRODUCT_VERSION_ARGUMENT = &quot;--productVersion=&quot;;</span>
+<span class="nc" id="L47">	public static String PRODUCT_STATUS_ARGUMENT = &quot;--productStatus=&quot;;</span>
+
+<span class="nc" id="L49">	public static String SEARCH_HOST_ARGUMENT = &quot;--searchHost=&quot;;</span>
+<span class="nc" id="L50">	public static String SEARCH_PORT_ARGUMENT = &quot;--searchPort=&quot;;</span>
+
+<span class="nc" id="L52">	public static String FILE_OUTPUT_ARGUMENT = &quot;--outputFile=&quot;;</span>
+
+	/**
+	 * Default constructor, for configurable interface.
+	 */
+<span class="nc" id="L57">	public SearchCLI() {</span>
+<span class="nc" id="L58">	}</span>
+
+	/**
+	 * Entry point into search. Called by Main when the --search argument is
+	 * used.
+	 * 
+	 * @param args
+	 *            command line arguments.
+	 * @throws Exception
+	 */
+	public static void main(final String[] args) throws Exception {
+<span class="nc" id="L69">		String outputFilePath = null;</span>
+<span class="nc" id="L70">		SearchMethod type = null;</span>
+<span class="nc" id="L71">		InetAddress host = InetAddress.getByName(&quot;localhost&quot;);</span>
+<span class="nc" id="L72">		int port = Integer.parseInt(SearchServerSocket.DEFAULT_SEARCH_PORT);</span>
+<span class="nc" id="L73">		ProductIndexQuery query = new ProductIndexQuery();</span>
+		// Alternate result types are currently not supported.
+<span class="nc" id="L75">		query.setResultType(ProductIndexQuery.RESULT_TYPE_CURRENT);</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">		for (String arg : args) {</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">			if (arg.startsWith(SEARCH_METHOD_ARGUMENT)) {</span>
+<span class="nc" id="L78">				type = SearchMethod.fromXmlMethodName(arg.replace(</span>
+						SEARCH_METHOD_ARGUMENT, &quot;&quot;));
+<span class="nc bnc" id="L80" title="All 2 branches missed.">				if (type == null) {</span>
+<span class="nc" id="L81">					LOGGER.severe(&quot;Undefined search method received: '&quot;</span>
+<span class="nc" id="L82">							+ arg.replace(SEARCH_METHOD_ARGUMENT, &quot;&quot;)</span>
+							+ &quot;'. Search could not be processed.&quot;);
+<span class="nc" id="L84">					throw new Exception();</span>
+				}
+				/*
+				 * Alternate result types are currently not supported. } else if
+				 * (arg.startsWith(RESULT_TYPE_ARGUMENT)) { String resultType =
+				 * arg.replace(RESULT_TYPE_ARGUMENT, &quot;&quot;); if
+				 * (resultType.toLowerCase() == &quot;current&quot;)
+				 * query.setResultType(ProductIndexQuery.RESULT_TYPE_CURRENT);
+				 * else if (resultType.toLowerCase() == &quot;superseded&quot;)
+				 * query.setResultType
+				 * (ProductIndexQuery.RESULT_TYPE_SUPERSEDED); else if
+				 * (resultType.toLowerCase() == &quot;all&quot;)
+				 * query.setResultType(ProductIndexQuery.RESULT_TYPE_ALL);
+				 */
+<span class="nc bnc" id="L98" title="All 2 branches missed.">			} else if (arg.startsWith(EVENT_SOURCE_ARGUMENT)) {</span>
+<span class="nc" id="L99">				query.setEventSource(arg.replace(EVENT_SOURCE_ARGUMENT, &quot;&quot;));</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">			} else if (arg.startsWith(EVENT_SOURCE_CODE_ARGUMENT)) {</span>
+<span class="nc" id="L101">				query.setEventSourceCode(arg.replace(</span>
+						EVENT_SOURCE_CODE_ARGUMENT, &quot;&quot;));
+<span class="nc bnc" id="L103" title="All 2 branches missed.">			} else if (arg.startsWith(MIN_EVENT_TIME_ARGUMENT)) {</span>
+<span class="nc" id="L104">				query.setMinEventTime(XmlUtils.getDate(arg.replace(</span>
+						MIN_EVENT_TIME_ARGUMENT, &quot;&quot;)));
+<span class="nc bnc" id="L106" title="All 2 branches missed.">			} else if (arg.startsWith(MAX_EVENT_TIME_ARGUMENT)) {</span>
+<span class="nc" id="L107">				query.setMaxEventTime(XmlUtils.getDate(arg.replace(</span>
+						MAX_EVENT_TIME_ARGUMENT, &quot;&quot;)));
+<span class="nc bnc" id="L109" title="All 2 branches missed.">			} else if (arg.startsWith(MIN_EVENT_LATITUDE_ARGUMENT)) {</span>
+<span class="nc" id="L110">				query.setMinEventLatitude(new BigDecimal(arg.replace(</span>
+						MIN_EVENT_LATITUDE_ARGUMENT, &quot;&quot;)));
+<span class="nc bnc" id="L112" title="All 2 branches missed.">			} else if (arg.startsWith(MIN_EVENT_LONGITUDE_ARGUMENT)) {</span>
+<span class="nc" id="L113">				query.setMinEventLongitude(new BigDecimal(arg.replace(</span>
+						MIN_EVENT_LONGITUDE_ARGUMENT, &quot;&quot;)));
+<span class="nc bnc" id="L115" title="All 2 branches missed.">			} else if (arg.startsWith(MIN_EVENT_DEPTH_ARGUMENT)) {</span>
+<span class="nc" id="L116">				query.setMinEventDepth(new BigDecimal(arg.replace(</span>
+						MIN_EVENT_DEPTH_ARGUMENT, &quot;&quot;)));
+<span class="nc bnc" id="L118" title="All 2 branches missed.">			} else if (arg.startsWith(MAX_EVENT_LATITUDE_ARGUMENT)) {</span>
+<span class="nc" id="L119">				query.setMaxEventLatitude(new BigDecimal(arg.replace(</span>
+						MAX_EVENT_LATITUDE_ARGUMENT, &quot;&quot;)));
+<span class="nc bnc" id="L121" title="All 2 branches missed.">			} else if (arg.startsWith(MAX_EVENT_LONGITUDE_ARGUMENT)) {</span>
+<span class="nc" id="L122">				query.setMaxEventLongitude(new BigDecimal(arg.replace(</span>
+						MAX_EVENT_LONGITUDE_ARGUMENT, &quot;&quot;)));
+<span class="nc bnc" id="L124" title="All 2 branches missed.">			} else if (arg.startsWith(MAX_EVENT_DEPTH_ARGUMENT)) {</span>
+<span class="nc" id="L125">				query.setMaxEventDepth(new BigDecimal(arg.replace(</span>
+						MAX_EVENT_DEPTH_ARGUMENT, &quot;&quot;)));
+<span class="nc bnc" id="L127" title="All 2 branches missed.">			} else if (arg.startsWith(MIN_EVENT_MAGNITUDE_ARGUMENT)) {</span>
+<span class="nc" id="L128">				query.setMinEventMagnitude(new BigDecimal(arg.replace(</span>
+						MIN_EVENT_MAGNITUDE_ARGUMENT, &quot;&quot;)));
+<span class="nc bnc" id="L130" title="All 2 branches missed.">			} else if (arg.startsWith(MAX_EVENT_MAGNITUDE_ARGUMENT)) {</span>
+<span class="nc" id="L131">				query.setMaxEventMagnitude(new BigDecimal(arg.replace(</span>
+						MAX_EVENT_MAGNITUDE_ARGUMENT, &quot;&quot;)));
+<span class="nc bnc" id="L133" title="All 2 branches missed.">			} else if (arg.startsWith(PRODUCT_ID_ARGUMENT)) {</span>
+<span class="nc" id="L134">				query.getProductIds().add(</span>
+<span class="nc" id="L135">						ProductId.parse(arg.replace(PRODUCT_ID_ARGUMENT, &quot;&quot;)));</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">			} else if (arg.startsWith(PRODUCT_SOURCE_ARGUMENT)) {</span>
+<span class="nc" id="L137">				query.setProductSource(arg.replace(PRODUCT_SOURCE_ARGUMENT, &quot;&quot;));</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">			} else if (arg.startsWith(PRODUCT_STATUS_ARGUMENT)) {</span>
+<span class="nc" id="L139">				query.setProductStatus(arg.replace(PRODUCT_STATUS_ARGUMENT, &quot;&quot;));</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">			} else if (arg.startsWith(PRODUCT_TYPE_ARGUMENT)) {</span>
+<span class="nc" id="L141">				query.setProductType(arg.replace(PRODUCT_TYPE_ARGUMENT, &quot;&quot;));</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">			} else if (arg.startsWith(PRODUCT_VERSION_ARGUMENT)) {</span>
+<span class="nc" id="L143">				query.setProductVersion(arg.replace(PRODUCT_VERSION_ARGUMENT,</span>
+						&quot;&quot;));
+<span class="nc bnc" id="L145" title="All 2 branches missed.">			} else if (arg.startsWith(SEARCH_HOST_ARGUMENT)) {</span>
+<span class="nc" id="L146">				host = InetAddress.getByName(arg.replace(SEARCH_HOST_ARGUMENT,</span>
+						&quot;&quot;));
+<span class="nc bnc" id="L148" title="All 2 branches missed.">			} else if (arg.startsWith(SEARCH_PORT_ARGUMENT)) {</span>
+<span class="nc" id="L149">				port = Integer.parseInt(arg.replace(SEARCH_PORT_ARGUMENT, &quot;&quot;));</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">			} else if (arg.startsWith(FILE_OUTPUT_ARGUMENT)) {</span>
+<span class="nc" id="L151">				outputFilePath = arg.replace(FILE_OUTPUT_ARGUMENT, &quot;&quot;);</span>
+			}
+		}
+<span class="nc" id="L154">		SearchRequest request = new SearchRequest();</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">		if (type == null) {</span>
+<span class="nc" id="L156">			LOGGER.severe(&quot;No search type was provided.&quot;);</span>
+		}
+		OutputStream stream;
+<span class="nc bnc" id="L159" title="All 2 branches missed.">		if (outputFilePath != null) {</span>
+<span class="nc" id="L160">			stream = new FileOutputStream(FILE_OUTPUT_ARGUMENT);</span>
+		} else {
+<span class="nc" id="L162">			stream = System.out;</span>
+		}
+<span class="nc" id="L164">		request.addQuery(SearchQuery.getSearchQuery(type, query));</span>
+
+<span class="nc" id="L166">		SearchSocket socket = new SearchSocket(host, port);</span>
+<span class="nc" id="L167">		socket.search(request, stream);</span>
+<span class="nc" id="L168">	}</span>
+
+	public static String getUsage() {
+<span class="nc" id="L171">		StringBuffer buf = new StringBuffer();</span>
+
+<span class="nc" id="L173">		buf.append(&quot;Product Index Search Interface:\n&quot;);</span>
+<span class="nc" id="L174">		buf.append(&quot;--search : Command is using the search interface\n&quot;);</span>
+<span class="nc" id="L175">		buf.append(SEARCH_METHOD_ARGUMENT + &quot;METHOD : Any one of &quot;);</span>
+<span class="nc" id="L176">		SearchMethod[] methods = SearchMethod.values();</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">		for (int i = 0; i &lt; methods.length; i++) {</span>
+<span class="nc" id="L178">			buf.append(&quot;'&quot; + methods[i].getXmlMethodName() + &quot;'&quot;);</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">			if (i &lt; methods.length - 1) {</span>
+<span class="nc" id="L180">				buf.append(&quot;, &quot;);</span>
+			} else {
+<span class="nc" id="L182">				buf.append(&quot;\n&quot;);</span>
+			}
+		}
+<span class="nc" id="L185">		buf.append(&quot;[&quot; + EVENT_SOURCE_ARGUMENT</span>
+				+ &quot;SOURCE] : Filter results by event source network.\n&quot;);
+<span class="nc" id="L187">		buf.append(&quot;[&quot; + EVENT_SOURCE_CODE_ARGUMENT</span>
+				+ &quot;CODE] : Filter results by event source network code.\n&quot;);
+<span class="nc" id="L189">		buf.append(&quot;[&quot;</span>
+				+ MIN_EVENT_TIME_ARGUMENT
+				+ &quot;XML_FORMATTED_TIME] : Filter results by start of time window.\n&quot;);
+<span class="nc" id="L192">		buf.append(&quot;[&quot;</span>
+				+ MAX_EVENT_TIME_ARGUMENT
+				+ &quot;XML_FORMATTED_TIME] : Filter results by end of time window.\n&quot;);
+<span class="nc" id="L195">		buf.append(&quot;[&quot; + MIN_EVENT_LATITUDE_ARGUMENT</span>
+				+ &quot;LATITUDE] : Filter results by Southern boundary.\n&quot;);
+<span class="nc" id="L197">		buf.append(&quot;[&quot; + MAX_EVENT_LATITUDE_ARGUMENT</span>
+				+ &quot;LATITUDE] : Filter results by Northern boundary.\n&quot;);
+<span class="nc" id="L199">		buf.append(&quot;[&quot; + MIN_EVENT_LONGITUDE_ARGUMENT</span>
+				+ &quot;LONGITUDE] : Filter results by Western boundary.\n&quot;);
+<span class="nc" id="L201">		buf.append(&quot;[&quot; + MAX_EVENT_LONGITUDE_ARGUMENT</span>
+				+ &quot;LONGITUDE] : Filter results by Eastern boundary.\n&quot;);
+<span class="nc" id="L203">		buf.append(&quot;[&quot; + MIN_EVENT_DEPTH_ARGUMENT</span>
+				+ &quot;DEPTH] : Filter results by minimum depth in km.\n&quot;);
+<span class="nc" id="L205">		buf.append(&quot;[&quot; + MAX_EVENT_DEPTH_ARGUMENT</span>
+				+ &quot;DEPTH] : Filter results by maximum depth in km.\n&quot;);
+<span class="nc" id="L207">		buf.append(&quot;[&quot; + MIN_EVENT_MAGNITUDE_ARGUMENT</span>
+				+ &quot;MAGNITUDE] : Filter results by minimum magnitude.\n&quot;);
+<span class="nc" id="L209">		buf.append(&quot;[&quot; + MAX_EVENT_MAGNITUDE_ARGUMENT</span>
+				+ &quot;MAGNITUDE] : Filter results by maximum magnitude.\n&quot;);
+<span class="nc" id="L211">		buf.append(&quot;[&quot;</span>
+				+ PRODUCT_ID_ARGUMENT
+				+ &quot;PRODUCT_ID] : Filter by product ID. Each time this appears the new ID is added.\n&quot;);
+<span class="nc" id="L214">		buf.append(&quot;[&quot; + PRODUCT_SOURCE_ARGUMENT</span>
+				+ &quot;SOURCE] : Filter results by product source.\n&quot;);
+<span class="nc" id="L216">		buf.append(&quot;[&quot; + PRODUCT_STATUS_ARGUMENT</span>
+				+ &quot;STATUS] : Filter results by product status.\n&quot;);
+<span class="nc" id="L218">		buf.append(&quot;[&quot; + PRODUCT_TYPE_ARGUMENT</span>
+				+ &quot;TYPE] : Filter results by product type.\n&quot;);
+<span class="nc" id="L220">		buf.append(&quot;[&quot; + PRODUCT_VERSION_ARGUMENT</span>
+				+ &quot;VERSION] : Filter results by product version.\n&quot;);
+<span class="nc" id="L222">		buf.append(&quot;[&quot;</span>
+				+ SEARCH_HOST_ARGUMENT
+				+ &quot;HOST] : The Product Index host to receive this query. Default is localhost.&quot;);
+<span class="nc" id="L225">		buf.append(&quot;[&quot;</span>
+				+ SEARCH_PORT_ARGUMENT
+				+ &quot;PORT] : The port on which to execute this query. Default is &quot;
+				+ SearchServerSocket.DEFAULT_SEARCH_PORT + &quot;.\n&quot;);
+<span class="nc" id="L229">		buf.append(&quot;[&quot;</span>
+				+ FILE_OUTPUT_ARGUMENT
+				+ &quot;FILE] : The file to write output to. If this is not included, output will be directed over stdout.&quot;);
+
+<span class="nc" id="L233">		return buf.toString();</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="gov.usgs.earthquake.distribution.ConcurrentStorageTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2019-08-05T22:06:32" hostname="igskcicgwsgm015" time="1.352">
+  <properties/>
+  <testcase name="shakemapSocketFirst" classname="gov.usgs.earthquake.distribution.ConcurrentStorageTest" time="0.852"/>
+  <testcase name="shakemapNotificationFirst" classname="gov.usgs.earthquake.distribution.ConcurrentStorageTest" time="0.5"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[
+###
+Mon Aug 05 16:06:33 MDT 2019
+INFO	thread=88	[null] sending product to Socket[addr=localhost/127.0.0.1,port=11235,localport=49779]
+There are 1 active/queued socket connections
+INFO	thread=89	[null] accepted connection Socket[addr=/127.0.0.1,port=49779,localport=11235]
+INFO	thread=89	[null] received product 'urn:usgs-product:us:shakemap:usa00040xz:1287260900624'
+ from Socket[addr=/127.0.0.1,port=49779,localport=11235]
+INFO	thread=88	[null] send complete Socket[addr=localhost/127.0.0.1,port=11235,localport=49779] response="[null] received product 'urn:usgs-product:us:shakemap:usa00040xz:1287260900624'
+"
+java.net.SocketException: Socket closed
+	at java.base/java.net.PlainSocketImpl.socketAccept(Native Method)
+	at java.base/java.net.AbstractPlainSocketImpl.accept(AbstractPlainSocketImpl.java:458)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:551)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:519)
+	at gov.usgs.earthquake.distribution.ConcurrentStorageTest$ProductWebServer.run(ConcurrentStorageTest.java:322)
+INFO	thread=89	[null] closed connection Socket[addr=/127.0.0.1,port=49779,localport=11235]
+
+###
+There are 1 active/queued socket connections
+Mon Aug 05 16:06:33 MDT 2019
+INFO	thread=203	[null] sending product to Socket[addr=localhost/127.0.0.1,port=11235,localport=49781]
+INFO	thread=206	[null] accepted connection Socket[addr=/127.0.0.1,port=49781,localport=11235]
+Mon Aug 05 16:06:34 MDT 2019
+INFO	thread=206	[null] received product 'urn:usgs-product:us:shakemap:usa00040xz:1287260900624'
+ from Socket[addr=/127.0.0.1,port=49781,localport=11235]
+INFO	thread=203	[null] send complete Socket[addr=localhost/127.0.0.1,port=11235,localport=49781] response="[null] received product 'urn:usgs-product:us:shakemap:usa00040xz:1287260900624'
+"
+INFO	thread=206	[null] closed connection Socket[addr=/127.0.0.1,port=49781,localport=11235]
+java.net.SocketException: Broken pipe (Write failed)
+	at java.base/java.net.SocketOutputStream.socketWrite0(Native Method)
+	at java.base/java.net.SocketOutputStream.socketWrite(SocketOutputStream.java:110)
+	at java.base/java.net.SocketOutputStream.write(SocketOutputStream.java:138)
+	at gov.usgs.earthquake.distribution.ConcurrentStorageTest$ProductWebServer.run(ConcurrentStorageTest.java:332)
+]]></system-err>
+</testsuite>

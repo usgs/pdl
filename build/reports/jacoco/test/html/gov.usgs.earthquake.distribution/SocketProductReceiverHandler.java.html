@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SocketProductReceiverHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">SocketProductReceiverHandler.java</span></div><h1>SocketProductReceiverHandler.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.product.io.BinaryIO;
+import gov.usgs.earthquake.product.io.IOUtil;
+import gov.usgs.earthquake.util.SizeLimitInputStream;
+import gov.usgs.util.ObjectLock;
+import gov.usgs.util.StreamUtils;
+
+public class SocketProductReceiverHandler implements Runnable {
+
+<span class="fc" id="L20">	private static final Logger LOGGER = Logger.getLogger(SocketProductReceiverHandler.class.getName());</span>
+
+	public static final int PDL_PROTOCOL_BUFFER = 1024;
+
+<span class="fc" id="L24">	protected final BinaryIO io = new BinaryIO();</span>
+	protected final SocketProductReceiver receiver;
+	protected final Socket socket;
+	protected String protocolVersion;
+
+
+<span class="fc" id="L30">	public SocketProductReceiverHandler(final SocketProductReceiver receiver, final Socket socket) {</span>
+<span class="fc" id="L31">		this.receiver = receiver;</span>
+<span class="fc" id="L32">		this.socket = socket;</span>
+<span class="fc" id="L33">	}</span>
+
+	/**
+	 * Acquire write lock in receiver storage.
+	 *
+	 * @param id product to lock.
+	 */
+	public void acquireWriteLock(final ProductId id) {
+		try {
+<span class="fc" id="L42">			ObjectLock&lt;ProductId&gt; storageLocks = ((FileProductStorage) receiver.getProductStorage())</span>
+<span class="fc" id="L43">					.getStorageLocks();</span>
+<span class="fc" id="L44">			storageLocks.acquireWriteLock(id);</span>
+<span class="fc" id="L45">		} catch (Exception e) {</span>
+			// ignore
+<span class="fc" id="L47">		}</span>
+<span class="fc" id="L48">	}</span>
+
+	/**
+	 * Release write lock in receiver storeage.
+	 *
+	 * @param id product to unlock.
+	 */
+	public void releaseWriteLock(final ProductId id) {
+<span class="fc bfc" id="L56" title="All 2 branches covered.">		if (id == null) {</span>
+<span class="fc" id="L57">			return;</span>
+		}
+
+		try {
+<span class="fc" id="L61">			ObjectLock&lt;ProductId&gt; storageLocks = ((FileProductStorage) receiver.getProductStorage())</span>
+<span class="fc" id="L62">					.getStorageLocks();</span>
+<span class="fc" id="L63">			storageLocks.releaseWriteLock(id);</span>
+<span class="fc" id="L64">		} catch (Exception e) {</span>
+			// ignore
+<span class="fc" id="L66">		}</span>
+<span class="fc" id="L67">	}</span>
+
+	/**
+	 * Read PDL protocol version.
+	 *
+	 * @param in input stream to read
+	 * @return version, or null if not the PDL protocol.
+	 *
+	 * @throws IOException
+	 */
+	public String readProtocolVersion(final InputStream in) throws IOException {
+<span class="fc" id="L78">		String version = null;</span>
+<span class="pc bpc" id="L79" title="2 of 6 branches missed.">		if (in.read() == 'P' &amp;&amp; in.read() == 'D' &amp;&amp; in.read() == 'L') {</span>
+			try {
+<span class="fc" id="L81">				version = io.readString(in, PDL_PROTOCOL_BUFFER);</span>
+<span class="nc" id="L82">			} catch (IOException e) {</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">				if (e.getMessage().contains(&quot;maxLength&quot;)) {</span>
+<span class="nc" id="L84">					throw new IOException(&quot;bad protocol version&quot;);</span>
+				} else {
+<span class="nc" id="L86">					throw e;</span>
+				}
+<span class="fc" id="L88">			}</span>
+		}
+<span class="fc" id="L90">		return version;</span>
+	}
+
+	/**
+	 * Process incoming socket connection.
+	 */
+	@Override
+	public void run() {
+<span class="fc" id="L98">		BufferedInputStream in = null;</span>
+<span class="fc" id="L99">		InputStream productIn = null;</span>
+<span class="fc" id="L100">		OutputStream out = null;</span>
+<span class="fc" id="L101">		ProductId productId = null;</span>
+
+		try {
+<span class="fc" id="L104">			socket.setSoTimeout(receiver.getReadTimeout());</span>
+<span class="fc" id="L105">			in = new BufferedInputStream(socket.getInputStream());</span>
+<span class="fc" id="L106">			out = socket.getOutputStream();</span>
+
+<span class="fc" id="L108">			in.mark(PDL_PROTOCOL_BUFFER);</span>
+
+<span class="fc" id="L110">			protocolVersion = readProtocolVersion(in);</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">			if (protocolVersion == null) {</span>
+<span class="fc" id="L112">				LOGGER.fine(&quot;[&quot; + receiver.getName() + &quot;] not using PDL protocol &quot;</span>
+						+ socket);
+<span class="fc" id="L114">				in.reset();</span>
+			} else {
+<span class="fc" id="L116">				LOGGER.fine(&quot;[&quot; + receiver.getName() + &quot;] protocol version '&quot;</span>
+						+ protocolVersion + &quot;' &quot; + socket);
+
+				// got a version, see if it's supported
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">				if (SocketProductSender.PROTOCOL_VERSION_0_1.equals(protocolVersion)) {</span>
+					// product id is only message
+					String productIdString;
+					try {
+<span class="fc" id="L124">						productIdString = io.readString(in, 1024);</span>
+<span class="nc" id="L125">					} catch (IOException e) {</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">						if (e.getMessage().contains(&quot;maxLength&quot;)) {</span>
+<span class="nc" id="L127">							throw new IOException(&quot;version too long&quot;);</span>
+						} else {
+<span class="nc" id="L129">							throw e;</span>
+						}
+<span class="fc" id="L131">					}</span>
+<span class="fc" id="L132">					productId = ProductId.parse(productIdString);</span>
+
+<span class="fc" id="L134">					acquireWriteLock(productId);</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">					if (receiver.getProductStorage().hasProduct(productId)) {</span>
+						// have product, don't send
+<span class="fc" id="L137">						sendString(out, SocketProductSender.ALREADY_HAVE_PRODUCT);</span>
+<span class="fc" id="L138">						return;</span>
+					} else {
+						// don't have product
+<span class="fc" id="L141">						sendString(out, SocketProductSender.UNKNOWN_PRODUCT);</span>
+<span class="fc" id="L142">						out.flush();</span>
+					}
+<span class="fc" id="L144">				} else {</span>
+<span class="nc" id="L145">					throw new IOException(&quot;unsupported protocol version&quot;);</span>
+				}
+			}
+
+			// read product
+<span class="fc" id="L150">			productIn = in;</span>
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">			if (receiver.getSizeLimit() &gt; 0) {</span>
+<span class="nc" id="L152">				productIn = new SizeLimitInputStream(in, receiver.getSizeLimit());</span>
+			}
+<span class="fc" id="L154">			String status = receiver.storeAndNotify(IOUtil</span>
+<span class="fc" id="L155">					.autoDetectProductSource(new StreamUtils.UnclosableInputStream(</span>
+							productIn)));
+<span class="fc" id="L157">			LOGGER.info(status + &quot; from &quot; + socket.toString());</span>
+
+			try {
+				// tell sender &quot;success&quot;
+<span class="fc bfc" id="L161" title="All 2 branches covered.">				if (protocolVersion == null) {</span>
+<span class="fc" id="L162">					out.write(status.getBytes());</span>
+				} else {
+<span class="fc" id="L164">					io.writeString(status, out);</span>
+				}
+<span class="fc" id="L166">				out.flush();</span>
+<span class="nc" id="L167">			} catch (Exception ex) {</span>
+<span class="nc" id="L168">				LOGGER.log(Level.WARNING, &quot;[&quot; + receiver.getName()</span>
+						+ &quot;] unable to notify sender of success&quot;, ex);
+<span class="fc" id="L170">			}</span>
+<span class="nc" id="L171">		} catch (Exception ex) {</span>
+<span class="nc" id="L172">			sendException(out, ex);</span>
+		} finally {
+<span class="fc" id="L174">			releaseWriteLock(productId);</span>
+
+<span class="fc" id="L176">			StreamUtils.closeStream(in);</span>
+<span class="fc" id="L177">			StreamUtils.closeStream(out);</span>
+		}
+<span class="fc" id="L179">	}</span>
+
+	/**
+	 * Send an exception to the user.
+	 *
+	 * @param out output stream where exception message is written
+	 * @param e exception to write
+	 */
+	public void sendException(final OutputStream out, final Exception e) {
+		try {
+<span class="nc bnc" id="L189" title="All 2 branches missed.">			if (e instanceof ProductAlreadyInStorageException</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">					|| e.getCause() instanceof ProductAlreadyInStorageException) {</span>
+<span class="nc" id="L191">				LOGGER.info(&quot;[&quot; + receiver.getName() + &quot;] product from &quot;</span>
+<span class="nc" id="L192">						+ socket.toString() + &quot; already in storage&quot;);</span>
+<span class="nc" id="L193">				sendString(out, SocketProductSender.ALREADY_HAVE_PRODUCT);</span>
+			} else {
+				// tell sender &quot;exception&quot;
+<span class="nc" id="L196">				LOGGER.log(Level.WARNING, &quot;[&quot; + receiver.getName()</span>
+						+ &quot;] exception while processing socket&quot;, e);
+<span class="nc" id="L198">				sendString(out, SocketProductSender.RECEIVE_ERROR +</span>
+<span class="nc" id="L199">						&quot; '&quot; + e.getMessage() + &quot;'&quot;);</span>
+			}
+<span class="nc" id="L201">		} catch (Exception e2) {</span>
+			//ignore
+<span class="nc" id="L203">		}</span>
+<span class="nc" id="L204">	}</span>
+
+	/**
+	 * Send a string to the user.
+	 *
+	 * @param out output stream where exception message is written
+	 * @param str string to write
+	 */
+	public void sendString(final OutputStream out, final String str) throws IOException {
+		try {
+<span class="pc bpc" id="L214" title="1 of 2 branches missed.">			if (protocolVersion == null) {</span>
+<span class="nc" id="L215">				out.write(str.getBytes());</span>
+			} else {
+<span class="fc" id="L217">				io.writeString(str, out);</span>
+			}
+<span class="fc" id="L219">			out.flush();</span>
+<span class="nc" id="L220">		} catch (IOException e) {</span>
+<span class="nc" id="L221">			LOGGER.log(Level.WARNING, &quot;[&quot; + receiver.getName() +</span>
+					&quot;] unable to send message '&quot; + str + &quot;' to &quot; +
+<span class="nc" id="L223">					socket.toString(), e);</span>
+<span class="nc" id="L224">			throw e;</span>
+<span class="fc" id="L225">		}</span>
+<span class="fc" id="L226">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

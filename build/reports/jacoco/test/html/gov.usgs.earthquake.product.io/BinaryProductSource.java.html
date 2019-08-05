@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BinaryProductSource.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product.io</a> &gt; <span class="el_source">BinaryProductSource.java</span></div><h1>BinaryProductSource.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.product.io;
+
+import gov.usgs.earthquake.product.InputStreamContent;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.StreamUtils;
+
+import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.net.URI;
+import java.net.URL;
+import java.util.Date;
+
+/**
+ * Parser for binary format for product data.
+ */
+public class BinaryProductSource implements ProductSource {
+
+	/** product being parsed. */
+	private ProductId id;
+	/** stream being parsed. */
+	private InputStream in;
+	/** binary io utility. */
+	private BinaryIO io;
+
+<span class="fc" id="L26">	public BinaryProductSource(final InputStream in) {</span>
+<span class="fc" id="L27">		this.in = in;</span>
+<span class="fc" id="L28">		this.io = new BinaryIO();</span>
+<span class="fc" id="L29">	}</span>
+
+	@Override
+	public void streamTo(ProductHandler out) throws Exception {
+		try {
+			while (true) {
+<span class="fc" id="L35">				String next = io.readString(in);</span>
+
+<span class="fc bfc" id="L37" title="All 2 branches covered.">				if (next.equals(BinaryProductHandler.HEADER)) {</span>
+					// begin product
+<span class="fc" id="L39">					id = ProductId.parse(io.readString(in));</span>
+<span class="fc" id="L40">					String status = io.readString(in);</span>
+					// allow tracker url to be null
+<span class="fc" id="L42">					URL trackerURL = null;</span>
+<span class="fc" id="L43">					String trackerURLString = io.readString(in);</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">					if (!trackerURLString.equalsIgnoreCase(&quot;null&quot;)) {</span>
+<span class="fc" id="L45">						trackerURL = new URL(trackerURLString);</span>
+					}
+<span class="fc" id="L47">					out.onBeginProduct(id, status, trackerURL);</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">				} else if (next.equals(BinaryProductHandler.PROPERTY)) {</span>
+<span class="fc" id="L49">					String name = io.readString(in);</span>
+<span class="fc" id="L50">					String value = io.readString(in);</span>
+<span class="fc" id="L51">					out.onProperty(id, name, value);</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">				} else if (next.equals(BinaryProductHandler.LINK)) {</span>
+<span class="fc" id="L53">					String relation = io.readString(in);</span>
+<span class="fc" id="L54">					URI href = new URI(io.readString(in));</span>
+<span class="fc" id="L55">					out.onLink(id, relation, href);</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">				} else if (next.equals(BinaryProductHandler.CONTENT)) {</span>
+<span class="fc" id="L57">					String path = io.readString(in);</span>
+<span class="fc" id="L58">					String contentType = io.readString(in);</span>
+<span class="fc" id="L59">					Date lastModified = io.readDate(in);</span>
+<span class="fc" id="L60">					Long length = io.readLong(in);</span>
+
+					// use a piped output stream to deliver content to separate
+					// processing thread. this thread will continue to read
+					// InputStream, transfer content to pipedOutputStream.
+					// Background thread calls onContent, and reads from
+					// pipedInputStream.
+<span class="fc" id="L67">					PipedOutputStream pipedOut = new PipedOutputStream();</span>
+<span class="fc" id="L68">					PipedInputStream pipedIn = new PipedInputStream(pipedOut);</span>
+
+<span class="fc" id="L70">					final InputStreamContent content = new InputStreamContent(</span>
+							pipedIn);
+<span class="fc" id="L72">					content.setContentType(contentType);</span>
+<span class="fc" id="L73">					content.setLastModified(lastModified);</span>
+<span class="fc" id="L74">					content.setLength(length);</span>
+
+					// background thread delivers content object to product handler
+<span class="fc" id="L77">					ContentOutputThread outputThread = new ContentOutputThread(out, id, path, content);</span>
+
+					try {
+<span class="fc" id="L80">						outputThread.start();</span>
+
+						// read stream content
+<span class="fc" id="L83">						io.readStream(length, in, pipedOut);</span>
+					} finally {
+						// done reading content, close piped stream to signal EOF.
+<span class="fc" id="L86">						StreamUtils.closeStream(pipedOut);</span>
+<span class="fc" id="L87">						pipedOut = null;</span>
+						try {
+							// wait for background thread to complete
+<span class="fc" id="L90">							outputThread.join();</span>
+<span class="nc" id="L91">						} catch (Exception e) {</span>
+							// ignore
+<span class="fc" id="L93">						}</span>
+<span class="fc" id="L94">						outputThread = null;</span>
+<span class="fc" id="L95">						content.close();</span>
+					}
+
+<span class="fc bfc" id="L98" title="All 2 branches covered.">				} else if (next.equals(BinaryProductHandler.SIGNATURE)) {</span>
+<span class="fc" id="L99">					String signature = io.readString(in);</span>
+<span class="fc" id="L100">					out.onSignature(id, signature);</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">				} else if (next.equals(BinaryProductHandler.FOOTER)) {</span>
+<span class="fc" id="L102">					out.onEndProduct(id);</span>
+<span class="fc" id="L103">					id = null;</span>
+
+					// end of product stream
+<span class="fc" id="L106">					break;</span>
+				}
+<span class="fc" id="L108">			}</span>
+		} finally {
+<span class="fc" id="L110">			StreamUtils.closeStream(in);</span>
+		}
+<span class="fc" id="L112">	}</span>
+
+
+	/**
+	 * Free any resources associated with this source.
+	 */
+	@Override
+	public void close() {
+<span class="fc" id="L120">		StreamUtils.closeStream(in);</span>
+<span class="fc" id="L121">		in = null;</span>
+<span class="fc" id="L122">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Regions.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.qdm</a> &gt; <span class="el_source">Regions.java</span></div><h1>Regions.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.qdm;
+
+import java.util.ArrayList;
+
+/**
+ * Set of regions.
+ *  
+ * @author - Alan Jones, 1999.09.10 &lt;br&gt;
+ *         2002.01.16: Convert from &quot;regions&quot; directory with above files to
+ *         regions.xml file. &lt;br&gt;
+ *         2003.01.06: Make class public, add support for non-file input so that
+ *         we can read from a JAR, add isDefaultNetID method to check for the
+ *         default network (US), add isAuthor method to check if the event is
+ *         authoritative
+ *
+ *         2018-08-21: JMF, reimplement parsing logic outside class.
+ *         Update code to Java 1.8+.
+ */
+public class Regions {
+
+    public String defaultNetid; // Default network
+    public ArrayList&lt;String&gt; netids; // Array of network ids, e.g. nc, us, etc.
+    public ArrayList&lt;Region&gt; regions; // Array of regions
+
+    /**
+     * Create a new set of regions.
+     */
+<span class="fc" id="L28">    public Regions() {</span>
+<span class="fc" id="L29">        this.defaultNetid = &quot;&quot;;</span>
+<span class="fc" id="L30">        this.netids = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L31">        this.regions = new ArrayList&lt;Region&gt;();</span>
+<span class="fc" id="L32">    }</span>
+
+    /**
+     * Is this netid in the set of regions? The default net covers the whole world
+     * so it is always valid since it has no finite boundaries.
+     */
+    public boolean isValidnetID(final String netid) {
+<span class="nc" id="L39">        return this.netids.contains(netid);</span>
+    }
+
+    //
+    // [KF] - add methods to check for the default network (US)
+    //
+
+    /**
+     * Checks if network ID is the default network.
+     * 
+     * @param netid network ID
+     * @return true if default network.
+     */
+    public boolean isDefaultNetID(final String netid) {
+<span class="fc" id="L53">        return this.defaultNetid.equalsIgnoreCase(netid);</span>
+    }
+
+    /**
+     * Checks if an event's network ID is the default network.
+     * 
+     * @param eq EQ event
+     * @return true if default network.
+     */
+    public boolean isDefaultNetID(final EQEvent eq) {
+<span class="nc" id="L63">        return this.isDefaultNetID(eq.getNetID());</span>
+    }
+
+    //
+    // [KF] - add methods to determine if the event is from the authoritative
+    // network.
+    //
+
+    /**
+     * Determines if the event is from the authoritative network.
+     * 
+     * @param netid network ID
+     * @param p     event point
+     * @return true if event is authoritative
+     */
+    public boolean isAuthor(final String netid, final Point p) {
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (this.isDefaultNetID(netid)) {</span>
+            // default region is authoritative where others are not.
+<span class="fc bfc" id="L81" title="All 2 branches covered.">            for (Region region : this.regions) {</span>
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">                if (region.netid.equalsIgnoreCase(netid)) {</span>
+                    // default region includes all points
+<span class="nc" id="L84">                    continue;</span>
+                }
+<span class="fc bfc" id="L86" title="All 2 branches covered.">                if (region.inpoly(p)) {</span>
+                    // if any region is authoritative, default is not
+<span class="fc" id="L88">                    return false;</span>
+                }
+<span class="fc" id="L90">            }</span>
+<span class="fc" id="L91">            return true;</span>
+        } else {
+            // non-default regions are authoritative in their own region
+<span class="fc bfc" id="L94" title="All 2 branches covered.">            for (Region region : this.regions) {</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">                if (region.netid.equalsIgnoreCase(netid)) {</span>
+<span class="fc" id="L96">                    return region.inpoly(p);</span>
+                }
+<span class="fc" id="L98">            }</span>
+<span class="fc" id="L99">            return false;</span>
+        }
+    }
+
+    /**
+     * Determines if the event is from the authoritative network.
+     * 
+     * @param eq EQ event
+     * @return true if event is authoritative
+     */
+    public boolean isAuthor(final EQEvent eq) {
+<span class="nc" id="L110">        return this.isAuthor(eq.getNetID(), eq.getPoint());</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

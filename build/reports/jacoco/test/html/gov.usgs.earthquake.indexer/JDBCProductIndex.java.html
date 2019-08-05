@@ -1,0 +1,2177 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JDBCProductIndex.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">JDBCProductIndex.java</span></div><h1>JDBCProductIndex.java</h1><pre class="source lang-java linenums">/*
+ * JDBCProductIndex
+ */
+package gov.usgs.earthquake.indexer;
+
+import gov.usgs.earthquake.product.InvalidProductException;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.util.JDBCConnection;
+import gov.usgs.util.Config;
+import gov.usgs.util.JDBCUtils;
+import gov.usgs.util.StreamUtils;
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * JDBC Implementation of {@link ProductIndex}.
+ */
+public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
+
+	/** Logging Utility **/
+<span class="fc" id="L43">	private static final Logger LOGGER = Logger.getLogger(Indexer.class</span>
+<span class="fc" id="L44">			.getName());</span>
+
+	/** _____ First, set up some constants _____ */
+
+	/**
+	 * Default index file. Copied into file system as JDBC_DEFAULT_FILE if
+	 * doesn't already exist.
+	 */
+	private static final String JDBC_DEFAULT_INDEX = &quot;etc/schema/productIndex.db&quot;;
+
+	private static final String JDBC_DEFAULT_DRIVER = JDBCUtils.SQLITE_DRIVER_CLASSNAME;
+
+	/**
+	 * Default index file. Created by copying JDBC_DEFAULT_INDEX out of Jar if
+	 * doesn't already exist in file system
+	 */
+	public static final String JDBC_DEFAULT_FILE = &quot;productIndex.db&quot;;
+
+	/**
+	 * Constant used to specify what the driver property should be called in the
+	 * config file
+	 */
+	private static final String JDBC_DRIVER_PROPERTY = &quot;driver&quot;;
+
+	/**
+	 * Constant used to specify the url property should be called in the config
+	 * file.
+	 */
+	private static final String JDBC_URL_PROPERTY = &quot;url&quot;;
+
+	/**
+	 * Constant used to specify what the index file property should be called in
+	 * to config file
+	 */
+	private static final String JDBC_FILE_PROPERTY = &quot;indexfile&quot;;
+
+	/** Prefix for connecting to a sqlite database */
+	private static final String JDBC_CONNECTION_PREFIX = &quot;jdbc:sqlite:&quot;;
+
+	/** Variables to store the event and product column names */
+	private static final String EVENT_TABLE = &quot;event&quot;;
+	private static final String EVENT_TABLE_ALIAS = &quot;e&quot;;
+	private static final String EVENT_INDEX_ID = &quot;id&quot;;
+	private static final String EVENT_CREATED = &quot;created&quot;;
+	private static final String EVENT_UPDATED = &quot;updated&quot;;
+	private static final String EVENT_SOURCE = &quot;source&quot;;
+	private static final String EVENT_SOURCE_CODE = &quot;sourceCode&quot;;
+	private static final String EVENT_TIME = &quot;eventTime&quot;;
+	private static final String EVENT_LATITUDE = &quot;latitude&quot;;
+	private static final String EVENT_LONGITUDE = &quot;longitude&quot;;
+	private static final String EVENT_DEPTH = &quot;depth&quot;;
+	private static final String EVENT_MAGNITUDE = &quot;magnitude&quot;;
+	private static final String EVENT_STATUS = &quot;status&quot;;
+
+	private static final String EVENT_STATUS_UPDATE = &quot;UPDATE&quot;;
+	private static final String EVENT_STATUS_DELETE = &quot;DELETE&quot;;
+
+	private static final String SUMMARY_TABLE = &quot;productSummary&quot;;
+	private static final String SUMMARY_TABLE_ALIAS = &quot;p&quot;;
+	private static final String SUMMARY_CREATED = &quot;created&quot;;
+	public static final String SUMMARY_PRODUCT_INDEX_ID = &quot;id&quot;;
+	private static final String SUMMARY_PRODUCT_ID = &quot;productId&quot;;
+	private static final String SUMMARY_EVENT_ID = &quot;eventId&quot;;
+	private static final String SUMMARY_TYPE = &quot;type&quot;;
+	private static final String SUMMARY_SOURCE = &quot;source&quot;;
+	private static final String SUMMARY_CODE = &quot;code&quot;;
+	private static final String SUMMARY_UPDATE_TIME = &quot;updateTime&quot;;
+	private static final String SUMMARY_EVENT_SOURCE = &quot;eventSource&quot;;
+	private static final String SUMMARY_EVENT_SOURCE_CODE = &quot;eventSourceCode&quot;;
+	private static final String SUMMARY_EVENT_TIME = &quot;eventTime&quot;;
+	private static final String SUMMARY_EVENT_LATITUDE = &quot;eventLatitude&quot;;
+	private static final String SUMMARY_EVENT_LONGITUDE = &quot;eventLongitude&quot;;
+	private static final String SUMMARY_EVENT_DEPTH = &quot;eventDepth&quot;;
+	private static final String SUMMARY_EVENT_MAGNITUDE = &quot;eventMagnitude&quot;;
+	private static final String SUMMARY_VERSION = &quot;version&quot;;
+	private static final String SUMMARY_STATUS = &quot;status&quot;;
+	private static final String SUMMARY_TRACKER_URL = &quot;trackerURL&quot;;
+	private static final String SUMMARY_PREFERRED = &quot;preferred&quot;;
+	private static final String SUMMARY_PROPERTY_TABLE = &quot;productSummaryProperty&quot;;
+	private static final String SUMMARY_PROPERTY_ID = &quot;productSummaryIndexId&quot;;
+	private static final String SUMMARY_PROPERTY_NAME = &quot;name&quot;;
+	private static final String SUMMARY_PROPERTY_VALUE = &quot;value&quot;;
+	private static final String SUMMARY_LINK_TABLE = &quot;productSummaryLink&quot;;
+	private static final String SUMMARY_LINK_ID = &quot;productSummaryIndexId&quot;;
+	private static final String SUMMARY_LINK_RELATION = &quot;relation&quot;;
+	private static final String SUMMARY_LINK_URL = &quot;url&quot;;
+
+	/** Query used to insert events */
+<span class="fc" id="L132">	private static final String INSERT_EVENT_QUERY = String.format(</span>
+			&quot;INSERT INTO %s (%s) VALUES (?)&quot;, EVENT_TABLE, EVENT_CREATED);
+
+	/** Query used to update preferred event properties. */
+<span class="fc" id="L136">	private static final String UPDATE_EVENT_QUERY = String</span>
+<span class="fc" id="L137">			.format(&quot;UPDATE %s SET %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=? WHERE %s=?&quot;,</span>
+					EVENT_TABLE, EVENT_UPDATED, EVENT_SOURCE,
+					EVENT_SOURCE_CODE, EVENT_TIME, EVENT_LATITUDE,
+					EVENT_LONGITUDE, EVENT_DEPTH, EVENT_MAGNITUDE,
+					EVENT_STATUS, EVENT_INDEX_ID);
+
+	/** Query used to update preferred event properties. */
+<span class="fc" id="L144">	private static final String UPDATE_DELETED_EVENT_QUERY = String.format(</span>
+			&quot;UPDATE %s SET %s=? WHERE %s=?&quot;, EVENT_TABLE, EVENT_STATUS,
+			EVENT_INDEX_ID);
+
+	/** Query used to insert product summaries */
+<span class="fc" id="L149">	private static final String INSERT_SUMMARY_QUERY = String</span>
+<span class="fc" id="L150">			.format(&quot;INSERT INTO %s ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s ) &quot;</span>
+					+ &quot;VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )&quot;,
+					SUMMARY_TABLE, SUMMARY_CREATED, SUMMARY_PRODUCT_ID,
+					SUMMARY_TYPE, SUMMARY_SOURCE, SUMMARY_CODE,
+					SUMMARY_UPDATE_TIME, SUMMARY_EVENT_SOURCE,
+					SUMMARY_EVENT_SOURCE_CODE, SUMMARY_EVENT_TIME,
+					SUMMARY_EVENT_LATITUDE, SUMMARY_EVENT_LONGITUDE,
+					SUMMARY_EVENT_DEPTH, SUMMARY_EVENT_MAGNITUDE,
+					SUMMARY_VERSION, SUMMARY_STATUS, SUMMARY_TRACKER_URL,
+					SUMMARY_PREFERRED);
+
+	/** Query used to store the property */
+<span class="fc" id="L162">	private static final String ADD_PROPERTY_QUERY = String.format(</span>
+			&quot;INSERT INTO %s ( %s, %s, %s ) &quot; + &quot;VALUES (?, ?, ?)&quot;,
+			SUMMARY_PROPERTY_TABLE, SUMMARY_PROPERTY_ID, SUMMARY_PROPERTY_NAME,
+			SUMMARY_PROPERTY_VALUE);
+
+	/** Query used to store the link */
+<span class="fc" id="L168">	private static final String ADD_LINK_QUERY = String.format(</span>
+			&quot;INSERT INTO %s ( %s, %s, %s ) &quot; + &quot;VALUES (?, ?, ?)&quot;,
+			SUMMARY_LINK_TABLE, SUMMARY_LINK_ID, SUMMARY_LINK_RELATION,
+			SUMMARY_LINK_URL);
+
+	/** Query used to store the relation between products and events */
+<span class="fc" id="L174">	private static final String ADD_ASSOCIATION_QUERY = String.format(</span>
+			&quot;UPDATE %s SET %s=? WHERE %s=? AND %s=? AND %s=?&quot;, SUMMARY_TABLE,
+			SUMMARY_EVENT_ID, SUMMARY_SOURCE, SUMMARY_TYPE, SUMMARY_CODE);
+
+	/** Query to delete events */
+<span class="fc" id="L179">	private static final String DELETE_EVENT_QUERY = String.format(</span>
+			&quot;DELETE FROM %s WHERE id=?&quot;, EVENT_TABLE);
+
+	/** Query to delete products */
+<span class="fc" id="L183">	private static final String DELETE_SUMMARY_QUERY = String.format(</span>
+			&quot;DELETE FROM %s WHERE id=?&quot;, SUMMARY_TABLE);
+
+	/** Query to delete properties */
+<span class="fc" id="L187">	private static final String DELETE_PROPERTIES_QUERY = String.format(</span>
+			&quot;DELETE FROM %s WHERE %s=?&quot;, SUMMARY_PROPERTY_TABLE,
+			SUMMARY_PROPERTY_ID);
+
+	/** Query to delete links */
+<span class="fc" id="L192">	private static final String DELETE_LINKS_QUERY = String.format(</span>
+			&quot;DELETE FROM %s WHERE %s=?&quot;, SUMMARY_LINK_TABLE, SUMMARY_LINK_ID);
+
+	/** Query to remove the association between a product and an event */
+<span class="fc" id="L196">	private static final String REMOVE_ASSOCIATION_QUERY = String.format(</span>
+			&quot;UPDATE %s SET %s=? WHERE %s=? AND %s=? AND %s=?&quot;, SUMMARY_TABLE,
+			SUMMARY_EVENT_ID, SUMMARY_SOURCE, SUMMARY_TYPE, SUMMARY_CODE);
+
+	/** Query to get a summary using its id */
+<span class="fc" id="L201">	private static final String GET_SUMMARY_BY_PRODUCT_INDEX_ID = String</span>
+<span class="fc" id="L202">			.format(&quot;SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = ?&quot;,</span>
+					SUMMARY_PRODUCT_ID, SUMMARY_TYPE, SUMMARY_SOURCE,
+					SUMMARY_CODE, SUMMARY_UPDATE_TIME, SUMMARY_EVENT_SOURCE,
+					SUMMARY_EVENT_SOURCE_CODE, SUMMARY_EVENT_TIME,
+					SUMMARY_EVENT_LATITUDE, SUMMARY_EVENT_LONGITUDE,
+					SUMMARY_EVENT_DEPTH, SUMMARY_EVENT_MAGNITUDE,
+					SUMMARY_VERSION, SUMMARY_STATUS, SUMMARY_TRACKER_URL,
+					SUMMARY_PREFERRED, SUMMARY_TABLE, SUMMARY_PRODUCT_INDEX_ID);
+
+	/** Query to get product ids that share an event id */
+<span class="fc" id="L212">	private static final String GET_SUMMARIES_BY_EVENT_INDEX_ID = String</span>
+<span class="fc" id="L213">			.format(&quot;SELECT %s FROM %s WHERE %s = ?&quot;, SUMMARY_PRODUCT_INDEX_ID,</span>
+					SUMMARY_TABLE, SUMMARY_EVENT_ID);
+
+	/** Query to get all the links for a product */
+<span class="fc" id="L217">	private static final String GET_LINKS_BY_PRODUCT_INDEX_ID = String.format(</span>
+			&quot;SELECT %s, %s FROM %s WHERE %s = ?&quot;, SUMMARY_LINK_RELATION,
+			SUMMARY_LINK_URL, SUMMARY_LINK_TABLE, SUMMARY_LINK_ID);
+
+	/** Query to get all the properties for a product */
+<span class="fc" id="L222">	private static final String GET_PROPS_BY_PRODUCT_INDEX_ID = String</span>
+<span class="fc" id="L223">			.format(&quot;SELECT %s, %s FROM %s WHERE %s = ?&quot;,</span>
+					SUMMARY_PROPERTY_NAME, SUMMARY_PROPERTY_VALUE,
+					SUMMARY_PROPERTY_TABLE, SUMMARY_PROPERTY_ID);
+
+	/** Create some prepared statements */
+	private PreparedStatement insertEvent;
+	private PreparedStatement updateEvent;
+	private PreparedStatement updateDeletedEvent;
+	private PreparedStatement insertSummary;
+	private PreparedStatement insertProperty;
+	private PreparedStatement insertLink;
+	private PreparedStatement addAssociation;
+	private PreparedStatement deleteEvent;
+	private PreparedStatement deleteSummary;
+	private PreparedStatement deleteProperties;
+	private PreparedStatement deleteLinks;
+	private PreparedStatement removeAssociation;
+	private PreparedStatement getSummary;
+	private PreparedStatement getSummaries;
+	private PreparedStatement getProductLinks;
+	private PreparedStatement getProductProperties;
+
+	private String driver;
+	private String url;
+	private String index_file;
+
+	/**
+	 * Constructor. Sets index_file to the default value JDBC_DEFAULT_FILE
+	 *
+	 * @throws Exception
+	 */
+<span class="fc" id="L254">	public JDBCProductIndex() throws Exception {</span>
+		// Default index file, so calling configure() isn't required
+<span class="fc" id="L256">		index_file = JDBC_DEFAULT_FILE;</span>
+<span class="fc" id="L257">		driver = JDBC_DEFAULT_DRIVER;</span>
+<span class="fc" id="L258">	}</span>
+
+<span class="fc" id="L260">	public JDBCProductIndex(final String sqliteFileName) throws Exception {</span>
+<span class="fc" id="L261">		index_file = sqliteFileName;</span>
+<span class="fc" id="L262">		driver = JDBC_DEFAULT_DRIVER;</span>
+<span class="fc" id="L263">	}</span>
+
+	// ____________________________________
+	// Public Methods
+	// ____________________________________
+
+	/**
+	 * Grab values from the Config object and put them into private variables.
+	 *
+	 * @param config
+	 *            Configuration for the product index
+	 */
+	@Override
+	public void configure(Config config) throws Exception {
+
+<span class="fc" id="L278">		driver = config.getProperty(JDBC_DRIVER_PROPERTY);</span>
+<span class="fc" id="L279">		index_file = config.getProperty(JDBC_FILE_PROPERTY);</span>
+<span class="fc" id="L280">		url = config.getProperty(JDBC_URL_PROPERTY);</span>
+
+<span class="pc bpc" id="L282" title="3 of 4 branches missed.">		if (driver == null || &quot;&quot;.equals(driver)) {</span>
+<span class="fc" id="L283">			driver = JDBC_DEFAULT_DRIVER;</span>
+		}
+
+<span class="pc bpc" id="L286" title="3 of 4 branches missed.">		if (index_file == null || &quot;&quot;.equals(index_file)) {</span>
+<span class="fc" id="L287">			index_file = JDBC_DEFAULT_FILE;</span>
+		}
+<span class="fc" id="L289">	}</span>
+
+	/**
+	 * Connect to the database and set up some prepared statements
+	 */
+	@Override
+	public synchronized void startup() throws Exception {
+		// initialize connection
+<span class="fc" id="L297">		super.startup();</span>
+<span class="fc" id="L298">		Connection connection = getConnection();</span>
+
+		// Prepare statements for interacting with the database
+		try {
+<span class="fc" id="L302">			insertEvent = connection.prepareStatement(INSERT_EVENT_QUERY,</span>
+					new String[] { EVENT_INDEX_ID });
+<span class="nc" id="L304">		} catch (SQLException e) {</span>
+			// sqlite doesn't support RETURN_GENERATED_KEYS, but appears to
+			// return generated keys anyways
+<span class="nc" id="L307">			insertEvent = connection.prepareStatement(INSERT_EVENT_QUERY);</span>
+<span class="fc" id="L308">		}</span>
+<span class="fc" id="L309">		updateEvent = connection.prepareStatement(UPDATE_EVENT_QUERY);</span>
+<span class="fc" id="L310">		updateDeletedEvent = connection</span>
+<span class="fc" id="L311">				.prepareStatement(UPDATE_DELETED_EVENT_QUERY);</span>
+		try {
+<span class="fc" id="L313">			insertSummary = connection.prepareStatement(INSERT_SUMMARY_QUERY,</span>
+					new String[] { SUMMARY_PRODUCT_INDEX_ID });
+<span class="nc" id="L315">		} catch (SQLException e) {</span>
+			// sqlite doesn't support RETURN_GENERATED_KEYS, but appears to
+			// return generated keys anyways
+<span class="nc" id="L318">			insertSummary = connection.prepareStatement(INSERT_SUMMARY_QUERY);</span>
+<span class="fc" id="L319">		}</span>
+<span class="fc" id="L320">		insertProperty = connection.prepareStatement(ADD_PROPERTY_QUERY);</span>
+<span class="fc" id="L321">		insertLink = connection.prepareStatement(ADD_LINK_QUERY);</span>
+<span class="fc" id="L322">		deleteEvent = connection.prepareStatement(DELETE_EVENT_QUERY);</span>
+<span class="fc" id="L323">		deleteSummary = connection.prepareStatement(DELETE_SUMMARY_QUERY);</span>
+<span class="fc" id="L324">		deleteProperties = connection.prepareStatement(DELETE_PROPERTIES_QUERY);</span>
+<span class="fc" id="L325">		deleteLinks = connection.prepareStatement(DELETE_LINKS_QUERY);</span>
+<span class="fc" id="L326">		removeAssociation = connection</span>
+<span class="fc" id="L327">				.prepareStatement(REMOVE_ASSOCIATION_QUERY);</span>
+<span class="fc" id="L328">		addAssociation = connection.prepareStatement(ADD_ASSOCIATION_QUERY);</span>
+<span class="fc" id="L329">		getSummary = connection</span>
+<span class="fc" id="L330">				.prepareStatement(GET_SUMMARY_BY_PRODUCT_INDEX_ID);</span>
+<span class="fc" id="L331">		getSummaries = connection</span>
+<span class="fc" id="L332">				.prepareStatement(GET_SUMMARIES_BY_EVENT_INDEX_ID);</span>
+<span class="fc" id="L333">		getProductLinks = connection</span>
+<span class="fc" id="L334">				.prepareStatement(GET_LINKS_BY_PRODUCT_INDEX_ID);</span>
+<span class="fc" id="L335">		getProductProperties = connection</span>
+<span class="fc" id="L336">				.prepareStatement(GET_PROPS_BY_PRODUCT_INDEX_ID);</span>
+<span class="fc" id="L337">	}</span>
+
+	/**
+	 * Return a connection to the database.
+	 *
+	 * @return Connection object
+	 * @throws Exception
+	 */
+	@Override
+	public Connection connect() throws Exception {
+		// If they are using the sqlite driver, we need to try to create the
+		// file
+<span class="pc bpc" id="L349" title="1 of 2 branches missed.">		if (driver.equals(JDBCUtils.SQLITE_DRIVER_CLASSNAME)) {</span>
+			// Make sure file exists or copy it out of the JAR
+<span class="fc" id="L351">			File indexFile = new File(index_file);</span>
+<span class="fc bfc" id="L352" title="All 2 branches covered.">			if (!indexFile.exists()) {</span>
+				// extract schema from jar
+<span class="fc" id="L354">				URL schemaURL = JDBCProductIndex.class.getClassLoader()</span>
+<span class="fc" id="L355">						.getResource(JDBC_DEFAULT_INDEX);</span>
+<span class="pc bpc" id="L356" title="1 of 2 branches missed.">				if (schemaURL != null) {</span>
+<span class="nc" id="L357">					StreamUtils.transferStream(schemaURL, indexFile);</span>
+				} else {
+					// Failed. Probably because we're not in a Jar file
+<span class="fc" id="L360">					File defaultIndex = new File(JDBC_DEFAULT_INDEX);</span>
+<span class="fc" id="L361">					StreamUtils.transferStream(defaultIndex, indexFile);</span>
+				}
+			}
+
+			// Build the JDBC url
+<span class="fc" id="L366">			url = JDBC_CONNECTION_PREFIX + index_file;</span>
+<span class="fc" id="L367">			driver = JDBCUtils.SQLITE_DRIVER_CLASSNAME;</span>
+		}
+
+<span class="fc" id="L370">		return JDBCUtils.getConnection(driver, url);</span>
+	}
+
+	/**
+	 * Close the database connection and each of the prepared statements. Before
+	 * closing each resource, this method checks if it is already closed.
+	 */
+	@Override
+	public synchronized void shutdown() throws Exception {
+		// Close each of the prepared statements, then close the connection.
+		// Make sure exceptions don't prevent closing of any statements.
+
+<span class="fc bfc" id="L382" title="All 2 branches covered.">		if (insertEvent != null) {</span>
+			try {
+<span class="fc" id="L384">				insertEvent.close();</span>
+<span class="nc" id="L385">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L387">			}</span>
+<span class="fc" id="L388">			insertEvent = null;</span>
+		}
+
+<span class="fc bfc" id="L391" title="All 2 branches covered.">		if (updateEvent != null) {</span>
+			try {
+<span class="fc" id="L393">				updateEvent.close();</span>
+<span class="nc" id="L394">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L396">			}</span>
+<span class="fc" id="L397">			updateEvent = null;</span>
+		}
+
+<span class="fc bfc" id="L400" title="All 2 branches covered.">		if (updateDeletedEvent != null) {</span>
+			try {
+<span class="fc" id="L402">				updateDeletedEvent.close();</span>
+<span class="nc" id="L403">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L405">			}</span>
+<span class="fc" id="L406">			updateDeletedEvent = null;</span>
+		}
+
+<span class="fc bfc" id="L409" title="All 2 branches covered.">		if (insertSummary != null) {</span>
+			try {
+<span class="fc" id="L411">				insertSummary.close();</span>
+<span class="nc" id="L412">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L414">			}</span>
+<span class="fc" id="L415">			insertSummary = null;</span>
+		}
+
+<span class="fc bfc" id="L418" title="All 2 branches covered.">		if (insertProperty != null) {</span>
+			try {
+<span class="fc" id="L420">				insertProperty.close();</span>
+<span class="nc" id="L421">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L423">			}</span>
+<span class="fc" id="L424">			insertProperty = null;</span>
+		}
+
+<span class="fc bfc" id="L427" title="All 2 branches covered.">		if (insertLink != null) {</span>
+			try {
+<span class="fc" id="L429">				insertLink.close();</span>
+<span class="nc" id="L430">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L432">			}</span>
+<span class="fc" id="L433">			insertLink = null;</span>
+		}
+
+<span class="fc bfc" id="L436" title="All 2 branches covered.">		if (deleteEvent != null) {</span>
+			try {
+<span class="fc" id="L438">				deleteEvent.close();</span>
+<span class="nc" id="L439">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L441">			}</span>
+<span class="fc" id="L442">			deleteEvent = null;</span>
+		}
+
+<span class="fc bfc" id="L445" title="All 2 branches covered.">		if (deleteSummary != null) {</span>
+			try {
+<span class="fc" id="L447">				deleteSummary.close();</span>
+<span class="nc" id="L448">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L450">			}</span>
+<span class="fc" id="L451">			deleteSummary = null;</span>
+		}
+
+<span class="fc bfc" id="L454" title="All 2 branches covered.">		if (deleteProperties != null) {</span>
+			try {
+<span class="fc" id="L456">				deleteProperties.close();</span>
+<span class="nc" id="L457">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L459">			}</span>
+<span class="fc" id="L460">			deleteProperties = null;</span>
+		}
+
+<span class="fc bfc" id="L463" title="All 2 branches covered.">		if (deleteLinks != null) {</span>
+			try {
+<span class="fc" id="L465">				deleteLinks.close();</span>
+<span class="nc" id="L466">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L468">			}</span>
+<span class="fc" id="L469">			deleteLinks = null;</span>
+		}
+
+<span class="fc bfc" id="L472" title="All 2 branches covered.">		if (removeAssociation != null) {</span>
+			try {
+<span class="fc" id="L474">				removeAssociation.close();</span>
+<span class="nc" id="L475">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L477">			}</span>
+<span class="fc" id="L478">			removeAssociation = null;</span>
+		}
+
+<span class="fc bfc" id="L481" title="All 2 branches covered.">		if (addAssociation != null) {</span>
+			try {
+<span class="fc" id="L483">				addAssociation.close();</span>
+<span class="nc" id="L484">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L486">			}</span>
+<span class="fc" id="L487">			addAssociation = null;</span>
+		}
+
+<span class="fc bfc" id="L490" title="All 2 branches covered.">		if (getSummary != null) {</span>
+			try {
+<span class="fc" id="L492">				getSummary.close();</span>
+<span class="nc" id="L493">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L495">			}</span>
+<span class="fc" id="L496">			getSummary = null;</span>
+		}
+
+<span class="fc bfc" id="L499" title="All 2 branches covered.">		if (getSummaries != null) {</span>
+			try {
+<span class="fc" id="L501">				getSummaries.close();</span>
+<span class="nc" id="L502">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L504">			}</span>
+<span class="fc" id="L505">			getSummaries = null;</span>
+		}
+
+<span class="fc bfc" id="L508" title="All 2 branches covered.">		if (getProductLinks != null) {</span>
+			try {
+<span class="fc" id="L510">				getProductLinks.close();</span>
+<span class="nc" id="L511">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L513">			}</span>
+<span class="fc" id="L514">			getProductLinks = null;</span>
+		}
+
+<span class="fc bfc" id="L517" title="All 2 branches covered.">		if (getProductProperties != null) {</span>
+			try {
+<span class="fc" id="L519">				getProductProperties.close();</span>
+<span class="nc" id="L520">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L522">			}</span>
+<span class="fc" id="L523">			getProductProperties = null;</span>
+		}
+
+		// disconnect
+<span class="fc" id="L527">		super.shutdown();</span>
+<span class="fc" id="L528">	}</span>
+
+	/**
+	 * Open a transaction on the database connection
+	 */
+	@Override
+	public synchronized void beginTransaction() throws Exception {
+<span class="fc" id="L535">		Connection conn = this.verifyConnection();</span>
+<span class="fc" id="L536">		conn.setAutoCommit(false);</span>
+<span class="fc" id="L537">	}</span>
+
+	/**
+	 * Finalize the transaction by committing all the changes and closing the
+	 * transaction.
+	 */
+	@Override
+	public synchronized void commitTransaction() throws Exception {
+<span class="fc" id="L545">		getConnection().setAutoCommit(true);</span>
+<span class="fc" id="L546">	}</span>
+
+	/**
+	 * Undo all of the changes made during the current transaction
+	 */
+	@Override
+	public synchronized void rollbackTransaction() throws Exception {
+<span class="nc" id="L553">		getConnection().rollback();</span>
+<span class="nc" id="L554">	}</span>
+
+	/**
+	 * Return all events from the database that meet the parameters specified in
+	 * the ProductIndexQuery object.
+	 *
+	 * @param query
+	 *            A description of which events to retrieve.
+	 * @return List of Event objects
+	 */
+	@Override
+	public synchronized List&lt;Event&gt; getEvents(ProductIndexQuery query)
+			throws Exception {
+<span class="fc" id="L567">		List&lt;Event&gt; events = new LinkedList&lt;Event&gt;();</span>
+
+		// Get a list of event indexIds from the database that match this query
+<span class="fc" id="L570">		List&lt;Long&gt; eventIndexIds = getEventIndexIds(query);</span>
+
+<span class="fc" id="L572">		Iterator&lt;Long&gt; iter = eventIndexIds.iterator();</span>
+<span class="fc bfc" id="L573" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L574">			Long eventIndexId = iter.next();</span>
+<span class="fc" id="L575">			events.add(getEvent(eventIndexId));</span>
+<span class="fc" id="L576">		}</span>
+
+<span class="fc" id="L578">		return events;</span>
+	}
+
+	/**
+	 * Add an event to the database
+	 *
+	 * @param event
+	 *            Event to store
+	 * @return Event object with eventId set to the database id
+	 */
+	@Override
+	public synchronized Event addEvent(Event event) throws Exception {
+<span class="fc" id="L590">		Event e = null;</span>
+<span class="fc" id="L591">		ResultSet keys = null;</span>
+
+		try {
+			// Add the values to the prepared statement
+<span class="fc" id="L595">			JDBCUtils.setParameter(insertEvent, 1, new Date().getTime(),</span>
+					Types.BIGINT);
+
+			// Execute the prepared statement
+<span class="fc" id="L599">			int rows = insertEvent.executeUpdate();</span>
+
+<span class="pc bpc" id="L601" title="1 of 2 branches missed.">			if (rows == 1) {</span>
+<span class="fc" id="L602">				keys = insertEvent.getGeneratedKeys();</span>
+<span class="fc" id="L603">				long id = 0;</span>
+<span class="fc bfc" id="L604" title="All 2 branches covered.">				while (keys.next()) {</span>
+<span class="fc" id="L605">					id = keys.getLong(1);</span>
+				}
+<span class="fc" id="L607">				e = new Event(event);</span>
+<span class="fc" id="L608">				e.setIndexId(id);</span>
+
+<span class="fc" id="L610">				LOGGER.finest(&quot;Added event id=&quot; + id);</span>
+<span class="fc" id="L611">			} else {</span>
+<span class="nc" id="L612">				LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+						+ &quot;] Exception when adding new event to database&quot;);
+<span class="nc" id="L614">				throw new Exception();</span>
+
+			}
+		} finally {
+			try {
+<span class="fc" id="L619">				keys.close();</span>
+<span class="nc" id="L620">			} catch (Exception e2) {</span>
+<span class="fc" id="L621">			}</span>
+		}
+<span class="fc" id="L623">		LOGGER.log(Level.FINEST, &quot;[&quot; + getName()</span>
+				+ &quot;] Added event to Product Index&quot;);
+<span class="fc" id="L625">		return e;</span>
+	}
+
+	/**
+	 * Delete an event from the database.
+	 *
+	 * @param event
+	 *            Event to remove
+	 * @return List containing all the ProductIds that were deleted by the
+	 *         method call
+	 */
+	@Override
+	public synchronized List&lt;ProductId&gt; removeEvent(Event event)
+			throws Exception {
+
+<span class="fc" id="L640">		Long id = event.getIndexId();</span>
+
+		// If there is no index id on the event, we can assume its
+		// not in the database
+<span class="pc bpc" id="L644" title="1 of 2 branches missed.">		if (id == null) {</span>
+<span class="nc" id="L645">			return null;</span>
+		}
+
+		// A list of all the productIds that got deleted
+<span class="fc" id="L649">		ArrayList&lt;ProductId&gt; productIds = new ArrayList&lt;ProductId&gt;();</span>
+
+		// We need to remove all the products associated with this event
+<span class="fc" id="L652">		List&lt;ProductSummary&gt; summaries = event.getProductList();</span>
+<span class="fc" id="L653">		Iterator&lt;ProductSummary&gt; summaryIter = summaries.iterator();</span>
+<span class="fc bfc" id="L654" title="All 2 branches covered.">		while (summaryIter.hasNext()) {</span>
+<span class="fc" id="L655">			ProductId productId = removeProductSummary(summaryIter.next());</span>
+<span class="fc" id="L656">			productIds.add(productId);</span>
+<span class="fc" id="L657">		}</span>
+
+<span class="fc" id="L659">		JDBCUtils.setParameter(deleteEvent, 1, id, Types.BIGINT);</span>
+<span class="fc" id="L660">		int rows = deleteEvent.executeUpdate();</span>
+		// If we didn't delete a row, or we deleted more than 1 row, throw an
+		// exception
+<span class="pc bpc" id="L663" title="1 of 2 branches missed.">		if (rows != 1) {</span>
+<span class="nc" id="L664">			LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+					+ &quot;] Exception when deleting an event from the database&quot;);
+<span class="nc" id="L666">			throw new Exception();</span>
+		}
+
+<span class="fc" id="L669">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] Removed event id=&quot; + id);</span>
+
+<span class="fc" id="L671">		return productIds;</span>
+	}
+
+	/**
+	 * Return all products that aren't associated with an event.
+	 *
+	 * @param query
+	 *            ProductIndexQuery used to further limit the results
+	 * @return List of unassociated Products
+	 * @throws IllegalArgumentException
+	 *             when query event search type is SEARCH_EVENT_PREFERRED.
+	 */
+	@Override
+	public synchronized List&lt;ProductSummary&gt; getUnassociatedProducts(
+			ProductIndexQuery query) throws Exception {
+<span class="pc bpc" id="L686" title="1 of 2 branches missed.">		if (query.getEventSearchType() == ProductIndexQuery.SEARCH_EVENT_PREFERRED) {</span>
+<span class="nc" id="L687">			throw new IllegalArgumentException(</span>
+					&quot;getUnassociatedProducts does not support SEARCH_EVENT_PREFERRED&quot;);
+		}
+
+<span class="fc" id="L691">		ArrayList&lt;ProductSummary&gt; products = new ArrayList&lt;ProductSummary&gt;();</span>
+
+<span class="fc" id="L693">		List&lt;String&gt; clauseList = buildProductClauses(query);</span>
+		// Add the unassociated quantifier to the clause list
+<span class="fc" id="L695">		clauseList.add(&quot;eventId IS NULL&quot;);</span>
+<span class="fc" id="L696">		String query_text = buildProductQuery(clauseList);</span>
+
+<span class="fc" id="L698">		Statement statement = null;</span>
+<span class="fc" id="L699">		ResultSet results = null;</span>
+		try {
+			// Great. We have the query built up, so lets run it
+<span class="fc" id="L702">			statement = verifyConnection().createStatement();</span>
+<span class="fc" id="L703">			results = statement.executeQuery(query_text);</span>
+
+			// Now lets build an Event object from each row in the result set
+<span class="fc bfc" id="L706" title="All 2 branches covered.">			while (results.next()) {</span>
+<span class="fc" id="L707">				ProductSummary p = parseSummaryResult(results);</span>
+<span class="fc" id="L708">				products.add(p);</span>
+<span class="fc" id="L709">			}</span>
+		} finally {
+			try {
+<span class="fc" id="L712">				results.close();</span>
+<span class="nc" id="L713">			} catch (Exception e) {</span>
+<span class="fc" id="L714">			}</span>
+			try {
+<span class="fc" id="L716">				statement.close();</span>
+<span class="nc" id="L717">			} catch (Exception e) {</span>
+<span class="fc" id="L718">			}</span>
+		}
+
+<span class="fc" id="L721">		return products;</span>
+	}
+
+	/**
+	 * Return all products that meet the parameters specified in the
+	 * ProductIndexQuery object.
+	 *
+	 * @param query
+	 *            A description of which products to retrieve.
+	 * @return List of ProductSummary objects
+	 * @throws IllegalArgumentException
+	 *             when query event search type is SEARCH_EVENT_PREFERRED.
+	 */
+	@Override
+	public synchronized List&lt;ProductSummary&gt; getProducts(ProductIndexQuery query)
+			throws Exception {
+<span class="pc bpc" id="L737" title="1 of 2 branches missed.">		if (query.getEventSearchType() == ProductIndexQuery.SEARCH_EVENT_PREFERRED) {</span>
+<span class="nc" id="L738">			throw new IllegalArgumentException(</span>
+					&quot;getUnassociatedProducts does not support SEARCH_EVENT_PREFERRED&quot;);
+		}
+
+<span class="fc" id="L742">		List&lt;ProductSummary&gt; summaries = new LinkedList&lt;ProductSummary&gt;();</span>
+
+<span class="fc" id="L744">		Iterator&lt;Long&gt; summaryIndexIds = getSummaryIndexIds(query).iterator();</span>
+<span class="fc bfc" id="L745" title="All 2 branches covered.">		while (summaryIndexIds.hasNext()) {</span>
+<span class="fc" id="L746">			summaries.add(getSummary(summaryIndexIds.next()));</span>
+		}
+
+<span class="fc" id="L749">		return summaries;</span>
+	}
+
+	/**
+	 * Add a product summary to the database
+	 *
+	 * @param summary
+	 *            ProductSummary object to store. Must not be null.
+	 * @return Copy of the product summary object with the indexId set to the
+	 *         newly inserted id.
+	 * @throws Exception
+	 */
+	@Override
+	public synchronized ProductSummary addProductSummary(ProductSummary summary)
+			throws Exception {
+		// Add values to the prepared statement
+
+		// Set the created timestamp
+<span class="fc" id="L767">		JDBCUtils.setParameter(insertSummary, 1, new Date().getTime(),</span>
+				Types.BIGINT);
+
+<span class="fc" id="L770">		ProductId sid = summary.getId();</span>
+<span class="pc bpc" id="L771" title="1 of 2 branches missed.">		if (sid != null) {</span>
+<span class="fc" id="L772">			JDBCUtils.setParameter(insertSummary, 2, sid.toString(),</span>
+					Types.VARCHAR);
+<span class="fc" id="L774">			JDBCUtils.setParameter(insertSummary, 3, sid.getType(),</span>
+					Types.VARCHAR);
+<span class="fc" id="L776">			JDBCUtils.setParameter(insertSummary, 4, sid.getSource(),</span>
+					Types.VARCHAR);
+<span class="fc" id="L778">			JDBCUtils.setParameter(insertSummary, 5, sid.getCode(),</span>
+					Types.VARCHAR);
+<span class="fc" id="L780">			JDBCUtils.setParameter(insertSummary, 6,</span>
+<span class="pc bpc" id="L781" title="1 of 2 branches missed.">					(sid.getUpdateTime() != null) ? sid.getUpdateTime()</span>
+<span class="pc" id="L782">							.getTime() : null, Types.BIGINT);</span>
+		} else {
+			// Summary product id is null. Set all these parameter to null
+<span class="nc" id="L785">			JDBCUtils.setParameter(insertSummary, 2, null, Types.VARCHAR);</span>
+<span class="nc" id="L786">			JDBCUtils.setParameter(insertSummary, 3, null, Types.VARCHAR);</span>
+<span class="nc" id="L787">			JDBCUtils.setParameter(insertSummary, 4, null, Types.VARCHAR);</span>
+<span class="nc" id="L788">			JDBCUtils.setParameter(insertSummary, 5, null, Types.VARCHAR);</span>
+<span class="nc" id="L789">			JDBCUtils.setParameter(insertSummary, 6, null, Types.BIGINT);</span>
+		}
+
+<span class="fc" id="L792">		JDBCUtils.setParameter(insertSummary, 7, summary.getEventSource(),</span>
+				Types.VARCHAR);
+<span class="fc" id="L794">		JDBCUtils.setParameter(insertSummary, 8, summary.getEventSourceCode(),</span>
+				Types.VARCHAR);
+
+<span class="fc" id="L797">		Date eventTime = summary.getEventTime();</span>
+<span class="fc" id="L798">		JDBCUtils.setParameter(insertSummary, 9,</span>
+<span class="fc bfc" id="L799" title="All 2 branches covered.">				(eventTime != null) ? eventTime.getTime() : null, Types.BIGINT);</span>
+
+<span class="fc" id="L801">		JDBCUtils</span>
+<span class="fc" id="L802">				.setParameter(insertSummary, 10,</span>
+<span class="fc bfc" id="L803" title="All 2 branches covered.">						(summary.getEventLatitude() != null) ? summary</span>
+<span class="fc" id="L804">								.getEventLatitude().doubleValue() : null,</span>
+						Types.DECIMAL);
+<span class="fc" id="L806">		JDBCUtils</span>
+<span class="fc" id="L807">				.setParameter(</span>
+						insertSummary,
+						11,
+<span class="fc bfc" id="L810" title="All 2 branches covered.">						(summary.getEventLongitude() != null) ? normalizeLongitude(summary</span>
+<span class="fc" id="L811">								.getEventLongitude().doubleValue()) : null,</span>
+						Types.DECIMAL);
+<span class="fc" id="L813">		JDBCUtils.setParameter(insertSummary, 12,</span>
+<span class="fc bfc" id="L814" title="All 2 branches covered.">				(summary.getEventDepth() != null) ? summary.getEventDepth()</span>
+<span class="fc" id="L815">						.doubleValue() : null, Types.DECIMAL);</span>
+<span class="fc" id="L816">		JDBCUtils.setParameter(insertSummary, 13,</span>
+<span class="fc bfc" id="L817" title="All 2 branches covered.">				(summary.getEventMagnitude() != null) ? summary</span>
+<span class="fc" id="L818">						.getEventMagnitude().doubleValue() : null,</span>
+				Types.DECIMAL);
+<span class="fc" id="L820">		JDBCUtils.setParameter(insertSummary, 14, summary.getVersion(),</span>
+				Types.VARCHAR);
+<span class="fc" id="L822">		JDBCUtils.setParameter(insertSummary, 15, summary.getStatus(),</span>
+				Types.VARCHAR);
+<span class="fc" id="L824">		JDBCUtils.setParameter(insertSummary, 16,</span>
+<span class="pc bpc" id="L825" title="1 of 2 branches missed.">				(summary.getTrackerURL() != null) ? summary.getTrackerURL()</span>
+<span class="pc" id="L826">						.toString() : null, Types.VARCHAR);</span>
+<span class="fc" id="L827">		JDBCUtils.setParameter(insertSummary, 17, summary.getPreferredWeight(),</span>
+				Types.BIGINT);
+
+		// Execute the prepared statement
+<span class="fc" id="L831">		insertSummary.executeUpdate();</span>
+
+<span class="fc" id="L833">		ResultSet keys = null;</span>
+<span class="fc" id="L834">		long productId = 0;</span>
+
+		try {
+<span class="fc" id="L837">			keys = insertSummary.getGeneratedKeys();</span>
+<span class="fc bfc" id="L838" title="All 2 branches covered.">			while (keys.next()) {</span>
+<span class="fc" id="L839">				productId = keys.getLong(1);</span>
+			}
+		} finally {
+			try {
+<span class="fc" id="L843">				keys.close();</span>
+<span class="nc" id="L844">			} catch (Exception e) {</span>
+<span class="fc" id="L845">			}</span>
+		}
+
+		// Now that the summary is stored, lets try to store the properties
+<span class="fc" id="L849">		addProductProperties(productId, summary.getProperties());</span>
+		// And try to store the links
+<span class="fc" id="L851">		addProductLinks(productId, summary.getLinks());</span>
+
+<span class="fc" id="L853">		ProductSummary p = new ProductSummary(summary);</span>
+<span class="fc" id="L854">		p.setIndexId(productId);</span>
+
+<span class="fc bfc" id="L856" title="All 2 branches covered.">		if (LOGGER.isLoggable(Level.FINEST)) {</span>
+<span class="fc" id="L857">			LOGGER.finest(&quot;[&quot; + getName() + &quot;] Added productSummary &quot; + sid</span>
+					+ &quot;, indexid=&quot; + productId + &quot; to product index&quot;);
+		}
+<span class="fc" id="L860">		return p;</span>
+	}
+
+	/**
+	 * Delete a product summary from the database If the summary doesn't have an
+	 * indexId value set, throw an exception
+	 *
+	 * @param summary
+	 *            ProductSummary object to delete
+	 */
+	@Override
+	public synchronized ProductId removeProductSummary(ProductSummary summary)
+			throws Exception {
+<span class="pc bpc" id="L873" title="2 of 4 branches missed.">		if (summary.getIndexId() != 0 &amp;&amp; summary.getIndexId() != null) {</span>
+			// First remove all the properties and links
+<span class="fc" id="L875">			long id = summary.getIndexId();</span>
+<span class="fc" id="L876">			removeProductProperties(id);</span>
+<span class="fc" id="L877">			removeProductLinks(id);</span>
+
+<span class="fc" id="L879">			JDBCUtils.setParameter(deleteSummary, 1, id, Types.BIGINT);</span>
+<span class="fc" id="L880">			deleteSummary.executeUpdate();</span>
+
+<span class="fc" id="L882">			LOGGER.finest(&quot;[&quot; + getName() + &quot;] Removed productSummary id=&quot; + id);</span>
+
+			// Return the id of the product deleted
+<span class="fc" id="L885">			return summary.getId();</span>
+		} else {
+<span class="nc" id="L887">			LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+					+ &quot;] Could not delete product summary. Index id not found&quot;);
+<span class="nc" id="L889">			throw new Exception(&quot;[&quot; + getName()</span>
+					+ &quot;] Could not delete summary. Index id not found.&quot;);
+		}
+	}
+
+	/**
+	 * Create an association between the given event and product summary. This
+	 * assumes that both the event and the product are already stored in their
+	 * respective tables.
+	 *
+	 * @param event
+	 * @param summary
+	 * @return Copy of event with summary added to the event's products list
+	 */
+	@Override
+	public synchronized Event addAssociation(Event event, ProductSummary summary)
+			throws Exception {
+
+<span class="pc bpc" id="L907" title="2 of 4 branches missed.">		if (event.getIndexId() == null || summary.getIndexId() == null) {</span>
+<span class="nc" id="L908">			throw new Exception(</span>
+					&quot;[&quot;
+<span class="nc" id="L910">							+ getName()</span>
+							+ &quot;] Cannot add association between event or summary that are not already in index.&quot;);
+		}
+
+<span class="fc" id="L914">		ProductId sid = summary.getId();</span>
+
+<span class="fc" id="L916">		JDBCUtils.setParameter(addAssociation, 1, event.getIndexId(),</span>
+				Types.BIGINT);
+		// these will target EVERY version of the given product
+<span class="fc" id="L919">		JDBCUtils.setParameter(addAssociation, 2, sid.getSource(),</span>
+				Types.VARCHAR);
+<span class="fc" id="L921">		JDBCUtils.setParameter(addAssociation, 3, sid.getType(), Types.VARCHAR);</span>
+<span class="fc" id="L922">		JDBCUtils.setParameter(addAssociation, 4, sid.getCode(), Types.VARCHAR);</span>
+
+<span class="fc" id="L924">		addAssociation.executeUpdate();</span>
+<span class="fc" id="L925">		Event e = new Event(event);</span>
+<span class="fc" id="L926">		e.addProduct(summary);</span>
+<span class="fc" id="L927">		LOGGER.log(</span>
+				Level.FINER,
+<span class="fc" id="L929">				&quot;[&quot; + getName() + &quot;] Added associations event id=&quot;</span>
+<span class="fc" id="L930">						+ event.getIndexId() + &quot;, productSummary source=&quot;</span>
+<span class="fc" id="L931">						+ sid.getSource() + &quot;, type=&quot; + sid.getType()</span>
+<span class="fc" id="L932">						+ &quot;, code=&quot; + sid.getCode() + &quot; (id=&quot;</span>
+<span class="fc" id="L933">						+ summary.getIndexId() + &quot;)&quot;);</span>
+
+<span class="fc" id="L935">		return e;</span>
+	}
+
+	/**
+	 * Delete the association, if it exists, between the given event and product
+	 * summary.
+	 *
+	 * NOTE: this removes the association between the event and ALL versions of the product summary.
+	 *
+	 * @param event
+	 * @param summary
+	 */
+	@Override
+	public synchronized Event removeAssociation(Event event,
+			ProductSummary summary) throws Exception {
+
+		// Deleting the association is really just removing the foreign key
+		// on the products table
+
+		// First check that this summary and event are both in the database
+
+		// What happens if runtime objects are set up, but not added to index.
+		// This would return the event with the association in-tact. Is that
+		// okay?
+
+<span class="fc" id="L960">		Long eventIndexId = event.getIndexId();</span>
+<span class="fc" id="L961">		Long productIndexId = summary.getIndexId();</span>
+<span class="pc bpc" id="L962" title="2 of 4 branches missed.">		if (eventIndexId == null || productIndexId == null) {</span>
+<span class="nc" id="L963">			return event;</span>
+		}
+
+<span class="fc" id="L966">		ProductId sid = summary.getId();</span>
+
+		// Now run the query
+<span class="fc" id="L969">		JDBCUtils.setParameter(removeAssociation, 1, null, Types.BIGINT);</span>
+		// these will target EVERY version of the given product
+<span class="fc" id="L971">		JDBCUtils.setParameter(removeAssociation, 2, summary.getId()</span>
+<span class="fc" id="L972">				.getSource(), Types.VARCHAR);</span>
+<span class="fc" id="L973">		JDBCUtils.setParameter(removeAssociation, 3, summary.getId().getType(),</span>
+				Types.VARCHAR);
+<span class="fc" id="L975">		JDBCUtils.setParameter(removeAssociation, 4, summary.getId().getCode(),</span>
+				Types.VARCHAR);
+
+<span class="fc" id="L978">		int rows = removeAssociation.executeUpdate();</span>
+		// Throw an exception if we didn't update any
+<span class="pc bpc" id="L980" title="1 of 2 branches missed.">		if (rows &lt; 1) {</span>
+<span class="nc" id="L981">			LOGGER.log(Level.INFO, &quot;[&quot; + getName()</span>
+					+ &quot;] Failed to remove an association in the Product Index&quot;);
+<span class="nc" id="L983">			throw new Exception(&quot;Failed to remove association&quot;);</span>
+		}
+
+<span class="fc" id="L986">		LOGGER.finer(&quot;[&quot; + getName() + &quot;] Removed associations event id=&quot;</span>
+<span class="fc" id="L987">				+ eventIndexId + &quot;, productSummary source=&quot; + sid.getSource()</span>
+<span class="fc" id="L988">				+ &quot;, type=&quot; + sid.getType() + &quot;, code=&quot; + sid.getCode()</span>
+				+ &quot; (id=&quot; + productIndexId + &quot;)&quot;);
+
+		// Should this method remove the summary from the event's list? Yes.
+<span class="fc" id="L992">		Event updatedEvent = new Event(event);</span>
+<span class="fc" id="L993">		List&lt;ProductSummary&gt; productsList = updatedEvent.getAllProducts().get(</span>
+<span class="fc" id="L994">				summary.getType());</span>
+
+		// pre 1.7.6 archive policies didn't always clean up after themselves
+		// handle it gracefully
+<span class="pc bpc" id="L998" title="1 of 2 branches missed.">		if (productsList != null) {</span>
+			// remove all product with given source, type, and code
+<span class="fc" id="L1000">			Iterator&lt;ProductSummary&gt; iter = productsList.iterator();</span>
+<span class="fc bfc" id="L1001" title="All 2 branches covered.">			while (iter.hasNext()) {</span>
+<span class="fc" id="L1002">				ProductId id = iter.next().getId();</span>
+<span class="fc bfc" id="L1003" title="All 2 branches covered.">				if (id.isSameProduct(summary.getId())) {</span>
+<span class="fc" id="L1004">					iter.remove();</span>
+				}
+<span class="fc" id="L1006">			}</span>
+<span class="fc bfc" id="L1007" title="All 2 branches covered.">			if (productsList.size() == 0) {</span>
+				// if this was the last product of that type, remove the list
+				// too
+<span class="fc" id="L1010">				updatedEvent.getAllProducts().remove(summary.getType());</span>
+			}
+<span class="fc" id="L1012">		} else {</span>
+<span class="nc" id="L1013">			LOGGER.warning(&quot;Products list is empty for summary type &quot;</span>
+<span class="nc" id="L1014">					+ summary.getId().toString()</span>
+					+ &quot;, when removing association&quot;);
+		}
+<span class="fc" id="L1017">		return updatedEvent;</span>
+	}
+
+	// ____________________________________
+	// Protected Methods
+	// ____________________________________
+
+	/**
+	 * Query the database to get the event with the given event index id
+	 *
+	 * @param eventIndexId
+	 * @return Event object
+	 * @throws SQLException
+	 * @throws InvalidProductException
+	 */
+	protected synchronized Event getEvent(Long eventIndexId)
+			throws SQLException, InvalidProductException {
+		// Create an event object with its eventIndexId set
+<span class="fc" id="L1035">		Event event = new Event(eventIndexId);</span>
+
+		// Find a list of summary index ids whose summaries are associated to
+		// the given eventIndexId
+<span class="fc" id="L1039">		Iterator&lt;Long&gt; summaryIndexIds = getSummaryIndexIds(eventIndexId)</span>
+<span class="fc" id="L1040">				.iterator();</span>
+
+<span class="fc bfc" id="L1042" title="All 2 branches covered.">		while (summaryIndexIds.hasNext()) {</span>
+			// Create the product summary for each returned summary index id and
+			// add the created summary to the event
+<span class="fc" id="L1045">			Long summaryIndexId = summaryIndexIds.next();</span>
+<span class="fc" id="L1046">			event.addProduct(getSummary(summaryIndexId));</span>
+<span class="fc" id="L1047">		}</span>
+
+		// Return our results. There may or may not be any products
+<span class="fc" id="L1050">		return event;</span>
+	}
+
+	/**
+	 * Query the database to get a list of event index ids that have products
+	 * matching the given ProductIndexQuery.
+	 *
+	 * @param query
+	 * @return List of index ids
+	 * @throws Exception
+	 */
+	protected synchronized List&lt;Long&gt; getEventIndexIds(ProductIndexQuery query)
+			throws Exception {
+		// Object to return
+<span class="fc" id="L1064">		List&lt;Long&gt; eventIndexIds = new LinkedList&lt;Long&gt;();</span>
+
+<span class="fc bfc" id="L1066" title="All 2 branches covered.">		if (query == null) {</span>
+			// a null query shouldn't match ALL events
+<span class="fc" id="L1068">			return eventIndexIds;</span>
+		}
+
+		// Build up our clause list like always
+<span class="fc" id="L1072">		List&lt;String&gt; clauses = buildProductClauses(query);</span>
+
+		// Build the SQL Query from our ProductIndexQuery object
+<span class="fc" id="L1075">		StringBuilder sql = new StringBuilder();</span>
+<span class="fc" id="L1076">		sql.append(&quot;SELECT DISTINCT e.&quot;);</span>
+<span class="fc" id="L1077">		sql.append(EVENT_INDEX_ID);</span>
+<span class="fc" id="L1078">		sql.append(&quot; FROM &quot;);</span>
+<span class="fc" id="L1079">		sql.append(SUMMARY_TABLE).append(&quot; p,&quot;);</span>
+<span class="fc" id="L1080">		sql.append(EVENT_TABLE).append(&quot; e&quot;);</span>
+<span class="fc" id="L1081">		sql.append(&quot; WHERE &quot;);</span>
+		// this join is effectively the same as SUMMARY_EVENT_ID IS NOT NULL
+<span class="fc" id="L1083">		sql.append(&quot;e.&quot;).append(EVENT_INDEX_ID).append(&quot;=p.&quot;)</span>
+<span class="fc" id="L1084">				.append(SUMMARY_EVENT_ID);</span>
+
+		// Add all appropriate where clauses
+<span class="fc" id="L1087">		Iterator&lt;String&gt; clauseIter = clauses.iterator();</span>
+<span class="fc bfc" id="L1088" title="All 2 branches covered.">		while (clauseIter.hasNext()) {</span>
+<span class="fc" id="L1089">			sql.append(&quot; AND &quot;);</span>
+<span class="fc" id="L1090">			sql.append(clauseIter.next());</span>
+		}
+
+		// Query the database.
+<span class="fc" id="L1094">		Statement statement = null;</span>
+<span class="fc" id="L1095">		ResultSet results = null;</span>
+
+		try {
+<span class="fc" id="L1098">			statement = verifyConnection().createStatement();</span>
+<span class="fc" id="L1099">			results = statement.executeQuery(sql.toString());</span>
+
+			// Loop over our results and add each eventIndexId to the list
+<span class="fc bfc" id="L1102" title="All 2 branches covered.">			while (results.next()) {</span>
+				// EVENT_INDEX_ID
+<span class="fc" id="L1104">				eventIndexIds.add(Long.valueOf(results.getLong(1)));</span>
+			}
+		} finally {
+			try {
+<span class="fc" id="L1108">				results.close();</span>
+<span class="nc" id="L1109">			} catch (Exception e) {</span>
+<span class="fc" id="L1110">			}</span>
+			try {
+<span class="fc" id="L1112">				statement.close();</span>
+<span class="nc" id="L1113">			} catch (Exception e) {</span>
+<span class="fc" id="L1114">			}</span>
+		}
+
+		// Return our result. Note this is never null but may be empty.
+<span class="fc" id="L1118">		return eventIndexIds;</span>
+	}
+
+	/**
+	 * Use the index id to get a ProductSummary from the database.
+	 *
+	 * @param summaryIndexId
+	 * @return ProductSummary pulled from the database
+	 * @throws SQLException
+	 * @throws InvalidProductException
+	 */
+	protected synchronized ProductSummary getSummary(Long summaryIndexId)
+			throws SQLException, InvalidProductException {
+<span class="fc" id="L1131">		ProductSummary summary = new ProductSummary();</span>
+<span class="fc" id="L1132">		summary.setIndexId(summaryIndexId);</span>
+
+		// -------------------------------------------------------------------
+		// -- Add basic summary information
+		// -------------------------------------------------------------------
+<span class="fc" id="L1137">		ResultSet results = null;</span>
+
+		try {
+			// Query the index for raw information
+<span class="fc" id="L1141">			getSummary.setLong(1, summaryIndexId);</span>
+<span class="fc" id="L1142">			results = getSummary.executeQuery();</span>
+
+			// Order of results is (taken from getSummary SQL)
+			// 1) SUMMARY_PRODUCT_ID,
+			// 2) SUMMARY_TYPE,
+			// 3) SUMMARY_SOURCE,
+			// 4) SUMMARY_CODE,
+			// 5) SUMMARY_UPDATE_TIME,
+			// 6) SUMMARY_EVENT_SOURCE,
+			// 7) SUMMARY_EVENT_SOURCE_CODE,
+			// 8) SUMMARY_EVENT_TIME,
+			// 9) SUMMARY_EVENT_LATITUDE,
+			// 10) SUMMARY_EVENT_LONGITUDE,
+			// 11) SUMMARY_EVENT_DEPTH,
+			// 12) SUMMARY_EVENT_MAGNITUDE,
+			// 13) SUMMARY_VERSION,
+			// 14) SUMMARY_STATUS,
+			// 15) SUMMARY_TRACKER_URL,
+			// 16) SUMMARY_PREFERRED
+
+			// Parse the raw information and set the summary parameters
+<span class="pc bpc" id="L1163" title="1 of 2 branches missed.">			if (results.next()) {</span>
+				try {
+					// SUMMARY_PRODUCT_ID
+<span class="fc" id="L1166">					summary.setId(ProductId.parse(results.getString(1)));</span>
+<span class="nc" id="L1167">				} catch (NullPointerException npx) {</span>
+					// Product ID not allowed to be null
+					// Remove from index?
+<span class="nc" id="L1170">					LOGGER.log(</span>
+							Level.WARNING,
+							&quot;[&quot;
+<span class="nc" id="L1173">									+ getName()</span>
+									+ &quot;] Failed to get summary. Product ID was null, summary index id=&quot;
+									+ summaryIndexId, npx);
+<span class="nc" id="L1176">					throw new InvalidProductException(&quot;Product ID was null&quot;,</span>
+							npx);
+<span class="fc" id="L1178">				}</span>
+
+				// Set some simple types. Null values are fine.
+				try {
+					// SUMMARY_EVENT_SOURCE
+<span class="fc" id="L1183">					summary.setEventSource(results.getString(6));</span>
+<span class="nc" id="L1184">				} catch (Exception e) {</span>
+					// ignore
+<span class="fc" id="L1186">				}</span>
+<span class="fc bfc" id="L1187" title="All 2 branches covered.">				if (results.wasNull()) {</span>
+<span class="fc" id="L1188">					summary.setEventSource(null);</span>
+				}
+
+				try {
+					// SUMMARY_EVENT_SOURCE_CODE
+<span class="fc" id="L1193">					summary.setEventSourceCode(results.getString(7));</span>
+<span class="nc" id="L1194">				} catch (Exception e) {</span>
+					// ignore
+<span class="fc" id="L1196">				}</span>
+<span class="fc bfc" id="L1197" title="All 2 branches covered.">				if (results.wasNull()) {</span>
+<span class="fc" id="L1198">					summary.setEventSourceCode(null);</span>
+				}
+
+				try {
+					// SUMMARY_EVENT_TIME
+<span class="fc" id="L1203">					summary.setEventTime(new Date(results.getLong(8)));</span>
+<span class="nc" id="L1204">				} catch (Exception e) {</span>
+					// ignore
+<span class="fc" id="L1206">				}</span>
+<span class="fc bfc" id="L1207" title="All 2 branches covered.">				if (results.wasNull()) {</span>
+<span class="fc" id="L1208">					summary.setEventTime(null);</span>
+				}
+
+				try {
+					// SUMMARY_EVENT_LATITUDE
+<span class="fc" id="L1213">					summary.setEventLatitude(new BigDecimal(results</span>
+<span class="fc" id="L1214">							.getDouble(9)));</span>
+<span class="nc" id="L1215">				} catch (Exception e) {</span>
+					// ignore
+<span class="fc" id="L1217">				}</span>
+<span class="fc bfc" id="L1218" title="All 2 branches covered.">				if (results.wasNull()) {</span>
+<span class="fc" id="L1219">					summary.setEventLatitude(null);</span>
+				}
+
+				try {
+					// SUMMARY_EVENT_LONGITUDE
+<span class="fc" id="L1224">					summary.setEventLongitude(new BigDecimal(results</span>
+<span class="fc" id="L1225">							.getDouble(10)));</span>
+<span class="nc" id="L1226">				} catch (Exception e) {</span>
+					// ignore
+<span class="fc" id="L1228">				}</span>
+<span class="fc bfc" id="L1229" title="All 2 branches covered.">				if (results.wasNull()) {</span>
+<span class="fc" id="L1230">					summary.setEventLongitude(null);</span>
+				}
+
+				try {
+					// SUMMARY_EVENT_DEPTH
+<span class="fc" id="L1235">					summary.setEventDepth(new BigDecimal(results.getDouble(11)));</span>
+<span class="nc" id="L1236">				} catch (Exception e) {</span>
+					// ignore
+<span class="fc" id="L1238">				}</span>
+<span class="fc bfc" id="L1239" title="All 2 branches covered.">				if (results.wasNull()) {</span>
+<span class="fc" id="L1240">					summary.setEventDepth(null);</span>
+				}
+
+				try {
+					// SUMMARY_EVENT_MAGNITUDE
+<span class="fc" id="L1245">					summary.setEventMagnitude(new BigDecimal(results</span>
+<span class="fc" id="L1246">							.getDouble(12)));</span>
+<span class="nc" id="L1247">				} catch (Exception e) {</span>
+					// ignore
+<span class="fc" id="L1249">				}</span>
+<span class="fc bfc" id="L1250" title="All 2 branches covered.">				if (results.wasNull()) {</span>
+<span class="fc" id="L1251">					summary.setEventMagnitude(null);</span>
+				}
+
+				// Set some more simple values
+				try {
+					// SUMMARY_VERSION
+<span class="fc" id="L1257">					summary.setVersion(results.getString(13));</span>
+<span class="nc" id="L1258">				} catch (Exception e) {</span>
+					// ignore
+<span class="fc" id="L1260">				}</span>
+<span class="fc bfc" id="L1261" title="All 2 branches covered.">				if (results.wasNull()) {</span>
+<span class="fc" id="L1262">					summary.setVersion(null);</span>
+				}
+
+				try {
+					// SUMMARY_STATUS
+<span class="fc" id="L1267">					summary.setStatus(results.getString(14));</span>
+<span class="nc" id="L1268">				} catch (Exception e) {</span>
+					// ignore
+<span class="fc" id="L1270">				}</span>
+<span class="pc bpc" id="L1271" title="1 of 2 branches missed.">				if (results.wasNull()) {</span>
+<span class="nc" id="L1272">					summary.setStatus(null);</span>
+				}
+
+				try {
+					// SUMMARY_TRACKER_URL
+<span class="fc" id="L1277">					summary.setTrackerURL(new URL(results.getString(15)));</span>
+<span class="nc" id="L1278">				} catch (MalformedURLException mux) {</span>
+
+					// Tracker URL is not allowed to be null
+					// Log a message?
+					// Remove this product from the index?
+
+					// Throw a more informative exception
+<span class="nc" id="L1285">					LOGGER.log(Level.INFO, &quot;[&quot; + getName()</span>
+							+ &quot;] Bad TrackerURL value&quot;, mux);
+<span class="nc" id="L1287">					throw new InvalidProductException(&quot;[&quot; + getName()</span>
+							+ &quot;] Bad TrackerURL value&quot;, mux);
+<span class="fc" id="L1289">				}</span>
+
+				// This will default to 0 if not set in index db
+				// SUMMARY_PREFERRED
+<span class="fc" id="L1293">				summary.setPreferredWeight(results.getLong(16));</span>
+			}
+		} finally {
+			// must close result set to keep from blocking transaction
+			try {
+<span class="fc" id="L1298">				results.close();</span>
+<span class="nc" id="L1299">			} catch (Exception e) {</span>
+<span class="fc" id="L1300">			}</span>
+		}
+
+		// Add summary link information
+<span class="fc" id="L1304">		summary.setLinks(getSummaryLinks(summaryIndexId));</span>
+
+		// Add summary property information
+<span class="fc" id="L1307">		Map&lt;String, String&gt; properties = getSummaryProperties(summaryIndexId);</span>
+<span class="fc" id="L1308">		summary.setProperties(properties);</span>
+
+		// set numeric attributes based on string values to preserve original precision
+<span class="fc bfc" id="L1311" title="All 2 branches covered.">		if (properties.containsKey(Product.DEPTH_PROPERTY)) {</span>
+<span class="fc" id="L1312">			summary.setEventDepth(new BigDecimal(</span>
+<span class="fc" id="L1313">					properties.get(Product.DEPTH_PROPERTY)));</span>
+		}
+<span class="fc bfc" id="L1315" title="All 2 branches covered.">		if (properties.containsKey(Product.LATITUDE_PROPERTY)) {</span>
+<span class="fc" id="L1316">			summary.setEventLatitude(new BigDecimal(</span>
+<span class="fc" id="L1317">					properties.get(Product.LATITUDE_PROPERTY)));</span>
+		}
+<span class="fc bfc" id="L1319" title="All 2 branches covered.">		if (properties.containsKey(Product.LONGITUDE_PROPERTY)) {</span>
+<span class="fc" id="L1320">			summary.setEventLongitude(new BigDecimal(</span>
+<span class="fc" id="L1321">					properties.get(Product.LONGITUDE_PROPERTY)));</span>
+		}
+<span class="fc bfc" id="L1323" title="All 2 branches covered.">		if (properties.containsKey(Product.MAGNITUDE_PROPERTY)) {</span>
+<span class="fc" id="L1324">			summary.setEventMagnitude(new BigDecimal(</span>
+<span class="fc" id="L1325">					properties.get(Product.MAGNITUDE_PROPERTY)));</span>
+		}
+
+		// Return our generated result. Note this is never null.
+<span class="fc" id="L1329">		return summary;</span>
+	}
+
+	/**
+	 * Use the event index id to get a list of all of the product summary ids
+	 * associated with that event
+	 *
+	 * @param eventIndexId
+	 * @return List of product index ids
+	 * @throws SQLException
+	 */
+	protected synchronized List&lt;Long&gt; getSummaryIndexIds(Long eventIndexId)
+			throws SQLException {
+		// Create a list object to return
+<span class="fc" id="L1343">		List&lt;Long&gt; summaryIndexIds = new LinkedList&lt;Long&gt;();</span>
+
+<span class="fc" id="L1345">		ResultSet results = null;</span>
+
+		try {
+			// Query database for a list of product summary index ids
+<span class="fc" id="L1349">			getSummaries.setLong(1, eventIndexId.longValue());</span>
+<span class="fc" id="L1350">			results = getSummaries.executeQuery();</span>
+
+			// Add each product summary index id to our list
+<span class="fc bfc" id="L1353" title="All 2 branches covered.">			while (results.next()) {</span>
+				// SUMMARY_PRODUCT_INDEX_ID
+<span class="fc" id="L1355">				summaryIndexIds.add(Long.valueOf(results.getLong(1)));</span>
+			}
+		} finally {
+			// must close result set to keep from blocking transaction
+			try {
+<span class="fc" id="L1360">				results.close();</span>
+<span class="nc" id="L1361">			} catch (Exception e) {</span>
+<span class="fc" id="L1362">			}</span>
+		}
+
+		// Return our results. Note this is never null but may be empty.
+<span class="fc" id="L1366">		return summaryIndexIds;</span>
+	}
+
+	/**
+	 * Query the database for a list of product summary index ids for summaries
+	 * that match the given query.
+	 *
+	 * @param query
+	 * @return List of product index ids
+	 * @throws SQLException
+	 */
+	protected synchronized List&lt;Long&gt; getSummaryIndexIds(ProductIndexQuery query)
+			throws SQLException {
+		// Object to return
+<span class="fc" id="L1380">		List&lt;Long&gt; summaryIndexIds = new LinkedList&lt;Long&gt;();</span>
+
+		// Build up our clause list like always
+<span class="fc" id="L1383">		List&lt;String&gt; clauses = buildProductClauses(query);</span>
+
+		// Build the SQL Query from our ProductIndexQuery object
+<span class="fc" id="L1386">		StringBuilder sql = new StringBuilder();</span>
+<span class="fc" id="L1387">		sql.append(&quot;SELECT DISTINCT &quot;);</span>
+<span class="fc" id="L1388">		sql.append(SUMMARY_PRODUCT_INDEX_ID);</span>
+<span class="fc" id="L1389">		sql.append(&quot; FROM &quot;);</span>
+<span class="fc" id="L1390">		sql.append(SUMMARY_TABLE).append(&quot; &quot;).append(SUMMARY_TABLE_ALIAS);</span>
+<span class="fc" id="L1391">		sql.append(&quot; WHERE &quot;);</span>
+<span class="fc" id="L1392">		sql.append(SUMMARY_TABLE_ALIAS).append(&quot;.&quot;)</span>
+<span class="fc" id="L1393">				.append(SUMMARY_PRODUCT_INDEX_ID);</span>
+<span class="fc" id="L1394">		sql.append(&quot; IS NOT NULL&quot;);</span>
+
+		// Add all appropriate where clauses
+<span class="fc" id="L1397">		Iterator&lt;String&gt; clauseIter = clauses.iterator();</span>
+<span class="fc bfc" id="L1398" title="All 2 branches covered.">		while (clauseIter.hasNext()) {</span>
+<span class="fc" id="L1399">			sql.append(&quot; AND &quot;);</span>
+<span class="fc" id="L1400">			sql.append(clauseIter.next());</span>
+		}
+
+<span class="fc" id="L1403">		String orderBy = query.getOrderBy();</span>
+<span class="pc bpc" id="L1404" title="1 of 2 branches missed.">		if (orderBy != null) {</span>
+<span class="nc" id="L1405">			sql.append(&quot; ORDER BY &quot; + orderBy);</span>
+		}
+
+<span class="fc" id="L1408">		Integer limit = query.getLimit();</span>
+<span class="pc bpc" id="L1409" title="1 of 2 branches missed.">		if (limit != null) {</span>
+<span class="nc" id="L1410">			sql.append(&quot; LIMIT &quot; + limit);</span>
+		}
+
+<span class="fc" id="L1413">		Statement statement = null;</span>
+<span class="fc" id="L1414">		ResultSet results = null;</span>
+		try {
+<span class="fc" id="L1416">			LOGGER.finest(&quot;[&quot; + getName() + &quot;] running query \n&quot;</span>
+<span class="fc" id="L1417">					+ sql.toString());</span>
+			// Query the database.
+<span class="fc" id="L1419">			statement = verifyConnection().createStatement();</span>
+<span class="fc" id="L1420">			results = statement.executeQuery(sql.toString());</span>
+
+			// Loop over our results and add each eventIndexId to the list
+<span class="fc bfc" id="L1423" title="All 2 branches covered.">			while (results.next()) {</span>
+				// SUMMARY_PRODUCT_INDEX_ID
+<span class="fc" id="L1425">				summaryIndexIds.add(Long.valueOf(results.getLong(1)));</span>
+			}
+
+<span class="fc" id="L1428">			LOGGER.finest(&quot;[&quot; + getName() + &quot;] query complete&quot;);</span>
+<span class="nc" id="L1429">		} catch (Exception e) {</span>
+<span class="nc" id="L1430">			LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+					+ &quot;] exception querying index&quot;, e);
+		} finally {
+			// must close result set to keep from blocking transaction
+			try {
+<span class="fc" id="L1435">				results.close();</span>
+<span class="nc" id="L1436">			} catch (Exception e) {</span>
+<span class="fc" id="L1437">			}</span>
+			try {
+<span class="fc" id="L1439">				statement.close();</span>
+<span class="nc" id="L1440">			} catch (Exception e) {</span>
+<span class="fc" id="L1441">			}</span>
+		}
+
+		// Return our result. Note this is never null but may be empty.
+<span class="fc" id="L1445">		return summaryIndexIds;</span>
+	}
+
+	/**
+	 * Build a list of all the pieces of the WHERE clause relevant to the
+	 * productSummary table. If the query doesn't set any properties, this
+	 * method will return an empty list. It is up to the calling methods to
+	 * check if the clause list is empty when they build their WHERE clause.
+	 *
+	 * @param query
+	 * @return list containing clauses in the form: column=&quot;value&quot;
+	 */
+	protected List&lt;String&gt; buildProductClauses(ProductIndexQuery query) {
+<span class="fc" id="L1458">		List&lt;String&gt; clauseList = new ArrayList&lt;String&gt;();</span>
+
+<span class="pc bpc" id="L1460" title="1 of 2 branches missed.">		if (query == null) {</span>
+<span class="nc" id="L1461">			return clauseList; /* No query = No clauses */</span>
+		}
+
+		// If they only want current products make a clause that contains a
+		// subquery
+<span class="fc bfc" id="L1466" title="All 2 branches covered.">		if (query.getResultType() == ProductIndexQuery.RESULT_TYPE_CURRENT) {</span>
+			String queryCode,
+					querySource,
+					queryType;
+
+<span class="fc" id="L1471">			queryCode = query.getProductCode();</span>
+<span class="fc" id="L1472">			querySource = query.getProductSource();</span>
+<span class="fc" id="L1473">			queryType = query.getProductType();</span>
+
+<span class="pc bpc" id="L1475" title="2 of 6 branches missed.">			if (queryCode != null &amp;&amp; querySource != null &amp;&amp; queryType != null) {</span>
+				// Better sub-select when these properties are specified
+<span class="fc" id="L1477">				clauseList</span>
+<span class="fc" id="L1478">						.add(String</span>
+<span class="fc" id="L1479">								.format(&quot;%s.%s = (SELECT %s FROM %s ps WHERE ps.%s='%s' AND ps.%s='%s' AND ps.%s='%s' AND ps.%s &lt;&gt; 'DELETE' ORDER BY ps.%s DESC LIMIT 1)&quot;,</span>
+										SUMMARY_TABLE_ALIAS, SUMMARY_PRODUCT_INDEX_ID,
+										SUMMARY_PRODUCT_INDEX_ID, SUMMARY_TABLE,
+										SUMMARY_SOURCE, querySource,
+										SUMMARY_TYPE, queryType,
+										SUMMARY_CODE, queryCode,
+										SUMMARY_STATUS,
+										SUMMARY_UPDATE_TIME));
+			} else {
+<span class="fc" id="L1488">				clauseList</span>
+<span class="fc" id="L1489">						.add(String</span>
+<span class="fc" id="L1490">								.format(&quot;NOT EXISTS (SELECT %s FROM %s ps WHERE ps.%s=p.%s AND ps.%s=p.%s AND ps.%s=p.%s AND ps.%s &gt; p.%s AND ps.%s &lt;&gt; 'DELETE')&quot;,</span>
+										SUMMARY_PRODUCT_INDEX_ID, SUMMARY_TABLE,
+										SUMMARY_TYPE, SUMMARY_TYPE, SUMMARY_SOURCE,
+										SUMMARY_SOURCE, SUMMARY_CODE, SUMMARY_CODE,
+										SUMMARY_UPDATE_TIME, SUMMARY_UPDATE_TIME,
+										SUMMARY_STATUS));
+			}
+<span class="fc" id="L1497">		}</span>
+		// If they only want superseded products, make a slightly different
+		// clause that has a subquery
+<span class="fc bfc" id="L1500" title="All 2 branches covered.">		else if (query.getResultType() == ProductIndexQuery.RESULT_TYPE_SUPERSEDED) {</span>
+<span class="fc" id="L1501">			clauseList</span>
+<span class="fc" id="L1502">					.add(String</span>
+<span class="fc" id="L1503">							.format(&quot;EXISTS (SELECT %s FROM %s ps WHERE ps.%s=p.%s AND ps.%s=p.%s AND ps.%s=p.%s AND ps.%s &gt; p.%s AND ps.%s &lt;&gt; 'DELETE')&quot;,</span>
+									SUMMARY_PRODUCT_INDEX_ID, SUMMARY_TABLE,
+									SUMMARY_TYPE, SUMMARY_TYPE, SUMMARY_SOURCE,
+									SUMMARY_SOURCE, SUMMARY_CODE, SUMMARY_CODE,
+									SUMMARY_UPDATE_TIME, SUMMARY_UPDATE_TIME,
+									SUMMARY_STATUS));
+		}
+
+		// Interested in &quot;any&quot; productId in the query.
+<span class="fc" id="L1512">		Iterator&lt;ProductId&gt; productIter = query.getProductIds().iterator();</span>
+
+		// If there are one or more productIds we should build this clause
+<span class="fc bfc" id="L1515" title="All 2 branches covered.">		if (productIter.hasNext()) {</span>
+			// Begin an &quot;IN&quot; clause
+<span class="fc" id="L1517">			StringBuilder clause = new StringBuilder();</span>
+<span class="fc" id="L1518">			clause.append(String.format(&quot;%s.%s IN ('%s&quot;, SUMMARY_TABLE_ALIAS,</span>
+<span class="fc" id="L1519">					SUMMARY_PRODUCT_ID, productIter.next().toString()));</span>
+
+			// Loop over any remaining productIds and add them to clause
+<span class="pc bpc" id="L1522" title="1 of 2 branches missed.">			while (productIter.hasNext()) {</span>
+<span class="nc" id="L1523">				clause.append(&quot;', '&quot;);</span>
+<span class="nc" id="L1524">				clause.append(productIter.next().toString());</span>
+			}
+
+			// Finish off our clause and add it to our clauseList
+<span class="fc" id="L1528">			clause.append(&quot;')&quot;);</span>
+<span class="fc" id="L1529">			clauseList.add(clause.toString());</span>
+		}
+
+		// Build clauses for all specified columns
+<span class="fc" id="L1533">		String eventSource = query.getEventSource();</span>
+<span class="fc bfc" id="L1534" title="All 2 branches covered.">		if (eventSource != null) {</span>
+<span class="fc" id="L1535">			clauseList.add(String.format(&quot;%s.%s='%s'&quot;, SUMMARY_TABLE_ALIAS,</span>
+					SUMMARY_EVENT_SOURCE, eventSource));
+		}
+
+<span class="fc" id="L1539">		String eventSourceCode = query.getEventSourceCode();</span>
+<span class="fc bfc" id="L1540" title="All 2 branches covered.">		if (eventSourceCode != null) {</span>
+<span class="fc" id="L1541">			clauseList.add(String.format(&quot;%s.%s='%s'&quot;, SUMMARY_TABLE_ALIAS,</span>
+					SUMMARY_EVENT_SOURCE_CODE, eventSourceCode));
+		}
+
+		String eventTimeColumn;
+		String eventLatitudeColumn;
+		String eventLongitudeColumn;
+		String eventMagnitudeColumn;
+		String eventDepthColumn;
+
+		// which table is used for event properties
+<span class="fc bfc" id="L1552" title="All 2 branches covered.">		if (query.getEventSearchType() == ProductIndexQuery.SEARCH_EVENT_PREFERRED) {</span>
+			// search preferred event parameters in event table
+<span class="fc" id="L1554">			eventTimeColumn = EVENT_TABLE_ALIAS + &quot;.&quot; + EVENT_TIME;</span>
+<span class="fc" id="L1555">			eventLatitudeColumn = EVENT_TABLE_ALIAS + &quot;.&quot; + EVENT_LATITUDE;</span>
+<span class="fc" id="L1556">			eventLongitudeColumn = EVENT_TABLE_ALIAS + &quot;.&quot; + EVENT_LONGITUDE;</span>
+<span class="fc" id="L1557">			eventMagnitudeColumn = EVENT_TABLE_ALIAS + &quot;.&quot; + EVENT_MAGNITUDE;</span>
+<span class="fc" id="L1558">			eventDepthColumn = EVENT_TABLE_ALIAS + &quot;.&quot; + EVENT_DEPTH;</span>
+		} else {
+			// search product summary parameters in summary table
+<span class="fc" id="L1561">			eventTimeColumn = SUMMARY_TABLE_ALIAS + &quot;.&quot; + SUMMARY_EVENT_TIME;</span>
+<span class="fc" id="L1562">			eventLatitudeColumn = SUMMARY_TABLE_ALIAS + &quot;.&quot;</span>
+					+ SUMMARY_EVENT_LATITUDE;
+<span class="fc" id="L1564">			eventLongitudeColumn = SUMMARY_TABLE_ALIAS + &quot;.&quot;</span>
+					+ SUMMARY_EVENT_LONGITUDE;
+<span class="fc" id="L1566">			eventMagnitudeColumn = SUMMARY_TABLE_ALIAS + &quot;.&quot;</span>
+					+ SUMMARY_EVENT_MAGNITUDE;
+<span class="fc" id="L1568">			eventDepthColumn = SUMMARY_TABLE_ALIAS + &quot;.&quot; + SUMMARY_EVENT_DEPTH;</span>
+		}
+
+<span class="fc" id="L1571">		Date minTime = query.getMinEventTime();</span>
+<span class="fc bfc" id="L1572" title="All 2 branches covered.">		if (minTime != null) {</span>
+<span class="fc" id="L1573">			clauseList.add(String.format(&quot;%s&gt;=%d&quot;, eventTimeColumn,</span>
+<span class="fc" id="L1574">					minTime.getTime()));</span>
+		}
+<span class="fc" id="L1576">		Date maxTime = query.getMaxEventTime();</span>
+<span class="fc bfc" id="L1577" title="All 2 branches covered.">		if (maxTime != null) {</span>
+<span class="fc" id="L1578">			clauseList.add(String.format(&quot;%s&lt;=%d&quot;, eventTimeColumn,</span>
+<span class="fc" id="L1579">					maxTime.getTime()));</span>
+		}
+
+<span class="fc" id="L1582">		BigDecimal minLat = query.getMinEventLatitude();</span>
+<span class="fc bfc" id="L1583" title="All 2 branches covered.">		if (minLat != null) {</span>
+<span class="fc" id="L1584">			clauseList.add(String.format(&quot;%s&gt;=%f&quot;, eventLatitudeColumn,</span>
+<span class="fc" id="L1585">					minLat.doubleValue()));</span>
+		}
+<span class="fc" id="L1587">		BigDecimal maxLat = query.getMaxEventLatitude();</span>
+<span class="fc bfc" id="L1588" title="All 2 branches covered.">		if (maxLat != null) {</span>
+<span class="fc" id="L1589">			clauseList.add(String.format(&quot;%s&lt;=%f&quot;, eventLatitudeColumn,</span>
+<span class="fc" id="L1590">					maxLat.doubleValue()));</span>
+		}
+
+<span class="fc" id="L1593">		BigDecimal minDepth = query.getMinEventDepth();</span>
+<span class="pc bpc" id="L1594" title="1 of 2 branches missed.">		if (minDepth != null) {</span>
+<span class="nc" id="L1595">			clauseList.add(String.format(&quot;%s&gt;=%f&quot;, eventDepthColumn,</span>
+<span class="nc" id="L1596">					minDepth.doubleValue()));</span>
+		}
+<span class="fc" id="L1598">		BigDecimal maxDepth = query.getMaxEventDepth();</span>
+<span class="pc bpc" id="L1599" title="1 of 2 branches missed.">		if (maxDepth != null) {</span>
+<span class="nc" id="L1600">			clauseList.add(String.format(&quot;%s&lt;=%f&quot;, eventDepthColumn,</span>
+<span class="nc" id="L1601">					maxDepth.doubleValue()));</span>
+		}
+
+<span class="fc" id="L1604">		BigDecimal minMag = query.getMinEventMagnitude();</span>
+<span class="pc bpc" id="L1605" title="1 of 2 branches missed.">		if (minMag != null) {</span>
+<span class="nc" id="L1606">			clauseList.add(String.format(&quot;%s&gt;=%f&quot;, eventMagnitudeColumn,</span>
+<span class="nc" id="L1607">					minMag.doubleValue()));</span>
+		}
+<span class="fc" id="L1609">		BigDecimal maxMag = query.getMaxEventMagnitude();</span>
+<span class="pc bpc" id="L1610" title="1 of 2 branches missed.">		if (maxMag != null) {</span>
+<span class="nc" id="L1611">			clauseList.add(String.format(&quot;%s&lt;=%f&quot;, eventMagnitudeColumn,</span>
+<span class="nc" id="L1612">					maxMag.doubleValue()));</span>
+		}
+
+<span class="fc" id="L1615">		Date minUpdateTime = query.getMinProductUpdateTime();</span>
+<span class="fc bfc" id="L1616" title="All 2 branches covered.">		if (minUpdateTime != null) {</span>
+<span class="fc" id="L1617">			clauseList.add(String.format(&quot;%s&gt;=%d&quot;, SUMMARY_UPDATE_TIME,</span>
+<span class="fc" id="L1618">					minUpdateTime.getTime()));</span>
+		}
+<span class="fc" id="L1620">		Date maxUpdateTime = query.getMaxProductUpdateTime();</span>
+<span class="pc bpc" id="L1621" title="1 of 2 branches missed.">		if (maxUpdateTime != null) {</span>
+<span class="nc" id="L1622">			clauseList.add(String.format(&quot;%s&lt;=%d&quot;, SUMMARY_UPDATE_TIME,</span>
+<span class="nc" id="L1623">					maxUpdateTime.getTime()));</span>
+		}
+
+<span class="fc" id="L1626">		String source = query.getProductSource();</span>
+<span class="fc bfc" id="L1627" title="All 2 branches covered.">		if (source != null) {</span>
+<span class="fc" id="L1628">			clauseList.add(String.format(&quot;%s='%s'&quot;, SUMMARY_SOURCE, source));</span>
+		}
+
+<span class="fc" id="L1631">		String type = query.getProductType();</span>
+<span class="fc bfc" id="L1632" title="All 2 branches covered.">		if (type != null) {</span>
+<span class="fc" id="L1633">			clauseList.add(String.format(&quot;%s='%s'&quot;, SUMMARY_TYPE, type));</span>
+		}
+
+<span class="fc" id="L1636">		String code = query.getProductCode();</span>
+<span class="fc bfc" id="L1637" title="All 2 branches covered.">		if (code != null) {</span>
+<span class="fc" id="L1638">			clauseList.add(String.format(&quot;%s='%s'&quot;, SUMMARY_CODE, code));</span>
+		}
+
+<span class="fc" id="L1641">		String version = query.getProductVersion();</span>
+<span class="pc bpc" id="L1642" title="1 of 2 branches missed.">		if (version != null) {</span>
+<span class="nc" id="L1643">			clauseList.add(String.format(&quot;%s='%s'&quot;, SUMMARY_VERSION, version));</span>
+		}
+
+<span class="fc" id="L1646">		String status = query.getProductStatus();</span>
+<span class="fc bfc" id="L1647" title="All 2 branches covered.">		if (status != null) {</span>
+<span class="fc" id="L1648">			clauseList.add(String.format(&quot;%s='%s'&quot;, SUMMARY_STATUS, status));</span>
+		}
+
+<span class="fc" id="L1651">		Long minProductIndexId = query.getMinProductIndexId();</span>
+<span class="pc bpc" id="L1652" title="1 of 2 branches missed.">		if (minProductIndexId != null) {</span>
+<span class="nc" id="L1653">			clauseList.add(String.format(&quot;%s&gt;=%d&quot;, SUMMARY_PRODUCT_INDEX_ID, minProductIndexId));</span>
+		}
+
+<span class="fc" id="L1656">		BigDecimal minLon = query.getMinEventLongitude();</span>
+<span class="fc" id="L1657">		BigDecimal maxLon = query.getMaxEventLongitude();</span>
+		// Normalize the longitudes between -180 and 180
+<span class="fc" id="L1659">		minLon = normalizeLongitude(minLon);</span>
+<span class="fc" id="L1660">		maxLon = normalizeLongitude(maxLon);</span>
+
+<span class="pc bpc" id="L1662" title="1 of 4 branches missed.">		if (minLon != null &amp;&amp; maxLon != null) {</span>
+<span class="fc bfc" id="L1663" title="All 2 branches covered.">			if (maxLon.doubleValue() &lt; minLon.doubleValue()) {</span>
+				// If the normalized maxLon is less than the normalized minLon,
+				// the
+				// span crosses
+				// the date line
+<span class="fc" id="L1668">				Double minLonDouble = minLon.doubleValue();</span>
+<span class="fc" id="L1669">				Double maxLonDouble = maxLon.doubleValue();</span>
+				// If the range crosses the date line, split it into 2 clauses
+<span class="fc" id="L1671">				String lonClause = String.format(</span>
+						&quot;((%s &gt; %f AND %s &lt;= 180) OR (%s &lt; %f AND %s &gt; -180))&quot;,
+						eventLongitudeColumn, minLonDouble,
+						eventLongitudeColumn, eventLongitudeColumn,
+						maxLonDouble, eventLongitudeColumn);
+<span class="fc" id="L1676">				clauseList.add(lonClause);</span>
+<span class="fc" id="L1677">			} else {</span>
+<span class="fc" id="L1678">				clauseList.add(String.format(&quot;%s&gt;=%f and %s&lt;=%f&quot;,</span>
+<span class="fc" id="L1679">						eventLongitudeColumn, minLon.doubleValue(),</span>
+<span class="fc" id="L1680">						eventLongitudeColumn, maxLon.doubleValue()));</span>
+			}
+<span class="pc bpc" id="L1682" title="1 of 2 branches missed.">		} else if (minLon != null) {</span>
+<span class="nc" id="L1683">			clauseList.add(String.format(&quot;%s&gt;=%f&quot;, eventLongitudeColumn,</span>
+<span class="nc" id="L1684">					minLon.doubleValue()));</span>
+<span class="pc bpc" id="L1685" title="1 of 2 branches missed.">		} else if (maxLon != null) {</span>
+<span class="nc" id="L1686">			clauseList.add(String.format(&quot;%s&lt;=%f&quot;, eventLongitudeColumn,</span>
+<span class="nc" id="L1687">					maxLon.doubleValue()));</span>
+		}
+<span class="fc" id="L1689">		return clauseList;</span>
+	}
+
+	/**
+	 * Create the full SELECT query for the products table using the clauseList
+	 * as the WHERE clause
+	 *
+	 * @param clauseList
+	 *            List of Strings to be AND'd together in the WHERE clause
+	 * @param orderby
+	 *            Complete ORDER BY clause to be added after the WHERE clause
+	 * @return String containing the full SELECT query
+	 */
+	protected String buildProductQuery(List&lt;String&gt; clauseList, String orderby) {
+		// Join all the clauses into a WHERE clause
+<span class="fc" id="L1704">		StringBuilder whereClause = new StringBuilder();</span>
+<span class="fc" id="L1705">		String and = &quot; AND &quot;;</span>
+<span class="fc" id="L1706">		boolean first = true;</span>
+<span class="fc bfc" id="L1707" title="All 2 branches covered.">		for (String clause : clauseList) {</span>
+<span class="fc bfc" id="L1708" title="All 2 branches covered.">			if (!first) {</span>
+<span class="fc" id="L1709">				whereClause.append(and);</span>
+			} else {
+<span class="fc" id="L1711">				first = false;</span>
+			}
+<span class="fc" id="L1713">			whereClause.append(clause);</span>
+<span class="fc" id="L1714">		}</span>
+
+<span class="fc" id="L1716">		String query_prefix = String</span>
+<span class="fc" id="L1717">				.format(&quot;SELECT * FROM %s p&quot;, SUMMARY_TABLE);</span>
+<span class="fc" id="L1718">		String query_suffix = &quot;&quot;;</span>
+<span class="pc bpc" id="L1719" title="1 of 2 branches missed.">		if (whereClause.length() &gt; 0) {</span>
+<span class="fc" id="L1720">			query_suffix = String.format(&quot; WHERE %s&quot;, whereClause.toString());</span>
+		}
+<span class="fc" id="L1722">		String query_text = query_prefix + query_suffix + &quot; &quot; + orderby;</span>
+
+<span class="fc" id="L1724">		return query_text;</span>
+	}
+
+	/**
+	 * Create the full SELECT query for the products table using the clauseList
+	 * as the WHERE clause. This method is a wrapper for
+	 * {@link #buildProductQuery(List, String)} with an empty
+	 * orderby string
+	 *
+	 * @param clauseList
+	 * @return String containing the full SELECT query
+	 */
+	protected String buildProductQuery(List&lt;String&gt; clauseList) {
+<span class="fc" id="L1737">		return buildProductQuery(clauseList, &quot;&quot;);</span>
+	}
+
+	/**
+	 * Parse the next item in the result set into a ProductSummary object
+	 *
+	 * @param results
+	 * @return ProductSummary object with attributes filled from database
+	 * @throws Exception
+	 */
+	protected ProductSummary parseSummaryResult(ResultSet results)
+			throws Exception {
+<span class="fc" id="L1749">		ProductSummary p = new ProductSummary();</span>
+<span class="fc" id="L1750">		p.setIndexId(results.getLong(&quot;id&quot;));</span>
+<span class="fc" id="L1751">		ProductId pid = ProductId.parse(results.getString(SUMMARY_PRODUCT_ID));</span>
+<span class="fc" id="L1752">		p.setId(pid);</span>
+<span class="fc" id="L1753">		p.setEventSource(results.getString(SUMMARY_EVENT_SOURCE));</span>
+<span class="fc" id="L1754">		p.setEventSourceCode(results.getString(SUMMARY_EVENT_SOURCE_CODE));</span>
+<span class="fc" id="L1755">		p.setEventTime(new Date(results.getLong(SUMMARY_EVENT_TIME)));</span>
+
+		// getDouble() returns 0 if the value was actually NULL. In this case,
+		// we are going to set the value to null
+<span class="fc" id="L1759">		String latitude = results.getString(SUMMARY_EVENT_LATITUDE);</span>
+<span class="pc bpc" id="L1760" title="1 of 2 branches missed.">		if (latitude == null) {</span>
+<span class="fc" id="L1761">			p.setEventLatitude(null);</span>
+		} else {
+<span class="nc" id="L1763">			p.setEventLatitude(new BigDecimal(latitude));</span>
+		}
+<span class="fc" id="L1765">		String longitude = results.getString(SUMMARY_EVENT_LONGITUDE);</span>
+<span class="pc bpc" id="L1766" title="1 of 2 branches missed.">		if (longitude == null) {</span>
+<span class="fc" id="L1767">			p.setEventLongitude(null);</span>
+		} else {
+<span class="nc" id="L1769">			p.setEventLongitude(new BigDecimal(longitude));</span>
+		}
+<span class="fc" id="L1771">		String depth = results.getString(SUMMARY_EVENT_DEPTH);</span>
+<span class="fc bfc" id="L1772" title="All 2 branches covered.">		if (depth == null) {</span>
+<span class="fc" id="L1773">			p.setEventDepth(null);</span>
+		} else {
+<span class="fc" id="L1775">			p.setEventDepth(new BigDecimal(depth));</span>
+		}
+<span class="fc" id="L1777">		String magnitude = results.getString(SUMMARY_EVENT_MAGNITUDE);</span>
+<span class="fc bfc" id="L1778" title="All 2 branches covered.">		if (magnitude == null) {</span>
+<span class="fc" id="L1779">			p.setEventMagnitude(null);</span>
+		} else {
+<span class="fc" id="L1781">			p.setEventMagnitude(new BigDecimal(magnitude));</span>
+		}
+<span class="fc" id="L1783">		p.setVersion(results.getString(SUMMARY_VERSION));</span>
+<span class="fc" id="L1784">		p.setStatus(results.getString(SUMMARY_STATUS));</span>
+<span class="pc bpc" id="L1785" title="1 of 2 branches missed.">		p.setTrackerURL((results.getString(SUMMARY_TRACKER_URL) != null) ? new URL(</span>
+<span class="pc" id="L1786">				results.getString(SUMMARY_TRACKER_URL)) : null);</span>
+<span class="fc" id="L1787">		p.setPreferredWeight(results.getLong(SUMMARY_PREFERRED));</span>
+
+		// Set product links
+<span class="fc" id="L1790">		Long indexId = p.getIndexId();</span>
+<span class="fc" id="L1791">		ResultSet links = null;</span>
+		try {
+<span class="fc" id="L1793">			JDBCUtils.setParameter(getProductLinks, 1, indexId, Types.BIGINT);</span>
+<span class="fc" id="L1794">			links = getProductLinks.executeQuery();</span>
+<span class="fc bfc" id="L1795" title="All 2 branches covered.">			while (links.next()) {</span>
+<span class="fc" id="L1796">				p.addLink(links.getString(SUMMARY_LINK_RELATION),</span>
+<span class="fc" id="L1797">						new URI(links.getString(SUMMARY_LINK_URL)));</span>
+			}
+		} finally {
+			try {
+<span class="fc" id="L1801">				links.close(); // Free this result set</span>
+<span class="nc" id="L1802">			} catch (Exception e) {</span>
+<span class="fc" id="L1803">			}</span>
+		}
+
+<span class="fc" id="L1806">		ResultSet props = null;</span>
+		try {
+			// Set product properties
+<span class="fc" id="L1809">			JDBCUtils.setParameter(getProductProperties, 1, indexId,</span>
+					Types.BIGINT);
+<span class="fc" id="L1811">			props = getProductProperties.executeQuery();</span>
+<span class="fc" id="L1812">			Map&lt;String, String&gt; properties = p.getProperties();</span>
+<span class="fc bfc" id="L1813" title="All 2 branches covered.">			while (props.next()) {</span>
+<span class="fc" id="L1814">				properties.put(props.getString(SUMMARY_PROPERTY_NAME),</span>
+<span class="fc" id="L1815">						props.getString(SUMMARY_PROPERTY_VALUE));</span>
+			}
+<span class="fc" id="L1817">			p.setProperties(properties);</span>
+		} finally {
+			try {
+<span class="fc" id="L1820">				props.close();</span>
+<span class="nc" id="L1821">			} catch (Exception e) {</span>
+<span class="fc" id="L1822">			}</span>
+		}
+
+<span class="fc" id="L1825">		return p;</span>
+	}
+
+	/**
+	 * Look in the database for all the properties associated with the given
+	 * product summary.
+	 *
+	 * @param summaryIndexId
+	 * @return Map of property name to property value
+	 * @throws SQLException
+	 * @throws InvalidProductException
+	 */
+	protected synchronized Map&lt;String, String&gt; getSummaryProperties(
+			Long summaryIndexId) throws SQLException, InvalidProductException {
+		// Create our object to populate and return
+<span class="fc" id="L1840">		Map&lt;String, String&gt; properties = new HashMap&lt;String, String&gt;();</span>
+
+<span class="fc" id="L1842">		ResultSet results = null;</span>
+		try {
+<span class="fc" id="L1844">			getProductProperties.setLong(1, summaryIndexId.longValue());</span>
+<span class="fc" id="L1845">			results = getProductProperties.executeQuery();</span>
+<span class="fc bfc" id="L1846" title="All 2 branches covered.">			while (results.next()) {</span>
+				// SUMMARY_PROPERTY_NAME
+<span class="fc" id="L1848">				String name = results.getString(1);</span>
+				// SUMMARY_PROPERTY_VALUE
+<span class="fc" id="L1850">				String value = results.getString(2);</span>
+
+<span class="pc bpc" id="L1852" title="2 of 4 branches missed.">				if (name == null || value == null) {</span>
+
+					// Both name and value are required
+					// Log something?
+					// Remove link from product index db?
+<span class="nc" id="L1857">					InvalidProductException ipx = new InvalidProductException(</span>
+							&quot;Bad Product Property&quot;);
+<span class="nc" id="L1859">					ipx.fillInStackTrace();</span>
+<span class="nc" id="L1860">					LOGGER.log(Level.INFO, &quot;[&quot; + getName()</span>
+							+ &quot;] Bad Product Property&quot;, ipx);
+<span class="nc" id="L1862">					throw ipx;</span>
+				}
+
+				// Add this link back to the map of links
+<span class="fc" id="L1866">				properties.put(name, value);</span>
+<span class="fc" id="L1867">			}</span>
+		} finally {
+			// must close result set to keep from blocking transaction
+			try {
+<span class="fc" id="L1871">				results.close();</span>
+<span class="nc" id="L1872">			} catch (Exception e) {</span>
+<span class="fc" id="L1873">			}</span>
+		}
+		// Return our mapping of generated properties. Note this is never null
+		// but may be empty.
+<span class="fc" id="L1877">		return properties;</span>
+	}
+
+	/**
+	 * Save the properties in the database and associate them to the given
+	 * productId
+	 *
+	 * @param productId
+	 * @param properties
+	 * @throws SQLException
+	 */
+	protected synchronized void addProductProperties(long productId,
+			Map&lt;String, String&gt; properties) throws SQLException {
+		// Loop through the properties list and add them all to the database
+<span class="fc" id="L1891">		Set&lt;String&gt; keys = properties.keySet();</span>
+<span class="fc bfc" id="L1892" title="All 2 branches covered.">		for (String key : keys) {</span>
+<span class="fc" id="L1893">			JDBCUtils.setParameter(insertProperty, 1, productId, Types.BIGINT);</span>
+<span class="fc" id="L1894">			JDBCUtils.setParameter(insertProperty, 2, key, Types.VARCHAR);</span>
+<span class="fc" id="L1895">			JDBCUtils.setParameter(insertProperty, 3, properties.get(key),</span>
+					Types.VARCHAR);
+
+<span class="fc" id="L1898">			insertProperty.executeUpdate();</span>
+<span class="fc bfc" id="L1899" title="All 2 branches covered.">			if (LOGGER.isLoggable(Level.FINEST)) {</span>
+<span class="fc" id="L1900">				LOGGER.log(Level.FINEST, &quot;[&quot; + getName() + &quot;] Added property &quot;</span>
+<span class="fc" id="L1901">						+ key + &quot;:&quot; + properties.get(key) + &quot; for product &quot;</span>
+						+ productId);
+			}
+<span class="fc" id="L1904">		}</span>
+<span class="fc" id="L1905">	}</span>
+
+	/**
+	 * Delete the given properties from the index
+	 *
+	 * @param productId
+	 */
+	protected synchronized void removeProductProperties(long productId)
+			throws Exception {
+<span class="fc" id="L1914">		JDBCUtils.setParameter(deleteProperties, 1, productId, Types.BIGINT);</span>
+
+<span class="fc" id="L1916">		deleteProperties.executeUpdate();</span>
+<span class="fc" id="L1917">	}</span>
+
+	/**
+	 * Look in the database for all the links associated with the given product
+	 * summary.
+	 *
+	 * @param summaryIndexId
+	 * @return Map of link relation (link type) to URL
+	 * @throws SQLException
+	 * @throws InvalidProductException
+	 */
+	protected synchronized Map&lt;String, List&lt;URI&gt;&gt; getSummaryLinks(
+			Long summaryIndexId) throws SQLException, InvalidProductException {
+		// Create our object to populate and return
+<span class="fc" id="L1931">		Map&lt;String, List&lt;URI&gt;&gt; links = new HashMap&lt;String, List&lt;URI&gt;&gt;();</span>
+
+<span class="fc" id="L1933">		ResultSet results = null;</span>
+		try {
+<span class="fc" id="L1935">			getProductLinks.setLong(1, summaryIndexId.longValue());</span>
+<span class="fc" id="L1936">			results = getProductLinks.executeQuery();</span>
+
+<span class="fc bfc" id="L1938" title="All 2 branches covered.">			while (results.next()) {</span>
+				// SUMMARY_LINK_RELATION
+<span class="fc" id="L1940">				String relation = results.getString(1);</span>
+				// SUMMARY_LINK_URL
+<span class="fc" id="L1942">				String uriStr = results.getString(2);</span>
+
+<span class="pc bpc" id="L1944" title="2 of 4 branches missed.">				if (relation == null || uriStr == null) {</span>
+
+					// Both relation and uri are required
+					// Log something?
+					// Remove link from product index db?
+
+<span class="nc" id="L1950">					InvalidProductException ipx = new InvalidProductException(</span>
+<span class="nc" id="L1951">							&quot;[&quot; + getName() + &quot;] Bad Product Link&quot;);</span>
+<span class="nc" id="L1952">					ipx.fillInStackTrace();</span>
+<span class="nc" id="L1953">					LOGGER.log(Level.INFO, &quot;[&quot; + getName()</span>
+							+ &quot;] Bad Product link&quot;, ipx);
+<span class="nc" id="L1955">					throw ipx;</span>
+				}
+<span class="fc" id="L1957">				List&lt;URI&gt; l = links.get(relation);</span>
+
+				// Case when no links for this relation yet
+<span class="pc bpc" id="L1960" title="1 of 2 branches missed.">				if (l == null) {</span>
+<span class="fc" id="L1961">					l = new LinkedList&lt;URI&gt;();</span>
+				}
+
+				try {
+<span class="fc" id="L1965">					l.add(new URI(uriStr));</span>
+<span class="nc" id="L1966">				} catch (URISyntaxException usx) {</span>
+
+					// Link URI String in DB was malformed.
+					// Log something?
+					// Remove from index?
+<span class="nc" id="L1971">					LOGGER.log(Level.INFO, &quot;[&quot; + getName()</span>
+							+ &quot;] Bad Product Link&quot;, usx);
+<span class="nc" id="L1973">					throw new InvalidProductException(&quot;[&quot; + getName()</span>
+							+ &quot;] Bad Product Link&quot;, usx);
+<span class="fc" id="L1975">				}</span>
+
+				// Add this link back to the map of links
+<span class="fc" id="L1978">				links.put(relation, l);</span>
+<span class="fc" id="L1979">			}</span>
+		} finally {
+			// must close result set to keep from blocking transaction
+			try {
+<span class="fc" id="L1983">				results.close();</span>
+<span class="nc" id="L1984">			} catch (Exception e) {</span>
+<span class="fc" id="L1985">			}</span>
+		}
+		// Return our mapping of generated links. Note this is never null but
+		// may be empty.
+<span class="fc" id="L1989">		return links;</span>
+	}
+
+	/**
+	 * Save the links in the database and associate them to the given productId
+	 *
+	 * @param productId
+	 *            Index id of the product to select
+	 * @param links
+	 *            Map of relations to URIs
+	 * @throws SQLException
+	 */
+	protected synchronized void addProductLinks(long productId,
+			Map&lt;String, List&lt;URI&gt;&gt; links) throws SQLException {
+		// Loop through the properties list and add them all to the database
+<span class="fc" id="L2004">		Set&lt;String&gt; keys = links.keySet();</span>
+<span class="fc bfc" id="L2005" title="All 2 branches covered.">		for (String key : keys) {</span>
+<span class="fc" id="L2006">			List&lt;URI&gt; uris = links.get(key);</span>
+<span class="fc bfc" id="L2007" title="All 2 branches covered.">			for (URI uri : uris) {</span>
+<span class="fc" id="L2008">				JDBCUtils.setParameter(insertLink, 1, productId, Types.BIGINT);</span>
+<span class="fc" id="L2009">				JDBCUtils.setParameter(insertLink, 2, key, Types.VARCHAR);</span>
+<span class="fc" id="L2010">				JDBCUtils.setParameter(insertLink, 3, uri.toString(),</span>
+						Types.VARCHAR);
+
+<span class="fc" id="L2013">				insertLink.executeUpdate();</span>
+<span class="fc" id="L2014">				LOGGER.log(Level.FINEST, &quot;[&quot; + getName() + &quot;] Added link &quot;</span>
+<span class="fc" id="L2015">						+ key + &quot;:&quot; + uri.toString() + &quot; for product &quot;</span>
+						+ productId);
+<span class="fc" id="L2017">			}</span>
+<span class="fc" id="L2018">		}</span>
+<span class="fc" id="L2019">	}</span>
+
+	/**
+	 * Delete the given links from the index
+	 *
+	 * @param productId
+	 */
+	protected synchronized void removeProductLinks(long productId)
+			throws Exception {
+<span class="fc" id="L2028">		JDBCUtils.setParameter(deleteLinks, 1, productId, Types.BIGINT);</span>
+
+<span class="fc" id="L2030">		deleteLinks.executeUpdate();</span>
+<span class="fc" id="L2031">	}</span>
+
+	/**
+	 * Convert the given longitude to be between -180 and 180. If the given
+	 * value is already in the range, this method just returns the value.
+	 *
+	 * @param lon
+	 * @return double normalized between -180 and 180
+	 */
+	protected double normalizeLongitude(double lon) {
+<span class="fc" id="L2041">		double normalizedLon = lon;</span>
+
+<span class="fc bfc" id="L2043" title="All 4 branches covered.">		if (normalizedLon &lt;= 180 &amp;&amp; normalizedLon &gt; -180) {</span>
+<span class="fc" id="L2044">			return normalizedLon;</span>
+		}
+
+		// If the value is above 180, make it negative by subtracting 360
+<span class="fc bfc" id="L2048" title="All 2 branches covered.">		if (normalizedLon &gt; 180) {</span>
+<span class="fc" id="L2049">			normalizedLon = normalizedLon % 360;</span>
+<span class="fc" id="L2050">			normalizedLon = normalizedLon - 360;</span>
+<span class="fc" id="L2051">			return normalizedLon;</span>
+		}
+
+		// If the value is below 180, make it positive by adding 360
+<span class="pc bpc" id="L2055" title="1 of 2 branches missed.">		if (normalizedLon &lt;= -180) {</span>
+<span class="fc" id="L2056">			normalizedLon = normalizedLon % 360;</span>
+<span class="fc" id="L2057">			normalizedLon = normalizedLon + 360;</span>
+<span class="fc" id="L2058">			return normalizedLon;</span>
+		}
+
+<span class="nc" id="L2061">		return normalizedLon;</span>
+	}
+
+	/**
+	 * Wrapper to normalize BigDecimal longitudes
+	 *
+	 * @param lon
+	 * @return Normalized BigDecimal latitude
+	 */
+	protected BigDecimal normalizeLongitude(BigDecimal lon) {
+<span class="fc bfc" id="L2071" title="All 2 branches covered.">		if (lon == null) {</span>
+<span class="fc" id="L2072">			return null;</span>
+		}
+
+<span class="fc" id="L2075">		return new BigDecimal(normalizeLongitude(lon.doubleValue()));</span>
+	}
+
+	/**
+	 * Called when the indexer is done updating events after a product is
+	 * processed. Stores the preferred attributes for each event in the list
+	 *
+	 * @param events
+	 *            the events that have been updated.
+	 */
+	@Override
+	public synchronized void eventsUpdated(List&lt;Event&gt; events) throws Exception {
+<span class="fc" id="L2087">		Long indexId = null;</span>
+
+<span class="fc" id="L2089">		Iterator&lt;Event&gt; iter = events.iterator();</span>
+<span class="fc bfc" id="L2090" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L2091">			Event updated = iter.next();</span>
+
+<span class="fc" id="L2093">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] Updating event indexid=&quot;</span>
+<span class="fc" id="L2094">					+ updated.getIndexId());</span>
+<span class="fc" id="L2095">			updated.log(LOGGER);</span>
+
+			try {
+<span class="fc" id="L2098">				indexId = updated.getIndexId();</span>
+
+<span class="fc bfc" id="L2100" title="All 2 branches covered.">				if (updated.isDeleted()) {</span>
+					// only update status if event deleted, leave other
+					// parameters intact
+<span class="fc" id="L2103">					JDBCUtils.setParameter(updateDeletedEvent, 1,</span>
+							EVENT_STATUS_DELETE, Types.VARCHAR);
+<span class="fc" id="L2105">					JDBCUtils.setParameter(updateDeletedEvent, 2, indexId,</span>
+							Types.BIGINT);
+
+<span class="fc" id="L2108">					updateDeletedEvent.executeUpdate();</span>
+				} else {
+<span class="fc" id="L2110">					EventSummary summary = updated.getEventSummary();</span>
+
+					// otherwise update event parameters
+<span class="fc" id="L2113">					JDBCUtils.setParameter(updateEvent, 1,</span>
+<span class="fc" id="L2114">							new Date().getTime(), Types.BIGINT);</span>
+<span class="fc" id="L2115">					JDBCUtils.setParameter(updateEvent, 2, summary.getSource(),</span>
+							Types.VARCHAR);
+<span class="fc" id="L2117">					JDBCUtils.setParameter(updateEvent, 3,</span>
+<span class="fc" id="L2118">							summary.getSourceCode(), Types.VARCHAR);</span>
+
+<span class="fc" id="L2120">					Long eventTime = null;</span>
+<span class="pc bpc" id="L2121" title="1 of 2 branches missed.">					if (summary.getTime() != null) {</span>
+<span class="fc" id="L2122">						eventTime = summary.getTime().getTime();</span>
+					}
+<span class="fc" id="L2124">					JDBCUtils.setParameter(updateEvent, 4, eventTime,</span>
+							Types.BIGINT);
+
+<span class="fc" id="L2127">					Double latitude = null;</span>
+<span class="pc bpc" id="L2128" title="1 of 2 branches missed.">					if (summary.getLatitude() != null) {</span>
+<span class="fc" id="L2129">						latitude = summary.getLatitude().doubleValue();</span>
+					}
+<span class="fc" id="L2131">					JDBCUtils.setParameter(updateEvent, 5, latitude,</span>
+							Types.DOUBLE);
+
+<span class="fc" id="L2134">					Double longitude = null;</span>
+<span class="pc bpc" id="L2135" title="1 of 2 branches missed.">					if (summary.getLongitude() != null) {</span>
+<span class="fc" id="L2136">						longitude = summary.getLongitude().doubleValue();</span>
+					}
+<span class="fc" id="L2138">					JDBCUtils.setParameter(updateEvent, 6, longitude,</span>
+							Types.DOUBLE);
+
+					// these may be null, handle carefully
+<span class="fc" id="L2142">					Double depth = null;</span>
+<span class="fc bfc" id="L2143" title="All 2 branches covered.">					if (summary.getDepth() != null) {</span>
+<span class="fc" id="L2144">						depth = summary.getDepth().doubleValue();</span>
+					}
+<span class="fc" id="L2146">					JDBCUtils.setParameter(updateEvent, 7, depth, Types.DOUBLE);</span>
+
+<span class="fc" id="L2148">					Double magnitude = null;</span>
+<span class="fc bfc" id="L2149" title="All 2 branches covered.">					if (summary.getMagnitude() != null) {</span>
+<span class="fc" id="L2150">						magnitude = summary.getMagnitude().doubleValue();</span>
+					}
+<span class="fc" id="L2152">					JDBCUtils.setParameter(updateEvent, 8, magnitude,</span>
+							Types.DOUBLE);
+
+<span class="fc" id="L2155">					JDBCUtils.setParameter(updateEvent, 9, EVENT_STATUS_UPDATE,</span>
+							Types.VARCHAR);
+
+<span class="fc" id="L2158">					JDBCUtils.setParameter(updateEvent, 10, indexId,</span>
+							Types.BIGINT);
+
+<span class="fc" id="L2161">					updateEvent.executeUpdate();</span>
+				}
+
+<span class="fc" id="L2164">				LOGGER.log(Level.FINEST, &quot;[&quot; + getName()</span>
+						+ &quot;] Updated event properties in Product Index&quot;);
+<span class="nc" id="L2166">			} catch (Exception e) {</span>
+<span class="nc" id="L2167">				LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+						+ &quot;] Error updating event properties, eventid=&quot;
+						+ indexId, e);
+				// trigger a rollback
+<span class="nc" id="L2171">				throw e;</span>
+<span class="fc" id="L2172">			}</span>
+<span class="fc" id="L2173">		}</span>
+<span class="fc" id="L2174">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

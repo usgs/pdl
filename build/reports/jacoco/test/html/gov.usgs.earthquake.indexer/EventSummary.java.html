@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventSummary.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">EventSummary.java</span></div><h1>EventSummary.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.indexer;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Summary of an Event and its products.
+ */
+public class EventSummary implements Comparable&lt;EventSummary&gt; {
+
+	/** The product index id for the original event. */
+	private Long indexId;
+
+	/** Event attributes. */
+	private String source;
+	private String sourceCode;
+	private Date time;
+	private BigDecimal latitude;
+	private BigDecimal longitude;
+	private BigDecimal depth;
+	private BigDecimal magnitude;
+<span class="fc" id="L24">	private boolean deleted = false;</span>
+
+	/** A map of all event codes associated with this event. */
+<span class="fc" id="L27">	private final Map&lt;String, String&gt; eventCodes = new HashMap&lt;String, String&gt;();</span>
+
+	/** Summary properties for an event. */
+<span class="fc" id="L30">	private final Map&lt;String, String&gt; properties = new HashMap&lt;String, String&gt;();</span>
+
+	/**
+	 * Create a new EventSummary.
+	 */
+<span class="fc" id="L35">	public EventSummary() {</span>
+<span class="fc" id="L36">	}</span>
+
+	public void setIndexId(Long indexId) {
+<span class="fc" id="L39">		this.indexId = indexId;</span>
+<span class="fc" id="L40">	}</span>
+
+	public Long getIndexId() {
+<span class="fc" id="L43">		return indexId;</span>
+	}
+
+	public String getId() {
+<span class="pc bpc" id="L47" title="2 of 4 branches missed.">		if (source != null &amp;&amp; sourceCode != null) {</span>
+<span class="fc" id="L48">			return source + sourceCode;</span>
+		}
+<span class="nc" id="L50">		return null;</span>
+	}
+
+	public String getSource() {
+<span class="fc" id="L54">		return source;</span>
+	}
+
+	public void setSource(String source) {
+<span class="fc" id="L58">		this.source = source;</span>
+<span class="fc" id="L59">	}</span>
+
+	public String getSourceCode() {
+<span class="fc" id="L62">		return sourceCode;</span>
+	}
+
+	public void setSourceCode(String sourceCode) {
+<span class="fc" id="L66">		this.sourceCode = sourceCode;</span>
+<span class="fc" id="L67">	}</span>
+
+	public Date getTime() {
+<span class="fc" id="L70">		return time;</span>
+	}
+
+	public void setTime(Date time) {
+<span class="fc" id="L74">		this.time = time;</span>
+<span class="fc" id="L75">	}</span>
+
+	public BigDecimal getLatitude() {
+<span class="fc" id="L78">		return latitude;</span>
+	}
+
+	public void setLatitude(BigDecimal latitude) {
+<span class="fc" id="L82">		this.latitude = latitude;</span>
+<span class="fc" id="L83">	}</span>
+
+	public BigDecimal getLongitude() {
+<span class="fc" id="L86">		return longitude;</span>
+	}
+
+	public void setLongitude(BigDecimal longitude) {
+<span class="fc" id="L90">		this.longitude = longitude;</span>
+<span class="fc" id="L91">	}</span>
+
+	public BigDecimal getDepth() {
+<span class="fc" id="L94">		return depth;</span>
+	}
+
+	public void setDepth(BigDecimal depth) {
+<span class="fc" id="L98">		this.depth = depth;</span>
+<span class="fc" id="L99">	}</span>
+
+	public BigDecimal getMagnitude() {
+<span class="fc" id="L102">		return magnitude;</span>
+	}
+
+	public void setMagnitude(BigDecimal magnitude) {
+<span class="fc" id="L106">		this.magnitude = magnitude;</span>
+<span class="fc" id="L107">	}</span>
+
+	public void setDeleted(final boolean deleted) {
+<span class="fc" id="L110">		this.deleted = deleted;</span>
+<span class="fc" id="L111">	}</span>
+
+	public boolean isDeleted() {
+<span class="fc" id="L114">		return deleted;</span>
+	}
+
+	/**
+	 * These properties are derived from product properties, and are those
+	 * desirable for searching at an event level.
+	 * 
+	 * @return The properties of this event.
+	 */
+	public Map&lt;String, String&gt; getProperties() {
+<span class="fc" id="L124">		return this.properties;</span>
+	}
+
+	/**
+	 * 
+	 * @return A map of event codes associated with this event.
+	 */
+	public Map&lt;String, String&gt; getEventCodes() {
+<span class="fc" id="L132">		return this.eventCodes;</span>
+	}
+
+	@Override
+	public int compareTo(EventSummary that) {
+		int r;
+
+<span class="fc" id="L139">		r = this.getSource().compareTo(that.getSource());</span>
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">		if (r != 0) {</span>
+<span class="nc" id="L141">			return r;</span>
+		}
+<span class="fc" id="L143">		r = this.getSourceCode().compareTo(that.getSourceCode());</span>
+
+<span class="fc" id="L145">		return r;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

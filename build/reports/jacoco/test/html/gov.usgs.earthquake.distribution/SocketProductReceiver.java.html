@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SocketProductReceiver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">SocketProductReceiver.java</span></div><h1>SocketProductReceiver.java</h1><pre class="source lang-java linenums">/*
+ * SocketProductReceiver
+ */
+package gov.usgs.earthquake.distribution;
+
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import gov.usgs.earthquake.product.io.ProductSource;
+import gov.usgs.util.Config;
+import gov.usgs.util.SocketAcceptor;
+import gov.usgs.util.SocketListenerInterface;
+
+/**
+ * Receive Products directly via a Socket.
+ * 
+ * The received products are sent using a SocketProductSender.
+ * 
+ * A SocketProductReceiver receives products directly and notifies listeners of
+ * received notifications.
+ * 
+ * These are typically used on hubs with an EIDSNotificationSender or
+ * RelayProductReceiver.
+ * 
+ * The NotificationReceiver uses a NotificationIndex to track received
+ * notifications, and a ProductStorage to store retrieved products.
+ * 
+ * The DefaultNotificationReceiver implements the Configurable interface and
+ * uses the following configuration parameters:
+ * 
+ * Each listener has a separate queue of notifications. Each listener is
+ * allocated one thread to process notifications from this queue.
+ */
+public class SocketProductReceiver extends DefaultNotificationReceiver
+		implements SocketListenerInterface {
+
+	private static final String THREAD_POOL_SIZE_PROPERTY = &quot;threads&quot;;
+
+	private static final String DEFAULT_THREAD_POOL_SIZE = &quot;10&quot;;
+
+	private static final String PRODUCT_PORT_PROPERTY = &quot;port&quot;;
+
+	private static final String DEFAULT_PRODUCT_PORT = &quot;11235&quot;;
+	
+	private static final String SIZE_LIMIT_PROPERTY = &quot;sizeLimit&quot;;
+	
+	private static final String DEFAULT_SIZE_LIMIT = &quot;-1&quot;;
+
+
+<span class="fc" id="L53">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L54">			.getLogger(SocketProductReceiver.class.getName());</span>
+
+<span class="fc" id="L56">	private int port = -1;</span>
+<span class="fc" id="L57">	private int threads = -1;</span>
+<span class="fc" id="L58">	private long sizeLimit = -1;</span>
+
+<span class="fc" id="L60">	private SocketAcceptor acceptor = null;</span>
+
+	public SocketProductReceiver() throws Exception {
+<span class="fc" id="L63">		super();</span>
+<span class="fc" id="L64">		this.port = Integer.parseInt(DEFAULT_PRODUCT_PORT);</span>
+<span class="fc" id="L65">		this.threads = Integer.parseInt(DEFAULT_THREAD_POOL_SIZE);</span>
+<span class="fc" id="L66">		this.sizeLimit = Long.parseLong(DEFAULT_SIZE_LIMIT);</span>
+<span class="fc" id="L67">	}</span>
+
+	public SocketProductReceiver(Config config) throws Exception {
+<span class="nc" id="L70">		this();</span>
+<span class="nc" id="L71">		configure(config);</span>
+<span class="nc" id="L72">	}</span>
+
+	public void configure(Config config) throws Exception {
+<span class="fc" id="L75">		super.configure(config);</span>
+<span class="fc" id="L76">		this.port = Integer.parseInt(config.getProperty(PRODUCT_PORT_PROPERTY,</span>
+				DEFAULT_PRODUCT_PORT));
+<span class="fc" id="L78">		LOGGER.config(&quot;[&quot; + getName() + &quot;]  port is '&quot; + this.port + &quot;'&quot;);</span>
+
+<span class="fc" id="L80">		this.threads = Integer.parseInt(config.getProperty(</span>
+				THREAD_POOL_SIZE_PROPERTY, DEFAULT_THREAD_POOL_SIZE));
+<span class="fc" id="L82">		LOGGER.config(&quot;[&quot; + getName() + &quot;]  number of threads is '&quot;</span>
+				+ this.threads + &quot;'&quot;);
+
+<span class="fc" id="L85">		this.sizeLimit = Long.parseLong(config.getProperty(</span>
+				SIZE_LIMIT_PROPERTY, DEFAULT_SIZE_LIMIT));
+<span class="fc" id="L87">		LOGGER.config(&quot;[&quot; + getName() + &quot;] size limite is '&quot;</span>
+				+ this.sizeLimit + &quot;'&quot;);
+<span class="fc" id="L89">	}</span>
+
+	public void startup() throws Exception {
+		// call DefaultNotificationReceiver startup first
+<span class="fc" id="L93">		super.startup();</span>
+
+<span class="fc" id="L95">		ServerSocket socket = new ServerSocket(port);</span>
+<span class="fc" id="L96">		socket.setReuseAddress(true);</span>
+<span class="fc" id="L97">		acceptor = new SocketAcceptor(socket, this,</span>
+<span class="fc" id="L98">				Executors.newFixedThreadPool(threads));</span>
+		// start accepting connections via socket
+<span class="fc" id="L100">		acceptor.start();</span>
+<span class="fc" id="L101">	}</span>
+
+	public void shutdown() throws Exception {
+		// stop accepting connections
+<span class="fc" id="L105">		acceptor.stop();</span>
+
+		// call DefaultNotificationReceiver shutdown last
+<span class="fc" id="L108">		super.shutdown();</span>
+<span class="fc" id="L109">	}</span>
+
+	public void onSocket(Socket socket) {
+<span class="fc" id="L112">		LOGGER.info(&quot;[&quot; + getName() + &quot;] accepted connection &quot;</span>
+<span class="fc" id="L113">				+ socket.toString());</span>
+
+		try {
+<span class="fc" id="L116">			new SocketProductReceiverHandler(this, socket).run();</span>
+<span class="nc" id="L117">		} catch (Exception e) {</span>
+<span class="nc" id="L118">			LOGGER.log(Level.WARNING,</span>
+<span class="nc" id="L119">					&quot;[&quot; + getName() + &quot;] uncaught exception processing &quot;</span>
+<span class="nc" id="L120">					+ socket.toString(), e);</span>
+		} finally {
+			try {
+<span class="nc" id="L123">				socket.shutdownInput();</span>
+<span class="fc" id="L124">			} catch (Exception e) {</span>
+				// ignore
+<span class="nc" id="L126">			}</span>
+			try {
+<span class="nc" id="L128">				socket.shutdownOutput();</span>
+<span class="fc" id="L129">			} catch (Exception e) {</span>
+				// ignore
+<span class="nc" id="L131">			}</span>
+
+			try {
+<span class="fc" id="L134">				socket.close();</span>
+<span class="nc" id="L135">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L137">			}</span>
+		}
+
+<span class="fc" id="L140">		LOGGER.info(&quot;[&quot; + getName() + &quot;] closed connection &quot;</span>
+<span class="fc" id="L141">				+ socket.toString());</span>
+<span class="fc" id="L142">	}</span>
+
+	protected String storeAndNotify(final ProductSource source)
+			throws Exception {
+<span class="fc" id="L146">		Notification notification = storeProductSource(source);</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">		if (notification != null) {</span>
+			// note in log file
+<span class="fc" id="L149">			String message = &quot;[&quot; + getName() + &quot;] received product '&quot;</span>
+<span class="fc" id="L150">					+ notification.getProductId().toString() + &quot;'\n&quot;;</span>
+
+			// product successfully stored, and notification index updated.
+<span class="fc" id="L153">			new ProductTracker(notification.getTrackerURL()).productReceived(</span>
+<span class="fc" id="L154">					this.getName(), notification.getProductId());</span>
+
+			// notify listeners of newly available product.
+<span class="fc" id="L157">			notifyListeners(notification);</span>
+
+<span class="fc" id="L159">			return message;</span>
+		} else {
+<span class="nc" id="L161">			throw new Exception(&quot;[&quot; + getName()</span>
+					+ &quot;] unknown error, no notification generated&quot;);
+		}
+	}
+
+	public int getPort() {
+<span class="nc" id="L167">		return port;</span>
+	}
+
+	public void setPort(int port) {
+<span class="nc" id="L171">		this.port = port;</span>
+<span class="nc" id="L172">	}</span>
+
+	public long getSizeLimit() {
+<span class="fc" id="L175">		return sizeLimit;</span>
+	}
+
+	public void setSizeLimit(long sizeLimit) {
+<span class="nc" id="L179">		this.sizeLimit = sizeLimit;</span>
+<span class="nc" id="L180">	}</span>
+
+	public int getThreads() {
+<span class="nc" id="L183">		return threads;</span>
+	}
+
+	public void setThreads(int threads) {
+<span class="nc" id="L187">		this.threads = threads;</span>
+<span class="nc" id="L188">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

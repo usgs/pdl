@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultNotificationListener.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">DefaultNotificationListener.java</span></div><h1>DefaultNotificationListener.java</h1><pre class="source lang-java linenums">/*
+ * DefaultNotificationListener
+ */
+package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.AbstractListener;
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.Config;
+import gov.usgs.util.StringUtils;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * A base implementation of a notification listener. Implements functionality
+ * that is useful for most notification listeners.
+ * 
+ * Sub classes should override the onProduct(Product) method to add custom
+ * processing.
+ * 
+ * The DefaultNotificationListener extends the AbstractListener and can use any
+ * of those configuration parameters.
+ * 
+ * @see gov.usgs.earthquake.product.AbstractListener
+ */
+<span class="fc" id="L34">public class DefaultNotificationListener extends AbstractListener implements</span>
+		NotificationListener {
+
+	/** Logging object. */
+<span class="fc" id="L38">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L39">			.getLogger(DefaultNotificationListener.class.getName());</span>
+
+	/** Property referencing a notification index config section. */
+	public static final String NOTIFICATION_INDEX_PROPERTY = &quot;listenerIndex&quot;;
+	public static final String INDEX_FILE_PROPERTY = &quot;listenerIndexFile&quot;;
+
+	/** How long to wait until checking for expired notifications/products. */
+	public static final String CLEANUP_INTERVAL_PROPERTY = &quot;cleanupInterval&quot;;
+	public static final String DEFAULT_CLEANUP_INTERVAL = &quot;3600000&quot;;
+
+	/** Whether or not to process products more than once. */
+	public static final String PROCESS_DUPLICATES = &quot;processDuplicates&quot;;
+	public static final String DEFAULT_PROCESS_DUPLICATES = &quot;false&quot;;
+
+	/** Filter products based on content paths they contain. */
+	public static final String INCLUDE_PATHS_PROPERTY = &quot;includePaths&quot;;
+	public static final String EXCLUDE_PATHS_PROPERTY = &quot;excludePaths&quot;;
+
+	/** Optional notification index. */
+<span class="fc" id="L58">	private NotificationIndex notificationIndex = null;</span>
+
+	/** How often to run cleanup task, in ms, &lt;=0 = off. */
+<span class="fc" id="L61">	private Long cleanupInterval = 0L;</span>
+
+	/** Timer that schedules sender cleanup task. */
+<span class="fc" id="L64">	private Timer cleanupTimer = null;</span>
+
+	/** Whether or not to process products that have already been processed. */
+<span class="fc" id="L67">	private boolean processDuplicates = false;</span>
+
+	/** Array of content paths to search. */
+<span class="fc" id="L70">	private final ArrayList&lt;String&gt; includePaths = new ArrayList&lt;String&gt;();</span>
+
+	/** Array of content paths to search. */
+<span class="fc" id="L73">	private final ArrayList&lt;String&gt; excludePaths = new ArrayList&lt;String&gt;();</span>
+
+	/**
+	 * Implement the NotificationListener interface.
+	 * 
+	 * This method calls accept, and if accept returns true, retrieves the
+	 * product and calls onProduct.
+	 */
+	public void onNotification(final NotificationEvent event) throws Exception {
+<span class="fc" id="L82">		Notification notification = event.getNotification();</span>
+<span class="fc" id="L83">		ProductId id = notification.getProductId();</span>
+<span class="fc" id="L84">		String productId = id.toString();</span>
+
+<span class="fc" id="L86">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] received notification for id=&quot;</span>
+				+ productId);
+
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">		if (!accept(id)) {</span>
+<span class="nc" id="L90">			LOGGER.finest(&quot;[&quot; + getName() + &quot;] rejected notification for id=&quot;</span>
+					+ productId);
+<span class="nc" id="L92">			return;</span>
+		}
+
+<span class="fc bfc" id="L95" title="All 2 branches covered.">		if (!onBeforeProcessNotification(notification)) {</span>
+<span class="fc" id="L96">			return;</span>
+		}
+
+<span class="fc" id="L99">		LOGGER.finer(&quot;[&quot; + getName() + &quot;] processing notification for id=&quot;</span>
+				+ productId);
+
+<span class="fc" id="L102">		Product product = event.getProduct();</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">		if (product == null) {</span>
+<span class="nc" id="L104">			throw new ContinuableListenerException(&quot;retrieved product null,&quot;</span>
+					+ &quot; notification id=&quot; + productId);
+		} else {
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">			if (!onBeforeProcessProduct(product)) {</span>
+<span class="nc" id="L108">				return;</span>
+			}
+<span class="fc" id="L110">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] processing product for id=&quot;</span>
+					+ productId);
+<span class="fc" id="L112">			onProduct(product);</span>
+
+<span class="fc" id="L114">			onAfterProcessNotification(notification);</span>
+		}
+<span class="fc" id="L116">	}</span>
+
+	/**
+	 * Called by onNotification when a product is retrieved.
+	 * 
+	 * @param product
+	 *            a product whose notification was accepted.
+	 * @throws Exception
+	 */
+	public void onProduct(final Product product) throws Exception {
+		// subclasses do stuff here
+<span class="nc" id="L127">		ProductId id = product.getId();</span>
+<span class="nc" id="L128">		StringBuffer b = new StringBuffer(&quot;[&quot; + getName()</span>
+<span class="nc" id="L129">				+ &quot;] product processed source=&quot; + id.getSource() + &quot;, type=&quot;</span>
+<span class="nc" id="L130">				+ id.getType() + &quot;, code=&quot; + id.getCode() + &quot;, updateTime=&quot;</span>
+<span class="nc" id="L131">				+ id.getUpdateTime().toString());</span>
+
+<span class="nc" id="L133">		Map&lt;String, String&gt; properties = product.getProperties();</span>
+<span class="nc" id="L134">		Iterator&lt;String&gt; iter = properties.keySet().iterator();</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L136">			String name = iter.next();</span>
+<span class="nc" id="L137">			b.append(&quot;, &quot;).append(name).append(&quot;=&quot;)</span>
+<span class="nc" id="L138">					.append(properties.get(name));</span>
+<span class="nc" id="L139">		}</span>
+
+<span class="nc" id="L141">		LOGGER.info(b.toString());</span>
+<span class="nc" id="L142">		System.out.println(b.toString());</span>
+<span class="nc" id="L143">	}</span>
+
+	/**
+	 * Called just before this listener processes a notification.
+	 * 
+	 * @param notification
+	 *            notification about to be processed.
+	 * @return true to process the notification, false to skip
+	 * @throws Exception
+	 */
+	protected boolean onBeforeProcessNotification(
+			final Notification notification) throws Exception {
+		// only check if we care
+<span class="pc bpc" id="L156" title="1 of 4 branches missed.">		if (!processDuplicates &amp;&amp; this.notificationIndex != null) {</span>
+<span class="fc" id="L157">			List&lt;Notification&gt; notifications = this.notificationIndex</span>
+<span class="fc" id="L158">					.findNotifications(notification.getProductId());</span>
+<span class="fc bfc" id="L159" title="All 2 branches covered.">			if (notifications.size() &gt; 0) {</span>
+<span class="fc" id="L160">				LOGGER.finer(&quot;[&quot; + getName()</span>
+						+ &quot;] skipping existing product &quot;
+<span class="fc" id="L162">						+ notification.getProductId().toString());</span>
+<span class="fc" id="L163">				return false;</span>
+			}
+		}
+
+<span class="fc" id="L167">		return true;</span>
+	}
+
+	/**
+	 * Called after a product has been downloaded, but before onProduct is
+	 * called.
+	 * 
+	 * Sometimes a listener cannot tell whether it should process a product
+	 * until its contents are available. This is where the &quot;includePaths&quot; and
+	 * &quot;excludePaths&quot; are evaluated.
+	 * 
+	 * @param product
+	 *            product about to be processed.
+	 * @return true to process the product, false to skip
+	 * @throws Exception
+	 */
+	protected boolean onBeforeProcessProduct(final Product product)
+			throws Exception {
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">		if (excludePaths.size() != 0) {</span>
+<span class="nc" id="L186">			Map&lt;String, Content&gt; contents = product.getContents();</span>
+<span class="nc" id="L187">			Iterator&lt;String&gt; pathIter = excludePaths.iterator();</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">			while (pathIter.hasNext()) {</span>
+<span class="nc" id="L189">				String path = pathIter.next();</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">				if (contents.containsKey(path)) {</span>
+					// contains at least one matching include path
+<span class="nc" id="L192">					LOGGER.fine(&quot;[&quot; + getName() + &quot;] skipping product &quot;</span>
+<span class="nc" id="L193">							+ product.getId().toString() + &quot;, '&quot; + path</span>
+							+ &quot;' matches excludePaths&quot;);
+<span class="nc" id="L195">					return false;</span>
+				}
+<span class="nc" id="L197">			}</span>
+		}
+
+<span class="pc bpc" id="L200" title="1 of 2 branches missed.">		if (includePaths.size() != 0) {</span>
+<span class="nc" id="L201">			boolean containsPath = false;</span>
+<span class="nc" id="L202">			Map&lt;String, Content&gt; contents = product.getContents();</span>
+<span class="nc" id="L203">			Iterator&lt;String&gt; pathIter = includePaths.iterator();</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">			while (pathIter.hasNext()) {</span>
+<span class="nc" id="L205">				String path = pathIter.next();</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">				if (contents.containsKey(path)) {</span>
+					// contains at least one matching include path
+<span class="nc" id="L208">					containsPath = true;</span>
+<span class="nc" id="L209">					break;</span>
+				}
+<span class="nc" id="L211">			}</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">			if (!containsPath) {</span>
+<span class="nc" id="L213">				LOGGER.fine(&quot;[&quot; + getName() + &quot;] skipping product &quot;</span>
+<span class="nc" id="L214">						+ product.getId().toString()</span>
+						+ &quot;, does not match includePaths&quot;);
+<span class="nc" id="L216">				return false;</span>
+			}
+		}
+
+<span class="fc" id="L220">		return true;</span>
+	}
+
+	/**
+	 * Called when this listener has successfully processed a notification.
+	 * 
+	 * @param notification
+	 *            notification that was processed.
+	 * @throws Exception
+	 */
+	protected void onAfterProcessNotification(final Notification notification)
+			throws Exception {
+<span class="fc bfc" id="L232" title="All 2 branches covered.">		if (this.notificationIndex != null) {</span>
+<span class="fc" id="L233">			this.notificationIndex.addNotification(notification);</span>
+		}
+<span class="fc" id="L235">	}</span>
+
+	/**
+	 * Called when an expired notification is being removed from the index.
+	 * 
+	 * @param notification
+	 * @throws Exception
+	 */
+	protected void onExpiredNotification(final Notification notification)
+			throws Exception {
+		// nothing to do
+<span class="nc" id="L246">	}</span>
+
+	/**
+	 * Periodic cleanup task.
+	 * 
+	 * Called every cleanupInterval milliseconds.
+	 */
+	public void cleanup() {
+<span class="fc" id="L254">		LOGGER.finer(&quot;[&quot; + getName() + &quot;] running listener cleanup&quot;);</span>
+		try {
+<span class="fc bfc" id="L256" title="All 2 branches covered.">			if (notificationIndex != null) {</span>
+<span class="fc" id="L257">				Iterator&lt;Notification&gt; iter = notificationIndex</span>
+<span class="fc" id="L258">						.findExpiredNotifications().iterator();</span>
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">				while (iter.hasNext()) {</span>
+<span class="nc" id="L260">					Notification notification = iter.next();</span>
+
+					// let subclasses remove other stuff first
+<span class="nc" id="L263">					onExpiredNotification(notification);</span>
+
+					// remove expired notification from index
+<span class="nc" id="L266">					notificationIndex.removeNotification(notification);</span>
+
+<span class="nc bnc" id="L268" title="All 2 branches missed.">					if (LOGGER.isLoggable(Level.FINEST)) {</span>
+<span class="nc" id="L269">						LOGGER.finest(&quot;[&quot;</span>
+<span class="nc" id="L270">								+ getName()</span>
+								+ &quot;] removed expired notification from sender index &quot;
+<span class="nc" id="L272">								+ notification.getProductId().toString());</span>
+					}
+<span class="nc" id="L274">				}</span>
+			}
+<span class="nc" id="L276">		} catch (Exception e) {</span>
+<span class="nc" id="L277">			LOGGER.log(Level.WARNING, &quot;Exception during listener cleanup&quot;, e);</span>
+<span class="fc" id="L278">		}</span>
+<span class="fc" id="L279">	};</span>
+
+	@Override
+	public void startup() throws Exception {
+<span class="fc" id="L283">		super.startup();</span>
+<span class="fc bfc" id="L284" title="All 2 branches covered.">		if (this.notificationIndex != null) {</span>
+<span class="fc" id="L285">			this.notificationIndex.startup();</span>
+		}
+
+		// only schedule cleanup if interval is non-zero
+<span class="fc bfc" id="L289" title="All 2 branches covered.">		if (cleanupInterval &gt; 0) {</span>
+<span class="fc" id="L290">			cleanupTimer = new Timer();</span>
+<span class="fc" id="L291">			cleanupTimer.scheduleAtFixedRate(new TimerTask() {</span>
+				public void run() {
+					try {
+<span class="fc" id="L294">						cleanup();</span>
+<span class="nc" id="L295">					} catch (Exception e) {</span>
+<span class="nc" id="L296">						LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+								+ &quot;] exception during sender cleanup&quot;, e);
+<span class="fc" id="L298">					}</span>
+<span class="fc" id="L299">				}</span>
+<span class="fc" id="L300">			}, 0, cleanupInterval);</span>
+		}
+<span class="fc" id="L302">	}</span>
+
+	@Override
+	public void shutdown() throws Exception {
+<span class="fc" id="L306">		super.shutdown();</span>
+		try {
+<span class="fc" id="L308">			this.notificationIndex.shutdown();</span>
+<span class="fc" id="L309">		} catch (Exception e) {</span>
+			// ignore
+<span class="fc" id="L311">		}</span>
+		try {
+<span class="fc" id="L313">			this.cleanupTimer.cancel();</span>
+<span class="fc" id="L314">		} catch (Exception e) {</span>
+			// ignore
+<span class="fc" id="L316">		}</span>
+<span class="fc" id="L317">	}</span>
+
+	@Override
+	public void configure(final Config config) throws Exception {
+<span class="fc" id="L321">		super.configure(config);</span>
+
+<span class="fc" id="L323">		String notificationIndexName = config</span>
+<span class="fc" id="L324">				.getProperty(NOTIFICATION_INDEX_PROPERTY);</span>
+<span class="fc" id="L325">		String notificationIndexFile = config.getProperty(INDEX_FILE_PROPERTY);</span>
+<span class="pc bpc" id="L326" title="1 of 2 branches missed.">		if (notificationIndexName != null) {</span>
+<span class="nc" id="L327">			LOGGER.config(&quot;[&quot; + getName() + &quot;] loading notification index '&quot;</span>
+					+ notificationIndexName + &quot;'&quot;);
+<span class="nc" id="L329">			notificationIndex = (NotificationIndex) Config.getConfig()</span>
+<span class="nc" id="L330">					.getObject(notificationIndexName);</span>
+<span class="nc bnc" id="L331" title="All 2 branches missed.">			if (notificationIndex == null) {</span>
+<span class="nc" id="L332">				throw new ConfigurationException(&quot;[&quot; + getName() + &quot;] index '&quot;</span>
+						+ notificationIndexName
+						+ &quot;' is not properly configured&quot;);
+			}
+<span class="pc bpc" id="L336" title="1 of 2 branches missed.">		} else if (notificationIndexFile != null) {</span>
+<span class="nc" id="L337">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using notification index '&quot;</span>
+					+ notificationIndexFile + &quot;'&quot;);
+<span class="nc" id="L339">			notificationIndex = new JDBCNotificationIndex(notificationIndexFile);</span>
+		}
+
+<span class="fc" id="L342">		cleanupInterval = Long.parseLong(config.getProperty(</span>
+				CLEANUP_INTERVAL_PROPERTY, DEFAULT_CLEANUP_INTERVAL));
+
+<span class="fc" id="L345">		processDuplicates = Boolean.valueOf(config.getProperty(</span>
+				PROCESS_DUPLICATES, DEFAULT_PROCESS_DUPLICATES));
+<span class="fc" id="L347">		LOGGER.config(&quot;[&quot; + getName() + &quot;] process duplicates = &quot;</span>
+				+ processDuplicates);
+
+<span class="fc" id="L350">		includePaths.addAll(StringUtils.split(</span>
+<span class="fc" id="L351">				config.getProperty(INCLUDE_PATHS_PROPERTY), &quot;,&quot;));</span>
+<span class="fc" id="L352">		LOGGER.config(&quot;[&quot; + getName() + &quot;] include paths = &quot; + includePaths);</span>
+
+<span class="fc" id="L354">		excludePaths.addAll(StringUtils.split(</span>
+<span class="fc" id="L355">				config.getProperty(EXCLUDE_PATHS_PROPERTY), &quot;,&quot;));</span>
+<span class="fc" id="L356">		LOGGER.config(&quot;[&quot; + getName() + &quot;] exclude paths = &quot; + excludePaths);</span>
+<span class="fc" id="L357">	}</span>
+
+	public NotificationIndex getNotificationIndex() {
+<span class="fc" id="L360">		return notificationIndex;</span>
+	}
+
+	public void setNotificationIndex(NotificationIndex notificationIndex) {
+<span class="fc" id="L364">		this.notificationIndex = notificationIndex;</span>
+<span class="fc" id="L365">	}</span>
+
+	public Long getCleanupInterval() {
+<span class="nc" id="L368">		return cleanupInterval;</span>
+	}
+
+	public void setCleanupInterval(Long cleanupInterval) {
+<span class="fc" id="L372">		this.cleanupInterval = cleanupInterval;</span>
+<span class="fc" id="L373">	}</span>
+
+	public boolean isProcessDuplicates() {
+<span class="fc" id="L376">		return processDuplicates;</span>
+	}
+
+	public void setProcessDuplicates(boolean processDuplicates) {
+<span class="nc" id="L380">		this.processDuplicates = processDuplicates;</span>
+<span class="nc" id="L381">	}</span>
+
+	/**
+	 * @return the includePaths
+	 */
+	public ArrayList&lt;String&gt; getIncludePaths() {
+<span class="nc" id="L387">		return includePaths;</span>
+	}
+
+	/**
+	 * @return the excludePaths
+	 */
+	public ArrayList&lt;String&gt; getExcludePaths() {
+<span class="nc" id="L394">		return excludePaths;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

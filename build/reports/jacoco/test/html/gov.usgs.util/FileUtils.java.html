@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FileUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util</a> &gt; <span class="el_source">FileUtils.java</span></div><h1>FileUtils.java</h1><pre class="source lang-java linenums">/*
+ * FileUtils
+ *
+ * $Id$
+ * $HeadURL$
+ */
+package gov.usgs.util;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.FileNameMap;
+import java.net.URLConnection;
+
+/**
+ * File input, output, content type, and delete utilities.
+ * 
+ * @author jmfee
+ * 
+ */
+<span class="nc" id="L23">public class FileUtils {</span>
+
+	/** For looking up file mime types. */
+<span class="fc" id="L26">	private static final FileNameMap MIMETYPES = URLConnection.getFileNameMap();</span>
+
+	/**
+	 * Get a file mime type based on its filename.
+	 * 
+	 * Calls getContentType(file.getName()).
+	 * 
+	 * @param file
+	 * @return String mime type.
+	 */
+	public static String getContentType(final File file) {
+<span class="nc" id="L37">		return getContentType(file.getName());</span>
+	}
+
+	/**
+	 * Get a file mime type based on its file path extension.
+	 * 
+	 * Uses URLConnection.getFileNameMap().
+	 * 
+	 * @param filename
+	 *            file path.
+	 * @return String mime type.
+	 */
+	public static String getContentType(final String filename) {
+<span class="nc" id="L50">		return MIMETYPES.getContentTypeFor(filename);</span>
+	}
+
+	/**
+	 * Read file contents into a byte array.
+	 * 
+	 * @param file
+	 *            file to read.
+	 * @return byte array of file content.
+	 * @throws IOException
+	 *             if an error occurs while reading.
+	 */
+	public static byte[] readFile(final File file) throws IOException {
+<span class="fc" id="L63">		return StreamUtils.readStream(file);</span>
+	}
+
+	/**
+	 * Write a file's content.
+	 * 
+	 * @param file
+	 *            file to write.
+	 * @param content
+	 *            content to write to file.
+	 */
+	public static void writeFile(final File file, final byte[] content)
+			throws IOException {
+<span class="fc" id="L76">		StreamUtils.transferStream(content, file);</span>
+<span class="fc" id="L77">	}</span>
+
+	/**
+	 * Write a file's content atomically.
+	 * 
+	 * @param tempfile
+	 *            where file is written.
+	 * @param file
+	 *            where tempfile is moved after writing.
+	 * @param content
+	 *            file content to write.
+	 * @throws IOException
+	 *             if any errors occur.
+	 */
+	public static void writeFileThenMove(final File tempfile, final File file,
+			final byte[] content) throws IOException {
+<span class="fc" id="L93">		writeFile(tempfile, content);</span>
+
+<span class="fc" id="L95">		File parent = file.getAbsoluteFile().getParentFile();</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">		if (!parent.exists()) {</span>
+<span class="fc" id="L97">			parent.mkdirs();</span>
+		}
+<span class="fc" id="L99">		tempfile.renameTo(file);</span>
+<span class="fc" id="L100">	}</span>
+
+	/**
+	 * Delete all files recursively within tree.
+	 * 
+	 * @param path
+	 *            root of tree to delete.
+	 */
+	public static void deleteTree(final File path) {
+<span class="fc bfc" id="L109" title="All 2 branches covered.">		if (path.exists()) {</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">			if (path.isDirectory()) {</span>
+<span class="fc" id="L111">				File[] files = path.listFiles();</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">				for (int i = 0; i &lt; files.length; i++) {</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">					if (files[i].isDirectory()) {</span>
+<span class="fc" id="L114">						deleteTree(files[i]);</span>
+					} else {
+<span class="fc" id="L116">						files[i].delete();</span>
+					}
+				}
+<span class="fc" id="L119">				files = null;</span>
+<span class="fc" id="L120">			} else {</span>
+<span class="fc" id="L121">				path.delete();</span>
+			}
+		}
+
+<span class="fc" id="L125">		deleteEmptyParents(path);</span>
+<span class="fc" id="L126">	}</span>
+
+	/**
+	 * Delete path and any empty parent directories.
+	 * 
+	 * @param path
+	 *            directory to start in.
+	 */
+	public static void deleteEmptyParents(final File path) {
+<span class="fc" id="L135">		deleteEmptyParents(path, null);</span>
+<span class="fc" id="L136">	}</span>
+
+	/**
+	 * Delete path and any empty parent directories up to the stopAt point.
+	 * 
+	 * @param path
+	 *            direcotry to start in
+	 * @param stopAt
+	 *            directory to stop at
+	 */
+	public static void deleteEmptyParents(final File path, final File stopAt) {
+<span class="fc" id="L147">		File parent = path;</span>
+		// Loop while parent is not null and we are not yet at the stopAt point
+<span class="fc bfc" id="L149" title="All 4 branches covered.">		while (parent != null &amp;&amp; !parent.equals(stopAt)) {</span>
+			try {
+<span class="fc" id="L151">				parent.delete();</span>
+<span class="fc" id="L152">				parent = parent.getParentFile();</span>
+<span class="nc" id="L153">			} catch (Exception e) {</span>
+<span class="nc" id="L154">				e.printStackTrace();</span>
+<span class="nc" id="L155">				break;</span>
+<span class="fc" id="L156">			}</span>
+		}
+<span class="fc" id="L158">	}</span>
+
+	/**
+	 * Extracts a resource file from within the executing JAR and copies it to
+	 * the file system.
+	 * 
+	 * @param rsFile
+	 *            Absolute file path (relative to JAR root) of the file to
+	 *            extract.
+	 * @param fsFile
+	 *            File path where to place the extracted file. An absolute path
+	 *            here is relative to the file system root. Relative paths for
+	 *            this value are relative to the CWD.
+	 */
+	public static void extractResourceFile(String rsFile, String fsFile) {
+<span class="nc" id="L173">		InputStream is = FileUtils.class.getResourceAsStream(rsFile);</span>
+		try {
+<span class="nc" id="L175">			FileOutputStream os = new FileOutputStream(fsFile);</span>
+			try {
+<span class="nc" id="L177">				byte[] buf = new byte[1024];</span>
+				while (true) {
+<span class="nc" id="L179">					int len = is.read(buf);</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">					if (len &lt; 0) {</span>
+<span class="nc" id="L181">						break;</span>
+					}
+<span class="nc" id="L183">					os.write(buf, 0, len);</span>
+<span class="nc" id="L184">				} // END: while</span>
+
+				// Do we have a logger yet?
+				// System.err.println(&quot;Copied &quot; + rsFile + &quot; from jar file to &quot; +
+				// fsFile+&quot; in the file system.  (&quot;+totalCopied+&quot; bytes).&quot;);
+			} finally {
+<span class="nc" id="L190">				StreamUtils.closeStream(os);</span>
+			}
+<span class="nc" id="L192">		} catch (FileNotFoundException fnf) {</span>
+			// Logger?
+<span class="nc" id="L194">			System.err.println(fnf.getMessage() + &quot; -- 1&quot;);</span>
+<span class="nc" id="L195">		} catch (IOException iox) {</span>
+			// Logger?
+<span class="nc" id="L197">			System.err.println(iox.getMessage() + &quot; -- 2&quot;);</span>
+<span class="nc" id="L198">		} catch (NullPointerException npx) {</span>
+			// A dummy catch
+		} finally {
+<span class="nc" id="L201">			StreamUtils.closeStream(is);</span>
+		}
+<span class="nc" id="L203">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

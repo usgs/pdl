@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SignatureVerifier.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">SignatureVerifier.java</span></div><h1>SignatureVerifier.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution;
+
+import java.security.PublicKey;
+import java.util.logging.Logger;
+
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.Config;
+import gov.usgs.util.DefaultConfigurable;
+
+<span class="fc" id="L11">public class SignatureVerifier extends DefaultConfigurable {</span>
+
+	/** logging object. */
+<span class="fc" id="L14">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L15">			.getLogger(SignatureVerifier.class.getName());</span>
+
+	/** Property for whether or not to verify signatures. */
+	public static final String VERIFY_SIGNATURES_PROPERTY_NAME = &quot;verifySignatures&quot;;
+	/** Don't verify signatures (Default). */
+	public static final String DEFAULT_VERIFY_SIGNATURE = &quot;off&quot;;
+	/** Test signatures, but don't reject invalid. */
+	public static final String TEST_VERIFY_SIGNATURE = &quot;test&quot;;
+	/** Allow products that do not have a configured key. */
+	public static final String ONLY_VERIFY_KNOWN = &quot;allowUnknownSigner&quot;;
+
+	/** Property for a list of keys. */
+	public static final String KEYCHAIN_PROPERTY_NAME = &quot;keychain&quot;;
+
+	/** Whether or not to reject invalid signatures. */
+<span class="fc" id="L30">	private boolean rejectInvalidSignatures = false;</span>
+
+	/** If not rejecting invalid signatures, test them anyways. */
+<span class="fc" id="L33">	private boolean testSignatures = false;</span>
+
+	/**
+	 * When rejecting invalid signatures, true will prevent an
+	 * InvalidSignatureException if there are no candidate keys.
+	 */
+<span class="fc" id="L39">	private boolean allowUnknownSigner = false;</span>
+
+	/** List of candidate keys. */
+	private ProductKeyChain keychain;
+
+	@Override
+	public void configure(final Config config) throws Exception {
+<span class="fc" id="L46">		String verifySignatures = config</span>
+<span class="fc" id="L47">				.getProperty(VERIFY_SIGNATURES_PROPERTY_NAME);</span>
+		// configured
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">		if (verifySignatures != null) {</span>
+			// &quot;test&quot;
+<span class="nc bnc" id="L51" title="All 2 branches missed.">			if (verifySignatures.equals(TEST_VERIFY_SIGNATURE)) {</span>
+<span class="nc" id="L52">				testSignatures = true;</span>
+<span class="nc" id="L53">				LOGGER.config(&quot;[&quot; + getName() + &quot;] test message signatures&quot;);</span>
+			}
+
+			// not &quot;off&quot;
+<span class="nc bnc" id="L57" title="All 2 branches missed.">			else if (!verifySignatures.equals(DEFAULT_VERIFY_SIGNATURE)) {</span>
+<span class="nc" id="L58">				rejectInvalidSignatures = true;</span>
+<span class="nc" id="L59">				LOGGER.config(&quot;[&quot; + getName() + &quot;] reject invalid signatures&quot;);</span>
+			}
+
+<span class="nc" id="L62">			String keyNames = config.getProperty(KEYCHAIN_PROPERTY_NAME);</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">			if (keyNames != null) {</span>
+<span class="nc" id="L64">				LOGGER.config(&quot;[&quot; + getName() + &quot;] using product keys &quot;</span>
+						+ keyNames);
+			} else {
+<span class="nc" id="L67">				LOGGER.warning(&quot;[&quot; + getName() + &quot;] no product keys configured&quot;);</span>
+			}
+
+<span class="nc" id="L70">			keychain = new ProductKeyChain(keyNames, Config.getConfig());</span>
+		}
+
+<span class="fc" id="L73">	}</span>
+
+	public boolean isRejectInvalidSignatures() {
+<span class="nc" id="L76">		return rejectInvalidSignatures;</span>
+	}
+
+	public void setRejectInvalidSignatures(boolean rejectInvalidSignatures) {
+<span class="nc" id="L80">		this.rejectInvalidSignatures = rejectInvalidSignatures;</span>
+<span class="nc" id="L81">	}</span>
+
+	public boolean isTestSignatures() {
+<span class="nc" id="L84">		return testSignatures;</span>
+	}
+
+	public void setTestSignatures(boolean testSignatures) {
+<span class="nc" id="L88">		this.testSignatures = testSignatures;</span>
+<span class="nc" id="L89">	}</span>
+
+	public ProductKeyChain getKeychain() {
+<span class="nc" id="L92">		return keychain;</span>
+	}
+
+	public void setKeychain(ProductKeyChain keychain) {
+<span class="nc" id="L96">		this.keychain = keychain;</span>
+<span class="nc" id="L97">	}</span>
+
+	public boolean isAllowUnknownSigner() {
+<span class="nc" id="L100">		return allowUnknownSigner;</span>
+	}
+
+	public void setAllowUnknownSigner(boolean allowUnknownSigner) {
+<span class="nc" id="L104">		this.allowUnknownSigner = allowUnknownSigner;</span>
+<span class="nc" id="L105">	}</span>
+
+	/**
+	 * Attempt to verify a products signature.
+	 * 
+	 * @param product
+	 *            product to verify.
+	 * @return true if the signature is from a key in the keychain.
+	 * @throws InvalidSignatureException
+	 *             if rejectInvalidSignatures=true, and signature was not
+	 *             verified; allowUnknownSigner=true prevents this exception
+	 *             when no keys are found in the keychain for the product.
+	 * @throws Exception
+	 */
+	public boolean verifySignature(final Product product) throws Exception {
+<span class="nc" id="L120">		ProductKey verifiedKey = null;</span>
+
+<span class="nc bnc" id="L122" title="All 4 branches missed.">		if (testSignatures || rejectInvalidSignatures) {</span>
+<span class="nc" id="L123">			ProductId id = product.getId();</span>
+<span class="nc" id="L124">			PublicKey[] candidateKeys = new PublicKey[] {};</span>
+
+<span class="nc bnc" id="L126" title="All 2 branches missed.">			if (keychain != null) {</span>
+<span class="nc" id="L127">				candidateKeys = keychain.getProductKeys(id);</span>
+<span class="nc" id="L128">				LOGGER.finer(&quot;[&quot; + getName() + &quot;] number of candidate keys=&quot;</span>
+						+ candidateKeys.length);
+<span class="nc bnc" id="L130" title="All 2 branches missed.">				if (candidateKeys.length &gt; 0) {</span>
+<span class="nc" id="L131">					PublicKey tmp = product.verifySignatureKey(candidateKeys);</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">					if (tmp != null) {</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">						for (ProductKey productKey : keychain.getKeychain()) {</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">							if (tmp.equals(productKey.getKey())) {</span>
+<span class="nc" id="L135">								verifiedKey = productKey;</span>
+<span class="nc" id="L136">								LOGGER.info(&quot;[&quot; + getName() + &quot;] has verified key &quot; + verifiedKey.getName());</span>
+<span class="nc" id="L137">								break;</span>
+							}
+<span class="nc" id="L139">						}</span>
+					}
+<span class="nc" id="L141">				}</span>
+			} else {
+<span class="nc" id="L143">				LOGGER.warning(&quot;[&quot; + getName() + &quot;] missing Signature Keychain&quot;);</span>
+			}
+
+
+<span class="nc bnc" id="L147" title="All 2 branches missed.">			LOGGER.fine(&quot;[&quot; + getName() + &quot;] signature verified=&quot; + ((verifiedKey != null) ? &quot;true, key=&quot; + verifiedKey.getName() : &quot;falsefalse&quot;)</span>
+<span class="nc" id="L148">					+ &quot;, id=&quot; + product.getId());</span>
+
+<span class="nc bnc" id="L150" title="All 4 branches missed.">			if (allowUnknownSigner &amp;&amp; candidateKeys.length == 0) {</span>
+<span class="nc" id="L151">					LOGGER.finer(&quot;[&quot; + getName()</span>
+							+ &quot;] unknown signer, allowed by configuration&quot;);
+<span class="nc" id="L153">					return false;</span>
+			}
+
+<span class="nc bnc" id="L156" title="All 4 branches missed.">			if (verifiedKey == null &amp;&amp; rejectInvalidSignatures) {</span>
+<span class="nc" id="L157">					throw new InvalidSignatureException(&quot;[&quot; + getName()</span>
+							+ &quot;] bad signature for id=&quot; + id);
+			}
+		}
+
+<span class="nc bnc" id="L162" title="All 2 branches missed.">		return verifiedKey != null;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

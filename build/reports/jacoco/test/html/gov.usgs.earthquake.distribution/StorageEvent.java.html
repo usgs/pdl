@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StorageEvent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">StorageEvent.java</span></div><h1>StorageEvent.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.ProductId;
+
+import java.util.EventObject;
+
+public class StorageEvent extends EventObject {
+
+	/** Enumeration of &lt;code&gt;StorageEventType&lt;/code&gt;s **/
+<span class="fc" id="L10">	public static enum StorageEventType {</span>
+<span class="fc" id="L11">		PRODUCT_STORED, PRODUCT_REMOVED</span>
+	}
+
+<span class="fc" id="L14">	public static final StorageEventType PRODUCT_STORED = StorageEventType.PRODUCT_STORED;</span>
+<span class="fc" id="L15">	public static final StorageEventType PRODUCT_REMOVED = StorageEventType.PRODUCT_REMOVED;</span>
+
+	private static final long serialVersionUID = 0x019A1A8BL;
+<span class="fc" id="L18">	private ProductId id = null;</span>
+<span class="fc" id="L19">	private StorageEventType type = null;</span>
+
+	public StorageEvent(ProductStorage storage, ProductId id,
+			StorageEventType type) {
+<span class="fc" id="L23">		super(storage);</span>
+<span class="fc" id="L24">		this.id = id;</span>
+<span class="fc" id="L25">		this.type = type;</span>
+<span class="fc" id="L26">	}</span>
+
+	public ProductStorage getProductStorage() {
+<span class="fc" id="L29">		return (ProductStorage) getSource();</span>
+	}
+
+	public ProductId getProductId() {
+<span class="fc" id="L33">		return id;</span>
+	}
+
+	public StorageEventType getType() {
+<span class="fc" id="L37">		return type;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

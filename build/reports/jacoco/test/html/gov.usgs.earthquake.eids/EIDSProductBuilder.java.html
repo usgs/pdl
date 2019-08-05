@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EIDSProductBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.eids</a> &gt; <span class="el_source">EIDSProductBuilder.java</span></div><h1>EIDSProductBuilder.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.eids;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import gov.usgs.ansseqmsg.EQMessage;
+import gov.usgs.earthquake.distribution.ProductBuilder;
+import gov.usgs.earthquake.distribution.ProductSender;
+import gov.usgs.earthquake.eidsutil.EIDSClient;
+import gov.usgs.earthquake.eidsutil.EIDSListener;
+import gov.usgs.earthquake.eidsutil.EIDSMessageEvent;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.util.Config;
+
+/**
+ * Convert messages from EIDS into products.
+ * 
+ * Listens to messages from an EIDSClient. Uses EQXMLProductParser and
+ * EventAddonParser to build products. Any built products are sent to all
+ * configured productSenders.
+ */
+<span class="fc" id="L26">public class EIDSProductBuilder extends ProductBuilder implements EIDSListener {</span>
+
+	/** Logging object. */
+<span class="fc" id="L29">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L30">			.getLogger(EIDSProductBuilder.class.getName());</span>
+
+	/** Convert EventAddon to EQMessage objects. */
+<span class="fc" id="L33">	private EventAddonParser addonParser = new EventAddonParser();</span>
+
+	/** Convert EQMessages to products. */
+<span class="fc" id="L36">	private EQMessageProductCreator eqmessageProductCreator = new EQMessageProductCreator();</span>
+
+	/**
+	 * Receive EIDS messages from an EIDSClient.
+	 * 
+	 * Any received messages are parsed and sent to any ProductSenders. If the
+	 * message is not EQXML, this method returns immediately.
+	 */
+	@Override
+	public synchronized void onEIDSMessage(EIDSMessageEvent event) {
+<span class="fc" id="L46">		List&lt;Product&gt; products = new LinkedList&lt;Product&gt;();</span>
+
+		// parse eids message into Products
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">		if (event.getRootElement().equals(&quot;EQMessage&quot;)) {</span>
+			try {
+<span class="fc" id="L51">				products.addAll(eqmessageProductCreator</span>
+<span class="fc" id="L52">						.getEQMessageProducts(event.getMessage()));</span>
+<span class="nc" id="L53">			} catch (Exception e) {</span>
+				// unable to parse EQMessage
+<span class="nc" id="L55">				LOGGER.log(Level.WARNING, &quot;Error while parsing EQMessage&quot;, e);</span>
+<span class="nc" id="L56">				LOGGER.info(event.getMessage());</span>
+<span class="nc" id="L57">				return;</span>
+<span class="fc" id="L58">			}</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">		} else if (event.getRootElement().equals(&quot;eventaddon&quot;)) {</span>
+			try {
+<span class="nc" id="L61">				EQMessage message = addonParser.parseMessage(event);</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">				if (message != null) {</span>
+<span class="nc" id="L63">					products.addAll(eqmessageProductCreator</span>
+<span class="nc" id="L64">							.getEQMessageProducts(message));</span>
+				} else {
+<span class="nc" id="L66">					LOGGER.log(Level.WARNING, &quot;Unable to parse eventaddon\n&quot;</span>
+<span class="nc" id="L67">							+ event.getMessage());</span>
+				}
+<span class="nc" id="L69">			} catch (Exception e) {</span>
+				// unable to parse eventaddon
+<span class="nc" id="L71">				LOGGER.log(Level.WARNING, &quot;Error while parsing eventaddon&quot;, e);</span>
+<span class="nc" id="L72">				LOGGER.info(event.getMessage());</span>
+<span class="nc" id="L73">				return;</span>
+<span class="nc" id="L74">			}</span>
+		} else {
+			// not parseable
+<span class="nc" id="L77">			LOGGER.info(&quot;Unexpected EIDS message {&quot; + event.getRootNamespace()</span>
+<span class="nc" id="L78">					+ &quot;}&quot; + event.getRootElement());</span>
+<span class="nc" id="L79">			return;</span>
+		}
+
+<span class="fc" id="L82">		LOGGER.finest(&quot;Received EIDS message &quot; + event.getMessage());</span>
+
+		// add eids properties onto products
+<span class="fc" id="L85">		String feederSource = event.getMessageSource();</span>
+<span class="fc" id="L86">		Long feederSequence = event.getMessageSequence();</span>
+<span class="fc" id="L87">		Iterator&lt;Product&gt; iter = products.iterator();</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L89">			Product product = iter.next();</span>
+<span class="fc" id="L90">			Map&lt;String, String&gt; properties = product.getProperties();</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">			if (feederSource != null) {</span>
+<span class="fc" id="L92">				properties.put(&quot;eids-feeder&quot;, feederSource);</span>
+			}
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">			if (feederSequence != null) {</span>
+<span class="fc" id="L95">				properties.put(&quot;eids-feeder-sequence&quot;,</span>
+<span class="fc" id="L96">						feederSequence.toString());</span>
+			}
+<span class="fc" id="L98">		}</span>
+
+		try {
+			// send products
+<span class="fc" id="L102">			iter = products.iterator();</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">			while (iter.hasNext()) {</span>
+<span class="fc" id="L104">				Product product = iter.next();</span>
+<span class="fc" id="L105">				LOGGER.fine(&quot;Sending product id=&quot; + product.getId()</span>
+<span class="fc" id="L106">						+ &quot;, status=&quot; + product.getStatus());</span>
+
+<span class="fc" id="L108">				Map&lt;ProductSender, Exception&gt; errors = sendProduct(product);</span>
+<span class="fc" id="L109">				Iterator&lt;ProductSender&gt; senders = errors.keySet().iterator();</span>
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">				while (senders.hasNext()) {</span>
+<span class="nc" id="L111">					LOGGER.log(Level.WARNING, &quot;Error sending product&quot;,</span>
+<span class="nc" id="L112">							errors.get(senders.next()));</span>
+<span class="nc" id="L113">					LOGGER.info(event.getMessage());</span>
+				}
+<span class="fc" id="L115">			}</span>
+<span class="nc" id="L116">		} catch (Exception e) {</span>
+<span class="nc" id="L117">			LOGGER.log(Level.FINE, &quot;Error sending products&quot;, e);</span>
+<span class="fc" id="L118">		}</span>
+
+<span class="fc" id="L120">	}</span>
+
+	/**
+	 * Main method to test EQXMLProductBuilder.
+	 * 
+	 * Connects an eids client to the product builder, and uses a dummy product
+	 * sender that outputs to stderr.
+	 * 
+	 * @param args
+	 */
+	public static void main(final String[] args) {
+<span class="nc" id="L131">		EIDSProductBuilder builder = new EIDSProductBuilder();</span>
+<span class="nc" id="L132">		builder.addProductSender(new ProductSender() {</span>
+			@Override
+			public void configure(Config arg0) throws Exception {
+<span class="nc" id="L135">			}</span>
+
+			@Override
+			public void shutdown() throws Exception {
+<span class="nc" id="L139">			}</span>
+
+			@Override
+			public void startup() throws Exception {
+<span class="nc" id="L143">			}</span>
+
+			@Override
+			public void sendProduct(Product product) throws Exception {
+<span class="nc" id="L147">				System.err.println(&quot;product id=&quot; + product.getId().toString());</span>
+
+<span class="nc" id="L149">				Iterator&lt;String&gt; names = product.getProperties().keySet()</span>
+<span class="nc" id="L150">						.iterator();</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">				while (names.hasNext()) {</span>
+<span class="nc" id="L152">					String name = names.next();</span>
+<span class="nc" id="L153">					System.err.println(&quot;\t&quot; + name + &quot;=&quot;</span>
+<span class="nc" id="L154">							+ product.getProperties().get(name));</span>
+<span class="nc" id="L155">				}</span>
+<span class="nc" id="L156">			}</span>
+
+			@Override
+			public String getName() {
+<span class="nc" id="L160">				return null;</span>
+			}
+
+			@Override
+			public void setName(String arg0) {
+<span class="nc" id="L165">			}</span>
+		});
+
+<span class="nc" id="L168">		EIDSClient client = new EIDSClient(&quot;eids1.cr.usgs.gov&quot;, 39977);</span>
+<span class="nc" id="L169">		client.addListener(builder);</span>
+<span class="nc" id="L170">		client.startup();</span>
+<span class="nc" id="L171">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

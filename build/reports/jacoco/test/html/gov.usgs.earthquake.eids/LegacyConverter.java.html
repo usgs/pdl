@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LegacyConverter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.eids</a> &gt; <span class="el_source">LegacyConverter.java</span></div><h1>LegacyConverter.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.eids;
+
+import java.io.InputStream;
+import java.util.Map;
+
+import gov.usgs.earthquake.cube.CubeMessage;
+import gov.usgs.earthquake.event.Converter;
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.util.StreamUtils;
+
+import org.quakeml_1_2.Quakeml;
+import gov.usgs.ansseqmsg.EQMessage;
+
+/**
+ * Utility class to translate between Quakeml, EQXML, and CUBE formats.
+ */
+public class LegacyConverter {
+
+<span class="fc" id="L20">	public static enum Format {</span>
+<span class="fc" id="L21">		CUBE, EQXML, QUAKEML</span>
+	};
+
+<span class="fc" id="L24">	public static final Format CUBE = Format.CUBE;</span>
+<span class="fc" id="L25">	public static final Format EQXML = Format.EQXML;</span>
+<span class="fc" id="L26">	public static final Format QUAKEML = Format.QUAKEML;</span>
+
+	public static final String EQXML_CONTENT_PATH = &quot;eqxml.xml&quot;;
+	public static final String QUAKEML_CONTENT_PATH = &quot;quakeml.xml&quot;;
+
+	private final Format outputFormat;
+	private final Converter converter;
+
+<span class="fc" id="L34">	public LegacyConverter(final Format outputFormat) {</span>
+<span class="fc" id="L35">		this.outputFormat = outputFormat;</span>
+<span class="fc" id="L36">		this.converter = new Converter();</span>
+<span class="fc" id="L37">	}</span>
+
+	/**
+	 * @return converter that outputs cube.
+	 */
+	public static LegacyConverter cubeConverter() {
+<span class="fc" id="L43">		return new LegacyConverter(CUBE);</span>
+	}
+
+	/**
+	 * @return converter that outputs eqxml.
+	 */
+	public static LegacyConverter eqxmlConverter() {
+<span class="fc" id="L50">		return new LegacyConverter(EQXML);</span>
+	}
+
+	/**
+	 * @return converter that outputs quakeml.
+	 */
+	public static LegacyConverter quakemlConverter() {
+<span class="fc" id="L57">		return new LegacyConverter(QUAKEML);</span>
+	}
+
+	/**
+	 * Handles conversion from a product containing either eqxml or quakeml
+	 * contents to either eqxml, quakeml, or cube byte array.
+	 * 
+	 * @param product
+	 *            the product object to convert.
+	 * @return byte array containing the output format, or null if unable to
+	 *         convert.
+	 * @throws Exception
+	 */
+	public byte[] convert(final Product product) throws Exception {
+<span class="fc" id="L71">		Map&lt;String, Content&gt; contents = product.getContents();</span>
+<span class="fc" id="L72">		InputStream input = null;</span>
+		try {
+<span class="fc bfc" id="L74" title="All 2 branches covered.">			if (contents.containsKey(QUAKEML_CONTENT_PATH)) {</span>
+<span class="fc" id="L75">				input = contents.get(QUAKEML_CONTENT_PATH).getInputStream();</span>
+<span class="fc" id="L76">				return convert(converter.getQuakeml(input));</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">			} else if (contents.containsKey(EQXML_CONTENT_PATH)) {</span>
+<span class="fc" id="L78">				input = contents.get(EQXML_CONTENT_PATH).getInputStream();</span>
+<span class="fc" id="L79">				return convert(converter.getEQMessage(input));</span>
+			} else {
+				// unable to convert
+<span class="fc" id="L82">				return null;</span>
+			}
+		} finally {
+<span class="fc" id="L85">			StreamUtils.closeStream(input);</span>
+		}
+	}
+
+	/**
+	 * Handles conversion from an eqxml to either eqxml, quakeml, or cube byte
+	 * array.
+	 * 
+	 * @param eqxml
+	 *            the eqxml object to convert.
+	 * @return byte array containing output format, or null if unable to
+	 *         convert.
+	 * @throws Exception
+	 */
+	public byte[] convert(EQMessage eqxml) throws Exception {
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">		if (eqxml == null) {</span>
+<span class="nc" id="L101">			return null;</span>
+		}
+		try {
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">			if (outputFormat == EQXML) {</span>
+<span class="nc" id="L105">				return converter.getString(eqxml).getBytes();</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">			} else if (outputFormat == CUBE) {</span>
+<span class="fc" id="L107">				return converter.getString(converter.getCubeMessage(eqxml))</span>
+<span class="fc" id="L108">						.getBytes();</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">			} else if (outputFormat == QUAKEML) {</span>
+<span class="nc" id="L110">				return converter.getString(converter.getQuakeml(eqxml))</span>
+<span class="nc" id="L111">						.getBytes();</span>
+			} else {
+<span class="nc" id="L113">				return null;</span>
+			}
+<span class="nc" id="L115">		} catch (NullPointerException npe) {</span>
+<span class="nc" id="L116">			return null;</span>
+		}
+	}
+
+	/**
+	 * Handles conversion from a quakeml message to either eqxml, quakeml, or
+	 * cube byte array.
+	 * 
+	 * @param quakeml
+	 *            the quakeml object to convert.
+	 * @return byte array containing output format, or null if unable to
+	 *         convert.
+	 * @throws Exception
+	 */
+	public byte[] convert(Quakeml quakeml) throws Exception {
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">		if (quakeml == null) {</span>
+<span class="nc" id="L132">			return null;</span>
+		}
+		try {
+<span class="fc bfc" id="L135" title="All 2 branches covered.">			if (outputFormat == EQXML) {</span>
+<span class="fc" id="L136">				return converter.getString(converter.getEQMessage(quakeml))</span>
+<span class="fc" id="L137">						.getBytes();</span>
+<span class="fc bfc" id="L138" title="All 2 branches covered.">			} else if (outputFormat == CUBE) {</span>
+<span class="fc" id="L139">				return converter.getString(converter.getCubeMessage(quakeml))</span>
+<span class="fc" id="L140">						.getBytes();</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">			} else if (outputFormat == QUAKEML) {</span>
+<span class="fc" id="L142">				return converter.getString(quakeml).getBytes();</span>
+			} else {
+<span class="nc" id="L144">				return null;</span>
+			}
+<span class="nc" id="L146">		} catch (NullPointerException npe) {</span>
+<span class="nc" id="L147">			return null;</span>
+		}
+	}
+
+	/**
+	 * Handles conversion from a cube message to either eqxml, quakeml, or cube
+	 * byte array.
+	 * 
+	 * @param cube
+	 *            the cube object to convert.
+	 * @return byte array containing output format, or null if unable to
+	 *         convert.
+	 * @throws Exception
+	 */
+	public byte[] convert(CubeMessage cube) throws Exception {
+<span class="nc bnc" id="L162" title="All 2 branches missed.">		if (cube == null) {</span>
+<span class="nc" id="L163">			return null;</span>
+		}
+		try {
+<span class="nc bnc" id="L166" title="All 2 branches missed.">			if (outputFormat == EQXML) {</span>
+<span class="nc" id="L167">				return converter.getString(converter.getEQMessage(cube))</span>
+<span class="nc" id="L168">						.getBytes();</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">			} else if (outputFormat == CUBE) {</span>
+<span class="nc" id="L170">				return converter.getString(cube).getBytes();</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">			} else if (outputFormat == QUAKEML) {</span>
+<span class="nc" id="L172">				return converter.getString(converter.getQuakeml(cube))</span>
+<span class="nc" id="L173">						.getBytes();</span>
+			} else {
+<span class="nc" id="L175">				return null;</span>
+			}
+<span class="nc" id="L177">		} catch (NullPointerException npe) {</span>
+<span class="nc" id="L178">			return null;</span>
+		}
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

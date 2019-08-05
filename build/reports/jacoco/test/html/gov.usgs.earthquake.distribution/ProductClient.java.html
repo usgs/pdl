@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">ProductClient.java</span></div><h1>ProductClient.java</h1><pre class="source lang-java linenums">/*
+ * Main
+ */
+package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.indexer.SearchCLI;
+
+import gov.usgs.util.Config;
+import gov.usgs.util.DefaultConfigurable;
+import gov.usgs.util.StringUtils;
+
+import java.lang.management.ManagementFactory;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
+/**
+ * The entry point to product distribution.
+ *
+ * The ProductClient implements the Configurable interface and can use the
+ * following configuration parameters:
+ *
+ * &lt;dl&gt;
+ *
+ * &lt;dt&gt;receivers&lt;/dt&gt;
+ * &lt;dd&gt;(Required) A comma separated list of section names that should be loaded
+ * as NotificationReceiver objects. Each receiver is a source of notifications
+ * for listeners.&lt;/dd&gt;
+ *
+ * &lt;dt&gt;listeners&lt;/dt&gt;
+ * &lt;dd&gt;(Required) A comma separated list of section names that should be loaded
+ * as NotificationListener objects. Each listener receives notifications from
+ * receivers.&lt;/dd&gt;
+ *
+ * &lt;dt&gt;logdirectory&lt;/dt&gt;
+ * &lt;dd&gt;(Optional) Log directory. Default is &quot;log&quot;, relative to the current
+ * working directory. Log files using a naming convention
+ * &lt;code&gt;ProductClient_YYYYMMDD.log&lt;/code&gt;.&lt;/dd&gt;
+ *
+ * &lt;dt&gt;loglevel&lt;/dt&gt; &lt;dd&gt;(Optional) Default is INFO. One of SEVERE, WARNING,
+ * INFO, CONFIG, FINE, FINER, FINEST&lt;/dd&gt;
+ *
+ * &lt;dt&gt;enableTracker&lt;/dt&gt; &lt;dd&gt;(Optional) Default is false. Whether or not to
+ * send tracker updates to a product tracker. This is generally desirable, but
+ * is disabled by default for the paranoid.&lt;/dd&gt;
+ *
+ * &lt;dt&gt;redirectconsole&lt;/dt&gt; &lt;dd&gt;(Optional) Default is false. Whether or not to
+ * redirect console output to the log file.&lt;/dd&gt;
+ *
+ * &lt;/dl&gt;
+ *
+ * &lt;p&gt;
+ * All listeners listen to all receivers for notifications.
+ * &lt;/p&gt;
+ *
+ */
+<span class="fc" id="L63">public class ProductClient extends DefaultConfigurable implements</span>
+		ProductClientMBean, Bootstrappable {
+
+	/** The &quot;release&quot; version number. */
+	public static final String RELEASE_VERSION = &quot;Version 2.1.1 2019-05-28&quot;;
+
+	/** Property name used on products for current RELEASE_VERSION. */
+	public static final String PDL_CLIENT_VERSION_PROPERTY = &quot;pdl-client-version&quot;;
+
+	/** SVN Id property. */
+	public static final String SVN_VERSION = &quot;$Id$&quot;;
+
+	/** SVN Revision property. */
+	public static final String SVN_REVISION = &quot;$Revision$&quot;;
+
+	/** SVN LastChangedDate property. */
+	public static final String SVN_LAST_CHANGED_DATE = &quot;$LastChangedDate$&quot;;
+
+	/** Logging object. */
+<span class="fc" id="L82">	private static final Logger LOGGER = Logger.getLogger(ProductClient.class</span>
+<span class="fc" id="L83">			.getName());</span>
+
+	/** Defaults are loaded from inside the jar file. */
+	public static final String JAR_CONFIG_FILE = &quot;etc/config/config.ini&quot;;
+
+	/** Default location of config file. */
+	public static final String DEFAULT_CONFIG_FILE = &quot;config.ini&quot;;
+
+	/** Custom config file locations. */
+	public static final String CONFIG_FILE_ARGUMENT = &quot;--configFile=&quot;;
+
+	/** Run the builder. */
+	public static final String BUILD_ARGUMENT = &quot;--build&quot;;
+
+	/** Run the tracker. */
+	public static final String TRACK_ARGUMENT = &quot;--track&quot;;
+
+	/** Run the builder. */
+	public static final String SEND_ARGUMENT = &quot;--send&quot;;
+
+	/** Run the client. */
+	public static final String RECEIVE_ARGUMENT = &quot;--receive&quot;;
+
+	/** Run the search. */
+	public static final String SEARCH_ARGUMENT = &quot;--search&quot;;
+
+	/** Show usage. */
+	public static final String USAGE_ARGUMENT = &quot;--help&quot;;
+
+	/** Property containing list of receivers. */
+	public static final String RECEIVERS_PROPERTY_NAME = &quot;receivers&quot;;
+
+	/** Property containing list of senders. */
+	public static final String LISTENERS_PROPERTY_NAME = &quot;listeners&quot;;
+
+	/** Log level property name. */
+	public static final String LOGLEVEL_PROPERTY_NAME = &quot;loglevel&quot;;
+
+	/** Default log level is INFO. */
+	public static final String DEFAULT_LOGLEVEL = &quot;INFO&quot;;
+
+	/** Property with location for log directory. */
+	public static final String LOGDIRECTORY_PROPERTY_NAME = &quot;logdirectory&quot;;
+
+	/** Default directory for logging. */
+	public static final String DEFAULT_LOGDIRECTORY = &quot;log&quot;;
+
+	/** Default location for log file. */
+	public static final String DEFAULT_LOGFILE = &quot;'ProductClient'_yyyyMMdd'.log'&quot;;
+
+	/** Whether or not to redirect stdout and stderr to log file. */
+	public static final String CONSOLE_REDIRECT_PROPERTY_NAME = &quot;redirectconsole&quot;;
+
+	/** Default console redirect value (don't redirect). */
+	public static final String DEFAULT_CONSOLE_REDIRECT = &quot;false&quot;;
+
+	/** Property used to disable tracker updates. */
+	public static final String ENABLE_TRACKER_PROPERTY_NAME = &quot;enableTracker&quot;;
+
+	public static final String ENABLE_ADMIN_SOCKET = &quot;enableAdminSocket&quot;;
+	public static final String DEFAULT_ENABLE_ADMIN_SOCKET = &quot;false&quot;;
+
+	/** List of receivers that generate notifications. */
+<span class="fc" id="L146">	private List&lt;NotificationReceiver&gt; receivers = new LinkedList&lt;NotificationReceiver&gt;();</span>
+
+	/** List of listeners that receive notifications. */
+<span class="fc" id="L149">	private List&lt;NotificationListener&gt; listeners = new LinkedList&lt;NotificationListener&gt;();</span>
+
+	/** Whether to start a zabbix agent. */
+<span class="fc" id="L152">	private boolean enableAdminSocket = false;</span>
+<span class="fc" id="L153">	private boolean enableJMX = true;</span>
+<span class="fc" id="L154">	private AdminSocketServer adminSocketServer = null;</span>
+
+	public void configure(Config config) throws Exception {
+<span class="fc" id="L157">		loadListeners(config);</span>
+<span class="fc" id="L158">		loadReceivers(config);</span>
+
+		// connect all listeners to all receivers
+<span class="fc" id="L161">		Iterator&lt;NotificationReceiver&gt; iter = receivers.iterator();</span>
+<span class="fc bfc" id="L162" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L163">			NotificationReceiver receiver = iter.next();</span>
+<span class="fc" id="L164">			Iterator&lt;NotificationListener&gt; iter2 = listeners.iterator();</span>
+<span class="fc bfc" id="L165" title="All 2 branches covered.">			while (iter2.hasNext()) {</span>
+<span class="fc" id="L166">				NotificationListener listener = iter2.next();</span>
+<span class="fc" id="L167">				receiver.addNotificationListener(listener);</span>
+<span class="fc" id="L168">			}</span>
+<span class="fc" id="L169">		}</span>
+
+<span class="fc" id="L171">		enableAdminSocket = Boolean.valueOf(config.getProperty(</span>
+				ENABLE_ADMIN_SOCKET, DEFAULT_ENABLE_ADMIN_SOCKET));
+<span class="fc" id="L173">	}</span>
+
+	/**
+	 * Load listeners from a Config object.
+	 *
+	 * @param config
+	 *            the configuration.
+	 * @throws Exception
+	 */
+	public void loadListeners(final Config config) throws Exception {
+<span class="fc" id="L183">		Iterator&lt;String&gt; iter = StringUtils.split(</span>
+<span class="fc" id="L184">				config.getProperty(LISTENERS_PROPERTY_NAME, &quot;&quot;), &quot;,&quot;)</span>
+<span class="fc" id="L185">				.iterator();</span>
+<span class="fc bfc" id="L186" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L187">			String listenerName = iter.next();</span>
+<span class="fc" id="L188">			LOGGER.config(&quot;Loading listener '&quot; + listenerName + &quot;'&quot;);</span>
+
+			NotificationListener listener = (NotificationListener) Config
+<span class="fc" id="L191">					.getConfig().getObject(listenerName);</span>
+<span class="pc bpc" id="L192" title="1 of 2 branches missed.">			if (listener == null) {</span>
+<span class="nc" id="L193">				throw new ConfigurationException(&quot;Unable to load listener '&quot;</span>
+						+ listenerName
+						+ &quot;', make sure it is properly configured.&quot;);
+			}
+
+			// listenerName references an object in the global configuration
+<span class="fc" id="L199">			listeners.add(listener);</span>
+<span class="fc" id="L200">		}</span>
+<span class="fc" id="L201">	}</span>
+
+	/**
+	 * Load NotificationReceivers from a Config object.
+	 *
+	 * @param config
+	 *            the configuration
+	 * @throws Exception
+	 */
+	public void loadReceivers(final Config config) throws Exception {
+<span class="fc" id="L211">		Iterator&lt;String&gt; iter = StringUtils.split(</span>
+<span class="fc" id="L212">				config.getProperty(RECEIVERS_PROPERTY_NAME), &quot;,&quot;).iterator();</span>
+<span class="fc bfc" id="L213" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L214">			String receiverName = iter.next();</span>
+<span class="fc" id="L215">			LOGGER.config(&quot;Loading receiver '&quot; + receiverName + &quot;'&quot;);</span>
+
+			NotificationReceiver receiver = (NotificationReceiver) Config
+<span class="fc" id="L218">					.getConfig().getObject(receiverName);</span>
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">			if (receiver == null) {</span>
+<span class="nc" id="L220">				throw new ConfigurationException(&quot;Unable to load receiver '&quot;</span>
+						+ receiverName
+						+ &quot;', make sure it is properly configured.&quot;);
+			}
+			// receiverName references an object in the global configuration
+<span class="fc" id="L225">			receivers.add(receiver);</span>
+<span class="fc" id="L226">		}</span>
+<span class="fc" id="L227">	}</span>
+
+	/**
+	 * Start up all listeners and receivers.
+	 */
+	public void startup() throws Exception {
+<span class="fc" id="L233">		Iterator&lt;NotificationListener&gt; iter = listeners.iterator();</span>
+<span class="fc bfc" id="L234" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L235">			iter.next().startup();</span>
+		}
+<span class="fc" id="L237">		Iterator&lt;NotificationReceiver&gt; iter2 = receivers.iterator();</span>
+<span class="fc bfc" id="L238" title="All 2 branches covered.">		while (iter2.hasNext()) {</span>
+<span class="fc" id="L239">			iter2.next().startup();</span>
+		}
+
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">		if (enableAdminSocket) {</span>
+<span class="nc" id="L243">			LOGGER.info(&quot;Starting AdminSocketServer on port 11111&quot;);</span>
+<span class="nc" id="L244">			adminSocketServer = new AdminSocketServer();</span>
+<span class="nc" id="L245">			adminSocketServer.setClient(this);</span>
+<span class="nc" id="L246">			adminSocketServer.startup();</span>
+		}
+
+<span class="pc bpc" id="L249" title="1 of 2 branches missed.">		if (enableJMX) {</span>
+<span class="fc" id="L250">			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();</span>
+<span class="fc" id="L251">			ObjectName clientName = new ObjectName(&quot;ProductClient:name=jmx&quot;);</span>
+<span class="fc" id="L252">			mbs.registerMBean(this, clientName);</span>
+		}
+<span class="fc" id="L254">	}</span>
+
+	/**
+	 * Shut down all receivers and listeners.
+	 */
+	public void shutdown() throws Exception {
+<span class="pc bpc" id="L260" title="1 of 2 branches missed.">		if (receivers.size() &gt; 0) {</span>
+<span class="fc" id="L261">			Iterator&lt;NotificationReceiver&gt; iter2 = receivers.iterator();</span>
+<span class="fc bfc" id="L262" title="All 2 branches covered.">			while (iter2.hasNext()) {</span>
+				try {
+<span class="fc" id="L264">					iter2.next().shutdown();</span>
+<span class="nc" id="L265">				} catch (Exception e) {</span>
+					// ignore
+<span class="pc" id="L267">				}</span>
+			}
+		}
+
+<span class="pc bpc" id="L271" title="1 of 2 branches missed.">		if (listeners.size() &gt; 0) {</span>
+<span class="fc" id="L272">			Iterator&lt;NotificationListener&gt; iter = listeners.iterator();</span>
+<span class="fc bfc" id="L273" title="All 2 branches covered.">			while (iter.hasNext()) {</span>
+				try {
+<span class="fc" id="L275">					iter.next().shutdown();</span>
+<span class="nc" id="L276">				} catch (Exception e) {</span>
+					// ignore
+<span class="pc" id="L278">				}</span>
+			}
+		}
+
+<span class="pc bpc" id="L282" title="1 of 2 branches missed.">		if (adminSocketServer != null) {</span>
+			try {
+<span class="nc" id="L284">				adminSocketServer.shutdown();</span>
+<span class="nc" id="L285">			} catch (Exception e) {</span>
+<span class="nc" id="L286">			}</span>
+<span class="nc" id="L287">			adminSocketServer = null;</span>
+		}
+<span class="fc" id="L289">	}</span>
+
+	/**
+	 * Entry point into Product Distribution.
+	 *
+	 * @param args
+	 */
+	public void run(final String[] args) throws Exception {
+		try {
+			// default is show usage
+<span class="nc" id="L299">			boolean receiveProducts = false;</span>
+<span class="nc" id="L300">			boolean buildProduct = false;</span>
+<span class="nc" id="L301">			boolean trackProduct = false;</span>
+<span class="nc" id="L302">			boolean searchProduct = false;</span>
+<span class="nc" id="L303">			boolean showUsage = false;</span>
+
+			// parse arguments
+<span class="nc bnc" id="L306" title="All 2 branches missed.">			for (String arg : args) {</span>
+<span class="nc bnc" id="L307" title="All 4 branches missed.">				if (arg.equals(SEND_ARGUMENT) || arg.equals(BUILD_ARGUMENT)) {</span>
+<span class="nc" id="L308">					buildProduct = true;</span>
+<span class="nc bnc" id="L309" title="All 2 branches missed.">				} else if (arg.equals(RECEIVE_ARGUMENT)) {</span>
+<span class="nc" id="L310">					receiveProducts = true;</span>
+<span class="nc bnc" id="L311" title="All 2 branches missed.">				} else if (arg.equals(TRACK_ARGUMENT)) {</span>
+<span class="nc" id="L312">					trackProduct = true;</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">				} else if (arg.equals(SEARCH_ARGUMENT)) {</span>
+<span class="nc" id="L314">					searchProduct = true;</span>
+<span class="nc bnc" id="L315" title="All 2 branches missed.">				} else if (arg.equals(USAGE_ARGUMENT)) {</span>
+<span class="nc" id="L316">					showUsage = true;</span>
+				}
+			}
+
+			// output current version
+<span class="nc" id="L321">			System.err.println(&quot;Product Distribution Client&quot;);</span>
+<span class="nc" id="L322">			System.err.println(RELEASE_VERSION);</span>
+<span class="nc" id="L323">			System.err.println();</span>
+
+<span class="nc bnc" id="L325" title="All 2 branches missed.">			if (buildProduct) {</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">				if (showUsage) {</span>
+<span class="nc" id="L327">					System.err.println(&quot;Usage: &quot;);</span>
+<span class="nc" id="L328">					System.err</span>
+<span class="nc" id="L329">							.println(&quot;    java -jar ProductClient.jar --build [BUILD ARGUMENTS]&quot;);</span>
+<span class="nc" id="L330">					System.err.println();</span>
+<span class="nc" id="L331">					System.err.println(CLIProductBuilder.getUsage());</span>
+<span class="nc" id="L332">					System.exit(0);</span>
+				}
+<span class="nc" id="L334">				LOGGER.info(&quot;Running Product Builder&quot;);</span>
+				// run builder main
+<span class="nc" id="L336">				CLIProductBuilder.main(args);</span>
+<span class="nc" id="L337">				System.exit(0);</span>
+<span class="nc bnc" id="L338" title="All 2 branches missed.">			} else if (trackProduct) {</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">				if (showUsage) {</span>
+<span class="nc" id="L340">					System.err.println(&quot;Usage: &quot;);</span>
+<span class="nc" id="L341">					System.err</span>
+<span class="nc" id="L342">							.println(&quot;    java -jar ProductClient.jar --track [TRACK ARGUMENTS]&quot;);</span>
+<span class="nc" id="L343">					System.err.println();</span>
+<span class="nc" id="L344">					System.err.println(ProductTracker.getUsage());</span>
+<span class="nc" id="L345">					System.exit(0);</span>
+				}
+<span class="nc" id="L347">				LOGGER.info(&quot;Running Product Tracker&quot;);</span>
+<span class="nc" id="L348">				ProductTracker.main(args);</span>
+<span class="nc" id="L349">				System.exit(0);</span>
+<span class="nc bnc" id="L350" title="All 2 branches missed.">			} else if (searchProduct) {</span>
+				// search needs to happen after track, since track also uses a
+				// --search argument
+<span class="nc bnc" id="L353" title="All 2 branches missed.">				if (showUsage) {</span>
+<span class="nc" id="L354">					System.err.println(&quot;Usage: &quot;);</span>
+<span class="nc" id="L355">					System.err</span>
+<span class="nc" id="L356">							.println(&quot;    java -jar ProductClient.jar --search [SEARCH ARGUMENTS]&quot;);</span>
+<span class="nc" id="L357">					System.err.println();</span>
+<span class="nc" id="L358">					System.err.println(SearchCLI.getUsage());</span>
+<span class="nc" id="L359">					System.exit(0);</span>
+				}
+<span class="nc" id="L361">				LOGGER.info(&quot;Running Product Search&quot;);</span>
+<span class="nc" id="L362">				SearchCLI.main(args);</span>
+<span class="nc" id="L363">				System.exit(0);</span>
+<span class="nc bnc" id="L364" title="All 4 branches missed.">			} else if (receiveProducts &amp;&amp; !showUsage) {</span>
+				// start processing
+<span class="nc" id="L366">				LOGGER.info(&quot;Starting&quot;);</span>
+				try {
+<span class="nc" id="L368">					startup();</span>
+<span class="nc" id="L369">				} catch (Exception e) {</span>
+<span class="nc" id="L370">					LOGGER.log(Level.SEVERE,</span>
+							&quot;Exceptions while starting, shutting down&quot;, e);
+					try {
+						// this has been throwing exceptions, move into try
+<span class="nc" id="L374">						shutdown();</span>
+					} finally {
+						// exit no matter what
+<span class="nc" id="L377">						System.exit(1);</span>
+					}
+<span class="nc" id="L379">				}</span>
+<span class="nc" id="L380">				LOGGER.info(&quot;Started&quot;);</span>
+
+				// shutdown threads when control-c is pressed
+				// otherwise, would continue running
+<span class="nc" id="L384">				Runtime.getRuntime().addShutdownHook(new Thread() {</span>
+					public void run() {
+						try {
+<span class="nc" id="L387">							LOGGER.info(&quot;Shutting down&quot;);</span>
+<span class="nc" id="L388">							shutdown();</span>
+<span class="nc" id="L389">							LOGGER.info(&quot;Shutdown complete&quot;);</span>
+<span class="nc" id="L390">						} catch (Exception e) {</span>
+<span class="nc" id="L391">							LOGGER.log(Level.WARNING,</span>
+									&quot;Exception while shutting down&quot;, e);
+<span class="nc" id="L393">						}</span>
+<span class="nc" id="L394">					}</span>
+				});
+			} else {
+<span class="nc" id="L397">				System.err.println(&quot;Usage: &quot;);</span>
+<span class="nc" id="L398">				System.err</span>
+<span class="nc" id="L399">						.println(&quot;    java -jar ProductClient.jar [ARGUMENTS]&quot;);</span>
+<span class="nc" id="L400">				System.err.println();</span>
+<span class="nc" id="L401">				System.err.println(getUsage());</span>
+<span class="nc" id="L402">				System.exit(1);</span>
+			}
+
+<span class="nc" id="L405">		} catch (Exception e) {</span>
+<span class="nc" id="L406">			LOGGER.log(Level.SEVERE, &quot;Exception in main&quot;, e);</span>
+<span class="nc" id="L407">		}</span>
+<span class="nc" id="L408">	}</span>
+
+	/**
+	 * @return The list of receivers
+	 */
+	public List&lt;NotificationReceiver&gt; getReceivers() {
+<span class="fc" id="L414">		return receivers;</span>
+	}
+
+	/**
+	 *
+	 * @return The list of listeners
+	 */
+	public List&lt;NotificationListener&gt; getListeners() {
+<span class="fc" id="L422">		return listeners;</span>
+	}
+
+	public static String getUsage() {
+<span class="nc" id="L426">		StringBuffer buf = new StringBuffer();</span>
+
+<span class="nc" id="L428">		buf.append(&quot;[--configFile=FILE]      override the default config file location\n&quot;);</span>
+<span class="nc" id="L429">		buf.append(&quot;                         default is config.ini in CWD\n&quot;);</span>
+<span class="nc" id="L430">		buf.append(&quot;[--help]                 show this message and exit\n&quot;);</span>
+<span class="nc" id="L431">		buf.append(&quot;[--version]              show the version and exit\n&quot;);</span>
+<span class="nc" id="L432">		buf.append(&quot;[--configTest]           load configuration and exit\n&quot;);</span>
+<span class="nc" id="L433">		buf.append(&quot;\n&quot;);</span>
+<span class="nc" id="L434">		buf.append(&quot;[--send]                 create and send a product\n&quot;);</span>
+<span class="nc" id="L435">		buf.append(&quot;                         try --send --help for more information\n&quot;);</span>
+<span class="nc" id="L436">		buf.append(&quot;[--receive]              receive products\n&quot;);</span>
+<span class="nc" id="L437">		buf.append(&quot;[--track]                check or update product status\n&quot;);</span>
+<span class="nc" id="L438">		buf.append(&quot;                         try --track --help for more information\n&quot;);</span>
+<span class="nc" id="L439">		buf.append(&quot;\n&quot;);</span>
+<span class="nc" id="L440">		buf.append(&quot;You must use one of \&quot;--send\&quot;, \&quot;--receive\&quot;, or \&quot;--track\&quot;\n&quot;);</span>
+<span class="nc" id="L441">		buf.append(&quot;\n&quot;);</span>
+
+<span class="nc" id="L443">		return buf.toString();</span>
+	}
+
+	@Override
+	public String getListenerQueueStatus() {
+<span class="nc" id="L448">		StringBuffer buf = new StringBuffer();</span>
+<span class="nc" id="L449">		Iterator&lt;NotificationReceiver&gt; iter = receivers.iterator();</span>
+<span class="nc bnc" id="L450" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L451">			NotificationReceiver receiver = iter.next();</span>
+<span class="nc bnc" id="L452" title="All 2 branches missed.">			if (receiver instanceof DefaultNotificationReceiver) {</span>
+<span class="nc" id="L453">				buf.append(((DefaultNotificationReceiver) receiver)</span>
+<span class="nc" id="L454">						.getListenerQueueStatus());</span>
+			}
+<span class="nc" id="L456">		}</span>
+<span class="nc" id="L457">		return buf.toString();</span>
+	}
+
+	@Override
+	public String getVersion() {
+<span class="nc" id="L462">		return RELEASE_VERSION;</span>
+	}
+
+	@Override
+	public long getMaxMemory() {
+<span class="nc" id="L467">		return Runtime.getRuntime().maxMemory();</span>
+	}
+
+	@Override
+	public long getFreeMemory() {
+<span class="nc" id="L472">		return Runtime.getRuntime().freeMemory();</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

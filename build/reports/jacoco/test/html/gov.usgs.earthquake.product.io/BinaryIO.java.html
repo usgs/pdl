@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BinaryIO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product.io</a> &gt; <span class="el_source">BinaryIO.java</span></div><h1>BinaryIO.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.product.io;
+
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.InputStream;
+
+import java.nio.ByteBuffer;
+import java.util.Date;
+
+<span class="fc" id="L11">public class BinaryIO {</span>
+
+	public void writeInt(final int in, final OutputStream out)
+			throws IOException {
+<span class="fc" id="L15">		out.write(ByteBuffer.allocate(4).putInt(in).array());</span>
+<span class="fc" id="L16">	}</span>
+
+	public void writeLong(final long in, final OutputStream out)
+			throws IOException {
+<span class="fc" id="L20">		out.write(ByteBuffer.allocate(8).putLong(in).array());</span>
+<span class="fc" id="L21">	}</span>
+
+	public void writeBytes(final byte[] toWrite, final OutputStream out)
+			throws IOException {
+		// length of string
+<span class="fc" id="L26">		writeInt(toWrite.length, out);</span>
+		// string
+<span class="fc" id="L28">		out.write(toWrite);</span>
+<span class="fc" id="L29">	}</span>
+
+	public void writeString(final String toWrite, final OutputStream out)
+			throws IOException {
+<span class="fc" id="L33">		writeBytes(toWrite.getBytes(&quot;UTF8&quot;), out);</span>
+<span class="fc" id="L34">	}</span>
+
+	public void writeDate(final Date toWrite, final OutputStream out)
+			throws IOException {
+<span class="fc" id="L38">		writeLong(toWrite.getTime(), out);</span>
+<span class="fc" id="L39">	}</span>
+
+	public void writeStream(final long length, final InputStream in,
+			final OutputStream out) throws IOException {
+<span class="fc" id="L43">		writeLong(length, out);</span>
+
+		// transfer stream bytes
+<span class="fc" id="L46">		int read = -1;</span>
+<span class="fc" id="L47">		byte[] bytes = new byte[1024];</span>
+		// read no more than length bytes
+<span class="fc bfc" id="L49" title="All 2 branches covered.">		while ((read = in.read(bytes)) != -1) {</span>
+<span class="fc" id="L50">			out.write(bytes, 0, read);</span>
+		}
+<span class="fc" id="L52">	}</span>
+
+	public int readInt(final InputStream in) throws IOException {
+<span class="fc" id="L55">		byte[] buffer = new byte[4];</span>
+<span class="fc" id="L56">		readFully(buffer, in);</span>
+<span class="fc" id="L57">		return ByteBuffer.wrap(buffer).getInt();</span>
+	}
+
+	public long readLong(final InputStream in) throws IOException {
+<span class="fc" id="L61">		byte[] buffer = new byte[8];</span>
+<span class="fc" id="L62">		readFully(buffer, in);</span>
+<span class="fc" id="L63">		return ByteBuffer.wrap(buffer).getLong();</span>
+	}
+
+	public byte[] readBytes(final InputStream in) throws IOException {
+<span class="nc" id="L67">		int length = readInt(in);</span>
+<span class="nc" id="L68">		byte[] buffer = new byte[length];</span>
+<span class="nc" id="L69">		readFully(buffer, in);</span>
+<span class="nc" id="L70">		return buffer;</span>
+	}
+
+
+	public String readString(final InputStream in) throws IOException {
+<span class="fc" id="L75">		return this.readString(in, -1);</span>
+	}
+
+	public String readString(final InputStream in, final int maxLength) throws IOException {
+<span class="fc" id="L79">		int length = readInt(in);</span>
+<span class="pc bpc" id="L80" title="1 of 4 branches missed.">		if (maxLength &gt; 0 &amp;&amp; length &gt; maxLength) {</span>
+<span class="nc" id="L81">			throw new IOException(&quot;request string length &quot; + length + &quot; greater than maxLength &quot; + maxLength);</span>
+		}
+<span class="fc" id="L83">		byte[] buffer = new byte[length];</span>
+<span class="fc" id="L84">		readFully(buffer, in);</span>
+<span class="fc" id="L85">		return new String(buffer, &quot;UTF8&quot;);</span>
+	}
+
+	public Date readDate(final InputStream in) throws IOException {
+<span class="fc" id="L89">		return new Date(readLong(in));</span>
+	}
+
+	public void readStream(final InputStream in, final OutputStream out)
+			throws IOException {
+<span class="nc" id="L94">		long length = readLong(in);</span>
+<span class="nc" id="L95">		readStream(length, in, out);</span>
+<span class="nc" id="L96">	}</span>
+
+	public void readStream(final long length, final InputStream in,
+			final OutputStream out) throws IOException {
+<span class="fc" id="L100">		long remaining = length;</span>
+
+		// transfer stream bytes, not going over total
+<span class="fc" id="L103">		int read = -1;</span>
+<span class="fc" id="L104">		byte[] bytes = new byte[1024];</span>
+<span class="fc" id="L105">		int readSize = bytes.length;</span>
+
+<span class="fc bfc" id="L107" title="All 2 branches covered.">		while (remaining &gt; 0) {</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">			if (remaining &lt; readSize) {</span>
+				// don't read past end of stream
+<span class="fc" id="L110">				readSize = (int) remaining;</span>
+			}
+
+			// read next chunk
+<span class="fc" id="L114">			read = in.read(bytes, 0, readSize);</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">			if (read == -1) {</span>
+				// shouldn't be at eof, since reading length specified in stream
+<span class="nc" id="L117">				throw new EOFException();</span>
+			}
+			// track how much has been read
+<span class="fc" id="L120">			remaining -= read;</span>
+			// transfer to out stream
+<span class="fc" id="L122">			out.write(bytes, 0, read);</span>
+		}
+<span class="fc" id="L124">	}</span>
+
+	protected void readFully(final byte[] buffer, final InputStream in)
+			throws IOException {
+<span class="fc" id="L128">		int length = buffer.length;</span>
+<span class="fc" id="L129">		int totalRead = 0;</span>
+<span class="fc" id="L130">		int read = -1;</span>
+
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">		while ((read = in.read(buffer, totalRead, length - totalRead)) != -1) {</span>
+<span class="fc" id="L133">			totalRead += read;</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">			if (totalRead == length) {</span>
+<span class="fc" id="L135">				break;</span>
+			}
+		}
+
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">		if (totalRead != length) {</span>
+<span class="nc" id="L140">			throw new IOException(&quot;EOF before buffer could be readFully, read=&quot; + totalRead + &quot;, expected=&quot; + length);</span>
+		}
+<span class="fc" id="L142">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

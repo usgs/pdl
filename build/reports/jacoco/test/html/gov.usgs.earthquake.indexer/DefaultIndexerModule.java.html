@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultIndexerModule.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">DefaultIndexerModule.java</span></div><h1>DefaultIndexerModule.java</h1><pre class="source lang-java linenums">/*
+ * DefaultIndexerModule
+ */
+package gov.usgs.earthquake.indexer;
+
+import gov.usgs.earthquake.distribution.ContinuableListenerException;
+import gov.usgs.earthquake.distribution.SignatureVerifier;
+import gov.usgs.earthquake.geoserve.ANSSRegionsFactory;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.qdm.Point;
+import gov.usgs.earthquake.qdm.Regions;
+
+import java.math.BigDecimal;
+import java.util.logging.Logger;
+
+
+/**
+ * Default implementation of the IndexerModule interface,
+ * implements ANSS Authoritative Region logic.
+ * 
+ * Provides a basic level of support for any type of product. Creates a
+ * ProductSummary using the ProductSummary(product) constructor, which copies
+ * all properties, and links from the product.
+ */
+<span class="fc" id="L25">public class DefaultIndexerModule implements IndexerModule {</span>
+
+<span class="fc" id="L27">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L28">			.getLogger(DefaultIndexerModule.class.getName());</span>
+
+	/** Initial preferred weight. */
+	public static final long DEFAULT_PREFERRED_WEIGHT = 1;
+
+	/** Weight added when product source is same as event source. */
+	public static final long SAME_SOURCE_WEIGHT = 5;
+
+	/** Weight added when product author is in its authoritative region. */
+	public static final long AUTHORITATIVE_WEIGHT = 100;
+
+	/** Weight added when product refers to an authoritative event. */
+	public static final long AUTHORITATIVE_EVENT_WEIGHT = 50;
+
+	/** Signature verifier, configured by indexer. */
+<span class="fc" id="L43">	private SignatureVerifier signatureVerifier = new SignatureVerifier();</span>
+
+	/**
+	 * Create a ProductSummary from a Product.
+	 * 
+	 * Uses the ProductSummary(Product) constructor, which copies product
+	 * information. Checks whether product is within its authoritative region,
+	 * and if so boosts preferredWeight by AUTHORITATIVE_WEIGHT.
+	 * 
+	 * @param product
+	 *            the product to summarize.
+	 * @return ProductSummary for Product object.
+	 */
+	public ProductSummary getProductSummary(final Product product)
+			throws Exception {
+<span class="fc" id="L58">		ProductSummary summary = new ProductSummary(product);</span>
+
+		// allow sender to assign preferredWeight if we add them to the keychain
+<span class="fc" id="L61">		String preferredWeight = product.getProperties().get(&quot;preferredWeight&quot;);</span>
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">		if (preferredWeight != null</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">				&amp;&amp; signatureVerifier.verifySignature(product)) {</span>
+<span class="nc" id="L64">			LOGGER.fine(&quot;Signature verified, using sender assigned preferredWeight &quot;</span>
+					+ preferredWeight);
+<span class="nc" id="L66">			summary.setPreferredWeight(Long.valueOf(preferredWeight));</span>
+		} else {
+<span class="fc" id="L68">			summary.setPreferredWeight(getPreferredWeight(summary));</span>
+		}
+<span class="fc" id="L70">		return summary;</span>
+	}
+
+	/**
+	 * Calculate the preferred weight for a product summary.
+	 * 
+	 * This method is called after creating a product summary, but before
+	 * returning the created summary. It's return value is used to assign the
+	 * product summary preferred weight.
+	 * 
+	 * Within each type of product, the summary with the largest preferred
+	 * weight is considered preferred.
+	 * 
+	 * @param summary
+	 *            the summary to calculate a preferred weight.
+	 * @return the absolute preferred weight.
+	 */
+	protected long getPreferredWeight(final ProductSummary summary)
+			throws Exception {
+<span class="fc" id="L89">		Regions regions = ANSSRegionsFactory.getFactory().getRegions();</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">		if (regions == null) {</span>
+<span class="nc" id="L91">			throw new ContinuableListenerException(</span>
+					&quot;Unable to load ANSS Authoritative Regions&quot;);
+		}
+
+<span class="fc" id="L95">		long preferredWeight = DEFAULT_PREFERRED_WEIGHT;</span>
+
+<span class="fc" id="L97">		String source = summary.getId().getSource();</span>
+<span class="fc" id="L98">		String eventSource = summary.getEventSource();</span>
+<span class="fc" id="L99">		BigDecimal latitude = summary.getEventLatitude();</span>
+<span class="fc" id="L100">		BigDecimal longitude = summary.getEventLongitude();</span>
+<span class="fc" id="L101">		Point location = null;</span>
+<span class="pc bpc" id="L102" title="1 of 4 branches missed.">		if (latitude != null &amp;&amp; longitude != null) {</span>
+<span class="fc" id="L103">			location = new Point(longitude.doubleValue(),</span>
+<span class="fc" id="L104">					latitude.doubleValue());</span>
+		}
+
+		// authoritative check
+<span class="fc bfc" id="L108" title="All 2 branches covered.">		if (location != null) {</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">			if (regions.isAuthor(source, location)) {</span>
+				// based on product source, who authored this product.
+<span class="fc" id="L111">				preferredWeight += AUTHORITATIVE_WEIGHT;</span>
+			}
+<span class="pc bpc" id="L113" title="1 of 4 branches missed.">			if (eventSource != null &amp;&amp; regions.isAuthor(eventSource, location)) {</span>
+				// based on event source, which event this product is about
+<span class="fc" id="L115">				preferredWeight += AUTHORITATIVE_EVENT_WEIGHT;</span>
+			}
+		}
+
+		// same source check
+<span class="fc bfc" id="L120" title="All 4 branches covered.">		if (eventSource != null &amp;&amp; eventSource.equalsIgnoreCase(source)) {</span>
+<span class="fc" id="L121">			preferredWeight += SAME_SOURCE_WEIGHT;</span>
+		}
+
+<span class="fc" id="L124">		return preferredWeight;</span>
+	}
+
+	/**
+	 * Remove &quot;internal-&quot; prefix and &quot;-scenario&quot; suffix from product type&quot;.
+	 *
+	 * @param type
+	 *        product type.
+	 * @return base product type (without any known prefix or suffix).
+	 */
+	public String getBaseProductType(String type) {
+<span class="fc bfc" id="L135" title="All 2 branches covered.">		if (type.startsWith(&quot;internal-&quot;)) {</span>
+<span class="fc" id="L136">			type = type.replace(&quot;internal-&quot;, &quot;&quot;);</span>
+		}
+
+<span class="fc bfc" id="L139" title="All 2 branches covered.">		if (type.endsWith(&quot;-scenario&quot;)) {</span>
+<span class="fc" id="L140">			type = type.replace(&quot;-scenario&quot;, &quot;&quot;);</span>
+		}
+
+<span class="fc" id="L143">		return type;</span>
+	}
+
+	/**
+	 * This module provides a default level of support for any type of product.
+	 * 
+	 * @param product
+	 *            the product to test.
+	 * @return IndexerModule.LEVEL_DEFAULT.
+	 */
+	public int getSupportLevel(final Product product) {
+<span class="fc" id="L154">		return IndexerModule.LEVEL_DEFAULT;</span>
+	}
+
+	public SignatureVerifier getSignatureVerifier() {
+<span class="fc" id="L158">		return signatureVerifier;</span>
+	}
+
+	public void setSignatureVerifier(SignatureVerifier signatureVerifier) {
+<span class="nc" id="L162">		this.signatureVerifier = signatureVerifier;</span>
+<span class="nc" id="L163">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

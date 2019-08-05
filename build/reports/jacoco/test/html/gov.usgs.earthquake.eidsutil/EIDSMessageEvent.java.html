@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EIDSMessageEvent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.eidsutil</a> &gt; <span class="el_source">EIDSMessageEvent.java</span></div><h1>EIDSMessageEvent.java</h1><pre class="source lang-java linenums">/*
+ * EIDSMessageEvent
+ */
+package gov.usgs.earthquake.eidsutil;
+
+import java.util.EventObject;
+import java.util.Date;
+
+/**
+ * EIDSMessageEvent objects are sent from EIDSClients to EIDSListeners.
+ */
+public class EIDSMessageEvent extends EventObject {
+
+	/** Serialization id. */
+	private static final long serialVersionUID = 1L;
+
+	/** The sequence number the server assigned. */
+	private Long serverSequenceNumber;
+
+	/** The time the server received this message. */
+	private Date serverTimeGenerated;
+
+	/** The unique source name. */
+	private String feederSourceHost;
+
+	/** The unique source number. */
+	private Long feederSequenceNumber;
+
+	/** Namespace for root element. */
+	private String rootNamespace;
+
+	/** Root element of message. */
+	private String rootElement;
+
+	/** Message that was received via EIDS. */
+	private String message;
+
+	/** The server that delivered this message. */
+	private String serverHost;
+
+	/**
+	 * Create a new EIDSMessageEvent.
+	 * 
+	 * @param source
+	 *            the EIDSClient that received the message.
+	 * @param feederSourceHost
+	 *            the origin of the message.
+	 * @param feederSequenceNumber
+	 *            a unique identifier from feederSourceHost.
+	 * @param rootNamespace
+	 *            the rootElement namespace of the message
+	 * @param rootElement
+	 *            the message rootElement local name.
+	 * @param message
+	 *            the message that was received.
+	 * @param serverSequenceNumber
+	 *            the sequence number assigned by the server that delivered this
+	 *            message.
+	 * @param serverTimeGenerated
+	 *            the date the server received this message.
+	 */
+	public EIDSMessageEvent(QWEmbeddedClient source, final Long serverSequenceNumber,
+			final Date serverTimeGenerated, final String feederSourceHost,
+			final Long feederSequenceNumber, final String rootNamespace,
+			final String rootElement, final String message) {
+<span class="fc" id="L66">		super(source);</span>
+<span class="fc" id="L67">		this.serverHost = source.getServerHost();</span>
+<span class="fc" id="L68">		this.serverSequenceNumber = serverSequenceNumber;</span>
+<span class="fc" id="L69">		this.serverTimeGenerated = serverTimeGenerated;</span>
+<span class="fc" id="L70">		this.feederSourceHost = feederSourceHost;</span>
+<span class="fc" id="L71">		this.feederSequenceNumber = feederSequenceNumber;</span>
+<span class="fc" id="L72">		this.rootNamespace = rootNamespace;</span>
+<span class="fc" id="L73">		this.rootElement = rootElement;</span>
+<span class="fc" id="L74">		this.message = message;</span>
+<span class="fc" id="L75">	}</span>
+
+	/**
+	 * @return the message source as an EIDSClient.
+	 */
+	public QWEmbeddedClient getQWEmbeddedClient() {
+<span class="nc" id="L81">		return (QWEmbeddedClient) getSource();</span>
+	}
+
+	/**
+	 * @return the serverHost
+	 */
+	public String getServerHost() {
+<span class="fc" id="L88">		return serverHost;</span>
+	}
+
+	/**
+	 * @return the serverSequenceNumber
+	 */
+	public Long getServerSequence() {
+<span class="fc" id="L95">		return serverSequenceNumber;</span>
+	}
+
+	/**
+	 * @return the serverTimeGenerated
+	 */
+	public Date getServerTimeGenerated() {
+<span class="nc" id="L102">		return serverTimeGenerated;</span>
+	}
+
+	/**
+	 * @return combined with message sequence, uniquely identifies this message.
+	 */
+	public String getMessageSource() {
+<span class="fc" id="L109">		return feederSourceHost;</span>
+	}
+
+	/**
+	 * @return combined with message source, uniquely identifies this message.
+	 */
+	public Long getMessageSequence() {
+<span class="fc" id="L116">		return feederSequenceNumber;</span>
+	}
+
+	/**
+	 * @return the namespace of the xml root element.
+	 */
+	public String getRootNamespace() {
+<span class="nc" id="L123">		return rootNamespace;</span>
+	}
+
+	/**
+	 * @return the xml root element of the message.
+	 */
+	public String getRootElement() {
+<span class="fc" id="L130">		return rootElement;</span>
+	}
+
+	/**
+	 * @return the message.
+	 */
+	public String getMessage() {
+<span class="fc" id="L137">		return message;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

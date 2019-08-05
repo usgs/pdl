@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Region.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.qdm</a> &gt; <span class="el_source">Region.java</span></div><h1>Region.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.qdm;
+
+import java.util.ArrayList;
+
+/**
+ * A polygon without holes.
+ * 
+ * Points are assumed to use x=longitude, y=latitude.
+ * A &quot;default&quot; region has no boundary points, and contains all points.
+ */
+public class Region {
+
+  public String netid;
+  public String regionid;
+
+  public ArrayList&lt;Point&gt; points;
+
+<span class="fc" id="L18">  public Region(String netid, String regionid) {</span>
+<span class="fc" id="L19">    this.netid = netid;</span>
+<span class="fc" id="L20">    this.regionid = regionid;</span>
+<span class="fc" id="L21">    this.points = new ArrayList&lt;Point&gt;();</span>
+<span class="fc" id="L22">  }</span>
+
+  /**
+   * Method to determine if this lat-lon in this region? In or out algorithm taken
+   * from an algorithm by Edwards and Coleman of Oak Ridge Lab, version for BNL by
+   * Benkovitz translated to C by Andy Michael and into Java by Alan Jones.
+   */
+  public boolean inpoly(Point xy) {
+    int in;
+    double sine;
+<span class="fc" id="L32">    boolean bool = false;</span>
+<span class="fc" id="L33">    int inside = 0;</span>
+<span class="fc" id="L34">    int nvert = this.points.size();</span>
+    // If there are no points in the region, assume default region
+    // and declare the point inside
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">    if (nvert == 0)</span>
+<span class="nc" id="L38">      return true;</span>
+<span class="fc" id="L39">    Point p[] = (Point[]) this.points.toArray(new Point[0]);</span>
+<span class="fc" id="L40">    double x = xy.x;</span>
+<span class="fc" id="L41">    double y = xy.y;</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">    for (int i = 0; i &lt; nvert; ++i) {</span>
+<span class="fc" id="L43">      in = i + 1;</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">      if (in &gt;= nvert)</span>
+<span class="fc" id="L45">        in = 0;</span>
+<span class="fc bfc" id="L46" title="All 4 branches covered.">      if (p[in].y == p[i].y &amp;&amp; p[in].x == p[i].x)</span>
+<span class="fc" id="L47">        continue;</span>
+<span class="fc" id="L48">      sine = (x - p[i].x) * (p[in].y - p[i].y) - (y - p[i].y) * (p[in].x - p[i].x);</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">      if (sine == 0) {</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">        if (((x - p[i].x) * (p[in].x - p[i].x) + (y - p[i].y) * (p[in].y - p[i].y))</span>
+            * ((x - p[in].x) * (p[in].x - p[i].x) + (y - p[in].y) * (p[in].y - p[i].y)) &gt; 0)
+<span class="nc" id="L52">          continue;</span>
+<span class="nc" id="L53">        return true;</span>
+      }
+<span class="fc bfc" id="L55" title="All 12 branches covered.">      if (y &gt; p[in].y &amp;&amp; y &lt;= p[i].y &amp;&amp; sine &lt; 0 || y &lt;= p[in].y &amp;&amp; y &gt; p[i].y &amp;&amp; sine &gt; 0) {</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        bool = !bool;</span>
+      }
+    }
+<span class="fc bfc" id="L59" title="All 2 branches covered.">    if (bool)</span>
+<span class="fc" id="L60">      inside = 1;</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">    if (inside != 0)</span>
+<span class="fc" id="L62">      return true;</span>
+    else
+<span class="fc" id="L64">      return false;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TectonicSummaryIndexerModule.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.tectonicsummary</a> &gt; <span class="el_source">TectonicSummaryIndexerModule.java</span></div><h1>TectonicSummaryIndexerModule.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.tectonicsummary;
+
+import gov.usgs.earthquake.indexer.DefaultIndexerModule;
+import gov.usgs.earthquake.indexer.IndexerModule;
+import gov.usgs.earthquake.indexer.ProductSummary;
+import gov.usgs.earthquake.product.Product;
+
+/**
+ * Tectonic Summary indexer module.
+ *
+ * Provides a higher and more specific level of support for tectonic summary
+ * products, including checking for &quot;Reviewed&quot; status on the tectonic summary.
+ * These &quot;Reviewed tectonic summmaries will always be preferred.
+ */
+@Deprecated()
+<span class="fc" id="L16">public class TectonicSummaryIndexerModule extends DefaultIndexerModule {</span>
+
+	public static final int REVIEWED_TECTONIC_SUMMARY_WEIGHT = 200;
+
+	@Override
+	public int getSupportLevel(Product product) {
+<span class="fc" id="L22">		int supportLevel = IndexerModule.LEVEL_UNSUPPORTED;</span>
+<span class="fc" id="L23">		String type = getBaseProductType(product.getId().getType());</span>
+		// support tectonic summary products
+<span class="fc bfc" id="L25" title="All 2 branches covered.">		if (type.equals(&quot;tectonic-summary&quot;)) {</span>
+<span class="fc" id="L26">			supportLevel = IndexerModule.LEVEL_SUPPORTED;</span>
+		}
+<span class="fc" id="L28">		return supportLevel;</span>
+	}
+
+	@Override
+	protected long getPreferredWeight(final ProductSummary summary)
+			throws Exception {
+<span class="fc" id="L34">		long preferredWeight = super.getPreferredWeight(summary);</span>
+<span class="fc" id="L35">		String reviewStatus = summary.getProperties().get(&quot;review-status&quot;);</span>
+
+<span class="fc bfc" id="L37" title="All 2 branches covered.">		if (&quot;REVIEWED&quot;.equalsIgnoreCase(reviewStatus)) {</span>
+<span class="fc" id="L38">			preferredWeight += REVIEWED_TECTONIC_SUMMARY_WEIGHT;</span>
+		}
+
+<span class="fc" id="L41">		return preferredWeight;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

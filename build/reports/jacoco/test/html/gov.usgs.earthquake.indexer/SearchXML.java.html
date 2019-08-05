@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchXML.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">SearchXML.java</span></div><h1>SearchXML.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.indexer;
+
+import gov.usgs.earthquake.distribution.FileProductStorage;
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.product.io.XmlProductHandler;
+import gov.usgs.util.XmlUtils;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.URI;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Formatter for Search XML.
+ */
+<span class="nc" id="L21">public class SearchXML {</span>
+
+	public static final String INDEXER_XMLNS = &quot;http://earthquake.usgs.gov/distribution/indexer&quot;;
+
+	public static final String REQUEST_ELEMENT = &quot;searchrequest&quot;;
+	public static final String RESPONSE_ELEMENT = &quot;searchresponse&quot;;
+
+	public static final String RESULT_ELEMENT = &quot;result&quot;;
+	public static final String QUERY_ELEMENT = &quot;query&quot;;
+	public static final String EVENT_ELEMENT = &quot;event&quot;;
+	public static final String ERROR_ELEMENT = &quot;error&quot;;
+
+	public static final String METHOD_ATTRIBUTE = &quot;method&quot;;
+
+	public static final String EVENT_SOURCE_ATTRIBUTE = &quot;eventSource&quot;;
+	public static final String EVENT_SOURCE_CODE_ATTRIBUTE = &quot;eventSourceCode&quot;;
+	public static final String MIN_EVENT_TIME_ATTRIBUTE = &quot;minEventTime&quot;;
+	public static final String MAX_EVENT_TIME_ATTRIBUTE = &quot;maxEventTime&quot;;
+	public static final String MIN_EVENT_LATITUDE_ATTRIBUTE = &quot;minEventLatitude&quot;;
+	public static final String MAX_EVENT_LATITUDE_ATTRIBUTE = &quot;maxEventLatitude&quot;;
+	public static final String MIN_EVENT_LONGITUDE_ATTRIBUTE = &quot;minEventLongitude&quot;;
+	public static final String MAX_EVENT_LONGITUDE_ATTRIBUTE = &quot;maxEventLongitude&quot;;
+	public static final String MIN_EVENT_DEPTH_ATTRIBUTE = &quot;minEventDepth&quot;;
+	public static final String MAX_EVENT_DEPTH_ATTRIBUTE = &quot;maxEventDepth&quot;;
+	public static final String MIN_EVENT_MAGNITUDE_ATTRIBUTE = &quot;minEventMagnitude&quot;;
+	public static final String MAX_EVENT_MAGNITUDE_ATTRIBUTE = &quot;maxEventMagnitude&quot;;
+	public static final String MIN_PRODUCT_UPDATE_TIME_ATTRIBUTE = &quot;minProductUpdateTime&quot;;
+	public static final String MAX_PRODUCT_UPDATE_TIME_ATTRIBUTE = &quot;maxProductUpdateTime&quot;;
+	public static final String PRODUCT_SOURCE_ATTRIBUTE = &quot;productSource&quot;;
+	public static final String PRODUCT_TYPE_ATTRIBUTE = &quot;productType&quot;;
+	public static final String PRODUCT_CODE_ATTRIBUTE = &quot;productCode&quot;;
+	public static final String PRODUCT_VERSION_ATTRIBUTE = &quot;productVersion&quot;;
+	public static final String PRODUCT_STATUS_ATTRIBUTE = &quot;productStatus&quot;;
+
+	public static final String EVENT_SUMMARY_ELEMENT = &quot;eventSummary&quot;;
+	public static final String PRODUCT_SUMMARY_ELEMENT = &quot;productSummary&quot;;
+
+	public static final String ID_ATTRIBUTE = &quot;id&quot;;
+	public static final String UPDATE_TIME_ATTRIBUTE = &quot;updateTime&quot;;
+	public static final String STATUS_ATTRIBUTE = &quot;status&quot;;
+	public static final String SOURCE_ATTRIBUTE = &quot;source&quot;;
+	public static final String SOURCE_CODE_ATTRIBUTE = &quot;sourceCode&quot;;
+	public static final String TIME_ATTRIBUTE = &quot;time&quot;;
+	public static final String LATITUDE_ATTRIBUTE = &quot;latitude&quot;;
+	public static final String LONGITUDE_ATTRIBUTE = &quot;longitude&quot;;
+	public static final String DEPTH_ATTRIBUTE = &quot;depth&quot;;
+	public static final String MAGNITUDE_ATTRIBUTE = &quot;magnitude&quot;;
+	public static final String VERSION_ATTRIBUTE = &quot;version&quot;;
+	public static final String PREFERRED_WEIGHT_ATTRIBUTE = &quot;preferredWeight&quot;;
+
+	/**
+	 * Parse an input stream with xml to a SearchRequest object.
+	 * 
+	 * @param in
+	 *            the input stream containing xml.
+	 * @return the parsed SearchRequest object.
+	 */
+	public static SearchRequest parseRequest(final InputStream in)
+			throws Exception {
+<span class="fc" id="L80">		SearchRequestParser parser = new SearchRequestParser();</span>
+<span class="fc" id="L81">		XmlUtils.parse(in, parser);</span>
+<span class="fc" id="L82">		return parser.getSearchRequest();</span>
+	}
+
+	/**
+	 * Parse an input stream with xml to a SearchResponse object.
+	 * 
+	 * @param in
+	 *            the input stream containing xml.
+	 * @param storage
+	 *            the storage where received products are stored.
+	 * @return the parsed SearchResponse object.
+	 * @throws Exception
+	 */
+	public static SearchResponse parseResponse(final InputStream in,
+			final FileProductStorage storage) throws Exception {
+<span class="fc" id="L97">		SearchResponseParser parser = new SearchResponseParser(storage);</span>
+<span class="fc" id="L98">		XmlUtils.parse(in, parser);</span>
+<span class="fc" id="L99">		return parser.getSearchResponse();</span>
+	}
+
+	/**
+	 * Convert a SearchRequest object to xml.
+	 * 
+	 * @param request
+	 *            the search request object to convert.
+	 * @param out
+	 *            the output stream where xml is written.
+	 * @throws Exception
+	 */
+	public static void toXML(final SearchRequest request, final OutputStream out)
+			throws Exception {
+<span class="fc" id="L113">		OutputStreamWriter outStream = new OutputStreamWriter(out);</span>
+<span class="fc" id="L114">		outStream.write(&quot;&lt;?xml version=\&quot;1.0\&quot;?&gt;&quot;);</span>
+<span class="fc" id="L115">		outStream.write(&quot;&lt;&quot; + REQUEST_ELEMENT);</span>
+<span class="fc" id="L116">		outStream.write(&quot; xmlns=\&quot;&quot; + INDEXER_XMLNS + &quot;\&quot;&quot;);</span>
+<span class="fc" id="L117">		outStream.write(&quot;&gt;&quot;);</span>
+<span class="fc" id="L118">		List&lt;SearchQuery&gt; queries = request.getQueries();</span>
+<span class="fc" id="L119">		for (Iterator&lt;SearchQuery&gt; queryIterator = queries.iterator(); queryIterator</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">				.hasNext();) {</span>
+<span class="fc" id="L121">			SearchQuery query = queryIterator.next();</span>
+<span class="fc" id="L122">			outStream.write(getQueryXMLString(query));</span>
+<span class="fc" id="L123">		}</span>
+<span class="fc" id="L124">		outStream.write(&quot;&lt;/&quot; + REQUEST_ELEMENT + &quot;&gt;&quot;);</span>
+<span class="fc" id="L125">		outStream.flush();</span>
+<span class="fc" id="L126">	}</span>
+
+	/**
+	 * Convert a SearchResponse object to xml.
+	 * 
+	 * @param response
+	 *            the search response object to convert.
+	 * @param out
+	 *            the output stream where xml is written.
+	 * @throws Exception
+	 */
+	public static void toXML(final SearchResponse response,
+			final OutputStream out) throws Exception {
+<span class="fc" id="L139">		OutputStreamWriter writer = new OutputStreamWriter(out);</span>
+<span class="fc" id="L140">		writer.write(&quot;&lt;?xml version=\&quot;1.0\&quot;?&gt;&quot;);</span>
+<span class="fc" id="L141">		writer.write(&quot;&lt;&quot; + RESPONSE_ELEMENT);</span>
+<span class="fc" id="L142">		writer.write(&quot; xmlns=\&quot;&quot; + INDEXER_XMLNS + &quot;\&quot;&quot;);</span>
+<span class="fc" id="L143">		writer.write(&quot; xmlns:product=\&quot;&quot;</span>
+				+ XmlProductHandler.PRODUCT_XML_NAMESPACE + &quot;\&quot;&quot;);
+<span class="fc" id="L145">		writer.write(&quot;&gt;&quot;);</span>
+<span class="fc" id="L146">		List&lt;SearchQuery&gt; results = response.getResults();</span>
+<span class="fc" id="L147">		for (Iterator&lt;SearchQuery&gt; resultsIterator = results.iterator(); resultsIterator</span>
+<span class="fc bfc" id="L148" title="All 2 branches covered.">				.hasNext();) {</span>
+<span class="fc" id="L149">			SearchQuery result = resultsIterator.next();</span>
+<span class="fc" id="L150">			writer.write(&quot;&lt;&quot; + RESULT_ELEMENT);</span>
+<span class="fc" id="L151">			writer.write(&quot; &quot; + METHOD_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L152">					+ result.getType().getXmlMethodName() + &quot;\&quot;&quot;);</span>
+<span class="fc" id="L153">			writer.write(&quot;&gt;&quot;);</span>
+<span class="fc" id="L154">			writer.write(getQueryXMLString(result));</span>
+
+<span class="fc bfc" id="L156" title="All 2 branches covered.">			if (result.getType() == SearchMethod.EVENT_DETAIL) {</span>
+<span class="fc" id="L157">				EventDetailQuery edResult = (EventDetailQuery) result;</span>
+<span class="fc" id="L158">				List&lt;Event&gt; events = edResult.getResult();</span>
+<span class="fc" id="L159">				for (Iterator&lt;Event&gt; eventIter = events.iterator(); eventIter</span>
+<span class="fc bfc" id="L160" title="All 2 branches covered.">						.hasNext();) {</span>
+<span class="fc" id="L161">					Event event = eventIter.next();</span>
+<span class="fc" id="L162">					writer.write(&quot;&lt;&quot; + EVENT_ELEMENT);</span>
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">					if (event.getSource() != null)</span>
+<span class="nc" id="L164">						writer.write(&quot; &quot; + SOURCE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="nc" id="L165">								+ event.getSource() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">					if (event.getSourceCode() != null)</span>
+<span class="nc" id="L167">						writer.write(&quot; &quot; + SOURCE_CODE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="nc" id="L168">								+ event.getSourceCode() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">					if (event.getTime() != null)</span>
+<span class="nc" id="L170">						writer.write(&quot; &quot; + TIME_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="nc" id="L171">								+ XmlUtils.formatDate(event.getTime()) + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L172" title="1 of 2 branches missed.">					if (event.getLatitude() != null)</span>
+<span class="nc" id="L173">						writer.write(&quot; &quot; + LATITUDE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="nc" id="L174">								+ event.getLatitude().toString() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">					if (event.getLongitude() != null)</span>
+<span class="nc" id="L176">						writer.write(&quot; &quot; + LONGITUDE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="nc" id="L177">								+ event.getLongitude().toString() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">					if (event.getDepth() != null)</span>
+<span class="nc" id="L179">						writer.write(&quot; &quot; + DEPTH_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="nc" id="L180">								+ event.getDepth().toString() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">					if (event.getMagnitude() != null)</span>
+<span class="nc" id="L182">						writer.write(&quot; &quot; + MAGNITUDE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="nc" id="L183">								+ event.getMagnitude().toString() + &quot;\&quot;&quot;);</span>
+<span class="fc" id="L184">					writer.write(&quot;&gt;&quot;);</span>
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">					if (!event.getProducts().isEmpty()) {</span>
+<span class="fc" id="L186">						Map&lt;String, List&lt;ProductSummary&gt;&gt; products = event</span>
+<span class="fc" id="L187">								.getProducts();</span>
+<span class="fc" id="L188">						for (Iterator&lt;String&gt; prodIter = products.keySet()</span>
+<span class="fc bfc" id="L189" title="All 2 branches covered.">								.iterator(); prodIter.hasNext();) {</span>
+<span class="fc" id="L190">							String prodType = prodIter.next();</span>
+<span class="fc" id="L191">							for (Iterator&lt;ProductSummary&gt; summaryIter = products</span>
+<span class="fc" id="L192">									.get(prodType).iterator(); summaryIter</span>
+<span class="fc bfc" id="L193" title="All 2 branches covered.">									.hasNext();) {</span>
+<span class="fc" id="L194">								writer.write(getProductSummaryXmlString(summaryIter</span>
+<span class="fc" id="L195">										.next()));</span>
+							}
+<span class="fc" id="L197">						}</span>
+					}
+<span class="fc" id="L199">					writer.write(&quot;&lt;/&quot; + EVENT_ELEMENT + &quot;&gt;&quot;);</span>
+<span class="fc" id="L200">				}</span>
+<span class="fc bfc" id="L201" title="All 2 branches covered.">			} else if (result.getType() == SearchMethod.EVENTS_SUMMARY) {</span>
+<span class="fc" id="L202">				EventsSummaryQuery esResult = (EventsSummaryQuery) result;</span>
+<span class="fc" id="L203">				List&lt;EventSummary&gt; summaries = esResult.getResult();</span>
+<span class="fc" id="L204">				for (Iterator&lt;EventSummary&gt; summaryIter = summaries.iterator(); summaryIter</span>
+<span class="fc bfc" id="L205" title="All 2 branches covered.">						.hasNext();) {</span>
+<span class="fc" id="L206">					writer.write(&quot;&lt;&quot; + EVENT_SUMMARY_ELEMENT);</span>
+<span class="fc" id="L207">					EventSummary summary = summaryIter.next();</span>
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">					if (summary.getSource() != null)</span>
+<span class="fc" id="L209">						writer.write(&quot; &quot; + SOURCE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L210">								+ summary.getSource() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L211" title="1 of 2 branches missed.">					if (summary.getSourceCode() != null)</span>
+<span class="fc" id="L212">						writer.write(&quot; &quot; + SOURCE_CODE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L213">								+ summary.getSourceCode() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L214" title="1 of 2 branches missed.">					if (summary.getTime() != null)</span>
+<span class="fc" id="L215">						writer.write(&quot; &quot; + TIME_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L216">								+ XmlUtils.formatDate(summary.getTime()) + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">					if (summary.getLatitude() != null)</span>
+<span class="fc" id="L218">						writer.write(&quot; &quot; + LATITUDE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L219">								+ summary.getLatitude().toString() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">					if (summary.getLongitude() != null)</span>
+<span class="fc" id="L221">						writer.write(&quot; &quot; + LONGITUDE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L222">								+ summary.getLongitude().toString() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L223" title="1 of 2 branches missed.">					if (summary.getDepth() != null)</span>
+<span class="fc" id="L224">						writer.write(&quot; &quot; + DEPTH_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L225">								+ summary.getDepth().toString() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">					if (summary.getMagnitude() != null)</span>
+<span class="fc" id="L227">						writer.write(&quot; &quot; + MAGNITUDE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L228">								+ summary.getMagnitude().toString() + &quot;\&quot;&quot;);</span>
+<span class="fc" id="L229">					writer.write(&quot;&gt;&quot;);</span>
+<span class="pc bpc" id="L230" title="1 of 2 branches missed.">					if (!summary.getProperties().isEmpty()) {</span>
+<span class="fc" id="L231">						Map&lt;String, String&gt; properties = summary</span>
+<span class="fc" id="L232">								.getProperties();</span>
+<span class="fc" id="L233">						for (Iterator&lt;String&gt; propIter = properties.keySet()</span>
+<span class="fc bfc" id="L234" title="All 2 branches covered.">								.iterator(); propIter.hasNext();) {</span>
+<span class="fc" id="L235">							String property = propIter.next();</span>
+<span class="fc" id="L236">							String value = properties.get(property);</span>
+<span class="fc" id="L237">							writer.write(&quot;&lt;product:&quot;</span>
+									+ XmlProductHandler.PROPERTY_ELEMENT);
+<span class="fc" id="L239">							writer.write(&quot; &quot;</span>
+									+ XmlProductHandler.PROPERTY_ATTRIBUTE_NAME
+									+ &quot;=\&quot;&quot; + property + &quot;\&quot;&quot;);
+<span class="fc" id="L242">							writer.write(&quot; &quot;</span>
+									+ XmlProductHandler.PROPERTY_ATTRIBUTE_VALUE
+									+ &quot;=\&quot;&quot; + value + &quot;\&quot;&quot;);
+<span class="fc" id="L245">							writer.write(&quot; /&gt;&quot;);</span>
+<span class="fc" id="L246">						}</span>
+					}
+<span class="fc" id="L248">					writer.write(&quot;&lt;/&quot; + EVENT_SUMMARY_ELEMENT + &quot;&gt;&quot;);</span>
+<span class="fc" id="L249">				}</span>
+<span class="fc bfc" id="L250" title="All 2 branches covered.">			} else if (result.getType() == SearchMethod.PRODUCT_DETAIL) {</span>
+<span class="fc" id="L251">				ProductDetailQuery pdResult = (ProductDetailQuery) result;</span>
+<span class="fc" id="L252">				List&lt;Product&gt; products = pdResult.getResult();</span>
+<span class="fc" id="L253">				writer.flush();</span>
+<span class="fc" id="L254">				for (Iterator&lt;Product&gt; prodIter = products.iterator(); prodIter</span>
+<span class="fc bfc" id="L255" title="All 2 branches covered.">						.hasNext();) {</span>
+<span class="fc" id="L256">					Product product = prodIter.next();</span>
+<span class="fc" id="L257">					XmlProductHandler handler = new XmlProductHandler(out, false);</span>
+<span class="fc" id="L258">					handler.onBeginProduct(product.getId(),</span>
+<span class="fc" id="L259">							product.getStatus(), product.getTrackerURL());</span>
+<span class="fc" id="L260">					Map&lt;String, String&gt; properties = product.getProperties();</span>
+<span class="fc" id="L261">					for (Iterator&lt;String&gt; propIter = properties.keySet()</span>
+<span class="fc bfc" id="L262" title="All 2 branches covered.">							.iterator(); propIter.hasNext();) {</span>
+<span class="fc" id="L263">						String name = propIter.next();</span>
+<span class="fc" id="L264">						handler.onProperty(product.getId(), name,</span>
+<span class="fc" id="L265">								properties.get(name));</span>
+<span class="fc" id="L266">					}</span>
+<span class="fc" id="L267">					Map&lt;String, List&lt;URI&gt;&gt; links = product.getLinks();</span>
+<span class="fc" id="L268">					for (Iterator&lt;String&gt; relIter = links.keySet().iterator(); relIter</span>
+<span class="fc bfc" id="L269" title="All 2 branches covered.">							.hasNext();) {</span>
+<span class="fc" id="L270">						String relation = relIter.next();</span>
+<span class="fc" id="L271">						for (Iterator&lt;URI&gt; uriIter = links.get(relation)</span>
+<span class="fc bfc" id="L272" title="All 2 branches covered.">								.iterator(); uriIter.hasNext();) {</span>
+<span class="fc" id="L273">							URI href = uriIter.next();</span>
+<span class="fc" id="L274">							handler.onLink(product.getId(), relation, href);</span>
+<span class="fc" id="L275">						}</span>
+<span class="fc" id="L276">					}</span>
+<span class="fc" id="L277">					Map&lt;String, Content&gt; contents = product.getContents();</span>
+<span class="fc" id="L278">					for (Iterator&lt;String&gt; pathIter = contents.keySet()</span>
+<span class="fc bfc" id="L279" title="All 2 branches covered.">							.iterator(); pathIter.hasNext();) {</span>
+<span class="fc" id="L280">						String path = pathIter.next();</span>
+<span class="fc" id="L281">						handler.onContent(product.getId(), path,</span>
+<span class="fc" id="L282">								contents.get(path));</span>
+<span class="fc" id="L283">					}</span>
+<span class="pc bpc" id="L284" title="1 of 2 branches missed.">					if (product.getSignature() != null)</span>
+<span class="fc" id="L285">						handler.onSignature(product.getId(),</span>
+<span class="fc" id="L286">								product.getSignature());</span>
+<span class="fc" id="L287">					handler.onEndProduct(product.getId());</span>
+<span class="fc" id="L288">				}</span>
+<span class="pc bpc" id="L289" title="1 of 2 branches missed.">			} else if (result.getType() == SearchMethod.PRODUCTS_SUMMARY) {</span>
+<span class="fc" id="L290">				ProductsSummaryQuery psQuery = (ProductsSummaryQuery) result;</span>
+<span class="fc" id="L291">				List&lt;ProductSummary&gt; summaries = psQuery.getResult();</span>
+<span class="fc" id="L292">				for (Iterator&lt;ProductSummary&gt; summaryIter = summaries</span>
+<span class="fc bfc" id="L293" title="All 2 branches covered.">						.iterator(); summaryIter.hasNext();) {</span>
+<span class="fc" id="L294">					writer.write(getProductSummaryXmlString(summaryIter.next()));</span>
+				}
+			}
+
+<span class="fc" id="L298">			writer.write(&quot;&lt;/&quot; + RESULT_ELEMENT + &quot;&gt;&quot;);</span>
+<span class="fc" id="L299">		}</span>
+<span class="fc" id="L300">		writer.write(&quot;&lt;/&quot; + RESPONSE_ELEMENT + &quot;&gt;&quot;);</span>
+<span class="fc" id="L301">		writer.flush();</span>
+<span class="fc" id="L302">	}</span>
+
+	/**
+	 * Private  helper method to convert query elements into XML
+	 * @param query
+	 * 		the query element to convert to xml
+	 * @return an xml string representing the query object
+	 */
+	private static String getQueryXMLString(SearchQuery query) {
+<span class="fc" id="L311">		StringBuffer queryXmlString = new StringBuffer();</span>
+<span class="fc" id="L312">		queryXmlString.append(&quot;&lt;&quot; + QUERY_ELEMENT);</span>
+<span class="fc" id="L313">		queryXmlString.append(&quot; &quot; + METHOD_ATTRIBUTE + &quot;=\&quot;&quot;);</span>
+<span class="fc" id="L314">		queryXmlString.append(query.getType().getXmlMethodName());</span>
+<span class="fc" id="L315">		queryXmlString.append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L316">		ProductIndexQuery prodIndexQuery = query.getProductIndexQuery();</span>
+<span class="pc bpc" id="L317" title="1 of 2 branches missed.">		if (prodIndexQuery.getEventSource() != null)</span>
+<span class="fc" id="L318">			queryXmlString.append(&quot; &quot; + EVENT_SOURCE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L319">					+ prodIndexQuery.getEventSource() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L320" title="1 of 2 branches missed.">		if (prodIndexQuery.getEventSourceCode() != null)</span>
+<span class="fc" id="L321">			queryXmlString.append(&quot; &quot; + EVENT_SOURCE_CODE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L322">					+ prodIndexQuery.getEventSourceCode() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L323" title="1 of 2 branches missed.">		if (prodIndexQuery.getMinEventTime() != null)</span>
+<span class="fc" id="L324">			queryXmlString.append(&quot; &quot; + MIN_EVENT_TIME_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L325">					+ XmlUtils.formatDate(prodIndexQuery.getMinEventTime())</span>
+					+ &quot;\&quot;&quot;);
+<span class="pc bpc" id="L327" title="1 of 2 branches missed.">		if (prodIndexQuery.getMaxEventTime() != null)</span>
+<span class="fc" id="L328">			queryXmlString.append(&quot; &quot; + MAX_EVENT_TIME_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L329">					+ XmlUtils.formatDate(prodIndexQuery.getMaxEventTime())</span>
+					+ &quot;\&quot;&quot;);
+<span class="pc bpc" id="L331" title="1 of 2 branches missed.">		if (prodIndexQuery.getMinEventLatitude() != null)</span>
+<span class="fc" id="L332">			queryXmlString.append(&quot; &quot; + MIN_EVENT_LATITUDE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L333">					+ prodIndexQuery.getMinEventLatitude() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L334" title="1 of 2 branches missed.">		if (prodIndexQuery.getMaxEventLatitude() != null)</span>
+<span class="fc" id="L335">			queryXmlString.append(&quot; &quot; + MAX_EVENT_LATITUDE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L336">					+ prodIndexQuery.getMaxEventLatitude() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L337" title="1 of 2 branches missed.">		if (prodIndexQuery.getMinEventLongitude() != null)</span>
+<span class="fc" id="L338">			queryXmlString.append(&quot; &quot; + MIN_EVENT_LONGITUDE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L339">					+ prodIndexQuery.getMinEventLongitude() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L340" title="1 of 2 branches missed.">		if (prodIndexQuery.getMaxEventLongitude() != null)</span>
+<span class="fc" id="L341">			queryXmlString.append(&quot; &quot; + MAX_EVENT_LONGITUDE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L342">					+ prodIndexQuery.getMaxEventLongitude() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L343" title="1 of 2 branches missed.">		if (prodIndexQuery.getMinEventDepth() != null)</span>
+<span class="fc" id="L344">			queryXmlString.append(&quot; &quot; + MIN_EVENT_DEPTH_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L345">					+ prodIndexQuery.getMinEventDepth() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L346" title="1 of 2 branches missed.">		if (prodIndexQuery.getMaxEventDepth() != null)</span>
+<span class="fc" id="L347">			queryXmlString.append(&quot; &quot; + MAX_EVENT_DEPTH_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L348">					+ prodIndexQuery.getMaxEventDepth() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L349" title="1 of 2 branches missed.">		if (prodIndexQuery.getMinEventMagnitude() != null)</span>
+<span class="fc" id="L350">			queryXmlString.append(&quot; &quot; + MIN_EVENT_MAGNITUDE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L351">					+ prodIndexQuery.getMinEventMagnitude() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L352" title="1 of 2 branches missed.">		if (prodIndexQuery.getMaxEventMagnitude() != null)</span>
+<span class="fc" id="L353">			queryXmlString.append(&quot; &quot; + MAX_EVENT_MAGNITUDE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L354">					+ prodIndexQuery.getMaxEventMagnitude() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L355" title="1 of 2 branches missed.">		if (prodIndexQuery.getMinProductUpdateTime() != null)</span>
+<span class="fc" id="L356">			queryXmlString.append(&quot; &quot;</span>
+					+ MIN_PRODUCT_UPDATE_TIME_ATTRIBUTE
+					+ &quot;=\&quot;&quot;
+<span class="fc" id="L359">					+ XmlUtils.formatDate(prodIndexQuery</span>
+<span class="fc" id="L360">							.getMinProductUpdateTime()) + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L361" title="1 of 2 branches missed.">		if (prodIndexQuery.getMaxProductUpdateTime() != null)</span>
+<span class="fc" id="L362">			queryXmlString.append(&quot; &quot;</span>
+					+ MAX_PRODUCT_UPDATE_TIME_ATTRIBUTE
+					+ &quot;=\&quot;&quot;
+<span class="fc" id="L365">					+ XmlUtils.formatDate(prodIndexQuery</span>
+<span class="fc" id="L366">							.getMaxProductUpdateTime()) + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L367" title="1 of 2 branches missed.">		if (prodIndexQuery.getProductSource() != null)</span>
+<span class="fc" id="L368">			queryXmlString.append(&quot; &quot; + PRODUCT_SOURCE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L369">					+ prodIndexQuery.getProductSource() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L370" title="1 of 2 branches missed.">		if (prodIndexQuery.getProductType() != null)</span>
+<span class="fc" id="L371">			queryXmlString.append(&quot; &quot; + PRODUCT_TYPE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L372">					+ prodIndexQuery.getProductType() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L373" title="1 of 2 branches missed.">		if (prodIndexQuery.getProductCode() != null)</span>
+<span class="fc" id="L374">			queryXmlString.append(&quot; &quot; + PRODUCT_CODE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L375">					+ prodIndexQuery.getProductCode() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L376" title="1 of 2 branches missed.">		if (prodIndexQuery.getProductVersion() != null)</span>
+<span class="fc" id="L377">			queryXmlString.append(&quot; &quot; + PRODUCT_VERSION_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L378">					+ prodIndexQuery.getProductVersion() + &quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L379" title="1 of 2 branches missed.">		if (prodIndexQuery.getProductStatus() != null)</span>
+<span class="fc" id="L380">			queryXmlString.append(&quot; &quot; + PRODUCT_STATUS_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L381">					+ prodIndexQuery.getProductStatus() + &quot;\&quot;&quot;);</span>
+
+<span class="fc" id="L383">		queryXmlString.append(&quot;&gt;&quot;);</span>
+
+<span class="fc" id="L385">		Iterator&lt;ProductId&gt; ids = prodIndexQuery.getProductIds().iterator();</span>
+<span class="fc bfc" id="L386" title="All 2 branches covered.">		while (ids.hasNext()) {</span>
+<span class="fc" id="L387">			queryXmlString.append(&quot;&lt;&quot; + PRODUCT_SUMMARY_ELEMENT);</span>
+<span class="fc" id="L388">			queryXmlString.append(&quot; &quot; + ID_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L389">					+ ids.next().toString() + &quot;\&quot;&quot;);</span>
+<span class="fc" id="L390">			queryXmlString.append(&quot; /&gt;&quot;);</span>
+		}
+
+<span class="fc" id="L393">		queryXmlString.append(&quot;&lt;/&quot; + QUERY_ELEMENT + &quot;&gt;&quot;);</span>
+
+<span class="fc" id="L395">		return queryXmlString.toString();</span>
+	}
+
+	/**
+	 * Private  helper method to convert product summary elements into XML
+	 * @param summary
+	 * 		the product summary element to convert to xml
+	 * @return an xml string representing the product summary object
+	 */
+	private static String getProductSummaryXmlString(ProductSummary summary) {
+<span class="fc" id="L405">		String summaryXmlString = &quot;&quot;;</span>
+<span class="fc" id="L406">		summaryXmlString += &quot;&lt;&quot; + PRODUCT_SUMMARY_ELEMENT;</span>
+<span class="pc bpc" id="L407" title="1 of 2 branches missed.">		if (summary.getId() != null)</span>
+<span class="fc" id="L408">			summaryXmlString += &quot; &quot; + ID_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L409">					+ summary.getId().toString() + &quot;\&quot;&quot;;</span>
+<span class="pc bpc" id="L410" title="1 of 2 branches missed.">		if (summary.getId().getUpdateTime() != null)</span>
+<span class="fc" id="L411">			summaryXmlString += &quot; &quot; + UPDATE_TIME_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L412">					+ XmlUtils.formatDate(summary.getId().getUpdateTime())</span>
+					+ &quot;\&quot;&quot;;
+<span class="pc bpc" id="L414" title="1 of 2 branches missed.">		if (summary.getStatus() != null)</span>
+<span class="fc" id="L415">			summaryXmlString += &quot; &quot; + STATUS_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L416">					+ summary.getStatus() + &quot;\&quot;&quot;;</span>
+<span class="pc bpc" id="L417" title="1 of 2 branches missed.">		if (summary.getSource() != null)</span>
+<span class="fc" id="L418">			summaryXmlString += &quot; &quot; + SOURCE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L419">					+ summary.getSource() + &quot;\&quot;&quot;;</span>
+<span class="pc bpc" id="L420" title="1 of 2 branches missed.">		if (summary.getCode() != null)</span>
+<span class="fc" id="L421">			summaryXmlString += &quot; &quot; + SOURCE_CODE_ATTRIBUTE + &quot;=\&quot;&quot; +</span>
+<span class="fc" id="L422">					summary.getCode() + &quot;\&quot;&quot;;</span>
+<span class="fc bfc" id="L423" title="All 2 branches covered.">		if (summary.getEventTime() != null)</span>
+<span class="fc" id="L424">			summaryXmlString += &quot; &quot; + TIME_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L425">					+ XmlUtils.formatDate(summary.getEventTime()) + &quot;\&quot;&quot;;</span>
+<span class="fc bfc" id="L426" title="All 2 branches covered.">		if (summary.getEventLatitude() != null)</span>
+<span class="fc" id="L427">			summaryXmlString += &quot; &quot; + LATITUDE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L428">					+ summary.getEventLatitude().toString() + &quot;\&quot;&quot;;</span>
+<span class="fc bfc" id="L429" title="All 2 branches covered.">		if (summary.getEventLongitude() != null)</span>
+<span class="fc" id="L430">			summaryXmlString += &quot; &quot; + LONGITUDE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L431">					+ summary.getEventLongitude().toString() + &quot;\&quot;&quot;;</span>
+<span class="fc bfc" id="L432" title="All 2 branches covered.">		if (summary.getEventDepth() != null)</span>
+<span class="fc" id="L433">			summaryXmlString += &quot; &quot; + DEPTH_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L434">					+ summary.getEventDepth().toString() + &quot;\&quot;&quot;;</span>
+<span class="fc bfc" id="L435" title="All 2 branches covered.">		if (summary.getEventMagnitude() != null)</span>
+<span class="fc" id="L436">			summaryXmlString += &quot; &quot; + MAGNITUDE_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L437">					+ summary.getEventMagnitude().toString() + &quot;\&quot;&quot;;</span>
+<span class="fc bfc" id="L438" title="All 2 branches covered.">		if (summary.getVersion() != null)</span>
+<span class="fc" id="L439">			summaryXmlString += &quot; &quot; + VERSION_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L440">					+ summary.getVersion() + &quot;\&quot;&quot;;</span>
+<span class="fc" id="L441">		summaryXmlString += &quot; &quot; + PREFERRED_WEIGHT_ATTRIBUTE + &quot;=\&quot;&quot;</span>
+<span class="fc" id="L442">				+ summary.getPreferredWeight() + &quot;\&quot;&quot;;</span>
+<span class="fc" id="L443">		summaryXmlString += &quot;&gt;&quot;;</span>
+
+<span class="fc" id="L445">		Map&lt;String, String&gt; properties = summary.getProperties();</span>
+<span class="fc" id="L446">		for (Iterator&lt;String&gt; propIter = properties.keySet().iterator(); propIter</span>
+<span class="fc bfc" id="L447" title="All 2 branches covered.">				.hasNext();) {</span>
+<span class="fc" id="L448">			String name = propIter.next();</span>
+<span class="fc" id="L449">			String value = properties.get(name);</span>
+<span class="fc" id="L450">			summaryXmlString += &quot;&lt;product:&quot;</span>
+					+ XmlProductHandler.PROPERTY_ELEMENT;
+<span class="fc" id="L452">			summaryXmlString += &quot; &quot; + XmlProductHandler.PROPERTY_ATTRIBUTE_NAME</span>
+					+ &quot;=\&quot;&quot; + name + &quot;\&quot;&quot;;
+<span class="fc" id="L454">			summaryXmlString += &quot; &quot;</span>
+					+ XmlProductHandler.PROPERTY_ATTRIBUTE_VALUE + &quot;=\&quot;&quot;
+					+ value + &quot;\&quot;&quot;;
+<span class="fc" id="L457">			summaryXmlString += &quot; /&gt;&quot;;</span>
+<span class="fc" id="L458">		}</span>
+
+<span class="fc" id="L460">		Map&lt;String, List&lt;URI&gt;&gt; links = summary.getLinks();</span>
+<span class="fc" id="L461">		for (Iterator&lt;String&gt; linkIter = links.keySet().iterator(); linkIter</span>
+<span class="fc bfc" id="L462" title="All 2 branches covered.">				.hasNext();) {</span>
+<span class="fc" id="L463">			String relation = linkIter.next();</span>
+<span class="fc" id="L464">			for (Iterator&lt;URI&gt; uriIter = links.get(relation).iterator(); uriIter</span>
+<span class="fc bfc" id="L465" title="All 2 branches covered.">					.hasNext();) {</span>
+<span class="fc" id="L466">				URI href = uriIter.next();</span>
+<span class="fc" id="L467">				summaryXmlString += &quot;&lt;product:&quot;</span>
+						+ XmlProductHandler.LINK_ELEMENT;
+<span class="fc" id="L469">				summaryXmlString += &quot; &quot;</span>
+						+ XmlProductHandler.LINK_ATTRIBUTE_RELATION + &quot;=\&quot;&quot;
+						+ relation + &quot;\&quot;&quot;;
+<span class="fc" id="L472">				summaryXmlString += &quot; &quot; + XmlProductHandler.LINK_ATTRIBUTE_HREF</span>
+						+ &quot;=\&quot;&quot; + href + &quot;\&quot;&quot;;
+<span class="fc" id="L474">				summaryXmlString += &quot; /&gt;&quot;;</span>
+<span class="fc" id="L475">			}</span>
+<span class="fc" id="L476">		}</span>
+
+<span class="fc" id="L478">		summaryXmlString += &quot;&lt;/&quot; + PRODUCT_SUMMARY_ELEMENT + &quot;&gt;&quot;;</span>
+<span class="fc" id="L479">		return summaryXmlString;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

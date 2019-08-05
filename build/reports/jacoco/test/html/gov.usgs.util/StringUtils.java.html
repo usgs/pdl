@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StringUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util</a> &gt; <span class="el_source">StringUtils.java</span></div><h1>StringUtils.java</h1><pre class="source lang-java linenums">/*
+ * StringUtils
+ *
+ * $Id$
+ * $HeadURL$
+ */
+package gov.usgs.util;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ * String parsing and utility functions.
+ */
+<span class="nc" id="L16">public class StringUtils {</span>
+
+    /**
+     * No Exception Double parsing method.
+     * 
+     * @param value
+     * @return null on error, otherwise Double value.
+     */
+    public static Double getDouble(final String value) {
+        Double d;
+        try {
+<span class="nc" id="L27">            d = Double.valueOf(value);</span>
+<span class="nc" id="L28">        } catch (Exception e) {</span>
+<span class="nc" id="L29">            d = null;</span>
+<span class="nc" id="L30">        }</span>
+<span class="nc" id="L31">        return d;</span>
+    }
+
+    /**
+     * No Exception Float parsing method.
+     * 
+     * @param value
+     * @return null on error, otherwise Float value.
+     */
+    public static Float getFloat(final String value) {
+        Float f;
+        try {
+<span class="nc" id="L43">            f = Float.valueOf(value);</span>
+<span class="nc" id="L44">        } catch (Exception e) {</span>
+<span class="nc" id="L45">            f = null;</span>
+<span class="nc" id="L46">        }</span>
+<span class="nc" id="L47">        return f;</span>
+    }
+
+    /**
+     * No Exception Integer parsing method.
+     * 
+     * @param value
+     * @return null on error, otherwise Integer value.
+     */
+    public static Integer getInteger(final String value) {
+        Integer i;
+        try {
+<span class="nc" id="L59">            i = Integer.valueOf(value);</span>
+<span class="nc" id="L60">        } catch (Exception e) {</span>
+<span class="nc" id="L61">            i = null;</span>
+<span class="nc" id="L62">        }</span>
+<span class="nc" id="L63">        return i;</span>
+    }
+
+    /**
+     * No Exception Long parsing method.
+     * 
+     * @param value
+     * @return null on error, otherwise Integer value.
+     */
+    public static Long getLong(final String value) {
+        Long l;
+        try {
+<span class="nc" id="L75">            l = Long.valueOf(value);</span>
+<span class="nc" id="L76">        } catch (Exception e) {</span>
+<span class="nc" id="L77">            l = null;</span>
+<span class="nc" id="L78">        }</span>
+<span class="nc" id="L79">        return l;</span>
+    }
+
+    /**
+     * Join objects in a list using the specified delimiter. The objects
+     * toString method is used to get a string value.
+     * 
+     * @param delimiter
+     *            string to insert between list items.
+     * @param list
+     *            items to join.
+     * @return string containing delimiter delimited list items.
+     */
+    public static String join(final List&lt;Object&gt; list, final String delimiter) {
+<span class="pc bpc" id="L93" title="2 of 4 branches missed.">        if (list == null || list.size() == 0) {</span>
+<span class="nc" id="L94">            return &quot;&quot;;</span>
+        }
+
+<span class="fc" id="L97">        StringBuffer buf = new StringBuffer();</span>
+<span class="fc" id="L98">        Iterator&lt;Object&gt; iter = list.iterator();</span>
+        // add first element to buffer
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">        if (iter.hasNext()) {</span>
+<span class="fc" id="L101">            buf.append(iter.next().toString());</span>
+        }
+        // add delimiter before other elements
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
+<span class="fc" id="L105">            buf.append(delimiter);</span>
+<span class="fc" id="L106">            buf.append(iter.next().toString());</span>
+        }
+
+<span class="fc" id="L109">        return buf.toString();</span>
+    }
+
+    /**
+     * Split a string into a list of strings using the specified delimiter. The
+     * intrinsic String.split method is used and elements of the returned String
+     * array (if any) are added to a list.
+     * 
+     * @param toSplit
+     *            string to split.
+     * @param delimiter
+     *            string used to separate items in toSplit
+     * @return a list containing items.
+     */
+    public static List&lt;String&gt; split(final String toSplit,
+            final String delimiter) {
+<span class="fc" id="L125">        List&lt;String&gt; list = new LinkedList&lt;String&gt;();</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">        if (toSplit != null) {</span>
+<span class="fc" id="L127">            String[] array = toSplit.split(delimiter);</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">            for (String value : array) {</span>
+<span class="fc" id="L129">                value = value.trim();</span>
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">                if (!&quot;&quot;.equals(value)) {</span>
+<span class="fc" id="L131">                    list.add(value);</span>
+                }
+            }
+        }
+<span class="fc" id="L135">        return list;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

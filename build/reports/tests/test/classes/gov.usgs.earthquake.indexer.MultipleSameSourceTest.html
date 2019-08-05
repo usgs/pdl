@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - Class gov.usgs.earthquake.indexer.MultipleSameSourceTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>Class gov.usgs.earthquake.indexer.MultipleSameSourceTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/gov.usgs.earthquake.indexer.html">gov.usgs.earthquake.indexer</a> &gt; MultipleSameSourceTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">1</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">0.088s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="tabs">
+<ul class="tabLinks">
+<li>
+<a href="#tab0">Tests</a>
+</li>
+<li>
+<a href="#tab1">Standard error</a>
+</li>
+</ul>
+<div id="tab0" class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">associate</td>
+<td class="success">0.088s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div id="tab1" class="tab">
+<h2>Standard error</h2>
+<span class="code">
+<pre>
+###
+Mon Aug 05 16:07:28 MDT 2019
+FINEST	thread=13	[null] storing product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
+FINEST	thread=13	[null] acquiring write lock for product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
+FINEST	thread=13	[null] acquired write lock for product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
+FINEST	thread=13	[null] acquiring read lock for product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
+FINEST	thread=13	[null] acquired read lock for product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
+FINEST	thread=13	[null] releasing read lock for product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
+FINEST	thread=13	[null] released read lock for product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
+FINER	thread=13	[null] product stored id=urn:usgs-product:nc:origin:nc72418635:1427489045050, status=UPDATE
+FINEST	thread=13	[null] releasing write lock for product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
+FINEST	thread=13	[null] released write lock for product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
+FINEST	thread=13	[null] stored product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
+FINER	thread=13	[null] summarizing product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
+FINEST	thread=13	[null] beginning index transaction
+FINER	thread=13	[null] finding previous version
+FINEST	thread=13	[null] running query 
+SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND p.id = (SELECT id FROM productSummary ps WHERE ps.source='nc' AND ps.type='origin' AND ps.code='nc72418635' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='nc' AND type='origin' AND code='nc72418635'
+FINEST	thread=13	[null] query complete
+FINER	thread=13	[null] finding previous event
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PRODUCTS
+resultType=RESULT_TYPE_ALL
+eventSource=nc
+eventSourceCode=72418635
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Fri Mar 27 14:42:14 MDT 2015
+maxEventTime=Fri Mar 27 14:42:46 MDT 2015
+minEventLatitude=38.28457359424046075986183268469176255166530609130859375
+maxEventLatitude=40.08442960575953924013816731530823744833469390869140625
+minEventLongitude=-121.603521811912202110761427320539951324462890625
+maxEventLongitude=-119.28147278808779674363904632627964019775390625
+FINER	thread=13	[null] adding summary to index
+FINEST	thread=13	[null] Added property magnitude-type:md for product 1
+FINEST	thread=13	[null] Added property origin-source:NC for product 1
+FINEST	thread=13	[null] Added property quakeml-magnitude-publicid:quakeml:nc.anss.org/Netmag/NC/1101445 for product 1
+FINEST	thread=13	[null] Added property latitude:39.1845016 for product 1
+FINEST	thread=13	[null] Added property magnitude-num-stations-used:5 for product 1
+FINEST	thread=13	[null] Added property magnitude-source:NC for product 1
+FINEST	thread=13	[null] Added property eventtime:2015-03-27T20:42:30.000Z for product 1
+FINEST	thread=13	[null] Added property eventsource:nc for product 1
+FINEST	thread=13	[null] Added property standard-error:0.06 for product 1
+FINEST	thread=13	[null] Added property eventParametersPublicID:quakeml:nc.anss.org/catalog/NC/1/142748904505 for product 1
+FINEST	thread=13	[null] Added property horizontal-error:0.6 for product 1
+FINEST	thread=13	[null] Added property eventsourcecode:72418635 for product 1
+FINEST	thread=13	[null] Added property magnitude:1.72 for product 1
+FINEST	thread=13	[null] Added property longitude:-120.4424973 for product 1
+FINEST	thread=13	[null] Added property minimum-distance:0.2601 for product 1
+FINEST	thread=13	[null] Added property azimuthal-gap:107 for product 1
+FINEST	thread=13	[null] Added property event-type:earthquake for product 1
+FINEST	thread=13	[null] Added property quakeml-origin-publicid:quakeml:nc.anss.org/Origin/NC/1932200 for product 1
+FINEST	thread=13	[null] Added property depth-type:from location for product 1
+FINEST	thread=13	[null] Added property review-status:automatic for product 1
+FINEST	thread=13	[null] Added property version:0 for product 1
+FINEST	thread=13	[null] Added property num-phases-used:9 for product 1
+FINEST	thread=13	[null] Added property num-stations-used:9 for product 1
+FINEST	thread=13	[null] Added property quakeml-publicid:quakeml:nc.anss.org/Event/NC/72418635 for product 1
+FINEST	thread=13	[null] Added property vertical-error:3.94 for product 1
+FINEST	thread=13	[null] Added property depth:5.63 for product 1
+FINEST	thread=13	[null] Added property evaluation-status:preliminary for product 1
+FINEST	thread=13	[null] Added property magnitude-error:0.05 for product 1
+FINEST	thread=13	[null] Added productSummary urn:usgs-product:nc:origin:nc72418635:1427489045050, indexid=1 to product index
+FINEST	thread=13	Added event id=1
+FINEST	thread=13	[null] Added event to Product Index
+FINER	thread=13	[null] Added associations event id=1, productSummary source=nc, type=origin, code=nc72418635 (id=1)
+FINER	thread=13	[null] created event indexid=1
+FINE	thread=13	Eventindexid=1, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nc:origin:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+FINER	thread=13	[null] checking for event merges
+FINER	thread=13	[null] searching for unassociated products
+FINER	thread=13	[null] search for unassociated products complete
+FINER	thread=13	[null] updating event summary parameters
+FINER	thread=13	[null] Updating event indexid=1
+FINE	thread=13	Eventindexid=1, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nc:origin:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+FINEST	thread=13	[null] Updated event properties in Product Index
+FINER	thread=13	[null] committing transaction
+FINE	thread=13	[null] notifying listeners
+INFO	thread=13	[null] indexed product id=urn:usgs-product:nc:origin:nc72418635:1427489045050, status=UPDATE
+EVENT_ADDED null =&gt; nc72418635
+FINEST	thread=13	[null] storing product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
+FINEST	thread=13	[null] acquiring write lock for product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
+FINEST	thread=13	[null] acquired write lock for product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
+FINEST	thread=13	[null] acquiring read lock for product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
+FINEST	thread=13	[null] acquired read lock for product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
+FINEST	thread=13	[null] releasing read lock for product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
+FINEST	thread=13	[null] released read lock for product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
+FINER	thread=13	[null] product stored id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050, status=UPDATE
+FINEST	thread=13	[null] releasing write lock for product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
+FINEST	thread=13	[null] released write lock for product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
+FINEST	thread=13	[null] stored product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
+FINER	thread=13	[null] summarizing product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
+FINEST	thread=13	[null] beginning index transaction
+FINER	thread=13	[null] finding previous version
+FINEST	thread=13	[null] running query 
+SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND p.id = (SELECT id FROM productSummary ps WHERE ps.source='nc' AND ps.type='phase-data' AND ps.code='nc72418635' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='nc' AND type='phase-data' AND code='nc72418635'
+FINEST	thread=13	[null] query complete
+FINER	thread=13	[null] finding previous event
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PRODUCTS
+resultType=RESULT_TYPE_ALL
+eventSource=nc
+eventSourceCode=72418635
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Fri Mar 27 14:42:14 MDT 2015
+maxEventTime=Fri Mar 27 14:42:46 MDT 2015
+minEventLatitude=38.28457359424046075986183268469176255166530609130859375
+maxEventLatitude=40.08442960575953924013816731530823744833469390869140625
+minEventLongitude=-121.603521811912202110761427320539951324462890625
+maxEventLongitude=-119.28147278808779674363904632627964019775390625
+FINER	thread=13	[null] adding summary to index
+FINEST	thread=13	[null] Added property magnitude-type:md for product 2
+FINEST	thread=13	[null] Added property origin-source:NC for product 2
+FINEST	thread=13	[null] Added property quakeml-magnitude-publicid:quakeml:nc.anss.org/Netmag/NC/1101445 for product 2
+FINEST	thread=13	[null] Added property latitude:39.1845016 for product 2
+FINEST	thread=13	[null] Added property magnitude-num-stations-used:5 for product 2
+FINEST	thread=13	[null] Added property magnitude-source:NC for product 2
+FINEST	thread=13	[null] Added property eventtime:2015-03-27T20:42:30.000Z for product 2
+FINEST	thread=13	[null] Added property eventsource:nc for product 2
+FINEST	thread=13	[null] Added property standard-error:0.06 for product 2
+FINEST	thread=13	[null] Added property eventParametersPublicID:quakeml:nc.anss.org/catalog/NC/1/142748904505 for product 2
+FINEST	thread=13	[null] Added property horizontal-error:0.6 for product 2
+FINEST	thread=13	[null] Added property eventsourcecode:72418635 for product 2
+FINEST	thread=13	[null] Added property magnitude:1.72 for product 2
+FINEST	thread=13	[null] Added property longitude:-120.4424973 for product 2
+FINEST	thread=13	[null] Added property minimum-distance:0.2601 for product 2
+FINEST	thread=13	[null] Added property azimuthal-gap:107 for product 2
+FINEST	thread=13	[null] Added property event-type:earthquake for product 2
+FINEST	thread=13	[null] Added property quakeml-origin-publicid:quakeml:nc.anss.org/Origin/NC/1932200 for product 2
+FINEST	thread=13	[null] Added property depth-type:from location for product 2
+FINEST	thread=13	[null] Added property review-status:automatic for product 2
+FINEST	thread=13	[null] Added property version:0 for product 2
+FINEST	thread=13	[null] Added property num-phases-used:9 for product 2
+FINEST	thread=13	[null] Added property num-stations-used:9 for product 2
+FINEST	thread=13	[null] Added property quakeml-publicid:quakeml:nc.anss.org/Event/NC/72418635 for product 2
+FINEST	thread=13	[null] Added property vertical-error:3.94 for product 2
+FINEST	thread=13	[null] Added property depth:5.63 for product 2
+FINEST	thread=13	[null] Added property evaluation-status:preliminary for product 2
+FINEST	thread=13	[null] Added property magnitude-error:0.05 for product 2
+FINEST	thread=13	[null] Added productSummary urn:usgs-product:nc:phase-data:nc72418635:1427489045050, indexid=2 to product index
+FINER	thread=13	[null] found existing event indexid=1
+FINE	thread=13	Eventindexid=1, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nc:origin:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+FINER	thread=13	[null] Added associations event id=1, productSummary source=nc, type=phase-data, code=nc72418635 (id=2)
+FINER	thread=13	[null] checking for event splits
+FINER	thread=13	[null] checking for event merges
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Fri Mar 27 14:42:14 MDT 2015
+maxEventTime=Fri Mar 27 14:42:46 MDT 2015
+minEventLatitude=38.28457359424046075986183268469176255166530609130859375
+maxEventLatitude=40.08442960575953924013816731530823744833469390869140625
+minEventLongitude=-121.603521811912202110761427320539951324462890625
+maxEventLongitude=-119.28147278808779674363904632627964019775390625
+FINER	thread=13	[null] searching for nearby events
+FINER	thread=13	[null] search for nearby events complete
+FINER	thread=13	[null] searching for unassociated products
+FINER	thread=13	[null] search for unassociated products complete
+FINER	thread=13	[null] updating event summary parameters
+FINER	thread=13	[null] Updating event indexid=1
+FINE	thread=13	Eventindexid=1, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nc:origin:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+FINEST	thread=13	[null] Updated event properties in Product Index
+FINER	thread=13	[null] committing transaction
+FINE	thread=13	[null] notifying listeners
+INFO	thread=13	[null] indexed product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050, status=UPDATE
+EVENT_UPDATED nc72418635 =&gt; nc72418635
+FINEST	thread=13	[null] storing product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
+FINEST	thread=13	[null] acquiring write lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
+FINEST	thread=13	[null] acquired write lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
+FINEST	thread=13	[null] acquiring read lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
+FINEST	thread=13	[null] acquired read lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
+FINEST	thread=13	[null] releasing read lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
+FINEST	thread=13	[null] released read lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
+FINER	thread=13	[null] product stored id=urn:usgs-product:nn:origin:nn00488363:1427492032529, status=UPDATE
+FINEST	thread=13	[null] releasing write lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
+FINEST	thread=13	[null] released write lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
+FINEST	thread=13	[null] stored product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
+FINER	thread=13	[null] summarizing product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
+FINEST	thread=13	[null] beginning index transaction
+FINER	thread=13	[null] finding previous version
+FINEST	thread=13	[null] running query 
+SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND p.id = (SELECT id FROM productSummary ps WHERE ps.source='nn' AND ps.type='origin' AND ps.code='nn00488363' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='nn' AND type='origin' AND code='nn00488363'
+FINEST	thread=13	[null] query complete
+FINER	thread=13	[null] finding previous event
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PRODUCTS
+resultType=RESULT_TYPE_ALL
+eventSource=nn
+eventSourceCode=00488363
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Fri Mar 27 14:42:14 MDT 2015
+maxEventTime=Fri Mar 27 14:42:46 MDT 2015
+minEventLatitude=38.35007199424046075986183268469176255166530609130859375
+maxEventLatitude=40.14992800575953924013816731530823744833469390869140625
+minEventLongitude=-121.368708153579035524671780876815319061279296875
+maxEventLongitude=-119.04449184642095360686653293669223785400390625
+FINER	thread=13	[null] adding summary to index
+FINEST	thread=13	[null] Added property magnitude-type:ml for product 3
+FINEST	thread=13	[null] Added property origin-source:NN for product 3
+FINEST	thread=13	[null] Added property latitude:39.25 for product 3
+FINEST	thread=13	[null] Added property magnitude-num-stations-used:3 for product 3
+FINEST	thread=13	[null] Added property magnitude-source:NN for product 3
+FINEST	thread=13	[null] Added property eventtime:2015-03-27T20:42:30.162Z for product 3
+FINEST	thread=13	[null] Added property eventsource:nn for product 3
+FINEST	thread=13	[null] Added property standard-error:0.1161 for product 3
+FINEST	thread=13	[null] Added property eventParametersPublicID:quakeml:www.seismo.unr.edu/Catalog/488363 for product 3
+FINEST	thread=13	[null] Added property horizontal-error:3.6187 for product 3
+FINEST	thread=13	[null] Added property eventsourcecode:00488363 for product 3
+FINEST	thread=13	[null] Added property magnitude:0.59 for product 3
+FINEST	thread=13	[null] Added property longitude:-120.2066 for product 3
+FINEST	thread=13	[null] Added property minimum-distance:0.076 for product 3
+FINEST	thread=13	[null] Added property azimuthal-gap:150.58 for product 3
+FINEST	thread=13	[null] Added property event-type:earthquake for product 3
+FINEST	thread=13	[null] Added property review-status:reviewed for product 3
+FINEST	thread=13	[null] Added property version:488363 for product 3
+FINEST	thread=13	[null] Added property num-phases-used:5 for product 3
+FINEST	thread=13	[null] Added property num-stations-used:4 for product 3
+FINEST	thread=13	[null] Added property quakeml-publicid:quakeml:www.seismo.unr.edu/Events/main.php?evid=488363 for product 3
+FINEST	thread=13	[null] Added property vertical-error:4.8386 for product 3
+FINEST	thread=13	[null] Added property depth:9.812 for product 3
+FINEST	thread=13	[null] Added property evaluation-status:reviewed for product 3
+FINEST	thread=13	[null] Added property magnitude-error:0.52 for product 3
+FINEST	thread=13	[null] Added productSummary urn:usgs-product:nn:origin:nn00488363:1427492032529, indexid=3 to product index
+FINER	thread=13	[null] found existing event indexid=1
+FINE	thread=13	Eventindexid=1, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nc:origin:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+FINER	thread=13	[null] Added associations event id=1, productSummary source=nn, type=origin, code=nn00488363 (id=3)
+FINER	thread=13	[null] checking for event splits
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Fri Mar 27 14:42:14 MDT 2015
+maxEventTime=Fri Mar 27 14:42:46 MDT 2015
+minEventLatitude=38.28457359424046075986183268469176255166530609130859375
+maxEventLatitude=40.08442960575953924013816731530823744833469390869140625
+minEventLongitude=-121.603521811912202110761427320539951324462890625
+maxEventLongitude=-119.28147278808779674363904632627964019775390625
+FINER	thread=13	[null] checking for event merges
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Fri Mar 27 14:42:14 MDT 2015
+maxEventTime=Fri Mar 27 14:42:46 MDT 2015
+minEventLatitude=38.28457359424046075986183268469176255166530609130859375
+maxEventLatitude=40.08442960575953924013816731530823744833469390869140625
+minEventLongitude=-121.603521811912202110761427320539951324462890625
+maxEventLongitude=-119.28147278808779674363904632627964019775390625
+FINER	thread=13	[null] searching for nearby events
+FINER	thread=13	[null] search for nearby events complete
+FINER	thread=13	[null] searching for unassociated products
+FINER	thread=13	[null] search for unassociated products complete
+FINER	thread=13	[null] updating event summary parameters
+FINER	thread=13	[null] Updating event indexid=1
+FINE	thread=13	Eventindexid=1, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nc:origin:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nn:origin:nn00488363:1427492032529, eventid=nn00488363, latitude=39.25, longitude=-120.2066, time=Fri Mar 27 14:42:30 MDT 2015
+FINEST	thread=13	[null] Updated event properties in Product Index
+FINER	thread=13	[null] committing transaction
+FINE	thread=13	[null] notifying listeners
+INFO	thread=13	[null] indexed product id=urn:usgs-product:nn:origin:nn00488363:1427492032529, status=UPDATE
+EVENT_UPDATED nc72418635 =&gt; nc72418635
+FINEST	thread=13	[null] storing product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
+FINEST	thread=13	[null] acquiring write lock for product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
+FINEST	thread=13	[null] acquired write lock for product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
+FINEST	thread=13	[null] acquiring read lock for product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
+FINEST	thread=13	[null] acquired read lock for product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
+FINEST	thread=13	[null] releasing read lock for product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
+FINEST	thread=13	[null] released read lock for product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
+FINER	thread=13	[null] product stored id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529, status=UPDATE
+FINEST	thread=13	[null] releasing write lock for product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
+FINEST	thread=13	[null] released write lock for product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
+FINEST	thread=13	[null] stored product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
+FINER	thread=13	[null] summarizing product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
+FINEST	thread=13	[null] beginning index transaction
+FINER	thread=13	[null] finding previous version
+FINEST	thread=13	[null] running query 
+SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND p.id = (SELECT id FROM productSummary ps WHERE ps.source='nn' AND ps.type='phase-data' AND ps.code='nn00488363' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='nn' AND type='phase-data' AND code='nn00488363'
+FINEST	thread=13	[null] query complete
+FINER	thread=13	[null] finding previous event
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PRODUCTS
+resultType=RESULT_TYPE_ALL
+eventSource=nn
+eventSourceCode=00488363
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Fri Mar 27 14:42:14 MDT 2015
+maxEventTime=Fri Mar 27 14:42:46 MDT 2015
+minEventLatitude=38.35007199424046075986183268469176255166530609130859375
+maxEventLatitude=40.14992800575953924013816731530823744833469390869140625
+minEventLongitude=-121.368708153579035524671780876815319061279296875
+maxEventLongitude=-119.04449184642095360686653293669223785400390625
+FINER	thread=13	[null] adding summary to index
+FINEST	thread=13	[null] Added property magnitude-type:ml for product 4
+FINEST	thread=13	[null] Added property origin-source:NN for product 4
+FINEST	thread=13	[null] Added property latitude:39.25 for product 4
+FINEST	thread=13	[null] Added property magnitude-num-stations-used:3 for product 4
+FINEST	thread=13	[null] Added property magnitude-source:NN for product 4
+FINEST	thread=13	[null] Added property eventtime:2015-03-27T20:42:30.162Z for product 4
+FINEST	thread=13	[null] Added property eventsource:nn for product 4
+FINEST	thread=13	[null] Added property standard-error:0.1161 for product 4
+FINEST	thread=13	[null] Added property eventParametersPublicID:quakeml:www.seismo.unr.edu/Catalog/488363 for product 4
+FINEST	thread=13	[null] Added property horizontal-error:3.6187 for product 4
+FINEST	thread=13	[null] Added property eventsourcecode:00488363 for product 4
+FINEST	thread=13	[null] Added property magnitude:0.59 for product 4
+FINEST	thread=13	[null] Added property longitude:-120.2066 for product 4
+FINEST	thread=13	[null] Added property minimum-distance:0.076 for product 4
+FINEST	thread=13	[null] Added property azimuthal-gap:150.58 for product 4
+FINEST	thread=13	[null] Added property event-type:earthquake for product 4
+FINEST	thread=13	[null] Added property review-status:reviewed for product 4
+FINEST	thread=13	[null] Added property version:488363 for product 4
+FINEST	thread=13	[null] Added property num-phases-used:5 for product 4
+FINEST	thread=13	[null] Added property num-stations-used:4 for product 4
+FINEST	thread=13	[null] Added property quakeml-publicid:quakeml:www.seismo.unr.edu/Events/main.php?evid=488363 for product 4
+FINEST	thread=13	[null] Added property vertical-error:4.8386 for product 4
+FINEST	thread=13	[null] Added property depth:9.812 for product 4
+FINEST	thread=13	[null] Added property evaluation-status:reviewed for product 4
+FINEST	thread=13	[null] Added property magnitude-error:0.52 for product 4
+FINEST	thread=13	[null] Added productSummary urn:usgs-product:nn:phase-data:nn00488363:1427492032529, indexid=4 to product index
+FINER	thread=13	[null] found existing event indexid=1
+FINE	thread=13	Eventindexid=1, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nn:origin:nn00488363:1427492032529, eventid=nn00488363, latitude=39.25, longitude=-120.2066, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nc:origin:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+FINER	thread=13	[null] Added associations event id=1, productSummary source=nn, type=phase-data, code=nn00488363 (id=4)
+FINER	thread=13	[null] checking for event splits
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Fri Mar 27 14:42:14 MDT 2015
+maxEventTime=Fri Mar 27 14:42:46 MDT 2015
+minEventLatitude=38.28457359424046075986183268469176255166530609130859375
+maxEventLatitude=40.08442960575953924013816731530823744833469390869140625
+minEventLongitude=-121.603521811912202110761427320539951324462890625
+maxEventLongitude=-119.28147278808779674363904632627964019775390625
+FINER	thread=13	[null] checking for event merges
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Fri Mar 27 14:42:14 MDT 2015
+maxEventTime=Fri Mar 27 14:42:46 MDT 2015
+minEventLatitude=38.28457359424046075986183268469176255166530609130859375
+maxEventLatitude=40.08442960575953924013816731530823744833469390869140625
+minEventLongitude=-121.603521811912202110761427320539951324462890625
+maxEventLongitude=-119.28147278808779674363904632627964019775390625
+FINER	thread=13	[null] searching for nearby events
+FINER	thread=13	[null] search for nearby events complete
+FINER	thread=13	[null] searching for unassociated products
+FINER	thread=13	[null] search for unassociated products complete
+FINER	thread=13	[null] updating event summary parameters
+FINER	thread=13	[null] Updating event indexid=1
+FINE	thread=13	Eventindexid=1, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529, eventid=nn00488363, latitude=39.25, longitude=-120.2066, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nn:origin:nn00488363:1427492032529, eventid=nn00488363, latitude=39.25, longitude=-120.2066, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nc:origin:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+FINEST	thread=13	[null] Updated event properties in Product Index
+FINER	thread=13	[null] committing transaction
+FINE	thread=13	[null] notifying listeners
+INFO	thread=13	[null] indexed product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529, status=UPDATE
+EVENT_UPDATED nc72418635 =&gt; nc72418635
+FINEST	thread=13	[null] storing product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
+FINEST	thread=13	[null] acquiring write lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
+FINEST	thread=13	[null] acquired write lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
+FINEST	thread=13	[null] acquiring read lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
+FINEST	thread=13	[null] acquired read lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
+FINEST	thread=13	[null] releasing read lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
+FINEST	thread=13	[null] released read lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
+FINER	thread=13	[null] product stored id=urn:usgs-product:nn:origin:nn00488363:1427492772035, status=DELETE
+FINEST	thread=13	[null] releasing write lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
+FINEST	thread=13	[null] released write lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
+FINEST	thread=13	[null] stored product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
+FINER	thread=13	[null] summarizing product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
+FINEST	thread=13	[null] beginning index transaction
+FINER	thread=13	[null] finding previous version
+FINEST	thread=13	[null] running query 
+SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND p.id = (SELECT id FROM productSummary ps WHERE ps.source='nn' AND ps.type='origin' AND ps.code='nn00488363' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='nn' AND type='origin' AND code='nn00488363'
+FINEST	thread=13	[null] query complete
+FINER	thread=13	[null] finding previous event
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PRODUCTS
+resultType=RESULT_TYPE_ALL
+eventSource=nn
+eventSourceCode=00488363
+FINER	thread=13	[null] adding summary to index
+FINEST	thread=13	[null] Added property quakeml-publicid:quakeml:www.seismo.unr.edu/Events/main.php?evid=488363 for product 5
+FINEST	thread=13	[null] Added property eventParametersPublicID:quakeml:www.seismo.unr.edu/Catalog/488363 for product 5
+FINEST	thread=13	[null] Added property eventsourcecode:00488363 for product 5
+FINEST	thread=13	[null] Added property eventsource:nn for product 5
+FINEST	thread=13	[null] Added property version:488363 for product 5
+FINEST	thread=13	[null] Added productSummary urn:usgs-product:nn:origin:nn00488363:1427492772035, indexid=5 to product index
+FINER	thread=13	[null] found existing event indexid=1
+FINE	thread=13	Eventindexid=1, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529, eventid=nn00488363, latitude=39.25, longitude=-120.2066, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nn:origin:nn00488363:1427492032529, eventid=nn00488363, latitude=39.25, longitude=-120.2066, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nc:origin:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+FINER	thread=13	[null] Added associations event id=1, productSummary source=nn, type=origin, code=nn00488363 (id=5)
+FINER	thread=13	[null] checking for event splits
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Fri Mar 27 14:42:14 MDT 2015
+maxEventTime=Fri Mar 27 14:42:46 MDT 2015
+minEventLatitude=38.28457359424046075986183268469176255166530609130859375
+maxEventLatitude=40.08442960575953924013816731530823744833469390869140625
+minEventLongitude=-121.603521811912202110761427320539951324462890625
+maxEventLongitude=-119.28147278808779674363904632627964019775390625
+FINER	thread=13	[null] checking for event merges
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Fri Mar 27 14:42:14 MDT 2015
+maxEventTime=Fri Mar 27 14:42:46 MDT 2015
+minEventLatitude=38.28457359424046075986183268469176255166530609130859375
+maxEventLatitude=40.08442960575953924013816731530823744833469390869140625
+minEventLongitude=-121.603521811912202110761427320539951324462890625
+maxEventLongitude=-119.28147278808779674363904632627964019775390625
+FINER	thread=13	[null] searching for nearby events
+FINER	thread=13	[null] search for nearby events complete
+FINER	thread=13	[null] searching for unassociated products
+FINER	thread=13	[null] search for unassociated products complete
+FINER	thread=13	[null] updating event summary parameters
+FINER	thread=13	[null] Updating event indexid=1
+FINE	thread=13	Eventindexid=1, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529, eventid=nn00488363, latitude=39.25, longitude=-120.2066, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nn:origin:nn00488363:1427492032529, eventid=nn00488363, latitude=39.25, longitude=-120.2066, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nc:origin:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+	status=DELETE, id=urn:usgs-product:nn:origin:nn00488363:1427492772035, eventid=nn00488363, latitude=null, longitude=null, time=null
+FINEST	thread=13	[null] Updated event properties in Product Index
+FINER	thread=13	[null] committing transaction
+FINE	thread=13	[null] notifying listeners
+INFO	thread=13	[null] indexed product id=urn:usgs-product:nn:origin:nn00488363:1427492772035, status=DELETE
+EVENT_UPDATED nc72418635 =&gt; nc72418635
+FINEST	thread=13	[null] storing product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
+FINEST	thread=13	[null] acquiring write lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
+FINEST	thread=13	[null] acquired write lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
+FINEST	thread=13	[null] acquiring read lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
+FINEST	thread=13	[null] acquired read lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
+FINEST	thread=13	[null] releasing read lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
+FINEST	thread=13	[null] released read lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
+FINER	thread=13	[null] product stored id=urn:usgs-product:nn:origin:nn00488366:1427492221309, status=UPDATE
+FINEST	thread=13	[null] releasing write lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
+FINEST	thread=13	[null] released write lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
+FINEST	thread=13	[null] stored product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
+FINER	thread=13	[null] summarizing product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
+FINEST	thread=13	[null] beginning index transaction
+FINER	thread=13	[null] finding previous version
+FINEST	thread=13	[null] running query 
+SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND p.id = (SELECT id FROM productSummary ps WHERE ps.source='nn' AND ps.type='origin' AND ps.code='nn00488366' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='nn' AND type='origin' AND code='nn00488366'
+FINEST	thread=13	[null] query complete
+FINER	thread=13	[null] finding previous event
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PRODUCTS
+resultType=RESULT_TYPE_ALL
+eventSource=nn
+eventSourceCode=00488366
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Fri Mar 27 14:42:11 MDT 2015
+maxEventTime=Fri Mar 27 14:42:43 MDT 2015
+minEventLatitude=38.26927199424046075986183268469176255166530609130859375
+maxEventLatitude=40.06912800575953924013816731530823744833469390869140625
+minEventLongitude=-121.4013718634347611668999888934195041656494140625
+maxEventLongitude=-119.0798281365652400154431234113872051239013671875
+FINER	thread=13	[null] adding summary to index
+FINEST	thread=13	[null] Added property magnitude-type:ml for product 6
+FINEST	thread=13	[null] Added property origin-source:NN for product 6
+FINEST	thread=13	[null] Added property latitude:39.1692 for product 6
+FINEST	thread=13	[null] Added property magnitude-num-stations-used:1 for product 6
+FINEST	thread=13	[null] Added property magnitude-source:NN for product 6
+FINEST	thread=13	[null] Added property eventtime:2015-03-27T20:42:27.445Z for product 6
+FINEST	thread=13	[null] Added property eventsource:nn for product 6
+FINEST	thread=13	[null] Added property standard-error:0.1492 for product 6
+FINEST	thread=13	[null] Added property eventParametersPublicID:quakeml:www.seismo.unr.edu/Catalog/488366 for product 6
+FINEST	thread=13	[null] Added property horizontal-error:12.3278 for product 6
+FINEST	thread=13	[null] Added property eventsourcecode:00488366 for product 6
+FINEST	thread=13	[null] Added property magnitude:0.24 for product 6
+FINEST	thread=13	[null] Added property longitude:-120.2406 for product 6
+FINEST	thread=13	[null] Added property minimum-distance:0.097 for product 6
+FINEST	thread=13	[null] Added property azimuthal-gap:257.88 for product 6
+FINEST	thread=13	[null] Added property event-type:earthquake for product 6
+FINEST	thread=13	[null] Added property review-status:reviewed for product 6
+FINEST	thread=13	[null] Added property version:488366 for product 6
+FINEST	thread=13	[null] Added property num-phases-used:5 for product 6
+FINEST	thread=13	[null] Added property num-stations-used:4 for product 6
+FINEST	thread=13	[null] Added property quakeml-publicid:quakeml:www.seismo.unr.edu/Events/main.php?evid=488366 for product 6
+FINEST	thread=13	[null] Added property depth:0.0 for product 6
+FINEST	thread=13	[null] Added property evaluation-status:reviewed for product 6
+FINEST	thread=13	[null] Added property magnitude-error:0.0 for product 6
+FINEST	thread=13	[null] Added productSummary urn:usgs-product:nn:origin:nn00488366:1427492221309, indexid=6 to product index
+FINEST	thread=13	Added event id=2
+FINEST	thread=13	[null] Added event to Product Index
+FINER	thread=13	[null] Added associations event id=2, productSummary source=nn, type=origin, code=nn00488366 (id=6)
+FINER	thread=13	[null] created event indexid=2
+FINE	thread=13	Eventindexid=2, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nn:origin:nn00488366:1427492221309, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015
+FINER	thread=13	[null] checking for event merges
+FINER	thread=13	[null] searching for unassociated products
+FINER	thread=13	[null] search for unassociated products complete
+FINER	thread=13	[null] updating event summary parameters
+FINER	thread=13	[null] Updating event indexid=2
+FINE	thread=13	Eventindexid=2, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nn:origin:nn00488366:1427492221309, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015
+FINEST	thread=13	[null] Updated event properties in Product Index
+FINER	thread=13	[null] committing transaction
+FINE	thread=13	[null] notifying listeners
+INFO	thread=13	[null] indexed product id=urn:usgs-product:nn:origin:nn00488366:1427492221309, status=UPDATE
+EVENT_ADDED null =&gt; nn00488366
+FINEST	thread=13	[null] storing product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
+FINEST	thread=13	[null] acquiring write lock for product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
+FINEST	thread=13	[null] acquired write lock for product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
+FINEST	thread=13	[null] acquiring read lock for product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
+FINEST	thread=13	[null] acquired read lock for product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
+FINEST	thread=13	[null] releasing read lock for product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
+FINEST	thread=13	[null] released read lock for product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
+FINER	thread=13	[null] product stored id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309, status=UPDATE
+FINEST	thread=13	[null] releasing write lock for product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
+FINEST	thread=13	[null] released write lock for product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
+FINEST	thread=13	[null] stored product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
+FINER	thread=13	[null] summarizing product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
+FINEST	thread=13	[null] beginning index transaction
+FINER	thread=13	[null] finding previous version
+FINEST	thread=13	[null] running query 
+SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND p.id = (SELECT id FROM productSummary ps WHERE ps.source='nn' AND ps.type='phase-data' AND ps.code='nn00488366' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='nn' AND type='phase-data' AND code='nn00488366'
+FINEST	thread=13	[null] query complete
+FINER	thread=13	[null] finding previous event
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PRODUCTS
+resultType=RESULT_TYPE_ALL
+eventSource=nn
+eventSourceCode=00488366
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Fri Mar 27 14:42:11 MDT 2015
+maxEventTime=Fri Mar 27 14:42:43 MDT 2015
+minEventLatitude=38.26927199424046075986183268469176255166530609130859375
+maxEventLatitude=40.06912800575953924013816731530823744833469390869140625
+minEventLongitude=-121.4013718634347611668999888934195041656494140625
+maxEventLongitude=-119.0798281365652400154431234113872051239013671875
+FINER	thread=13	[null] adding summary to index
+FINEST	thread=13	[null] Added property magnitude-type:ml for product 7
+FINEST	thread=13	[null] Added property origin-source:NN for product 7
+FINEST	thread=13	[null] Added property latitude:39.1692 for product 7
+FINEST	thread=13	[null] Added property magnitude-num-stations-used:1 for product 7
+FINEST	thread=13	[null] Added property magnitude-source:NN for product 7
+FINEST	thread=13	[null] Added property eventtime:2015-03-27T20:42:27.445Z for product 7
+FINEST	thread=13	[null] Added property eventsource:nn for product 7
+FINEST	thread=13	[null] Added property standard-error:0.1492 for product 7
+FINEST	thread=13	[null] Added property eventParametersPublicID:quakeml:www.seismo.unr.edu/Catalog/488366 for product 7
+FINEST	thread=13	[null] Added property horizontal-error:12.3278 for product 7
+FINEST	thread=13	[null] Added property eventsourcecode:00488366 for product 7
+FINEST	thread=13	[null] Added property magnitude:0.24 for product 7
+FINEST	thread=13	[null] Added property longitude:-120.2406 for product 7
+FINEST	thread=13	[null] Added property minimum-distance:0.097 for product 7
+FINEST	thread=13	[null] Added property azimuthal-gap:257.88 for product 7
+FINEST	thread=13	[null] Added property event-type:earthquake for product 7
+FINEST	thread=13	[null] Added property review-status:reviewed for product 7
+FINEST	thread=13	[null] Added property version:488366 for product 7
+FINEST	thread=13	[null] Added property num-phases-used:5 for product 7
+FINEST	thread=13	[null] Added property num-stations-used:4 for product 7
+FINEST	thread=13	[null] Added property quakeml-publicid:quakeml:www.seismo.unr.edu/Events/main.php?evid=488366 for product 7
+FINEST	thread=13	[null] Added property depth:0.0 for product 7
+FINEST	thread=13	[null] Added property evaluation-status:reviewed for product 7
+FINEST	thread=13	[null] Added property magnitude-error:0.0 for product 7
+FINEST	thread=13	[null] Added productSummary urn:usgs-product:nn:phase-data:nn00488366:1427492221309, indexid=7 to product index
+FINER	thread=13	[null] found existing event indexid=2
+FINE	thread=13	Eventindexid=2, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nn:origin:nn00488366:1427492221309, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015
+FINER	thread=13	[null] Added associations event id=2, productSummary source=nn, type=phase-data, code=nn00488366 (id=7)
+FINER	thread=13	[null] checking for event splits
+FINER	thread=13	[null] checking for event merges
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Fri Mar 27 14:42:11 MDT 2015
+maxEventTime=Fri Mar 27 14:42:43 MDT 2015
+minEventLatitude=38.26927199424046075986183268469176255166530609130859375
+maxEventLatitude=40.06912800575953924013816731530823744833469390869140625
+minEventLongitude=-121.4013718634347611668999888934195041656494140625
+maxEventLongitude=-119.0798281365652400154431234113872051239013671875
+FINER	thread=13	[null] searching for nearby events
+FINER	thread=13	[null] search for nearby events complete
+FINER	thread=13	[null] searching for unassociated products
+FINER	thread=13	[null] search for unassociated products complete
+FINER	thread=13	[null] updating event summary parameters
+FINER	thread=13	[null] Updating event indexid=2
+FINE	thread=13	Eventindexid=2, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nn:origin:nn00488366:1427492221309, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015
+FINEST	thread=13	[null] Updated event properties in Product Index
+FINER	thread=13	[null] committing transaction
+FINE	thread=13	[null] notifying listeners
+INFO	thread=13	[null] indexed product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309, status=UPDATE
+EVENT_UPDATED nn00488366 =&gt; nn00488366
+FINEST	thread=13	[null] storing product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
+FINEST	thread=13	[null] acquiring write lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
+FINEST	thread=13	[null] acquired write lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
+FINEST	thread=13	[null] acquiring read lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
+FINEST	thread=13	[null] acquired read lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
+FINEST	thread=13	[null] releasing read lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
+FINEST	thread=13	[null] released read lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
+FINER	thread=13	[null] product stored id=urn:usgs-product:nn:origin:nn00488366:1427492772081, status=DELETE
+FINEST	thread=13	[null] releasing write lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
+FINEST	thread=13	[null] released write lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
+FINEST	thread=13	[null] stored product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
+FINER	thread=13	[null] summarizing product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
+FINEST	thread=13	[null] beginning index transaction
+FINER	thread=13	[null] finding previous version
+FINEST	thread=13	[null] running query 
+SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND p.id = (SELECT id FROM productSummary ps WHERE ps.source='nn' AND ps.type='origin' AND ps.code='nn00488366' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='nn' AND type='origin' AND code='nn00488366'
+FINEST	thread=13	[null] query complete
+FINER	thread=13	[null] finding previous event
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PRODUCTS
+resultType=RESULT_TYPE_ALL
+eventSource=nn
+eventSourceCode=00488366
+FINER	thread=13	[null] adding summary to index
+FINEST	thread=13	[null] Added property quakeml-publicid:quakeml:www.seismo.unr.edu/Events/main.php?evid=488366 for product 8
+FINEST	thread=13	[null] Added property eventParametersPublicID:quakeml:www.seismo.unr.edu/Catalog/488366 for product 8
+FINEST	thread=13	[null] Added property eventsourcecode:00488366 for product 8
+FINEST	thread=13	[null] Added property eventsource:nn for product 8
+FINEST	thread=13	[null] Added property version:488366 for product 8
+FINEST	thread=13	[null] Added productSummary urn:usgs-product:nn:origin:nn00488366:1427492772081, indexid=8 to product index
+FINER	thread=13	[null] found existing event indexid=2
+FINE	thread=13	Eventindexid=2, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nn:origin:nn00488366:1427492221309, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015
+FINER	thread=13	[null] Added associations event id=2, productSummary source=nn, type=origin, code=nn00488366 (id=8)
+FINER	thread=13	[null] checking for event splits
+FINER	thread=13	[null] checking for event merges
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Fri Mar 27 14:42:11 MDT 2015
+maxEventTime=Fri Mar 27 14:42:43 MDT 2015
+minEventLatitude=38.26927199424046075986183268469176255166530609130859375
+maxEventLatitude=40.06912800575953924013816731530823744833469390869140625
+minEventLongitude=-121.4013718634347611668999888934195041656494140625
+maxEventLongitude=-119.0798281365652400154431234113872051239013671875
+FINER	thread=13	[null] searching for nearby events
+FINER	thread=13	[null] search for nearby events complete
+FINER	thread=13	[null] searching for unassociated products
+FINER	thread=13	[null] search for unassociated products complete
+FINER	thread=13	[null] updating event summary parameters
+FINER	thread=13	[null] Updating event indexid=2
+FINE	thread=13	Eventindexid=2, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015, deleted=true
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nn:origin:nn00488366:1427492221309, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015
+	status=DELETE, id=urn:usgs-product:nn:origin:nn00488366:1427492772081, eventid=nn00488366, latitude=null, longitude=null, time=null
+FINEST	thread=13	[null] Updated event properties in Product Index
+FINER	thread=13	[null] committing transaction
+FINE	thread=13	[null] notifying listeners
+INFO	thread=13	[null] indexed product id=urn:usgs-product:nn:origin:nn00488366:1427492772081, status=DELETE
+EVENT_DELETED nn00488366 =&gt; nn00488366
+FINE	thread=13	Eventindexid=1, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529, eventid=nn00488363, latitude=39.25, longitude=-120.2066, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nn:origin:nn00488363:1427492032529, eventid=nn00488363, latitude=39.25, longitude=-120.2066, time=Fri Mar 27 14:42:30 MDT 2015
+	status=DELETE, id=urn:usgs-product:nn:origin:nn00488363:1427492772035, eventid=nn00488363, latitude=null, longitude=null, time=null
+	status=UPDATE, id=urn:usgs-product:nc:origin:nc72418635:1427489045050, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015
+FINE	thread=13	Eventindexid=2, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015, deleted=true
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015
+	status=UPDATE, id=urn:usgs-product:nn:origin:nn00488366:1427492221309, eventid=nn00488366, latitude=39.1692, longitude=-120.2406, time=Fri Mar 27 14:42:27 MDT 2015
+	status=DELETE, id=urn:usgs-product:nn:origin:nn00488366:1427492772081, eventid=nn00488366, latitude=null, longitude=null, time=null
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="http://www.gradle.org">Gradle 5.4.1</a> at Aug 5, 2019, 4:07:43 PM</p>
+</div>
+</div>
+</body>
+</html>

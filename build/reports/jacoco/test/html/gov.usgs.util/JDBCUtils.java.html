@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JDBCUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util</a> &gt; <span class="el_source">JDBCUtils.java</span></div><h1>JDBCUtils.java</h1><pre class="source lang-java linenums">/*
+ * JDBCUtils
+ *
+ * $Id$
+ * $HeadURL$
+ */
+package gov.usgs.util;
+
+import java.lang.reflect.InvocationTargetException;
+
+import java.io.File;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+/**
+ * JDBC Connection and Statement utility functions.
+ * 
+ * @author jmfee
+ * 
+ */
+<span class="nc" id="L23">public class JDBCUtils {</span>
+
+	/** Mysql Driver. */
+	public static final String MYSQL_DRIVER_CLASSNAME = &quot;com.mysql.jdbc.Driver&quot;;
+
+	/** SQLite Driver. */
+	public static final String SQLITE_DRIVER_CLASSNAME = &quot;org.sqlite.JDBC&quot;;
+
+	/**
+	 * Create a new JDBC Connection.
+	 * 
+	 * @param driver
+	 *            driver class name.
+	 * @param url
+	 *            driver specific url.
+	 * @return Connection to database.
+	 * @throws ClassNotFoundException
+	 *             if driver class is not found.
+	 * @throws IllegalAccessException
+	 *             if driver empty constructor is not public.
+	 * @throws InstantiationException
+	 *             if an exception occurs while instantiating driver.
+	 * @throws SQLException
+	 *             if an error occurs while making connection.
+	 */
+	public static Connection getConnection(final String driver, final String url)
+			throws ClassNotFoundException, IllegalAccessException,
+			InstantiationException, InvocationTargetException,
+			NoSuchMethodException, SQLException {
+		// create driver class, which registers with DriverManager
+<span class="fc" id="L53">		Class.forName(driver).getConstructor().newInstance();</span>
+
+		// request connection from DriverManager
+<span class="fc" id="L56">		return DriverManager.getConnection(url);</span>
+	}
+
+	/**
+	 * Set a JDBC prepared statement parameter.
+	 * 
+	 * Either calls statement.setNull if object is null, or sets the appropriate
+	 * type based on the object. If the object is not null, type is ignored.
+	 * 
+	 * @param statement
+	 *            statement with parameters to set.
+	 * @param index
+	 *            index of parameter being set.
+	 * @param object
+	 *            value of parameter being set.
+	 * @param type
+	 *            java.sql.Types constant for column type.
+	 * @throws SQLException
+	 */
+	public static void setParameter(final PreparedStatement statement,
+			final int index, final Object object, final int type)
+			throws SQLException {
+
+<span class="fc bfc" id="L79" title="All 2 branches covered.">		if (object == null) {</span>
+<span class="fc" id="L80">			statement.setNull(index, type);</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">		} else if (object instanceof Boolean) {</span>
+<span class="nc" id="L82">			statement.setBoolean(index, (Boolean) object);</span>
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">		} else if (object instanceof Byte) {</span>
+<span class="nc" id="L84">			statement.setByte(index, (Byte) object);</span>
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">		} else if (object instanceof Character) {</span>
+<span class="nc" id="L86">			statement.setString(index, ((Character) object).toString());</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">		} else if (object instanceof Double) {</span>
+<span class="fc" id="L88">			statement.setDouble(index, (Double) object);</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">		} else if (object instanceof Float) {</span>
+<span class="nc" id="L90">			statement.setFloat(index, (Float) object);</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">		} else if (object instanceof Integer) {</span>
+<span class="nc" id="L92">			statement.setInt(index, (Integer) object);</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">		} else if (object instanceof Long) {</span>
+<span class="fc" id="L94">			statement.setLong(index, (Long) object);</span>
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">		} else if (object instanceof Short) {</span>
+<span class="nc" id="L96">			statement.setShort(index, (Short) object);</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">		} else if (object instanceof String) {</span>
+<span class="fc" id="L98">			statement.setString(index, (String) object);</span>
+		} else {
+<span class="nc" id="L100">			statement.setObject(index, object, type);</span>
+<span class="nc" id="L101">			System.err.printf(</span>
+					&quot;Unsupported object type (%s): index=%d, value=%s\n&quot;,
+<span class="nc" id="L103">					object.getClass().getName(), index, object.toString());</span>
+		}
+<span class="fc" id="L105">	}</span>
+
+	/**
+	 * Get a mysql connection from a URL.
+	 * 
+	 * Calls getConnection(MYSQL_DRIVER_CLASSNAME, url).
+	 * 
+	 * @param url
+	 *            a Mysql URL.
+	 * @return a Connection to a Mysql database.
+	 */
+	public static Connection getMysqlConnection(final String url)
+			throws SQLException, ClassNotFoundException,
+			IllegalAccessException, InstantiationException,
+			InvocationTargetException, NoSuchMethodException {
+<span class="nc" id="L120">		return getConnection(MYSQL_DRIVER_CLASSNAME, url);</span>
+	}
+
+	/**
+	 * Get a sqlite connection from a file.
+	 * 
+	 * Builds a sqlite file url and calls getSqliteConnection(url).
+	 * 
+	 * @param file
+	 *            sqlite database file.
+	 * @return connection to sqlite database file.
+	 */
+	public static Connection getSqliteConnection(final File file)
+			throws SQLException, ClassNotFoundException,
+			IllegalAccessException, InstantiationException,
+			InvocationTargetException, NoSuchMethodException {
+<span class="fc" id="L136">		String sqliteFileURL = &quot;jdbc:sqlite:&quot; + file.getAbsolutePath();</span>
+<span class="fc" id="L137">		return getSqliteConnection(sqliteFileURL);</span>
+	}
+
+	/**
+	 * Get a sqlite connection from a URL.
+	 * 
+	 * Calls getConnection(SQLITE_DRIVER_CLASSNAME, url).
+	 * 
+	 * @param url
+	 *            sqlite database URL.
+	 * @return a Connection to a sqlite database.
+	 */
+	public static Connection getSqliteConnection(final String url)
+			throws SQLException, ClassNotFoundException,
+			IllegalAccessException, InstantiationException,
+			InvocationTargetException, NoSuchMethodException {
+<span class="fc" id="L153">		return getConnection(SQLITE_DRIVER_CLASSNAME, url);</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

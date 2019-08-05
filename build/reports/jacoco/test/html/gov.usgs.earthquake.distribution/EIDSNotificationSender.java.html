@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EIDSNotificationSender.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">EIDSNotificationSender.java</span></div><h1>EIDSNotificationSender.java</h1><pre class="source lang-java linenums">/*
+ *
+ */
+package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.eidsutil.CorbaSender;
+import gov.usgs.util.Config;
+import gov.usgs.util.FileUtils;
+
+import java.io.File;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+<span class="fc" id="L19">public class EIDSNotificationSender extends DefaultNotificationListener {</span>
+
+	/** Logging object. */
+<span class="fc" id="L22">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L23">			.getLogger(EIDSNotificationSender.class.getName());</span>
+
+	/** Property referencing a product storage config section. */
+	public static final String PRODUCT_STORAGE_PROPERTY = &quot;storage&quot;;
+
+	/** Property referencing how long to store products in milliseconds. */
+	public static final String PRODUCT_STORAGE_MAX_AGE_PROPERTY = &quot;storageage&quot;;
+
+	/** Default max age to store products, 604800000 milliseconds = 1 week. */
+	public static final String DEFAULT_PRODUCT_STORAGE_MAX_AGE = &quot;604800000&quot;;
+
+	/** Property referencing eids server host. */
+	public static final String EIDS_SERVER_HOST_PROPERTY = &quot;serverHost&quot;;
+
+	/** Property referencing eids server port. */
+	public static final String EIDS_SERVER_PORT_PROPERTY = &quot;serverPort&quot;;
+
+	/** Property referencing directory where notifications are &quot;sent&quot;. */
+	public static final String EIDS_POLLDIR_PROPERTY = &quot;serverPolldir&quot;;
+
+	/** Default directory where notifications are sent. */
+	public static final String EIDS_DEFAULT_POLLDIR = &quot;polldir&quot;;
+
+	/** The product storage where retrieved products are stored. */
+	private URLProductStorage productStorage;
+
+	/** How long to store retrieved product, in milliseconds. */
+	private Long productStorageMaxAge;
+
+	/** How long to wait until checking for expired notifications/products. */
+	private Long senderCleanupInterval;
+
+	/** Host for CORBA send. */
+<span class="fc" id="L56">	private String serverHost = null;</span>
+	/** Port for CORBA send. */
+<span class="fc" id="L58">	private String serverPort = null;</span>
+	/** Directory for Polldir send, in case CORBA send fails. */
+<span class="fc" id="L60">	private File serverPolldir = null;</span>
+	/** CORBA sending object. */
+<span class="fc" id="L62">	private CorbaSender corbaSender = null;</span>
+
+	/**
+	 * Called just before this listener processes a notification.
+	 * 
+	 * @param notification
+	 *            notification about to be processed.
+	 * @return true to process the notification, false to skip
+	 * @throws Exception
+	 */
+	protected boolean onBeforeProcessNotification(
+			final Notification notification) throws Exception {
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">		if (!isProcessDuplicates()) {</span>
+			// only check if we care
+<span class="fc" id="L76">			List&lt;Notification&gt; notifications = getNotificationIndex()</span>
+<span class="fc" id="L77">					.findNotifications(notification.getProductId());</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">			if (notifications.size() &gt; 0) {</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">				if (productStorage.hasProduct(notification.getProductId())) {</span>
+<span class="fc" id="L80">					LOGGER.finer(&quot;[&quot; + getName()</span>
+							+ &quot;] skipping existing product &quot;
+<span class="fc" id="L82">							+ notification.getProductId().toString());</span>
+<span class="fc" id="L83">					return false;</span>
+				} else {
+<span class="fc" id="L85">					LOGGER.finer(&quot;[&quot;</span>
+<span class="fc" id="L86">							+ getName()</span>
+							+ &quot;] found notifications, but product missing from storage &quot;
+<span class="fc" id="L88">							+ notification.getProductId().toString());</span>
+				}
+			}
+		}
+
+<span class="fc" id="L93">		return true;</span>
+	}
+
+	@Override
+	protected void onAfterProcessNotification(final Notification notification)
+			throws Exception {
+		// replace this function, so the notification is not added to the index
+		// this classes adds the notification it sends to the index, instead of
+		// the notification it received from the receiver.
+<span class="fc" id="L102">	}</span>
+
+	@Override
+	public void onExpiredNotification(final Notification notification)
+			throws Exception {
+<span class="nc" id="L107">		List&lt;Notification&gt; notifications = getNotificationIndex()</span>
+<span class="nc" id="L108">				.findNotifications(notification.getProductId());</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">		if (notifications.size() &lt;= 1) {</span>
+			// this is called before removing notification from index.
+<span class="nc" id="L111">			productStorage.removeProduct(notification.getProductId());</span>
+<span class="nc" id="L112">			LOGGER.finer(&quot;[&quot; + getName()</span>
+					+ &quot;] removed expired product from sender storage &quot;
+<span class="nc" id="L114">					+ notification.getProductId().toString());</span>
+		} else {
+			// still have notifications left for product, don't remove
+		}
+<span class="nc" id="L118">	}</span>
+
+	/**
+	 * Store product and send a notification via eids.
+	 */
+	public void onProduct(final Product product) throws Exception {
+<span class="fc" id="L124">		ProductId id = product.getId();</span>
+
+		// store product
+		try {
+<span class="fc" id="L128">			productStorage.storeProduct(product);</span>
+<span class="nc" id="L129">		} catch (ProductAlreadyInStorageException e) {</span>
+			// ignore
+<span class="fc" id="L131">		}</span>
+
+		// create notification
+		// make expiration relative to now
+<span class="fc" id="L135">		Date expirationDate = new Date(new Date().getTime()</span>
+<span class="fc" id="L136">				+ productStorageMaxAge);</span>
+<span class="fc" id="L137">		URLNotification notification = new URLNotification(id, expirationDate,</span>
+<span class="fc" id="L138">				product.getTrackerURL(), productStorage.getProductURL(id));</span>
+
+		// remove any existing notifications, generally there won't be any
+<span class="fc" id="L141">		Iterator&lt;Notification&gt; existing = getNotificationIndex()</span>
+<span class="fc" id="L142">				.findNotifications(id).iterator();</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">		while (existing.hasNext()) {</span>
+<span class="fc" id="L144">			getNotificationIndex().removeNotification(existing.next());</span>
+		}
+
+		// add created notification to index. Used to track which products
+		// have been processed, and to delete after expirationDate
+<span class="fc" id="L149">		getNotificationIndex().addNotification(notification);</span>
+
+		// send notification
+<span class="fc" id="L152">		sendEIDSMessage(serverHost, serverPort, notification.toXML());</span>
+
+		// track that notification was sent
+<span class="fc" id="L155">		new ProductTracker(notification.getTrackerURL()).notificationSent(</span>
+<span class="fc" id="L156">				this.getName(), notification);</span>
+<span class="fc" id="L157">	}</span>
+
+	protected void sendEIDSMessage(final String server, final String port,
+			final String message) throws Exception {
+<span class="fc" id="L161">		boolean sent = false;</span>
+
+<span class="pc bpc" id="L163" title="3 of 4 branches missed.">		if (serverHost != null &amp;&amp; serverPort != null) {</span>
+			try {
+<span class="nc bnc" id="L165" title="All 2 branches missed.">				if (corbaSender == null) {</span>
+					// try to establish a connection
+<span class="nc" id="L167">					corbaSender = new CorbaSender(serverHost, serverPort);</span>
+				}
+<span class="nc" id="L169">				sent = corbaSender.sendMessage(message);</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">				if (sent) {</span>
+<span class="nc" id="L171">					LOGGER.fine(&quot;[&quot; + getName()</span>
+							+ &quot;] sent notification to EIDS via CORBA&quot;);
+				}
+<span class="nc" id="L174">			} catch (Exception e) {</span>
+<span class="nc" id="L175">				LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+						+ &quot;] unable to send notification using CORBA&quot;, e);
+<span class="nc" id="L177">			}</span>
+		}
+
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">		if (!sent) {</span>
+			// when unable to send directly to corba service
+			// send notification via EIDS polldir
+
+			// create a uniqueish filename
+<span class="fc" id="L185">			String filename = &quot;out_&quot; + new Date().getTime();</span>
+<span class="fc" id="L186">			File outFile = new File(serverPolldir, filename + &quot;.xml&quot;);</span>
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">			while (outFile.exists()) {</span>
+<span class="nc" id="L188">				filename = filename += &quot;_1&quot;;</span>
+<span class="nc" id="L189">				outFile = new File(serverPolldir, filename + &quot;.xml&quot;);</span>
+			}
+
+			// is this atomic enough?, write then move may be better
+<span class="fc" id="L193">			FileUtils.writeFile(outFile, message.getBytes());</span>
+<span class="fc" id="L194">			LOGGER.log(Level.INFO, &quot;[&quot; + getName()</span>
+<span class="fc" id="L195">					+ &quot;] sent notification to EIDS via &quot; + outFile.getPath());</span>
+		}
+<span class="fc" id="L197">	}</span>
+
+	public void configure(Config config) throws Exception {
+		// let default notification listener configure itself
+<span class="nc" id="L201">		super.configure(config);</span>
+
+<span class="nc bnc" id="L203" title="All 2 branches missed.">		if (getNotificationIndex() == null) {</span>
+<span class="nc" id="L204">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+					+ &quot;] 'index' is a required configuration property&quot;);
+		}
+
+<span class="nc" id="L208">		String productStorageName = config</span>
+<span class="nc" id="L209">				.getProperty(PRODUCT_STORAGE_PROPERTY);</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">		if (productStorageName == null) {</span>
+<span class="nc" id="L211">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+					+ &quot;] 'storage' is a required configuration property&quot;);
+		}
+<span class="nc" id="L214">		LOGGER.config(&quot;[&quot; + getName() + &quot;] loading product storage '&quot;</span>
+				+ productStorageName + &quot;'&quot;);
+<span class="nc" id="L216">		productStorage = (URLProductStorage) Config.getConfig().getObject(</span>
+				productStorageName);
+<span class="nc bnc" id="L218" title="All 2 branches missed.">		if (productStorage == null) {</span>
+<span class="nc" id="L219">			throw new ConfigurationException(&quot;[&quot; + getName() + &quot;] storage '&quot;</span>
+					+ productStorageName + &quot;' is not properly configured&quot;);
+		}
+
+<span class="nc" id="L223">		productStorageMaxAge = Long.parseLong(config.getProperty(</span>
+				PRODUCT_STORAGE_MAX_AGE_PROPERTY,
+				DEFAULT_PRODUCT_STORAGE_MAX_AGE));
+<span class="nc" id="L226">		LOGGER.config(&quot;[&quot; + getName() + &quot;] storage max age &quot;</span>
+				+ productStorageMaxAge + &quot; ms&quot;);
+
+<span class="nc" id="L229">		serverHost = config.getProperty(EIDS_SERVER_HOST_PROPERTY);</span>
+<span class="nc" id="L230">		LOGGER.config(&quot;[&quot; + getName() + &quot;] EIDS CORBA server host '&quot;</span>
+				+ serverHost + &quot;'&quot;);
+
+<span class="nc" id="L233">		serverPort = config.getProperty(EIDS_SERVER_PORT_PROPERTY);</span>
+<span class="nc" id="L234">		LOGGER.config(&quot;[&quot; + getName() + &quot;] EIDS CORBA server port '&quot;</span>
+				+ serverPort + &quot;'&quot;);
+
+<span class="nc" id="L237">		serverPolldir = new File(config.getProperty(EIDS_POLLDIR_PROPERTY,</span>
+				EIDS_DEFAULT_POLLDIR));
+<span class="nc" id="L239">		LOGGER.config(&quot;[&quot; + getName() + &quot;] EIDS server polldir '&quot;</span>
+				+ serverPolldir + &quot;'&quot;);
+
+<span class="nc" id="L242">	}</span>
+
+	public void shutdown() throws Exception {
+<span class="fc" id="L245">		super.shutdown();</span>
+
+<span class="pc bpc" id="L247" title="1 of 2 branches missed.">		if (corbaSender != null) {</span>
+			try {
+<span class="nc" id="L249">				corbaSender.destroy();</span>
+<span class="nc" id="L250">			} catch (Exception e) {</span>
+				// ignore
+<span class="nc" id="L252">			}</span>
+<span class="nc" id="L253">			corbaSender = null;</span>
+		}
+
+		try {
+<span class="fc" id="L257">			productStorage.shutdown();</span>
+<span class="nc" id="L258">		} catch (Exception e) {</span>
+			// ignore
+<span class="fc" id="L260">		}</span>
+<span class="fc" id="L261">	}</span>
+
+	public void startup() throws Exception {
+<span class="fc" id="L264">		productStorage.startup();</span>
+
+<span class="pc bpc" id="L266" title="3 of 4 branches missed.">		if (serverHost != null &amp;&amp; serverPort != null) {</span>
+			try {
+<span class="nc" id="L268">				corbaSender = new CorbaSender(serverHost, serverPort);</span>
+<span class="nc" id="L269">			} catch (org.omg.CORBA.COMM_FAILURE e) {</span>
+<span class="nc" id="L270">				LOGGER.warning(&quot;[&quot; + getName()</span>
+						+ &quot;] unable to connect to EIDS using CORBA&quot;);
+<span class="nc" id="L272">				corbaSender = null;</span>
+<span class="nc" id="L273">			}</span>
+		}
+
+<span class="fc" id="L276">		super.startup();</span>
+<span class="fc" id="L277">	}</span>
+
+	public URLProductStorage getProductStorage() {
+<span class="fc" id="L280">		return productStorage;</span>
+	}
+
+	public void setProductStorage(URLProductStorage productStorage) {
+<span class="fc" id="L284">		this.productStorage = productStorage;</span>
+<span class="fc" id="L285">	}</span>
+
+	public Long getProductStorageMaxAge() {
+<span class="nc" id="L288">		return productStorageMaxAge;</span>
+	}
+
+	public void setProductStorageMaxAge(Long productStorageMaxAge) {
+<span class="fc" id="L292">		this.productStorageMaxAge = productStorageMaxAge;</span>
+<span class="fc" id="L293">	}</span>
+
+	public Long getSenderCleanupInterval() {
+<span class="nc" id="L296">		return senderCleanupInterval;</span>
+	}
+
+	public void setSenderCleanupInterval(Long senderCleanupInterval) {
+<span class="nc" id="L300">		this.senderCleanupInterval = senderCleanupInterval;</span>
+<span class="nc" id="L301">	}</span>
+
+	public String getServerHost() {
+<span class="nc" id="L304">		return serverHost;</span>
+	}
+
+	public void setServerHost(String serverHost) {
+<span class="nc" id="L308">		this.serverHost = serverHost;</span>
+<span class="nc" id="L309">	}</span>
+
+	public String getServerPort() {
+<span class="nc" id="L312">		return serverPort;</span>
+	}
+
+	public void setServerPort(String serverPort) {
+<span class="nc" id="L316">		this.serverPort = serverPort;</span>
+<span class="nc" id="L317">	}</span>
+
+	public File getServerPolldir() {
+<span class="nc" id="L320">		return serverPolldir;</span>
+	}
+
+	public void setServerPolldir(File serverPolldir) {
+<span class="fc" id="L324">		this.serverPolldir = serverPolldir;</span>
+<span class="fc" id="L325">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

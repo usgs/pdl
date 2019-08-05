@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="gov.usgs.earthquake.eids.EQMessageProductCreatorTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2019-08-05T22:07:14" hostname="igskcicgwsgm015" time="0.02">
+  <properties/>
+  <testcase name="mtTest" classname="gov.usgs.earthquake.eids.EQMessageProductCreatorTest" time="0.002"/>
+  <testcase name="testQuarryEvent" classname="gov.usgs.earthquake.eids.EQMessageProductCreatorTest" time="0.003"/>
+  <testcase name="testPreserveOriginalContent" classname="gov.usgs.earthquake.eids.EQMessageProductCreatorTest" time="0.002"/>
+  <testcase name="akSameSecondTest" classname="gov.usgs.earthquake.eids.EQMessageProductCreatorTest" time="0.009"/>
+  <testcase name="testSonicBoomEvent" classname="gov.usgs.earthquake.eids.EQMessageProductCreatorTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[<?xml version="1.0"?>
+<product xmlns="http://earthquake.usgs.gov/distribution/product" id="urn:usgs-product:ak:origin:ak10561248:1347984366565" updateTime="2012-09-18T16:06:06.565Z" status="UPDATE">
+	<property name="azimuthal-gap" value="68.4"/>
+	<property name="cube-location-method" value="A"/>
+	<property name="cube-magnitude-type" value="B"/>
+	<property name="depth" value="9.2"/>
+	<property name="event-type" value="earthquake"/>
+	<property name="eventsource" value="ak"/>
+	<property name="eventsourcecode" value="10561248"/>
+	<property name="eventtime" value="2012-09-18T01:44:47.000Z"/>
+	<property name="horizontal-error" value="0.3"/>
+	<property name="latitude" value="56.9446"/>
+	<property name="location-method-algorithm" value="Binder"/>
+	<property name="location-method-class" value="Carol Johnson stack"/>
+	<property name="longitude" value="-154.1804"/>
+	<property name="magnitude" value="6.0"/>
+	<property name="magnitude-type" value="Mb"/>
+	<property name="minimum-distance" value="0.38537726"/>
+	<property name="num-phases-used" value="138"/>
+	<property name="num-stations-used" value="141"/>
+	<property name="review-status" value="AUTOMATIC"/>
+	<property name="standard-error" value="0.92"/>
+	<property name="version" value="1"/>
+	<property name="vertical-error" value="0.5"/>
+	<content path="contents.xml" type="text/plain" length="272" modified="2012-09-18T16:06:06.000Z" encoded="true">PD94bWwgdmVyc2lvbj0iMS4wIj8+Cjxjb250ZW50cyB4bWxucz0iaHR0cDovL2VhcnRocXVha2UudXNncy5nb3YvZWFydGhxdWFrZXMvZXZlbnQvY29udGVudHMiPgo8ZmlsZSB0aXRsZT0iRWFydGhxdWFrZSBYTUwgKEVRWE1MKSIgaWQ9ImVxeG1sIj4KPGZvcm1hdCB0eXBlPSJ4bWwiIGhyZWY9ImVxeG1sLnhtbCIvPgo8L2ZpbGU+CjxwYWdlIHRpdGxlPSJMb2NhdGlvbiIgc2x1Zz0ibG9jYXRpb24iPgo8ZmlsZSByZWZpZD0iZXF4bWwiLz4KPC9wYWdlPgo8L2NvbnRlbnRzPgo=</content>
+	<content path="eqxml.xml" type="text/plain" length="1018" modified="2012-09-18T16:06:06.000Z" encoded="true">PEVRTWVzc2FnZSB4bWxucz0iaHR0cDovL3d3dy51c2dzLmdvdi9hbnNzZXFtc2ciPjxTb3VyY2U+QUs8L1NvdXJjZT48TW9kdWxlPlF1YWtlV2F0Y2ggU2VydmVyLCBWZXJzaW9uIDEuMDwvTW9kdWxlPjxTZW50PjIwMTItMDktMThUMTY6MDY6MDYuNTY1WjwvU2VudD48RXZlbnQ+PERhdGFTb3VyY2U+QUs8L0RhdGFTb3VyY2U+PEV2ZW50SUQ+MTA1NjEyNDg8L0V2ZW50SUQ+PFZlcnNpb24+MTwvVmVyc2lvbj48QWN0aW9uPlVwZGF0ZTwvQWN0aW9uPjxUeXBlPkVhcnRocXVha2U8L1R5cGU+PFVzYWdlPkFjdHVhbDwvVXNhZ2U+PFNjb3BlPlB1YmxpYzwvU2NvcGU+PE9yaWdpbj48VGltZT4yMDEyLTA5LTE4VDAxOjQ0OjQ3LjAwMFo8L1RpbWU+PExhdGl0dWRlPjU2Ljk0NDY8L0xhdGl0dWRlPjxMb25naXR1ZGU+LTE1NC4xODA0PC9Mb25naXR1ZGU+PERlcHRoPjkuMjwvRGVwdGg+PFN0ZEVycm9yPjAuOTI8L1N0ZEVycm9yPjxBemltR2FwPjY4LjQ8L0F6aW1HYXA+PE1pbkRpc3Q+MC4zODUzNzcyNjwvTWluRGlzdD48RXJyaD4wLjM8L0Vycmg+PEVycno+MC41PC9FcnJ6PjxOdW1QaGFVc2VkPjEzODwvTnVtUGhhVXNlZD48TnVtU3RhVXNlZD4xNDE8L051bVN0YVVzZWQ+PFN0YXR1cz5BdXRvbWF0aWM8L1N0YXR1cz48UHJlZmVycmVkRmxhZz50cnVlPC9QcmVmZXJyZWRGbGFnPjxNYWduaXR1ZGU+PFR5cGVLZXk+TWI8L1R5cGVLZXk+PFZhbHVlPjYuMDwvVmFsdWU+PFByZWZlcnJlZEZsYWc+dHJ1ZTwvUHJlZmVycmVkRmxhZz48Q29tbWVudD48VHlwZUtleT5DVUJFX0NvZGU8L1R5cGVLZXk+PFRleHQ+Q1VCRV9Db2RlIEI8L1RleHQ+PC9Db21tZW50PjwvTWFnbml0dWRlPjxNZXRob2Q+PENsYXNzPkNhcm9sIEpvaG5zb24gc3RhY2s8L0NsYXNzPjxBbGdvcml0aG0+QmluZGVyPC9BbGdvcml0aG0+PENvbW1lbnQ+PFR5cGVLZXk+Q1VCRV9Db2RlPC9UeXBlS2V5PjxUZXh0PkNVQkVfQ29kZSBBPC9UZXh0PjwvQ29tbWVudD48L01ldGhvZD48L09yaWdpbj48L0V2ZW50PjwvRVFNZXNzYWdlPg==</content>
+</product>
+<?xml version="1.0"?>
+<product xmlns="http://earthquake.usgs.gov/distribution/product" id="urn:usgs-product:ak:origin:ak10561248:1347984366603" updateTime="2012-09-18T16:06:06.603Z" status="UPDATE">
+	<property name="azimuthal-gap" value="129.6"/>
+	<property name="cube-location-method" value="a"/>
+	<property name="cube-magnitude-type" value="B"/>
+	<property name="depth" value="48.1"/>
+	<property name="event-type" value="earthquake"/>
+	<property name="eventsource" value="ak"/>
+	<property name="eventsourcecode" value="10561248"/>
+	<property name="eventtime" value="2012-09-18T01:44:49.000Z"/>
+	<property name="horizontal-error" value="0.7"/>
+	<property name="latitude" value="56.8835"/>
+	<property name="location-method-algorithm" value="Binder"/>
+	<property name="location-method-class" value="Carol Johnson stack"/>
+	<property name="longitude" value="-154.0788"/>
+	<property name="magnitude" value="5.5"/>
+	<property name="magnitude-type" value="Mb"/>
+	<property name="minimum-distance" value="0.32878339"/>
+	<property name="num-phases-used" value="93"/>
+	<property name="num-stations-used" value="86"/>
+	<property name="review-status" value="REVIEWED"/>
+	<property name="standard-error" value="0.85"/>
+	<property name="version" value="2"/>
+	<property name="vertical-error" value="0.1"/>
+	<content path="contents.xml" type="text/plain" length="272" modified="2012-09-18T16:06:06.000Z" encoded="true">PD94bWwgdmVyc2lvbj0iMS4wIj8+Cjxjb250ZW50cyB4bWxucz0iaHR0cDovL2VhcnRocXVha2UudXNncy5nb3YvZWFydGhxdWFrZXMvZXZlbnQvY29udGVudHMiPgo8ZmlsZSB0aXRsZT0iRWFydGhxdWFrZSBYTUwgKEVRWE1MKSIgaWQ9ImVxeG1sIj4KPGZvcm1hdCB0eXBlPSJ4bWwiIGhyZWY9ImVxeG1sLnhtbCIvPgo8L2ZpbGU+CjxwYWdlIHRpdGxlPSJMb2NhdGlvbiIgc2x1Zz0ibG9jYXRpb24iPgo8ZmlsZSByZWZpZD0iZXF4bWwiLz4KPC9wYWdlPgo8L2NvbnRlbnRzPgo=</content>
+	<content path="eqxml.xml" type="text/plain" length="1017" modified="2012-09-18T16:06:06.000Z" encoded="true">PEVRTWVzc2FnZSB4bWxucz0iaHR0cDovL3d3dy51c2dzLmdvdi9hbnNzZXFtc2ciPjxTb3VyY2U+QUs8L1NvdXJjZT48TW9kdWxlPlF1YWtlV2F0Y2ggU2VydmVyLCBWZXJzaW9uIDEuMDwvTW9kdWxlPjxTZW50PjIwMTItMDktMThUMTY6MDY6MDYuNjAzWjwvU2VudD48RXZlbnQ+PERhdGFTb3VyY2U+QUs8L0RhdGFTb3VyY2U+PEV2ZW50SUQ+MTA1NjEyNDg8L0V2ZW50SUQ+PFZlcnNpb24+MjwvVmVyc2lvbj48QWN0aW9uPlVwZGF0ZTwvQWN0aW9uPjxUeXBlPkVhcnRocXVha2U8L1R5cGU+PFVzYWdlPkFjdHVhbDwvVXNhZ2U+PFNjb3BlPlB1YmxpYzwvU2NvcGU+PE9yaWdpbj48VGltZT4yMDEyLTA5LTE4VDAxOjQ0OjQ5LjAwMFo8L1RpbWU+PExhdGl0dWRlPjU2Ljg4MzU8L0xhdGl0dWRlPjxMb25naXR1ZGU+LTE1NC4wNzg4PC9Mb25naXR1ZGU+PERlcHRoPjQ4LjE8L0RlcHRoPjxTdGRFcnJvcj4wLjg1PC9TdGRFcnJvcj48QXppbUdhcD4xMjkuNjwvQXppbUdhcD48TWluRGlzdD4wLjMyODc4MzM5PC9NaW5EaXN0PjxFcnJoPjAuNzwvRXJyaD48RXJyej4wLjE8L0Vycno+PE51bVBoYVVzZWQ+OTM8L051bVBoYVVzZWQ+PE51bVN0YVVzZWQ+ODY8L051bVN0YVVzZWQ+PFN0YXR1cz5SZXZpZXdlZDwvU3RhdHVzPjxQcmVmZXJyZWRGbGFnPnRydWU8L1ByZWZlcnJlZEZsYWc+PE1hZ25pdHVkZT48VHlwZUtleT5NYjwvVHlwZUtleT48VmFsdWU+NS41PC9WYWx1ZT48UHJlZmVycmVkRmxhZz50cnVlPC9QcmVmZXJyZWRGbGFnPjxDb21tZW50PjxUeXBlS2V5PkNVQkVfQ29kZTwvVHlwZUtleT48VGV4dD5DVUJFX0NvZGUgQjwvVGV4dD48L0NvbW1lbnQ+PC9NYWduaXR1ZGU+PE1ldGhvZD48Q2xhc3M+Q2Fyb2wgSm9obnNvbiBzdGFjazwvQ2xhc3M+PEFsZ29yaXRobT5CaW5kZXI8L0FsZ29yaXRobT48Q29tbWVudD48VHlwZUtleT5DVUJFX0NvZGU8L1R5cGVLZXk+PFRleHQ+Q1VCRV9Db2RlIGE8L1RleHQ+PC9Db21tZW50PjwvTWV0aG9kPjwvT3JpZ2luPjwvRXZlbnQ+PC9FUU1lc3NhZ2U+</content>
+</product>
+<?xml version="1.0"?>
+<product xmlns="http://earthquake.usgs.gov/distribution/product" id="urn:usgs-product:us:origin:us2012_003:1565042834871" updateTime="2019-08-05T22:07:14.871Z" status="UPDATE">
+	<property name="event-type" value="sonicboom"/>
+	<property name="eventsource" value="us"/>
+	<property name="eventsourcecode" value="2012_003"/>
+	<property name="eventtime" value="2012-03-19T01:36:00.000Z"/>
+	<property name="latitude" value="36.8"/>
+	<property name="longitude" value="-76.1"/>
+	<property name="version" value="1"/>
+	<content path="contents.xml" type="text/plain" length="272" modified="2019-08-05T22:07:14.000Z" encoded="true">PD94bWwgdmVyc2lvbj0iMS4wIj8+Cjxjb250ZW50cyB4bWxucz0iaHR0cDovL2VhcnRocXVha2UudXNncy5nb3YvZWFydGhxdWFrZXMvZXZlbnQvY29udGVudHMiPgo8ZmlsZSB0aXRsZT0iRWFydGhxdWFrZSBYTUwgKEVRWE1MKSIgaWQ9ImVxeG1sIj4KPGZvcm1hdCB0eXBlPSJ4bWwiIGhyZWY9ImVxeG1sLnhtbCIvPgo8L2ZpbGU+CjxwYWdlIHRpdGxlPSJMb2NhdGlvbiIgc2x1Zz0ibG9jYXRpb24iPgo8ZmlsZSByZWZpZD0iZXF4bWwiLz4KPC9wYWdlPgo8L2NvbnRlbnRzPgo=</content>
+	<content path="eqxml.xml" type="text/plain" length="449" modified="2019-08-05T22:07:14.000Z" encoded="true">PEVRTWVzc2FnZSB4bWxucz0iaHR0cDovL3d3dy51c2dzLmdvdi9hbnNzZXFtc2ciPgoJPFNvdXJjZT5VUzwvU291cmNlPgoJPEV2ZW50PgoJCTxEYXRhU291cmNlPlVTPC9EYXRhU291cmNlPgoJCTxFdmVudElEPjIwMTJfMDAzPC9FdmVudElEPgoJCTxWZXJzaW9uPjE8L1ZlcnNpb24+CgkJPEFjdGlvbj5VcGRhdGU8L0FjdGlvbj4KCQk8VHlwZT5Tb25pY0Jvb208L1R5cGU+CgkJPFVzYWdlPkFjdHVhbDwvVXNhZ2U+CgkJPFNjb3BlPlB1YmxpYzwvU2NvcGU+CgkJPE9yaWdpbj4KCQkJPFRpbWU+MjAxMi0wMy0xOVQwMTozNjowMC4wMDBaPC9UaW1lPgoJCQk8TGF0aXR1ZGU+MzYuODwvTGF0aXR1ZGU+CgkJCTxMb25naXR1ZGU+LTc2LjE8L0xvbmdpdHVkZT4KCQkJPFByZWZlcnJlZEZsYWc+dHJ1ZTwvUHJlZmVycmVkRmxhZz4KCQk8L09yaWdpbj4KCTwvRXZlbnQ+CjwvRVFNZXNzYWdlPgo=</content>
+</product>
+]]></system-err>
+</testsuite>

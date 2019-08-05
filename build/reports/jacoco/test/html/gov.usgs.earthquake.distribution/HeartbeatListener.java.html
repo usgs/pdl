@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HeartbeatListener.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">HeartbeatListener.java</span></div><h1>HeartbeatListener.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.distribution.HeartbeatStatus;
+import gov.usgs.util.Config;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
+import java.util.Iterator;
+import java.util.logging.Logger;
+
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+
+
+/**
+ * Heartbeat Listener stores heartbeat messages and writes them to a heartbeat
+ * file when a product is received
+ * 
+ * @author tene
+ * 
+ */
+public class HeartbeatListener extends DefaultNotificationListener {
+
+<span class="fc" id="L31">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L32">			.getLogger(HeartbeatListener.class.getName());</span>
+
+	/** Storage for heartbeat components */
+<span class="fc" id="L35">	private static Map&lt;String, HeartbeatStatus&gt; HASH_HEARTBEATS = new HashMap&lt;String, HeartbeatStatus&gt;();</span>
+
+	/** Configurable property for heartbeat fully qualified directory+filename. */
+	public static final String HEARTBEAT_FILENAME_PROPERTY = &quot;heartbeatFilename&quot;;
+
+	/** Default heartbeat directory. */
+	public static final String DEFAULT_HEARTBEAT_FILENAME = &quot;heartbeat.dat&quot;;
+
+	/** Default timeout for HeartbeatStatus key/value pairs. Zero = disabled */
+	public static final String DEFAULT_STORAGE_TIMEOUT = &quot;0&quot;;
+
+	/**
+	 * Default schedule interval for HeartbeatStatus key/value pairs cleanup. 30
+	 * minutes
+	 */
+	public static final String DEFAULT_CLEANUP_INTERVAL = &quot;1800000&quot;;
+
+	/** Configurable property for heartbeat key/value expiration */
+	public static final String HEARTBEAT_TIMEOUT_PROPERTY = &quot;heartbeatTimeout&quot;;
+
+	/** Flag listeners are listening */
+<span class="fc" id="L56">	private static boolean LISTENING = false;</span>
+
+	/** Hearbeat registered file. */
+	private File heartbeatFile;
+
+	/** Timeout for expiration of key/value pairs */
+	private long storageTimeout;
+
+	/**
+	 * Create a new HeartbeatListener.
+	 * 
+	 * Sets up the includeTypes list to contain &quot;heartbeat&quot;.
+	 */
+<span class="fc" id="L69">	public HeartbeatListener() throws Exception {</span>
+<span class="fc" id="L70">		LISTENING = true;</span>
+<span class="fc" id="L71">		heartbeatFile = new File(DEFAULT_HEARTBEAT_FILENAME);</span>
+<span class="fc" id="L72">		storageTimeout = Long.valueOf(DEFAULT_STORAGE_TIMEOUT);</span>
+<span class="fc" id="L73">		this.getIncludeTypes().add(&quot;heartbeat&quot;);</span>
+<span class="fc" id="L74">	}</span>
+
+	/**
+	 * @return map of component and heartbeat status.
+	 */
+	protected static Map&lt;String, HeartbeatStatus&gt; getHeartbeats() {
+<span class="fc" id="L80">		return HASH_HEARTBEATS;</span>
+	}
+
+	/**
+	 * heartbeat onProduct processing writes to heartbeat file
+	 */
+	@Override
+	public void onProduct(final Product product) throws Exception {
+
+		// track product
+<span class="nc" id="L90">		sendHeartbeatMessage(this.getName(), &quot;lastHeartbeat&quot;, product.getId()</span>
+<span class="nc" id="L91">				.toString());</span>
+
+		// track current memory usage
+<span class="nc" id="L94">		MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();</span>
+<span class="nc" id="L95">		MemoryUsage heapMemory = memoryMXBean.getHeapMemoryUsage();</span>
+<span class="nc" id="L96">		MemoryUsage nonHeapMemory = memoryMXBean.getNonHeapMemoryUsage();</span>
+
+<span class="nc" id="L98">		long heapUsed = heapMemory.getUsed();</span>
+<span class="nc" id="L99">		long nonHeapUsed = nonHeapMemory.getUsed();</span>
+<span class="nc" id="L100">		long heapCommitted = heapMemory.getCommitted();</span>
+<span class="nc" id="L101">		long nonHeapCommitted = nonHeapMemory.getCommitted();</span>
+<span class="nc" id="L102">		long heapMax = heapMemory.getMax();</span>
+<span class="nc" id="L103">		long nonHeapMax = nonHeapMemory.getMax();</span>
+<span class="nc" id="L104">		long totalUsed = heapUsed + nonHeapUsed;</span>
+<span class="nc" id="L105">		long totalCommitted = heapCommitted + nonHeapCommitted;</span>
+<span class="nc" id="L106">		long totalMax = heapMax + nonHeapMax;</span>
+
+<span class="nc" id="L108">		sendHeartbeatMessage(this.getName(), &quot;totalUsed&quot;, Long</span>
+<span class="nc" id="L109">				.toString(totalUsed));</span>
+<span class="nc" id="L110">		sendHeartbeatMessage(this.getName(), &quot;totalCommitted&quot;, Long</span>
+<span class="nc" id="L111">				.toString(totalCommitted));</span>
+<span class="nc" id="L112">		sendHeartbeatMessage(this.getName(), &quot;totalMax&quot;, Long</span>
+<span class="nc" id="L113">				.toString(totalMax));</span>
+
+		// write heartbeat information to file
+<span class="nc" id="L116">		this.writeHeartbeat();</span>
+
+<span class="nc" id="L118">	}</span>
+
+	/**
+	 * Send heartbeat data to heartbeat listener
+	 * 
+	 * @param component
+	 * @param key
+	 * @param value
+	 */
+	public static void sendHeartbeatMessage(final String component,
+			final String key, final String value) {
+
+<span class="fc bfc" id="L130" title="All 2 branches covered.">		if (!LISTENING) {</span>
+<span class="fc" id="L131">			return;</span>
+		}
+		HeartbeatStatus objHeartbeat;
+
+<span class="fc" id="L135">		String heartbeatKey = component;</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">		if (heartbeatKey == null) {</span>
+<span class="fc" id="L137">			heartbeatKey = &quot;&lt;null&gt;&quot;;</span>
+		}
+
+		// register this heartbeat in temporary storage
+<span class="fc bfc" id="L141" title="All 2 branches covered.">		if (HASH_HEARTBEATS.containsKey(heartbeatKey)) {</span>
+<span class="fc" id="L142">			objHeartbeat = HASH_HEARTBEATS.get(heartbeatKey);</span>
+		} else {
+<span class="fc" id="L144">			objHeartbeat = new HeartbeatStatus();</span>
+<span class="fc" id="L145">			HASH_HEARTBEATS.put(heartbeatKey, objHeartbeat);</span>
+		}
+
+		// store the heartbeat key/value in temporary storage
+<span class="fc" id="L149">		objHeartbeat.updateStatus(key, value);</span>
+<span class="fc" id="L150">	}</span>
+
+	/**
+	 * Write heartbeat data for all components to the heartbeat file
+	 * 
+	 * @return true
+	 * @throws IOException
+	 */
+	public boolean writeHeartbeat() throws IOException {
+<span class="fc" id="L159">		String tempFileName = heartbeatFile.getName() + &quot;-temp&quot;;</span>
+<span class="fc" id="L160">		File tempFile = new File(tempFileName);</span>
+
+<span class="fc" id="L162">		gov.usgs.util.FileUtils.writeFileThenMove(tempFile, heartbeatFile, this</span>
+<span class="fc" id="L163">				.formatHeartbeatOutput().getBytes());</span>
+
+<span class="fc" id="L165">		return true;</span>
+	}
+
+	/**
+	 * Self-configure HeartbeatListener object
+	 */
+	@Override
+	public void configure(Config config) throws Exception {
+		// let default notification listener configure itself
+<span class="fc" id="L174">		super.configure(config);</span>
+
+<span class="fc" id="L176">		heartbeatFile = new File(config.getProperty(</span>
+				HEARTBEAT_FILENAME_PROPERTY, DEFAULT_HEARTBEAT_FILENAME));
+<span class="fc" id="L178">		LOGGER.config(&quot;[&quot; + getName() + &quot;] heartbeat file = &quot;</span>
+<span class="fc" id="L179">				+ heartbeatFile.getCanonicalPath());</span>
+
+<span class="fc" id="L181">		storageTimeout = Long.valueOf(config.getProperty(</span>
+				HEARTBEAT_TIMEOUT_PROPERTY, DEFAULT_STORAGE_TIMEOUT));
+<span class="fc" id="L183">		LOGGER.config(&quot;[&quot; + getName() + &quot;] heartbeat timeout = &quot;</span>
+				+ storageTimeout + &quot;ms&quot;);
+<span class="fc" id="L185">	}</span>
+
+	/**
+	 * @return JSON-formatted output from the map of components and their values
+	 */
+	public String formatHeartbeatOutput() {
+<span class="fc" id="L191">		JsonObjectBuilder builder = Json.createObjectBuilder();</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">		for (String key : HASH_HEARTBEATS.keySet()) {</span>
+<span class="fc" id="L193">			HeartbeatStatus status = HASH_HEARTBEATS.get(key);</span>
+<span class="pc bpc" id="L194" title="1 of 2 branches missed.">			builder.add(key, status == null ? null : status.toJsonObject());</span>
+<span class="fc" id="L195">		}</span>
+<span class="fc" id="L196">		return builder.build().toString();</span>
+	}
+
+	/**
+	 * purge heartbeat key/values older than storageTimeout, also purging empty
+	 * heartbeats
+	 */
+	public void cleanup() {
+<span class="fc" id="L204">		super.cleanup();</span>
+
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">		if (this.storageTimeout == 0) {</span>
+<span class="nc" id="L207">			return;</span>
+		}
+
+<span class="fc" id="L210">		Map&lt;String, HeartbeatStatus&gt; hashHeartbeats = getHeartbeats();</span>
+		HeartbeatStatus objHeartbeat;
+		String component;
+<span class="fc" id="L213">		Iterator&lt;String&gt; itComponents = hashHeartbeats.keySet().iterator();</span>
+<span class="fc" id="L214">		Date purgeDate = new Date(new Date().getTime() - this.storageTimeout);</span>
+
+		// iterate through map of components
+<span class="fc bfc" id="L217" title="All 2 branches covered.">		while (itComponents.hasNext()) {</span>
+<span class="fc" id="L218">			component = itComponents.next();</span>
+
+			// purge old key/value entries within objHeartbeat
+<span class="fc" id="L221">			objHeartbeat = hashHeartbeats.get(component);</span>
+<span class="fc" id="L222">			objHeartbeat.clearDataOlderThanDate(purgeDate);</span>
+
+			// if purge has left a objHeartheat with no remaining key/value
+			// entries,
+			// remove the objHeartbeat (i.e. the component)
+<span class="fc bfc" id="L227" title="All 2 branches covered.">			if (objHeartbeat.isEmpty()) {</span>
+<span class="fc" id="L228">				itComponents.remove();</span>
+			}
+
+		} // END while more components
+
+<span class="fc" id="L233">	}</span>
+
+	public File getHeartbeatFile() {
+<span class="nc" id="L236">		return heartbeatFile;</span>
+	}
+
+	public void setHeartbeatFile(File heartbeatFile) {
+<span class="nc" id="L240">		this.heartbeatFile = heartbeatFile;</span>
+<span class="nc" id="L241">	}</span>
+
+	public long getStorageTimeout() {
+<span class="nc" id="L244">		return storageTimeout;</span>
+	}
+
+	public void setStorageTimeout(long storageTimeout) {
+<span class="nc" id="L248">		this.storageTimeout = storageTimeout;</span>
+<span class="nc" id="L249">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

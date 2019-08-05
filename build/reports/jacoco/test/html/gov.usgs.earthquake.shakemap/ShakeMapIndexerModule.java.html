@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ShakeMapIndexerModule.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.shakemap</a> &gt; <span class="el_source">ShakeMapIndexerModule.java</span></div><h1>ShakeMapIndexerModule.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.shakemap;
+
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.imageio.ImageIO;
+
+import gov.usgs.earthquake.indexer.DefaultIndexerModule;
+import gov.usgs.earthquake.indexer.IndexerModule;
+import gov.usgs.earthquake.indexer.ProductSummary;
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.util.StreamUtils;
+
+/**
+ * ShakeMap Indexer Module.
+ *
+ * Provides a higher and more specific level of support for ShakeMap products,
+ * including reading additional product information out of the ShakeMap content
+ * files provided with the Product and placing it into the ProductSummary for
+ * the Product itself.
+ */
+<span class="fc" id="L28">public class ShakeMapIndexerModule extends DefaultIndexerModule {</span>
+
+<span class="fc" id="L30">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L31">			.getLogger(ShakeMapIndexerModule.class.getName());</span>
+
+	public static final String OVERLAY_IMAGE_PATH = &quot;download/ii_overlay.png&quot;;
+	public static final String OVERLAY_WIDTH_PROPERTY = &quot;overlayWidth&quot;;
+	public static final String OVERLAY_HEIGHT_PROPERTY = &quot;overlayHeight&quot;;
+
+	public static final int CONTAINS_EPICENTER_WEIGHT = 50;
+	public static final int CENTERED_ON_EPICENTER_WEIGHT = 25;
+	// Number of degrees at which no additional weight will be
+	// assigned based on the proximity of the map center to the
+	// epicenter.
+	public static final double MAX_DELTA_DEGREES = 2.0;
+
+	// ShakeMap atlas is the most preferred ShakeMap contributor
+	public static final String SHAKEMAP_ATLAS_SOURCE = &quot;atlas&quot;;
+	public static final int SHAKEMAP_ATLAS_WEIGHT = 200;
+
+	@Override
+	public int getSupportLevel(Product product) {
+<span class="fc" id="L50">		int supportLevel = IndexerModule.LEVEL_UNSUPPORTED;</span>
+<span class="fc" id="L51">		String type = getBaseProductType(product.getId().getType());</span>
+		// Support only ShakeMap products that contain grid.xml
+<span class="pc bpc" id="L53" title="1 of 4 branches missed.">		if (type.equals(&quot;shakemap&quot;) &amp;&amp; product.getContents().containsKey(</span>
+				ShakeMap.GRID_XML_ATTACHMENT))
+<span class="fc" id="L55">			supportLevel = IndexerModule.LEVEL_SUPPORTED;</span>
+<span class="fc" id="L56">		return supportLevel;</span>
+	}
+
+	@Override
+	public ProductSummary getProductSummary(Product product) throws Exception {
+		// Load additional properties into the ProductSummary by loading these
+		// properties specifically through a ShakeMap product
+<span class="fc" id="L63">		ProductSummary summary = super.getProductSummary(new ShakeMap(product));</span>
+
+<span class="fc" id="L65">		Content overlayImage = product.getContents().get(OVERLAY_IMAGE_PATH);</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">		if (overlayImage != null) {</span>
+<span class="fc" id="L67">			InputStream overlayInputStream = null;</span>
+			try {
+<span class="fc" id="L69">				overlayInputStream = overlayImage.getInputStream();</span>
+<span class="fc" id="L70">				BufferedImage info = ImageIO.read(overlayInputStream);</span>
+<span class="fc" id="L71">				summary.getProperties().put(OVERLAY_WIDTH_PROPERTY,</span>
+<span class="fc" id="L72">						Integer.toString(info.getWidth()));</span>
+<span class="fc" id="L73">				summary.getProperties().put(OVERLAY_HEIGHT_PROPERTY,</span>
+<span class="fc" id="L74">						Integer.toString(info.getHeight()));</span>
+<span class="fc" id="L75">				LOGGER.finest(&quot;overlay width=&quot; + info.getWidth() +</span>
+<span class="fc" id="L76">						&quot;, overlay height=&quot; + info.getHeight());</span>
+<span class="nc" id="L77">			} catch (IOException e) {</span>
+<span class="nc" id="L78">				LOGGER.log(Level.WARNING, &quot;exception reading &quot;</span>
+						+ OVERLAY_IMAGE_PATH + &quot; width/height&quot;, e);
+			} finally {
+<span class="fc" id="L81">				StreamUtils.closeStream(overlayInputStream);</span>
+			}
+		}
+
+<span class="fc" id="L85">		return summary;</span>
+	}
+
+	@Override
+	protected long getPreferredWeight(ProductSummary summary)
+			throws Exception {
+		// Get the default preferred weight value from the parent class
+<span class="fc" id="L92">		long weight = super.getPreferredWeight(summary);</span>
+
+<span class="fc bfc" id="L94" title="All 2 branches covered.">		if (SHAKEMAP_ATLAS_SOURCE.equals(summary.getSource())) {</span>
+<span class="fc" id="L95">			weight += SHAKEMAP_ATLAS_WEIGHT;</span>
+		}
+
+		// check that shakemap has event properties and map extents
+<span class="fc" id="L99">		Map&lt;String, String&gt; properties = summary.getProperties();</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">		if (summary.getEventLatitude() == null ||</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">				summary.getEventLongitude() == null ||</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">				properties.get(ShakeMap.MINIMUM_LATITUDE_PROPERTY) == null ||</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">				properties.get(ShakeMap.MAXIMUM_LATITUDE_PROPERTY) == null ||</span>
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">				properties.get(ShakeMap.MINIMUM_LONGITUDE_PROPERTY) == null ||</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">				properties.get(ShakeMap.MAXIMUM_LONGITUDE_PROPERTY) == null) {</span>
+<span class="fc" id="L106">			return weight;</span>
+		}
+
+		// Get properties for comparison to alter authoritative weight
+<span class="fc" id="L110">		BigDecimal eventLat = summary.getEventLatitude();</span>
+<span class="fc" id="L111">		BigDecimal eventLon = summary.getEventLongitude();</span>
+<span class="fc" id="L112">		BigDecimal minLat = new BigDecimal(properties.get(</span>
+				ShakeMap.MINIMUM_LATITUDE_PROPERTY));
+<span class="fc" id="L114">		BigDecimal maxLat = new BigDecimal(properties.get(</span>
+				ShakeMap.MAXIMUM_LATITUDE_PROPERTY));
+<span class="fc" id="L116">		BigDecimal minLon = new BigDecimal(properties.get(</span>
+				ShakeMap.MINIMUM_LONGITUDE_PROPERTY));
+<span class="fc" id="L118">		BigDecimal maxLon = new BigDecimal(properties.get(</span>
+				ShakeMap.MAXIMUM_LONGITUDE_PROPERTY));
+<span class="fc" id="L120">		BigDecimal centerLat = minLat.add(maxLat).divide(new BigDecimal(2));</span>
+<span class="fc" id="L121">		BigDecimal centerLon = minLon.add(maxLon).divide(new BigDecimal(2));</span>
+
+		// Calculate delta in degrees between map center and event epicenter
+<span class="fc" id="L124">		double latDelta = Math.abs(centerLat.doubleValue() - eventLat.doubleValue());</span>
+<span class="fc" id="L125">		double lonDelta = Math.abs(centerLon.doubleValue() - eventLon.doubleValue());</span>
+<span class="fc" id="L126">		double locationDelta = (double) Math.sqrt(Math.pow(latDelta, 2)</span>
+<span class="fc" id="L127">				+ Math.pow(lonDelta, 2));</span>
+
+		// Increase weight dynamically if the map center is within
+		// MAX_DELTA_DEGREES of the event epicenter
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">		if (locationDelta &lt;= MAX_DELTA_DEGREES) {</span>
+			// Add more weight based on the map center being closer to
+			// the event epicenter
+<span class="fc" id="L134">			weight += Math.round((1 - (locationDelta / MAX_DELTA_DEGREES))</span>
+					* CENTERED_ON_EPICENTER_WEIGHT);
+		}
+
+		// Increase weight further if the map contains the epicenter within
+		// its boundaries.
+<span class="fc bfc" id="L140" title="All 2 branches covered.">		if (eventLat.longValue() &lt; maxLat.longValue()</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">				&amp;&amp; eventLat.longValue() &gt; minLat.longValue()</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">				&amp;&amp; eventLon.longValue() &lt; maxLon.longValue()</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">				&amp;&amp; eventLon.longValue() &gt; minLon.longValue()) {</span>
+<span class="fc" id="L144">			weight += CONTAINS_EPICENTER_WEIGHT;</span>
+		}
+
+<span class="fc" id="L147">		return weight;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

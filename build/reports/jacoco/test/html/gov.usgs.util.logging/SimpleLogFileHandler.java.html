@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SimpleLogFileHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util.logging</a> &gt; <span class="el_source">SimpleLogFileHandler.java</span></div><h1>SimpleLogFileHandler.java</h1><pre class="source lang-java linenums">package gov.usgs.util.logging;
+
+import gov.usgs.util.StreamUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+
+/**
+ * A java.util.logging style Handler that does daily log rotation by default.
+ */
+public class SimpleLogFileHandler extends Handler {
+
+	/** Default format used. */
+	public static final String DEFAULT_FILENAME_FORMAT = &quot;'log_'yyyyMMdd'.log'&quot;;
+
+	/** The directory where log files are written. */
+	private File logDirectory;
+
+	/** Used to generate filename for current log message. */
+	private SimpleDateFormat filenameFormat;
+
+	/** The last filename used when logging. */
+	private String currentFilename;
+
+	/** Handle to the current log file. */
+	private OutputStream currentStream;
+
+	/**
+	 * Create a default SimpleLogHandler.
+	 * 
+	 * Uses the system locale to roll log files once a day, and default filename
+	 * format &quot;log_YYYYMMDD.log&quot;.
+	 * 
+	 * @param logDirectory
+	 *            the directory to write log files.
+	 */
+	public SimpleLogFileHandler(final File logDirectory) {
+<span class="nc" id="L44">		this(logDirectory, new SimpleDateFormat(DEFAULT_FILENAME_FORMAT));</span>
+<span class="nc" id="L45">	}</span>
+
+	/**
+	 * Create a SimpleLogHandler with a custom filename format.
+	 * 
+	 * @param logDirectory
+	 *            the directory to write log files.
+	 * @param filenameFormat
+	 *            the format for log files. Files are opened as soon as the
+	 *            format output changes for a given log's message.
+	 */
+	public SimpleLogFileHandler(final File logDirectory,
+<span class="nc" id="L57">			final SimpleDateFormat filenameFormat) {</span>
+<span class="nc" id="L58">		this.logDirectory = logDirectory;</span>
+<span class="nc" id="L59">		this.filenameFormat = filenameFormat;</span>
+<span class="nc" id="L60">		this.currentFilename = null;</span>
+<span class="nc" id="L61">		this.currentStream = null;</span>
+<span class="nc" id="L62">	}</span>
+
+	/**
+	 * Closes the current log file.
+	 */
+	public void close() throws SecurityException {
+<span class="nc bnc" id="L68" title="All 2 branches missed.">		if (currentStream != null) {</span>
+			try {
+				// log when the file was closed, if possible
+<span class="nc" id="L71">				currentStream.write((&quot;\nClosing log file at &quot;</span>
+<span class="nc" id="L72">						+ new Date().toString() + &quot;\n\n&quot;).getBytes());</span>
+<span class="nc" id="L73">			} catch (IOException e) {</span>
+				// ignore
+			} finally {
+<span class="nc" id="L76">				StreamUtils.closeStream(currentStream);</span>
+<span class="nc" id="L77">				currentStream = null;</span>
+			}
+		}
+<span class="nc" id="L80">	}</span>
+
+	/**
+	 * Attempts to flush any buffered content. If exceptions occur, the stream
+	 * is closed.
+	 */
+	public void flush() {
+<span class="nc bnc" id="L87" title="All 2 branches missed.">		if (currentStream != null) {</span>
+			try {
+<span class="nc" id="L89">				currentStream.flush();</span>
+<span class="nc" id="L90">			} catch (IOException e) {</span>
+<span class="nc" id="L91">				close();</span>
+<span class="nc" id="L92">				currentStream = null;</span>
+<span class="nc" id="L93">			}</span>
+		}
+<span class="nc" id="L95">	}</span>
+
+	/**
+	 * Retrieve the outputstream for the current log file.
+	 * 
+	 * @param date
+	 *            the date of the message about to be logged.
+	 * @return and OutputStream where the log message may be written.
+	 * @throws IOException
+	 *             if errors occur.
+	 */
+	protected OutputStream getOutputStream(final Date date) throws IOException {
+<span class="nc" id="L107">		String filename = filenameFormat.format(date);</span>
+<span class="nc bnc" id="L108" title="All 4 branches missed.">		if (currentStream == null || currentFilename == null</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">				|| !filename.equals(currentFilename)) {</span>
+			// close any existing stream
+<span class="nc" id="L111">			close();</span>
+
+			// filename is what is being opened
+<span class="nc" id="L114">			currentFilename = filename;</span>
+<span class="nc" id="L115">			currentStream = StreamUtils.getOutputStream(new File(logDirectory,</span>
+					filename), true);
+
+			// log when the file was opened
+<span class="nc" id="L119">			currentStream</span>
+<span class="nc" id="L120">					.write((&quot;Opened log file at &quot; + new Date().toString() + &quot;\n\n&quot;)</span>
+<span class="nc" id="L121">							.getBytes());</span>
+<span class="nc" id="L122">			currentStream.flush();</span>
+		}
+<span class="nc" id="L124">		return currentStream;</span>
+	}
+
+	/**
+	 * Add a LogRecord to the log file.
+	 */
+	public void publish(LogRecord record) {
+<span class="nc bnc" id="L131" title="All 2 branches missed.">		if (record == null) {</span>
+<span class="nc" id="L132">			return;</span>
+		}
+
+<span class="nc" id="L135">		String message = getFormatter().format(record);</span>
+		try {
+<span class="nc" id="L137">			OutputStream stream = getOutputStream(new Date(record.getMillis()));</span>
+<span class="nc" id="L138">			stream.write(message.getBytes());</span>
+<span class="nc" id="L139">			flush();</span>
+<span class="nc" id="L140">		} catch (Exception e) {</span>
+			// close if any exceptions occur
+<span class="nc" id="L142">			close();</span>
+<span class="nc" id="L143">		}</span>
+<span class="nc" id="L144">	}</span>
+
+<span class="nc" id="L146">	private static final Logger LOGGER = Logger</span>
+<span class="nc" id="L147">			.getLogger(SimpleLogFileHandler.class.getName());</span>
+
+	public static void main(final String[] args) throws Exception {
+<span class="nc" id="L150">		SimpleDateFormat ridiculouslyShortLogs = new SimpleDateFormat(</span>
+				&quot;'log_'yyyyMMddHHmmss'.log'&quot;);
+<span class="nc" id="L152">		File logDirectory = new File(&quot;log&quot;);</span>
+
+<span class="nc" id="L154">		SimpleLogFileHandler handler = new SimpleLogFileHandler(logDirectory,</span>
+				ridiculouslyShortLogs);
+<span class="nc" id="L156">		handler.setFormatter(new SimpleLogFormatter());</span>
+<span class="nc" id="L157">		LOGGER.addHandler(handler);</span>
+
+		// there should be at least 2 log files created, and more likely 3
+<span class="nc" id="L160">		LOGGER.info(&quot;message to log&quot;);</span>
+<span class="nc" id="L161">		handler.close();</span>
+<span class="nc" id="L162">		LOGGER.info(&quot;message to log&quot;);</span>
+<span class="nc" id="L163">		Thread.sleep(1000);</span>
+<span class="nc" id="L164">		LOGGER.info(&quot;another message to log&quot;);</span>
+<span class="nc" id="L165">		Thread.sleep(250);</span>
+<span class="nc" id="L166">		LOGGER.info(&quot;another message to log&quot;);</span>
+<span class="nc" id="L167">		Thread.sleep(1000);</span>
+<span class="nc" id="L168">		LOGGER.info(&quot;yet another message to log&quot;);</span>
+<span class="nc" id="L169">		Thread.sleep(250);</span>
+<span class="nc" id="L170">		LOGGER.info(&quot;yet another message to log&quot;);</span>
+<span class="nc" id="L171">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

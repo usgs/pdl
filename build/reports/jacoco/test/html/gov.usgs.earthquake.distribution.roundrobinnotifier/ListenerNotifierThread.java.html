@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ListenerNotifierThread.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution.roundrobinnotifier</a> &gt; <span class="el_source">ListenerNotifierThread.java</span></div><h1>ListenerNotifierThread.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution.roundrobinnotifier;
+
+import java.util.Date;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import gov.usgs.earthquake.distribution.DefaultNotificationListener;
+import gov.usgs.earthquake.distribution.NotificationEvent;
+import gov.usgs.earthquake.distribution.NotificationListener;
+import gov.usgs.earthquake.product.AbstractListener;
+
+/**
+ * Thread that delivers notifications to a listener.
+ * 
+ * Uses interrupt to stop thread, so listeners should be careful when also using
+ * interrupts.
+ */
+public class ListenerNotifierThread implements Runnable {
+
+	/** Logging object. */
+<span class="nc" id="L22">	private static final Logger LOGGER = Logger</span>
+<span class="nc" id="L23">			.getLogger(ListenerNotifierThread.class.getName());</span>
+
+	/** Listener that receives notifications. */
+	private final NotificationListener listener;
+	/** Queue of notifications to deliver. */
+	private final ListenerNotificationQueue queue;
+	/** Queue of notifications that failed, and should be reattempted. */
+	private final LinkedBlockingQueue&lt;ListenerNotification&gt; errorQueue;
+	/** Thread where &quot;this&quot; is running. */
+	private Thread thread;
+
+	/**
+	 * Create a new listener notifier thread.
+	 * 
+	 * @param listener
+	 *            listener that receives notifications.
+	 */
+<span class="nc" id="L40">	public ListenerNotifierThread(final NotificationListener listener) {</span>
+<span class="nc" id="L41">		this.listener = listener;</span>
+<span class="nc" id="L42">		this.queue = new ListenerNotificationQueue();</span>
+<span class="nc" id="L43">		this.errorQueue = new LinkedBlockingQueue&lt;ListenerNotification&gt;();</span>
+<span class="nc" id="L44">		this.thread = null;</span>
+<span class="nc" id="L45">	}</span>
+
+	/**
+	 * Start processing notifications in the queue.
+	 */
+	public void start() {
+<span class="nc bnc" id="L51" title="All 2 branches missed.">		if (thread == null) {</span>
+<span class="nc" id="L52">			thread = new Thread(this);</span>
+<span class="nc" id="L53">			thread.start();</span>
+		}
+<span class="nc" id="L55">	}</span>
+
+	/**
+	 * Stop processing notifications in the queue.
+	 */
+	public void stop() {
+<span class="nc bnc" id="L61" title="All 2 branches missed.">		if (thread != null) {</span>
+<span class="nc" id="L62">			thread.interrupt();</span>
+<span class="nc" id="L63">			thread = null;</span>
+		}
+<span class="nc" id="L65">	}</span>
+
+	/**
+	 * Process notifications in the queue.
+	 */
+	public void run() {
+<span class="nc" id="L71">		ListenerNotification notification = null;</span>
+<span class="nc" id="L72">		Date start = null;</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">		while (!Thread.currentThread().isInterrupted()) {</span>
+			try {
+<span class="nc" id="L75">				notification = queue.take();</span>
+<span class="nc" id="L76">				notification.attempts++;</span>
+<span class="nc" id="L77">				start = new Date();</span>
+<span class="nc" id="L78">				listener.onNotification(notification.event);</span>
+<span class="nc" id="L79">				LOGGER.fine(&quot;[&quot; + listener.getName() + &quot;] processed &quot;</span>
+<span class="nc" id="L80">						+ notification.getProductId() + &quot; in &quot;</span>
+<span class="nc" id="L81">						+ (new Date().getTime() - start.getTime()) + &quot;ms&quot;);</span>
+<span class="nc" id="L82">			} catch (InterruptedException ie) {</span>
+				// thread is stopping
+<span class="nc" id="L84">			} catch (Exception e) {</span>
+				// requeue notification
+<span class="nc bnc" id="L86" title="All 2 branches missed.">				if (notification.attempts &lt; listener.getMaxTries()) {</span>
+					// requeue
+<span class="nc" id="L88">					notification.lastAttempt = new Date();</span>
+<span class="nc" id="L89">					errorQueue.add(notification);</span>
+<span class="nc" id="L90">					LOGGER.log(Level.FINE, &quot;[&quot; + listener.getName()</span>
+							+ &quot;] exception processing &quot;
+<span class="nc" id="L92">							+ notification.getProductId() + &quot; attempt &quot;</span>
+							+ notification.attempts + &quot;/&quot;
+<span class="nc" id="L94">							+ listener.getMaxTries() + &quot;, requeuing&quot;);</span>
+				} else {
+					// couldn't process
+<span class="nc" id="L97">					LOGGER.log(Level.WARNING, &quot;[&quot; + listener.getName()</span>
+							+ &quot;] unable to process &quot;
+<span class="nc" id="L99">							+ notification.getProductId() + &quot; &quot;</span>
+							+ notification.attempts + &quot; attempts&quot;, e);
+				}
+<span class="nc" id="L102">			}</span>
+		}
+<span class="nc" id="L104">	}</span>
+
+	/**
+	 * Add a notification to the queue.
+	 * 
+	 * Checks if notification is &quot;accept&quot;able before queueing.
+	 * 
+	 * @param event
+	 *            notification to add.
+	 */
+	public void notify(final NotificationEvent event) {
+<span class="nc bnc" id="L115" title="All 2 branches missed.">		if (listener instanceof AbstractListener) {</span>
+<span class="nc" id="L116">			AbstractListener abstractListener = (AbstractListener) listener;</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">			if (!abstractListener.accept(event.getNotification().getProductId())) {</span>
+<span class="nc" id="L118">				return;</span>
+			}
+		}
+<span class="nc" id="L121">		queue.add(new ListenerNotification(event));</span>
+<span class="nc" id="L122">	}</span>
+
+	/**
+	 * @return the listener.
+	 */
+	public NotificationListener getListener() {
+<span class="nc" id="L128">		return listener;</span>
+	}
+
+	/**
+	 * @return the queue.
+	 */
+	public ListenerNotificationQueue getQueue() {
+<span class="nc" id="L135">		return queue;</span>
+	}
+
+	/**
+	 * @return the error queue.
+	 */
+	public LinkedBlockingQueue&lt;ListenerNotification&gt; getErrorQueue() {
+<span class="nc" id="L142">		return errorQueue;</span>
+	}
+
+	/**
+	 * Move any failed notifications that are ready to be retried from the error
+	 * queue into the queue.
+	 */
+	public void requeueErrors() {
+		ListenerNotification notification;
+<span class="nc" id="L151">		Date threshold = new Date();</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">		if (listener instanceof DefaultNotificationListener) {</span>
+<span class="nc" id="L153">			threshold = new Date(threshold.getTime()</span>
+<span class="nc" id="L154">					- ((DefaultNotificationListener) listener).getRetryDelay());</span>
+		}
+		while (true) {
+<span class="nc" id="L157">			notification = errorQueue.peek();</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">			if (</span>
+			// no more notifications
+			notification == null ||
+			// after threshold
+<span class="nc bnc" id="L162" title="All 2 branches missed.">					notification.lastAttempt.before(threshold)) {</span>
+<span class="nc" id="L163">				break;</span>
+			}
+			// requeue notification
+<span class="nc" id="L166">			queue.add(errorQueue.poll());</span>
+		}
+<span class="nc" id="L168">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

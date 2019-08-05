@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultIndexerListener.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">DefaultIndexerListener.java</span></div><h1>DefaultIndexerListener.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.indexer;
+
+import gov.usgs.earthquake.indexer.IndexerChange.IndexerChangeType;
+import gov.usgs.earthquake.product.AbstractListener;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.util.CompareUtil;
+import gov.usgs.util.Config;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Logger;
+
+/**
+ * DefaultIndexerListener provides a starting point from which all
+ * IndexerListeners may extend.
+ * 
+ * As a child-class of the AbstractListener, this may be configured with all of
+ * the parent parameters and also accepts the following:
+ * 
+ * &lt;dl&gt;
+ * &lt;dt&gt;command&lt;/dt&gt;
+ * &lt;dd&gt;(Required) The command to execute. This must be an executable command and
+ * may include arguments. Any product-specific arguments are appended at the end
+ * of command.&lt;/dd&gt;
+ * 
+ * &lt;dt&gt;storage&lt;/dt&gt;
+ * &lt;dd&gt;(Required) A directory used to store all products. Each product is
+ * extracted into a separate directory within this directory and is referenced
+ * by the --directory=/path/to/directory argument when command is executed.&lt;/dd&gt;
+ * 
+ * &lt;dt&gt;processUnassociated&lt;/dt&gt;
+ * &lt;dd&gt;(Optional, Default = false) Whether or not to process unassociated
+ * products. Valid values are &quot;true&quot; and &quot;false&quot;.&lt;/dd&gt;
+ * 
+ * &lt;dt&gt;processPreferredOnly&lt;/dt&gt;
+ * &lt;dd&gt;(Optional, Default = false) Whether or not to process only preferred
+ * products of the type accepted by this listener. Valid values are &quot;true&quot; and
+ * &quot;false&quot;.&lt;/dd&gt;
+ * 
+ * &lt;dt&gt;ignoreArchive&lt;/dt&gt;
+ * &lt;dd&gt;(Optional, Default = false) Whether or not to ignore EVENT_ARCHIVED and
+ * PRODUCT_ARCHIVED indexer events. Value values are &quot;true&quot; and &quot;false&quot;.&lt;/dd&gt;
+ * 
+ * &lt;/dl&gt;
+ */
+<span class="fc" id="L46">public class DefaultIndexerListener extends AbstractListener implements</span>
+		IndexerListener {
+	/** Logging object. */
+<span class="fc" id="L49">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L50">			.getLogger(DefaultIndexerListener.class.getName());</span>
+
+	public static final String PROCESS_PREFERRED_ONLY_PROPERTY = &quot;processPreferredOnly&quot;;
+	public static final String PROCESS_PREFERRED_ONLY_DEFAULT = &quot;false&quot;;
+
+	public static final String PROCESS_UNASSOCIATED_PROPERTY = &quot;processUnassociated&quot;;
+	public static final String PROCESS_UNASSOCIATED_DEFAULT = &quot;true&quot;;
+
+	public static final String PROCESS_ONLY_WHEN_EVENT_CHANGE_PROPERTY = &quot;processOnlyWhenEventChanged&quot;;
+	public static final String PROCESS_ONLY_WHEN_EVENT_CHANGE_DEFAULT = &quot;false&quot;;
+
+	public static final String IGNORE_ARCHIVE_PROPERTY = &quot;ignoreArchive&quot;;
+	public static final String IGNORE_ARCHIVE_DEFAULT = &quot;true&quot;;
+
+	/** Whether or not to process only preferred products. */
+<span class="fc" id="L65">	private boolean processOnlyPreferredProducts = false;</span>
+
+	/** Whether or not to process unassociated products. */
+<span class="fc" id="L68">	private boolean processUnassociatedProducts = true;</span>
+
+	/**
+	 * Whether or not to process updates that don't change preferred event
+	 * parameters.
+	 */
+<span class="fc" id="L74">	private boolean processOnlyWhenEventChanged = false;</span>
+
+	/** Whether or not to process archive events. */
+<span class="fc" id="L77">	private boolean ignoreArchive = false;</span>
+
+	@Override
+	public void onIndexerEvent(IndexerEvent event) throws Exception {
+<span class="nc" id="L81">		StringBuffer buf = new StringBuffer();</span>
+<span class="nc" id="L82">		Iterator&lt;IndexerChange&gt; changes = event.getIndexerChanges().iterator();</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">		while (changes.hasNext()) {</span>
+<span class="nc" id="L84">			IndexerChange change = changes.next();</span>
+<span class="nc" id="L85">			buf.append(&quot;\n&quot;).append(change.getType().toString()).append(&quot; &quot;);</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">			if (change.getOriginalEvent() == null) {</span>
+<span class="nc" id="L87">				buf.append(&quot;null&quot;);</span>
+			} else {
+<span class="nc" id="L89">				buf.append(change.getOriginalEvent().getEventId());</span>
+			}
+<span class="nc" id="L91">			buf.append(&quot; =&gt; &quot;);</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">			if (change.getNewEvent() == null) {</span>
+<span class="nc" id="L93">				buf.append(&quot;null&quot;);</span>
+			} else {
+<span class="nc" id="L95">				buf.append(change.getNewEvent().getEventId());</span>
+			}
+<span class="nc" id="L97">		}</span>
+<span class="nc" id="L98">		LOGGER.info(buf.toString());</span>
+<span class="nc" id="L99">	}</span>
+
+	/**
+	 * @param change
+	 *            the indexer event that has occurred
+	 * @return whether this external indexer listener handles this product type
+	 * @throws Exception
+	 */
+	public boolean accept(IndexerEvent change) throws Exception {
+<span class="fc" id="L108">		String productType = null;</span>
+
+<span class="fc bfc" id="L110" title="All 2 branches covered.">		if (change.getSummary() != null) {</span>
+<span class="fc" id="L111">			ProductId productId = change.getSummary().getId();</span>
+
+<span class="fc" id="L113">			productType = productId.getType();</span>
+
+			// use default notification listener first
+<span class="fc bfc" id="L116" title="All 2 branches covered.">			if (!super.accept(productId)) {</span>
+<span class="fc" id="L117">				return false;</span>
+			}
+		}
+
+<span class="fc" id="L121">		List&lt;Event&gt; events = change.getEvents();</span>
+<span class="pc bpc" id="L122" title="3 of 4 branches missed.">		if (!processUnassociatedProducts &amp;&amp; events.size() == 0) {</span>
+<span class="nc" id="L123">			LOGGER.fine(&quot;[&quot; + getName() + &quot;] product is unassociated&quot;);</span>
+<span class="nc" id="L124">			return false;</span>
+		}
+
+<span class="pc bpc" id="L127" title="1 of 4 branches missed.">		if (processOnlyPreferredProducts &amp;&amp; events.size() &gt; 0) {</span>
+			// check if preferred for any event
+<span class="fc" id="L129">			boolean isPreferred = false;</span>
+
+			// can only be a preferred product if a summary associated
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">			if (productType != null) {</span>
+<span class="fc" id="L133">				Iterator&lt;Event&gt; iter = events.iterator();</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">				while (iter.hasNext()) {</span>
+<span class="fc" id="L135">					Event event = iter.next();</span>
+<span class="fc" id="L136">					ProductSummary preferred = event</span>
+<span class="fc" id="L137">							.getPreferredProduct(productType);</span>
+<span class="pc bpc" id="L138" title="1 of 4 branches missed.">					if (preferred != null &amp;&amp; preferred.getId().equals(</span>
+<span class="fc" id="L139">							change.getSummary().getId())) {</span>
+						// it is the most preferred product for this event
+<span class="fc" id="L141">						isPreferred = true;</span>
+<span class="fc" id="L142">						break;</span>
+					}
+<span class="fc" id="L144">				}</span>
+			}
+
+<span class="fc bfc" id="L147" title="All 2 branches covered.">			if (!isPreferred) {</span>
+<span class="fc" id="L148">				LOGGER.fine(&quot;[&quot; + getName()</span>
+						+ &quot;] product is not preferred in any event&quot;);
+<span class="fc" id="L150">				return false;</span>
+			}
+		}
+
+		// accept by default
+<span class="fc" id="L155">		return true;</span>
+	}
+
+	public boolean accept(IndexerEvent event, IndexerChange change)
+			throws Exception {
+		// check whether this is an archive indexer change
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">		if (ignoreArchive</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">				&amp;&amp; (change.getType() == IndexerChangeType.PRODUCT_ARCHIVED</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">				|| change.getType() == IndexerChangeType.EVENT_ARCHIVED)) {</span>
+<span class="nc" id="L164">			return false;</span>
+		}
+
+		// see if preferred event parameters have changed
+<span class="fc bfc" id="L168" title="All 2 branches covered.">		if (processOnlyWhenEventChanged) {</span>
+<span class="fc" id="L169">			Event originalEvent = change.getOriginalEvent();</span>
+<span class="fc" id="L170">			Event newEvent = change.getNewEvent();</span>
+<span class="fc bfc" id="L171" title="All 4 branches covered.">			if (originalEvent != null &amp;&amp; newEvent != null) {</span>
+<span class="fc" id="L172">				EventSummary originalEventSummary = originalEvent.getEventSummary();</span>
+<span class="fc" id="L173">				EventSummary newEventSummary = newEvent.getEventSummary();</span>
+<span class="fc bfc" id="L174" title="All 2 branches covered.">				if (CompareUtil.nullSafeCompare(</span>
+<span class="fc" id="L175">						originalEventSummary.getMagnitude(),</span>
+<span class="fc" id="L176">						newEventSummary.getMagnitude()) != 0) {</span>
+					// magnitude changed
+<span class="fc bfc" id="L178" title="All 2 branches covered.">				} else if (CompareUtil.nullSafeCompare(</span>
+<span class="fc" id="L179">						originalEventSummary.getLatitude(),</span>
+<span class="fc" id="L180">						newEventSummary.getLatitude()) != 0) {</span>
+					// latitude changed
+<span class="pc bpc" id="L182" title="1 of 2 branches missed.">				} else if (CompareUtil.nullSafeCompare(</span>
+<span class="fc" id="L183">						originalEventSummary.getLongitude(),</span>
+<span class="fc" id="L184">						newEventSummary.getLongitude()) != 0) {</span>
+					// longitude changed
+<span class="pc bpc" id="L186" title="1 of 2 branches missed.">				} else if (CompareUtil.nullSafeCompare(</span>
+<span class="fc" id="L187">						originalEventSummary.getDepth(),</span>
+<span class="fc" id="L188">						newEventSummary.getDepth()) != 0) {</span>
+					// depth changed
+<span class="pc bpc" id="L190" title="1 of 2 branches missed.">				} else if (CompareUtil.nullSafeCompare(</span>
+<span class="fc" id="L191">						originalEventSummary.getTime(),</span>
+<span class="fc" id="L192">						newEventSummary.getTime()) != 0) {</span>
+					// time changed
+<span class="pc bpc" id="L194" title="1 of 2 branches missed.">				} else if (originalEventSummary.isDeleted() != newEventSummary.isDeleted()) {</span>
+					// status changed
+				} else {
+					// preferred event parameters haven't changed
+<span class="fc" id="L198">					return false;</span>
+				}
+			}
+		}
+
+		// accept changes by default
+<span class="fc" id="L204">		return true;</span>
+	}
+
+	public void configure(Config config) throws Exception {
+<span class="nc" id="L208">		super.configure(config);</span>
+
+<span class="nc" id="L210">		processOnlyPreferredProducts = Boolean.valueOf(config</span>
+<span class="nc" id="L211">				.getProperty(PROCESS_PREFERRED_ONLY_PROPERTY,</span>
+						PROCESS_PREFERRED_ONLY_DEFAULT));
+<span class="nc" id="L213">		LOGGER.config(&quot;[&quot; + getName() + &quot;] process only preferred products = &quot;</span>
+				+ processOnlyPreferredProducts);
+
+<span class="nc" id="L216">		processUnassociatedProducts = Boolean.valueOf(config.getProperty(</span>
+				PROCESS_UNASSOCIATED_PROPERTY, PROCESS_UNASSOCIATED_DEFAULT));
+<span class="nc" id="L218">		LOGGER.config(&quot;[&quot; + getName() + &quot;] process unassociated products = &quot;</span>
+				+ processUnassociatedProducts);
+
+<span class="nc" id="L221">		processOnlyWhenEventChanged = Boolean.valueOf(config.getProperty(</span>
+				PROCESS_ONLY_WHEN_EVENT_CHANGE_PROPERTY,
+				PROCESS_ONLY_WHEN_EVENT_CHANGE_DEFAULT));
+<span class="nc" id="L224">		LOGGER.config(&quot;[&quot; + getName() + &quot;] process only when event changed = &quot;</span>
+				+ processOnlyWhenEventChanged);
+
+<span class="nc" id="L227">		ignoreArchive = Boolean.valueOf(config.getProperty(</span>
+				IGNORE_ARCHIVE_PROPERTY, IGNORE_ARCHIVE_DEFAULT));
+<span class="nc" id="L229">		LOGGER.config(&quot;[&quot; + getName() + &quot;] ignore archive changes = &quot;</span>
+				+ ignoreArchive);
+<span class="nc" id="L231">	}</span>
+
+	/**
+	 * @return whether only preferred products are processed
+	 */
+	public boolean getProcessOnlyPreferredProducts() {
+<span class="nc" id="L237">		return processOnlyPreferredProducts;</span>
+	}
+
+	/**
+	 * @param processOnlyPreferredProducts
+	 *            whether to process ony preferred products
+	 */
+	public void setProcessOnlyPreferredProducts(
+			final boolean processOnlyPreferredProducts) {
+<span class="fc" id="L246">		this.processOnlyPreferredProducts = processOnlyPreferredProducts;</span>
+<span class="fc" id="L247">	}</span>
+
+	public void setProcessUnassociatedProducts(
+			final boolean processUnassociatedProducts) {
+<span class="nc" id="L251">		this.processUnassociatedProducts = processUnassociatedProducts;</span>
+<span class="nc" id="L252">	}</span>
+
+	public boolean getProcessUnassociatedProducts() {
+<span class="nc" id="L255">		return processUnassociatedProducts;</span>
+	}
+
+	public boolean isProcessOnlyWhenEventChanged() {
+<span class="nc" id="L259">		return processOnlyWhenEventChanged;</span>
+	}
+
+	public void setProcessOnlyWhenEventChanged(
+			boolean processOnlyWhenEventChanged) {
+<span class="fc" id="L264">		this.processOnlyWhenEventChanged = processOnlyWhenEventChanged;</span>
+<span class="fc" id="L265">	}</span>
+
+	public boolean isIgnoreArchive() {
+<span class="nc" id="L268">		return ignoreArchive;</span>
+	}
+
+	public void setIgnoreArchive(boolean ignoreArchive) {
+<span class="nc" id="L272">		this.ignoreArchive = ignoreArchive;</span>
+<span class="nc" id="L273">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

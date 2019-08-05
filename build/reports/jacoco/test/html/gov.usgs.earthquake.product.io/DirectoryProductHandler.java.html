@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DirectoryProductHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product.io</a> &gt; <span class="el_source">DirectoryProductHandler.java</span></div><h1>DirectoryProductHandler.java</h1><pre class="source lang-java linenums">/*
+ * DirectoryProductHandler
+ */
+package gov.usgs.earthquake.product.io;
+
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.FileContent;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.product.URLContent;
+import gov.usgs.util.StreamUtils;
+
+import java.io.File;
+import java.io.OutputStream;
+
+/**
+ * Store a product to a Directory.
+ * 
+ * Product attributes are stored to a file named &quot;product.xml&quot;. All
+ * ProductOutput methods are passed to an ObjectProductOutput object, except
+ * files with non-empty paths. Files are stored in the directory, and all other
+ * product attributes are stored using the product xml format to a file name
+ * &quot;product.xml&quot;.
+ */
+public class DirectoryProductHandler extends ObjectProductHandler {
+
+	/** The file where product attributes are stored. */
+	public static final String PRODUCT_XML_FILENAME = &quot;product.xml&quot;;
+
+	/** Directory where product contents are stored. */
+	private File directory;
+
+	/**
+	 * Construct a new DirectoryProductHandler object.
+	 * 
+	 * @param directory
+	 *            where product contents will be stored.
+	 */
+<span class="fc" id="L38">	public DirectoryProductHandler(final File directory) {</span>
+<span class="fc" id="L39">		this.directory = directory;</span>
+<span class="fc" id="L40">	}</span>
+
+	/**
+	 * Extract content when path isn't empty.
+	 */
+	public void onContent(ProductId id, String path, Content content)
+			throws Exception {
+<span class="fc bfc" id="L47" title="All 2 branches covered.">		if (&quot;&quot;.equals(path)) {</span>
+<span class="fc" id="L48">			super.onContent(id, path, content);</span>
+		} else {
+			// FileContent copy constructor extracts content
+<span class="fc" id="L51">			FileContent fc = new FileContent(content, new File(directory, path));</span>
+<span class="fc" id="L52">			super.onContent(id, path, new URLContent(fc));</span>
+<span class="fc" id="L53">			fc = null;</span>
+		}
+<span class="fc" id="L55">	}</span>
+
+	/**
+	 * Store all except product contents to product.xml.
+	 */
+	public void onEndProduct(ProductId id) throws Exception {
+<span class="fc" id="L61">		super.onEndProduct(id);</span>
+
+		// save reference to stream, so it can be forced close.
+<span class="fc" id="L64">		OutputStream out = null;</span>
+<span class="fc" id="L65">		ProductSource source = null;</span>
+<span class="fc" id="L66">		ProductHandler handler = null;</span>
+		try {
+<span class="fc" id="L68">			out = StreamUtils.getOutputStream(new File(directory,</span>
+					PRODUCT_XML_FILENAME));
+
+			// save product attributes as xml
+<span class="fc" id="L72">			source = new ObjectProductSource(getProduct());</span>
+<span class="fc" id="L73">			handler = new XmlProductHandler(out);</span>
+<span class="fc" id="L74">			source.streamTo(handler);</span>
+		} finally {
+			// close stream
+<span class="fc" id="L77">			StreamUtils.closeStream(out);</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">			if (source != null) {</span>
+<span class="fc" id="L79">				source.close();</span>
+			}
+<span class="fc bfc" id="L81" title="All 2 branches covered.">			if (handler != null) {</span>
+<span class="fc" id="L82">				handler.close();</span>
+			}
+		}
+<span class="fc" id="L85">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

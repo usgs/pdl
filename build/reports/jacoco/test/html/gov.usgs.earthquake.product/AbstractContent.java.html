@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractContent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product</a> &gt; <span class="el_source">AbstractContent.java</span></div><h1>AbstractContent.java</h1><pre class="source lang-java linenums">/*
+ * AbstractContent
+ */
+package gov.usgs.earthquake.product;
+
+import java.util.Date;
+
+/**
+ * AbstractContent is a base class for other content classes and implements
+ * common functionality.
+ */
+public abstract class AbstractContent implements Content {
+
+	/** The content mime type. */
+	private String contentType;
+
+	/** When this content was created. */
+	private Date lastModified;
+
+	/** How much content there is. */
+	private Long length;
+
+	/**
+	 * Null values are replaced with defaults.
+	 * 
+	 * @param contentType
+	 *            defaults to &quot;text/plain&quot;.
+	 * @param lastModified
+	 *            defaults to new Date().
+	 * @param length
+	 *            defaults to -1L.
+	 */
+	public AbstractContent(final String contentType, final Date lastModified,
+<span class="fc" id="L34">			final Long length) {</span>
+<span class="fc" id="L35">		setContentType(contentType);</span>
+<span class="fc" id="L36">		setLastModified(lastModified);</span>
+<span class="fc" id="L37">		setLength(length);</span>
+<span class="fc" id="L38">	}</span>
+
+	/**
+	 * Copy constructor from another content.
+	 * 
+	 * @param content
+	 *            the content to copy.
+	 */
+	public AbstractContent(final Content content) {
+<span class="fc" id="L47">		this(content.getContentType(), content.getLastModified(), content</span>
+<span class="fc" id="L48">				.getLength());</span>
+<span class="fc" id="L49">	}</span>
+
+	/**
+	 * Default Constructor which requires no arguments. Default values are used
+	 * for all fields.
+	 */
+	public AbstractContent() {
+<span class="fc" id="L56">		this(null, null, null);</span>
+<span class="fc" id="L57">	}</span>
+
+	/**
+	 * @return the content mime type.
+	 */
+	public String getContentType() {
+<span class="fc" id="L63">		return contentType;</span>
+	}
+
+	/**
+	 * Set the content mime type.
+	 * 
+	 * @param contentType
+	 *            the content mime type.
+	 */
+	public void setContentType(final String contentType) {
+<span class="fc bfc" id="L73" title="All 2 branches covered.">		if (contentType == null) {</span>
+<span class="fc" id="L74">			this.contentType = &quot;text/plain&quot;;</span>
+		} else {
+<span class="fc" id="L76">			this.contentType = contentType;</span>
+		}
+<span class="fc" id="L78">	}</span>
+
+	/**
+	 * @return the content creation date.
+	 */
+	public Date getLastModified() {
+<span class="fc" id="L84">		return lastModified;</span>
+	}
+
+	/**
+	 * Set when this content was created.
+	 * 
+	 * @param lastModified
+	 *            when this content was created.
+	 */
+	public void setLastModified(final Date lastModified) {
+<span class="fc bfc" id="L94" title="All 2 branches covered.">		if (lastModified == null) {</span>
+<span class="fc" id="L95">			this.lastModified = new Date();</span>
+		} else {
+<span class="fc" id="L97">			this.lastModified = new Date(lastModified.getTime());</span>
+		}
+
+		// Round to nearest second. Some file systems do not preserve
+		// milliseconds.
+<span class="fc" id="L102">		this.lastModified</span>
+<span class="fc" id="L103">				.setTime((this.lastModified.getTime() / 1000L) * 1000L);</span>
+<span class="fc" id="L104">	}</span>
+
+	/**
+	 * @return the content length, or -1 if unknown.
+	 */
+	public Long getLength() {
+<span class="fc" id="L110">		return length;</span>
+	}
+
+	/**
+	 * Set the content length.
+	 * 
+	 * @param length
+	 */
+	public void setLength(final Long length) {
+<span class="fc bfc" id="L119" title="All 2 branches covered.">		if (length == null) {</span>
+<span class="fc" id="L120">			this.length = -1L;</span>
+		} else {
+<span class="fc" id="L122">			this.length = length;</span>
+		}
+<span class="fc" id="L124">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

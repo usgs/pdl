@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Bootstrap.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">Bootstrap.java</span></div><h1>Bootstrap.java</h1><pre class="source lang-java linenums">/*
+ * Bootstrap
+ */
+package gov.usgs.earthquake.distribution;
+
+import gov.usgs.util.Config;
+import gov.usgs.util.Configurable;
+import gov.usgs.util.StreamUtils;
+import gov.usgs.util.logging.LoggingOutputStream;
+import gov.usgs.util.logging.SimpleLogFileHandler;
+import gov.usgs.util.logging.SimpleLogFormatter;
+import gov.usgs.util.logging.StdOutErrLevel;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.XMLFormatter;
+
+/**
+ * Bootstrap is a class used to start an application.
+ *
+ * It loads a configuration file, sets up initial logging, and starts a
+ * configurable main method.
+ *
+ * @author jmfee
+ *
+ */
+public class Bootstrap {
+
+	/**
+	 * logging is noisy without this.
+	 */
+	static {
+<span class="nc" id="L43">		Logger.getLogger(&quot;com.sun.xml.bind&quot;).setLevel(Level.INFO);</span>
+<span class="nc" id="L44">		Logger.getLogger(&quot;com.sun.activation&quot;).setLevel(Level.INFO);</span>
+<span class="nc" id="L45">		Logger.getLogger(&quot;javax.xml.bind&quot;).setLevel(Level.INFO);</span>
+<span class="nc" id="L46">		Logger.getLogger(&quot;sun.awt.X11.timeoutTask.XToolkit&quot;).setLevel(Level.INFO);</span>
+<span class="nc" id="L47">		Logger.getLogger(&quot;com.sun.xml.bind.v2.runtime.reflect.opt.OptimizedAccessorFactory&quot;).setLevel(Level.INFO);</span>
+	}
+
+	// public static
+
+	/** Default JAR config path. */
+	public static final String JAR_CONFIGFILE = &quot;etc/config/config.ini&quot;;
+
+	/** Argument for config file. */
+	public static final String CONFIGFILE_ARGUMENT = &quot;--configFile=&quot;;
+	/** Default config file. */
+	public static final String DEFAULT_CONFIGFILE = &quot;config.ini&quot;;
+
+	/** Whether to test config only. */
+	public static final String CONFIG_TEST_ARGUMENT = &quot;--configTest&quot;;
+
+	/** Property for log format. */
+	public static final String LOGFORMAT_PROPERTY_NAME = &quot;logformat&quot;;
+	/** log format value for &quot;pdl&quot; format */
+	public static final String LOGFORMAT_PDL = &quot;pdl&quot;;
+	/** log format value for java &quot;simple&quot; format */
+	public static final String LOGFORMAT_SIMPLE = &quot;simple&quot;;
+	/** log format value for java &quot;xml&quot; format */
+	public static final String LOGFORMAT_XML = &quot;xml&quot;;
+	/** Default log format is &quot;simple&quot;. */
+	public static final String DEFAULT_LOGFORMAT = LOGFORMAT_PDL;
+
+	/** Property for log level. */
+	public static final String LOGLEVEL_PROPERTY_NAME = &quot;loglevel&quot;;
+	/** Default log level is &quot;INFO&quot;. */
+	public static final String DEFAULT_LOGLEVEL = &quot;INFO&quot;;
+
+	/** Property for log directory. */
+	public static final String LOGDIRECTORY_PROPERTY_NAME = &quot;logdirectory&quot;;
+	/** Default log directory is &quot;log&quot;. */
+	public static final String DEFAULT_LOGDIRECTORY = &quot;log&quot;;
+
+	/** Property for log file pattern. */
+	public static final String LOGFILE_PROPERTY_NAME = &quot;logfile&quot;;
+	/** Default log file pattern is &quot;yyyyMMdd'.log'&quot;. */
+	public static final String DEFAULT_LOGFILE = &quot;yyyyMMdd'.log'&quot;;
+
+	/** Property for console redirect. */
+	public static final String CONSOLEREDIRECT_PROPERTY_NAME = &quot;redirectconsole&quot;;
+	/** Default console redirect value is &quot;false&quot; (don't redirect). */
+	public static final String DEFAULT_CONSOLEREDIRECT = &quot;false&quot;;
+
+	/** Property used to disable tracker updates. */
+	public static final String ENABLE_TRACKER_PROPERTY_NAME = &quot;enableTracker&quot;;
+
+	/** Argument for mainclass. */
+	public static final String MAINCLASS_ARGUMENT = &quot;--mainclass=&quot;;
+	/** Property for mainclass. */
+	public static final String MAINCLASS_PROPERTY_NAME = &quot;mainclass&quot;;
+	/** Default mainclass is &quot;gov.usgs.earthquake.distribution.ProductClient. */
+	public static final String DEFAULT_MAINCLASS = &quot;gov.usgs.earthquake.distribution.ProductClient&quot;;
+
+	public static final String VERSION_ARGUMENT = &quot;--version&quot;;
+
+	// private static
+
+	/** Private logging object. */
+<span class="nc" id="L109">	private static final Logger LOGGER = Logger.getLogger(Bootstrap.class</span>
+<span class="nc" id="L110">			.getName());</span>
+
+	// constructors
+
+<span class="nc" id="L114">	public Bootstrap() {</span>
+<span class="nc" id="L115">	}</span>
+
+	// members
+
+	/**
+	 * Read configuration from inside jar file, and configFile.
+	 *
+	 * @param configFile
+	 *            config file to load.
+	 * @throws IOException
+	 */
+	public Config loadConfig(final File configFile) throws IOException {
+<span class="nc" id="L127">		Config config = new Config();</span>
+
+		// load defaults from jar file
+<span class="nc" id="L130">		InputStream in = Bootstrap.class.getClassLoader().getResourceAsStream(</span>
+				JAR_CONFIGFILE);
+<span class="nc bnc" id="L132" title="All 2 branches missed.">		if (in != null) {</span>
+			try {
+<span class="nc" id="L134">				config.load(in);</span>
+			} finally {
+<span class="nc" id="L136">				StreamUtils.closeStream(in);</span>
+<span class="nc" id="L137">			}</span>
+		} else {
+<span class="nc" id="L139">			LOGGER.config(&quot;Jar configuration not found&quot;);</span>
+		}
+
+		// override settings with a config file
+<span class="nc bnc" id="L143" title="All 2 branches missed.">		if (configFile.exists()) {</span>
+<span class="nc" id="L144">			LOGGER.config(&quot;Loading configuration file &quot;</span>
+<span class="nc" id="L145">					+ configFile.getCanonicalPath());</span>
+
+<span class="nc" id="L147">			config = new Config(config);</span>
+<span class="nc" id="L148">			in = StreamUtils.getInputStream(configFile);</span>
+			try {
+<span class="nc" id="L150">				config.load(in);</span>
+			} finally {
+<span class="nc" id="L152">				StreamUtils.closeStream(in);</span>
+			}
+		}
+
+<span class="nc" id="L156">		return config;</span>
+	}
+
+	public void setupLogging(final Config config) {
+<span class="nc" id="L160">		LogManager.getLogManager().reset();</span>
+
+<span class="nc" id="L162">		Level level = Level.parse(config.getProperty(LOGLEVEL_PROPERTY_NAME,</span>
+				DEFAULT_LOGLEVEL));
+<span class="nc" id="L164">		String logDirectory = config.getProperty(LOGDIRECTORY_PROPERTY_NAME,</span>
+				DEFAULT_LOGDIRECTORY);
+<span class="nc" id="L166">		LOGGER.config(&quot;Logging Level '&quot; + level + &quot;'&quot;);</span>
+<span class="nc" id="L167">		LOGGER.config(&quot;Log directory '&quot; + logDirectory + &quot;'&quot;);</span>
+
+<span class="nc" id="L169">		Logger rootLogger = Logger.getLogger(&quot;&quot;);</span>
+<span class="nc" id="L170">		rootLogger.setLevel(level);</span>
+
+		try {
+<span class="nc" id="L173">			File logDirectoryFile = new File(logDirectory);</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">			if (!logDirectoryFile.exists()) {</span>
+<span class="nc" id="L175">				LOGGER.fine(&quot;Creating log directory&quot;);</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">				if (!logDirectoryFile.mkdirs()) {</span>
+<span class="nc" id="L177">					LOGGER.warning(&quot;Unable to create log directory&quot;);</span>
+				}
+			}
+
+			// filepattern, maxBytesPerFile, maxFiles, append
+			// FileHandler handler = new FileHandler(logFile, 100000, 10, true);
+<span class="nc" id="L183">			Handler handler = new SimpleLogFileHandler(logDirectoryFile,</span>
+					new SimpleDateFormat(DEFAULT_LOGFILE));
+<span class="nc" id="L185">			handler.setLevel(level);</span>
+<span class="nc" id="L186">			rootLogger.addHandler(handler);</span>
+<span class="nc" id="L187">		} catch (Exception e) {</span>
+<span class="nc" id="L188">			LOGGER.log(Level.WARNING, &quot;Unable to create log file handler&quot;, e);</span>
+<span class="nc" id="L189">		}</span>
+
+<span class="nc" id="L191">		String redirectConsole = config.getProperty(</span>
+				CONSOLEREDIRECT_PROPERTY_NAME, DEFAULT_CONSOLEREDIRECT);
+<span class="nc bnc" id="L193" title="All 2 branches missed.">		if (!redirectConsole.equals(DEFAULT_CONSOLEREDIRECT)) {</span>
+			// default is off, so enable
+<span class="nc" id="L195">			System.err.println(&quot;Redirecting STDOUT and STDERR to log file&quot;);</span>
+<span class="nc" id="L196">			System.setOut(new PrintStream(new LoggingOutputStream(Logger</span>
+<span class="nc" id="L197">					.getLogger(&quot;stdout&quot;), StdOutErrLevel.STDOUT)));</span>
+<span class="nc" id="L198">			System.setErr(new PrintStream(new LoggingOutputStream(Logger</span>
+<span class="nc" id="L199">					.getLogger(&quot;stderr&quot;), StdOutErrLevel.STDERR)));</span>
+		} else {
+<span class="nc" id="L201">			ConsoleHandler handler = new ConsoleHandler();</span>
+<span class="nc" id="L202">			handler.setLevel(level);</span>
+<span class="nc" id="L203">			rootLogger.addHandler(handler);</span>
+		}
+
+		Formatter formatter;
+<span class="nc" id="L207">		String logFormat = config.getProperty(</span>
+				LOGFORMAT_PROPERTY_NAME, DEFAULT_LOGFORMAT);
+<span class="nc bnc" id="L209" title="All 2 branches missed.">		if (logFormat.equals(LOGFORMAT_SIMPLE)) {</span>
+			// built in simple formatter
+<span class="nc" id="L211">			formatter = new SimpleFormatter();</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">		} else if (logFormat.equals(LOGFORMAT_XML)) {</span>
+			// built in xml formatter
+<span class="nc" id="L214">			formatter = new XMLFormatter();</span>
+		} else {
+			// pdl style simple formatter
+<span class="nc" id="L217">			formatter = new SimpleLogFormatter();</span>
+		}
+<span class="nc bnc" id="L219" title="All 2 branches missed.">		for (Handler handler : rootLogger.getHandlers()) {</span>
+<span class="nc" id="L220">			handler.setFormatter(formatter);</span>
+		}
+<span class="nc" id="L222">	}</span>
+
+	public static void main(final String[] args) throws Exception {
+<span class="nc" id="L225">		StringBuffer argumentList = new StringBuffer();</span>
+<span class="nc" id="L226">		boolean configTest = false;</span>
+
+<span class="nc" id="L228">		String className = null;</span>
+
+		// use default config file
+<span class="nc" id="L231">		File configFile = new File(DEFAULT_CONFIGFILE);</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">		for (String arg : args) {</span>
+<span class="nc" id="L233">			argumentList.append(arg).append(&quot; &quot;);</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">			if (arg.startsWith(CONFIGFILE_ARGUMENT)) {</span>
+				// unless config file argument provided
+<span class="nc" id="L236">				configFile = new File(arg.replace(CONFIGFILE_ARGUMENT, &quot;&quot;));</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">			} else if (arg.equals(CONFIG_TEST_ARGUMENT)) {</span>
+<span class="nc" id="L238">				configTest = true;</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">			} else if (arg.startsWith(MAINCLASS_ARGUMENT)) {</span>
+<span class="nc" id="L240">				className = arg.replace(MAINCLASS_ARGUMENT, &quot;&quot;);</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">			} else if (arg.equals(VERSION_ARGUMENT)) {</span>
+<span class="nc" id="L242">				System.err.println(&quot;Product Distribution Client&quot;);</span>
+<span class="nc" id="L243">				System.err.println(ProductClient.RELEASE_VERSION);</span>
+<span class="nc" id="L244">				System.exit(0);</span>
+			}
+		}
+
+<span class="nc" id="L248">		Bootstrap bootstrap = new Bootstrap();</span>
+
+		// load configuration file
+<span class="nc" id="L251">		Config config = bootstrap.loadConfig(configFile);</span>
+
+		// set global config object
+<span class="nc" id="L254">		Config.setConfig(config);</span>
+
+		// setup logging based on configuration
+<span class="nc" id="L257">		bootstrap.setupLogging(config);</span>
+
+		// java and os information
+<span class="nc" id="L260">		LOGGER.config(&quot;java.vendor = &quot; + System.getProperty(&quot;java.vendor&quot;));</span>
+<span class="nc" id="L261">		LOGGER.config(&quot;java.version = &quot; + System.getProperty(&quot;java.version&quot;));</span>
+<span class="nc" id="L262">		LOGGER.config(&quot;java.home = &quot; + System.getProperty(&quot;java.home&quot;));</span>
+<span class="nc" id="L263">		LOGGER.config(&quot;os.arch = &quot; + System.getProperty(&quot;os.arch&quot;));</span>
+<span class="nc" id="L264">		LOGGER.config(&quot;os.name = &quot; + System.getProperty(&quot;os.name&quot;));</span>
+<span class="nc" id="L265">		LOGGER.config(&quot;os.version = &quot; + System.getProperty(&quot;os.version&quot;));</span>
+<span class="nc" id="L266">		LOGGER.config(&quot;user.dir = &quot; + System.getProperty(&quot;user.dir&quot;));</span>
+<span class="nc" id="L267">		LOGGER.config(&quot;user.name = &quot; + System.getProperty(&quot;user.name&quot;));</span>
+
+		// log command line arguments
+<span class="nc" id="L270">		LOGGER.fine(&quot;Command line arguments: &quot; + argumentList.toString().trim());</span>
+
+		// configure whether tracker updates are sent.
+<span class="nc" id="L273">		String enableTrackerProperty = config</span>
+<span class="nc" id="L274">				.getProperty(ENABLE_TRACKER_PROPERTY_NAME);</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">		if (Boolean.valueOf(enableTrackerProperty)) {</span>
+<span class="nc" id="L276">			LOGGER.warning(&quot;Enabled tracker updates,&quot;</span>
+					+ &quot; this is usually not a good idea.&quot;);
+<span class="nc" id="L278">			ProductTracker.setTrackerEnabled(true);</span>
+		}
+
+		// lookup main class
+<span class="nc bnc" id="L282" title="All 2 branches missed.">		if (className == null) {</span>
+			// no argument specified, check configuration
+<span class="nc" id="L284">			className = config.getProperty(MAINCLASS_PROPERTY_NAME,</span>
+					DEFAULT_MAINCLASS);
+		}
+
+		// invoke main class main(String[] args) method
+<span class="nc" id="L289">		LOGGER.config(&quot;Loading main class &quot; + className);</span>
+<span class="nc" id="L290">		Bootstrappable main = null;</span>
+		try {
+<span class="nc" id="L292">			main = (Bootstrappable) Class.forName(className)</span>
+<span class="nc" id="L293">					.getConstructor().newInstance();</span>
+<span class="nc" id="L294">		} catch (ClassCastException cce) {</span>
+<span class="nc" id="L295">			LOGGER.log(Level.SEVERE,</span>
+					&quot;Main class must implement the Bootstrappable interface&quot;,
+					cce);
+<span class="nc" id="L298">			System.exit(1);</span>
+<span class="nc" id="L299">		}</span>
+
+		// use the configurable interface when available
+<span class="nc bnc" id="L302" title="All 2 branches missed.">		if (main instanceof Configurable) {</span>
+<span class="nc" id="L303">			Configurable configurable = ((Configurable) main);</span>
+<span class="nc" id="L304">			configurable.setName(&quot;main&quot;);</span>
+			try {
+<span class="nc" id="L306">				configurable.configure(config);</span>
+<span class="nc" id="L307">			} catch (Exception e) {</span>
+<span class="nc" id="L308">				LOGGER.log(Level.SEVERE, &quot;Exception loading configuration &quot;, e);</span>
+<span class="nc" id="L309">				System.exit(1);</span>
+<span class="nc" id="L310">			}</span>
+		}
+
+		// configuration loaded okay
+<span class="nc" id="L314">		LOGGER.config(&quot;Configuration loaded&quot;);</span>
+<span class="nc bnc" id="L315" title="All 2 branches missed.">		if (configTest) {</span>
+			// exit successfully
+<span class="nc" id="L317">			System.exit(0);</span>
+		}
+
+		// run main instance
+<span class="nc" id="L321">		LOGGER.config(&quot;Bootstrap complete, running main class\n&quot;);</span>
+		try {
+<span class="nc" id="L323">			main.run(args);</span>
+<span class="nc" id="L324">		} catch (Exception e) {</span>
+<span class="nc" id="L325">			LOGGER.log(Level.SEVERE, &quot;Main class threw exception, exiting&quot;, e);</span>
+<span class="nc" id="L326">			System.exit(Bootstrappable.RUN_EXCEPTION_EXIT_CODE);</span>
+<span class="nc" id="L327">		}</span>
+<span class="nc" id="L328">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

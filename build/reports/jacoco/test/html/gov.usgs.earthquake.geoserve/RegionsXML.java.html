@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RegionsXML.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.geoserve</a> &gt; <span class="el_source">RegionsXML.java</span></div><h1>RegionsXML.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.geoserve;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.TreeSet;
+
+import gov.usgs.earthquake.qdm.Point;
+import gov.usgs.earthquake.qdm.Region;
+import gov.usgs.earthquake.qdm.Regions;
+import gov.usgs.earthquake.qdm.RegionsHandler;
+import gov.usgs.util.XmlUtils;
+
+/**
+ * Legacy Regions XML formatting for gov.usgs.earthquake.qdm.Regions.
+ *
+ */
+<span class="nc" id="L19">public class RegionsXML {</span>
+
+    /**
+     * Output ANSS Authoritative Regions in the legacy Regions XML format.
+     */
+    public String formatXML(final Regions regions) {
+<span class="nc" id="L25">        StringBuffer xml = new StringBuffer(String.join(&quot;\n&quot;,</span>
+            &quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot;?&gt;&quot;,
+            &quot;&lt;regions&gt;&quot;,
+            &quot;  &lt;file name=\&quot;regions.xml\&quot;&gt;&quot;,
+<span class="nc" id="L29">            &quot;  &lt;update date=\&quot;&quot; + XmlUtils.formatDate(new Date()) + &quot;\&quot;/&gt;&quot;,</span>
+            &quot;  &lt;format version=\&quot;0.2\&quot;/&gt;&quot;,
+            &quot;\n&lt;!--&quot;,
+            &quot;# ANSS Authoritative Regions&quot;,
+            &quot;# DEFAULT indicates no polygon - matches any event.&quot;,
+            &quot;# A network may have more than 1 region list,&quot;,
+            &quot;# but each region may be associated with only ONE network.&quot;,
+            &quot;# There may only be 1 DEFAULT region.&quot;,
+            &quot;--&gt;\n&quot;
+        ));
+
+        // group regions by netid
+<span class="nc" id="L41">        final HashMap&lt;String, ArrayList&lt;Region&gt;&gt; networks = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        for (final Region region : regions.regions) {</span>
+<span class="nc" id="L43">            String netid = region.netid;</span>
+<span class="nc" id="L44">            ArrayList&lt;Region&gt; netRegions = networks.get(netid);</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">            if (netRegions == null) {</span>
+<span class="nc" id="L46">                netRegions = new ArrayList&lt;Region&gt;();</span>
+<span class="nc" id="L47">                networks.put(netid, netRegions);</span>
+            }
+<span class="nc" id="L49">            netRegions.add(region);</span>
+<span class="nc" id="L50">        }</span>
+
+        // output networks
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        for (String netid : new TreeSet&lt;&gt;(networks.keySet())) {</span>
+<span class="nc" id="L54">            xml.append(&quot;\n&lt;net&quot;)</span>
+<span class="nc" id="L55">                    .append(&quot; code=\&quot;&quot;).append(netid).append(&quot;\&quot;&quot;)</span>
+                    // name is &quot;DEFAULT&quot; or not, use netid since it's unique
+<span class="nc" id="L57">                    .append(&quot; name=\&quot;&quot;).append(netid).append(&quot;\&quot;&quot;)</span>
+<span class="nc" id="L58">                    .append(&quot;&gt;\n&quot;);</span>
+            // output network regions
+<span class="nc bnc" id="L60" title="All 2 branches missed.">            for (Region region : networks.get(netid)) {</span>
+<span class="nc" id="L61">                xml.append(&quot;  &lt;region code=\&quot;&quot;).append(region.regionid).append(&quot;\&quot;&gt;\n&quot;);</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">                for (Point point : region.points) {</span>
+<span class="nc" id="L63">                    xml.append(&quot;    &lt;coordinate&quot;)</span>
+<span class="nc" id="L64">                            .append(&quot; latitude=\&quot;&quot;).append(point.y).append(&quot;\&quot;&quot;)</span>
+<span class="nc" id="L65">                            .append(&quot; longitude=\&quot;&quot;).append(point.x).append(&quot;\&quot;&quot;)</span>
+<span class="nc" id="L66">                            .append(&quot;/&gt;\n&quot;);</span>
+<span class="nc" id="L67">                }</span>
+<span class="nc" id="L68">                xml.append(&quot;  &lt;/region&gt;\n&quot;);</span>
+<span class="nc" id="L69">            }</span>
+<span class="nc" id="L70">            xml.append(&quot;&lt;/net&gt;\n&quot;);</span>
+<span class="nc" id="L71">        }</span>
+
+        // add NEIC as default region
+<span class="nc" id="L74">        xml.append(String.join(&quot;\n&quot;,</span>
+                &quot;&quot;,
+                &quot;&lt;net code=\&quot;US\&quot; name=\&quot;DEFAULT\&quot;&gt;&quot;,
+                &quot;  &lt;region code=\&quot;US\&quot;/&gt;&quot;,
+                &quot;&lt;/net&gt;&quot;,
+                &quot;&quot;));
+
+<span class="nc" id="L81">        xml.append(&quot;&lt;/regions&gt;&quot;);</span>
+
+<span class="nc" id="L83">        return xml.toString();</span>
+    }
+
+    /**
+     * Parse regions from an XML input stream.
+     *
+     * @throws Exception
+     */
+    public static Regions getRegions(final InputStream in) throws Exception {
+<span class="nc" id="L92">        RegionsHandler regionsHandler = new RegionsHandler();</span>
+<span class="nc" id="L93">        Exception error = regionsHandler.parse(in);</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        if (error != null) {</span>
+<span class="nc" id="L95">            throw error;</span>
+        }
+<span class="nc" id="L97">		return regionsHandler.regions;</span>
+    }
+
+    /**
+     * Download ANSS Authoritative regions from Geoserve,
+     * and print to the screen in Regions XML format.
+     */
+    public static void main(final String[] args) throws Exception {
+<span class="nc" id="L105">        Regions regions = ANSSRegionsFactory.getFactory().getRegions();</span>
+<span class="nc" id="L106">        String xml = new RegionsXML().formatXML(regions);</span>
+<span class="nc" id="L107">        System.out.println(xml);</span>
+<span class="nc" id="L108">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
