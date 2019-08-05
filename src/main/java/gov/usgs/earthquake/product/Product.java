@@ -3,6 +3,7 @@
  */
 package gov.usgs.earthquake.product;
 
+import gov.usgs.earthquake.distribution.ProductKey;
 import gov.usgs.util.CryptoUtils;
 import gov.usgs.util.XmlUtils;
 
@@ -342,22 +343,26 @@ public class Product {
 	 */
 	public boolean verifySignature(final PublicKey[] publicKeys)
 			throws Exception {
+		return verifySignatureKey(publicKeys) != null;
+	}
+
+	public PublicKey verifySignatureKey(final PublicKey[] publicKeys) throws Exception {
 		if (signature == null) {
-			return false;
+			return null;
 		}
 
 		byte[] digest = ProductDigest.digestProduct(this);
 		for (PublicKey key : publicKeys) {
 			try {
 				if (CryptoUtils.verify(key, digest, getSignature())) {
-					return true;
+					return key;
 				}
 			} catch (Exception e) {
 				LOGGER.log(Level.FINEST, "Exception while verifying signature",
-						e);
+								e);
 			}
 		}
-		return false;
+		return null;
 	}
 
 	/**

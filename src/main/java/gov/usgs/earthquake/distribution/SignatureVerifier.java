@@ -117,7 +117,7 @@ public class SignatureVerifier extends DefaultConfigurable {
 	 * @throws Exception
 	 */
 	public boolean verifySignature(final Product product) throws Exception {
-		boolean verified = false;
+		ProductKey verifiedKey = null;
 
 		if (testSignatures || rejectInvalidSignatures) {
 			ProductId id = product.getId();
@@ -128,13 +128,23 @@ public class SignatureVerifier extends DefaultConfigurable {
 				LOGGER.finer("[" + getName() + "] number of candidate keys="
 						+ candidateKeys.length);
 				if (candidateKeys.length > 0) {
-					verified = product.verifySignature(candidateKeys);
+					PublicKey tmp = product.verifySignatureKey(candidateKeys);
+					if (tmp != null) {
+						for (ProductKey productKey : keychain.getKeychain()) {
+							if (tmp.equals(productKey.getKey())) {
+								verifiedKey = productKey;
+								LOGGER.info("[" + getName() + "] has verified key " + verifiedKey.getName());
+								break;
+							}
+						}
+					}
 				}
 			} else {
 				LOGGER.warning("[" + getName() + "] missing Signature Keychain");
 			}
 
-			LOGGER.fine("[" + getName() + "] signature verified=" + verified
+
+			LOGGER.fine("[" + getName() + "] signature verified=" + ((verifiedKey != null) ? "true, key=" + verifiedKey.getName() : "false")
 					+ ", id=" + product.getId());
 
 			if (allowUnknownSigner && candidateKeys.length == 0) {
@@ -143,13 +153,13 @@ public class SignatureVerifier extends DefaultConfigurable {
 					return false;
 			}
 
-			if (!verified && rejectInvalidSignatures) {
+			if (verifiedKey == null && rejectInvalidSignatures) {
 					throw new InvalidSignatureException("[" + getName()
 							+ "] bad signature for id=" + id);
 			}
 		}
 
-		return verified;
+		return verifiedKey != null;
 	}
 
 }
