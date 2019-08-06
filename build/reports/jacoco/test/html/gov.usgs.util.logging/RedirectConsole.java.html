@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RedirectConsole.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util.logging</a> &gt; <span class="el_source">RedirectConsole.java</span></div><h1>RedirectConsole.java</h1><pre class="source lang-java linenums">package gov.usgs.util.logging;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+
+/**
+ * Console redirection utility.
+ * 
+ * Replaces system.out and system.err with
+ * printstreams that log all writes when flushed.
+ */
+<span class="nc" id="L16">public class RedirectConsole {</span>
+
+	/** Logger to handle writes to system.err. */
+<span class="nc" id="L19">	private static final Logger SYSTEM_ERR_LOGGER = Logger</span>
+<span class="nc" id="L20">			.getLogger(&quot;system.err&quot;);</span>
+
+	/** Logger to handle writes to system.out. */
+<span class="nc" id="L23">	private static final Logger SYSTEM_OUT_LOGGER = Logger</span>
+<span class="nc" id="L24">			.getLogger(&quot;system.out&quot;);</span>
+
+	/** The previous system.err stream. */
+	private static PrintStream PREVIOUS_SYSTEM_ERR;
+
+	/** The previous system.out.stream. */
+	private static PrintStream PREVIOUS_SYSTEM_OUT;
+
+	/**
+	 * Redirect System.out and System.err to java.util.logging.Logger objects.
+	 * 
+	 * System.out is redirected to logger &quot;system.out&quot;. System.err is redirected
+	 * to logger &quot;system.err&quot;.
+	 * 
+	 * Use the cancel method to undo this redirection.
+	 */
+	public static void redirect() {
+<span class="nc bnc" id="L41" title="All 4 branches missed.">		if (PREVIOUS_SYSTEM_ERR != null || PREVIOUS_SYSTEM_OUT != null) {</span>
+<span class="nc" id="L42">			cancel();</span>
+		}
+
+<span class="nc" id="L45">		PREVIOUS_SYSTEM_OUT = System.out;</span>
+<span class="nc" id="L46">		System.setOut(new LoggerPrintStream(&quot;STDOUT&quot;, SYSTEM_OUT_LOGGER));</span>
+
+<span class="nc" id="L48">		PREVIOUS_SYSTEM_ERR = System.err;</span>
+<span class="nc" id="L49">		System.setErr(new LoggerPrintStream(&quot;STDERR&quot;, SYSTEM_ERR_LOGGER));</span>
+<span class="nc" id="L50">	}</span>
+
+	/**
+	 * Undo a redirection previously setup using redirect().
+	 * 
+	 * Restores System.out and System.err to their state before redirect was
+	 * called.
+	 */
+	public static void cancel() {
+<span class="nc bnc" id="L59" title="All 2 branches missed.">		if (PREVIOUS_SYSTEM_OUT != null) {</span>
+			// flush any pending output
+<span class="nc" id="L61">			System.out.flush();</span>
+			// restore previous output stream
+<span class="nc" id="L63">			System.setOut(PREVIOUS_SYSTEM_OUT);</span>
+<span class="nc" id="L64">			PREVIOUS_SYSTEM_OUT = null;</span>
+		}
+<span class="nc bnc" id="L66" title="All 2 branches missed.">		if (PREVIOUS_SYSTEM_ERR != null) {</span>
+			// flush any pending output
+<span class="nc" id="L68">			System.err.flush();</span>
+			// restore previous error stream
+<span class="nc" id="L70">			System.setErr(PREVIOUS_SYSTEM_ERR);</span>
+<span class="nc" id="L71">			PREVIOUS_SYSTEM_ERR = null;</span>
+		}
+<span class="nc" id="L73">	}</span>
+
+	/**
+	 * A PrintStream that writes messages to a Logger object.
+	 */
+	private static class LoggerPrintStream extends PrintStream {
+
+		/** Name for output, prepended to LogRecord. */
+		private String name;
+
+		/** Logger used when flush is called. */
+		private Logger logger;
+
+		public LoggerPrintStream(final String name, final Logger logger) {
+			// true is for autoflush
+<span class="nc" id="L88">			super(new ByteArrayOutputStream(), true);</span>
+<span class="nc" id="L89">			this.name = name;</span>
+<span class="nc" id="L90">			this.logger = logger;</span>
+<span class="nc" id="L91">		}</span>
+
+		/**
+		 * Override to force synchronization.
+		 */
+		@Override
+		public synchronized void write(final byte[] b) throws IOException {
+<span class="nc" id="L98">			super.write(b);</span>
+<span class="nc" id="L99">		}</span>
+
+		/**
+		 * Override to force synchronization.
+		 */
+		@Override
+		public synchronized void write(final int b) {
+<span class="nc" id="L106">			super.write(b);</span>
+<span class="nc" id="L107">		}</span>
+
+		/**
+		 * Override to force synchronization.
+		 */
+		@Override
+		public synchronized void write(final byte[] buf, final int off,
+				final int len) {
+<span class="nc" id="L115">			super.write(buf, off, len);</span>
+<span class="nc" id="L116">		}</span>
+
+		/**
+		 * Flush forces message to be written to log file.
+		 */
+		@Override
+		public synchronized void flush() {
+<span class="nc" id="L123">			ByteArrayOutputStream baos = (ByteArrayOutputStream) out;</span>
+			try {
+<span class="nc" id="L125">				logger.log(new LogRecord(Level.INFO, this.name + &quot; &quot;</span>
+<span class="nc" id="L126">						+ baos.toString().trim()));</span>
+			} finally {
+				// tried to write at least, clear buffer...
+<span class="nc" id="L129">				out = new ByteArrayOutputStream();</span>
+			}
+<span class="nc" id="L131">		}</span>
+
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

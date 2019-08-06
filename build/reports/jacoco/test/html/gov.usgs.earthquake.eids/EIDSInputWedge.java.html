@@ -1,0 +1,867 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EIDSInputWedge.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.eids</a> &gt; <span class="el_source">EIDSInputWedge.java</span></div><h1>EIDSInputWedge.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.eids;
+
+import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.xml.bind.JAXBException;
+
+import org.xml.sax.SAXParseException;
+
+import gov.usgs.earthquake.distribution.Bootstrappable;
+import gov.usgs.earthquake.distribution.CLIProductBuilder;
+import gov.usgs.earthquake.distribution.ConfigurationException;
+import gov.usgs.earthquake.distribution.ProductBuilder;
+import gov.usgs.earthquake.distribution.ProductSender;
+import gov.usgs.earthquake.distribution.SocketProductSender;
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.FileContent;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.quakeml.FileToQuakemlConverter;
+import gov.usgs.util.Config;
+import gov.usgs.util.CryptoUtils;
+import gov.usgs.util.DirectoryPoller;
+import gov.usgs.util.FileUtils;
+import gov.usgs.util.StringUtils;
+
+/**
+ * Read messages from files or a poll directory, and push products into PDL.
+ * 
+ * This is supports EIDS/QDDS style polling. The input messages are converted to
+ * Quakeml using the FileToQuakemlConverter interface, then sent as Quakeml
+ * based products.
+ * 
+ * Much of the configuration can be supplied using either a configuration file,
+ * or command line arguments.
+ */
+public class EIDSInputWedge extends ProductBuilder implements Runnable,
+		Bootstrappable {
+
+	/**
+	 * Global reference to arguments array, when EIDSInputWedge is run via
+	 * Bootstrap.
+	 */
+<span class="fc" id="L52">	public static String[] ARGS = null;</span>
+
+<span class="fc" id="L54">	private static final Logger LOGGER = Logger.getLogger(EIDSInputWedge.class</span>
+<span class="fc" id="L55">			.getName());</span>
+
+	public static final String PARSER_CLASS_PROPERTY = &quot;parserClass&quot;;
+	public static final String DEFAULT_PARSER_CLASS = &quot;gov.usgs.earthquake.event.QuakemlToQuakemlConverter&quot;;
+
+	public static final String POLLDIR_PROPERTY = &quot;directory&quot;;
+	public static final String DEFAULT_POLLDIR = &quot;polldir&quot;;
+<span class="fc" id="L62">	private File polldir = new File(DEFAULT_POLLDIR);</span>
+
+	public static final String STORAGEDIR_PROPERTY = &quot;oldinputdir&quot;;
+	public static final String DEFAULT_STORAGEDIR = &quot;oldinput&quot;;
+<span class="fc" id="L66">	private File storagedir = new File(DEFAULT_STORAGEDIR);</span>
+
+	public static final String ERRORDIR_PROPERTY = &quot;errordir&quot;;
+	public static final String DEFAULT_ERRORDIR = &quot;errordir&quot;;
+<span class="fc" id="L70">	private File errordir = new File(DEFAULT_ERRORDIR);</span>
+
+	public static final String VALIDATE_PROPERTY = &quot;validate&quot;;
+	public static final String DEFAULT_VALIDATE = &quot;false&quot;;
+
+	public static final String SEND_ORIGIN_WHEN_PHASES_EXIST_PROPERTY = &quot;sendOriginWhenPhasesExist&quot;;
+	public static final String DEFAULT_SEND_ORIGIN_WHEN_PHASES_EXIST = &quot;false&quot;;
+
+	public static final String SEND_MECHANISM_WHEN_PHASES_EXIST_PROPERTY = &quot;sendMechanismWhenPhasesExist&quot;;
+	public static final String DEFAULT_SEND_MECHANISM_WHEN_PHASES_EXIST = &quot;false&quot;;
+
+	/** Convert parsed quakeml to a product. */
+<span class="fc" id="L82">	private ProductCreator productCreator = new QuakemlProductCreator();</span>
+
+	/** Whether created products should be converted to internal types. */
+	public static final String CREATE_INTERNAL_PRODUCTS_PROPERTY = &quot;createInternalProducts&quot;;
+	public static final String DEFAULT_CREATE_INTERNAL_PRODUCTS = &quot;false&quot;;
+<span class="fc" id="L87">	private boolean createInternalProducts = false;</span>
+
+	/** Whether created products should be converted to scenario types. */
+	public static final String CREATE_SCENARIO_PRODUCTS_PROPERTY = &quot;createScenarioProducts&quot;;
+	public static final String DEFAULT_CREATE_SCENARIO_PRODUCTS = &quot;false&quot;;
+<span class="fc" id="L92">	private boolean createScenarioProducts = false;</span>
+
+	/** Directory polling object. */
+	private DirectoryPoller directoryPoller;
+
+	public static final String POLLINTERVAL_PROPERTY = &quot;interval&quot;;
+	public static final String DEFAULT_POLLINTERVAL = &quot;1000&quot;;
+<span class="fc" id="L99">	private long pollInterval = 1000L;</span>
+
+	public static final String POLL_CAREFULLY_PROPERTY = &quot;pollCarefully&quot;;
+	public static final String DEFAULT_POLL_CAREFULLY = &quot;false&quot;;
+<span class="fc" id="L103">	private boolean pollCarefully = false;</span>
+
+<span class="fc" id="L105">	private Thread pollThread = null;</span>
+
+<span class="fc" id="L107">	public EIDSInputWedge() throws Exception {</span>
+<span class="fc" id="L108">	}</span>
+
+	public Map&lt;ProductId, Map&lt;ProductSender, Exception&gt;&gt; parseAndSend(
+			final File file, final Map&lt;String, Content&gt; attachContent)
+			throws Exception {
+<span class="fc" id="L113">		Map&lt;ProductId, Map&lt;ProductSender, Exception&gt;&gt; sendProductResults = new HashMap&lt;ProductId, Map&lt;ProductSender, Exception&gt;&gt;();</span>
+
+<span class="fc" id="L115">		List&lt;Product&gt; products = productCreator.getProducts(file);</span>
+
+<span class="fc" id="L117">		Iterator&lt;Product&gt; iter = products.iterator();</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L119">			Product product = iter.next();</span>
+<span class="fc" id="L120">			ProductId id = product.getId();</span>
+
+<span class="fc bfc" id="L122" title="All 2 branches covered.">			if (createInternalProducts) {</span>
+<span class="fc" id="L123">				id.setType(&quot;internal-&quot; + id.getType());</span>
+			}
+<span class="fc bfc" id="L125" title="All 2 branches covered.">			if (createScenarioProducts) {</span>
+<span class="fc" id="L126">				id.setType(id.getType() + &quot;-scenario&quot;);</span>
+			}
+
+			// attach files to generated product
+<span class="pc bpc" id="L130" title="2 of 4 branches missed.">			if (attachContent != null &amp;&amp; attachContent.size() &gt; 0) {</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">				if (products.size() &gt; 1) {</span>
+<span class="nc" id="L132">					throw new Exception(&quot;Trying to attach files,&quot;</span>
+							+ &quot; generated more than 1 product&quot;);
+				}
+<span class="nc" id="L135">				product.getContents().putAll(attachContent);</span>
+			}
+
+			// send product, save any exceptions
+<span class="fc" id="L139">			sendProductResults.put(product.getId(), sendProduct(product));</span>
+<span class="fc" id="L140">		}</span>
+
+<span class="fc" id="L142">		return sendProductResults;</span>
+	}
+
+	public void onFile(File file) {
+<span class="nc" id="L146">		Date inputtime = new Date();</span>
+<span class="nc" id="L147">		LOGGER.info(&quot;Reading file &quot; + file.getName());</span>
+
+		try {
+<span class="nc" id="L150">			Map&lt;ProductId, Map&lt;ProductSender, Exception&gt;&gt; sendExceptions = parseAndSend(</span>
+					file, null);
+
+			// check how send went
+<span class="nc" id="L154">			int numSenders = getProductSenders().size();</span>
+<span class="nc" id="L155">			int total = sendExceptions.size();</span>
+<span class="nc" id="L156">			int successful = 0;</span>
+<span class="nc" id="L157">			int partialFailures = 0;</span>
+<span class="nc" id="L158">			int totalFailures = 0;</span>
+
+<span class="nc" id="L160">			Iterator&lt;ProductId&gt; sentIds = sendExceptions.keySet().iterator();</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">			while (sentIds.hasNext()) {</span>
+<span class="nc" id="L162">				ProductId sentId = sentIds.next();</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">				if (sendExceptions.get(sentId).size() == numSenders) {</span>
+<span class="nc" id="L164">					totalFailures++;</span>
+<span class="nc" id="L165">					LOGGER.severe(&quot;Total failure sending product &quot;</span>
+<span class="nc" id="L166">							+ sentId.toString());</span>
+				} else {
+					// output built product id because it was sent at least once
+<span class="nc" id="L169">					System.out.println(sentId.toString());</span>
+
+<span class="nc bnc" id="L171" title="All 2 branches missed.">					if (sendExceptions.get(sentId).size() == 0) {</span>
+<span class="nc" id="L172">						successful++;</span>
+					} else {
+<span class="nc" id="L174">						partialFailures++;</span>
+<span class="nc" id="L175">						LOGGER.warning(&quot;Partial failure sending product &quot;</span>
+<span class="nc" id="L176">								+ sentId.toString());</span>
+					}
+				}
+<span class="nc" id="L179">			}</span>
+
+<span class="nc" id="L181">			LOGGER.info(&quot;generated &quot; + total + &quot; products: &quot; + successful</span>
+					+ &quot; sent, &quot; + partialFailures + &quot; partially sent, &quot;
+					+ totalFailures + &quot; failed to send&quot;);
+
+			// notify of failures using exit code
+<span class="nc bnc" id="L186" title="All 2 branches missed.">			if (totalFailures &gt; 0) {</span>
+				// consider this failure, event if some products sent
+<span class="nc" id="L188">				throw new Exception();</span>
+			}
+
+			// succeeded, at least somewhat
+			// move to oldinput directory
+<span class="nc" id="L193">			file.renameTo(new File(storagedir, file.getName() + &quot;_&quot;</span>
+<span class="nc" id="L194">					+ inputtime.getTime()));</span>
+<span class="nc" id="L195">		} catch (Exception e) {</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">			if (e instanceof JAXBException</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">					&amp;&amp; ((JAXBException) e).getLinkedException() instanceof SAXParseException) {</span>
+<span class="nc" id="L198">				SAXParseException spe = (SAXParseException) ((JAXBException) e)</span>
+<span class="nc" id="L199">						.getLinkedException();</span>
+<span class="nc" id="L200">				LOGGER.warning(&quot;Parse error: &quot; + spe.getMessage() + &quot;; line=&quot;</span>
+<span class="nc" id="L201">						+ spe.getLineNumber() + &quot;, column=&quot;</span>
+<span class="nc" id="L202">						+ spe.getColumnNumber());</span>
+			}
+
+<span class="nc bnc" id="L205" title="All 2 branches missed.">			if (errordir != null) {</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">				if (!errordir.exists()) {</span>
+<span class="nc" id="L207">					errordir.mkdirs();</span>
+				}
+<span class="nc" id="L209">				File errorfile = new File(errordir, file.getName() + &quot;_&quot;</span>
+<span class="nc" id="L210">						+ new Date().getTime());</span>
+
+				// move to error directory
+				try {
+<span class="nc" id="L214">				LOGGER.log(Level.WARNING, &quot;Errors processing file, moving to &quot;</span>
+<span class="nc" id="L215">						+ errorfile.getCanonicalPath(), e);</span>
+<span class="nc" id="L216">				} catch (Exception ignore) {</span>
+					//ignore
+<span class="nc" id="L218">				}</span>
+<span class="nc" id="L219">				file.renameTo(errorfile);</span>
+<span class="nc" id="L220">			} else {</span>
+<span class="nc" id="L221">				LOGGER.warning(&quot;Error processing file &quot; + file.getName()</span>
+						+ &quot;, and no error directory configured&quot;);
+<span class="nc" id="L223">				FileUtils.deleteTree(file);</span>
+			}
+<span class="nc" id="L225">		}</span>
+<span class="nc" id="L226">	}</span>
+
+	@Override
+	public void configure(Config config) throws Exception {
+<span class="nc" id="L230">		super.configure(config);</span>
+
+<span class="nc" id="L232">		String parserClassName = config.getProperty(PARSER_CLASS_PROPERTY);</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">		if (parserClassName == null) {</span>
+<span class="nc" id="L234">			LOGGER.config(&quot;Using QuakemlToProductConverter&quot;);</span>
+		} else {
+<span class="nc" id="L236">			Object parserObj = Class.forName(parserClassName)</span>
+<span class="nc" id="L237">					.getConstructor().newInstance();</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">			if (parserObj instanceof ProductCreator) {</span>
+<span class="nc" id="L239">				productCreator = (ProductCreator) parserObj;</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">			} else if (parserObj instanceof FileToQuakemlConverter) {</span>
+<span class="nc" id="L241">				QuakemlProductCreator quakemlCreator = new QuakemlProductCreator();</span>
+<span class="nc" id="L242">				quakemlCreator.setConverter((FileToQuakemlConverter) parserObj);</span>
+<span class="nc" id="L243">				productCreator = quakemlCreator;</span>
+<span class="nc" id="L244">			} else {</span>
+<span class="nc" id="L245">				throw new ConfigurationException(&quot;configured parser class &quot;</span>
+						+ parserClassName + &quot; does not implement &quot;
+<span class="nc" id="L247">						+ FileToQuakemlConverter.class.getName());</span>
+			}
+<span class="nc" id="L249">			LOGGER.config(&quot;Using parser class &quot; + parserClassName);</span>
+		}
+
+<span class="nc" id="L252">		boolean validate = Boolean.getBoolean(config.getProperty(</span>
+				VALIDATE_PROPERTY, DEFAULT_VALIDATE));
+<span class="nc" id="L254">		productCreator.setValidate(validate);</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">		LOGGER.config(&quot;Validation &quot; + (validate ? &quot;enabled&quot; : &quot;disabled&quot;));</span>
+
+<span class="nc" id="L257">		boolean sendOriginWhenPhasesExist = Boolean.valueOf(config</span>
+<span class="nc" id="L258">				.getProperty(SEND_ORIGIN_WHEN_PHASES_EXIST_PROPERTY,</span>
+						DEFAULT_SEND_ORIGIN_WHEN_PHASES_EXIST));
+<span class="nc bnc" id="L260" title="All 2 branches missed.">		if (productCreator instanceof EQMessageProductCreator) {</span>
+<span class="nc" id="L261">			((EQMessageProductCreator) productCreator)</span>
+<span class="nc" id="L262">					.setSendOriginWhenPhasesExist(sendOriginWhenPhasesExist);</span>
+		} else {
+<span class="nc" id="L264">			((QuakemlProductCreator) productCreator)</span>
+<span class="nc" id="L265">					.setSendOriginWhenPhasesExist(sendOriginWhenPhasesExist);</span>
+		}
+<span class="nc" id="L267">		LOGGER.config(&quot;sendOriginWhenPhasesExist = &quot;</span>
+				+ sendOriginWhenPhasesExist);
+
+<span class="nc" id="L270">		boolean sendMechanismWhenPhasesExist = Boolean.valueOf(config</span>
+<span class="nc" id="L271">				.getProperty(SEND_MECHANISM_WHEN_PHASES_EXIST_PROPERTY,</span>
+						DEFAULT_SEND_MECHANISM_WHEN_PHASES_EXIST));
+<span class="nc bnc" id="L273" title="All 2 branches missed.">		if (productCreator instanceof EQMessageProductCreator) {</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">			if (sendMechanismWhenPhasesExist) {</span>
+<span class="nc" id="L275">				LOGGER.warning(SEND_MECHANISM_WHEN_PHASES_EXIST_PROPERTY</span>
+						+ &quot; is not supported for EQMessageProductCreator&quot;);
+			}
+		} else {
+<span class="nc" id="L279">			((QuakemlProductCreator) productCreator)</span>
+<span class="nc" id="L280">					.setSendMechanismWhenPhasesExist(sendMechanismWhenPhasesExist);</span>
+		}
+<span class="nc" id="L282">		LOGGER.config(&quot;sendMechanismWhenPhasesExist = &quot;</span>
+				+ sendMechanismWhenPhasesExist);
+
+<span class="nc" id="L285">		polldir = new File(</span>
+<span class="nc" id="L286">				config.getProperty(POLLDIR_PROPERTY, DEFAULT_POLLDIR));</span>
+<span class="nc" id="L287">		LOGGER.config(&quot;Using poll directory &quot; + polldir.getCanonicalPath());</span>
+
+<span class="nc" id="L289">		pollInterval = Long.valueOf(config.getProperty(POLLINTERVAL_PROPERTY,</span>
+				DEFAULT_POLLINTERVAL));
+<span class="nc" id="L291">		LOGGER.config(&quot;Using poll interval &quot; + pollInterval + &quot;ms&quot;);</span>
+
+<span class="nc" id="L293">		pollCarefully = Boolean.valueOf(config.getProperty(POLL_CAREFULLY_PROPERTY,</span>
+				DEFAULT_POLL_CAREFULLY));
+<span class="nc" id="L295">		LOGGER.config(&quot;Poll carefully = &quot; + pollCarefully);</span>
+
+<span class="nc" id="L297">		storagedir = new File(config.getProperty(STORAGEDIR_PROPERTY,</span>
+				DEFAULT_STORAGEDIR));
+<span class="nc" id="L299">		LOGGER.config(&quot;Using oldinput directory &quot;</span>
+<span class="nc" id="L300">				+ storagedir.getCanonicalPath());</span>
+
+<span class="nc" id="L302">		errordir = new File(config.getProperty(ERRORDIR_PROPERTY,</span>
+				DEFAULT_ERRORDIR));
+<span class="nc" id="L304">		LOGGER.config(&quot;Using error directory &quot; + errordir.getCanonicalPath());</span>
+
+<span class="nc" id="L306">		createInternalProducts = Boolean.valueOf(config</span>
+<span class="nc" id="L307">				.getProperty(CREATE_INTERNAL_PRODUCTS_PROPERTY,</span>
+						DEFAULT_CREATE_INTERNAL_PRODUCTS));
+<span class="nc" id="L309">		LOGGER.config(&quot;createInternalProducts = &quot; + createInternalProducts);</span>
+
+<span class="nc" id="L311">		createScenarioProducts = Boolean.valueOf(config</span>
+<span class="nc" id="L312">				.getProperty(CREATE_SCENARIO_PRODUCTS_PROPERTY,</span>
+						DEFAULT_CREATE_SCENARIO_PRODUCTS));
+<span class="nc" id="L314">		LOGGER.config(&quot;createScenarioProducts = &quot; + createScenarioProducts);</span>
+<span class="nc" id="L315">	}</span>
+
+	@Override
+	public void shutdown() throws Exception {
+<span class="nc bnc" id="L319" title="All 2 branches missed.">		if (pollThread != null) {</span>
+<span class="nc" id="L320">			pollThread.interrupt();</span>
+<span class="nc" id="L321">			pollThread = null;</span>
+		}
+
+<span class="nc" id="L324">		super.shutdown();</span>
+<span class="nc" id="L325">	}</span>
+
+	@Override
+	public void startup() throws Exception {
+<span class="nc" id="L329">		super.startup();</span>
+
+<span class="nc bnc" id="L331" title="All 2 branches missed.">		if (pollThread == null) {</span>
+<span class="nc" id="L332">			pollThread = new Thread(this);</span>
+<span class="nc" id="L333">			pollThread.setName(&quot;poll thread&quot;);</span>
+<span class="nc" id="L334">			pollThread.start();</span>
+		}
+<span class="nc" id="L336">	}</span>
+
+	public File getPolldir() {
+<span class="nc" id="L339">		return polldir;</span>
+	}
+
+	public void setPolldir(File polldir) {
+<span class="nc" id="L343">		this.polldir = polldir;</span>
+<span class="nc" id="L344">	}</span>
+
+	public File getStoragedir() {
+<span class="nc" id="L347">		return storagedir;</span>
+	}
+
+	public void setStoragedir(File storagedir) {
+<span class="nc" id="L351">		this.storagedir = storagedir;</span>
+<span class="nc" id="L352">	}</span>
+
+	public File getErrordir() {
+<span class="nc" id="L355">		return errordir;</span>
+	}
+
+	public void setErrordir(File errordir) {
+<span class="nc" id="L359">		this.errordir = errordir;</span>
+<span class="nc" id="L360">	}</span>
+
+	public ProductCreator getProductCreator() {
+<span class="fc" id="L363">		return productCreator;</span>
+	}
+
+	public void setProductCreator(ProductCreator productCreator) {
+<span class="fc" id="L367">		this.productCreator = productCreator;</span>
+<span class="fc" id="L368">	}</span>
+
+	public DirectoryPoller getDirectoryPoller() {
+<span class="nc" id="L371">		return directoryPoller;</span>
+	}
+
+	public void setDirectoryPoller(DirectoryPoller directoryPoller) {
+<span class="nc" id="L375">		this.directoryPoller = directoryPoller;</span>
+<span class="nc" id="L376">	}</span>
+
+	public long getPollInterval() {
+<span class="nc" id="L379">		return pollInterval;</span>
+	}
+
+	public void setPollInterval(long pollInterval) {
+<span class="nc" id="L383">		this.pollInterval = pollInterval;</span>
+<span class="nc" id="L384">	}</span>
+
+	public boolean isPollCarefully() {
+<span class="nc" id="L387">		return pollCarefully;</span>
+	}
+
+	public void setPollCarefully(boolean pollCarefully) {
+<span class="nc" id="L391">		this.pollCarefully = pollCarefully;</span>
+<span class="nc" id="L392">	}</span>
+
+	/**
+	 * @return the createInternalProducts
+	 */
+	public boolean isCreateInternalProducts() {
+<span class="nc" id="L398">		return createInternalProducts;</span>
+	}
+
+	/**
+	 * @param createInternalProducts
+	 *            the createInternalProducts to set
+	 */
+	public void setCreateInternalProducts(boolean createInternalProducts) {
+<span class="nc" id="L406">		this.createInternalProducts = createInternalProducts;</span>
+<span class="nc" id="L407">	}</span>
+
+	/**
+	 * @return the createScenarioProducts
+	 */
+	public boolean isCreateScenarioProducts() {
+<span class="nc" id="L413">		return createScenarioProducts;</span>
+	}
+
+	/**
+	 * @param createScenarioProducts
+	 *            the createScenarioProducts to set
+	 */
+	public void setCreateScenarioProducts(boolean createScenarioProducts) {
+<span class="nc" id="L421">		this.createScenarioProducts = createScenarioProducts;</span>
+<span class="nc" id="L422">	}</span>
+
+	public static List&lt;ProductSender&gt; parseServers(final String servers,
+			final Integer connectTimeout, final boolean binaryFormat,
+			final boolean enableDeflate) {
+<span class="fc" id="L427">		List&lt;ProductSender&gt; senders = new ArrayList&lt;ProductSender&gt;();</span>
+
+<span class="fc" id="L429">		Iterator&lt;String&gt; iter = StringUtils.split(servers, &quot;,&quot;).iterator();</span>
+<span class="fc bfc" id="L430" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L431">			String server = iter.next();</span>
+<span class="fc" id="L432">			String[] parts = server.split(&quot;:&quot;);</span>
+<span class="fc" id="L433">			SocketProductSender sender = new SocketProductSender(parts[0],</span>
+<span class="fc" id="L434">					Integer.parseInt(parts[1]), connectTimeout);</span>
+<span class="fc" id="L435">			sender.setBinaryFormat(binaryFormat);</span>
+<span class="fc" id="L436">			sender.setEnableDeflate(enableDeflate);</span>
+<span class="fc" id="L437">			senders.add(sender);</span>
+<span class="fc" id="L438">		}</span>
+
+<span class="fc" id="L440">		return senders;</span>
+	}
+
+	public static final String HELP_ARGUMENT = &quot;--help&quot;;
+	public static final String POLL_ARGUMENT = &quot;--poll&quot;;
+
+	public static final String POLL_CAREFULLY_ARGUMENT = &quot;--pollCarefully&quot;;
+	public static final String POLLDIR_ARGUMENT = &quot;--polldir=&quot;;
+	public static final String ERRORDIR_ARGUMENT = &quot;--errordir=&quot;;
+	public static final String STORAGEDIR_ARGUMENT = &quot;--oldinputdir=&quot;;
+	public static final String POLL_INTERVAL_ARGUMENT = &quot;--pollInterval=&quot;;
+	public static final String TRACKER_URL_ARGUMENT = &quot;--trackerURL=&quot;;
+
+	public static final String FILE_ARGUMENT = &quot;--file=&quot;;
+
+	public static final String PARSER_ARGUMENT = &quot;--parser=&quot;;
+	public static final String VALIDATE_ARGUMENT = &quot;--validate&quot;;
+	public static final String PRIVATE_KEY_ARGUMENT = &quot;--privateKey=&quot;;
+	public static final String SERVERS_ARGUMENT = &quot;--servers=&quot;;
+	public static final String SERVERS_DEFAULT = &quot;prod01-pdl01.cr.usgs.gov:11235,prod02-pdl01.cr.usgs.gov:11235&quot;;
+	public static final String CONNECT_TIMEOUT_ARGUMENT = &quot;--connectTimeout=&quot;;
+<span class="fc" id="L461">	public static final Integer DEFAULT_CONNECT_TIMEOUT = 15000;</span>
+	public static final String BINARY_FORMAT_ARGUMENT = &quot;--binaryFormat&quot;;
+	public static final String DISABLE_DEFLATE_ARGUMENT = &quot;--disableDeflate&quot;;
+	public static final String ATTACH_ARGUMENT = &quot;--attach=&quot;;
+	public static final String SEND_ORIGINS_WITH_PHASES = &quot;--sendOriginWhenPhasesExist&quot;;
+	public static final String SEND_MECHANISMS_WITH_PHASES = &quot;--sendMechanismWhenPhasesExist&quot;;
+
+	public static final String CREATE_INTERNAL_PRODUCTS = &quot;--internal&quot;;
+	public static final String CREATE_SCENARIO_PRODUCTS = &quot;--scenario&quot;;
+
+	public static final String TEST_ARGUMENT = &quot;--test&quot;;
+
+	/**
+	 * Bootstrappable interface.
+	 */
+	@Override
+	public void run(final String[] args) throws Exception {
+		// save arguments in global for access by FileToQuakemlParser objects.
+<span class="fc" id="L479">		EIDSInputWedge.ARGS = args;</span>
+
+<span class="fc" id="L481">		boolean test = false;</span>
+<span class="fc" id="L482">		boolean help = false;</span>
+<span class="fc" id="L483">		boolean poll = false;</span>
+<span class="fc" id="L484">		boolean validate = this.productCreator.isValidate();</span>
+<span class="fc" id="L485">		boolean sendOriginWhenPhasesExist = false;</span>
+<span class="fc" id="L486">		boolean sendMechanismWhenPhasesExist = false;</span>
+
+		// preserve any existing settings from config file
+<span class="pc bpc" id="L489" title="1 of 2 branches missed.">		if (productCreator instanceof QuakemlProductCreator) {</span>
+<span class="fc" id="L490">			sendOriginWhenPhasesExist = ((QuakemlProductCreator) productCreator)</span>
+<span class="fc" id="L491">					.isSendOriginWhenPhasesExist();</span>
+<span class="fc" id="L492">			sendMechanismWhenPhasesExist = ((QuakemlProductCreator) productCreator)</span>
+<span class="fc" id="L493">					.isSendMechanismWhenPhasesExist();</span>
+<span class="nc bnc" id="L494" title="All 2 branches missed.">		} else if (productCreator instanceof EQMessageProductCreator) {</span>
+<span class="nc" id="L495">			sendOriginWhenPhasesExist = ((EQMessageProductCreator) productCreator)</span>
+<span class="nc" id="L496">					.isSendOriginWhenPhasesExist();</span>
+		}
+
+<span class="fc" id="L499">		File file = null;</span>
+		// when sending 1 product, allow extra files to be attached.
+<span class="fc" id="L501">		HashMap&lt;String, Content&gt; attachContent = new HashMap&lt;String, Content&gt;();</span>
+<span class="fc" id="L502">		Integer connectTimeout = DEFAULT_CONNECT_TIMEOUT;</span>
+<span class="fc" id="L503">		boolean binaryFormat = false;</span>
+<span class="fc" id="L504">		boolean enableDeflate = true;</span>
+
+<span class="fc" id="L506">		StringBuffer arguments = new StringBuffer();</span>
+<span class="fc bfc" id="L507" title="All 2 branches covered.">		for (String arg : args) {</span>
+<span class="fc" id="L508">			arguments.append(arg).append(&quot; &quot;);</span>
+<span class="pc bpc" id="L509" title="1 of 2 branches missed.">			if (arg.equals(HELP_ARGUMENT)) {</span>
+<span class="nc" id="L510">				help = true;</span>
+<span class="pc bpc" id="L511" title="1 of 2 branches missed.">			} else if (arg.equals(POLL_ARGUMENT)) {</span>
+<span class="nc" id="L512">				poll = true;</span>
+<span class="pc bpc" id="L513" title="1 of 2 branches missed.">			} else if (arg.equals(POLL_CAREFULLY_ARGUMENT)) {</span>
+<span class="nc" id="L514">				pollCarefully = true;</span>
+<span class="pc bpc" id="L515" title="1 of 2 branches missed.">			} else if (arg.equals(SEND_ORIGINS_WITH_PHASES)) {</span>
+<span class="nc" id="L516">				sendOriginWhenPhasesExist = true;</span>
+<span class="pc bpc" id="L517" title="1 of 2 branches missed.">			} else if (arg.equals(SEND_MECHANISMS_WITH_PHASES)) {</span>
+<span class="nc" id="L518">				sendMechanismWhenPhasesExist = true;</span>
+<span class="pc bpc" id="L519" title="1 of 2 branches missed.">			} else if (arg.startsWith(POLLDIR_ARGUMENT)) {</span>
+<span class="nc" id="L520">				setPolldir(new File(arg.replace(POLLDIR_ARGUMENT, &quot;&quot;)));</span>
+<span class="pc bpc" id="L521" title="1 of 2 branches missed.">			} else if (arg.startsWith(ERRORDIR_ARGUMENT)) {</span>
+<span class="nc" id="L522">				setErrordir(new File(arg.replace(ERRORDIR_ARGUMENT, &quot;&quot;)));</span>
+<span class="pc bpc" id="L523" title="1 of 2 branches missed.">			} else if (arg.startsWith(STORAGEDIR_ARGUMENT)) {</span>
+<span class="nc" id="L524">				setStoragedir(new File(arg.replace(STORAGEDIR_ARGUMENT, &quot;&quot;)));</span>
+<span class="fc bfc" id="L525" title="All 2 branches covered.">			} else if (arg.startsWith(FILE_ARGUMENT)) {</span>
+<span class="fc" id="L526">				file = new File(arg.replace(FILE_ARGUMENT, &quot;&quot;));</span>
+<span class="pc bpc" id="L527" title="1 of 2 branches missed.">			} else if (arg.startsWith(ATTACH_ARGUMENT)) {</span>
+<span class="nc" id="L528">				File attach = new File(arg.replace(ATTACH_ARGUMENT, &quot;&quot;));</span>
+<span class="nc bnc" id="L529" title="All 2 branches missed.">				if (attach.isDirectory()) {</span>
+<span class="nc" id="L530">					attachContent.putAll(FileContent</span>
+<span class="nc" id="L531">							.getDirectoryContents(attach));</span>
+				} else {
+<span class="nc" id="L533">					attachContent</span>
+<span class="nc" id="L534">							.put(attach.getName(), new FileContent(attach));</span>
+				}
+<span class="pc bfc" id="L536" title="All 2 branches covered.">			} else if (arg.startsWith(PARSER_ARGUMENT)) {</span>
+<span class="fc" id="L537">				Object parser = Class.forName(arg.replace(PARSER_ARGUMENT, &quot;&quot;))</span>
+<span class="fc" id="L538">						.getConstructor().newInstance();</span>
+<span class="pc bpc" id="L539" title="1 of 2 branches missed.">				if (parser instanceof ProductCreator) {</span>
+<span class="fc" id="L540">					setProductCreator((ProductCreator) parser);</span>
+				} else {
+<span class="nc" id="L542">					QuakemlProductCreator productCreator = new QuakemlProductCreator();</span>
+<span class="nc" id="L543">					productCreator</span>
+<span class="nc" id="L544">							.setConverter((FileToQuakemlConverter) parser);</span>
+<span class="nc" id="L545">					setProductCreator(productCreator);</span>
+				}
+<span class="pc bpc" id="L547" title="1 of 2 branches missed.">			} else if (arg.startsWith(VALIDATE_ARGUMENT)) {</span>
+<span class="nc" id="L548">				validate = true;</span>
+<span class="fc bfc" id="L549" title="All 2 branches covered.">			} else if (arg.startsWith(SERVERS_ARGUMENT)) {</span>
+				// ignore servers argument when in test mode
+<span class="pc bpc" id="L551" title="1 of 2 branches missed.">				if (!test) {</span>
+<span class="fc" id="L552">					getProductSenders().clear();</span>
+<span class="fc" id="L553">					getProductSenders().addAll(</span>
+<span class="fc" id="L554">							parseServers(arg.replace(SERVERS_ARGUMENT, &quot;&quot;),</span>
+									connectTimeout, binaryFormat, enableDeflate));
+				}
+<span class="pc bpc" id="L557" title="1 of 2 branches missed.">			} else if (arg.startsWith(TEST_ARGUMENT)) {</span>
+<span class="nc" id="L558">				test = true;</span>
+<span class="nc" id="L559">				getProductSenders().clear();</span>
+<span class="nc" id="L560">				getProductSenders().add(new DebugProductSender());</span>
+<span class="fc bfc" id="L561" title="All 2 branches covered.">			} else if (arg.startsWith(PRIVATE_KEY_ARGUMENT)) {</span>
+<span class="fc" id="L562">				setPrivateKey(CryptoUtils.readOpenSSHPrivateKey(FileUtils</span>
+<span class="fc" id="L563">						.readFile(new File(arg</span>
+<span class="fc" id="L564">								.replace(PRIVATE_KEY_ARGUMENT, &quot;&quot;))), null));</span>
+<span class="pc bpc" id="L565" title="1 of 2 branches missed.">			} else if (arg.startsWith(CONNECT_TIMEOUT_ARGUMENT)) {</span>
+<span class="nc" id="L566">				connectTimeout = Integer.valueOf(arg.replace(</span>
+						CONNECT_TIMEOUT_ARGUMENT, &quot;&quot;));
+<span class="pc bpc" id="L568" title="1 of 2 branches missed.">			} else if (arg.equals(BINARY_FORMAT_ARGUMENT)) {</span>
+<span class="nc" id="L569">				binaryFormat = true;</span>
+<span class="pc bpc" id="L570" title="1 of 2 branches missed.">			} else if (arg.equals(DISABLE_DEFLATE_ARGUMENT)) {</span>
+<span class="nc" id="L571">				enableDeflate = false;</span>
+<span class="pc bpc" id="L572" title="1 of 2 branches missed.">			} else if (arg.startsWith(POLL_INTERVAL_ARGUMENT)) {</span>
+<span class="nc" id="L573">				setPollInterval(Long.valueOf(arg.replace(</span>
+						POLL_INTERVAL_ARGUMENT, &quot;&quot;)));
+<span class="pc bpc" id="L575" title="1 of 2 branches missed.">			} else if (arg.startsWith(TRACKER_URL_ARGUMENT)) {</span>
+<span class="nc" id="L576">				this.setTrackerURL(new URL(arg</span>
+<span class="nc" id="L577">						.replace(TRACKER_URL_ARGUMENT, &quot;&quot;)));</span>
+<span class="fc bfc" id="L578" title="All 2 branches covered.">			} else if (arg.equals(CREATE_INTERNAL_PRODUCTS)) {</span>
+<span class="fc" id="L579">				createInternalProducts = true;</span>
+<span class="pc bpc" id="L580" title="1 of 2 branches missed.">			} else if (arg.equals(CREATE_SCENARIO_PRODUCTS)) {</span>
+<span class="fc" id="L581">				createScenarioProducts = true;</span>
+			}
+		}
+
+<span class="fc" id="L585">		ProductCreator creator = getProductCreator();</span>
+<span class="fc" id="L586">		creator.setValidate(validate);</span>
+<span class="pc bpc" id="L587" title="1 of 2 branches missed.">		if (creator instanceof EQMessageProductCreator) {</span>
+<span class="fc" id="L588">			((EQMessageProductCreator) creator)</span>
+<span class="fc" id="L589">					.setSendOriginWhenPhasesExist(sendOriginWhenPhasesExist);</span>
+<span class="nc bnc" id="L590" title="All 2 branches missed.">		} else if (creator instanceof QuakemlProductCreator) {</span>
+<span class="nc" id="L591">			QuakemlProductCreator quakemlCreator = ((QuakemlProductCreator) creator);</span>
+<span class="nc" id="L592">			quakemlCreator</span>
+<span class="nc" id="L593">					.setSendOriginWhenPhasesExist(sendOriginWhenPhasesExist);</span>
+<span class="nc" id="L594">			quakemlCreator</span>
+<span class="nc" id="L595">					.setSendMechanismWhenPhasesExist(sendMechanismWhenPhasesExist);</span>
+		}
+
+<span class="pc bpc" id="L598" title="4 of 8 branches missed.">		if (</span>
+		// want usage, or didn't provide arguments
+		(help || args.length == 0)
+		// or didn't provide correct arguments
+				|| (!poll &amp;&amp; file == null)) {
+<span class="nc" id="L603">			printUsage();</span>
+		}
+
+		// run continuously
+<span class="pc bpc" id="L607" title="1 of 2 branches missed.">		else if (poll) {</span>
+<span class="nc" id="L608">			startup();</span>
+		}
+
+		// send, then shutdown
+		else {
+			// file != null
+			try {
+				// send
+<span class="fc" id="L616">				Map&lt;ProductId, Map&lt;ProductSender, Exception&gt;&gt; sendExceptions = parseAndSend(</span>
+						file, attachContent);
+
+				// check how send went
+<span class="fc" id="L620">				int numSenders = getProductSenders().size();</span>
+<span class="fc" id="L621">				int total = sendExceptions.size();</span>
+<span class="fc" id="L622">				int successful = 0;</span>
+<span class="fc" id="L623">				int partialFailures = 0;</span>
+<span class="fc" id="L624">				int totalFailures = 0;</span>
+
+<span class="fc" id="L626">				Iterator&lt;ProductId&gt; sentIds = sendExceptions.keySet()</span>
+<span class="fc" id="L627">						.iterator();</span>
+<span class="fc bfc" id="L628" title="All 2 branches covered.">				while (sentIds.hasNext()) {</span>
+<span class="fc" id="L629">					ProductId sentId = sentIds.next();</span>
+<span class="pc bpc" id="L630" title="1 of 2 branches missed.">					if (sendExceptions.get(sentId).size() == numSenders) {</span>
+<span class="nc" id="L631">						totalFailures++;</span>
+<span class="nc" id="L632">						LOGGER.severe(&quot;Total failure sending product &quot;</span>
+<span class="nc" id="L633">								+ sentId.toString());</span>
+					} else {
+						// output built product id because it was sent at least
+						// once
+<span class="fc" id="L637">						System.out.println(sentId.toString());</span>
+
+<span class="pc bpc" id="L639" title="1 of 2 branches missed.">						if (sendExceptions.get(sentId).size() == 0) {</span>
+<span class="fc" id="L640">							successful++;</span>
+						} else {
+<span class="nc" id="L642">							partialFailures++;</span>
+<span class="nc" id="L643">							LOGGER.warning(&quot;Partial failure sending product &quot;</span>
+<span class="nc" id="L644">									+ sentId.toString());</span>
+						}
+					}
+<span class="fc" id="L647">				}</span>
+
+<span class="fc" id="L649">				LOGGER.info(&quot;Generated &quot; + total + &quot; products: &quot; + successful</span>
+						+ &quot; sent, &quot; + partialFailures + &quot; partially sent, &quot;
+						+ totalFailures + &quot; failed to send&quot;);
+
+				// notify of failures using exit code
+<span class="pc bpc" id="L654" title="1 of 2 branches missed.">				if (totalFailures &gt; 0) {</span>
+<span class="nc" id="L655">					System.exit(CLIProductBuilder.EXIT_UNABLE_TO_SEND);</span>
+				}
+<span class="pc bpc" id="L657" title="1 of 2 branches missed.">				if (partialFailures &gt; 0) {</span>
+<span class="nc" id="L658">					System.exit(CLIProductBuilder.EXIT_PARTIALLY_SENT);</span>
+				}
+<span class="nc" id="L660">			} catch (Exception e) {</span>
+<span class="nc bnc" id="L661" title="All 2 branches missed.">				if (e instanceof JAXBException</span>
+<span class="nc bnc" id="L662" title="All 2 branches missed.">						&amp;&amp; ((JAXBException) e).getLinkedException() instanceof SAXParseException) {</span>
+<span class="nc" id="L663">					SAXParseException spe = (SAXParseException) ((JAXBException) e)</span>
+<span class="nc" id="L664">							.getLinkedException();</span>
+<span class="nc" id="L665">					LOGGER.severe(&quot;Parse error: &quot; + spe.getMessage()</span>
+<span class="nc" id="L666">							+ &quot;; line=&quot; + spe.getLineNumber() + &quot;, column=&quot;</span>
+<span class="nc" id="L667">							+ spe.getColumnNumber());</span>
+<span class="nc" id="L668">				} else {</span>
+<span class="nc" id="L669">					LOGGER.log(Level.SEVERE, &quot;Exception while sending&quot;, e);</span>
+				}
+<span class="nc" id="L671">				System.exit(CLIProductBuilder.EXIT_UNABLE_TO_SEND);</span>
+<span class="fc" id="L672">			}</span>
+		}
+
+<span class="fc" id="L675">	}</span>
+
+	public static void printUsage() {
+<span class="nc" id="L678">		System.err</span>
+<span class="nc" id="L679">				.println(&quot;\nUsage:\n\n&quot;</span>
+						+ &quot;java -cp ProductClient.jar gov.usgs.earthquake.eids.EIDSInputWedge&quot;
+						+ &quot; (&quot;
+						+ HELP_ARGUMENT
+						+ &quot;|&quot;
+						+ POLL_ARGUMENT
+						+ &quot;|&quot;
+						+ FILE_ARGUMENT
+						+ &quot;FILE) [&quot;
+						+ PRIVATE_KEY_ARGUMENT
+						+ &quot;KEYFILE] [&quot;
+						+ SERVERS_ARGUMENT
+						+ &quot;SERVERS] [&quot;
+						+ TEST_ARGUMENT
+						+ &quot;] [&quot;
+						+ CONNECT_TIMEOUT_ARGUMENT
+						+ &quot;TIMEOUT] [&quot;
+						+ PARSER_ARGUMENT
+						+ &quot;PARSER] [&quot;
+						+ POLLDIR_ARGUMENT
+						+ &quot;POLLDIR] [&quot;
+						+ POLL_INTERVAL_ARGUMENT
+						+ &quot;INTERVAL] [&quot;
+						+ STORAGEDIR_ARGUMENT
+						+ &quot;STORAGEDIR] [&quot;
+						+ ERRORDIR_ARGUMENT
+						+ &quot;ERRORDIR] [&quot;
+						+ ATTACH_ARGUMENT
+						+ &quot;ATTACH] [&quot;
+						+ SEND_ORIGINS_WITH_PHASES
+						+ &quot;] [&quot;
+						+ SEND_MECHANISMS_WITH_PHASES
+						+ &quot;] [&quot;
+						+ CREATE_INTERNAL_PRODUCTS
+						+ &quot;] [&quot;
+						+ CREATE_SCENARIO_PRODUCTS
+						+ &quot;] [&quot;
+						+ BINARY_FORMAT_ARGUMENT
+						+ &quot;] [&quot;
+						+ DISABLE_DEFLATE_ARGUMENT
+						+ &quot;]&quot;);
+
+<span class="nc" id="L721">		System.err.println();</span>
+
+<span class="nc" id="L723">		System.err.println(&quot;\t&quot; + HELP_ARGUMENT);</span>
+<span class="nc" id="L724">		System.err.println(&quot;\t\tdisplay this message&quot;);</span>
+<span class="nc" id="L725">		System.err.println(&quot;\t&quot; + FILE_ARGUMENT + &quot;FILE&quot;);</span>
+<span class="nc" id="L726">		System.err.println(&quot;\t\tparse and send one file&quot;);</span>
+<span class="nc" id="L727">		System.err.println(&quot;\t&quot; + POLL_ARGUMENT);</span>
+<span class="nc" id="L728">		System.err.println(&quot;\t\trun continuously, checking POLLDIR for files&quot;);</span>
+
+<span class="nc" id="L730">		System.err.println();</span>
+
+<span class="nc" id="L732">		System.err.println(&quot;\t&quot; + PRIVATE_KEY_ARGUMENT + &quot;KEYFILE&quot;);</span>
+<span class="nc" id="L733">		System.err.println(&quot;\t\topenssh private key used to sign products&quot;);</span>
+
+<span class="nc" id="L735">		System.err.println(&quot;\t&quot; + CONNECT_TIMEOUT_ARGUMENT + &quot;TIMEOUT&quot;);</span>
+<span class="nc" id="L736">		System.err.println(&quot;\t\tmilliseconds before timeout while connecting&quot;);</span>
+<span class="nc" id="L737">		System.err.println(&quot;\t\tdefault is \&quot;&quot; + DEFAULT_CONNECT_TIMEOUT</span>
+				+ &quot;\&quot;ms&quot;);
+<span class="nc" id="L739">		System.err.println(&quot;\t\t(must appear before &quot; + SERVERS_ARGUMENT + &quot;)&quot;);</span>
+
+<span class="nc" id="L741">		System.err.println(&quot;\t&quot; + SERVERS_ARGUMENT + &quot;SERVERS&quot;);</span>
+<span class="nc" id="L742">		System.err</span>
+<span class="nc" id="L743">				.println(&quot;\t\tcomma delimited list of servers(host:port) where products are sent&quot;);</span>
+<span class="nc" id="L744">		System.err.println(&quot;\t\tdefault is \&quot;&quot; + SERVERS_DEFAULT + &quot;\&quot;&quot;);</span>
+<span class="nc" id="L745">		System.err.println(&quot;\t&quot; + TEST_ARGUMENT);</span>
+<span class="nc" id="L746">		System.err.println(&quot;\t\tPrint generated products to console for testing, ignores &quot;</span>
+				+ SERVERS_ARGUMENT);
+<span class="nc" id="L748">		System.err.println(&quot;\t&quot; + PARSER_ARGUMENT + &quot;PARSER&quot;);</span>
+<span class="nc" id="L749">		System.err.println(&quot;\t\tclass that implements &quot;</span>
+				+ &quot;gov.usgs.earthquake.quakeml.FileToQuakemlConverter&quot;);
+<span class="nc" id="L751">		System.err.println(&quot;\t\tdefault is \&quot;&quot; + DEFAULT_PARSER_CLASS + &quot;\&quot;&quot;);</span>
+
+<span class="nc" id="L753">		System.err.println();</span>
+
+<span class="nc" id="L755">		System.err.println(&quot;\t&quot; + POLLDIR_ARGUMENT + &quot;POLLDIR&quot;);</span>
+<span class="nc" id="L756">		System.err.println(&quot;\t\tdirectory to poll for messages&quot;);</span>
+
+<span class="nc" id="L758">		System.err.println(&quot;\t&quot; + POLL_INTERVAL_ARGUMENT + &quot;INTERVAL&quot;);</span>
+<span class="nc" id="L759">		System.err.println(&quot;\t\tmilliseconds between polling&quot;);</span>
+<span class="nc" id="L760">		System.err.println(&quot;\t\tdefault is \&quot;&quot; + DEFAULT_POLLINTERVAL + &quot;\&quot;ms&quot;);</span>
+
+<span class="nc" id="L762">		System.err.println(&quot;\t&quot; + STORAGEDIR_ARGUMENT + &quot;STORAGEDIR&quot;);</span>
+<span class="nc" id="L763">		System.err.println(&quot;\t\tdirectory for files that were processed&quot;);</span>
+
+<span class="nc" id="L765">		System.err.println(&quot;\t&quot; + ERRORDIR_ARGUMENT + &quot;ERRORDIR&quot;);</span>
+<span class="nc" id="L766">		System.err.println(&quot;\t\tdirectory for files that weren't processed&quot;);</span>
+
+<span class="nc" id="L768">		System.err.println(&quot;\t&quot; + ATTACH_ARGUMENT + &quot;ATTACH&quot;);</span>
+<span class="nc" id="L769">		System.err</span>
+<span class="nc" id="L770">				.println(&quot;\t\tattach a file or directory to one generated product, repeatable&quot;);</span>
+<span class="nc" id="L771">		System.err</span>
+<span class="nc" id="L772">				.println(&quot;\t\tdirectory trees are preserved, each path must be unique&quot;);</span>
+<span class="nc" id="L773">		System.err</span>
+<span class="nc" id="L774">				.println(&quot;\t\tif more than one product is generated, an exception will be thrown&quot;);</span>
+<span class="nc" id="L775">		System.err.println(&quot;\t&quot; + SEND_ORIGINS_WITH_PHASES);</span>
+<span class="nc" id="L776">		System.err</span>
+<span class="nc" id="L777">				.println(&quot;\t\tWhen a phase-data product is generated, also send an origin product without the phase data&quot;);</span>
+<span class="nc" id="L778">		System.err.println(&quot;\t&quot; + SEND_MECHANISMS_WITH_PHASES);</span>
+<span class="nc" id="L779">		System.err</span>
+<span class="nc" id="L780">				.println(&quot;\t\tWhen an phase-data product is generated, also send focal mechanism products without the phase data&quot;);</span>
+<span class="nc" id="L781">		System.err.println();</span>
+
+<span class="nc" id="L783">		System.err.println(&quot;\t&quot; + CREATE_INTERNAL_PRODUCTS);</span>
+<span class="nc" id="L784">		System.err</span>
+<span class="nc" id="L785">				.println(&quot;\t\tuse the product type prefix 'internal-' for all generated products&quot;);</span>
+<span class="nc" id="L786">		System.err.println(&quot;\t&quot; + CREATE_SCENARIO_PRODUCTS);</span>
+<span class="nc" id="L787">		System.err</span>
+<span class="nc" id="L788">				.println(&quot;\t\tuse the product type suffix '-scenario' for all generated products&quot;);</span>
+
+<span class="nc" id="L790">		System.err.println(&quot;\t&quot; + BINARY_FORMAT_ARGUMENT);</span>
+<span class="nc" id="L791">		System.err.println(&quot;\t\tsend to hub using binary format&quot;);</span>
+
+<span class="nc" id="L793">		System.err.println(&quot;\t&quot; + DISABLE_DEFLATE_ARGUMENT);</span>
+<span class="nc" id="L794">		System.err.println(&quot;\t\tdisable deflate compression when sending to hubs&quot;);</span>
+
+<span class="nc" id="L796">		System.exit(1);</span>
+<span class="nc" id="L797">	}</span>
+
+	@Override
+	public void run() {
+<span class="nc bnc" id="L801" title="All 2 branches missed.">		if (!polldir.exists()) {</span>
+<span class="nc" id="L802">			polldir.mkdirs();</span>
+		}
+<span class="nc bnc" id="L804" title="All 2 branches missed.">		while (!Thread.currentThread().isInterrupted()) {</span>
+			try {
+<span class="nc" id="L806">				Date pollStart = new Date();</span>
+
+<span class="nc" id="L808">				String[] polldirFiles = polldir.list();</span>
+<span class="nc bnc" id="L809" title="All 2 branches missed.">				if (polldirFiles.length &gt; 0) {</span>
+<span class="nc" id="L810">					LOGGER.fine(&quot;Polldir contains &quot; + polldirFiles.length</span>
+							+ &quot; files&quot;);
+				}
+
+<span class="nc bnc" id="L814" title="All 2 branches missed.">				for (int i = 0, len = polldirFiles.length; i &lt; len; i++) {</span>
+<span class="nc" id="L815">					File file = new File(polldir, polldirFiles[i]);</span>
+					try {
+<span class="nc bnc" id="L817" title="All 2 branches missed.">						if (pollCarefully) {</span>
+							// wait until file is at least pollInterval ms old,
+							// in case it is still being written
+<span class="nc" id="L820">							long age = new Date().getTime() - file.lastModified();</span>
+<span class="nc bnc" id="L821" title="All 2 branches missed.">							if (age &lt;= pollInterval) {</span>
+<span class="nc" id="L822">								continue;</span>
+							}
+						}
+
+<span class="nc" id="L826">						onFile(file);</span>
+
+<span class="nc bnc" id="L828" title="All 2 branches missed.">						if (storagedir != null) {</span>
+<span class="nc bnc" id="L829" title="All 2 branches missed.">							if (!storagedir.exists()) {</span>
+<span class="nc" id="L830">								storagedir.mkdirs();</span>
+							}
+<span class="nc" id="L832">							file.renameTo(new File(storagedir, pollStart</span>
+<span class="nc" id="L833">									.getTime() + &quot;_&quot; + file.getName()));</span>
+						} else {
+<span class="nc" id="L835">							FileUtils.deleteTree(file);</span>
+						}
+<span class="nc" id="L837">					} catch (Exception e) {</span>
+<span class="nc bnc" id="L838" title="All 2 branches missed.">						if (errordir != null) {</span>
+<span class="nc bnc" id="L839" title="All 2 branches missed.">							if (!errordir.exists()) {</span>
+<span class="nc" id="L840">								errordir.mkdirs();</span>
+							}
+<span class="nc" id="L842">							file.renameTo(new File(errordir, pollStart</span>
+<span class="nc" id="L843">									.getTime() + &quot;_&quot; + file.getName()));</span>
+						} else {
+<span class="nc" id="L845">							LOGGER.warning(&quot;Error processing file &quot;</span>
+<span class="nc" id="L846">									+ file.getName()</span>
+									+ &quot;, and no error directory configured&quot;);
+<span class="nc" id="L848">							FileUtils.deleteTree(file);</span>
+						}
+<span class="nc" id="L850">					}</span>
+				}
+
+<span class="nc" id="L853">				Date pollEnd = new Date();</span>
+<span class="nc" id="L854">				Long pollTime = pollEnd.getTime() - pollStart.getTime();</span>
+<span class="nc bnc" id="L855" title="All 2 branches missed.">				if (pollTime &lt; pollInterval) {</span>
+<span class="nc" id="L856">					Thread.sleep(pollInterval - pollTime);</span>
+				}
+<span class="nc" id="L858">			} catch (InterruptedException ie) {</span>
+				// interrupted means shutdown
+<span class="nc" id="L860">				return;</span>
+<span class="nc" id="L861">			}</span>
+		}
+
+<span class="nc" id="L864">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

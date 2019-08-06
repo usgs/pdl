@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContentListener.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">ContentListener.java</span></div><h1>ContentListener.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution;
+
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.Config;
+import gov.usgs.util.StreamUtils;
+
+/**
+ * A listener that listens for a specific content path.
+ * 
+ * This is intended for users who wish to output specific pieces of product
+ * content, such as &quot;quakeml.xml&quot;, for products that otherwise meet their
+ * configured NotificationListener criteria.
+ */
+public class ContentListener extends DefaultNotificationListener {
+
+<span class="nc" id="L25">	private static final Logger LOGGER = Logger.getLogger(ContentListener.class</span>
+<span class="nc" id="L26">			.getName());</span>
+
+	/** configuration property for includePaths. */
+	public static final String OUTPUT_DIRECTORY_PROPERTY = &quot;outputDirectory&quot;;
+	public static final String TEMP_DIRECTORY_PROPERTY = &quot;tempDirectory&quot;;
+	public static final String OUTPUT_FORMAT_PROPERTY = &quot;outputFormat&quot;;
+
+	public static final String DEFAULT_OUTPUT_FORMAT = &quot;SOURCE_TYPE_CODE_UPDATETIME_PATH&quot;;
+
+	/** Directory where content is output. */
+<span class="nc" id="L36">	private File outputDirectory = null;</span>
+
+	/**
+	 * Temporary directory where content is written before moving to
+	 * outputDirectory, defaults to system temp directory when null.
+	 */
+<span class="nc" id="L42">	private File tempDirectory = null;</span>
+
+	/** Output format for files inside outputDirectory. */
+<span class="nc" id="L45">	private String outputFormat = DEFAULT_OUTPUT_FORMAT;</span>
+
+<span class="nc" id="L47">	public ContentListener() {</span>
+<span class="nc" id="L48">	}</span>
+
+	@Override
+	public void configure(final Config config) throws Exception {
+<span class="nc" id="L52">		super.configure(config);</span>
+
+<span class="nc bnc" id="L54" title="All 2 branches missed.">		if (getIncludePaths().size() == 0) {</span>
+<span class="nc" id="L55">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+					+ &quot;] ContentListener requires 'includePaths' be non-empty&quot;);
+		}
+
+<span class="nc" id="L59">		outputDirectory = new File(</span>
+<span class="nc" id="L60">				config.getProperty(OUTPUT_DIRECTORY_PROPERTY));</span>
+<span class="nc" id="L61">		LOGGER.config(&quot;[&quot; + getName() + &quot;] output directory = &quot;</span>
+				+ outputDirectory);
+
+<span class="nc" id="L64">		String tempDirectoryString = config</span>
+<span class="nc" id="L65">				.getProperty(TEMP_DIRECTORY_PROPERTY);</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">		if (tempDirectoryString != null) {</span>
+<span class="nc" id="L67">			tempDirectory = new File(tempDirectoryString);</span>
+		}
+<span class="nc" id="L69">		LOGGER.config(&quot;[&quot; + getName() + &quot;] temp directory = &quot; + tempDirectory);</span>
+
+<span class="nc" id="L71">		outputFormat = config.getProperty(OUTPUT_FORMAT_PROPERTY,</span>
+				DEFAULT_OUTPUT_FORMAT);
+<span class="nc" id="L73">		LOGGER.config(&quot;[&quot; + getName() + &quot;] output format = &quot; + outputFormat);</span>
+<span class="nc" id="L74">	}</span>
+
+	@Override
+	public void onProduct(final Product product) throws Exception {
+<span class="nc" id="L78">		Map&lt;String, Content&gt; contents = product.getContents();</span>
+<span class="nc" id="L79">		Iterator&lt;String&gt; iter = getIncludePaths().iterator();</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L81">			String path = iter.next();</span>
+<span class="nc" id="L82">			Content content = contents.get(path);</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">			if (content != null) {</span>
+				// product has content at this path
+<span class="nc" id="L85">				writeContent(product.getId(), path, content);</span>
+			}
+<span class="nc" id="L87">		}</span>
+<span class="nc" id="L88">	}</span>
+
+	/**
+	 * Generate an output path based on product id and content path.
+	 * 
+	 * @param id
+	 *            the product id.
+	 * @param path
+	 *            the content path.
+	 * @return relative path to write content within output directory.
+	 */
+	protected String getOutputPath(final ProductId id, final String path) {
+<span class="nc" id="L100">		return outputFormat</span>
+<span class="nc" id="L101">				.replace(&quot;SOURCE&quot;, id.getSource())</span>
+<span class="nc" id="L102">				.replace(&quot;TYPE&quot;, id.getType())</span>
+<span class="nc" id="L103">				.replace(&quot;CODE&quot;, id.getCode())</span>
+<span class="nc" id="L104">				.replace(&quot;UPDATETIME&quot;,</span>
+<span class="nc" id="L105">						Long.toString(id.getUpdateTime().getTime()))</span>
+<span class="nc" id="L106">				.replace(&quot;PATH&quot;, path);</span>
+	}
+
+	/**
+	 * Output a product content that was in includePaths.
+	 * 
+	 * @param id
+	 *            the product id.
+	 * @param path
+	 *            the content path.
+	 * @param content
+	 *            the content.
+	 * @throws Exception
+	 *             when unable to output the content.
+	 */
+	protected void writeContent(final ProductId id, final String path,
+			final Content content) throws Exception {
+<span class="nc" id="L123">		String outputPath = getOutputPath(id, path);</span>
+<span class="nc bnc" id="L124" title="All 4 branches missed.">		if (tempDirectory != null &amp;&amp; !tempDirectory.exists()) {</span>
+			// make sure parent directories exist
+<span class="nc" id="L126">			tempDirectory.mkdirs();</span>
+		}
+<span class="nc" id="L128">		File tempFile = File.createTempFile(outputPath, null, tempDirectory);</span>
+
+<span class="nc" id="L130">		File outputFile = new File(outputDirectory, outputPath);</span>
+<span class="nc" id="L131">		File outputFileParent = outputFile.getParentFile();</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">		if (!outputFileParent.exists()) {</span>
+			// make sure parent directories exist
+<span class="nc" id="L134">			outputFileParent.mkdirs();</span>
+		}
+
+		// write, then move into place
+<span class="nc" id="L138">		InputStream in = null;</span>
+<span class="nc" id="L139">		OutputStream out = null;</span>
+		try {
+<span class="nc bnc" id="L141" title="All 2 branches missed.">			if (!tempFile.getParentFile().exists()) {</span>
+<span class="nc" id="L142">				tempFile.getParentFile().mkdirs();</span>
+			}
+<span class="nc bnc" id="L144" title="All 2 branches missed.">			if (!outputFile.getParentFile().exists()) {</span>
+<span class="nc" id="L145">				outputFile.getParentFile().mkdirs();</span>
+			}
+<span class="nc" id="L147">			in = content.getInputStream();</span>
+<span class="nc" id="L148">			out = StreamUtils.getOutputStream(tempFile);</span>
+			// write to temp file
+<span class="nc" id="L150">			StreamUtils.transferStream(in, out);</span>
+			// move to output file
+<span class="nc" id="L152">			tempFile.renameTo(outputFile);</span>
+		} finally {
+<span class="nc" id="L154">			StreamUtils.closeStream(in);</span>
+<span class="nc" id="L155">			StreamUtils.closeStream(out);</span>
+			// clean up temp file if it wasn't renamed
+<span class="nc bnc" id="L157" title="All 2 branches missed.">			if (tempFile.exists()) {</span>
+<span class="nc" id="L158">				tempFile.delete();</span>
+			}
+		}
+<span class="nc" id="L161">	}</span>
+
+	/**
+	 * @return the outputDirectory
+	 */
+	public File getOutputDirectory() {
+<span class="nc" id="L167">		return outputDirectory;</span>
+	}
+
+	/**
+	 * @param outputDirectory
+	 *            the outputDirectory to set
+	 */
+	public void setOutputDirectory(File outputDirectory) {
+<span class="nc" id="L175">		this.outputDirectory = outputDirectory;</span>
+<span class="nc" id="L176">	}</span>
+
+	/**
+	 * @return the tempDirectory
+	 */
+	public File getTempDirectory() {
+<span class="nc" id="L182">		return tempDirectory;</span>
+	}
+
+	/**
+	 * @param tempDirectory
+	 *            the tempDirectory to set
+	 */
+	public void setTempDirectory(File tempDirectory) {
+<span class="nc" id="L190">		this.tempDirectory = tempDirectory;</span>
+<span class="nc" id="L191">	}</span>
+
+	/**
+	 * @return the outputFormat
+	 */
+	public String getOutputFormat() {
+<span class="nc" id="L197">		return outputFormat;</span>
+	}
+
+	/**
+	 * @param outputFormat
+	 *            the outputFormat to set
+	 */
+	public void setOutputFormat(String outputFormat) {
+<span class="nc" id="L205">		this.outputFormat = outputFormat;</span>
+<span class="nc" id="L206">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

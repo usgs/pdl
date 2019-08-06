@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchRequestParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">SearchRequestParser.java</span></div><h1>SearchRequestParser.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.indexer;
+
+import java.math.BigDecimal;
+
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.product.io.XmlProductHandler;
+import gov.usgs.util.XmlUtils;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+/**
+ * Parser for SearchXML request.
+ */
+public class SearchRequestParser extends DefaultHandler {
+
+	/** The request being parsed. */
+	private SearchRequest searchRequest;
+
+	/** The query being parsed. */
+	private SearchQuery searchQuery;
+
+<span class="fc" id="L24">	public SearchRequestParser() {</span>
+<span class="fc" id="L25">	}</span>
+
+	public SearchRequest getSearchRequest() {
+<span class="fc" id="L28">		return searchRequest;</span>
+	}
+
+	@Override
+	public void startElement(String uri, String localName, String qName,
+			Attributes attributes) throws SAXException {
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">		if (SearchXML.INDEXER_XMLNS.equals(uri)) {</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">			if (SearchXML.REQUEST_ELEMENT.equals(localName)) {</span>
+<span class="fc" id="L36">				searchRequest = new SearchRequest();</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">			} else if (SearchXML.PRODUCT_SUMMARY_ELEMENT.equals(localName)) {</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">				if (searchQuery == null) {</span>
+<span class="nc" id="L39">					throw new SAXException(</span>
+							&quot;Expected searchQuery element around productSummary element&quot;);
+				} else {
+<span class="fc" id="L42">					ProductId id = ProductId.parse(XmlUtils.getAttribute(</span>
+							attributes, uri, SearchXML.ID_ATTRIBUTE));
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">					if (id != null) {</span>
+<span class="fc" id="L45">						searchQuery.getProductIndexQuery().getProductIds()</span>
+<span class="fc" id="L46">								.add(id);</span>
+					} else {
+<span class="nc" id="L48">						throw new SAXException(</span>
+								&quot;Expected id attribute on productSummary element&quot;);
+					}
+<span class="fc" id="L51">				}</span>
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">			} else if (SearchXML.QUERY_ELEMENT.equals(localName)) {</span>
+<span class="fc" id="L53">				String method = XmlUtils.getAttribute(attributes,</span>
+						SearchXML.INDEXER_XMLNS, SearchXML.METHOD_ATTRIBUTE);
+				String value;
+
+<span class="fc" id="L57">				ProductIndexQuery query = new ProductIndexQuery();</span>
+<span class="fc" id="L58">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.EVENT_SOURCE_ATTRIBUTE);
+<span class="fc" id="L60">				query.setEventSource(value);</span>
+
+<span class="fc" id="L62">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.EVENT_SOURCE_CODE_ATTRIBUTE);
+<span class="fc" id="L64">				query.setEventSourceCode(value);</span>
+
+<span class="fc" id="L66">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MIN_EVENT_TIME_ATTRIBUTE);
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L69">					query.setMinEventTime(XmlUtils.getDate(value));</span>
+				}
+
+<span class="fc" id="L72">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MAX_EVENT_TIME_ATTRIBUTE);
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L75">					query.setMaxEventTime(XmlUtils.getDate(value));</span>
+				}
+
+<span class="fc" id="L78">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MIN_EVENT_LATITUDE_ATTRIBUTE);
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L81">					query.setMinEventLatitude(new BigDecimal(value));</span>
+				}
+
+<span class="fc" id="L84">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MAX_EVENT_LATITUDE_ATTRIBUTE);
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L87">					query.setMaxEventLatitude(new BigDecimal(value));</span>
+				}
+
+<span class="fc" id="L90">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MIN_EVENT_LONGITUDE_ATTRIBUTE);
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L93">					query.setMinEventLongitude(new BigDecimal(value));</span>
+				}
+
+<span class="fc" id="L96">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MAX_EVENT_LONGITUDE_ATTRIBUTE);
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L99">					query.setMaxEventLongitude(new BigDecimal(value));</span>
+				}
+
+<span class="fc" id="L102">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MIN_EVENT_DEPTH_ATTRIBUTE);
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L105">					query.setMinEventDepth(new BigDecimal(value));</span>
+				}
+
+<span class="fc" id="L108">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MAX_EVENT_DEPTH_ATTRIBUTE);
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L111">					query.setMaxEventDepth(new BigDecimal(value));</span>
+				}
+
+<span class="fc" id="L114">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MIN_EVENT_MAGNITUDE_ATTRIBUTE);
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L117">					query.setMinEventMagnitude(new BigDecimal(value));</span>
+				}
+
+<span class="fc" id="L120">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MAX_EVENT_MAGNITUDE_ATTRIBUTE);
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L123">					query.setMaxEventMagnitude(new BigDecimal(value));</span>
+				}
+
+<span class="fc" id="L126">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MIN_PRODUCT_UPDATE_TIME_ATTRIBUTE);
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L129">					query.setMinProductUpdateTime(XmlUtils.getDate(value));</span>
+				}
+
+<span class="fc" id="L132">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.MAX_PRODUCT_UPDATE_TIME_ATTRIBUTE);
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L135">					query.setMaxProductUpdateTime(XmlUtils.getDate(value));</span>
+				}
+
+<span class="fc" id="L138">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.PRODUCT_SOURCE_ATTRIBUTE);
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L141">					query.setProductSource(value);</span>
+				}
+
+<span class="fc" id="L144">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.PRODUCT_TYPE_ATTRIBUTE);
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L147">					query.setProductType(value);</span>
+				}
+
+<span class="fc" id="L150">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.PRODUCT_CODE_ATTRIBUTE);
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L153">					query.setProductCode(value);</span>
+				}
+
+<span class="fc" id="L156">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.PRODUCT_VERSION_ATTRIBUTE);
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L159">					query.setProductVersion(value);</span>
+				}
+
+<span class="fc" id="L162">				value = XmlUtils.getAttribute(attributes, uri,</span>
+						SearchXML.PRODUCT_STATUS_ATTRIBUTE);
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">				if (value != null) {</span>
+<span class="fc" id="L165">					query.setProductStatus(value);</span>
+				}
+
+<span class="fc" id="L168">				searchQuery = SearchQuery.getSearchQuery(</span>
+<span class="fc" id="L169">						SearchMethod.fromXmlMethodName(method), query);</span>
+<span class="fc" id="L170">			}</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">		} else if (XmlProductHandler.PRODUCT_XML_NAMESPACE.equals(uri)) {</span>
+			// Possible inclusion of properties in the future
+		}
+<span class="fc" id="L174">	}</span>
+
+	@Override
+	public void endElement(String uri, String localName, String qName)
+			throws SAXException {
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">		if (SearchXML.INDEXER_XMLNS.equals(uri)) {</span>
+<span class="fc bfc" id="L180" title="All 2 branches covered.">			if (SearchXML.REQUEST_ELEMENT.equals(localName)) {</span>
+				// search request, done
+<span class="fc bfc" id="L182" title="All 2 branches covered.">			} else if (SearchXML.QUERY_ELEMENT.equals(localName)) {</span>
+<span class="fc" id="L183">				searchRequest.addQuery(searchQuery);</span>
+<span class="fc" id="L184">				searchQuery = null;</span>
+			}
+		}
+<span class="fc" id="L187">	}</span>
+
+	@Override
+	public void characters(char[] ch, int start, int length)
+			throws SAXException {
+<span class="nc" id="L192">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

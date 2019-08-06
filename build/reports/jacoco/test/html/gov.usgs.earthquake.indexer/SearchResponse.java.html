@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">SearchResponse.java</span></div><h1>SearchResponse.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.indexer;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * Results from a SearchRequest.
+ */
+public class SearchResponse {
+
+	/** The queries with results. */
+<span class="fc" id="L14">	private final List&lt;SearchQuery&gt; results = new LinkedList&lt;SearchQuery&gt;();</span>
+
+	/**
+	 * Construct a new Search response.
+	 */
+<span class="fc" id="L19">	public SearchResponse() {</span>
+<span class="fc" id="L20">	}</span>
+
+	/**
+	 * Add a search result to this response.
+	 * 
+	 * @param result
+	 */
+	public void addResult(final SearchQuery result) {
+<span class="fc" id="L28">		results.add(result);</span>
+<span class="fc" id="L29">	}</span>
+
+	/**
+	 * @return The search results.
+	 */
+	public List&lt;SearchQuery&gt; getResults() {
+<span class="fc" id="L35">		return results;</span>
+	}
+
+	/**
+	 * Test by comparing each result.
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">		if (!(obj instanceof SearchResponse)) {</span>
+<span class="nc" id="L44">			return false;</span>
+		}
+
+<span class="fc" id="L47">		SearchResponse that = (SearchResponse) obj;</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">		if (this.getResults().size() != that.getResults().size()) {</span>
+<span class="nc" id="L49">			return false;</span>
+		}
+
+<span class="fc" id="L52">		Iterator&lt;SearchQuery&gt; thisIter = this.getResults().iterator();</span>
+<span class="fc" id="L53">		Iterator&lt;SearchQuery&gt; thatIter = that.getResults().iterator();</span>
+<span class="pc bpc" id="L54" title="1 of 4 branches missed.">		while (thisIter.hasNext() &amp;&amp; thatIter.hasNext()) {</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">			if (!thisIter.next().equals(thatIter.next())) {</span>
+<span class="nc" id="L56">				return false;</span>
+			}
+		}
+
+<span class="fc" id="L60">		return true;</span>
+	}
+
+	/**
+	 * Also override hashCode, using hash of result objects.
+	 */
+	@Override
+	public int hashCode() {
+<span class="nc" id="L68">		return Objects.hash(this.getResults().toArray());</span>
+	}
+
+	/**
+	 * Get a distinct list of events from EventDetailQuery results.
+	 * 
+	 * @return List of found events. List will be empty if there were no
+	 *         EventDetailQueries, or no matching events were found.
+	 */
+	public List&lt;Event&gt; getEvents() {
+<span class="fc" id="L78">		List&lt;Event&gt; events = new LinkedList&lt;Event&gt;();</span>
+
+		// Get the results out of the SearchRequest and into a list
+<span class="fc" id="L81">		Iterator&lt;SearchQuery&gt; iter = getResults().iterator();</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L83">			SearchQuery query = iter.next();</span>
+
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">			if (query instanceof EventDetailQuery) {</span>
+<span class="fc" id="L86">				List&lt;Event&gt; queryEvents = ((EventDetailQuery) query)</span>
+<span class="fc" id="L87">						.getResult();</span>
+<span class="fc" id="L88">				Iterator&lt;Event&gt; queryIter = queryEvents.iterator();</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">				while (queryIter.hasNext()) {</span>
+<span class="fc" id="L90">					Event event = queryIter.next();</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">					if (!events.contains(event)) {</span>
+						// since events may be returned multiple times by
+						// search query (one per query).
+<span class="fc" id="L94">						events.add(event);</span>
+					}
+<span class="fc" id="L96">				}</span>
+			}
+<span class="fc" id="L98">		}</span>
+
+<span class="fc" id="L100">		return events;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventAddonParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.eids</a> &gt; <span class="el_source">EventAddonParser.java</span></div><h1>EventAddonParser.java</h1><pre class="source lang-java linenums">/*
+ * EventAddonProductParser
+ */
+package gov.usgs.earthquake.eids;
+
+import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
+import gov.usgs.ansseqmsg.Action;
+import gov.usgs.ansseqmsg.Comment;
+import gov.usgs.ansseqmsg.EQMessage;
+import gov.usgs.ansseqmsg.Event;
+import gov.usgs.ansseqmsg.ProductLink;
+import gov.usgs.earthquake.eidsutil.EIDSMessageEvent;
+import gov.usgs.util.SAXAdapter;
+import gov.usgs.util.XmlUtils;
+
+/**
+ * Parser for event addon messages.
+ * 
+ * Maps these messages into an EQMessage with a
+ * product link.
+ */
+<span class="fc" id="L28">public class EventAddonParser extends SAXAdapter {</span>
+
+	/** Date format used in event addon message. */
+<span class="fc" id="L31">	public static final SimpleDateFormat ADDON_DATE_FORMAT = new SimpleDateFormat(</span>
+			&quot;yyyy/MM/dd_HH:mm:ss&quot;);
+
+	/** The parsed addon object. */
+	private EventAddon addon;
+
+	public EQMessage parseMessage(EIDSMessageEvent event) throws Exception {
+		// create a parser object for this message
+<span class="nc" id="L39">		EventAddonParser parser = new EventAddonParser();</span>
+
+		try {
+			// parse the message using the parser
+<span class="nc" id="L43">			XmlUtils.parse(event.getMessage(), parser);</span>
+			// get the parsed addon
+<span class="nc" id="L45">			EventAddon addon = parser.getAddon();</span>
+			// convert the parsed addon to an EQMessage
+<span class="nc" id="L47">			return addon.getEQMessage();</span>
+<span class="nc" id="L48">		} catch (SAXException e) {</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">			if (!(e.getCause() instanceof ParseException)) {</span>
+<span class="nc" id="L50">				throw e;</span>
+			}
+		}
+
+<span class="nc" id="L54">		return null;</span>
+	}
+
+	/**
+	 * Data structure for event addon message. Also performs mapping onto
+	 * EQMessage,Event, and ProductLink or Comment elements.
+	 */
+	public static class EventAddon {
+
+		public String fileName;
+		public String submitter;
+		public Date submitTime;
+		public String email;
+		public String eventid;
+		public String type;
+		public String version;
+		public String action;
+		public String description;
+		public String link;
+		public String text;
+
+<span class="nc" id="L75">		public EventAddon() {</span>
+<span class="nc" id="L76">		}</span>
+
+		/**
+		 * Parse eventaddon xml into a ProductLink.
+		 * 
+		 * @return null, if there is no link.
+		 */
+		public ProductLink getProductLink() {
+<span class="nc bnc" id="L84" title="All 2 branches missed.">			if (this.link == null) {</span>
+<span class="nc" id="L85">				return null;</span>
+			}
+
+<span class="nc" id="L88">			Action plAction = Action.UPDATE;</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">			if (action.equalsIgnoreCase(&quot;DEL&quot;)) {</span>
+<span class="nc" id="L90">				plAction = Action.DELETE;</span>
+			}
+
+<span class="nc" id="L93">			ProductLink link = new ProductLink();</span>
+<span class="nc" id="L94">			link.setSourceKey(submitter);</span>
+<span class="nc" id="L95">			link.setTypeKey(&quot;LinkURL&quot;);</span>
+<span class="nc" id="L96">			link.setAction(plAction);</span>
+<span class="nc" id="L97">			link.setCode(type);</span>
+<span class="nc" id="L98">			link.setLink(this.link);</span>
+<span class="nc" id="L99">			link.setNote(text);</span>
+<span class="nc" id="L100">			link.setVersion(version);</span>
+
+<span class="nc" id="L102">			return link;</span>
+		}
+
+		/**
+		 * Parse eventaddon xml into a Comment.
+		 * 
+		 * @return null, if there is a link.
+		 */
+		public Comment getComment() {
+<span class="nc bnc" id="L111" title="All 2 branches missed.">			if (this.link != null) {</span>
+<span class="nc" id="L112">				return null;</span>
+			}
+
+<span class="nc" id="L115">			Action cAction = Action.UPDATE;</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">			if (action.equalsIgnoreCase(&quot;DEL&quot;)) {</span>
+<span class="nc" id="L117">				cAction = Action.DELETE;</span>
+			}
+
+<span class="nc" id="L120">			Comment comment = new Comment();</span>
+<span class="nc" id="L121">			comment.setSourceKey(submitter);</span>
+<span class="nc" id="L122">			comment.setTypeKey(type);</span>
+<span class="nc" id="L123">			comment.setAction(cAction);</span>
+<span class="nc" id="L124">			comment.setText(text);</span>
+<span class="nc" id="L125">			comment.setVersion(version);</span>
+
+<span class="nc" id="L127">			return comment;</span>
+		}
+
+		public Event getEvent() {
+<span class="nc" id="L131">			Event event = new Event();</span>
+<span class="nc" id="L132">			event.setDataSource(eventid.substring(0, 2));</span>
+<span class="nc" id="L133">			event.setEventID(eventid.substring(2));</span>
+
+<span class="nc" id="L135">			ProductLink link = getProductLink();</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">			if (link != null) {</span>
+<span class="nc" id="L137">				event.getProductLink().add(getProductLink());</span>
+			} else {
+<span class="nc" id="L139">				Comment comment = getComment();</span>
+<span class="nc" id="L140">				event.getComment().add(comment);</span>
+			}
+
+<span class="nc" id="L143">			return event;</span>
+		}
+
+		public EQMessage getEQMessage() {
+<span class="nc" id="L147">			EQMessage message = new EQMessage();</span>
+<span class="nc" id="L148">			message.setSent(submitTime);</span>
+<span class="nc" id="L149">			message.setSource(submitter);</span>
+<span class="nc" id="L150">			message.getEvent().add(getEvent());</span>
+<span class="nc" id="L151">			return message;</span>
+		}
+	}
+
+	/**
+	 * Get parsed addon.
+	 * 
+	 * @return parsed addon, or null if nothing parsed.
+	 */
+	public EventAddon getAddon() {
+<span class="nc" id="L161">		return addon;</span>
+	}
+
+	/**
+	 * SAXAdapter start element handler.
+	 * 
+	 * @param uri
+	 *            element uri.
+	 * @param localName
+	 *            element localName.
+	 * @param qName
+	 *            element qName.
+	 * @param attributes
+	 *            element attributes.
+	 * @throws SAXException
+	 *             if there is an error.
+	 */
+	public void onStartElement(final String uri, final String localName,
+			final String qName, final Attributes attributes)
+			throws SAXException {
+
+<span class="nc bnc" id="L182" title="All 2 branches missed.">		if (localName.equals(&quot;eventaddon&quot;)) {</span>
+<span class="nc" id="L183">			addon = new EventAddon();</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">		} else if (localName.equals(&quot;file&quot;)) {</span>
+<span class="nc" id="L185">			addon.fileName = attributes.getValue(&quot;name&quot;);</span>
+		}
+<span class="nc" id="L187">	}</span>
+
+	/**
+	 * SAXAdapter end element handler. Content only includes characters that
+	 * were read from this element, NOT any characters from child elements.
+	 * 
+	 * @param uri
+	 *            element uri.
+	 * @param localName
+	 *            element localName.
+	 * @param qName
+	 *            element qName.
+	 * @param content
+	 *            element content.
+	 * @throws SAXException
+	 *             if onEndElement throws a SAXException.
+	 */
+	public void onEndElement(final String uri, final String localName,
+			final String qName, final String content) throws SAXException {
+
+<span class="nc bnc" id="L207" title="All 2 branches missed.">		if (localName.equals(&quot;submitter&quot;)) {</span>
+<span class="nc" id="L208">			addon.submitter = content;</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">		} else if (localName.equals(&quot;email&quot;)) {</span>
+<span class="nc" id="L210">			addon.email = content;</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">		} else if (localName.equals(&quot;eventid&quot;)) {</span>
+<span class="nc" id="L212">			addon.eventid = content;</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">		} else if (localName.equals(&quot;type&quot;)) {</span>
+<span class="nc" id="L214">			addon.type = content;</span>
+<span class="nc bnc" id="L215" title="All 2 branches missed.">		} else if (localName.equals(&quot;version&quot;)) {</span>
+<span class="nc" id="L216">			addon.version = content;</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">		} else if (localName.equals(&quot;action&quot;)) {</span>
+<span class="nc" id="L218">			addon.action = content;</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">		} else if (localName.equals(&quot;description&quot;)) {</span>
+<span class="nc" id="L220">			addon.description = content;</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">		} else if (localName.equals(&quot;link&quot;)) {</span>
+<span class="nc" id="L222">			addon.link = content;</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">		} else if (localName.equals(&quot;text&quot;)) {</span>
+<span class="nc" id="L224">			addon.text = content;</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">		} else if (localName.equals(&quot;submit_time&quot;)) {</span>
+			try {
+<span class="nc" id="L227">				addon.submitTime = ADDON_DATE_FORMAT.parse(content);</span>
+<span class="nc" id="L228">			} catch (ParseException e) {</span>
+<span class="nc" id="L229">				throw new SAXException(e);</span>
+<span class="nc" id="L230">			}</span>
+		}
+<span class="nc" id="L232">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

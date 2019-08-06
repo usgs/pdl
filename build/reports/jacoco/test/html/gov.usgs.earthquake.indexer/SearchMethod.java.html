@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchMethod.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">SearchMethod.java</span></div><h1>SearchMethod.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.indexer;
+
+/**
+ * Different types of searches that are supported.
+ */
+<span class="fc" id="L6">public enum SearchMethod {</span>
+	/** Summary for multiple events. */
+<span class="fc" id="L8">	EVENTS_SUMMARY(&quot;getEventSummary&quot;),</span>
+
+	/** Detail for one event. */
+<span class="fc" id="L11">	EVENT_DETAIL(&quot;getEvent&quot;),</span>
+
+	/** Summary for multiple products. */
+<span class="fc" id="L14">	PRODUCTS_SUMMARY(&quot;getProductSummary&quot;),</span>
+
+	/** Detail for one product. */
+<span class="fc" id="L17">	PRODUCT_DETAIL(&quot;getProduct&quot;);</span>
+
+	private String xmlMethodName;
+
+<span class="fc" id="L21">	private SearchMethod(final String xmlMethodName) {</span>
+<span class="fc" id="L22">		this.xmlMethodName = xmlMethodName;</span>
+<span class="fc" id="L23">	}</span>
+
+	/**
+	 * @return The XML string used to represent this response type.
+	 */
+	public String getXmlMethodName() {
+<span class="fc" id="L29">		return xmlMethodName;</span>
+	}
+
+	/**
+	 * Get the enumerated value for the given xml string.
+	 * 
+	 * @param xmlMethodName
+	 *            the xml name.
+	 * @return null if xmlMethodName is unknown.
+	 */
+	public static SearchMethod fromXmlMethodName(
+			final String xmlMethodName) {
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">		if (xmlMethodName == null) {</span>
+<span class="nc" id="L42">			return null;</span>
+		}
+
+<span class="fc bfc" id="L45" title="All 2 branches covered.">		if (EVENTS_SUMMARY.getXmlMethodName().equals(xmlMethodName)) {</span>
+<span class="fc" id="L46">			return EVENTS_SUMMARY;</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">		} else if (EVENT_DETAIL.getXmlMethodName().equals(xmlMethodName)) {</span>
+<span class="fc" id="L48">			return EVENT_DETAIL;</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">		} else if (PRODUCTS_SUMMARY.getXmlMethodName().equals(xmlMethodName)) {</span>
+<span class="fc" id="L50">			return PRODUCTS_SUMMARY;</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">		} else if (PRODUCT_DETAIL.getXmlMethodName().equals(xmlMethodName)) {</span>
+<span class="fc" id="L52">			return PRODUCT_DETAIL;</span>
+		}
+
+<span class="nc" id="L55">		return null;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

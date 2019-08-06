@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExternalIndexerListener.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">ExternalIndexerListener.java</span></div><h1>ExternalIndexerListener.java</h1><pre class="source lang-java linenums">/*
+ * ExternalIndexerListener
+ */
+package gov.usgs.earthquake.indexer;
+
+import gov.usgs.earthquake.distribution.CLIProductBuilder;
+import gov.usgs.earthquake.distribution.ConfigurationException;
+import gov.usgs.earthquake.distribution.ExternalNotificationListener;
+import gov.usgs.earthquake.distribution.FileProductStorage;
+import gov.usgs.earthquake.distribution.HeartbeatListener;
+import gov.usgs.earthquake.distribution.ProductAlreadyInStorageException;
+import gov.usgs.earthquake.distribution.ProductStorage;
+import gov.usgs.earthquake.indexer.IndexerChange.IndexerChangeType;
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.Config;
+import gov.usgs.util.StreamUtils;
+import gov.usgs.util.XmlUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * ExternalIndexerListener triggers external, non-Java listener processes.
+ * 
+ * Provides a translation to a command-line interface
+ * for the product indexer to speak with external, non-Java listeners.
+ * 
+ * As a child-class of the AbstractListener, this also accepts the following
+ * configration parameters:
+ * 
+ * &lt;dl&gt;
+ * &lt;dt&gt;command&lt;/dt&gt;
+ * &lt;dd&gt;(Required) The command to execute. This must be an executable command and
+ * may include arguments. Any product-specific arguments are appended at the end
+ * of command.&lt;/dd&gt;
+ * 
+ * &lt;dt&gt;storage&lt;/dt&gt;
+ * &lt;dd&gt;(Required) A directory used to store all products. Each product is
+ * extracted into a separate directory within this directory and is referenced
+ * by the --directory=/path/to/directory argument when command is executed.&lt;/dd&gt;
+ * 
+ * &lt;dt&gt;processUnassociated&lt;/dt&gt;
+ * &lt;dd&gt;(Optional, Default = false) Whether or not to process unassociated
+ * products. Valid values are &quot;true&quot; and &quot;false&quot;.&lt;/dd&gt;
+ * 
+ * &lt;dt&gt;processPreferredOnly&lt;/dt&gt;
+ * &lt;dd&gt;(Optional, Default = false) Whether or not to process only preferred
+ * products of the type accepted by this listener. Valid values are &quot;true&quot; and
+ * &quot;false&quot;.&lt;/dd&gt;
+ * 
+ * &lt;dt&gt;autoArchive&lt;/dt&gt;
+ * &lt;dd&gt;(Optional, Default = false) Whether or not to archive products from
+ * storage when they are archived by the indexer.&lt;/dd&gt;
+ * 
+ * &lt;/dl&gt;
+ */
+public class ExternalIndexerListener extends DefaultIndexerListener implements
+		IndexerListener {
+
+<span class="fc" id="L70">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L71">			.getLogger(ExternalIndexerListener.class.getName());</span>
+
+	public static final String EVENT_ACTION_ARGUMENT = &quot;--action=&quot;;
+	public static final String EVENT_IDS_ARGUMENT = &quot;--eventids=&quot;;
+
+	public static final String PREFERRED_ID_ARGUMENT = &quot;--preferred-eventid=&quot;;
+	public static final String PREFERRED_EVENTSOURCE_ARGUMENT = &quot;--preferred-eventsource=&quot;;
+	public static final String PREFERRED_EVENTSOURCECODE_ARGUMENT = &quot;--preferred-eventsourcecode=&quot;;
+	public static final String PREFERRED_MAGNITUDE_ARGUMENT = &quot;--preferred-magnitude=&quot;;
+	public static final String PREFERRED_LONGITUDE_ARGUMENT = &quot;--preferred-longitude=&quot;;
+	public static final String PREFERRED_LATITUDE_ARGUMENT = &quot;--preferred-latitude=&quot;;
+	public static final String PREFERRED_DEPTH_ARGUMENT = &quot;--preferred-depth=&quot;;
+	public static final String PREFERRED_ORIGIN_TIME_ARGUMENT = &quot;--preferred-eventtime=&quot;;
+	/** Configuration parameter for storage directory product. */
+	public static final String STORAGE_NAME_PROPERTY = &quot;storage&quot;;
+
+	/** Short circuit to directly configure storage directory. */
+	public static final String STORAGE_DIRECTORY_PROPERTY = &quot;storageDirectory&quot;;
+
+	/** Configuration parameter for command. */
+	public static final String COMMAND_PROPERTY = &quot;command&quot;;
+
+	/** Configuration parameter for autoArchive. */
+	public static final String AUTO_ARCHIVE_PROPERTY = &quot;autoArchive&quot;;
+	public static final String AUTO_ARCHIVE_DEFAULT = &quot;true&quot;;
+
+	/** Argument used to pass signature to external process. */
+	public static final String SIGNATURE_ARGUMENT = &quot;--signature=&quot;;
+
+	/** Where products are stored in extracted form. */
+	private FileProductStorage storage;
+
+	/** Command that is executed after a product is stored. */
+	private String command;
+
+	/** Archive products from listener storage when archived by indexer. */
+<span class="fc" id="L107">	private boolean autoArchive = false;</span>
+
+	/**
+	 * Construct a new ExternalIndexerListener object
+	 * 
+	 * The listener must be configured with a FileProductStorage and a command
+	 * to function.
+	 */
+	public ExternalIndexerListener() {
+<span class="fc" id="L116">		super();</span>
+<span class="fc" id="L117">	}</span>
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see gov.usgs.earthquake.indexer.IndexerListener#onIndexerEvent(gov.usgs.
+	 * earthquake.indexer.IndexerEvent)
+	 */
+	public void onIndexerEvent(IndexerEvent change) throws Exception {
+		// Only handle products that are specifically included, unless there are
+		// no specified inclusions, and do not handle products that are
+		// specifically excluded.
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">		if (accept(change)) {</span>
+			// store product first
+<span class="fc" id="L131">			Product product = storeProduct(change.getProduct());</span>
+
+<span class="fc" id="L133">			for (Iterator&lt;IndexerChange&gt; changeIter = change</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">					.getIndexerChanges().iterator(); changeIter.hasNext();) {</span>
+<span class="fc" id="L135">				IndexerChange indexerChange = changeIter.next();</span>
+
+				// check if we should process this change
+<span class="fc bfc" id="L138" title="All 2 branches covered.">				if (!accept(change, indexerChange)) {</span>
+<span class="fc" id="L139">					continue;</span>
+				}
+
+				// build command
+<span class="fc" id="L143">				final String indexerCommand = getProductSummaryCommand(change,</span>
+						indexerChange);
+
+<span class="fc" id="L146">				runProductCommand(indexerCommand, product);</span>
+<span class="fc" id="L147">			}</span>
+		}
+
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">		if (autoArchive) {</span>
+<span class="nc" id="L151">			Iterator&lt;IndexerChange&gt; changeIter = change.getIndexerChanges()</span>
+<span class="nc" id="L152">					.iterator();</span>
+<span class="nc" id="L153">			ProductStorage storage = getStorage();</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">			while (changeIter.hasNext()) {</span>
+<span class="nc" id="L155">				IndexerChange nextChange = changeIter.next();</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">				if (nextChange.getType() == IndexerChangeType.PRODUCT_ARCHIVED) {</span>
+					// one product being archived
+<span class="nc bnc" id="L158" title="All 2 branches missed.">					if (change.getSummary() != null) {</span>
+<span class="nc" id="L159">						ProductId productId = change.getSummary().getId();</span>
+<span class="nc" id="L160">						LOGGER.log(Level.FINER,</span>
+<span class="nc" id="L161">								&quot;[&quot; + getName() + &quot;] auto archiving product &quot;</span>
+<span class="nc" id="L162">										+ productId.toString());</span>
+<span class="nc" id="L163">						storage.removeProduct(productId);</span>
+<span class="nc" id="L164">					}</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">				} else if (nextChange.getType() == IndexerChangeType.EVENT_ARCHIVED) {</span>
+					// all products on event being archived
+<span class="nc" id="L167">					Event changeEvent = nextChange.getOriginalEvent();</span>
+<span class="nc" id="L168">					LOGGER.log(Level.FINER,</span>
+<span class="nc" id="L169">							&quot;[&quot; + getName() + &quot;] auto archiving event &quot;</span>
+<span class="nc" id="L170">									+ changeEvent.getEventId() + &quot; products&quot;);</span>
+<span class="nc" id="L171">					Iterator&lt;ProductSummary&gt; productIter = changeEvent</span>
+<span class="nc" id="L172">							.getAllProductList().iterator();</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">					while (productIter.hasNext()) {</span>
+<span class="nc" id="L174">						ProductId productId = productIter.next().getId();</span>
+<span class="nc" id="L175">						LOGGER.log(Level.FINER,</span>
+<span class="nc" id="L176">								&quot;[&quot; + getName() + &quot;] auto archiving product &quot;</span>
+<span class="nc" id="L177">										+ productId.toString());</span>
+<span class="nc" id="L178">						storage.removeProduct(productId);</span>
+<span class="nc" id="L179">					}</span>
+				}
+<span class="nc" id="L181">			}</span>
+		}
+<span class="fc" id="L183">	}</span>
+
+	/**
+	 * Store product associated with the change.
+	 *
+	 * @param product product to be stored.
+	 * @return a new product object, read from the listener storage.
+	 * @throws Exception
+	 */
+	public Product storeProduct(final Product product) throws Exception {
+<span class="fc" id="L193">		Product listenerProduct = null;</span>
+		try {
+<span class="fc bfc" id="L195" title="All 2 branches covered.">			if (product != null) {</span>
+<span class="fc" id="L196">				getStorage().storeProduct(product);</span>
+<span class="fc" id="L197">				listenerProduct = getStorage().getProduct(product.getId());</span>
+			} else {
+<span class="fc" id="L199">				LOGGER.finer(&quot;[&quot; + getName()</span>
+						+ &quot;] Change product is null. Probably archiving.&quot;);
+			}
+<span class="fc" id="L202">		} catch (ProductAlreadyInStorageException paise) {</span>
+<span class="fc" id="L203">			LOGGER.info(&quot;[&quot; + getName() + &quot;] product already in storage&quot;);</span>
+			// keep going anyways, but load from local storage
+<span class="fc" id="L205">			listenerProduct = getStorage().getProduct(product.getId());</span>
+<span class="fc" id="L206">		}</span>
+
+<span class="fc" id="L208">		return listenerProduct;</span>
+	}
+
+	/**
+	 * Run a product command.
+	 *
+	 * @param command command and arguments.
+	 * @param product product, when set and empty content (path &quot;&quot;) is defined,
+	 *        the content is provided to the command on stdin.
+	 * @throws Exception
+	 */
+	public void runProductCommand(final String command, final Product product) throws Exception {
+		// execute
+<span class="fc" id="L221">		LOGGER.info(&quot;[&quot; + getName() + &quot;] running command &quot; + command);</span>
+<span class="fc" id="L222">		final Process process = Runtime.getRuntime().exec(command);</span>
+
+		// Stream content over stdin if it exists
+<span class="fc bfc" id="L225" title="All 2 branches covered.">		if (product != null) {</span>
+<span class="fc" id="L226">			Content content = product.getContents().get(&quot;&quot;);</span>
+<span class="fc bfc" id="L227" title="All 2 branches covered.">			if (content != null) {</span>
+<span class="fc" id="L228">				StreamUtils.transferStream(content.getInputStream(),</span>
+<span class="fc" id="L229">						process.getOutputStream());</span>
+			}
+		}
+
+		// Close the output stream
+<span class="fc" id="L234">		StreamUtils.closeStream(process.getOutputStream());</span>
+
+<span class="fc" id="L236">		Timer commandTimer = new Timer();</span>
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">		if (this.getTimeout() &gt; 0) {</span>
+			// Schedule process destruction for commandTimeout
+			// milliseconds in the future
+<span class="nc" id="L240">			commandTimer.schedule(new TimerTask() {</span>
+				public void run() {
+<span class="nc" id="L242">					LOGGER.warning(&quot;[&quot; + getName()</span>
+							+ &quot;] command timeout '&quot; + command
+							+ &quot;', destroying process.&quot;);
+<span class="nc" id="L245">					process.destroy();</span>
+<span class="nc" id="L246">				}</span>
+<span class="nc" id="L247">			}, this.getTimeout());</span>
+		}
+
+		// Wait for process to complete
+<span class="fc" id="L251">		process.waitFor();</span>
+		// Cancel the timer if it was not triggered
+<span class="fc" id="L253">		commandTimer.cancel();</span>
+<span class="fc" id="L254">		LOGGER.info(&quot;[&quot; + getName() + &quot;] command '&quot; + command</span>
+<span class="fc" id="L255">				+ &quot;' exited with status '&quot; + process.exitValue() + &quot;'&quot;);</span>
+<span class="pc bpc" id="L256" title="1 of 2 branches missed.">		if (process.exitValue() != 0) {</span>
+<span class="nc" id="L257">			byte[] errorOutput = StreamUtils.readStream(process.getErrorStream());</span>
+<span class="nc" id="L258">			LOGGER.fine(&quot;[&quot; + getName() + &quot;] command '&quot; + command + &quot;' stderr output '&quot; +</span>
+					new String(errorOutput) + &quot;'&quot;);
+		}
+<span class="fc" id="L261">		StreamUtils.closeStream(process.getErrorStream());</span>
+
+		// send heartbeat info
+<span class="fc" id="L264">		HeartbeatListener.sendHeartbeatMessage(getName(), &quot;command&quot;, command);</span>
+<span class="fc" id="L265">		HeartbeatListener.sendHeartbeatMessage(getName(), &quot;exit value&quot;,</span>
+<span class="fc" id="L266">				Integer.toString(process.exitValue()));</span>
+<span class="fc" id="L267">	}</span>
+
+	/**
+	 * Get the product command and add the indexer arguments to it.
+	 * 
+	 * @param change
+	 *            The IndexerEvent received by the ExternalIndexerListener
+	 * @return the command to execute with its arguments as a string
+	 * @throws Exception
+	 */
+	public String getProductSummaryCommand(IndexerEvent change,
+			IndexerChange indexerChange) throws Exception {
+<span class="fc" id="L279">		ProductSummary summary = change.getSummary();</span>
+
+<span class="fc" id="L281">		Event event = indexerChange.getNewEvent();</span>
+		// When archiving events include event information
+<span class="fc bfc" id="L283" title="All 4 branches covered.">		if (event == null &amp;&amp; indexerChange.getType() == IndexerChangeType.EVENT_ARCHIVED) {</span>
+<span class="fc" id="L284">			event = indexerChange.getOriginalEvent();</span>
+		}
+
+<span class="fc" id="L287">		String command = getProductSummaryCommand(event, summary);</span>
+
+		// Tells external indexer what type of index event occurred.
+<span class="fc" id="L290">		command = command + &quot; &quot; +</span>
+				ExternalIndexerListener.EVENT_ACTION_ARGUMENT +
+<span class="fc" id="L292">				indexerChange.getType().toString();</span>
+
+<span class="fc" id="L294">		return command;</span>
+	}
+
+	/**
+	 * Get the command for a specific event and summary.
+	 *
+	 * @param event
+	 * @param summary
+	 * @return command line arguments as a string.
+	 * @throws Exception
+	 */
+	public String getProductSummaryCommand(Event event, ProductSummary summary) throws Exception {
+<span class="fc" id="L306">		StringBuffer indexerCommand = new StringBuffer(getCommand());</span>
+
+<span class="fc bfc" id="L308" title="All 2 branches covered.">		if (event != null) {</span>
+<span class="fc" id="L309">			indexerCommand.append(getEventArguments(event));</span>
+		}
+<span class="fc bfc" id="L311" title="All 2 branches covered.">		if (summary != null) {</span>
+<span class="fc" id="L312">			indexerCommand.append(getProductSummaryArguments(summary));</span>
+		}
+
+
+<span class="fc" id="L316">		Product product = null;</span>
+		try {
+<span class="fc" id="L318">			product = getStorage().getProduct(summary.getId());</span>
+<span class="fc" id="L319">		} catch (Exception e) {</span>
+			// when archiving product may not exist
+<span class="fc" id="L321">			LOGGER.log(</span>
+					Level.FINE,
+					&quot;Exception retreiving product from storage, probably archiving&quot;,
+					e);
+<span class="fc" id="L325">		}</span>
+<span class="fc bfc" id="L326" title="All 2 branches covered.">		if (product != null) {</span>
+			// Can only add these arguments if there is a product
+<span class="fc" id="L328">			Content content = product.getContents().get(&quot;&quot;);</span>
+<span class="fc bfc" id="L329" title="All 2 branches covered.">			if (content != null) {</span>
+<span class="fc" id="L330">				indexerCommand.append(&quot; &quot;).append(</span>
+						CLIProductBuilder.CONTENT_ARGUMENT);
+<span class="fc" id="L332">				indexerCommand.append(&quot; &quot;)</span>
+<span class="fc" id="L333">						.append(CLIProductBuilder.CONTENT_TYPE_ARGUMENT)</span>
+<span class="fc" id="L334">						.append(content.getContentType());</span>
+			}
+
+<span class="fc bfc" id="L337" title="All 2 branches covered.">			if (product.getSignature() != null) {</span>
+<span class="fc" id="L338">				indexerCommand</span>
+<span class="fc" id="L339">						.append(&quot; &quot;)</span>
+<span class="fc" id="L340">						.append(ExternalNotificationListener.SIGNATURE_ARGUMENT)</span>
+<span class="fc" id="L341">						.append(product.getSignature());</span>
+			}
+
+		}
+
+<span class="fc" id="L346">		return indexerCommand.toString();</span>
+	}
+
+	/**
+	 * Get command line arguments for an event.
+	 *
+	 * @param event the event
+	 * @return command line arguments
+	 */
+	public String getEventArguments(final Event event) {
+<span class="fc" id="L356">		StringBuffer buf = new StringBuffer();</span>
+
+<span class="fc" id="L358">		EventSummary eventSummary = event.getEventSummary();</span>
+<span class="fc" id="L359">		buf.append(&quot; &quot;)</span>
+<span class="fc" id="L360">				.append(ExternalIndexerListener.PREFERRED_ID_ARGUMENT)</span>
+<span class="fc" id="L361">				.append(eventSummary.getId());</span>
+<span class="fc" id="L362">		buf.append(&quot; &quot;)</span>
+<span class="fc" id="L363">				.append(ExternalIndexerListener.PREFERRED_EVENTSOURCE_ARGUMENT)</span>
+<span class="fc" id="L364">				.append(eventSummary.getSource());</span>
+<span class="fc" id="L365">		buf.append(&quot; &quot;)</span>
+<span class="fc" id="L366">				.append(ExternalIndexerListener.PREFERRED_EVENTSOURCECODE_ARGUMENT)</span>
+<span class="fc" id="L367">				.append(eventSummary.getSourceCode());</span>
+<span class="fc" id="L368">		Map&lt;String, List&lt;String&gt;&gt; eventids = event.getAllEventCodes(true);</span>
+<span class="fc" id="L369">		Iterator&lt;String&gt; sourceIter = eventids.keySet().iterator();</span>
+<span class="fc" id="L370">		buf.append(&quot; &quot;).append(EVENT_IDS_ARGUMENT);</span>
+<span class="fc bfc" id="L371" title="All 2 branches covered.">		while (sourceIter.hasNext()) {</span>
+<span class="fc" id="L372">			String source = sourceIter.next();</span>
+<span class="fc" id="L373">			Iterator&lt;String&gt; sourceCodeIter = eventids.get(source).iterator();</span>
+<span class="fc bfc" id="L374" title="All 2 branches covered.">			while (sourceCodeIter.hasNext()) {</span>
+<span class="fc" id="L375">				String sourceCode = sourceCodeIter.next();</span>
+<span class="fc" id="L376">				buf.append(source).append(sourceCode);</span>
+<span class="pc bpc" id="L377" title="1 of 4 branches missed.">				if (sourceCodeIter.hasNext() || sourceIter.hasNext()) {</span>
+<span class="fc" id="L378">					buf.append(&quot;,&quot;);</span>
+				}
+<span class="fc" id="L380">			}</span>
+<span class="fc" id="L381">		}</span>
+
+<span class="fc" id="L383">		buf.append(&quot; &quot;).append(PREFERRED_MAGNITUDE_ARGUMENT)</span>
+<span class="fc" id="L384">				.append(eventSummary.getMagnitude());</span>
+<span class="fc" id="L385">		buf.append(&quot; &quot;).append(PREFERRED_LATITUDE_ARGUMENT)</span>
+<span class="fc" id="L386">				.append(eventSummary.getLatitude());</span>
+<span class="fc" id="L387">		buf.append(&quot; &quot;).append(PREFERRED_LONGITUDE_ARGUMENT)</span>
+<span class="fc" id="L388">				.append(eventSummary.getLongitude());</span>
+<span class="fc" id="L389">		buf.append(&quot; &quot;).append(PREFERRED_DEPTH_ARGUMENT)</span>
+<span class="fc" id="L390">				.append(eventSummary.getDepth());</span>
+<span class="fc" id="L391">		String eventTime = null;</span>
+<span class="fc bfc" id="L392" title="All 2 branches covered.">		if (event.getTime() != null) {</span>
+<span class="fc" id="L393">			eventTime = XmlUtils.formatDate(event.getTime());</span>
+		}
+<span class="fc" id="L395">		buf.append(&quot; &quot;).append(PREFERRED_ORIGIN_TIME_ARGUMENT)</span>
+<span class="fc" id="L396">				.append(eventTime);</span>
+
+<span class="fc" id="L398">		return buf.toString();</span>
+	}
+
+	/**
+	 * Get command line arguments for a product summary.
+	 *
+	 * @param summary the product summary
+	 * @return command line arguments
+	 */
+	public String getProductSummaryArguments(final ProductSummary summary) throws IOException {
+<span class="fc" id="L408">		StringBuffer buf = new StringBuffer();</span>
+
+<span class="fc" id="L410">		File productDirectory = getStorage().getProductFile(summary.getId());</span>
+<span class="fc bfc" id="L411" title="All 2 branches covered.">		if (productDirectory.exists()) {</span>
+			// Add the directory argument
+<span class="fc" id="L413">			buf.append(&quot; &quot;)</span>
+<span class="fc" id="L414">					.append(CLIProductBuilder.DIRECTORY_ARGUMENT)</span>
+<span class="fc" id="L415">					.append(productDirectory.getCanonicalPath());</span>
+		}
+
+		// Add arguments from summary
+<span class="fc" id="L419">		buf.append(&quot; &quot;).append(CLIProductBuilder.TYPE_ARGUMENT)</span>
+<span class="fc" id="L420">				.append(summary.getType());</span>
+<span class="fc" id="L421">		buf.append(&quot; &quot;).append(CLIProductBuilder.CODE_ARGUMENT)</span>
+<span class="fc" id="L422">				.append(summary.getCode());</span>
+<span class="fc" id="L423">		buf.append(&quot; &quot;).append(CLIProductBuilder.SOURCE_ARGUMENT)</span>
+<span class="fc" id="L424">				.append(summary.getSource());</span>
+<span class="fc" id="L425">		buf.append(&quot; &quot;)</span>
+<span class="fc" id="L426">				.append(CLIProductBuilder.UPDATE_TIME_ARGUMENT)</span>
+<span class="fc" id="L427">				.append(XmlUtils.formatDate(summary.getUpdateTime()));</span>
+<span class="fc" id="L428">		buf.append(&quot; &quot;).append(CLIProductBuilder.STATUS_ARGUMENT)</span>
+<span class="fc" id="L429">				.append(summary.getStatus());</span>
+<span class="fc bfc" id="L430" title="All 2 branches covered.">		if (summary.isDeleted()) {</span>
+<span class="fc" id="L431">			buf.append(&quot; &quot;)</span>
+<span class="fc" id="L432">					.append(CLIProductBuilder.DELETE_ARGUMENT);</span>
+		}
+
+		// Add optional tracker URL argument
+<span class="pc bpc" id="L436" title="1 of 2 branches missed.">		if (summary.getTrackerURL() != null) {</span>
+<span class="fc" id="L437">			buf.append(&quot; &quot;)</span>
+<span class="fc" id="L438">					.append(CLIProductBuilder.TRACKER_URL_ARGUMENT)</span>
+<span class="fc" id="L439">					.append(summary.getTrackerURL());</span>
+		}
+
+		// Add property arguments
+<span class="fc" id="L443">		Map&lt;String, String&gt; props = summary.getProperties();</span>
+<span class="fc" id="L444">		Iterator&lt;String&gt; iter = props.keySet().iterator();</span>
+<span class="fc bfc" id="L445" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L446">			String name = iter.next();</span>
+<span class="fc" id="L447">			buf.append(&quot; \&quot;&quot;)</span>
+<span class="fc" id="L448">					.append(CLIProductBuilder.PROPERTY_ARGUMENT).append(name)</span>
+<span class="fc" id="L449">					.append(&quot;=&quot;).append(props.get(name).replace(&quot;\&quot;&quot;, &quot;\\\&quot;&quot;))</span>
+<span class="fc" id="L450">					.append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L451">		}</span>
+
+		// Add link arguments
+<span class="fc" id="L454">		Map&lt;String, List&lt;URI&gt;&gt; links = summary.getLinks();</span>
+<span class="fc" id="L455">		iter = links.keySet().iterator();</span>
+<span class="fc bfc" id="L456" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L457">			String relation = iter.next();</span>
+<span class="fc" id="L458">			Iterator&lt;URI&gt; iter2 = links.get(relation).iterator();</span>
+<span class="fc bfc" id="L459" title="All 2 branches covered.">			while (iter2.hasNext()) {</span>
+<span class="fc" id="L460">				buf.append(&quot; &quot;)</span>
+<span class="fc" id="L461">						.append(CLIProductBuilder.LINK_ARGUMENT)</span>
+<span class="fc" id="L462">						.append(relation).append(&quot;=&quot;)</span>
+<span class="fc" id="L463">						.append(iter2.next().toString());</span>
+			}
+<span class="fc" id="L465">		}</span>
+
+<span class="fc" id="L467">		return buf.toString();</span>
+	}
+
+	/**
+	 * Configure an ExternalNotificationListener using a Config object.
+	 * 
+	 * @param config
+	 *            the config containing a
+	 */
+	public void configure(Config config) throws Exception {
+<span class="nc" id="L477">		super.configure(config);</span>
+
+<span class="nc" id="L479">		command = config.getProperty(COMMAND_PROPERTY);</span>
+<span class="nc bnc" id="L480" title="All 2 branches missed.">		if (command == null) {</span>
+<span class="nc" id="L481">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+					+ &quot;] 'command' is a required configuration property&quot;);
+		}
+<span class="nc" id="L484">		LOGGER.config(&quot;[&quot; + getName() + &quot;] command is '&quot; + command + &quot;'&quot;);</span>
+
+		// storage references an object in the global configuration
+<span class="nc" id="L487">		String storageName = config.getProperty(STORAGE_NAME_PROPERTY);</span>
+<span class="nc" id="L488">		String directoryName = config.getProperty(STORAGE_DIRECTORY_PROPERTY);</span>
+<span class="nc bnc" id="L489" title="All 4 branches missed.">		if (storageName == null &amp;&amp; directoryName == null) {</span>
+<span class="nc" id="L490">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+					+ &quot;] one of 'storage' or 'storageDirectory' is required&quot;);
+		}
+
+<span class="nc bnc" id="L494" title="All 2 branches missed.">		if (storageName != null) {</span>
+<span class="nc" id="L495">			LOGGER.config(&quot;[&quot; + getName() + &quot;] loading FileProductStorage '&quot;</span>
+					+ storageName + &quot;'&quot;);
+<span class="nc" id="L497">			storage = (FileProductStorage) Config.getConfig().getObject(</span>
+					storageName);
+<span class="nc bnc" id="L499" title="All 2 branches missed.">			if (storage == null) {</span>
+<span class="nc" id="L500">				throw new ConfigurationException(&quot;[&quot; + getName()</span>
+						+ &quot;] unable to load FileProductStorage '&quot; + storageName
+						+ &quot;'&quot;);
+			}
+		} else {
+<span class="nc" id="L505">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using storage directory '&quot;</span>
+					+ directoryName + &quot;'&quot;);
+<span class="nc" id="L507">			storage = new FileProductStorage(new File(directoryName));</span>
+<span class="nc" id="L508">			storage.setName(getName() + &quot;-storage&quot;);</span>
+		}
+
+<span class="nc" id="L511">		autoArchive = Boolean.valueOf(config.getProperty(AUTO_ARCHIVE_PROPERTY,</span>
+				AUTO_ARCHIVE_DEFAULT));
+<span class="nc" id="L513">		LOGGER.config(&quot;[&quot; + getName() + &quot;] autoArchive = &quot; + autoArchive);</span>
+<span class="nc" id="L514">	}</span>
+
+	/**
+	 * Called when client is shutting down.
+	 */
+	public void shutdown() throws Exception {
+<span class="fc" id="L520">		super.shutdown();</span>
+		// maybe make current process a member and kill process?
+		// or find way of detaching so client process can exit but product
+		// process can complete?
+<span class="fc" id="L524">		storage.shutdown();</span>
+<span class="fc" id="L525">	}</span>
+
+	/**
+	 * Called after client has been configured and should begin processing.
+	 */
+	public void startup() throws Exception {
+		// no background threads to start or objects to create
+<span class="fc" id="L532">		storage.startup();</span>
+<span class="fc" id="L533">		super.startup();</span>
+<span class="fc" id="L534">	}</span>
+
+	/**
+	 * @return the storage
+	 */
+	public FileProductStorage getStorage() {
+<span class="fc" id="L540">		return storage;</span>
+	}
+
+	/**
+	 * @param storage
+	 *            the storage to set
+	 */
+	public void setStorage(FileProductStorage storage) {
+<span class="fc" id="L548">		this.storage = storage;</span>
+<span class="fc" id="L549">	}</span>
+
+	/**
+	 * @return the command
+	 */
+	public String getCommand() {
+<span class="fc" id="L555">		return command;</span>
+	}
+
+	/**
+	 * @param command
+	 *            the command to set
+	 */
+	public void setCommand(String command) {
+<span class="fc" id="L563">		this.command = command;</span>
+<span class="fc" id="L564">	}</span>
+
+	/**
+	 * @return the autoArchive
+	 */
+	public boolean isAutoArchive() {
+<span class="nc" id="L570">		return autoArchive;</span>
+	}
+
+	/**
+	 * @param autoArchive
+	 *            the autoArchive to set
+	 */
+	public void setAutoArchive(boolean autoArchive) {
+<span class="nc" id="L578">		this.autoArchive = autoArchive;</span>
+<span class="nc" id="L579">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

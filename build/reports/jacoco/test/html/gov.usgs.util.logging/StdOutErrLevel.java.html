@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StdOutErrLevel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util.logging</a> &gt; <span class="el_source">StdOutErrLevel.java</span></div><h1>StdOutErrLevel.java</h1><pre class="source lang-java linenums">/*
+ * StdOutErrLevel
+ * 
+ * $Id: StdOutErrLevel.java 7868 2010-10-21 23:05:34Z jmfee $
+ * $URL: https://ehptools.cr.usgs.gov/svn/ProductDistribution/trunk/src/gov/usgs/earthquake/logging/StdOutErrLevel.java $
+ */
+package gov.usgs.util.logging;
+
+import java.io.InvalidObjectException;
+import java.io.ObjectStreamException;
+import java.util.logging.Level;
+
+/**
+ * Class defining 2 new Logging levels, one for STDOUT, one for STDERR.
+ * 
+ * Used when multiplexing STDOUT and STDERR into the same rolling
+ * log file via the Java Logging APIs. From
+ * http://blogs.sun.com/nickstephen/entry/java_redirecting_system_out_and
+ */
+public class StdOutErrLevel extends Level {
+
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Private constructor
+	 */
+	private StdOutErrLevel(String name, int value) {
+<span class="nc" id="L28">		super(name, value);</span>
+<span class="nc" id="L29">	}</span>
+
+	/**
+	 * Level for STDOUT activity.
+	 */
+<span class="nc" id="L34">	public static Level STDOUT = new StdOutErrLevel(&quot;STDOUT&quot;, Level.INFO</span>
+<span class="nc" id="L35">			.intValue() + 53);</span>
+	/**
+	 * Level for STDERR activity
+	 */
+<span class="nc" id="L39">	public static Level STDERR = new StdOutErrLevel(&quot;STDERR&quot;, Level.INFO</span>
+<span class="nc" id="L40">			.intValue() + 54);</span>
+
+	/**
+	 * Method to avoid creating duplicate instances when deserializing the
+	 * object.
+	 * 
+	 * @return the singleton instance of this &lt;code&gt;Level&lt;/code&gt; value in this
+	 *         classloader
+	 * @throws ObjectStreamException
+	 *             If unable to deserialize
+	 */
+	protected Object readResolve() throws ObjectStreamException {
+<span class="nc bnc" id="L52" title="All 2 branches missed.">		if (this.intValue() == STDOUT.intValue())</span>
+<span class="nc" id="L53">			return STDOUT;</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">		if (this.intValue() == STDERR.intValue())</span>
+<span class="nc" id="L55">			return STDERR;</span>
+<span class="nc" id="L56">		throw new InvalidObjectException(&quot;Unknown instance :&quot; + this);</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

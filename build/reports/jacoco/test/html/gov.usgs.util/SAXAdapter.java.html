@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SAXAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util</a> &gt; <span class="el_source">SAXAdapter.java</span></div><h1>SAXAdapter.java</h1><pre class="source lang-java linenums">/*
+ * SAXAdapter
+ * 
+ * $Id$
+ * $HeadURL$
+ */
+package gov.usgs.util;
+
+import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.util.LinkedList;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+
+
+/**
+ * SAXAdapter is a sax handler that accumulates element content, which is a
+ * common sax handler task.
+ * 
+ * Users should be cautious because this in some ways removes efficiency gained
+ * by handling streaming events, because element content is being buffered. One
+ * buffer for each element nesting is maintained, so this works best for shallow
+ * documents, whose elements contain little content.
+ */
+<span class="fc" id="L32">public class SAXAdapter extends DefaultHandler {</span>
+
+    /** Buffers for element content, since it may be delivered in pieces. */
+<span class="fc" id="L35">    private LinkedList&lt;StringBuffer&gt; buffers = new LinkedList&lt;StringBuffer&gt;();</span>
+
+    /**
+     * SAXAdapter start element handler.
+     * 
+     * @param uri
+     *            element uri.
+     * @param localName
+     *            element localName.
+     * @param qName
+     *            element qName.
+     * @param attributes
+     *            element attributes.
+     * @throws SAXException
+     *             if there is an error.
+     */
+    public void onStartElement(final String uri, final String localName,
+            final String qName, final Attributes attributes)
+            throws SAXException {
+<span class="nc" id="L54">    }</span>
+
+    /**
+     * SAXAdapter end element handler. Content only includes characters that
+     * were read from this element, NOT any characters from child elements.
+     * 
+     * @param uri
+     *            element uri.
+     * @param localName
+     *            element localName.
+     * @param qName
+     *            element qName.
+     * @param content
+     *            element content.
+     * @throws SAXException
+     *             if onEndElement throws a SAXException.
+     */
+    public void onEndElement(final String uri, final String localName,
+            final String qName, final String content) throws SAXException {
+<span class="fc" id="L73">    }</span>
+
+    /**
+     * Override DefaultHandler startElement. Adds a new element content buffer
+     * and calls onStartElement.
+     * 
+     * @param uri
+     *            element uri.
+     * @param localName
+     *            element localName.
+     * @param qName
+     *            element qName.
+     * @param attributes
+     *            element attributes.
+     * @throws SAXException
+     *             if onStartElement throws a SAXException.
+     */
+    public final void startElement(final String uri, final String localName,
+            final String qName, final Attributes attributes)
+            throws SAXException {
+<span class="fc" id="L93">        buffers.add(new StringBuffer());</span>
+<span class="fc" id="L94">        onStartElement(uri, localName, qName, attributes);</span>
+<span class="fc" id="L95">    }</span>
+
+    /**
+     * Override DefaultHandler endElement. Retrieves element content buffer and
+     * passes it to onEndElement.
+     * 
+     * @param uri
+     *            element uri.
+     * @param localName
+     *            element localName.
+     * @param qName
+     *            element qName.
+     * @throws SAXException
+     *             if onEndElement throws a SAXException.
+     */
+    public final void endElement(final String uri, final String localName,
+            final String qName) throws SAXException {
+<span class="fc" id="L112">        String elementContent = buffers.removeLast().toString();</span>
+<span class="fc" id="L113">        onEndElement(uri, localName, qName, elementContent);</span>
+<span class="fc" id="L114">    }</span>
+
+    /**
+     * Override DefaultHandler characters. Appends content to current element
+     * buffer, or skips if before first element.
+     * 
+     * @param ch
+     *            content.
+     * @param start
+     *            position in content to read.
+     * @param length
+     *            lenth of content to read.
+     * @throws SAXException
+     *             never.
+     */
+    public final void characters(final char[] ch, final int start,
+            final int length) throws SAXException {
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        if (buffers.size() &gt; 0) {</span>
+<span class="nc" id="L132">            buffers.getLast().append(ch, start, length);</span>
+        }
+<span class="nc" id="L134">    }</span>
+
+    /**
+     * Use this handler to parse a string. Wraps string bytes in a
+     * ByteArrayInputStream.
+     * 
+     * @param xml
+     *            string containing xml to parse.
+     * @return any exception that occurs while parsing, or null if no exceptions
+     *         occur.
+     */
+    public final Exception parse(final String xml) {
+<span class="nc" id="L146">        return parse(new ByteArrayInputStream(xml.getBytes()));</span>
+    }
+
+    /**
+     * Use this handler to parse an input stream. Uses self as a content and
+     * error handler in an XMLReader. If an error occurs, use getException to
+     * retrieve the error.
+     * 
+     * @param xml
+     *            input stream of xml to parse.
+     * @return any exception that occurs while parsing, or null if no exceptions
+     *         occur.
+     */
+    public final Exception parse(InputStream xml) {
+        try {
+<span class="fc" id="L161">            SAXParserFactory spf = SAXParserFactory.newInstance();</span>
+<span class="fc" id="L162">            spf.setNamespaceAware(true);</span>
+<span class="fc" id="L163">            SAXParser sp = spf.newSAXParser();</span>
+<span class="fc" id="L164">            XMLReader xr = sp.getXMLReader();</span>
+<span class="fc" id="L165">            xr.setContentHandler(this);</span>
+<span class="fc" id="L166">            xr.setErrorHandler(this);</span>
+<span class="fc" id="L167">            xr.parse(new InputSource(xml));</span>
+<span class="fc" id="L168">            return null;</span>
+<span class="nc" id="L169">        } catch (Exception e) {</span>
+<span class="nc" id="L170">            return e;</span>
+        } finally {
+<span class="fc" id="L172">            StreamUtils.closeStream(xml);</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

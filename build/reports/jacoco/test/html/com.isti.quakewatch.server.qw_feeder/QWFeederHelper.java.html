@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QWFeederHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">com.isti.quakewatch.server.qw_feeder</a> &gt; <span class="el_source">QWFeederHelper.java</span></div><h1>QWFeederHelper.java</h1><pre class="source lang-java linenums">package com.isti.quakewatch.server.qw_feeder;
+
+/** 
+ * Helper class for : QWFeeder
+ *  
+ * @author OpenORB Compiler
+ */ 
+<span class="nc" id="L8">public class QWFeederHelper</span>
+{
+    /**
+     * Insert QWFeeder into an any
+     * @param a an any
+     * @param t QWFeeder value
+     */
+    public static void insert(org.omg.CORBA.Any a, com.isti.quakewatch.server.qw_feeder.QWFeeder t)
+    {
+<span class="nc" id="L17">        a.insert_Object(t , type());</span>
+<span class="nc" id="L18">    }</span>
+
+    /**
+     * Extract QWFeeder from an any
+     *
+     * @param a an any
+     * @return the extracted QWFeeder value
+     */
+    public static com.isti.quakewatch.server.qw_feeder.QWFeeder extract( org.omg.CORBA.Any a )
+    {
+<span class="nc bnc" id="L28" title="All 2 branches missed.">        if ( !a.type().equivalent( type() ) )</span>
+        {
+<span class="nc" id="L30">            throw new org.omg.CORBA.MARSHAL();</span>
+        }
+        try
+        {
+<span class="nc" id="L34">            return com.isti.quakewatch.server.qw_feeder.QWFeederHelper.narrow( a.extract_Object() );</span>
+        }
+<span class="nc" id="L36">        catch ( final org.omg.CORBA.BAD_PARAM e )</span>
+        {
+<span class="nc" id="L38">            throw new org.omg.CORBA.MARSHAL(e.getMessage());</span>
+        }
+    }
+
+    //
+    // Internal TypeCode value
+    //
+<span class="nc" id="L45">    private static org.omg.CORBA.TypeCode _tc = null;</span>
+
+    /**
+     * Return the QWFeeder TypeCode
+     * @return a TypeCode
+     */
+    public static org.omg.CORBA.TypeCode type()
+    {
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        if (_tc == null) {</span>
+<span class="nc" id="L54">            org.omg.CORBA.ORB orb = org.omg.CORBA.ORB.init();</span>
+<span class="nc" id="L55">            _tc = orb.create_interface_tc( id(), &quot;QWFeeder&quot; );</span>
+        }
+<span class="nc" id="L57">        return _tc;</span>
+    }
+
+    /**
+     * Return the QWFeeder IDL ID
+     * @return an ID
+     */
+    public static String id()
+    {
+<span class="nc" id="L66">        return _id;</span>
+    }
+
+    private final static String _id = &quot;IDL:com/isti/quakewatch/server/qw_feeder/QWFeeder:1.0&quot;;
+
+    /**
+     * Read QWFeeder from a marshalled stream
+     * @param istream the input stream
+     * @return the readed QWFeeder value
+     */
+    public static com.isti.quakewatch.server.qw_feeder.QWFeeder read(org.omg.CORBA.portable.InputStream istream)
+    {
+<span class="nc" id="L78">        return(com.isti.quakewatch.server.qw_feeder.QWFeeder)istream.read_Object(com.isti.quakewatch.server.qw_feeder._QWFeederStub.class);</span>
+    }
+
+    /**
+     * Write QWFeeder into a marshalled stream
+     * @param ostream the output stream
+     * @param value QWFeeder value
+     */
+    public static void write(org.omg.CORBA.portable.OutputStream ostream, com.isti.quakewatch.server.qw_feeder.QWFeeder value)
+    {
+<span class="nc" id="L88">        ostream.write_Object((org.omg.CORBA.portable.ObjectImpl)value);</span>
+<span class="nc" id="L89">    }</span>
+
+    /**
+     * Narrow CORBA::Object to QWFeeder
+     * @param obj the CORBA Object
+     * @return QWFeeder Object
+     */
+    public static QWFeeder narrow(org.omg.CORBA.Object obj)
+    {
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        if (obj == null)</span>
+<span class="nc" id="L99">            return null;</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        if (obj instanceof QWFeeder)</span>
+<span class="nc" id="L101">            return (QWFeeder)obj;</span>
+
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        if (obj._is_a(id()))</span>
+        {
+<span class="nc" id="L105">            _QWFeederStub stub = new _QWFeederStub();</span>
+<span class="nc" id="L106">            stub._set_delegate(((org.omg.CORBA.portable.ObjectImpl)obj)._get_delegate());</span>
+<span class="nc" id="L107">            return stub;</span>
+        }
+
+<span class="nc" id="L110">        throw new org.omg.CORBA.BAD_PARAM();</span>
+    }
+
+    /**
+     * Unchecked Narrow CORBA::Object to QWFeeder
+     * @param obj the CORBA Object
+     * @return QWFeeder Object
+     */
+    public static QWFeeder unchecked_narrow(org.omg.CORBA.Object obj)
+    {
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        if (obj == null)</span>
+<span class="nc" id="L121">            return null;</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        if (obj instanceof QWFeeder)</span>
+<span class="nc" id="L123">            return (QWFeeder)obj;</span>
+
+<span class="nc" id="L125">        _QWFeederStub stub = new _QWFeederStub();</span>
+<span class="nc" id="L126">        stub._set_delegate(((org.omg.CORBA.portable.ObjectImpl)obj)._get_delegate());</span>
+<span class="nc" id="L127">        return stub;</span>
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

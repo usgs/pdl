@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - Class gov.usgs.earthquake.eids.EIDSInputWedgeTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>Class gov.usgs.earthquake.eids.EIDSInputWedgeTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/gov.usgs.earthquake.eids.html">gov.usgs.earthquake.eids</a> &gt; EIDSInputWedgeTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">3</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">0.095s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="tabs">
+<ul class="tabLinks">
+<li>
+<a href="#tab0">Tests</a>
+</li>
+<li>
+<a href="#tab1">Standard output</a>
+</li>
+<li>
+<a href="#tab2">Standard error</a>
+</li>
+</ul>
+<div id="tab0" class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">sendInternalProduct</td>
+<td class="success">0.026s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">sendOneProduct</td>
+<td class="success">0.023s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">sendScenarioProduct</td>
+<td class="success">0.046s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div id="tab1" class="tab">
+<h2>Standard output</h2>
+<span class="code">
+<pre>urn:usgs-product:ci:origin-scenario:ci09082344:1565042834435
+urn:usgs-product:ci:internal-origin:ci09082344:1565042834462
+urn:usgs-product:ci:origin:ci09082344:1565042834488
+</pre>
+</span>
+</div>
+<div id="tab2" class="tab">
+<h2>Standard error</h2>
+<span class="code">
+<pre>
+###
+Mon Aug 05 16:07:14 MDT 2019
+FINE	thread=13	Digest='VK5yqAOZ9qVxXqa0gziHA+B96HY=' , 1ms
+FINE	thread=13	Product Created source=ci, type=origin-scenario, code=ci09082344, updateTime=Mon Aug 05 16:07:14 MDT 2019
+INFO	thread=13	[null] sending product to Socket[addr=localhost/127.0.0.1,port=11235,localport=49813]
+FINE	thread=13	[null] using protocol version v0.1
+There are 1 active/queued socket connections
+INFO	thread=532	[test_receiver] accepted connection Socket[addr=/127.0.0.1,port=49813,localport=11235]
+FINE	thread=532	[test_receiver] protocol version 'v0.1' Socket[addr=/127.0.0.1,port=49813,localport=11235]
+FINE	thread=532	Product Received source=ci, type=origin-scenario, code=ci09082344, updateTime=Mon Aug 05 16:07:14 MDT 2019
+FINE	thread=532	[test_receiver] listener (test_listener) has 0 queued notifications
+INFO	thread=532	[test_receiver] received product 'urn:usgs-product:ci:origin-scenario:ci09082344:1565042834435'
+ from Socket[addr=/127.0.0.1,port=49813,localport=11235]
+INFO	thread=532	[test_receiver] closed connection Socket[addr=/127.0.0.1,port=49813,localport=11235]
+INFO	thread=13	[null] send complete Socket[addr=localhost/127.0.0.1,port=11235,localport=49813] response=&quot;[test_receiver] received product 'urn:usgs-product:ci:origin-scenario:ci09082344:1565042834435'
+&quot;
+INFO	thread=13	Generated 1 products: 1 sent, 0 partially sent, 0 failed to send
+listener received urn:usgs-product:ci:origin-scenario:ci09082344:1565042834435
+FINE	thread=13	Digest='VK5yqAOZ9qVxXqa0gziHA+B96HY=' , 1ms
+
+###
+Mon Aug 05 16:07:14 MDT 2019
+FINE	thread=13	SAXParserFactory instance: {0}
+FINE	thread=13	Digest='ww+7L/RDzl4wUXDTy7T5fXx+Fho=' , 1ms
+FINE	thread=13	Product Created source=ci, type=internal-origin, code=ci09082344, updateTime=Mon Aug 05 16:07:14 MDT 2019
+INFO	thread=13	[null] sending product to Socket[addr=localhost/127.0.0.1,port=11235,localport=49814]
+FINE	thread=13	[null] using protocol version v0.1
+There are 1 active/queued socket connections
+INFO	thread=540	[test_receiver] accepted connection Socket[addr=/127.0.0.1,port=49814,localport=11235]
+FINE	thread=540	[test_receiver] protocol version 'v0.1' Socket[addr=/127.0.0.1,port=49814,localport=11235]
+FINE	thread=540	Product Received source=ci, type=internal-origin, code=ci09082344, updateTime=Mon Aug 05 16:07:14 MDT 2019
+FINE	thread=540	[test_receiver] listener (test_listener) has 0 queued notifications
+INFO	thread=540	[test_receiver] received product 'urn:usgs-product:ci:internal-origin:ci09082344:1565042834462'
+ from Socket[addr=/127.0.0.1,port=49814,localport=11235]
+INFO	thread=540	[test_receiver] closed connection Socket[addr=/127.0.0.1,port=49814,localport=11235]
+INFO	thread=13	[null] send complete Socket[addr=localhost/127.0.0.1,port=11235,localport=49814] response=&quot;[test_receiver] received product 'urn:usgs-product:ci:internal-origin:ci09082344:1565042834462'
+&quot;
+INFO	thread=13	Generated 1 products: 1 sent, 0 partially sent, 0 failed to send
+listener received urn:usgs-product:ci:internal-origin:ci09082344:1565042834462
+FINE	thread=13	Digest='ww+7L/RDzl4wUXDTy7T5fXx+Fho=' , 0ms
+
+###
+Mon Aug 05 16:07:14 MDT 2019
+FINE	thread=13	SAXParserFactory instance: {0}
+FINE	thread=13	Digest='t6lAV4oVdwlVGUEEk8xg51ddQSg=' , 1ms
+FINE	thread=13	Product Created source=ci, type=origin, code=ci09082344, updateTime=Mon Aug 05 16:07:14 MDT 2019
+INFO	thread=13	[null] sending product to Socket[addr=localhost/127.0.0.1,port=11235,localport=49815]
+FINE	thread=13	[null] using protocol version v0.1
+There are 1 active/queued socket connections
+INFO	thread=548	[test_receiver] accepted connection Socket[addr=/127.0.0.1,port=49815,localport=11235]
+FINE	thread=548	[test_receiver] protocol version 'v0.1' Socket[addr=/127.0.0.1,port=49815,localport=11235]
+FINE	thread=548	Product Received source=ci, type=origin, code=ci09082344, updateTime=Mon Aug 05 16:07:14 MDT 2019
+FINE	thread=548	[test_receiver] listener (test_listener) has 0 queued notifications
+INFO	thread=548	[test_receiver] received product 'urn:usgs-product:ci:origin:ci09082344:1565042834488'
+ from Socket[addr=/127.0.0.1,port=49815,localport=11235]
+INFO	thread=548	[test_receiver] closed connection Socket[addr=/127.0.0.1,port=49815,localport=11235]
+INFO	thread=13	[null] send complete Socket[addr=localhost/127.0.0.1,port=11235,localport=49815] response=&quot;[test_receiver] received product 'urn:usgs-product:ci:origin:ci09082344:1565042834488'
+&quot;
+INFO	thread=13	Generated 1 products: 1 sent, 0 partially sent, 0 failed to send
+listener received urn:usgs-product:ci:origin:ci09082344:1565042834488
+FINE	thread=13	Digest='t6lAV4oVdwlVGUEEk8xg51ddQSg=' , 1ms
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="http://www.gradle.org">Gradle 5.4.1</a> at Aug 5, 2019, 4:07:43 PM</p>
+</div>
+</div>
+</body>
+</html>

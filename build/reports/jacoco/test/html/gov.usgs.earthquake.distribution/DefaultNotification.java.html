@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultNotification.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">DefaultNotification.java</span></div><h1>DefaultNotification.java</h1><pre class="source lang-java linenums">/*
+ * DefaultNotification
+ */
+package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.ProductId;
+
+import java.net.URL;
+import java.util.Date;
+
+/**
+ * A DefaultNotification is a implementation of the Notification interface. No
+ * location information is stored about products, and must be tracked
+ * separately.
+ */
+public class DefaultNotification implements Notification {
+
+	/** The product that is available. */
+	private final ProductId id;
+
+	/** How long the product is available. */
+	private final Date expirationDate;
+
+	/** Where to send tracking updates. */
+	private final URL trackerURL;
+
+	/**
+	 * Construct a DefaultNotification.
+	 * 
+	 * @param id
+	 *            the product that is available.
+	 * @param expirationDate
+	 *            how long the product is available.
+	 * @param trackerURL
+	 *            where to send tracking updates.
+	 */
+	public DefaultNotification(final ProductId id, final Date expirationDate,
+<span class="fc" id="L38">			final URL trackerURL) {</span>
+<span class="fc" id="L39">		this.id = id;</span>
+<span class="fc" id="L40">		this.expirationDate = expirationDate;</span>
+<span class="fc" id="L41">		this.trackerURL = trackerURL;</span>
+<span class="fc" id="L42">	}</span>
+
+	/**
+	 * @return how long the product is available.
+	 */
+	public Date getExpirationDate() {
+<span class="fc" id="L48">		return expirationDate;</span>
+	}
+
+	/**
+	 * @return which product is available.
+	 */
+	public ProductId getProductId() {
+<span class="fc" id="L55">		return id;</span>
+	}
+
+	/**
+	 * @return location to send tracking updates.
+	 */
+	public URL getTrackerURL() {
+<span class="fc" id="L62">		return trackerURL;</span>
+	}
+	
+	/** A comparison method to see if two notifications are equal. */
+	public boolean equals(Notification that) {
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">		return</span>
+		(
+			that instanceof DefaultNotification &amp;&amp;
+<span class="fc bfc" id="L70" title="All 2 branches covered.">			getExpirationDate().equals(that.getExpirationDate()) &amp;&amp;</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">			getProductId().equals(that.getProductId()) &amp;&amp;</span>
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">			getTrackerURL().equals(that.getTrackerURL())</span>
+		);
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

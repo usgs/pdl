@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>_QWFeederStub.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">com.isti.quakewatch.server.qw_feeder</a> &gt; <span class="el_source">_QWFeederStub.java</span></div><h1>_QWFeederStub.java</h1><pre class="source lang-java linenums">package com.isti.quakewatch.server.qw_feeder;
+
+/**
+ * Interface definition: QWFeeder.
+ * 
+ * @author OpenORB Compiler
+ */
+<span class="nc" id="L8">public class _QWFeederStub extends org.omg.CORBA.portable.ObjectImpl</span>
+        implements QWFeeder
+{
+    /** Serialization id. */
+	private static final long serialVersionUID = 1L;
+	
+<span class="nc" id="L14">	static final String[] _ids_list =</span>
+    {
+        &quot;IDL:com/isti/quakewatch/server/qw_feeder/QWFeeder:1.0&quot;
+    };
+
+    public String[] _ids()
+    {
+<span class="nc" id="L21">     return _ids_list;</span>
+    }
+
+<span class="nc" id="L24">    private final static Class&lt;QWFeederOperations&gt; _opsClass = com.isti.quakewatch.server.qw_feeder.QWFeederOperations.class;</span>
+
+    /**
+     * Operation sendSourcedMsg
+     */
+    public boolean sendSourcedMsg(String messageStr, String feederSourceHostStr, long feederSrcHostMsgIdNum)
+    {
+        while(true)
+        {
+<span class="nc bnc" id="L33" title="All 2 branches missed.">            if (!this._is_local())</span>
+            {
+<span class="nc" id="L35">                org.omg.CORBA.portable.InputStream _input = null;</span>
+                try
+                {
+<span class="nc" id="L38">                    org.omg.CORBA.portable.OutputStream _output = this._request(&quot;sendSourcedMsg&quot;,true);</span>
+<span class="nc" id="L39">                    _output.write_string(messageStr);</span>
+<span class="nc" id="L40">                    _output.write_string(feederSourceHostStr);</span>
+<span class="nc" id="L41">                    _output.write_longlong(feederSrcHostMsgIdNum);</span>
+<span class="nc" id="L42">                    _input = this._invoke(_output);</span>
+<span class="nc" id="L43">                    boolean _arg_ret = _input.read_boolean();</span>
+<span class="nc" id="L44">                    return _arg_ret;</span>
+                }
+<span class="nc" id="L46">                catch(org.omg.CORBA.portable.RemarshalException _exception)</span>
+                {
+                    continue;
+                }
+<span class="nc" id="L50">                catch(org.omg.CORBA.portable.ApplicationException _exception)</span>
+                {
+<span class="nc" id="L52">                    String _exception_id = _exception.getId();</span>
+<span class="nc" id="L53">                    throw new org.omg.CORBA.UNKNOWN(&quot;Unexpected User Exception: &quot;+ _exception_id);</span>
+                }
+                finally
+                {
+<span class="nc" id="L57">                    this._releaseReply(_input);</span>
+                }
+            }
+            else
+            {
+<span class="nc" id="L62">                org.omg.CORBA.portable.ServantObject _so = _servant_preinvoke(&quot;sendSourcedMsg&quot;,_opsClass);</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">                if (_so == null)</span>
+<span class="nc" id="L64">                   continue;</span>
+<span class="nc" id="L65">                com.isti.quakewatch.server.qw_feeder.QWFeederOperations _self = (com.isti.quakewatch.server.qw_feeder.QWFeederOperations) _so.servant;</span>
+                try
+                {
+<span class="nc" id="L68">                    return _self.sendSourcedMsg( messageStr,  feederSourceHostStr,  feederSrcHostMsgIdNum);</span>
+                }
+                finally
+                {
+<span class="nc" id="L72">                    _servant_postinvoke(_so);</span>
+                }
+            }
+        }
+    }
+
+    /**
+     * Operation sendSourcedDomainTypeMsg
+     */
+    public boolean sendSourcedDomainTypeMsg(String domainStr, String typeStr, String messageStr, String feederSourceHostStr, long feederSrcHostMsgIdNum)
+    {
+        while(true)
+        {
+<span class="nc bnc" id="L85" title="All 2 branches missed.">            if (!this._is_local())</span>
+            {
+<span class="nc" id="L87">                org.omg.CORBA.portable.InputStream _input = null;</span>
+                try
+                {
+<span class="nc" id="L90">                    org.omg.CORBA.portable.OutputStream _output = this._request(&quot;sendSourcedDomainTypeMsg&quot;,true);</span>
+<span class="nc" id="L91">                    _output.write_string(domainStr);</span>
+<span class="nc" id="L92">                    _output.write_string(typeStr);</span>
+<span class="nc" id="L93">                    _output.write_string(messageStr);</span>
+<span class="nc" id="L94">                    _output.write_string(feederSourceHostStr);</span>
+<span class="nc" id="L95">                    _output.write_longlong(feederSrcHostMsgIdNum);</span>
+<span class="nc" id="L96">                    _input = this._invoke(_output);</span>
+<span class="nc" id="L97">                    boolean _arg_ret = _input.read_boolean();</span>
+<span class="nc" id="L98">                    return _arg_ret;</span>
+                }
+<span class="nc" id="L100">                catch(org.omg.CORBA.portable.RemarshalException _exception)</span>
+                {
+                    continue;
+                }
+<span class="nc" id="L104">                catch(org.omg.CORBA.portable.ApplicationException _exception)</span>
+                {
+<span class="nc" id="L106">                    String _exception_id = _exception.getId();</span>
+<span class="nc" id="L107">                    throw new org.omg.CORBA.UNKNOWN(&quot;Unexpected User Exception: &quot;+ _exception_id);</span>
+                }
+                finally
+                {
+<span class="nc" id="L111">                    this._releaseReply(_input);</span>
+                }
+            }
+            else
+            {
+<span class="nc" id="L116">                org.omg.CORBA.portable.ServantObject _so = _servant_preinvoke(&quot;sendSourcedDomainTypeMsg&quot;,_opsClass);</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">                if (_so == null)</span>
+<span class="nc" id="L118">                   continue;</span>
+<span class="nc" id="L119">                com.isti.quakewatch.server.qw_feeder.QWFeederOperations _self = (com.isti.quakewatch.server.qw_feeder.QWFeederOperations) _so.servant;</span>
+                try
+                {
+<span class="nc" id="L122">                    return _self.sendSourcedDomainTypeMsg( domainStr,  typeStr,  messageStr,  feederSourceHostStr,  feederSrcHostMsgIdNum);</span>
+                }
+                finally
+                {
+<span class="nc" id="L126">                    _servant_postinvoke(_so);</span>
+                }
+            }
+        }
+    }
+
+    /**
+     * Operation sendSourcedDomainTypeNameMsg
+     */
+    public boolean sendSourcedDomainTypeNameMsg(String domainStr, String typeStr, String nameStr, String messageStr, String feederSourceHostStr, long feederSrcHostMsgIdNum)
+    {
+        while(true)
+        {
+<span class="nc bnc" id="L139" title="All 2 branches missed.">            if (!this._is_local())</span>
+            {
+<span class="nc" id="L141">                org.omg.CORBA.portable.InputStream _input = null;</span>
+                try
+                {
+<span class="nc" id="L144">                    org.omg.CORBA.portable.OutputStream _output = this._request(&quot;sendSourcedDomainTypeNameMsg&quot;,true);</span>
+<span class="nc" id="L145">                    _output.write_string(domainStr);</span>
+<span class="nc" id="L146">                    _output.write_string(typeStr);</span>
+<span class="nc" id="L147">                    _output.write_string(nameStr);</span>
+<span class="nc" id="L148">                    _output.write_string(messageStr);</span>
+<span class="nc" id="L149">                    _output.write_string(feederSourceHostStr);</span>
+<span class="nc" id="L150">                    _output.write_longlong(feederSrcHostMsgIdNum);</span>
+<span class="nc" id="L151">                    _input = this._invoke(_output);</span>
+<span class="nc" id="L152">                    boolean _arg_ret = _input.read_boolean();</span>
+<span class="nc" id="L153">                    return _arg_ret;</span>
+                }
+<span class="nc" id="L155">                catch(org.omg.CORBA.portable.RemarshalException _exception)</span>
+                {
+                    continue;
+                }
+<span class="nc" id="L159">                catch(org.omg.CORBA.portable.ApplicationException _exception)</span>
+                {
+<span class="nc" id="L161">                    String _exception_id = _exception.getId();</span>
+<span class="nc" id="L162">                    throw new org.omg.CORBA.UNKNOWN(&quot;Unexpected User Exception: &quot;+ _exception_id);</span>
+                }
+                finally
+                {
+<span class="nc" id="L166">                    this._releaseReply(_input);</span>
+                }
+            }
+            else
+            {
+<span class="nc" id="L171">                org.omg.CORBA.portable.ServantObject _so = _servant_preinvoke(&quot;sendSourcedDomainTypeNameMsg&quot;,_opsClass);</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">                if (_so == null)</span>
+<span class="nc" id="L173">                   continue;</span>
+<span class="nc" id="L174">                com.isti.quakewatch.server.qw_feeder.QWFeederOperations _self = (com.isti.quakewatch.server.qw_feeder.QWFeederOperations) _so.servant;</span>
+                try
+                {
+<span class="nc" id="L177">                    return _self.sendSourcedDomainTypeNameMsg( domainStr,  typeStr,  nameStr,  messageStr,  feederSourceHostStr,  feederSrcHostMsgIdNum);</span>
+                }
+                finally
+                {
+<span class="nc" id="L181">                    _servant_postinvoke(_so);</span>
+                }
+            }
+        }
+    }
+
+    /**
+     * Operation sendMessage
+     */
+    public boolean sendMessage(String messageStr)
+    {
+        while(true)
+        {
+<span class="nc bnc" id="L194" title="All 2 branches missed.">            if (!this._is_local())</span>
+            {
+<span class="nc" id="L196">                org.omg.CORBA.portable.InputStream _input = null;</span>
+                try
+                {
+<span class="nc" id="L199">                    org.omg.CORBA.portable.OutputStream _output = this._request(&quot;sendMessage&quot;,true);</span>
+<span class="nc" id="L200">                    _output.write_string(messageStr);</span>
+<span class="nc" id="L201">                    _input = this._invoke(_output);</span>
+<span class="nc" id="L202">                    boolean _arg_ret = _input.read_boolean();</span>
+<span class="nc" id="L203">                    return _arg_ret;</span>
+                }
+<span class="nc" id="L205">                catch(org.omg.CORBA.portable.RemarshalException _exception)</span>
+                {
+                    continue;
+                }
+<span class="nc" id="L209">                catch(org.omg.CORBA.portable.ApplicationException _exception)</span>
+                {
+<span class="nc" id="L211">                    String _exception_id = _exception.getId();</span>
+<span class="nc" id="L212">                    throw new org.omg.CORBA.UNKNOWN(&quot;Unexpected User Exception: &quot;+ _exception_id);</span>
+                }
+                finally
+                {
+<span class="nc" id="L216">                    this._releaseReply(_input);</span>
+                }
+            }
+            else
+            {
+<span class="nc" id="L221">                org.omg.CORBA.portable.ServantObject _so = _servant_preinvoke(&quot;sendMessage&quot;,_opsClass);</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">                if (_so == null)</span>
+<span class="nc" id="L223">                   continue;</span>
+<span class="nc" id="L224">                com.isti.quakewatch.server.qw_feeder.QWFeederOperations _self = (com.isti.quakewatch.server.qw_feeder.QWFeederOperations) _so.servant;</span>
+                try
+                {
+<span class="nc" id="L227">                    return _self.sendMessage( messageStr);</span>
+                }
+                finally
+                {
+<span class="nc" id="L231">                    _servant_postinvoke(_so);</span>
+                }
+            }
+        }
+    }
+
+    /**
+     * Operation sendDomainTypeMessage
+     */
+    public boolean sendDomainTypeMessage(String domainStr, String typeStr, String messageStr)
+    {
+        while(true)
+        {
+<span class="nc bnc" id="L244" title="All 2 branches missed.">            if (!this._is_local())</span>
+            {
+<span class="nc" id="L246">                org.omg.CORBA.portable.InputStream _input = null;</span>
+                try
+                {
+<span class="nc" id="L249">                    org.omg.CORBA.portable.OutputStream _output = this._request(&quot;sendDomainTypeMessage&quot;,true);</span>
+<span class="nc" id="L250">                    _output.write_string(domainStr);</span>
+<span class="nc" id="L251">                    _output.write_string(typeStr);</span>
+<span class="nc" id="L252">                    _output.write_string(messageStr);</span>
+<span class="nc" id="L253">                    _input = this._invoke(_output);</span>
+<span class="nc" id="L254">                    boolean _arg_ret = _input.read_boolean();</span>
+<span class="nc" id="L255">                    return _arg_ret;</span>
+                }
+<span class="nc" id="L257">                catch(org.omg.CORBA.portable.RemarshalException _exception)</span>
+                {
+                    continue;
+                }
+<span class="nc" id="L261">                catch(org.omg.CORBA.portable.ApplicationException _exception)</span>
+                {
+<span class="nc" id="L263">                    String _exception_id = _exception.getId();</span>
+<span class="nc" id="L264">                    throw new org.omg.CORBA.UNKNOWN(&quot;Unexpected User Exception: &quot;+ _exception_id);</span>
+                }
+                finally
+                {
+<span class="nc" id="L268">                    this._releaseReply(_input);</span>
+                }
+            }
+            else
+            {
+<span class="nc" id="L273">                org.omg.CORBA.portable.ServantObject _so = _servant_preinvoke(&quot;sendDomainTypeMessage&quot;,_opsClass);</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">                if (_so == null)</span>
+<span class="nc" id="L275">                   continue;</span>
+<span class="nc" id="L276">                com.isti.quakewatch.server.qw_feeder.QWFeederOperations _self = (com.isti.quakewatch.server.qw_feeder.QWFeederOperations) _so.servant;</span>
+                try
+                {
+<span class="nc" id="L279">                    return _self.sendDomainTypeMessage( domainStr,  typeStr,  messageStr);</span>
+                }
+                finally
+                {
+<span class="nc" id="L283">                    _servant_postinvoke(_so);</span>
+                }
+            }
+        }
+    }
+
+    /**
+     * Operation sendDomainTypeNameMessage
+     */
+    public boolean sendDomainTypeNameMessage(String domainStr, String typeStr, String nameStr, String messageStr)
+    {
+        while(true)
+        {
+<span class="nc bnc" id="L296" title="All 2 branches missed.">            if (!this._is_local())</span>
+            {
+<span class="nc" id="L298">                org.omg.CORBA.portable.InputStream _input = null;</span>
+                try
+                {
+<span class="nc" id="L301">                    org.omg.CORBA.portable.OutputStream _output = this._request(&quot;sendDomainTypeNameMessage&quot;,true);</span>
+<span class="nc" id="L302">                    _output.write_string(domainStr);</span>
+<span class="nc" id="L303">                    _output.write_string(typeStr);</span>
+<span class="nc" id="L304">                    _output.write_string(nameStr);</span>
+<span class="nc" id="L305">                    _output.write_string(messageStr);</span>
+<span class="nc" id="L306">                    _input = this._invoke(_output);</span>
+<span class="nc" id="L307">                    boolean _arg_ret = _input.read_boolean();</span>
+<span class="nc" id="L308">                    return _arg_ret;</span>
+                }
+<span class="nc" id="L310">                catch(org.omg.CORBA.portable.RemarshalException _exception)</span>
+                {
+                    continue;
+                }
+<span class="nc" id="L314">                catch(org.omg.CORBA.portable.ApplicationException _exception)</span>
+                {
+<span class="nc" id="L316">                    String _exception_id = _exception.getId();</span>
+<span class="nc" id="L317">                    throw new org.omg.CORBA.UNKNOWN(&quot;Unexpected User Exception: &quot;+ _exception_id);</span>
+                }
+                finally
+                {
+<span class="nc" id="L321">                    this._releaseReply(_input);</span>
+                }
+            }
+            else
+            {
+<span class="nc" id="L326">                org.omg.CORBA.portable.ServantObject _so = _servant_preinvoke(&quot;sendDomainTypeNameMessage&quot;,_opsClass);</span>
+<span class="nc bnc" id="L327" title="All 2 branches missed.">                if (_so == null)</span>
+<span class="nc" id="L328">                   continue;</span>
+<span class="nc" id="L329">                com.isti.quakewatch.server.qw_feeder.QWFeederOperations _self = (com.isti.quakewatch.server.qw_feeder.QWFeederOperations) _so.servant;</span>
+                try
+                {
+<span class="nc" id="L332">                    return _self.sendDomainTypeNameMessage( domainStr,  typeStr,  nameStr,  messageStr);</span>
+                }
+                finally
+                {
+<span class="nc" id="L336">                    _servant_postinvoke(_so);</span>
+                }
+            }
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

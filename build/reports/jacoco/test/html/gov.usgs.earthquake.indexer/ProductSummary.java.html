@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductSummary.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">ProductSummary.java</span></div><h1>ProductSummary.java</h1><pre class="source lang-java linenums">/*
+ * ProductSummary
+ */
+package gov.usgs.earthquake.indexer;
+
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.XmlUtils;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.math.BigDecimal;
+import java.net.URL;
+import java.util.List;
+import java.net.URI;
+
+/**
+ * A ProductSummary is essentially a product without its contents.
+ * 
+ * These are usually created by {@link IndexerModule}s, which may
+ * inspect Product Content to add additional summary properties.
+ */
+public class ProductSummary {
+
+	/** An ID used by the ProductIndex. */
+<span class="fc" id="L29">	private Long indexId = null;</span>
+
+	/** The product id. */
+<span class="fc" id="L32">	private ProductId id = null;</span>
+
+	/** The product status. */
+<span class="fc" id="L35">	private String status = null;</span>
+
+	/** The product tracker url. */
+<span class="fc" id="L38">	private URL trackerURL = null;</span>
+
+	/** The product properties. */
+<span class="fc" id="L41">	private Map&lt;String, String&gt; properties = new HashMap&lt;String, String&gt;();</span>
+
+	/** The product links. */
+<span class="fc" id="L44">	private Map&lt;String, List&lt;URI&gt;&gt; links = new HashMap&lt;String, List&lt;URI&gt;&gt;();</span>
+
+	/** Unique identifier for this event. */
+<span class="fc" id="L47">	private String eventSource = null;</span>
+
+	/** Unique identifier from the event network. */
+<span class="fc" id="L50">	private String eventSourceCode = null;</span>
+
+	/** When the event occurred. */
+<span class="fc" id="L53">	private Date eventTime = null;</span>
+
+	/** Where the event occurred. */
+<span class="fc" id="L56">	private BigDecimal eventLatitude = null;</span>
+
+	/** Where the event occurred. */
+<span class="fc" id="L59">	private BigDecimal eventLongitude = null;</span>
+
+	/** Where the event occurred. */
+<span class="fc" id="L62">	private BigDecimal eventDepth = null;</span>
+
+	/** How big the event was. */
+<span class="fc" id="L65">	private BigDecimal eventMagnitude = null;</span>
+
+	/** Product version. */
+<span class="fc" id="L68">	private String version = null;</span>
+
+	/** Whether this product is &quot;preferred&quot;. */
+<span class="fc" id="L71">	private long preferredWeight = 0;</span>
+
+	/**
+	 * Empty constructor.
+	 */
+<span class="fc" id="L76">	public ProductSummary() {</span>
+<span class="fc" id="L77">	}</span>
+
+	/**
+	 * Copy constructor for ProductSummary.
+	 * 
+	 * Does a deep copy of properties and links maps. All other attributes are
+	 * copied by reference.
+	 * 
+	 * @param copy
+	 *            product summary to copy.
+	 */
+<span class="fc" id="L88">	public ProductSummary(final ProductSummary copy) {</span>
+<span class="fc" id="L89">		this.indexId = copy.getIndexId();</span>
+<span class="fc" id="L90">		this.id = copy.getId();</span>
+<span class="fc" id="L91">		this.status = copy.getStatus();</span>
+<span class="fc" id="L92">		this.trackerURL = copy.getTrackerURL();</span>
+<span class="fc" id="L93">		this.properties.putAll(copy.getProperties());</span>
+
+<span class="fc" id="L95">		Map&lt;String, List&lt;URI&gt;&gt; copyLinks = copy.getLinks();</span>
+<span class="fc" id="L96">		Iterator&lt;String&gt; iter = copyLinks.keySet().iterator();</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L98">			String relation = iter.next();</span>
+<span class="fc" id="L99">			links.put(relation, new LinkedList&lt;URI&gt;(copyLinks.get(relation)));</span>
+<span class="fc" id="L100">		}</span>
+
+<span class="fc" id="L102">		this.setEventSource(copy.getEventSource());</span>
+<span class="fc" id="L103">		this.setEventSourceCode(copy.getEventSourceCode());</span>
+<span class="fc" id="L104">		this.setEventTime(copy.getEventTime());</span>
+<span class="fc" id="L105">		this.setEventLatitude(copy.getEventLatitude());</span>
+<span class="fc" id="L106">		this.setEventLongitude(copy.getEventLongitude());</span>
+<span class="fc" id="L107">		this.setEventDepth(copy.getEventDepth());</span>
+<span class="fc" id="L108">		this.setEventMagnitude(copy.getEventMagnitude());</span>
+<span class="fc" id="L109">		this.setVersion(copy.getVersion());</span>
+<span class="fc" id="L110">		this.setPreferredWeight(copy.getPreferredWeight());</span>
+<span class="fc" id="L111">	}</span>
+
+	/**
+	 * Create a ProductSummary from a product.
+	 * 
+	 * All attributes are copied from the product, and preferredWeight is set to
+	 * 1L.
+	 * 
+	 * @param product
+	 *            the product to summarize.
+	 */
+<span class="fc" id="L122">	public ProductSummary(final Product product) {</span>
+<span class="fc" id="L123">		this.id = product.getId();</span>
+<span class="fc" id="L124">		this.status = product.getStatus();</span>
+<span class="fc" id="L125">		this.trackerURL = product.getTrackerURL();</span>
+<span class="fc" id="L126">		this.properties.putAll(product.getProperties());</span>
+
+<span class="fc" id="L128">		Map&lt;String, List&lt;URI&gt;&gt; copyLinks = product.getLinks();</span>
+<span class="fc" id="L129">		Iterator&lt;String&gt; iter = copyLinks.keySet().iterator();</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L131">			String relation = iter.next();</span>
+<span class="fc" id="L132">			links.put(relation, new LinkedList&lt;URI&gt;(copyLinks.get(relation)));</span>
+<span class="fc" id="L133">		}</span>
+
+<span class="fc" id="L135">		this.setEventSource(product.getEventSource());</span>
+<span class="fc" id="L136">		this.setEventSourceCode(product.getEventSourceCode());</span>
+<span class="fc" id="L137">		this.setEventTime(product.getEventTime());</span>
+<span class="fc" id="L138">		this.setEventLatitude(product.getLatitude());</span>
+<span class="fc" id="L139">		this.setEventLongitude(product.getLongitude());</span>
+<span class="fc" id="L140">		this.setEventDepth(product.getDepth());</span>
+<span class="fc" id="L141">		this.setEventMagnitude(product.getMagnitude());</span>
+<span class="fc" id="L142">		this.setVersion(product.getVersion());</span>
+<span class="fc" id="L143">		this.setPreferredWeight(1L);</span>
+<span class="fc" id="L144">	}</span>
+
+	public Long getIndexId() {
+<span class="fc" id="L147">		return indexId;</span>
+	}
+
+	public void setIndexId(Long indexId) {
+<span class="fc" id="L151">		this.indexId = indexId;</span>
+<span class="fc" id="L152">	}</span>
+
+	public ProductId getId() {
+<span class="fc" id="L155">		return id;</span>
+	}
+
+	public void setId(ProductId id) {
+<span class="fc" id="L159">		this.id = id;</span>
+<span class="fc" id="L160">	}</span>
+
+	public String getStatus() {
+<span class="fc" id="L163">		return status;</span>
+	}
+
+	public void setStatus(String status) {
+<span class="fc" id="L167">		this.status = status;</span>
+<span class="fc" id="L168">	}</span>
+
+	public boolean isDeleted() {
+<span class="fc bfc" id="L171" title="All 2 branches covered.">		if (Product.STATUS_DELETE.equalsIgnoreCase(this.status)) {</span>
+<span class="fc" id="L172">			return true;</span>
+		} else {
+<span class="fc" id="L174">			return false;</span>
+		}
+	}
+
+	public URL getTrackerURL() {
+<span class="fc" id="L179">		return trackerURL;</span>
+	}
+
+	public void setTrackerURL(URL trackerURL) {
+<span class="fc" id="L183">		this.trackerURL = trackerURL;</span>
+<span class="fc" id="L184">	}</span>
+
+	public long getPreferredWeight() {
+<span class="fc" id="L187">		return preferredWeight;</span>
+	}
+
+	public void setPreferredWeight(long weight) {
+<span class="fc" id="L191">		this.preferredWeight = weight;</span>
+<span class="fc" id="L192">	}</span>
+
+	/**
+	 * @return the properties
+	 */
+	public Map&lt;String, String&gt; getProperties() {
+<span class="fc" id="L198">		return properties;</span>
+	}
+
+	/**
+	 * @param properties
+	 *            the properties to set
+	 */
+	public void setProperties(final Map&lt;String, String&gt; properties) {
+<span class="fc" id="L206">		this.properties.putAll(properties);</span>
+<span class="fc" id="L207">	}</span>
+
+	/**
+	 * Returns a reference to the links map.
+	 * 
+	 * @return the links
+	 */
+	public Map&lt;String, List&lt;URI&gt;&gt; getLinks() {
+<span class="fc" id="L215">		return links;</span>
+	}
+
+	/**
+	 * Copies entries from provided map.
+	 * 
+	 * @param links
+	 *            the links to set
+	 */
+	public void setLinks(final Map&lt;String, List&lt;URI&gt;&gt; links) {
+<span class="fc" id="L225">		this.links.clear();</span>
+<span class="fc" id="L226">		this.links.putAll(links);</span>
+<span class="fc" id="L227">	}</span>
+
+	/**
+	 * Add a link to a product.
+	 * 
+	 * @param relation
+	 *            how link is related to product.
+	 * @param href
+	 *            actual link.
+	 */
+	public void addLink(final String relation, final URI href) {
+<span class="fc" id="L238">		List&lt;URI&gt; relationLinks = links.get(relation);</span>
+<span class="pc bpc" id="L239" title="1 of 2 branches missed.">		if (relationLinks == null) {</span>
+<span class="fc" id="L240">			relationLinks = new LinkedList&lt;URI&gt;();</span>
+<span class="fc" id="L241">			links.put(relation, relationLinks);</span>
+		}
+<span class="fc" id="L243">		relationLinks.add(href);</span>
+<span class="fc" id="L244">	}</span>
+
+	public String getEventId() {
+<span class="pc bpc" id="L247" title="1 of 4 branches missed.">		if (eventSource == null || eventSourceCode == null) {</span>
+<span class="fc" id="L248">			return null;</span>
+		}
+<span class="fc" id="L250">		return (eventSource + eventSourceCode).toLowerCase();</span>
+	}
+
+	public String getEventSource() {
+<span class="fc" id="L254">		return eventSource;</span>
+	}
+
+	public void setEventSource(String eventSource) {
+<span class="fc" id="L258">		this.eventSource = eventSource;</span>
+
+		// event ids are case insensitive, force lower.
+<span class="fc bfc" id="L261" title="All 2 branches covered.">		if (this.eventSource != null) {</span>
+<span class="fc" id="L262">			this.eventSource = this.eventSource.toLowerCase();</span>
+		}
+
+<span class="fc bfc" id="L265" title="All 2 branches covered.">		if (this.eventSource != null) {</span>
+<span class="fc" id="L266">			this.properties.put(Product.EVENTSOURCE_PROPERTY, this.eventSource);</span>
+		} else {
+<span class="fc" id="L268">			this.properties.remove(Product.EVENTSOURCE_PROPERTY);</span>
+		}
+<span class="fc" id="L270">	}</span>
+
+	public String getEventSourceCode() {
+<span class="fc" id="L273">		return eventSourceCode;</span>
+	}
+
+	public void setEventSourceCode(String eventSourceCode) {
+<span class="fc" id="L277">		this.eventSourceCode = eventSourceCode;</span>
+
+		// event ids are case insensitive, force lower.
+<span class="fc bfc" id="L280" title="All 2 branches covered.">		if (this.eventSourceCode != null) {</span>
+<span class="fc" id="L281">			this.eventSourceCode = this.eventSourceCode.toLowerCase();</span>
+		}
+
+<span class="fc bfc" id="L284" title="All 2 branches covered.">		if (this.eventSourceCode != null) {</span>
+<span class="fc" id="L285">			this.properties.put(Product.EVENTSOURCECODE_PROPERTY,</span>
+					this.eventSourceCode);
+		} else {
+<span class="fc" id="L288">			this.properties.remove(Product.EVENTSOURCECODE_PROPERTY);</span>
+		}
+<span class="fc" id="L290">	}</span>
+
+	public Date getEventTime() {
+<span class="fc" id="L293">		return eventTime;</span>
+	}
+
+	public void setEventTime(Date eventTime) {
+<span class="fc" id="L297">		this.eventTime = eventTime;</span>
+<span class="fc bfc" id="L298" title="All 2 branches covered.">		if (eventTime != null) {</span>
+<span class="fc" id="L299">			this.properties.put(Product.EVENTTIME_PROPERTY,</span>
+<span class="fc" id="L300">					XmlUtils.formatDate(eventTime));</span>
+		} else {
+<span class="fc" id="L302">			this.properties.remove(Product.EVENTTIME_PROPERTY);</span>
+		}
+
+<span class="fc" id="L305">	}</span>
+
+	public BigDecimal getEventLatitude() {
+<span class="fc" id="L308">		return eventLatitude;</span>
+	}
+
+	public void setEventLatitude(BigDecimal eventLatitude) {
+<span class="fc" id="L312">		this.eventLatitude = eventLatitude;</span>
+<span class="fc bfc" id="L313" title="All 2 branches covered.">		if (eventLatitude != null) {</span>
+<span class="fc" id="L314">			this.properties.put(Product.LATITUDE_PROPERTY,</span>
+<span class="fc" id="L315">					eventLatitude.toString());</span>
+		} else {
+<span class="fc" id="L317">			this.properties.remove(Product.LATITUDE_PROPERTY);</span>
+		}
+<span class="fc" id="L319">	}</span>
+
+	public BigDecimal getEventLongitude() {
+<span class="fc" id="L322">		return eventLongitude;</span>
+	}
+
+	public void setEventLongitude(BigDecimal eventLongitude) {
+<span class="fc" id="L326">		this.eventLongitude = eventLongitude;</span>
+<span class="fc bfc" id="L327" title="All 2 branches covered.">		if (eventLongitude != null) {</span>
+<span class="fc" id="L328">			this.properties.put(Product.LONGITUDE_PROPERTY,</span>
+<span class="fc" id="L329">					eventLongitude.toString());</span>
+		} else {
+<span class="fc" id="L331">			this.properties.remove(Product.LONGITUDE_PROPERTY);</span>
+		}
+<span class="fc" id="L333">	}</span>
+
+	public BigDecimal getEventDepth() {
+<span class="fc" id="L336">		return eventDepth;</span>
+	}
+
+	public void setEventDepth(BigDecimal eventDepth) {
+<span class="fc" id="L340">		this.eventDepth = eventDepth;</span>
+<span class="fc bfc" id="L341" title="All 2 branches covered.">		if (eventDepth != null) {</span>
+<span class="fc" id="L342">			this.properties.put(Product.DEPTH_PROPERTY, eventDepth.toString());</span>
+		} else {
+<span class="fc" id="L344">			this.properties.remove(Product.DEPTH_PROPERTY);</span>
+		}
+<span class="fc" id="L346">	}</span>
+
+	public BigDecimal getEventMagnitude() {
+<span class="fc" id="L349">		return eventMagnitude;</span>
+	}
+
+	public void setEventMagnitude(BigDecimal eventMagnitude) {
+<span class="fc" id="L353">		this.eventMagnitude = eventMagnitude;</span>
+<span class="fc bfc" id="L354" title="All 2 branches covered.">		if (eventMagnitude != null) {</span>
+<span class="fc" id="L355">			this.properties.put(Product.MAGNITUDE_PROPERTY,</span>
+<span class="fc" id="L356">					eventMagnitude.toString());</span>
+		} else {
+<span class="fc" id="L358">			this.properties.remove(Product.MAGNITUDE_PROPERTY);</span>
+		}
+<span class="fc" id="L360">	}</span>
+
+	public String getVersion() {
+<span class="fc" id="L363">		return version;</span>
+	}
+
+	public void setVersion(String version) {
+<span class="fc" id="L367">		this.version = version;</span>
+<span class="fc bfc" id="L368" title="All 2 branches covered.">		if (version != null) {</span>
+<span class="fc" id="L369">			this.properties.put(Product.VERSION_PROPERTY, version);</span>
+		} else {
+<span class="fc" id="L371">			this.properties.remove(Product.VERSION_PROPERTY);</span>
+		}
+<span class="fc" id="L373">	}</span>
+
+	public String getType() {
+<span class="fc" id="L376">		return getId().getType();</span>
+	}
+
+	public String getSource() {
+<span class="fc" id="L380">		return getId().getSource();</span>
+	}
+
+	public String getCode() {
+<span class="fc" id="L384">		return getId().getCode();</span>
+	}
+
+	public Date getUpdateTime() {
+<span class="fc" id="L388">		return getId().getUpdateTime();</span>
+	}
+
+	/**
+	 * Compares two ProductSummaries to determine if they are equal.
+	 * 
+	 * This first implementation just considers the ProductId of each summary.
+	 * This is probably not the best way to check for equality.
+	 */
+	@Override
+	public boolean equals(Object o) {
+<span class="pc bpc" id="L399" title="1 of 2 branches missed.">		if (o instanceof ProductSummary) {</span>
+<span class="fc" id="L400">			return ((ProductSummary) o).getId().equals(this.getId());</span>
+		}
+<span class="nc" id="L402">		return false;</span>
+	}
+
+	/**
+	 * Generate hashcode for ProductId using all components.
+	 *
+	 * This implementation just uses hashcode from ProductId.
+	 */
+	@Override
+	public int hashCode() {
+<span class="fc" id="L412">		return getId().hashCode();</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

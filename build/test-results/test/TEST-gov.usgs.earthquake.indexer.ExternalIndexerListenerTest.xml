@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="gov.usgs.earthquake.indexer.ExternalIndexerListenerTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2019-08-05T22:07:20" hostname="igskcicgwsgm015" time="0.094">
+  <properties/>
+  <testcase name="testAccept" classname="gov.usgs.earthquake.indexer.ExternalIndexerListenerTest" time="0.069"/>
+  <testcase name="testArchivingProduct" classname="gov.usgs.earthquake.indexer.ExternalIndexerListenerTest" time="0.024"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[
+###
+Mon Aug 05 16:07:20 MDT 2019
+FINER	thread=287	[null] running listener cleanup
+FINER	thread=13	[null] product type 'shakemap' excluded
+FINE	thread=13	[null] product is not preferred in any event
+
+###
+Mon Aug 05 16:07:20 MDT 2019
+FINE	thread=13	Digest='0uv96xgURBBHRoDgbCZZ1i8eRoA=' , 3ms
+FINEST	thread=13	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1565042840144
+FINEST	thread=13	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1565042840144
+FINEST	thread=13	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1565042840144
+FINEST	thread=13	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1565042840144
+FINER	thread=13	[null] Change product is null. Probably archiving.
+FINEST	thread=13	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1565042840144
+FINEST	thread=13	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1565042840144
+FINEST	thread=13	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1565042840144
+FINEST	thread=13	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1565042840144
+INFO	thread=13	[null] running command echo --type=shakemap --code=abcd1234 --source=us --updateTime=2019-08-05T22:07:20.144Z --status=UPDATE --trackerURL=http://localhost/tracker "--property-testprop=testvalue" --link-testrelation=http://google.com/ --action=PRODUCT_ARCHIVED
+INFO	thread=13	[null] command 'echo --type=shakemap --code=abcd1234 --source=us --updateTime=2019-08-05T22:07:20.144Z --status=UPDATE --trackerURL=http://localhost/tracker "--property-testprop=testvalue" --link-testrelation=http://google.com/ --action=PRODUCT_ARCHIVED' exited with status '0'
+]]></system-err>
+</testsuite>

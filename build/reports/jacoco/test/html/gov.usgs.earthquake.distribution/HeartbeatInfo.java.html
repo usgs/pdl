@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HeartbeatInfo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">HeartbeatInfo.java</span></div><h1>HeartbeatInfo.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution;
+
+import java.util.Date;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+
+/**
+ * HeartbeatInfo stores a single heartbeat key/value message, together with a
+ * timestamp
+ * 
+ * @author tene
+ * 
+ */
+public class HeartbeatInfo {
+
+<span class="fc" id="L17">	private String message = null;</span>
+<span class="fc" id="L18">	private Date date = null;</span>
+
+	/**
+	 * Message constructor
+	 * 
+	 * @param message
+	 * @param date
+	 */
+<span class="fc" id="L26">	public HeartbeatInfo(String message, Date date) {</span>
+<span class="fc" id="L27">		this.message = message;</span>
+<span class="fc" id="L28">		this.date = date;</span>
+<span class="fc" id="L29">	}</span>
+
+	/**
+	 * @return message contents
+	 */
+	public String getMessage() {
+<span class="fc" id="L35">		return message;</span>
+	}
+
+	/**
+	 * @return message timestamp
+	 */
+	public Date getDate() {
+<span class="fc" id="L42">		return date;</span>
+	}
+
+	/**
+	 * Set message content
+	 * 
+	 * @param message
+	 */
+	public void setMessage(String message) {
+<span class="nc" id="L51">		this.message = message;</span>
+<span class="nc" id="L52">	}</span>
+
+	/**
+	 * Set message timestamp
+	 * 
+	 * @param date
+	 */
+	public void setDate(Date date) {
+<span class="nc" id="L60">		this.date = date;</span>
+<span class="nc" id="L61">	}</span>
+
+	/**
+	 * Test if a message is older than a purgeDate
+	 * 
+	 * @param purgeDate
+	 * @return true if {@link #getDate()} is before purgeDate
+	 */
+	public boolean isExpired(Date purgeDate) {
+<span class="fc" id="L70">		return date.before(purgeDate);</span>
+	}
+
+	/**
+	 * @return JSON object of the message
+	 */
+	public JsonObject toJsonObject() {
+<span class="fc" id="L77">		JsonObject object = Json.createObjectBuilder()</span>
+<span class="fc" id="L78">				.add(&quot;message&quot;, message)</span>
+<span class="fc" id="L79">				.add(&quot;date&quot;, String.valueOf(date.getTime()))</span>
+<span class="fc" id="L80">				.build();</span>
+<span class="fc" id="L81">		return object;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

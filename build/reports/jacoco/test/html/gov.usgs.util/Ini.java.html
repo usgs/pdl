@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Ini.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util</a> &gt; <span class="el_source">Ini.java</span></div><h1>Ini.java</h1><pre class="source lang-java linenums">/*
+ * Ini
+ *
+ * $Id$
+ * $URL$
+ */
+package gov.usgs.util;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.HashMap;
+
+/**
+ * Ini is a Properties that supports sections.
+ *
+ * Format Rules:
+ * &lt;ul&gt;
+ * &lt;li&gt;Empty lines are ignored.
+ * &lt;li&gt;Leading and trailing white space are ignored.
+ * &lt;li&gt;Comments must be on separate lines, and begin with '#' or ';'.
+ * &lt;li&gt;Properties are key value pairs delimited by an equals: key = value
+ * &lt;li&gt;Section Names are on separate lines, begin with '[' and end with ']'. Any
+ * whitespace around the brackets is ignored.
+ * &lt;li&gt;Any properties before the first section are in the &quot;null&quot; section
+ * &lt;/ul&gt;
+ *
+ * Format Example:
+ *
+ * &lt;pre&gt;
+ * #comment about the global
+ * global = value
+ *
+ * # comment about this section
+ * ; another comment about this section
+ * [ Section Name ]
+ * section = value
+ * &lt;/pre&gt;
+ *
+ */
+public class Ini extends Properties {
+
+	/** Serialization version. */
+	private static final long serialVersionUID = 1L;
+
+	/** Section names map to Section properties. */
+<span class="fc" id="L55">	private HashMap&lt;String, Properties&gt; sections = new HashMap&lt;String, Properties&gt;();</span>
+
+	public static final String COMMENT_START = &quot;;&quot;;
+	public static final String ALTERNATE_COMMENT_START = &quot;#&quot;;
+
+	public static final String SECTION_START = &quot;[&quot;;
+	public static final String SECTION_END = &quot;]&quot;;
+	public static final String PROPERTY_DELIMITER = &quot;=&quot;;
+
+	/**
+	 * Same as new Ini(null).
+	 */
+	public Ini() {
+<span class="fc" id="L68">		this(null);</span>
+<span class="fc" id="L69">	}</span>
+
+	/**
+	 * Construct a new Ini with defaults.
+	 *
+	 * @param properties
+	 *            a Properties or Ini object with defaults. If an Ini object,
+	 *            also makes a shallow copy of sections.
+	 */
+	public Ini(final Properties properties) {
+<span class="fc" id="L79">		super(properties);</span>
+
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">		if (properties instanceof Ini) {</span>
+<span class="nc" id="L82">			sections.putAll(((Ini) properties).getSections());</span>
+		}
+<span class="fc" id="L84">	}</span>
+
+	/**
+	 * @return the section properties map.
+	 */
+	public HashMap&lt;String, Properties&gt; getSections() {
+<span class="fc" id="L90">		return sections;</span>
+	}
+
+	/**
+	 * Get a section property.
+	 *
+	 * @param section
+	 *            the section, if null calls getProperty(key).
+	 * @param key
+	 *            the property name.
+	 * @return value or property, or null if no matching property found.
+	 */
+	public String getSectionProperty(String section, String key) {
+<span class="nc bnc" id="L103" title="All 2 branches missed.">		if (section == null) {</span>
+<span class="nc" id="L104">			return getProperty(key);</span>
+		} else {
+<span class="nc" id="L106">			Properties props = sections.get(section);</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">			if (props != null) {</span>
+<span class="nc" id="L108">				return props.getProperty(key);</span>
+			} else {
+<span class="nc" id="L110">				return null;</span>
+			}
+		}
+	}
+
+	/**
+	 * Set a section property.
+	 *
+	 * @param section
+	 *            the section, if null calls super.setProperty(key, value).
+	 * @param key
+	 *            the property name.
+	 * @param value
+	 *            the property value.
+	 * @return any previous value for key.
+	 */
+	public Object setSectionProperty(String section, String key, String value) {
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">		if (section == null) {</span>
+<span class="nc" id="L128">			return setProperty(key, value);</span>
+		} else {
+<span class="fc" id="L130">			Properties props = sections.get(section);</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">			if (props == null) {</span>
+				// new section
+<span class="fc" id="L133">				props = new Properties();</span>
+<span class="fc" id="L134">				sections.put(section, props);</span>
+			}
+<span class="fc" id="L136">			return props.setProperty(key, value);</span>
+		}
+	}
+
+	/**
+	 * Read an Ini input stream.
+	 *
+	 * @param inStream
+	 *            the input stream to read.
+	 * @throws IOException
+	 *         if unable to parse input stream.
+	 */
+	public void load(InputStream inStream) throws IOException {
+<span class="nc" id="L149">		BufferedReader br = new BufferedReader(new InputStreamReader(inStream));</span>
+
+		// keep track of current line number
+<span class="nc" id="L152">		int lineNumber = 0;</span>
+		// line being parsed
+		String line;
+		// section being parsed
+<span class="nc" id="L156">		Properties section = null;</span>
+
+<span class="nc bnc" id="L158" title="All 2 branches missed.">		while ((line = br.readLine()) != null) {</span>
+<span class="nc" id="L159">			lineNumber = lineNumber + 1;</span>
+<span class="nc" id="L160">			line = line.trim();</span>
+
+			// empty line or comment
+<span class="nc bnc" id="L163" title="All 4 branches missed.">			if (line.length() == 0 || line.startsWith(COMMENT_START)</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">					|| line.startsWith(ALTERNATE_COMMENT_START)) {</span>
+				// ignore
+<span class="nc" id="L166">				continue;</span>
+			}
+
+			// section
+<span class="nc bnc" id="L170" title="All 2 branches missed.">			else if (line.startsWith(SECTION_START)</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">					&amp;&amp; line.endsWith(SECTION_END)) {</span>
+				// remove brackets
+<span class="nc" id="L173">				line = line.replace(SECTION_START, &quot;&quot;);</span>
+<span class="nc" id="L174">				line = line.replace(SECTION_END, &quot;&quot;);</span>
+<span class="nc" id="L175">				line = line.trim();</span>
+
+				// store all properties in section
+<span class="nc" id="L178">				section = new Properties();</span>
+<span class="nc" id="L179">				getSections().put(line, section);</span>
+			}
+
+			// parse as property
+			else {
+<span class="nc" id="L184">				int index = line.indexOf(&quot;=&quot;);</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">				if (index == -1) {</span>
+<span class="nc" id="L186">					throw new IOException(&quot;Expected &quot; + PROPERTY_DELIMITER</span>
+							+ &quot; on line &quot; + lineNumber + &quot;: '&quot; + line + &quot;'&quot;);
+				} else {
+<span class="nc" id="L189">					String[] parts = line.split(PROPERTY_DELIMITER, 2);</span>
+<span class="nc" id="L190">					String key = parts[0].trim();</span>
+<span class="nc" id="L191">					String value = parts[1].trim();</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">					if (section != null) {</span>
+<span class="nc" id="L193">						section.setProperty(key, value);</span>
+					} else {
+<span class="nc" id="L195">						setProperty(key, value);</span>
+					}
+				}
+<span class="nc" id="L198">			}</span>
+
+		}
+
+<span class="nc" id="L202">		br.close();</span>
+<span class="nc" id="L203">	}</span>
+
+	/**
+	 * Write an Ini format to a PrintWriter.
+	 *
+	 * @param props
+	 *            properties to write.
+	 * @param writer
+	 *            the writer that writes.
+	 * @param header
+	 *            an optioal header that will appear in comments at the start of
+	 *            the ini format.
+	 * @throws IOException
+	 *         if unable to write output.
+	 */
+	@SuppressWarnings(&quot;unchecked&quot;)
+	public static void write(final Properties props, final PrintWriter writer,
+			String header) throws IOException {
+
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">		if (header != null) {</span>
+			// write the header
+<span class="fc" id="L224">			writer.write(new StringBuffer(COMMENT_START).append(&quot; &quot;).append(</span>
+<span class="fc" id="L225">					header.trim().replace(&quot;\n&quot;, &quot;\n&quot; + COMMENT_START + &quot; &quot;))</span>
+<span class="fc" id="L226">					.append(&quot;\n&quot;).toString());</span>
+		}
+
+		// write properties
+<span class="fc" id="L230">		Iterator&lt;String&gt; iter = (Iterator&lt;String&gt;) Collections.list(</span>
+<span class="fc" id="L231">				props.propertyNames()).iterator();</span>
+<span class="fc bfc" id="L232" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L233">			String key = iter.next();</span>
+<span class="fc" id="L234">			writer.write(new StringBuffer(key).append(PROPERTY_DELIMITER)</span>
+<span class="fc" id="L235">					.append(props.getProperty(key)).append(&quot;\n&quot;).toString());</span>
+<span class="fc" id="L236">		}</span>
+
+		// write sections
+<span class="pc bpc" id="L239" title="1 of 2 branches missed.">		if (props instanceof Ini) {</span>
+<span class="fc" id="L240">			Ini ini = (Ini) props;</span>
+<span class="fc" id="L241">			iter = ini.getSections().keySet().iterator();</span>
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">			while (iter.hasNext()) {</span>
+<span class="nc" id="L243">				String sectionName = iter.next();</span>
+<span class="nc" id="L244">				writer.write(new StringBuffer(SECTION_START)</span>
+<span class="nc" id="L245">						.append(sectionName).append(SECTION_END).append(&quot;\n&quot;)</span>
+<span class="nc" id="L246">						.toString());</span>
+<span class="nc" id="L247">				write(ini.getSections().get(sectionName), writer, null);</span>
+<span class="nc" id="L248">			}</span>
+		}
+
+		// flush, but don't close
+<span class="fc" id="L252">		writer.flush();</span>
+<span class="fc" id="L253">	}</span>
+
+	/**
+	 * Calls write(new PrintWriter(out), header).
+	 */
+	public void store(OutputStream out, String header) throws IOException {
+<span class="fc" id="L259">		write(this, new PrintWriter(out), header);</span>
+<span class="fc" id="L260">	}</span>
+
+	/**
+	 * Write properties to an OutputStream.
+	 *
+	 * @param out
+	 *            the OutputStream used for writing.
+	 */
+	public void save(final OutputStream out) {
+		try {
+<span class="nc" id="L270">			store(out, null);</span>
+<span class="nc" id="L271">		} catch (IOException e) {</span>
+<span class="nc" id="L272">			e.printStackTrace();</span>
+<span class="nc" id="L273">		}</span>
+<span class="nc" id="L274">	}</span>
+
+	/**
+	 * Write properties to a PrintStream.
+	 *
+	 * @param out
+	 *            the PrintStream used for writing.
+	 */
+	public void list(PrintStream out) {
+		try {
+<span class="nc" id="L284">			store(out, null);</span>
+<span class="nc" id="L285">		} catch (IOException e) {</span>
+<span class="nc" id="L286">			e.printStackTrace();</span>
+<span class="nc" id="L287">		}</span>
+<span class="nc" id="L288">	}</span>
+
+	/**
+	 * Write properties to a PrintWriter.
+	 *
+	 * @param out
+	 *            the PrintWriter used for writing.
+	 */
+	public void list(PrintWriter out) {
+		try {
+<span class="nc" id="L298">			write(this, out, null);</span>
+<span class="nc" id="L299">		} catch (IOException e) {</span>
+<span class="nc" id="L300">			e.printStackTrace();</span>
+<span class="nc" id="L301">		}</span>
+<span class="nc" id="L302">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XmlUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util</a> &gt; <span class="el_source">XmlUtils.java</span></div><h1>XmlUtils.java</h1><pre class="source lang-java linenums">/*
+ * XmlUtils
+ *
+ * $Id$
+ * $HeadURL$
+ */
+package gov.usgs.util;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TimeZone;
+
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.datatype.DatatypeFactory;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.SAXException;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+
+/**
+ * Xml parsing utility functions.
+ *
+ * @author jmfee
+ *
+ */
+<span class="nc" id="L39">public class XmlUtils {</span>
+
+<span class="fc" id="L41">	public static final Map&lt;String, String&gt; ESCAPES = new HashMap&lt;String, String&gt;();</span>
+	static {
+		// xml
+<span class="fc" id="L44">		ESCAPES.put(&quot;&amp;&quot;, &quot;&amp;amp;&quot;);</span>
+<span class="fc" id="L45">		ESCAPES.put(&quot;&lt;&quot;, &quot;&amp;lt;&quot;);</span>
+<span class="fc" id="L46">		ESCAPES.put(&quot;&gt;&quot;, &quot;&amp;gt;&quot;);</span>
+<span class="fc" id="L47">		ESCAPES.put(&quot;\&quot;&quot;, &quot;&amp;quot;&quot;);</span>
+<span class="fc" id="L48">		ESCAPES.put(&quot;'&quot;, &quot;&amp;apos;&quot;);</span>
+		// whitespace characters
+<span class="fc" id="L50">		ESCAPES.put(&quot;\t&quot;, &quot;&amp;#x9;&quot;); // tab</span>
+<span class="fc" id="L51">		ESCAPES.put(&quot;\n&quot;, &quot;&amp;#xA;&quot;); // newline</span>
+<span class="fc" id="L52">		ESCAPES.put(&quot;\r&quot;, &quot;&amp;#xD;&quot;); // carriage return</span>
+<span class="fc" id="L53">	}</span>
+
+	/**
+	 * Convenience method to format a Date as an XML DateTime String.
+	 *
+	 * @param date
+	 *            the date to format.
+	 * @return the XML representation as a string.
+	 */
+	public static String formatDate(final Date date) {
+<span class="fc bfc" id="L63" title="All 2 branches covered.">		if (date == null) {</span>
+<span class="fc" id="L64">			return null;</span>
+		}
+<span class="fc" id="L66">		GregorianCalendar calendar = new GregorianCalendar();</span>
+<span class="fc" id="L67">		calendar.setTimeInMillis(date.getTime());</span>
+<span class="fc" id="L68">		return formatGregorianCalendar(calendar);</span>
+	}
+
+	/**
+	 * Format a Gregorian Calendar as an XML DateTime String.
+	 *
+	 * @param calendar
+	 *            the calendar to format.
+	 * @return the XML representation as a string.
+	 */
+	public static String formatGregorianCalendar(
+			final GregorianCalendar calendar) {
+		try {
+<span class="fc" id="L81">			return DatatypeFactory.newInstance()</span>
+<span class="fc" id="L82">					.newXMLGregorianCalendar(calendar).normalize()</span>
+<span class="fc" id="L83">					.toXMLFormat();</span>
+<span class="nc" id="L84">		} catch (Exception e) {</span>
+<span class="nc" id="L85">			return null;</span>
+		}
+	}
+
+	/**
+	 * Convenience method to parse an XML Date Time into a Date. Only useful
+	 * when the XML Date Time is within the Date object time range.
+	 *
+	 * @param toParse
+	 *            the xml date time string to parse.
+	 * @return the parsed Date object.
+	 */
+	public static Date getDate(final String toParse) {
+<span class="fc" id="L98">		XMLGregorianCalendar calendar = getXMLGregorianCalendar(toParse);</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">		if (calendar != null) {</span>
+<span class="fc" id="L100">			return new Date(calendar.toGregorianCalendar().getTimeInMillis());</span>
+		} else {
+<span class="fc" id="L102">			return null;</span>
+		}
+	}
+
+	/**
+	 * Parse an XML Date Time into an XMLGregorianCalendar.
+	 *
+	 * @param toParse
+	 *            the xml date time string to parse.
+	 * @return the parsed XMLGregorianCalendar object.
+	 */
+	public static XMLGregorianCalendar getXMLGregorianCalendar(
+			final String toParse) {
+		try {
+<span class="fc" id="L116">			return DatatypeFactory.newInstance().newXMLGregorianCalendar(</span>
+					toParse);
+<span class="fc" id="L118">		} catch (Exception e) {</span>
+<span class="fc" id="L119">			return null;</span>
+		}
+	}
+
+	/**
+	 * Converts an XMLGregorianCalendar to a Date.
+	 *
+	 * @param xmlDate
+	 *            XMLGregorianCalendar to convert.
+	 * @return corresponding date object.
+	 */
+	public static Date getDate(final XMLGregorianCalendar xmlDate) {
+		// is this equivalent to getDate(String) processing above??
+
+		// start with UTC, i.e. no daylight savings time.
+<span class="nc" id="L134">		TimeZone timezone = TimeZone.getTimeZone(&quot;GMT&quot;);</span>
+
+		// adjust timezone to match xmldate
+<span class="nc" id="L137">		int offsetMinutes = xmlDate.getTimezone();</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">		if (offsetMinutes != DatatypeConstants.FIELD_UNDEFINED) {</span>
+<span class="nc" id="L139">			timezone.setRawOffset(</span>
+			// convert minutes to milliseconds
+			offsetMinutes * 60 // seconds per minute
+			* 1000 // milliseconds per second
+			);
+		}
+
+		// use calendar so parsed date will be UTC
+<span class="nc" id="L147">		Calendar calendar = Calendar.getInstance(timezone);</span>
+<span class="nc" id="L148">		calendar.clear();</span>
+<span class="nc" id="L149">		calendar.set(xmlDate.getYear(),</span>
+				// xmlcalendar is 1 based, calender is 0 based
+<span class="nc" id="L151">				xmlDate.getMonth() - 1, xmlDate.getDay(), xmlDate.getHour(),</span>
+<span class="nc" id="L152">				xmlDate.getMinute(), xmlDate.getSecond());</span>
+<span class="nc" id="L153">		Date date = calendar.getTime();</span>
+<span class="nc" id="L154">		int millis = xmlDate.getMillisecond();</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">		if (millis != DatatypeConstants.FIELD_UNDEFINED) {</span>
+<span class="nc" id="L156">			calendar.setTimeInMillis(calendar.getTimeInMillis() + millis);</span>
+		}
+
+<span class="nc" id="L159">		return date;</span>
+	}
+
+	/**
+	 * Creates an XMLReader and uses handler as a content and error handler.
+	 *
+	 * @param xml
+	 *            source of xml.
+	 * @param handler
+	 *            SAX handler for xml.
+	 * @throws SAXException
+	 *             if any exceptions occur during parsing.
+	 * @throws IOException
+	 *             if unable to convert xml to an inputstream.
+	 * @throws ParserConfigurationException
+	 *             if unable to create a namespace aware parser.
+	 */
+	public static void parse(final Object xml, final DefaultHandler handler)
+			throws SAXException, IOException, ParserConfigurationException {
+<span class="fc" id="L178">		SAXParserFactory spf = SAXParserFactory.newInstance();</span>
+<span class="fc" id="L179">		spf.setNamespaceAware(true);</span>
+<span class="fc" id="L180">		SAXParser sp = spf.newSAXParser();</span>
+<span class="fc" id="L181">		XMLReader xr = sp.getXMLReader();</span>
+<span class="fc" id="L182">		xr.setContentHandler(handler);</span>
+<span class="fc" id="L183">		xr.setErrorHandler(handler);</span>
+<span class="fc" id="L184">		InputStream in = StreamUtils.getInputStream(xml);</span>
+		try {
+<span class="fc" id="L186">			xr.parse(new InputSource(in));</span>
+		} finally {
+<span class="fc" id="L188">			StreamUtils.closeStream(in);</span>
+		}
+<span class="fc" id="L190">	}</span>
+
+	/**
+	 * Sometimes parsers do not preserve the namespace for attributes. This
+	 * attempts to use the namespace and localname, and, if not available using
+	 * the namespace, checks for an attribute using only localname.
+	 *
+	 * @param attributes
+	 *            Attributes object to search.
+	 * @param uri
+	 *            namespace of attribute.
+	 * @param localName
+	 *            local name of attribute.
+	 * @return value of attribute.
+	 */
+	public static String getAttribute(final Attributes attributes,
+			final String uri, final String localName) {
+<span class="fc" id="L207">		String value = attributes.getValue(uri, localName);</span>
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">		if (value == null) {</span>
+<span class="fc" id="L209">			value = attributes.getValue(localName);</span>
+		}
+<span class="fc" id="L211">		return value;</span>
+	}
+
+	/**
+	 * Escape a value when writing XML.
+	 *
+	 * Replaces each character in the ESCAPES map with its escaped value.
+	 *
+	 * This method should only be used when generating xml manually, since most
+	 * xml writers escape automatically.
+	 *
+	 * @param value
+	 *            the value to escape
+	 * @return the escaped value.
+	 */
+	public static String escape(final String value) {
+<span class="fc" id="L227">		String escapedValue = value;</span>
+
+		// replace each escapeable character
+<span class="fc" id="L230">		Iterator&lt;String&gt; iter = ESCAPES.keySet().iterator();</span>
+<span class="fc bfc" id="L231" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L232">			String raw = iter.next();</span>
+<span class="fc" id="L233">			String escaped = ESCAPES.get(raw);</span>
+<span class="fc" id="L234">			escapedValue = escapedValue.replace(raw, escaped);</span>
+<span class="fc" id="L235">		}</span>
+
+<span class="fc" id="L237">		return escapedValue;</span>
+	}
+
+	/**
+	 * Unescape a value when reading XML.
+	 *
+	 * Replaces each escaped character in the ESCAPES map with its unescaped
+	 * value.
+	 *
+	 * This method should only be used when parsing xml manually, since most xml
+	 * parsers unescape automatically.
+	 *
+	 * @param value
+	 *            the value to unescape
+	 * @return the unescaped value.
+	 */
+	public static String unescape(final String value) {
+<span class="nc" id="L254">		String unescapedValue = value;</span>
+
+		// replace each escapeable character
+<span class="nc" id="L257">		Iterator&lt;String&gt; iter = ESCAPES.keySet().iterator();</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L259">			String raw = iter.next();</span>
+<span class="nc" id="L260">			String escaped = ESCAPES.get(raw);</span>
+<span class="nc" id="L261">			unescapedValue = unescapedValue.replace(escaped, raw);</span>
+<span class="nc" id="L262">		}</span>
+
+<span class="nc" id="L264">		return unescapedValue;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

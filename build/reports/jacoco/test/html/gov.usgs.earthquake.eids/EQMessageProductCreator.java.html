@@ -1,0 +1,1033 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EQMessageProductCreator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.eids</a> &gt; <span class="el_source">EQMessageProductCreator.java</span></div><h1>EQMessageProductCreator.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.eids;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+//Does it make sense to import objects from quakeml when we're parsing eqxml?
+//import org.quakeml.FocalMechanism;
+//import org.quakeml.NodalPlane;
+//import org.quakeml.NodalPlanes;
+
+import gov.usgs.ansseqmsg.Action;
+import gov.usgs.ansseqmsg.Comment;
+import gov.usgs.ansseqmsg.EQMessage;
+import gov.usgs.ansseqmsg.EventAction;
+import gov.usgs.ansseqmsg.EventScope;
+import gov.usgs.ansseqmsg.EventType;
+import gov.usgs.ansseqmsg.EventUsage;
+import gov.usgs.ansseqmsg.Fault;
+import gov.usgs.ansseqmsg.Magnitude;
+import gov.usgs.ansseqmsg.Method;
+import gov.usgs.ansseqmsg.MomentTensor;
+import gov.usgs.ansseqmsg.NodalPlanes;
+import gov.usgs.ansseqmsg.Origin;
+import gov.usgs.ansseqmsg.Event;
+import gov.usgs.ansseqmsg.ProductLink;
+import gov.usgs.ansseqmsg.Tensor;
+import gov.usgs.earthquake.cube.CubeAddon;
+import gov.usgs.earthquake.cube.CubeDelete;
+import gov.usgs.earthquake.cube.CubeEvent;
+import gov.usgs.earthquake.cube.CubeMessage;
+import gov.usgs.earthquake.eqxml.EQMessageParser;
+import gov.usgs.earthquake.event.Converter;
+import gov.usgs.earthquake.product.ByteContent;
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.FileUtils;
+import gov.usgs.util.StreamUtils;
+import gov.usgs.util.XmlUtils;
+
+/**
+ * Convert EQXML messages to Products.
+ * 
+ * &lt;p&gt;
+ * Product source is EQMessage/Source.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * Product type is &quot;origin&quot;, &quot;magnitude&quot;, or &quot;addon&quot;. Types may be prefixed by
+ * non-Public Event/Scope, and suffixed by non-Actual Event/Usage
+ * (internal-magnitude-scenario).
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * Product code is Event/DataSource + Event/EventId. When an addon product,
+ * either ProductLink/Code or Comment/TypeKey is appended to code.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * Product updateTime is EQMessage/Sent.
+ * &lt;/p&gt;
+ * 
+ * &lt;p&gt;
+ * Origin properties appear only on origin type products. Magnitude properties
+ * appear on both magnitude and origin products.
+ * &lt;/p&gt;
+ */
+public class EQMessageProductCreator implements ProductCreator {
+
+<span class="fc" id="L75">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L76">			.getLogger(EQMessageProductCreator.class.getName());</span>
+
+	public static final String XML_CONTENT_TYPE = &quot;application/xml&quot;;
+
+	/** Path to content where source message is stored in created product. */
+	public static final String EQMESSAGE_CONTENT_PATH = &quot;eqxml.xml&quot;;
+	public static final String CONTENTS_XML_PATH = &quot;contents.xml&quot;;
+
+	/**
+	 * When phases exist is is a &quot;phase&quot; type product. When this flag is set to
+	 * true, a lightweight, origin-only type product is also sent.
+	 */
+<span class="fc" id="L88">	private boolean sendOriginWhenPhasesExist = false;</span>
+
+	/**
+	 * Whether to validate when parsing and serializing. When validating, only
+	 * native EQXML is supported via the ProductCreator interface.
+	 */
+<span class="fc" id="L94">	private boolean validate = false;</span>
+
+	// the eqmessage currently being processed.
+	private EQMessage eqmessage;
+
+	// xml for the eqmessage currently being processed
+	private String eqmessageXML;
+	private String eqmessageSource;
+	private Date eqmessageSent;
+
+	private String eventDataSource;
+	private String eventEventId;
+	private String eventVersion;
+	private EventAction eventAction;
+	private EventUsage eventUsage;
+	private EventScope eventScope;
+
+	private BigDecimal originLatitude;
+	private BigDecimal originLongitude;
+	private BigDecimal originDepth;
+	private Date originEventTime;
+
+	private BigDecimal magnitude;
+
+	/**
+	 * Default, empty constructor.
+	 */
+<span class="fc" id="L121">	public EQMessageProductCreator() {</span>
+<span class="fc" id="L122">	}</span>
+
+	/**
+	 * Get all the products contained in an EQMessage.
+	 * 
+	 * Same as getEQMessageProducts(message, null).
+	 * 
+	 * @param message
+	 *            the EQMessage containing products.
+	 * @return a list of created products.
+	 * @throws Exception
+	 */
+	public synchronized List&lt;Product&gt; getEQMessageProducts(
+			final EQMessage message) throws Exception {
+<span class="fc" id="L136">		return getEQMessageProducts(message, null);</span>
+	}
+
+	/**
+	 * Get all the products contained in an EQMessage.
+	 * 
+	 * Parses rawEqxml string into an EQMessage, but preserves raw eqxml in
+	 * created products.
+	 * 
+	 * Same as getEQMessageProducts(EQMessageParser.parse(rawEqxml), rawEqxml);
+	 * 
+	 * @param rawEqxml
+	 *            the raw EQXML message.
+	 * @return a list of created products.
+	 * @throws Exception
+	 */
+	public synchronized List&lt;Product&gt; getEQMessageProducts(final String rawEqxml)
+			throws Exception {
+<span class="fc" id="L154">		EQMessage message = EQMessageParser.parse(rawEqxml, validate);</span>
+<span class="fc" id="L155">		return getEQMessageProducts(message, rawEqxml);</span>
+	}
+
+	/**
+	 * Get all the products contained in an EQMessage.
+	 * 
+	 * @param message
+	 *            the EQMessage containing products.
+	 * @param rawEqxml
+	 *            the raw EQXML message. When null, an EQXML message is
+	 *            serialized from the object.
+	 * @return a list of created products.
+	 * @throws Exception
+	 */
+	public synchronized List&lt;Product&gt; getEQMessageProducts(
+			final EQMessage message, final String rawEqxml) throws Exception {
+<span class="fc" id="L171">		List&lt;Product&gt; products = new LinkedList&lt;Product&gt;();</span>
+
+<span class="pc bpc" id="L173" title="1 of 2 branches missed.">		if (message == null) {</span>
+<span class="nc" id="L174">			return products;</span>
+		}
+
+<span class="fc" id="L177">		this.eqmessage = message;</span>
+<span class="fc" id="L178">		this.eqmessageSource = message.getSource();</span>
+<span class="fc" id="L179">		this.eqmessageSent = message.getSent();</span>
+
+<span class="fc bfc" id="L181" title="All 2 branches covered.">		if (this.eqmessageSent == null) {</span>
+<span class="fc" id="L182">			this.eqmessageSent = new Date();</span>
+		}
+
+		// convert to xml
+<span class="fc bfc" id="L186" title="All 2 branches covered.">		if (rawEqxml != null) {</span>
+<span class="fc" id="L187">			this.eqmessageXML = rawEqxml;</span>
+		} else {
+<span class="fc" id="L189">			ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="fc" id="L190">			EQMessageParser.serialize(message, baos, validate);</span>
+<span class="fc" id="L191">			this.eqmessageXML = baos.toString();</span>
+		}
+
+		// process each event
+<span class="fc" id="L195">		List&lt;Event&gt; events = message.getEvent();</span>
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">		if (events != null) {</span>
+<span class="fc" id="L197">			Iterator&lt;Event&gt; iter = events.iterator();</span>
+<span class="fc bfc" id="L198" title="All 2 branches covered.">			while (iter.hasNext()) {</span>
+<span class="fc" id="L199">				products.addAll(getEventProducts(iter.next()));</span>
+			}
+		}
+
+<span class="fc" id="L203">		this.eqmessageSource = null;</span>
+<span class="fc" id="L204">		this.eqmessageSent = null;</span>
+<span class="fc" id="L205">		this.eqmessageXML = null;</span>
+
+<span class="fc" id="L207">		return products;</span>
+	}
+
+	/**
+	 * Get products from an event.
+	 * 
+	 * @param event
+	 *            the event containing products.
+	 * @return a list of created products.
+	 * @throws Exception
+	 */
+	protected synchronized List&lt;Product&gt; getEventProducts(final Event event)
+			throws Exception {
+<span class="fc" id="L220">		List&lt;Product&gt; products = new LinkedList&lt;Product&gt;();</span>
+<span class="pc bpc" id="L221" title="1 of 2 branches missed.">		if (event == null) {</span>
+<span class="nc" id="L222">			return products;</span>
+		}
+
+<span class="fc" id="L225">		eventDataSource = event.getDataSource();</span>
+<span class="fc" id="L226">		eventEventId = event.getEventID();</span>
+<span class="fc" id="L227">		eventVersion = event.getVersion();</span>
+<span class="fc" id="L228">		eventAction = event.getAction();</span>
+<span class="fc" id="L229">		eventUsage = event.getUsage();</span>
+<span class="fc" id="L230">		eventScope = event.getScope();</span>
+
+		// default values
+<span class="pc bpc" id="L233" title="1 of 2 branches missed.">		if (eventAction == null) {</span>
+<span class="nc" id="L234">			eventAction = EventAction.UPDATE;</span>
+		}
+<span class="fc bfc" id="L236" title="All 2 branches covered.">		if (eventUsage == null) {</span>
+<span class="fc" id="L237">			eventUsage = EventUsage.ACTUAL;</span>
+		}
+<span class="fc bfc" id="L239" title="All 2 branches covered.">		if (eventScope == null) {</span>
+<span class="fc" id="L240">			eventScope = EventScope.PUBLIC;</span>
+		}
+
+<span class="fc bfc" id="L243" title="All 2 branches covered.">		if (eventAction == EventAction.DELETE) {</span>
+			// delete origin product (only product with location)
+<span class="fc" id="L245">			Product deleteProduct = getProduct(&quot;origin&quot;, eventAction.toString());</span>
+<span class="fc" id="L246">			products.add(deleteProduct);</span>
+<span class="fc" id="L247">		} else {</span>
+			// update origin product
+<span class="fc" id="L249">			products.addAll(getOriginProducts(event.getOrigin(), event));</span>
+		}
+
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">		for (ProductLink eventLink : event.getProductLink()) {</span>
+<span class="nc" id="L253">			products.addAll(getProductLinkProducts(eventLink));</span>
+<span class="nc" id="L254">		}</span>
+<span class="fc bfc" id="L255" title="All 2 branches covered.">		for (Comment eventComment : event.getComment()) {</span>
+<span class="fc" id="L256">			products.addAll(getCommentProducts(eventComment));</span>
+<span class="fc" id="L257">		}</span>
+
+<span class="fc" id="L259">		eventDataSource = null;</span>
+<span class="fc" id="L260">		eventEventId = null;</span>
+<span class="fc" id="L261">		eventVersion = null;</span>
+<span class="fc" id="L262">		eventAction = null;</span>
+<span class="fc" id="L263">		eventUsage = null;</span>
+<span class="fc" id="L264">		eventScope = null;</span>
+
+<span class="fc" id="L266">		return products;</span>
+	}
+
+	/**
+	 * Get origin product(s).
+	 * 
+	 * This implementation only creates one origin (the first one) regardless of
+	 * how many origins are provided.
+	 * 
+	 * @param origins
+	 *            the list of origins.
+	 * @return a list of created products.
+	 * @throws Exception
+	 */
+	protected synchronized List&lt;Product&gt; getOriginProducts(
+			final List&lt;Origin&gt; origins, final Event event) throws Exception {
+<span class="fc" id="L282">		List&lt;Product&gt; products = new LinkedList&lt;Product&gt;();</span>
+<span class="pc bpc" id="L283" title="2 of 4 branches missed.">		if (origins == null || origins.size() == 0) {</span>
+<span class="nc" id="L284">			return products;</span>
+		}
+
+		// only process first origin
+<span class="fc" id="L288">		Origin origin = origins.get(0);</span>
+
+		// get sub-products
+<span class="fc" id="L291">		products.addAll(getFocalMechanismProducts(origin.getMomentTensor()));</span>
+
+<span class="fc" id="L293">		this.originLatitude = origin.getLatitude();</span>
+<span class="fc" id="L294">		this.originLongitude = origin.getLongitude();</span>
+<span class="fc" id="L295">		this.originDepth = origin.getDepth();</span>
+<span class="fc" id="L296">		this.originEventTime = origin.getTime();</span>
+
+<span class="pc bpc" id="L298" title="1 of 4 branches missed.">		boolean preferred = (origin.getPreferredFlag() == null || origin</span>
+<span class="fc" id="L299">				.getPreferredFlag());</span>
+
+		// only process &quot;preferred&quot; origins
+		// this is how hydra differentiates between origins as input parameters
+		// to focal mechanisms, and origins as origins
+<span class="pc bpc" id="L304" title="3 of 8 branches missed.">		if (preferred &amp;&amp; this.originLatitude != null</span>
+				&amp;&amp; this.originLongitude != null &amp;&amp; this.originEventTime != null) {
+			// create an origin/magnitude product only if origin has
+			// lat+lon+time
+
+<span class="fc" id="L309">			List&lt;Product&gt; magnitudeProducts = getMagnitudeProducts(origin</span>
+<span class="fc" id="L310">					.getMagnitude());</span>
+
+			// now build origin product
+<span class="fc" id="L313">			Action originAction = origin.getAction();</span>
+<span class="fc" id="L314">			Product originProduct = getProduct(&quot;origin&quot;,</span>
+<span class="pc bpc" id="L315" title="1 of 2 branches missed.">					originAction == null ? null : originAction.toString());</span>
+			// origin specific properties
+<span class="fc" id="L317">			Map&lt;String, String&gt; properties = originProduct.getProperties();</span>
+
+			// set event type
+<span class="fc" id="L320">			properties.put(</span>
+					&quot;event-type&quot;,
+<span class="pc bpc" id="L322" title="1 of 2 branches missed.">					(event.getType() == null ? EventType.EARTHQUAKE : event</span>
+<span class="fc" id="L323">							.getType()).value().toLowerCase());</span>
+
+<span class="fc bfc" id="L325" title="All 2 branches covered.">			if (magnitudeProducts.size() &gt; 0) {</span>
+				// transfer magnitude product properties to origin
+<span class="fc" id="L327">				properties.putAll(magnitudeProducts.get(0).getProperties());</span>
+			}
+
+<span class="pc bpc" id="L330" title="1 of 2 branches missed.">			if (origin.getSourceKey() != null) {</span>
+<span class="nc" id="L331">				properties.put(&quot;origin-source&quot;, origin.getSourceKey());</span>
+			}
+<span class="fc bfc" id="L333" title="All 2 branches covered.">			if (origin.getAzimGap() != null) {</span>
+<span class="fc" id="L334">				properties.put(&quot;azimuthal-gap&quot;, origin.getAzimGap().toString());</span>
+			}
+<span class="pc bpc" id="L336" title="1 of 2 branches missed.">			if (origin.getDepthError() != null) {</span>
+<span class="nc" id="L337">				properties</span>
+<span class="nc" id="L338">						.put(&quot;depth-error&quot;, origin.getDepthError().toString());</span>
+			}
+<span class="pc bpc" id="L340" title="1 of 2 branches missed.">			if (origin.getDepthMethod() != null) {</span>
+<span class="nc" id="L341">				properties.put(&quot;depth-method&quot;, origin.getDepthMethod());</span>
+			}
+<span class="fc bfc" id="L343" title="All 2 branches covered.">			if (origin.getErrh() != null) {</span>
+<span class="fc" id="L344">				properties.put(&quot;horizontal-error&quot;, origin.getErrh().toString());</span>
+			}
+<span class="fc bfc" id="L346" title="All 2 branches covered.">			if (origin.getErrz() != null) {</span>
+<span class="fc" id="L347">				properties.put(&quot;vertical-error&quot;, origin.getErrz().toString());</span>
+			}
+<span class="pc bpc" id="L349" title="1 of 2 branches missed.">			if (origin.getLatError() != null) {</span>
+<span class="nc" id="L350">				properties.put(&quot;latitude-error&quot;, origin.getLatError()</span>
+<span class="nc" id="L351">						.toString());</span>
+			}
+<span class="pc bpc" id="L353" title="1 of 2 branches missed.">			if (origin.getLonError() != null) {</span>
+<span class="nc" id="L354">				properties.put(&quot;longitude-error&quot;, origin.getLonError()</span>
+<span class="nc" id="L355">						.toString());</span>
+			}
+<span class="fc bfc" id="L357" title="All 2 branches covered.">			if (origin.getMinDist() != null) {</span>
+<span class="fc" id="L358">				properties.put(&quot;minimum-distance&quot;, origin.getMinDist()</span>
+<span class="fc" id="L359">						.toString());</span>
+			}
+<span class="fc bfc" id="L361" title="All 2 branches covered.">			if (origin.getNumPhaUsed() != null) {</span>
+<span class="fc" id="L362">				properties.put(&quot;num-phases-used&quot;, origin.getNumPhaUsed()</span>
+<span class="fc" id="L363">						.toString());</span>
+			}
+<span class="fc bfc" id="L365" title="All 2 branches covered.">			if (origin.getNumStaUsed() != null) {</span>
+<span class="fc" id="L366">				properties.put(&quot;num-stations-used&quot;, origin.getNumStaUsed()</span>
+<span class="fc" id="L367">						.toString());</span>
+			}
+<span class="pc bpc" id="L369" title="1 of 2 branches missed.">			if (origin.getRegion() != null) {</span>
+<span class="nc" id="L370">				properties.put(&quot;region&quot;, origin.getRegion());</span>
+			}
+<span class="fc bfc" id="L372" title="All 2 branches covered.">			if (origin.getStatus() != null) {</span>
+<span class="fc" id="L373">				properties.put(&quot;review-status&quot;, origin.getStatus().toString());</span>
+			}
+<span class="fc bfc" id="L375" title="All 2 branches covered.">			if (origin.getStdError() != null) {</span>
+<span class="fc" id="L376">				properties.put(&quot;standard-error&quot;, origin.getStdError()</span>
+<span class="fc" id="L377">						.toString());</span>
+			}
+
+			// origin method
+<span class="fc" id="L381">			Iterator&lt;Method&gt; methods = origin.getMethod().iterator();</span>
+<span class="fc bfc" id="L382" title="All 2 branches covered.">			if (methods.hasNext()) {</span>
+<span class="fc" id="L383">				Method method = methods.next();</span>
+<span class="pc bpc" id="L384" title="1 of 2 branches missed.">				if (method.getClazz() != null) {</span>
+<span class="fc" id="L385">					properties.put(&quot;location-method-class&quot;, method.getClazz());</span>
+				}
+<span class="pc bpc" id="L387" title="1 of 2 branches missed.">				if (method.getAlgorithm() != null) {</span>
+<span class="fc" id="L388">					properties.put(&quot;location-method-algorithm&quot;,</span>
+<span class="fc" id="L389">							method.getAlgorithm());</span>
+				}
+<span class="pc bpc" id="L391" title="1 of 2 branches missed.">				if (method.getModel() != null) {</span>
+<span class="nc" id="L392">					properties.put(&quot;location-method-model&quot;, method.getModel());</span>
+				}
+
+<span class="fc" id="L395">				String cubeLocationMethod = getCubeCode(method.getComment());</span>
+<span class="pc bpc" id="L396" title="1 of 2 branches missed.">				if (cubeLocationMethod != null) {</span>
+<span class="fc" id="L397">					properties.put(&quot;cube-location-method&quot;, cubeLocationMethod);</span>
+				}
+			}
+
+<span class="pc bpc" id="L401" title="2 of 4 branches missed.">			if (origin.getPhase() != null &amp;&amp; origin.getPhase().size() &gt; 0) {</span>
+<span class="nc" id="L402">				originProduct.getId().setType(&quot;phase-data&quot;);</span>
+<span class="nc" id="L403">				products.add(originProduct);</span>
+
+<span class="nc bnc" id="L405" title="All 2 branches missed.">				if (sendOriginWhenPhasesExist) {</span>
+					// create lightweight origin product
+<span class="nc" id="L407">					Product lightweightOrigin = new Product(originProduct);</span>
+<span class="nc" id="L408">					lightweightOrigin.getId().setType(&quot;origin&quot;);</span>
+<span class="nc" id="L409">					lightweightOrigin.getContents().remove(</span>
+							EQMESSAGE_CONTENT_PATH);
+
+					// seek and destroy phases
+<span class="nc" id="L413">					Iterator&lt;Origin&gt; iter = origins.iterator();</span>
+<span class="nc bnc" id="L414" title="All 2 branches missed.">					while (iter.hasNext()) {</span>
+<span class="nc" id="L415">						Origin next = iter.next();</span>
+<span class="nc bnc" id="L416" title="All 2 branches missed.">						if (next.getPhase() != null) {</span>
+<span class="nc" id="L417">							next.getPhase().clear();</span>
+						}
+<span class="nc" id="L419">					}</span>
+
+					// serialize xml without phase data
+<span class="nc" id="L422">					ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="nc" id="L423">					EQMessageParser.serialize(this.eqmessage, baos, validate);</span>
+<span class="nc" id="L424">					lightweightOrigin.getContents().put(EQMESSAGE_CONTENT_PATH,</span>
+<span class="nc" id="L425">							new ByteContent(baos.toByteArray()));</span>
+
+<span class="nc" id="L427">					products.add(0, lightweightOrigin);</span>
+<span class="nc" id="L428">				}</span>
+			} else {
+				// insert origin at start of list
+<span class="fc" id="L431">				products.add(0, originProduct);</span>
+			}
+		}
+
+<span class="fc" id="L435">		this.originDepth = null;</span>
+<span class="fc" id="L436">		this.originEventTime = null;</span>
+<span class="fc" id="L437">		this.originLatitude = null;</span>
+<span class="fc" id="L438">		this.originLongitude = null;</span>
+<span class="fc" id="L439">		this.magnitude = null;</span>
+
+<span class="pc bpc" id="L441" title="1 of 2 branches missed.">		for (Comment originComment : origin.getComment()) {</span>
+<span class="nc" id="L442">			products.addAll(getCommentProducts(originComment));</span>
+<span class="nc" id="L443">		}</span>
+
+<span class="fc" id="L445">		return products;</span>
+	}
+
+	/**
+	 * Build magnitude products.
+	 * 
+	 * This implementation builds at most one magnitude product (the first).
+	 * 
+	 * @param magnitudes
+	 *            a list of candidate magsnitude objects.
+	 * @return a list of built magnitude products, which may be empty.
+	 */
+	protected synchronized List&lt;Product&gt; getMagnitudeProducts(
+			final List&lt;Magnitude&gt; magnitudes) {
+<span class="fc" id="L459">		List&lt;Product&gt; products = new LinkedList&lt;Product&gt;();</span>
+<span class="pc bpc" id="L460" title="1 of 4 branches missed.">		if (magnitudes == null || magnitudes.size() == 0) {</span>
+<span class="fc" id="L461">			return products;</span>
+		}
+
+		// build product based on the first magnitude
+<span class="fc" id="L465">		Magnitude magnitude = magnitudes.get(0);</span>
+		// set &quot;globalish&quot; property before getProduct()
+<span class="fc" id="L467">		this.magnitude = magnitude.getValue();</span>
+
+<span class="fc" id="L469">		Action magnitudeAction = magnitude.getAction();</span>
+		// build magnitude product
+<span class="fc" id="L471">		Product product = getProduct(&quot;magnitude&quot;,</span>
+<span class="pc bpc" id="L472" title="1 of 2 branches missed.">				magnitudeAction == null ? null : magnitudeAction.toString());</span>
+
+<span class="fc" id="L474">		Map&lt;String, String&gt; properties = product.getProperties();</span>
+<span class="pc bpc" id="L475" title="1 of 2 branches missed.">		if (magnitude.getSourceKey() != null) {</span>
+<span class="nc" id="L476">			properties.put(&quot;magnitude-source&quot;, magnitude.getSourceKey());</span>
+		}
+<span class="pc bpc" id="L478" title="1 of 2 branches missed.">		if (magnitude.getTypeKey() != null) {</span>
+<span class="fc" id="L479">			properties.put(&quot;magnitude-type&quot;, magnitude.getTypeKey());</span>
+		}
+<span class="pc bpc" id="L481" title="1 of 2 branches missed.">		if (magnitude.getAzimGap() != null) {</span>
+<span class="nc" id="L482">			properties.put(&quot;magnitude-azimuthal-gap&quot;, magnitude.getAzimGap()</span>
+<span class="nc" id="L483">					.toString());</span>
+		}
+<span class="fc bfc" id="L485" title="All 2 branches covered.">		if (magnitude.getError() != null) {</span>
+<span class="fc" id="L486">			properties.put(&quot;magnitude-error&quot;, magnitude.getError().toString());</span>
+		}
+<span class="fc bfc" id="L488" title="All 2 branches covered.">		if (magnitude.getNumStations() != null) {</span>
+<span class="fc" id="L489">			properties.put(&quot;magnitude-num-stations-used&quot;, magnitude</span>
+<span class="fc" id="L490">					.getNumStations().toString());</span>
+		}
+
+<span class="fc" id="L493">		String cubeMagnitudeType = getCubeCode(magnitude.getComment());</span>
+<span class="pc bpc" id="L494" title="1 of 2 branches missed.">		if (cubeMagnitudeType != null) {</span>
+<span class="fc" id="L495">			properties.put(&quot;cube-magnitude-type&quot;, cubeMagnitudeType);</span>
+		}
+
+		// don't clear property here, so origin can borrow magnitude property
+		// this.magnitude = null;
+
+<span class="fc" id="L501">		products.add(product);</span>
+<span class="fc" id="L502">		return products;</span>
+	}
+
+	protected synchronized List&lt;Product&gt; getFocalMechanismProducts(
+			final List&lt;MomentTensor&gt; momentTensors) {
+<span class="fc" id="L507">		List&lt;Product&gt; products = new LinkedList&lt;Product&gt;();</span>
+<span class="pc bpc" id="L508" title="1 of 4 branches missed.">		if (momentTensors == null || momentTensors.size() == 0) {</span>
+<span class="fc" id="L509">			return products;</span>
+		}
+
+		// build moment tensors
+<span class="fc" id="L513">		Iterator&lt;MomentTensor&gt; iter = momentTensors.iterator();</span>
+<span class="fc bfc" id="L514" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L515">			MomentTensor mt = iter.next();</span>
+
+<span class="fc" id="L517">			Action mtAction = mt.getAction();</span>
+			// may be set to &quot;moment-tensor&quot; below
+<span class="fc" id="L519">			Product product = getProduct(&quot;focal-mechanism&quot;,</span>
+<span class="pc bpc" id="L520" title="1 of 2 branches missed.">					mtAction == null ? null : mtAction.toString());</span>
+
+<span class="fc" id="L522">			Map&lt;String, String&gt; properties = product.getProperties();</span>
+
+			// fill in product properties
+<span class="pc bpc" id="L525" title="1 of 2 branches missed.">			if (mt.getSourceKey() != null) {</span>
+<span class="fc" id="L526">				properties.put(&quot;beachball-source&quot;, mt.getSourceKey());</span>
+			}
+<span class="pc bpc" id="L528" title="1 of 2 branches missed.">			if (mt.getTypeKey() != null) {</span>
+<span class="fc" id="L529">				properties.put(&quot;beachball-type&quot;, mt.getTypeKey());</span>
+				// append source+type to code
+<span class="fc" id="L531">				ProductId productId = product.getId();</span>
+<span class="fc" id="L532">				productId.setCode((productId.getCode() + &quot;-&quot;</span>
+<span class="fc" id="L533">						+ mt.getSourceKey() + &quot;-&quot; + mt.getTypeKey())</span>
+<span class="fc" id="L534">						.toLowerCase());</span>
+			}
+<span class="pc bpc" id="L536" title="1 of 2 branches missed.">			if (mt.getMagMw() != null) {</span>
+<span class="fc" id="L537">				product.setMagnitude(mt.getMagMw());</span>
+			}
+<span class="pc bpc" id="L539" title="1 of 2 branches missed.">			if (mt.getM0() != null) {</span>
+<span class="fc" id="L540">				properties.put(&quot;scalar-moment&quot;, mt.getM0().toString());</span>
+			}
+
+<span class="pc bpc" id="L543" title="1 of 2 branches missed.">			if (mt.getTensor() != null) {</span>
+				// if the tensor is included, it is a &quot;moment-tensor&quot; instead of
+				// a &quot;focal-mechanism&quot;
+<span class="fc" id="L546">				product.getId().setType(&quot;moment-tensor&quot;);</span>
+
+<span class="fc" id="L548">				Tensor t = mt.getTensor();</span>
+<span class="pc bpc" id="L549" title="1 of 2 branches missed.">				if (t.getMtt() != null) {</span>
+<span class="fc" id="L550">					properties.put(&quot;tensor-mtt&quot;, t.getMtt().toString());</span>
+				}
+<span class="pc bpc" id="L552" title="1 of 2 branches missed.">				if (t.getMpp() != null) {</span>
+<span class="fc" id="L553">					properties.put(&quot;tensor-mpp&quot;, t.getMpp().toString());</span>
+				}
+<span class="pc bpc" id="L555" title="1 of 2 branches missed.">				if (t.getMrr() != null) {</span>
+<span class="fc" id="L556">					properties.put(&quot;tensor-mrr&quot;, t.getMrr().toString());</span>
+				}
+<span class="pc bpc" id="L558" title="1 of 2 branches missed.">				if (t.getMtp() != null) {</span>
+<span class="fc" id="L559">					properties.put(&quot;tensor-mtp&quot;, t.getMtp().toString());</span>
+				}
+<span class="pc bpc" id="L561" title="1 of 2 branches missed.">				if (t.getMrp() != null) {</span>
+<span class="fc" id="L562">					properties.put(&quot;tensor-mrp&quot;, t.getMrp().toString());</span>
+				}
+<span class="pc bpc" id="L564" title="1 of 2 branches missed.">				if (t.getMrt() != null) {</span>
+<span class="fc" id="L565">					properties.put(&quot;tensor-mrt&quot;, t.getMrt().toString());</span>
+				}
+			}
+
+<span class="pc bpc" id="L569" title="1 of 2 branches missed.">			if (mt.getNodalPlanes() != null) {</span>
+<span class="fc" id="L570">				NodalPlanes np = mt.getNodalPlanes();</span>
+<span class="fc" id="L571">				List&lt;Fault&gt; faults = np.getFault();</span>
+<span class="pc bpc" id="L572" title="1 of 2 branches missed.">				if (faults.size() == 2) {</span>
+<span class="fc" id="L573">					Fault fault1 = faults.get(0);</span>
+<span class="pc bpc" id="L574" title="1 of 2 branches missed.">					if (fault1.getDip() != null) {</span>
+<span class="fc" id="L575">						properties.put(&quot;nodal-plane-1-dip&quot;, fault1.getDip()</span>
+<span class="fc" id="L576">								.toString());</span>
+					}
+<span class="pc bpc" id="L578" title="1 of 2 branches missed.">					if (fault1.getSlip() != null) {</span>
+<span class="fc" id="L579">						properties.put(&quot;nodal-plane-1-slip&quot;, fault1.getSlip()</span>
+<span class="fc" id="L580">								.toString());</span>
+					}
+<span class="pc bpc" id="L582" title="1 of 2 branches missed.">					if (fault1.getStrike() != null) {</span>
+<span class="fc" id="L583">						properties.put(&quot;nodal-plane-1-strike&quot;, fault1</span>
+<span class="fc" id="L584">								.getStrike().toString());</span>
+					}
+<span class="fc" id="L586">					Fault fault2 = faults.get(1);</span>
+<span class="pc bpc" id="L587" title="1 of 2 branches missed.">					if (fault2.getDip() != null) {</span>
+<span class="fc" id="L588">						properties.put(&quot;nodal-plane-2-dip&quot;, fault2.getDip()</span>
+<span class="fc" id="L589">								.toString());</span>
+					}
+<span class="pc bpc" id="L591" title="1 of 2 branches missed.">					if (fault2.getSlip() != null) {</span>
+<span class="fc" id="L592">						properties.put(&quot;nodal-plane-2-slip&quot;, fault2.getSlip()</span>
+<span class="fc" id="L593">								.toString());</span>
+					}
+<span class="pc bpc" id="L595" title="1 of 2 branches missed.">					if (fault2.getStrike() != null) {</span>
+<span class="fc" id="L596">						properties.put(&quot;nodal-plane-2-strike&quot;, fault2</span>
+<span class="fc" id="L597">								.getStrike().toString());</span>
+					}
+				}
+			}
+
+<span class="pc bpc" id="L602" title="1 of 2 branches missed.">			if (mt.getDerivedOriginTime() != null) {</span>
+<span class="nc" id="L603">				properties.put(&quot;derived-eventtime&quot;,</span>
+<span class="nc" id="L604">						XmlUtils.formatDate(mt.getDerivedOriginTime()));</span>
+			}
+<span class="pc bpc" id="L606" title="1 of 2 branches missed.">			if (mt.getDerivedLatitude() != null) {</span>
+<span class="nc" id="L607">				properties.put(&quot;derived-latitude&quot;, mt.getDerivedLatitude()</span>
+<span class="nc" id="L608">						.toString());</span>
+			}
+<span class="pc bpc" id="L610" title="1 of 2 branches missed.">			if (mt.getDerivedLongitude() != null) {</span>
+<span class="nc" id="L611">				properties.put(&quot;derived-longitude&quot;, mt.getDerivedLongitude()</span>
+<span class="nc" id="L612">						.toString());</span>
+			}
+<span class="pc bpc" id="L614" title="1 of 2 branches missed.">			if (mt.getDerivedDepth() != null) {</span>
+<span class="fc" id="L615">				properties</span>
+<span class="fc" id="L616">						.put(&quot;derived-depth&quot;, mt.getDerivedDepth().toString());</span>
+			}
+
+<span class="pc bpc" id="L619" title="1 of 2 branches missed.">			if (mt.getPerDblCpl() != null) {</span>
+<span class="fc" id="L620">				properties.put(&quot;percent-double-couple&quot;, mt.getPerDblCpl()</span>
+<span class="fc" id="L621">						.toString());</span>
+			}
+<span class="pc bpc" id="L623" title="1 of 2 branches missed.">			if (mt.getNumObs() != null) {</span>
+<span class="fc" id="L624">				properties.put(&quot;num-stations-used&quot;, mt.getNumObs().toString());</span>
+			}
+
+			// attach original message as product content
+<span class="fc" id="L628">			ByteContent xml = new ByteContent(eqmessageXML.getBytes());</span>
+<span class="fc" id="L629">			xml.setLastModified(eqmessageSent);</span>
+<span class="fc" id="L630">			xml.setContentType(&quot;application/xml&quot;);</span>
+<span class="fc" id="L631">			product.getContents().put(EQMESSAGE_CONTENT_PATH, xml);</span>
+
+			// add to list of built products
+<span class="fc" id="L634">			products.add(product);</span>
+<span class="fc" id="L635">		}</span>
+
+<span class="fc" id="L637">		return products;</span>
+	}
+
+	/**
+	 * Get product(s) from a ProductLink object.
+	 * 
+	 * 
+	 * @param link
+	 *            the link object.
+	 * @return a list of found products.
+	 * @throws Exception
+	 */
+	protected synchronized List&lt;Product&gt; getProductLinkProducts(
+			final ProductLink link) throws Exception {
+<span class="nc" id="L651">		List&lt;Product&gt; products = new LinkedList&lt;Product&gt;();</span>
+
+<span class="nc" id="L653">		String linkType = getLinkAddonProductType(link.getCode());</span>
+<span class="nc bnc" id="L654" title="All 2 branches missed.">		if (linkType == null) {</span>
+<span class="nc" id="L655">			LOGGER.finer(&quot;No product type found for productlink with code '&quot;</span>
+<span class="nc" id="L656">					+ link.getCode() + &quot;', skipping&quot;);</span>
+<span class="nc" id="L657">			return products;</span>
+		}
+
+<span class="nc" id="L660">		Action linkAction = link.getAction();</span>
+<span class="nc bnc" id="L661" title="All 2 branches missed.">		Product linkProduct = getProduct(linkType, linkAction == null ? null</span>
+<span class="nc" id="L662">				: linkAction.toString());</span>
+		// remove the EQXML, only send product link attributes with link
+		// products
+<span class="nc" id="L665">		linkProduct.getContents().clear();</span>
+
+		// add addon code to product code
+<span class="nc" id="L668">		ProductId id = linkProduct.getId();</span>
+<span class="nc" id="L669">		id.setCode(id.getCode() + &quot;-&quot; + link.getCode().toLowerCase());</span>
+
+<span class="nc bnc" id="L671" title="All 2 branches missed.">		if (link.getVersion() != null) {</span>
+<span class="nc" id="L672">			linkProduct.setVersion(link.getVersion());</span>
+		}
+
+<span class="nc" id="L675">		Map&lt;String, String&gt; properties = linkProduct.getProperties();</span>
+<span class="nc bnc" id="L676" title="All 2 branches missed.">		if (link.getLink() != null) {</span>
+<span class="nc" id="L677">			properties.put(&quot;url&quot;, link.getLink());</span>
+		}
+<span class="nc bnc" id="L679" title="All 2 branches missed.">		if (link.getNote() != null) {</span>
+<span class="nc" id="L680">			properties.put(&quot;text&quot;, link.getNote());</span>
+		}
+<span class="nc bnc" id="L682" title="All 2 branches missed.">		if (link.getCode() != null) {</span>
+<span class="nc" id="L683">			properties.put(&quot;addon-code&quot;, link.getCode());</span>
+		}
+<span class="nc" id="L685">		properties.put(&quot;addon-type&quot;, link.getTypeKey());</span>
+
+<span class="nc" id="L687">		products.add(linkProduct);</span>
+<span class="nc" id="L688">		return products;</span>
+	}
+
+	/**
+	 * Get product(s) from a Comment object.
+	 * 
+	 * @param comment
+	 *            the comment object.
+	 * @return a list of found products.
+	 * @throws Exception
+	 */
+	protected synchronized List&lt;Product&gt; getCommentProducts(
+			final Comment comment) throws Exception {
+<span class="fc" id="L701">		List&lt;Product&gt; products = new LinkedList&lt;Product&gt;();</span>
+
+		// CUBE_Codes are attributes of the containing product.
+<span class="fc" id="L704">		String typeKey = comment.getTypeKey();</span>
+<span class="pc bpc" id="L705" title="2 of 4 branches missed.">		if (typeKey != null &amp;&amp; !typeKey.equals(&quot;CUBE_Code&quot;)) {</span>
+<span class="fc" id="L706">			String commentType = getTextAddonProductType(typeKey);</span>
+<span class="pc bpc" id="L707" title="1 of 2 branches missed.">			if (commentType == null) {</span>
+<span class="fc" id="L708">				LOGGER.finer(&quot;No product type found for comment with type '&quot;</span>
+<span class="fc" id="L709">						+ comment.getTypeKey() + &quot;'&quot;);</span>
+<span class="fc" id="L710">				return products;</span>
+			}
+
+<span class="nc" id="L713">			Action commentAction = comment.getAction();</span>
+<span class="nc" id="L714">			Product commentProduct = getProduct(commentType,</span>
+<span class="nc bnc" id="L715" title="All 2 branches missed.">					commentAction == null ? null : commentAction.toString());</span>
+			// remove the EQXML, only send comment text with comment products
+<span class="nc" id="L717">			commentProduct.getContents().clear();</span>
+
+			// one product per comment type
+<span class="nc" id="L720">			ProductId id = commentProduct.getId();</span>
+<span class="nc" id="L721">			id.setCode(id.getCode() + &quot;_&quot; + comment.getTypeKey().toLowerCase());</span>
+
+<span class="nc" id="L723">			Map&lt;String, String&gt; properties = commentProduct.getProperties();</span>
+<span class="nc" id="L724">			properties.put(&quot;addon-type&quot;, &quot;comment&quot;);</span>
+<span class="nc bnc" id="L725" title="All 2 branches missed.">			if (comment.getTypeKey() != null) {</span>
+<span class="nc" id="L726">				properties.put(&quot;code&quot;, comment.getTypeKey());</span>
+			}
+
+			// store the comment text as content instead of a property, it may
+			// contain newlines
+<span class="nc" id="L731">			commentProduct.getContents().put(&quot;&quot;,</span>
+<span class="nc" id="L732">					new ByteContent(comment.getText().getBytes()));</span>
+<span class="nc" id="L733">			products.add(commentProduct);</span>
+		}
+
+<span class="nc" id="L736">		return products;</span>
+	}
+
+	/**
+	 * Build a product skeleton based on the current state.
+	 * 
+	 * Product type is : [internal-](origin,magnitude,addon)[-(scenario|test)]
+	 * where the optional scope is not &quot;Public&quot;, and the optional usage is not
+	 * &quot;Actual&quot;.
+	 * 
+	 * @param type
+	 *            short product type, like &quot;origin&quot;, &quot;magnitude&quot;.
+	 * @param action
+	 *            override the global message action.
+	 * @return a Product so that properties and content can be added.
+	 */
+	protected synchronized Product getProduct(final String type,
+			final String action) {
+
+<span class="fc" id="L755">		String productType = type;</span>
+		// prepend type with non Public scopes (Internal)
+<span class="pc bpc" id="L757" title="1 of 2 branches missed.">		if (eventScope != EventScope.PUBLIC) {</span>
+<span class="nc" id="L758">			productType = eventScope.toString() + &quot;-&quot; + productType;</span>
+		}
+		// append to type with non Actual usages
+<span class="pc bpc" id="L761" title="1 of 2 branches missed.">		if (eventUsage != EventUsage.ACTUAL) {</span>
+<span class="nc" id="L762">			productType = productType + &quot;-&quot; + eventUsage.toString();</span>
+		}
+		// make it all lower case
+<span class="fc" id="L765">		productType = productType.toLowerCase();</span>
+
+		// use event id
+<span class="fc" id="L768">		String productCode = eventDataSource + eventEventId;</span>
+<span class="fc" id="L769">		productCode = productCode.toLowerCase();</span>
+
+<span class="fc" id="L771">		ProductId id = new ProductId(eqmessageSource.toLowerCase(),</span>
+				productType, productCode, eqmessageSent);
+<span class="fc" id="L773">		Product product = new Product(id);</span>
+
+		// figure out whether this is a delete
+<span class="fc" id="L776">		String productAction = action;</span>
+<span class="fc bfc" id="L777" title="All 2 branches covered.">		if (productAction == null) {</span>
+<span class="fc" id="L778">			productAction = eventAction.toString();</span>
+<span class="pc bpc" id="L779" title="1 of 2 branches missed.">			if (productAction == null) {</span>
+<span class="nc" id="L780">				productAction = &quot;Update&quot;;</span>
+			}
+		}
+		String productStatus;
+<span class="fc bfc" id="L784" title="All 2 branches covered.">		if (productAction.equalsIgnoreCase(&quot;Delete&quot;)) {</span>
+<span class="fc" id="L785">			productStatus = Product.STATUS_DELETE;</span>
+		} else {
+<span class="fc" id="L787">			productStatus = Product.STATUS_UPDATE;</span>
+		}
+<span class="fc" id="L789">		product.setStatus(productStatus);</span>
+
+<span class="pc bpc" id="L791" title="2 of 4 branches missed.">		if (eventDataSource != null &amp;&amp; eventEventId != null) {</span>
+<span class="fc" id="L792">			product.setEventId(eventDataSource, eventEventId);</span>
+		}
+<span class="fc bfc" id="L794" title="All 2 branches covered.">		if (originEventTime != null) {</span>
+<span class="fc" id="L795">			product.setEventTime(originEventTime);</span>
+		}
+<span class="fc bfc" id="L797" title="All 2 branches covered.">		if (originLongitude != null) {</span>
+<span class="fc" id="L798">			product.setLongitude(originLongitude);</span>
+		}
+<span class="fc bfc" id="L800" title="All 2 branches covered.">		if (originLatitude != null) {</span>
+<span class="fc" id="L801">			product.setLatitude(originLatitude);</span>
+		}
+<span class="fc bfc" id="L803" title="All 2 branches covered.">		if (originDepth != null) {</span>
+<span class="fc" id="L804">			product.setDepth(originDepth);</span>
+		}
+<span class="fc bfc" id="L806" title="All 2 branches covered.">		if (magnitude != null) {</span>
+<span class="fc" id="L807">			product.setMagnitude(magnitude);</span>
+		}
+<span class="pc bpc" id="L809" title="1 of 2 branches missed.">		if (eventVersion != null) {</span>
+<span class="fc" id="L810">			product.setVersion(eventVersion);</span>
+		}
+
+		/*
+		 * Map&lt;String, String&gt; properties = product.getProperties(); if
+		 * (eventUsage != null) { properties.put(&quot;eqxml-usage&quot;,
+		 * eventUsage.toString()); } if (eventScope != null) {
+		 * properties.put(&quot;eqxml-scope&quot;, eventScope.toString()); } if
+		 * (eventAction != null) { properties.put(&quot;eqxml-action&quot;,
+		 * eventAction.toString()); }
+		 */
+
+<span class="fc" id="L822">		ByteContent xml = new ByteContent(eqmessageXML.getBytes());</span>
+<span class="fc" id="L823">		xml.setLastModified(eqmessageSent);</span>
+<span class="fc" id="L824">		product.getContents().put(EQMESSAGE_CONTENT_PATH, xml);</span>
+
+		// add contents.xml to product to describe above content
+<span class="fc" id="L827">		product.getContents().put(CONTENTS_XML_PATH, getContentsXML());</span>
+
+<span class="fc" id="L829">		return product;</span>
+	}
+
+	protected Content getContentsXML() {
+<span class="fc" id="L833">		StringBuffer buf = new StringBuffer();</span>
+<span class="fc" id="L834">		buf.append(&quot;&lt;?xml version=\&quot;1.0\&quot;?&gt;\n&quot;);</span>
+<span class="fc" id="L835">		buf.append(&quot;&lt;contents xmlns=\&quot;http://earthquake.usgs.gov/earthquakes/event/contents\&quot;&gt;\n&quot;);</span>
+<span class="fc" id="L836">		buf.append(&quot;&lt;file title=\&quot;Earthquake XML (EQXML)\&quot; id=\&quot;eqxml\&quot;&gt;\n&quot;);</span>
+<span class="fc" id="L837">		buf.append(&quot;&lt;format type=\&quot;xml\&quot; href=\&quot;&quot;)</span>
+<span class="fc" id="L838">				.append(EQMESSAGE_CONTENT_PATH).append(&quot;\&quot;/&gt;\n&quot;);</span>
+<span class="fc" id="L839">		buf.append(&quot;&lt;/file&gt;\n&quot;);</span>
+<span class="fc" id="L840">		buf.append(&quot;&lt;page title=\&quot;Location\&quot; slug=\&quot;location\&quot;&gt;\n&quot;);</span>
+<span class="fc" id="L841">		buf.append(&quot;&lt;file refid=\&quot;eqxml\&quot;/&gt;\n&quot;);</span>
+<span class="fc" id="L842">		buf.append(&quot;&lt;/page&gt;\n&quot;);</span>
+<span class="fc" id="L843">		buf.append(&quot;&lt;/contents&gt;\n&quot;);</span>
+
+<span class="fc" id="L845">		ByteContent content = new ByteContent(buf.toString().getBytes());</span>
+<span class="fc" id="L846">		content.setLastModified(eqmessageSent);</span>
+		// this breaks things
+		// content.setContentType(&quot;application/xml&quot;);
+<span class="fc" id="L849">		return content;</span>
+	}
+
+	/**
+	 * Extract a CUBE_Code from a Comment.
+	 * 
+	 * This is the ISTI convention for preserving CUBE information in EQXML
+	 * messages. Checks a list of Comment objects for one with
+	 * TypeKey=&quot;CUBE_Code&quot; and Text=&quot;CUBE_Code X&quot;, where X is the returned cube
+	 * code.
+	 * 
+	 * @param comments
+	 *            the list of comments.
+	 * @return the cube code, or null if not found.
+	 */
+	protected synchronized String getCubeCode(final List&lt;Comment&gt; comments) {
+<span class="fc" id="L865">		String cubeCode = null;</span>
+
+<span class="pc bpc" id="L867" title="1 of 2 branches missed.">		if (comments != null) {</span>
+<span class="fc" id="L868">			Iterator&lt;Comment&gt; iter = comments.iterator();</span>
+<span class="pc bpc" id="L869" title="1 of 2 branches missed.">			while (iter.hasNext()) {</span>
+<span class="fc" id="L870">				Comment comment = iter.next();</span>
+<span class="pc bpc" id="L871" title="1 of 2 branches missed.">				if (comment.getTypeKey().equals(&quot;CUBE_Code&quot;)) {</span>
+<span class="fc" id="L872">					cubeCode = comment.getText().replace(&quot;CUBE_Code &quot;, &quot;&quot;);</span>
+<span class="fc" id="L873">					break;</span>
+				}
+<span class="nc" id="L875">			}</span>
+		}
+
+<span class="fc" id="L878">		return cubeCode;</span>
+	}
+
+	public boolean isSendOriginWhenPhasesExist() {
+<span class="nc" id="L882">		return sendOriginWhenPhasesExist;</span>
+	}
+
+	public void setSendOriginWhenPhasesExist(boolean sendOriginWhenPhasesExist) {
+<span class="fc" id="L886">		this.sendOriginWhenPhasesExist = sendOriginWhenPhasesExist;</span>
+<span class="fc" id="L887">	}</span>
+
+	@Override
+	public boolean isValidate() {
+<span class="nc" id="L891">		return validate;</span>
+	}
+
+	@Override
+	public void setValidate(boolean validate) {
+<span class="fc" id="L896">		this.validate = validate;</span>
+<span class="fc" id="L897">	}</span>
+
+	@Override
+	public List&lt;Product&gt; getProducts(File file) throws Exception {
+<span class="fc" id="L901">		EQMessage eqxml = null;</span>
+<span class="fc" id="L902">		String content = new String(FileUtils.readFile(file));</span>
+<span class="fc" id="L903">		String rawEqxml = null;</span>
+
+		// try to read eqxml
+		try {
+<span class="pc" id="L907">			eqxml = EQMessageParser.parse(</span>
+<span class="fc" id="L908">					StreamUtils.getInputStream(content.getBytes()), validate);</span>
+<span class="nc" id="L909">			rawEqxml = content;</span>
+<span class="fc" id="L910">		} catch (Exception e) {</span>
+<span class="pc bpc" id="L911" title="1 of 2 branches missed.">			if (validate) {</span>
+<span class="nc" id="L912">				throw e;</span>
+			}
+
+			// try to read cube
+			try {
+<span class="fc" id="L917">				Converter converter = new Converter();</span>
+<span class="fc" id="L918">				CubeMessage cube = converter.getCubeMessage(content);</span>
+<span class="fc" id="L919">				eqxml = converter.getEQMessage(cube);</span>
+<span class="nc" id="L920">			} catch (Exception e2) {</span>
+<span class="nc bnc" id="L921" title="All 2 branches missed.">				if (content.startsWith(CubeEvent.TYPE) ||</span>
+<span class="nc bnc" id="L922" title="All 2 branches missed.">						content.startsWith(CubeDelete.TYPE) ||</span>
+<span class="nc bnc" id="L923" title="All 2 branches missed.">						content.startsWith(CubeAddon.TYPE)) {</span>
+					// throw cube parsing exception
+<span class="nc" id="L925">					throw e2;</span>
+				} else {
+					// log cube parsing exception
+<span class="nc" id="L928">					LOGGER.log(Level.FINE, &quot;Unable to parse cube message&quot;, e2);</span>
+				}
+
+				// try to read eventaddon xml
+				try {
+<span class="nc" id="L933">					EventAddonParser parser = new EventAddonParser();</span>
+<span class="nc" id="L934">					parser.parse(content);</span>
+<span class="nc" id="L935">					eqxml = parser.getAddon().getEQMessage();</span>
+<span class="nc" id="L936">				} catch (Exception e3) {</span>
+					// log eventaddon parsing exception
+<span class="nc" id="L938">					LOGGER.log(Level.FINE, &quot;Unable to parse eventaddon&quot;, e3);</span>
+					// throw original exception
+<span class="nc" id="L940">					throw e;</span>
+<span class="nc" id="L941">				}</span>
+<span class="fc" id="L942">			}</span>
+<span class="nc" id="L943">		}</span>
+
+<span class="fc" id="L945">		return this.getEQMessageProducts(eqxml, rawEqxml);</span>
+	}
+
+	public static final String GENERAL_TEXT_TYPE = &quot;general-text&quot;;
+<span class="fc" id="L949">	public static final String[] GENERAL_TEXT_ADDONS = new String[] {};</span>
+
+	public static final String SCITECH_TEXT_TYPE = &quot;scitech-text&quot;;
+<span class="fc" id="L952">	public static final String[] SCITECH_TEXT_ADDONS = new String[] {};</span>
+
+	public static final String IMPACT_TEXT_TYPE = &quot;impact-text&quot;;
+<span class="fc" id="L955">	public static final String[] IMPACT_TEXT_ADDONS = new String[] { &quot;feltreports&quot; };</span>
+
+	/** Selected link type products have a mapping. */
+	public static final String GENERAL_LINK_TYPE = &quot;general-link&quot;;
+<span class="fc" id="L959">	public static final String[] GENERAL_LINK_ADDONS = new String[] {</span>
+			&quot;aftershock&quot;, &quot;afterwarn&quot;, &quot;asw&quot;, &quot;generalmisc&quot; };
+
+	public static final String SCITECH_LINK_TYPE = &quot;scitech-link&quot;;
+<span class="fc" id="L963">	public static final String[] SCITECH_LINK_ADDONS = new String[] { &quot;energy&quot;,</span>
+			&quot;focalmech&quot;, &quot;ncfm&quot;, &quot;histmomenttensor&quot;, &quot;finitefault&quot;,
+			&quot;momenttensor&quot;, &quot;mtensor&quot;, &quot;phase&quot;, &quot;seiscrosssec&quot;, &quot;seisrecsec&quot;,
+			&quot;traveltimes&quot;, &quot;waveform&quot;, &quot;seismograms&quot;, &quot;scitechmisc&quot; };
+
+	public static final String IMPACT_LINK_TYPE = &quot;impact-link&quot;;
+<span class="fc" id="L969">	public static final String[] IMPACT_LINK_ADDONS = new String[] {</span>
+			&quot;tsunamilinks&quot;, &quot;impactmisc&quot; };
+
+	/**
+	 * Map from cube style link addon to product type.
+	 * 
+	 * @param addonType
+	 * @return null if link should not be converted to a product.
+	 */
+	public String getLinkAddonProductType(final String addonType) {
+<span class="nc" id="L979">		String c = addonType.toLowerCase();</span>
+
+<span class="nc bnc" id="L981" title="All 2 branches missed.">		for (String general : GENERAL_LINK_ADDONS) {</span>
+<span class="nc bnc" id="L982" title="All 2 branches missed.">			if (c.startsWith(general)) {</span>
+<span class="nc" id="L983">				return GENERAL_LINK_TYPE;</span>
+			}
+		}
+
+<span class="nc bnc" id="L987" title="All 2 branches missed.">		for (String scitech : SCITECH_LINK_ADDONS) {</span>
+<span class="nc bnc" id="L988" title="All 2 branches missed.">			if (c.startsWith(scitech)) {</span>
+<span class="nc" id="L989">				return SCITECH_LINK_TYPE;</span>
+			}
+		}
+
+<span class="nc bnc" id="L993" title="All 2 branches missed.">		for (String impact : IMPACT_LINK_ADDONS) {</span>
+<span class="nc bnc" id="L994" title="All 2 branches missed.">			if (c.startsWith(impact)) {</span>
+<span class="nc" id="L995">				return IMPACT_LINK_TYPE;</span>
+			}
+		}
+
+<span class="nc" id="L999">		return null;</span>
+	}
+
+	/**
+	 * Map from cube style text addon to product type.
+	 * 
+	 * @param addonType
+	 * @return null if comment should not be converted to a product.
+	 */
+	public String getTextAddonProductType(final String addonType) {
+<span class="fc" id="L1009">		String c = addonType.toLowerCase();</span>
+
+<span class="pc bpc" id="L1011" title="1 of 2 branches missed.">		for (String general : GENERAL_TEXT_ADDONS) {</span>
+<span class="nc bnc" id="L1012" title="All 2 branches missed.">			if (c.startsWith(general)) {</span>
+<span class="nc" id="L1013">				return GENERAL_TEXT_TYPE;</span>
+			}
+		}
+
+<span class="fc bfc" id="L1017" title="All 2 branches covered.">		for (String impact : IMPACT_TEXT_ADDONS) {</span>
+<span class="pc bpc" id="L1018" title="1 of 2 branches missed.">			if (c.startsWith(impact)) {</span>
+<span class="nc" id="L1019">				return IMPACT_TEXT_TYPE;</span>
+			}
+		}
+
+<span class="pc bpc" id="L1023" title="1 of 2 branches missed.">		for (String scitech : SCITECH_TEXT_ADDONS) {</span>
+<span class="nc bnc" id="L1024" title="All 2 branches missed.">			if (c.startsWith(scitech)) {</span>
+<span class="nc" id="L1025">				return SCITECH_TEXT_TYPE;</span>
+			}
+		}
+
+<span class="fc" id="L1029">		return null;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

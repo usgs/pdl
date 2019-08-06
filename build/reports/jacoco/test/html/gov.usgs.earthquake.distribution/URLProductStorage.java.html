@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>URLProductStorage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">URLProductStorage.java</span></div><h1>URLProductStorage.java</h1><pre class="source lang-java linenums">/*
+ * URLProductStorage
+ */
+package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.ProductId;
+
+import gov.usgs.earthquake.product.io.BinaryProductHandler;
+import gov.usgs.earthquake.product.io.BinaryProductSource;
+import gov.usgs.earthquake.product.io.ProductSource;
+import gov.usgs.earthquake.product.io.ProductHandler;
+import gov.usgs.earthquake.product.io.XmlProductSource;
+import gov.usgs.earthquake.product.io.XmlProductHandler;
+import gov.usgs.util.Config;
+import gov.usgs.util.StreamUtils;
+
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import java.net.URL;
+import java.util.logging.Logger;
+
+/**
+ * Store products in a file system which is also available at a URL.
+ */
+public class URLProductStorage extends FileProductStorage {
+
+<span class="fc" id="L29">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L30">			.getLogger(URLProductStorage.class.getName());</span>
+
+	/** Property name representing base URL. */
+	public static final String URL_PROPERTY_NAME = &quot;url&quot;;
+
+	/** The URL which corresponds to baseDirectory. */
+	private URL baseURL;
+
+	/** Property name to configure binary or xml format. */
+	public static final String BINARY_FORMAT_PROPERTY = &quot;binaryFormat&quot;;
+	/** Default value for whether to use binary format. */
+	public static final String BINARY_FORMAT_DEFAULT = &quot;false&quot;;
+
+	/** Whether to store in binary format (true), or xml format (false). */
+<span class="pc" id="L44">	private boolean binaryFormat = false;</span>
+
+	/**
+	 * Constructor for the Configurable interface.
+	 */
+<span class="nc" id="L49">	public URLProductStorage() {</span>
+<span class="nc" id="L50">	}</span>
+
+	/**
+	 * Construct a new ProductStorage object
+	 * 
+	 * @param baseDirectory
+	 *            the storage directory where products are stored.
+	 * @param baseURL
+	 *            the url where storage directory is available.
+	 */
+	public URLProductStorage(final File baseDirectory, final URL baseURL) {
+<span class="fc" id="L61">		super(baseDirectory);</span>
+<span class="fc" id="L62">		this.baseURL = baseURL;</span>
+<span class="fc" id="L63">	}</span>
+
+	/**
+	 * Load the baseURL from configuration.
+	 * 
+	 * @param config
+	 *            the configuration object.
+	 */
+	public void configure(final Config config) throws Exception {
+<span class="nc" id="L72">		super.configure(config);</span>
+
+<span class="nc" id="L74">		String urlString = config.getProperty(URL_PROPERTY_NAME);</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">		if (urlString == null) {</span>
+<span class="nc" id="L76">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+					+ &quot;] 'url' is a required configuration property&quot;);
+		}
+<span class="nc" id="L79">		baseURL = new URL(urlString);</span>
+
+<span class="nc" id="L81">		LOGGER.config(&quot;[&quot; + getName() + &quot;] base url is '&quot; + baseURL.toString()</span>
+				+ &quot;'&quot;);
+
+<span class="nc" id="L84">		binaryFormat = Boolean.valueOf(config.getProperty(</span>
+				BINARY_FORMAT_PROPERTY, BINARY_FORMAT_DEFAULT));
+<span class="nc" id="L86">		LOGGER.config(&quot;[&quot; + getName() + &quot;] using &quot;</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">				+ (binaryFormat ? &quot;binary&quot; : &quot;xml&quot;) + &quot; format&quot;);</span>
+<span class="nc" id="L88">	}</span>
+
+	/**
+	 * Compute the URL to a product.
+	 * 
+	 * @param id
+	 *            which product.
+	 * @return the URL to a product.
+	 * @throws Exception
+	 */
+	public URL getProductURL(final ProductId id) throws Exception {
+<span class="fc" id="L99">		return new URL(baseURL, getProductPath(id));</span>
+	}
+
+	/**
+	 * A method for subclasses to override the storage path.
+	 * 
+	 * The returned path is appended to the base directory when storing and
+	 * retrieving products.
+	 * 
+	 * @param id
+	 *            the product id to convert.
+	 * @return the directory used to store id.
+	 */
+	@Override
+	public String getProductPath(final ProductId id) {
+<span class="fc" id="L114">		StringBuffer buf = new StringBuffer();</span>
+<span class="fc" id="L115">		buf.append(id.getSource());</span>
+<span class="fc" id="L116">		buf.append(&quot;_&quot;);</span>
+<span class="fc" id="L117">		buf.append(id.getType());</span>
+<span class="fc" id="L118">		buf.append(&quot;_&quot;);</span>
+<span class="fc" id="L119">		buf.append(id.getCode());</span>
+<span class="fc" id="L120">		buf.append(&quot;_&quot;);</span>
+<span class="fc" id="L121">		buf.append(id.getUpdateTime().getTime());</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">		if (binaryFormat) {</span>
+<span class="nc" id="L123">			buf.append(&quot;.bin&quot;);</span>
+		} else {
+<span class="fc" id="L125">			buf.append(&quot;.xml&quot;);</span>
+		}
+<span class="fc" id="L127">		return buf.toString();</span>
+	}
+
+	/**
+	 * A method for subclasses to override the storage format.
+	 * 
+	 * When overriding this method, the method getProductInputForFile should
+	 * also be overridden.
+	 * 
+	 * @param file
+	 *            a file that should be converted into a ProductOutput.
+	 * @return the ProductOutput.
+	 */
+	protected ProductHandler getProductHandlerFormat(final File file)
+			throws Exception {
+<span class="fc" id="L142">		OutputStream out = StreamUtils.getOutputStream(file);</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">		if (binaryFormat) {</span>
+<span class="nc" id="L144">			return new BinaryProductHandler(out);</span>
+		} else {
+<span class="fc" id="L146">			return new XmlProductHandler(out);</span>
+		}
+	}
+
+	/**
+	 * A method for subclasses to override the storage format.
+	 * 
+	 * When overriding this method, the method getProductOutputForFile should
+	 * also be overridden.
+	 * 
+	 * @param file
+	 *            a file that should be converted into a ProductInput.
+	 * @return the ProductInput.
+	 */
+	protected ProductSource getProductSourceFormat(final File file)
+			throws Exception {
+<span class="fc" id="L162">		InputStream in = StreamUtils.getInputStream(file);</span>
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">		if (binaryFormat) {</span>
+<span class="nc" id="L164">			return new BinaryProductSource(in);</span>
+		} else {
+<span class="fc" id="L166">			return new XmlProductSource(in);</span>
+		}
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

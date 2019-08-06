@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExecutorTask.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util</a> &gt; <span class="el_source">ExecutorTask.java</span></div><h1>ExecutorTask.java</h1><pre class="source lang-java linenums">/*
+ * ExecutorTask
+ * 
+ * $Id$
+ * $URL$
+ */
+package gov.usgs.util;
+
+import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * A wrapper for Runnable or Callable objects for use with an ExecutorService.
+ * 
+ * Can be used to schedule interrupt based timeouts, multiple attempts, and
+ * Future style exception tracking for Runnable or Callable objects.
+ * 
+ * @param &lt;T&gt; return type for callable.
+ */
+public final class ExecutorTask&lt;T&gt; implements Future&lt;T&gt;, Runnable {
+
+	/** Logging object. */
+<span class="fc" id="L33">	private static final Logger LOGGER = Logger.getLogger(ExecutorTask.class</span>
+<span class="fc" id="L34">			.getName());</span>
+
+	/** Default number of milliseconds to wait before a retry. */
+	public static final long DEFAULT_RETRY_DELAY = 0L;
+
+	/** Default number of tries to run this task. */
+	public static final int DEFAULT_NUM_TRIES = 1;
+
+	/** Default timeout for this task. */
+	public static final long DEFAULT_TIMEOUT = 0L;
+
+	/** ExecutorService used to execute this task. */
+	private ExecutorService service;
+
+	/** The callable to be called. */
+	private Callable&lt;T&gt; callable;
+
+	/** Timeout for task. */
+<span class="fc" id="L52">	private long timeout = DEFAULT_TIMEOUT;</span>
+
+	/** Number of tries to execute this task. */
+<span class="fc" id="L55">	private int maxTries = DEFAULT_NUM_TRIES;</span>
+
+	/** Number of milliseconds to wait before trying again. */
+<span class="fc" id="L58">	private long retryDelay = DEFAULT_RETRY_DELAY;</span>
+
+	/** Timer used to schedule retries, when they have a non-zero delay. */
+	private Timer retryTimer;
+
+	/** The future from the executor service. */
+	private T result;
+
+	/** List of exceptions thrown, up to maxTries in length. */
+	ArrayList&lt;Exception&gt; exceptions;
+
+	/** Whether this task is complete. */
+<span class="fc" id="L70">	private Boolean done = false;</span>
+
+	/** Whether this task has been canceled. */
+<span class="fc" id="L73">	private Boolean cancelled = false;</span>
+
+	/** Number of tries used. */
+<span class="fc" id="L76">	private int numTries = 0;</span>
+
+	/** The thread where this is running, used to interrupt. */
+<span class="fc" id="L79">	private Thread runThread = null;</span>
+
+	/** Name for this task. */
+<span class="fc" id="L82">	private String name = null;</span>
+
+<span class="fc" id="L84">	private final Object syncObject = new Object();</span>
+
+	/**
+	 * Construct a new ExecutorTask
+	 * 
+	 * @param service
+	 *            ExecutorService that this task will be submitted to.
+	 * @param maxTries
+	 *            maximum number of tries callable can throw an exception or
+	 *            timeout before giving up. &amp;lt; 1 means never run.
+	 * @param timeout
+	 *            number of milliseconds to allow callable to run before it is
+	 *            interrupted. &amp;lt;= 0 means never timeout.
+	 * @param callable
+	 *            the callable to call. To work well, the callable should handle
+	 *            interrupts gracefully.
+	 * @see InterruptedException
+	 */
+	public ExecutorTask(ExecutorService service, int maxTries, long timeout,
+			Callable&lt;T&gt; callable) {
+<span class="fc" id="L104">		this(service, maxTries, timeout, callable, null, DEFAULT_RETRY_DELAY);</span>
+<span class="fc" id="L105">	}</span>
+
+	/**
+	 * Wraps a runnable and result using the CallableRunnable class.
+	 * 
+	 * @see java.util.concurrent.Executors#callable(Runnable, Object)
+	 */
+	public ExecutorTask(ExecutorService service, int maxTries, long timeout,
+			Runnable runnable, T result) {
+<span class="nc" id="L114">		this(service, maxTries, timeout, Executors.callable(runnable, result));</span>
+<span class="nc" id="L115">	}</span>
+
+	/**
+	 * Construct a new ExecutorTask
+	 * 
+	 * @param service
+	 *            ExecutorService that this task will be submitted to.
+	 * @param maxTries
+	 *            maximum number of tries callable can throw an exception or
+	 *            timeout before giving up. &amp;lt; 1 means never run.
+	 * @param timeout
+	 *            number of milliseconds to allow callable to run before it is
+	 *            interrupted. &amp;lt;= 0 means never timeout.
+	 * @param callable
+	 *            the callable to call. To work well, the callable should handle
+	 *            interrupts gracefully.
+	 * @param retryTimer
+	 *            a timer used to schedule retries when retryDelay is non-zero.
+	 * @param retryDelay
+	 *            the number of milliseconds to wait before retrying after an
+	 *            exception.
+	 * @see InterruptedException
+	 */
+	public ExecutorTask(ExecutorService service, int maxTries, long timeout,
+<span class="fc" id="L139">			Callable&lt;T&gt; callable, Timer retryTimer, long retryDelay) {</span>
+<span class="fc" id="L140">		this.service = service;</span>
+<span class="fc" id="L141">		this.maxTries = maxTries;</span>
+<span class="fc" id="L142">		this.timeout = timeout;</span>
+<span class="fc" id="L143">		this.callable = callable;</span>
+<span class="fc" id="L144">		this.exceptions = new ArrayList&lt;Exception&gt;(maxTries);</span>
+<span class="fc" id="L145">		this.retryTimer = retryTimer;</span>
+<span class="fc" id="L146">		this.retryDelay = retryDelay;</span>
+<span class="fc" id="L147">	}</span>
+
+	/**
+	 * Run calls the callable, scheduling timeout interruption, catching
+	 * exceptions, and potentially resubmitting to the executor service.
+	 */
+	@Override
+	public void run() {
+		// used to schedule timeout
+<span class="fc" id="L156">		Timer timeoutTimer = new Timer();</span>
+
+		try {
+			// synchronized (this) {
+<span class="pc bpc" id="L160" title="3 of 6 branches missed.">			if (done || cancelled || numTries &gt;= maxTries) {</span>
+				// already done, cancelled, or out of attempts
+<span class="nc" id="L162">				return;</span>
+			}
+
+			// otherwise,
+<span class="fc" id="L166">			++numTries;</span>
+			// signal that we are running
+<span class="fc" id="L168">			runThread = Thread.currentThread();</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">			if (timeout &gt; 0) {</span>
+				// schedule interrupt
+<span class="nc" id="L171">				final Thread currentThread = runThread;</span>
+<span class="nc" id="L172">				timeoutTimer.schedule(new TimerTask() {</span>
+					@Override
+					public void run() {
+<span class="nc" id="L175">						LOGGER.fine(&quot;Interrupting executor thread&quot;);</span>
+<span class="nc" id="L176">						currentThread.interrupt();</span>
+<span class="nc" id="L177">					}</span>
+				}, timeout);
+			}
+			// }
+
+			// compute result, outside synchronized
+<span class="fc" id="L183">			result = callable.call();</span>
+
+			// synchronized (this) {
+			// signal that we are done running
+<span class="fc" id="L187">			runThread = null;</span>
+
+			// computed without exceptions, done
+<span class="fc" id="L190">			done();</span>
+			// }
+<span class="fc" id="L192">		} catch (Exception e) {</span>
+<span class="fc" id="L193">			LOGGER.log(Level.INFO, &quot;Exception executing task&quot;, e);</span>
+			// synchronized (this) {
+			// signal that we are not running
+<span class="fc" id="L196">			runThread = null;</span>
+
+			// track this exception
+<span class="fc" id="L199">			exceptions.add(e);</span>
+
+			// try to resubmit
+<span class="pc bpc" id="L202" title="2 of 4 branches missed.">			if (!cancelled &amp;&amp; numTries &lt; maxTries) {</span>
+<span class="nc" id="L203">				LOGGER.info(&quot;Resubmitting task to executor &quot; + numTries + &quot;/&quot;</span>
+						+ maxTries + &quot; attempts&quot;);
+<span class="nc" id="L205">				SubmitTaskToExecutor retryTask = new SubmitTaskToExecutor(this);</span>
+<span class="nc bnc" id="L206" title="All 4 branches missed.">				if (retryDelay &lt;= 0L || retryTimer == null) {</span>
+<span class="nc" id="L207">					retryTask.run();</span>
+				} else {
+<span class="nc" id="L209">					retryTimer.schedule(retryTask, retryDelay);</span>
+				}
+<span class="nc" id="L211">			} else {</span>
+				// cancelled or out of tries, done
+<span class="fc" id="L213">				done();</span>
+			}
+			// }
+		} finally {
+			// cancel timeout based interrupt
+<span class="fc" id="L218">			timeoutTimer.cancel();</span>
+		}
+<span class="fc" id="L220">	}</span>
+
+	/**
+	 * Called when task is completed, either successfully, or unsuccessfully and
+	 * has no more tries
+	 */
+	private void done() {
+		// done running, either successfully or because out of tries
+<span class="fc" id="L228">		done = true;</span>
+		// notify anyone waiting for task to complete
+<span class="fc" id="L230">		synchronized (syncObject) {</span>
+<span class="fc" id="L231">			syncObject.notifyAll();</span>
+<span class="fc" id="L232">		}</span>
+<span class="fc" id="L233">	}</span>
+
+	@Override
+	public boolean cancel(boolean mayInterruptIfRunning) {
+<span class="nc bnc" id="L237" title="All 4 branches missed.">		if (cancelled || done) {</span>
+			// already canceled or complete
+<span class="nc" id="L239">			return cancelled;</span>
+		}
+
+<span class="nc" id="L242">		cancelled = true;</span>
+<span class="nc bnc" id="L243" title="All 4 branches missed.">		if (runThread != null &amp;&amp; mayInterruptIfRunning) {</span>
+			// running, try to interrupt
+<span class="nc" id="L245">			runThread.interrupt();</span>
+		}
+
+		// thread may still be running, if it doesn't handle interrupts well,
+		// but Future interface says we are done
+<span class="nc" id="L250">		done();</span>
+
+<span class="nc" id="L252">		return cancelled;</span>
+	}
+
+	@Override
+	public boolean isCancelled() {
+<span class="nc" id="L257">		return cancelled;</span>
+	}
+
+	@Override
+	public boolean isDone() {
+<span class="nc" id="L262">		return done;</span>
+	}
+
+	/**
+	 * Get the result returned by the callable.
+	 */
+	@Override
+	public T get() throws InterruptedException, ExecutionException {
+<span class="nc bnc" id="L270" title="All 6 branches missed.">		while (!cancelled &amp;&amp; !done &amp;&amp; numTries &lt; maxTries) {</span>
+<span class="nc" id="L271">			synchronized (syncObject) {</span>
+<span class="nc" id="L272">				syncObject.wait();</span>
+<span class="nc" id="L273">			}</span>
+		}
+
+<span class="nc bnc" id="L276" title="All 4 branches missed.">		if (numTries == maxTries &amp;&amp; exceptions.size() == maxTries) {</span>
+			// can't execute any more, signal using most recent exception
+<span class="nc" id="L278">			throw new ExecutionException(exceptions.get(maxTries - 1));</span>
+		}
+
+<span class="nc" id="L281">		return result;</span>
+	}
+
+	/**
+	 * Get the result returned by the callable.
+	 */
+	@Override
+	public T get(long timeout, TimeUnit unit) throws InterruptedException,
+			ExecutionException, TimeoutException {
+<span class="nc bnc" id="L290" title="All 6 branches missed.">		if (!cancelled &amp;&amp; !done &amp;&amp; numTries &lt; maxTries) {</span>
+<span class="nc" id="L291">			synchronized (syncObject) {</span>
+<span class="nc" id="L292">				unit.timedWait(syncObject, timeout);</span>
+<span class="nc" id="L293">			}</span>
+		}
+
+<span class="nc bnc" id="L296" title="All 4 branches missed.">		if (!cancelled &amp;&amp; !done) {</span>
+			// must have timed out
+<span class="nc" id="L298">			throw new TimeoutException();</span>
+		}
+
+<span class="nc bnc" id="L301" title="All 4 branches missed.">		if (numTries == maxTries &amp;&amp; exceptions.size() == maxTries) {</span>
+			// can't execute any more, signal using most recent exception
+<span class="nc" id="L303">			throw new ExecutionException(exceptions.get(maxTries - 1));</span>
+		}
+
+<span class="nc" id="L306">		return result;</span>
+	}
+
+	/**
+	 * Number of tries used.
+	 * 
+	 * @return actual number of attempts.
+	 */
+	public int getNumTries() {
+<span class="nc" id="L315">		return numTries;</span>
+	}
+
+	/**
+	 * Maximum number of tries before giving up.
+	 * 
+	 * @return maximum number of attempts.
+	 */
+	public int getMaxTries() {
+<span class="nc" id="L324">		return maxTries;</span>
+	}
+
+	/**
+	 * Any exceptions thrown, during any execution attempt.
+	 * 
+	 * @return array of thrown exceptions. should contain no more than numTries
+	 *         exceptions.
+	 */
+	public ArrayList&lt;Exception&gt; getExceptions() {
+<span class="nc" id="L334">		return exceptions;</span>
+	}
+
+	/**
+	 * The callable object that is/was called.
+	 * 
+	 * @return The callable object for this task. If this task was created using
+	 *         a runnable, this was created using Executors.callable(Runnable).
+	 */
+	public Callable&lt;T&gt; getCallable() {
+<span class="nc" id="L344">		return callable;</span>
+	}
+
+	public String getName() {
+<span class="nc" id="L348">		return this.name;</span>
+	}
+
+	public void setName(final String name) {
+<span class="nc" id="L352">		this.name = name;</span>
+<span class="nc" id="L353">	}</span>
+
+	/**
+	 * @return the retryDelay
+	 */
+	public long getRetryDelay() {
+<span class="nc" id="L359">		return retryDelay;</span>
+	}
+
+	/**
+	 * @param retryDelay
+	 *            the retryDelay to set
+	 */
+	public void setRetryDelay(long retryDelay) {
+<span class="nc" id="L367">		this.retryDelay = retryDelay;</span>
+<span class="nc" id="L368">	}</span>
+
+	/**
+	 * @return the retryTimer
+	 */
+	public Timer getRetryTimer() {
+<span class="nc" id="L374">		return retryTimer;</span>
+	}
+
+	/**
+	 * @param retryTimer
+	 *            the retryTimer to set
+	 */
+	public void setRetryTimer(Timer retryTimer) {
+<span class="nc" id="L382">		this.retryTimer = retryTimer;</span>
+<span class="nc" id="L383">	}</span>
+
+	/**
+	 * Submit an ExecutorTask to an ExecutorService.
+	 * 
+	 * Used to defer resubmission of a task after it fails, but scheduling its
+	 * resubmission using a timer.
+	 */
+	private class SubmitTaskToExecutor extends TimerTask {
+
+		/** The task to resubmit. */
+		private ExecutorTask&lt;T&gt; task;
+
+		/**
+		 * Construct a new SubmitTaskToExecutor instance.
+		 * 
+		 * @param task
+		 *            the task to resubmit.
+		 */
+<span class="nc" id="L402">		public SubmitTaskToExecutor(final ExecutorTask&lt;T&gt; task) {</span>
+<span class="nc" id="L403">			this.task = task;</span>
+<span class="nc" id="L404">		}</span>
+
+		/**
+		 * Submits the task to the executor.
+		 */
+		public void run() {
+<span class="nc" id="L410">			service.submit(task);</span>
+<span class="nc" id="L411">		}</span>
+
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

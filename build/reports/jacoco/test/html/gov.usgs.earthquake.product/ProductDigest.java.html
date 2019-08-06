@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductDigest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product</a> &gt; <span class="el_source">ProductDigest.java</span></div><h1>ProductDigest.java</h1><pre class="source lang-java linenums">/*
+ * ProductDigest
+ */
+package gov.usgs.earthquake.product;
+
+import gov.usgs.earthquake.product.io.ObjectProductSource;
+import gov.usgs.earthquake.product.io.ProductHandler;
+import gov.usgs.earthquake.util.NullOutputStream;
+import gov.usgs.util.CryptoUtils;
+import gov.usgs.util.StreamUtils;
+import gov.usgs.util.XmlUtils;
+
+import java.io.File;
+import java.net.URI;
+import java.net.URL;
+import java.security.DigestOutputStream;
+import java.security.KeyPair;
+import java.security.MessageDigest;
+import java.util.Base64;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.logging.Logger;
+
+
+/**
+ * Used to generate product digests.
+ * 
+ * All product attributes and content are used when generating a digest, except
+ * any existing signature, since the digest is used to generate or verify
+ * signatures.
+ * 
+ * Calls to ProductOutput methods on this class must occur in identical order to
+ * generate consistent signatures. Therefore it is almost required to use the
+ * ObjectProductInput, which fulfills this requirement.
+ */
+public class ProductDigest implements ProductHandler {
+
+	/** Logging object. */
+<span class="fc" id="L39">	private static final Logger LOGGER = Logger.getLogger(ProductDigest.class</span>
+<span class="fc" id="L40">			.getName());</span>
+
+	/** Character set used when computing digests. */
+	public static final String CHARSET = &quot;UTF-8&quot;;
+
+	/** Algorithm used when generating product digest. */
+	public static final String MESSAGE_DIGEST_ALGORITHM = &quot;SHA1&quot;;
+
+	/** The stream used to compute the product digest. */
+	private DigestOutputStream digestStream;
+
+	/** The computed digest. */
+<span class="fc" id="L52">	private byte[] digest = null;</span>
+
+	/**
+	 * Construct a new ProductDigest.
+	 */
+<span class="fc" id="L57">	protected ProductDigest() {</span>
+<span class="fc" id="L58">		MessageDigest digest = null;</span>
+		try {
+<span class="fc" id="L60">			digest = MessageDigest.getInstance(MESSAGE_DIGEST_ALGORITHM);</span>
+<span class="nc" id="L61">		} catch (Exception e) {</span>
+<span class="nc" id="L62">			e.printStackTrace();</span>
+<span class="fc" id="L63">		}</span>
+
+<span class="fc" id="L65">		digestStream = new DigestOutputStream(new NullOutputStream(), digest);</span>
+<span class="fc" id="L66">	}</span>
+
+	/**
+	 * A convenience method that generates a product digest.
+	 * 
+	 * @param product
+	 *            the product to digest
+	 * @return the computed digest.
+	 * @throws Exception
+	 *             if errors occur while digesting product.
+	 */
+	public static byte[] digestProduct(final Product product) throws Exception {
+<span class="fc" id="L78">		Date start = new Date();</span>
+<span class="fc" id="L79">		ProductDigest productDigest = new ProductDigest();</span>
+		// ObjectProductInput generates ProductOutput calls in a reliable order.
+<span class="fc" id="L81">		new ObjectProductSource(product).streamTo(productDigest);</span>
+<span class="fc" id="L82">		Date end = new Date();</span>
+
+<span class="fc" id="L84">		byte[] digest = productDigest.getDigest();</span>
+<span class="fc" id="L85">		LOGGER.fine(&quot;Digest='&quot; + Base64.getEncoder().encodeToString(digest)</span>
+<span class="fc" id="L86">				+ &quot;' , &quot; + (end.getTime() - start.getTime()) + &quot;ms&quot;);</span>
+<span class="fc" id="L87">		return digest;</span>
+	}
+
+	/**
+	 * @return the computed digest, or null if not finished yet.
+	 */
+	public byte[] getDigest() {
+<span class="fc" id="L94">		return digest;</span>
+	}
+
+	/**
+	 * Digest the id, update time, status, and URL.
+	 */
+	public void onBeginProduct(ProductId id, String status, URL trackerURL)
+			throws Exception {
+<span class="fc" id="L102">		digestStream.write(id.toString().getBytes(CHARSET));</span>
+<span class="fc" id="L103">		digestStream.write(XmlUtils.formatDate(id.getUpdateTime()).getBytes(</span>
+				CHARSET));
+<span class="fc" id="L105">		digestStream.write(status.getBytes(CHARSET));</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">		if (trackerURL != null) {</span>
+<span class="fc" id="L107">			digestStream.write(trackerURL.toString().getBytes(CHARSET));</span>
+		}
+<span class="fc" id="L109">	}</span>
+
+	/**
+	 * Digest the path, content attributes, and content bytes.
+	 */
+	public void onContent(ProductId id, String path, Content content)
+			throws Exception {
+<span class="fc" id="L116">		digestStream.write(path.getBytes(CHARSET));</span>
+<span class="fc" id="L117">		digestStream.write(content.getContentType().getBytes(CHARSET));</span>
+<span class="fc" id="L118">		digestStream.write(XmlUtils.formatDate(content.getLastModified())</span>
+<span class="fc" id="L119">				.getBytes(CHARSET));</span>
+<span class="fc" id="L120">		digestStream.write(content.getLength().toString().getBytes(CHARSET));</span>
+<span class="fc" id="L121">		StreamUtils.transferStream(content.getInputStream(),</span>
+				new StreamUtils.UnclosableOutputStream(digestStream));
+<span class="fc" id="L123">	}</span>
+
+	/**
+	 * Finish computing digest.
+	 */
+	public void onEndProduct(ProductId id) throws Exception {
+		// finish computing message digest.
+<span class="fc" id="L130">		digestStream.flush();</span>
+<span class="fc" id="L131">		digest = digestStream.getMessageDigest().digest();</span>
+<span class="fc" id="L132">	}</span>
+
+	/**
+	 * Digest the link relation and href.
+	 */
+	public void onLink(ProductId id, String relation, URI href)
+			throws Exception {
+<span class="fc" id="L139">		digestStream.write(relation.getBytes(CHARSET));</span>
+<span class="fc" id="L140">		digestStream.write(href.toString().getBytes(CHARSET));</span>
+<span class="fc" id="L141">	}</span>
+
+	/**
+	 * Digest the property name and value.
+	 */
+	public void onProperty(ProductId id, String name, String value)
+			throws Exception {
+<span class="fc" id="L148">		digestStream.write(name.getBytes(CHARSET));</span>
+<span class="fc" id="L149">		digestStream.write(value.getBytes(CHARSET));</span>
+<span class="fc" id="L150">	}</span>
+
+	/**
+	 * Don't digest the signature.
+	 */
+	public void onSignature(ProductId id, String signature) throws Exception {
+		// generating signature, ignore
+<span class="fc" id="L157">	}</span>
+
+	/**
+	 * Free any resources associated with this handler.
+	 */
+	@Override
+	public void close() {
+<span class="nc" id="L164">		StreamUtils.closeStream(digestStream);</span>
+<span class="nc" id="L165">	}</span>
+
+
+	public static void main(final String[] args) throws Exception {
+<span class="nc bnc" id="L169" title="All 2 branches missed.">		if (args.length == 0) {</span>
+<span class="nc" id="L170">			System.err.println(&quot;Usage: ProductDigest FILE [FILE ...]&quot;);</span>
+<span class="nc" id="L171">			System.err</span>
+<span class="nc" id="L172">					.println(&quot;where FILE is a file or directory to include in digest&quot;);</span>
+<span class="nc" id="L173">			System.exit(1);</span>
+		}
+
+<span class="nc" id="L176">		Product product = new Product(new ProductId(&quot;test&quot;, &quot;test&quot;, &quot;test&quot;));</span>
+		try {
+<span class="nc" id="L178">			product.setTrackerURL(new URL(&quot;http://localhost/tracker&quot;));</span>
+<span class="nc" id="L179">		} catch (Exception e) {</span>
+			// ignore
+<span class="nc" id="L181">		}</span>
+
+		// treat all arguments as files or directories to be added as content
+<span class="nc bnc" id="L184" title="All 2 branches missed.">		for (String arg : args) {</span>
+<span class="nc" id="L185">			File file = new File(arg);</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">			if (!file.exists()) {</span>
+<span class="nc" id="L187">				System.err.println(file.getCanonicalPath() + &quot; does not exist&quot;);</span>
+<span class="nc" id="L188">				System.exit(1);</span>
+			}
+
+<span class="nc bnc" id="L191" title="All 2 branches missed.">			if (file.isDirectory()) {</span>
+<span class="nc" id="L192">				product.getContents().putAll(</span>
+<span class="nc" id="L193">						FileContent.getDirectoryContents(file));</span>
+			} else {
+<span class="nc" id="L195">				product.getContents()</span>
+<span class="nc" id="L196">						.put(file.getName(), new FileContent(file));</span>
+			}
+		}
+
+<span class="nc" id="L200">		long totalBytes = 0L;</span>
+<span class="nc" id="L201">		Iterator&lt;String&gt; iter = product.getContents().keySet().iterator();</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L203">			totalBytes += product.getContents().get(iter.next()).getLength();</span>
+		}
+
+<span class="nc" id="L206">		KeyPair keyPair = CryptoUtils.generateDSAKeyPair(CryptoUtils.DSA_1024);</span>
+<span class="nc" id="L207">		Date start = new Date();</span>
+<span class="nc" id="L208">		product.sign(keyPair.getPrivate());</span>
+<span class="nc" id="L209">		Date end = new Date();</span>
+<span class="nc" id="L210">		long elapsed = (end.getTime() - start.getTime());</span>
+
+<span class="nc" id="L212">		System.err.println(&quot;Digested &quot; + totalBytes + &quot; bytes of content in &quot;</span>
+				+ elapsed + &quot;ms&quot;);
+<span class="nc" id="L214">		System.err.println(&quot;Average rate = &quot; + (totalBytes / (elapsed / 1000.0))</span>
+				+ &quot; bytes/second&quot;);
+<span class="nc" id="L216">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultStorageListener.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">DefaultStorageListener.java</span></div><h1>DefaultStorageListener.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution;
+
+import gov.usgs.util.Config;
+import gov.usgs.util.DefaultConfigurable;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+<span class="fc" id="L9">public class DefaultStorageListener extends DefaultConfigurable implements</span>
+		StorageListener {
+
+<span class="fc" id="L12">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L13">			.getLogger(DefaultStorageListener.class.getName());</span>
+
+	@Override
+	public void configure(Config arg0) throws Exception {
+		// Nothing to do for default configure
+<span class="nc" id="L18">	}</span>
+
+	@Override
+	public void shutdown() throws Exception {
+		// Nothing to do for default shutdown
+<span class="nc" id="L23">	}</span>
+
+	@Override
+	public void startup() throws Exception {
+		// Nothing to do for default startup
+<span class="nc" id="L28">	}</span>
+
+	/**
+	 * Simple dispatch method for listeners who are only interested in certain
+	 * types of &lt;code&gt;StorageEvent&lt;/code&gt;s.
+	 * 
+	 * @param event
+	 *            The event that triggered the call
+	 */
+	@Override
+	public void onStorageEvent(StorageEvent event) {
+<span class="fc" id="L39">		StorageEvent.StorageEventType type = event.getType();</span>
+		try {
+<span class="fc bfc" id="L41" title="All 2 branches covered.">			if (type == StorageEvent.PRODUCT_STORED) {</span>
+<span class="fc" id="L42">				onProductStored(event);</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">			} else if (type == StorageEvent.PRODUCT_REMOVED) {</span>
+<span class="fc" id="L44">				onProductRemoved(event);</span>
+			}
+<span class="nc" id="L46">		} catch (Exception e) {</span>
+<span class="nc" id="L47">			LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] exception processing storage event&quot;, e);</span>
+<span class="fc" id="L48">		}</span>
+<span class="fc" id="L49">	}</span>
+
+	/**
+	 * Dispatched method called when the type of event is
+	 * &lt;code&gt;StorageEvent.StorageEventType.PRODUCT_STORED&lt;/code&gt;.
+	 * 
+	 * @param event
+	 */
+	public void onProductStored(StorageEvent event) throws Exception {
+<span class="nc" id="L58">		LOGGER.info(&quot;onProductStored::&quot; + event.getProductId().toString());</span>
+<span class="nc" id="L59">	}</span>
+
+	/**
+	 * Dispatched method called when the type of event is
+	 * &lt;code&gt;StorageEvent.StorageEventType.PRODUCT_REMOVED&lt;/code&gt;.
+	 * 
+	 * @param event
+	 */
+	public void onProductRemoved(StorageEvent event) throws Exception {
+<span class="nc" id="L68">		LOGGER.info(&quot;onProductRemoved::&quot; + event.getProductId().toString());</span>
+<span class="nc" id="L69">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

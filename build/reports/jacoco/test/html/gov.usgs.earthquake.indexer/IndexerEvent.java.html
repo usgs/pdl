@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IndexerEvent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">IndexerEvent.java</span></div><h1>IndexerEvent.java</h1><pre class="source lang-java linenums">/*
+ * IndexerEvent
+ */
+package gov.usgs.earthquake.indexer;
+
+import gov.usgs.earthquake.product.Product;
+
+import java.util.EventObject;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
+
+/**
+ * A description of a change to a ProductIndex.
+ * 
+ * IndexerEvents are created by the Indexer, and sent to IndexerListeners.
+ */
+public class IndexerEvent extends EventObject {
+
+	/** Serialization ID. */
+	private static final long serialVersionUID = 1L;
+
+	/** The index that was changed. */
+	private ProductIndex index;
+
+	/** The product that triggered this change. */
+	private ProductSummary summary;
+
+	/**
+	 * A Vector object is used here because it provides synchronized
+	 * (thread-safe) access to its elements. This is important since this event
+	 * will be sent asynchronously to many listeners (potentially).
+	 */
+<span class="fc" id="L37">	private Vector&lt;IndexerChange&gt; indexerChanges = null;</span>
+
+	/**
+	 * Construct a new IndexerEvent.
+	 * 
+	 * @param source
+	 *            the indexer that made the change.
+	 */
+	public IndexerEvent(final Indexer source) {
+<span class="fc" id="L46">		super(source);</span>
+		// Initial capacity = 5, capacity increment = 5;
+<span class="fc" id="L48">		this.indexerChanges = new Vector&lt;IndexerChange&gt;(5, 5);</span>
+<span class="fc" id="L49">	}</span>
+
+	public Indexer getIndexer() {
+<span class="fc" id="L52">		return (Indexer) getSource();</span>
+	}
+
+	public ProductIndex getIndex() {
+<span class="nc" id="L56">		return this.index;</span>
+	}
+
+	public void setIndex(ProductIndex index) {
+<span class="fc" id="L60">		this.index = index;</span>
+<span class="fc" id="L61">	}</span>
+
+	public ProductSummary getSummary() {
+<span class="fc" id="L64">		return this.summary;</span>
+	}
+
+	public void setSummary(ProductSummary summary) {
+<span class="fc" id="L68">		this.summary = summary;</span>
+<span class="fc" id="L69">	}</span>
+
+	public void addIndexerChange(IndexerChange change) {
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">		if (change != null) {</span>
+<span class="fc" id="L73">			this.indexerChanges.add(change);</span>
+		}
+<span class="fc" id="L75">	}</span>
+
+	public void addIndexerChanges(List&lt;IndexerChange&gt; changes) {
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">		if (changes == null) {</span>
+<span class="nc" id="L79">			return;</span>
+		}
+
+<span class="fc" id="L82">		Iterator&lt;IndexerChange&gt; iterator = changes.iterator();</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">		while (iterator.hasNext()) {</span>
+<span class="fc" id="L84">			addIndexerChange(iterator.next());</span>
+		}
+<span class="fc" id="L86">	}</span>
+
+	public Vector&lt;IndexerChange&gt; getIndexerChanges() {
+<span class="fc" id="L89">		return this.indexerChanges;</span>
+	}
+
+	/**
+	 * Convenience method to retrieve Product from Indexer storage.
+	 * 
+	 * @return Product object corresponding to ProductSummary.
+	 * @throws Exception
+	 */
+	public Product getProduct() throws Exception {
+<span class="fc bfc" id="L99" title="All 2 branches covered.">		if (summary == null) {</span>
+<span class="fc" id="L100">			return null;</span>
+		}
+<span class="fc" id="L102">		return getIndexer().getProductStorage().getProduct(summary.getId());</span>
+	}
+
+	/**
+	 * Retrieve a distinct list of events that were changed as part of this
+	 * IndexerEvent.
+	 * 
+	 * @return list of events
+	 */
+	public List&lt;Event&gt; getEvents() {
+		// map from eventid to event
+<span class="fc" id="L113">		Map&lt;Long, Event&gt; events = new HashMap&lt;Long, Event&gt;();</span>
+
+		// iterate over all changes, and place new event into map.
+
+		// more recent changes occur later in list, and thus only the
+		// latest update to an event will appear (if the event was
+		// changed more than once).
+<span class="fc" id="L120">		Iterator&lt;IndexerChange&gt; iter = indexerChanges.iterator();</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L122">			IndexerChange change = iter.next();</span>
+<span class="fc" id="L123">			Event event = change.getNewEvent();</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">			if (event != null) {</span>
+				// not an UNASSOCIATED_PRODUCT, which doesn't have an associated
+				// event
+<span class="fc" id="L127">				events.put(event.getIndexId(), event);</span>
+			}
+<span class="fc" id="L129">		}</span>
+
+		// extract distinct events from map
+<span class="fc" id="L132">		return new LinkedList&lt;Event&gt;(events.values());</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

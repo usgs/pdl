@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GridXYZHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.shakemap</a> &gt; <span class="el_source">GridXYZHandler.java</span></div><h1>GridXYZHandler.java</h1><pre class="source lang-java linenums">/**
+ * This class is currently not in use, but kept for posterity and the ability
+ * to add this support back in if it is deemed necessary.
+ */
+package gov.usgs.earthquake.shakemap;
+
+import java.util.zip.ZipInputStream;
+
+import gov.usgs.util.StreamUtils;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.math.BigDecimal;
+
+import java.text.SimpleDateFormat;
+
+/**
+ * Parser for ShakeMap grid.xyz metadata.
+ *
+ * id magnitude latitude longitude month day year hour:minute:second timezone
+ * lonMin latMin lonMax latMax (Process time: dow month day hour:minute:second
+ * year) eventDescription 2009232_290541 4.2 41.94 -114.09 AUG 20 2009 06:44:11
+ * GMT -115.327 41.0306 -112.844 42.8806 (Process time: Wed Aug 19 23:55:49
+ * 2009) 73.1 miles NE of WELLS-NV
+ */
+public class GridXYZHandler {
+
+<span class="nc" id="L29">	public static final SimpleDateFormat EVENT_TIMESTAMP_FORMAT = new SimpleDateFormat(</span>
+			&quot;MMM dd yyyy HH:mm:ss zzz&quot;);
+<span class="nc" id="L31">	public static final SimpleDateFormat PROCESS_TIMESTAMP_FORMAT = new SimpleDateFormat(</span>
+			&quot;'(Process time: 'EEE MMM dd HH:mm:ss yyyy')'&quot;);
+
+	private ShakeMap shakemap;
+
+<span class="nc" id="L36">	public GridXYZHandler(ShakeMap shakemap) {</span>
+<span class="nc" id="L37">		this.shakemap = shakemap;</span>
+<span class="nc" id="L38">	}</span>
+
+	public ShakeMap getShakemap() {
+<span class="nc" id="L41">		return shakemap;</span>
+	}
+
+	public void setShakemap(ShakeMap shakemap) {
+<span class="nc" id="L45">		this.shakemap = shakemap;</span>
+<span class="nc" id="L46">	}</span>
+
+	/**
+	 * Read first line of grid.xyz file and set properties on ShakeMap object.
+	 *
+	 * @param in the grid.xyz input stream.
+	 */
+	public void parse(final InputStream in) throws Exception {
+		try {
+<span class="nc" id="L55">			BufferedReader br = new BufferedReader(new InputStreamReader(</span>
+					new ZipInputStream(in)));
+<span class="nc" id="L57">			String firstLine = br.readLine();</span>
+<span class="nc" id="L58">			br.close();</span>
+
+<span class="nc" id="L60">			String parts[] = firstLine.split(&quot; &quot;);</span>
+			// id
+<span class="nc" id="L62">			shakemap.setEventSourceCode(parts[0]);</span>
+
+			// magnitude
+<span class="nc" id="L65">			shakemap.setMagnitude(new BigDecimal(parts[1]));</span>
+			// latitude
+<span class="nc" id="L67">			shakemap.setLatitude(new BigDecimal(parts[2]));</span>
+			// longitude
+<span class="nc" id="L69">			shakemap.setLongitude(new BigDecimal(parts[3]));</span>
+
+			// month day year hour:minute:second timezone
+<span class="nc" id="L72">			String[] eventTimestampParts = new String[5];</span>
+<span class="nc" id="L73">			System.arraycopy(parts, 4, eventTimestampParts, 0, 5);</span>
+<span class="nc" id="L74">			shakemap.setEventTime(EVENT_TIMESTAMP_FORMAT.parse(join(&quot; &quot;,</span>
+					eventTimestampParts)));
+
+			// lonMin
+<span class="nc" id="L78">			shakemap.setMinimumLongitude(new BigDecimal(parts[9]));</span>
+			// latMin
+<span class="nc" id="L80">			shakemap.setMinimumLatitude(new BigDecimal(parts[10]));</span>
+			// lonMax
+<span class="nc" id="L82">			shakemap.setMaximumLongitude(new BigDecimal(parts[11]));</span>
+			// latMax
+<span class="nc" id="L84">			shakemap.setMaximumLatitude(new BigDecimal(parts[12]));</span>
+
+			// (Process time: dow month day hour:minute:second year)
+<span class="nc" id="L87">			String[] processTimestampParts = new String[7];</span>
+<span class="nc" id="L88">			System.arraycopy(parts, 13, processTimestampParts, 0, 7);</span>
+<span class="nc" id="L89">			shakemap.setProcessTimestamp(PROCESS_TIMESTAMP_FORMAT.parse(join(&quot; &quot;,</span>
+					processTimestampParts)));
+
+<span class="nc" id="L92">			String eventDescription = &quot;&quot;;</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">			for (int i = 20; i &lt; parts.length; i++) {</span>
+<span class="nc" id="L94">				eventDescription += parts[i] + &quot; &quot;;</span>
+			}
+<span class="nc" id="L96">			shakemap.setEventDescription(eventDescription.trim());</span>
+		} finally {
+<span class="nc" id="L98">			StreamUtils.closeStream(in);</span>
+		}
+<span class="nc" id="L100">	}</span>
+
+	protected String join(final String delimeter, final String[] parts) {
+<span class="nc" id="L103">		StringBuffer buf = new StringBuffer();</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">		if (parts == null) {</span>
+<span class="nc" id="L105">			return &quot;&quot;;</span>
+		}
+
+<span class="nc" id="L108">		buf.append(parts[0]);</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">		for (int i = 1; i &lt; parts.length; i++) {</span>
+<span class="nc" id="L110">			buf.append(delimeter);</span>
+<span class="nc" id="L111">			buf.append(parts[i]);</span>
+		}
+<span class="nc" id="L113">		return buf.toString();</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DYFIIndexerWedge.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.dyfi</a> &gt; <span class="el_source">DYFIIndexerWedge.java</span></div><h1>DYFIIndexerWedge.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.dyfi;
+
+import gov.usgs.earthquake.distribution.ConfigurationException;
+import gov.usgs.earthquake.distribution.ExternalNotificationListener;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.util.Config;
+
+import java.util.logging.Logger;
+
+/**
+ * Legacy interface to trigger pre-Indexer ShakeMap processing.
+ */
+@Deprecated
+public class DYFIIndexerWedge extends ExternalNotificationListener {
+
+<span class="fc" id="L16">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L17">			.getLogger(&quot;gov.usgs.earthquake.dyfi.DYFIIndexerWedge&quot;);</span>
+
+	public static final String BASE_DIRECTORY_PROPERTY = &quot;baseDirectory&quot;;
+<span class="fc" id="L20">	private String baseDirectory = null;</span>
+
+<span class="fc" id="L22">	public DYFIIndexerWedge() {</span>
+<span class="fc" id="L23">		getIncludeTypes().add(&quot;dyfi&quot;);</span>
+<span class="fc" id="L24">	}</span>
+
+	/**
+	 * Builds the command to index the product. Just appends the relative
+	 * product directory (from the DYFILegacyStorage) to the configured index
+	 * command.
+	 * 
+	 * @param product
+	 *            the Product used to build the indexing command.
+	 * @throws Exception
+	 */
+	@Override
+	public String getProductCommand(final Product product) throws Exception {
+<span class="fc" id="L37">		StringBuffer pc = new StringBuffer(getCommand());</span>
+
+<span class="fc" id="L39">		pc.append(&quot; &quot;).append(&quot;--directory=&quot;).append(baseDirectory)</span>
+<span class="fc" id="L40">				.append(getStorage().getProductPath(product.getId()));</span>
+
+<span class="fc" id="L42">		return pc.toString();</span>
+	}
+
+	@Override
+	public void configure(Config config) throws Exception {
+<span class="fc" id="L47">		super.configure(config);</span>
+
+		// Base directory
+<span class="fc" id="L50">		baseDirectory = config.getProperty(BASE_DIRECTORY_PROPERTY);</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">		if (baseDirectory == null) {</span>
+<span class="nc" id="L52">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+					+ &quot;] 'baseDirectory' is a required configuration property&quot;);
+		}
+<span class="fc" id="L55">		LOGGER.config(&quot;[&quot; + getName() + &quot;] baseDirectory is '&quot; + baseDirectory</span>
+				+ &quot;'&quot;);
+<span class="fc" id="L57">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

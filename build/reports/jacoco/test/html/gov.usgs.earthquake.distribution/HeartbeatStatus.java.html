@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HeartbeatStatus.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">HeartbeatStatus.java</span></div><h1>HeartbeatStatus.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+
+/**
+ * Heartbeat status information for a single component
+ * 
+ */
+public class HeartbeatStatus {
+
+<span class="fc" id="L18">	private Map&lt;String, HeartbeatInfo&gt; statuses = null;</span>
+
+	/**
+	 * Create a new HeartbeatStatus.
+	 * 
+	 */
+<span class="fc" id="L24">	public HeartbeatStatus() {</span>
+<span class="fc" id="L25">		statuses = new HashMap&lt;String, HeartbeatInfo&gt;();</span>
+<span class="fc" id="L26">	}</span>
+
+	/**
+	 * Add or update a Heartbeat's key/value pair
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	public void updateStatus(String key, String value) {
+<span class="fc" id="L35">		statuses.put(key, new HeartbeatInfo(value, new Date()));</span>
+<span class="fc" id="L36">	}</span>
+
+	public Map&lt;String, HeartbeatInfo&gt; getStatuses() {
+<span class="fc" id="L39">		return statuses;</span>
+	}
+
+	public boolean isEmpty() {
+<span class="fc bfc" id="L43" title="All 2 branches covered.">		return (statuses.size() == 0);</span>
+	}
+
+	/**
+	 * Purge all heartbeatStatus data for this component older than given date
+	 * 
+	 * @param purgeDate
+	 */
+	public void clearDataOlderThanDate(Date purgeDate) {
+<span class="fc" id="L52">		Iterator&lt;String&gt; iterator = statuses.keySet().iterator();</span>
+<span class="fc" id="L53">		String key = &quot;&quot;;</span>
+
+		// find and purge data older than given purgeDate
+<span class="fc bfc" id="L56" title="All 2 branches covered.">		while (iterator.hasNext()) {</span>
+<span class="fc" id="L57">			key = iterator.next();</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">			if (statuses.get(key).isExpired(purgeDate)) {</span>
+<span class="fc" id="L59">				iterator.remove();</span>
+			}
+		}
+
+<span class="fc" id="L63">	}</span>
+
+	/**
+	 * @return a JsonObject for output.
+	 */
+	public JsonObject toJsonObject() {
+<span class="fc" id="L69">		JsonObjectBuilder builder = Json.createObjectBuilder();</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">		for (String key : statuses.keySet()) {</span>
+<span class="fc" id="L71">			builder.add(key, statuses.get(key).toJsonObject());</span>
+<span class="fc" id="L72">		}</span>
+<span class="fc" id="L73">		return builder.build();</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

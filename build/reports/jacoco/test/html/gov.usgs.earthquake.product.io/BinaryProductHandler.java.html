@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BinaryProductHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product.io</a> &gt; <span class="el_source">BinaryProductHandler.java</span></div><h1>BinaryProductHandler.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.product.io;
+
+import gov.usgs.earthquake.product.ByteContent;
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.StreamUtils;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URL;
+
+/**
+ * Generator of binary format for product data.
+ * 
+ * Binary representation of data types:
+ * &lt;dl&gt;
+ * &lt;dt&gt;Integer&lt;/dt&gt;
+ * &lt;dd&gt;4-bytes&lt;/dd&gt;
+ * &lt;dt&gt;Long&lt;/dt&gt;
+ * &lt;dd&gt;8-bytes&lt;/dd&gt;
+ * &lt;dt&gt;Date&lt;/dt&gt;
+ * &lt;dd&gt;Long (Date.getTime())&lt;/dd&gt;
+ * &lt;dt&gt;byte[]&lt;/dt&gt;
+ * &lt;dd&gt;Integer length, raw bytes&lt;/dd&gt;
+ * &lt;dt&gt;String&lt;/dt&gt;
+ * &lt;dd&gt;byte[] (String.getBytes(&quot;UTF8&quot;))&lt;/dd&gt;
+ * &lt;dt&gt;URL/URI&lt;/dt&gt;
+ * &lt;dd&gt;String (URL.toString())&lt;/dd&gt;
+ * &lt;/dl&gt;
+ * 
+ * 
+ * Product is stored in this order:
+ * 
+ * &lt;ol&gt;
+ * 
+ * &lt;li&gt;Header, exactly 1
+ * &lt;ol&gt;
+ * &lt;li&gt;&quot;BEGINPRODUCT&quot; (string)&lt;/li&gt;
+ * &lt;li&gt;ProductId (String)&lt;/li&gt;
+ * &lt;li&gt;Status (String)&lt;/li&gt;
+ * &lt;li&gt;TrackerURL (URL)&lt;/li&gt;
+ * &lt;/ol&gt;
+ * &lt;/li&gt;
+ * 
+ * &lt;li&gt;Properties, 0 to many:
+ * &lt;ol&gt;
+ * &lt;li&gt;&quot;PROPERTY&quot; (String)&lt;/li&gt;
+ * &lt;li&gt;name (String)&lt;/li&gt;
+ * &lt;li&gt;value (String)&lt;/li&gt;
+ * &lt;/ol&gt;
+ * &lt;/li&gt;
+ * 
+ * &lt;li&gt;Links, 0 to many:
+ * &lt;ol&gt;
+ * &lt;li&gt;&quot;LINK&quot; (String)&lt;/li&gt;
+ * &lt;li&gt;relation (String)&lt;/li&gt;
+ * &lt;li&gt;href (URI)&lt;/li&gt;
+ * &lt;/ol&gt;
+ * &lt;/li&gt;
+ * 
+ * &lt;li&gt;Contents, 0 to many:
+ * &lt;ol&gt;
+ * &lt;li&gt;&quot;CONTENT&quot; (String)&lt;/li&gt;
+ * &lt;li&gt;path (String)&lt;/li&gt;
+ * &lt;li&gt;contentType (String)&lt;/li&gt;
+ * &lt;li&gt;lastModified (Date)&lt;/li&gt;
+ * &lt;li&gt;length (Long)&lt;/li&gt;
+ * &lt;li&gt;raw bytes&lt;/li&gt;
+ * &lt;/ol&gt;
+ * &lt;/li&gt;
+ * 
+ * &lt;li&gt;Signature, 0 or 1:
+ * &lt;ol&gt;
+ * &lt;li&gt;&quot;SIGNATURE&quot; (String)&lt;/li&gt;
+ * &lt;li&gt;signature (String)&lt;/li&gt;
+ * &lt;/ol&gt;
+ * &lt;/li&gt;
+ * 
+ * &lt;li&gt;Footer, exactly 1:
+ * &lt;ol&gt;
+ * &lt;li&gt;&quot;ENDPRODUCT&quot; (String)&lt;/li&gt;
+ * &lt;/ol&gt;
+ * &lt;/li&gt;
+ * 
+ * &lt;/ol&gt;
+ */
+public class BinaryProductHandler implements ProductHandler {
+
+	public static final String HEADER = &quot;BEGINPRODUCT&quot;;
+	public static final String PROPERTY = &quot;PROPERTY&quot;;
+	public static final String LINK = &quot;LINK&quot;;
+	public static final String CONTENT = &quot;CONTENT&quot;;
+	public static final String SIGNATURE = &quot;SIGNATURE&quot;;
+	public static final String FOOTER = &quot;ENDPRODUCT&quot;;
+
+	private OutputStream out;
+	private BinaryIO io;
+
+<span class="fc" id="L100">	public BinaryProductHandler(final OutputStream out) {</span>
+<span class="fc" id="L101">		this.out = out;</span>
+<span class="fc" id="L102">		this.io = new BinaryIO();</span>
+<span class="fc" id="L103">	}</span>
+
+	@Override
+	public void onBeginProduct(ProductId id, String status, URL trackerURL)
+			throws Exception {
+<span class="fc" id="L108">		io.writeString(HEADER, out);</span>
+<span class="fc" id="L109">		io.writeString(id.toString(), out);</span>
+<span class="fc" id="L110">		io.writeString(status, out);</span>
+		// allow trackerURL to be null
+<span class="fc bfc" id="L112" title="All 2 branches covered.">		if (trackerURL == null) {</span>
+<span class="fc" id="L113">			io.writeString(&quot;null&quot;, out);</span>
+		} else {
+<span class="fc" id="L115">			io.writeString(trackerURL.toString(), out);</span>
+		}
+<span class="fc" id="L117">	}</span>
+
+	@Override
+	public void onProperty(ProductId id, String name, String value)
+			throws Exception {
+<span class="fc" id="L122">		io.writeString(PROPERTY, out);</span>
+<span class="fc" id="L123">		io.writeString(name, out);</span>
+<span class="fc" id="L124">		io.writeString(value, out);</span>
+<span class="fc" id="L125">	}</span>
+
+	@Override
+	public void onLink(ProductId id, String relation, URI href)
+			throws Exception {
+<span class="fc" id="L130">		io.writeString(LINK, out);</span>
+<span class="fc" id="L131">		io.writeString(relation, out);</span>
+<span class="fc" id="L132">		io.writeString(href.toString(), out);</span>
+<span class="fc" id="L133">	}</span>
+
+	@Override
+	public void onContent(ProductId id, String path, Content content)
+			throws Exception {
+<span class="pc bpc" id="L138" title="2 of 4 branches missed.">		if (content.getLength() == null || content.getLength() &lt; 0) {</span>
+			// binary io only handles streams with length, convert to content
+			// with length
+<span class="nc" id="L141">			content = new ByteContent(content);</span>
+		}
+
+<span class="fc" id="L144">		io.writeString(CONTENT, out);</span>
+<span class="fc" id="L145">		io.writeString(path, out);</span>
+
+<span class="fc" id="L147">		io.writeString(content.getContentType(), out);</span>
+<span class="fc" id="L148">		io.writeDate(content.getLastModified(), out);</span>
+<span class="fc" id="L149">		InputStream contentInputStream = content.getInputStream();</span>
+		try {
+<span class="fc" id="L151">			io.writeStream(content.getLength().longValue(), contentInputStream, out);</span>
+		} finally {
+<span class="fc" id="L153">			StreamUtils.closeStream(contentInputStream);</span>
+		}
+<span class="fc" id="L155">	}</span>
+
+	@Override
+	public void onSignature(ProductId id, String signature) throws Exception {
+		// allow signature to be null
+<span class="fc bfc" id="L160" title="All 2 branches covered.">		if (signature == null) {</span>
+<span class="fc" id="L161">			return;</span>
+		}
+
+<span class="fc" id="L164">		io.writeString(SIGNATURE, out);</span>
+<span class="fc" id="L165">		io.writeString(signature, out);</span>
+<span class="fc" id="L166">	}</span>
+
+	@Override
+	public void onEndProduct(ProductId id) throws Exception {
+<span class="fc" id="L170">		io.writeString(FOOTER, out);</span>
+
+<span class="fc" id="L172">		out.flush();</span>
+<span class="fc" id="L173">		out.close();</span>
+<span class="fc" id="L174">	}</span>
+
+	/**
+	 * Free any resources associated with this source.
+	 */
+	@Override
+	public void close() {
+<span class="nc" id="L181">		StreamUtils.closeStream(out);</span>
+<span class="nc" id="L182">		out = null;</span>
+<span class="nc" id="L183">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

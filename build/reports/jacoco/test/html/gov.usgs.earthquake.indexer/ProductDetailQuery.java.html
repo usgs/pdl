@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductDetailQuery.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">ProductDetailQuery.java</span></div><h1>ProductDetailQuery.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.indexer;
+
+import java.util.Iterator;
+import java.util.List;
+
+import gov.usgs.earthquake.product.Product;
+
+/**
+ * Search for one product.
+ */
+public class ProductDetailQuery extends SearchQuery {
+
+	private List&lt;Product&gt; result;
+
+	public ProductDetailQuery(final ProductIndexQuery query) {
+<span class="fc" id="L16">		super(SearchMethod.PRODUCT_DETAIL, query);</span>
+<span class="fc" id="L17">	}</span>
+
+	@Override
+	public List&lt;Product&gt; getResult() {
+<span class="fc" id="L21">		return result;</span>
+	}
+
+	public void setResult(final List&lt;Product&gt; product) {
+<span class="fc" id="L25">		this.result = product;</span>
+<span class="fc" id="L26">	}</span>
+
+	@Override
+	public int compareTo(SearchQuery that) {
+		int r;
+
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">		if ((r = super.compareTo(that)) != 0) {</span>
+<span class="nc" id="L33">			return r;</span>
+		}
+
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">		if (this.result != null) {</span>
+<span class="fc" id="L37">			List&lt;Product&gt; thatResult = ((ProductDetailQuery) that).result;</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">			if ((r = (thatResult.size() - this.result.size())) != 0) {</span>
+<span class="nc" id="L39">				return r;</span>
+			}
+
+<span class="fc" id="L42">			Iterator&lt;Product&gt; thisIter = this.result.iterator();</span>
+<span class="fc" id="L43">			Iterator&lt;Product&gt; thatIter = thatResult.iterator();</span>
+<span class="pc bpc" id="L44" title="1 of 4 branches missed.">			while (thisIter.hasNext() &amp;&amp; thatIter.hasNext()) {</span>
+				// just compare product ids for now
+<span class="fc" id="L46">				r = thisIter.next().getId().compareTo(thatIter.next().getId());</span>
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">				if (r != 0) {</span>
+<span class="nc" id="L48">					return r;</span>
+				}
+			}
+		}
+
+<span class="fc" id="L53">		return 0;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

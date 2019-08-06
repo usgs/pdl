@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BinaryXmlIOComparison.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product.io</a> &gt; <span class="el_source">BinaryXmlIOComparison.java</span></div><h1>BinaryXmlIOComparison.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.product.io;
+
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.util.StreamUtils;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.util.Date;
+
+/**
+ * Compare io times of XML and Binary product formats.
+ * 
+ * All conversion is done in memory to try to balance the tests. All writes use
+ * a BinaryProductSource to keep the playing field level.
+ */
+<span class="nc" id="L16">public class BinaryXmlIOComparison {</span>
+
+	public static long timeSerializeProduct(final ProductSource source,
+			final ProductHandler handler) throws Exception {
+<span class="nc" id="L20">		Date start = new Date();</span>
+<span class="nc" id="L21">		source.streamTo(handler);</span>
+<span class="nc" id="L22">		Date end = new Date();</span>
+<span class="nc" id="L23">		return end.getTime() - start.getTime();</span>
+	}
+
+	public static void main(final String[] args) throws Exception {
+<span class="nc" id="L27">		int numRuns = 10;</span>
+<span class="nc" id="L28">		testProductIO(</span>
+<span class="nc" id="L29">				ObjectProductHandler.getProduct(new BinaryProductSource(</span>
+<span class="nc" id="L30">						StreamUtils.getInputStream(new File(</span>
+								&quot;etc/test_products/se082311a/us_dyfi_se082311a_1314562782198.bin&quot;)))),
+				numRuns);
+<span class="nc" id="L33">		testProductIO(</span>
+<span class="nc" id="L34">				ObjectProductHandler.getProduct(new BinaryProductSource(</span>
+<span class="nc" id="L35">						StreamUtils.getInputStream(new File(</span>
+								&quot;etc/test_products/usa00040xz/us_shakemap_usa00040xz_1287260900624.bin&quot;)))),
+				numRuns);
+<span class="nc" id="L38">		testProductIO(</span>
+<span class="nc" id="L39">				ObjectProductHandler.getProduct(new BinaryProductSource(</span>
+<span class="nc" id="L40">						StreamUtils.getInputStream(new File(</span>
+								&quot;etc/test_products/usa00040xz/us_losspager_usa00040xz_1287260989064.bin&quot;)))),
+				numRuns);
+<span class="nc" id="L43">	}</span>
+
+	public static void testProductIO(final Product product, int numRuns)
+			throws Exception {
+<span class="nc" id="L47">		System.err.println(product.getId().toString());</span>
+<span class="nc" id="L48">		testXmlReads(product, numRuns);</span>
+<span class="nc" id="L49">		testXmlWrites(product, numRuns);</span>
+<span class="nc" id="L50">		testBinaryReads(product, numRuns);</span>
+<span class="nc" id="L51">		testBinaryWrites(product, numRuns);</span>
+<span class="nc" id="L52">		System.err.println();</span>
+<span class="nc" id="L53">	}</span>
+
+	public static void testXmlReads(final Product product, int numReads)
+			throws Exception {
+		// read product into memory
+<span class="nc" id="L58">		ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="nc" id="L59">		new ObjectProductSource(product).streamTo(new XmlProductHandler(baos));</span>
+<span class="nc" id="L60">		byte[] bytes = baos.toByteArray();</span>
+
+<span class="nc" id="L62">		long time = 0L;</span>
+
+<span class="nc bnc" id="L64" title="All 2 branches missed.">		for (int i = 0; i &lt; numReads; i++) {</span>
+<span class="nc" id="L65">			Date start = new Date();</span>
+
+			// parse from memory
+<span class="nc" id="L68">			ObjectProductHandler.getProduct(new XmlProductSource(StreamUtils</span>
+<span class="nc" id="L69">					.getInputStream(bytes)));</span>
+
+<span class="nc" id="L71">			Date end = new Date();</span>
+<span class="nc" id="L72">			time += end.getTime() - start.getTime();</span>
+		}
+
+<span class="nc" id="L75">		System.err.println(&quot;xml\tlength=&quot; + bytes.length + &quot;,\tnumReads=&quot;</span>
+				+ numReads + &quot;,\tread average=&quot; + ((double) time / numReads));
+<span class="nc" id="L77">	}</span>
+
+	public static void testBinaryReads(final Product product, int numReads)
+			throws Exception {
+		// read product into memory
+<span class="nc" id="L82">		ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="nc" id="L83">		new ObjectProductSource(product)</span>
+<span class="nc" id="L84">				.streamTo(new BinaryProductHandler(baos));</span>
+<span class="nc" id="L85">		byte[] bytes = baos.toByteArray();</span>
+
+<span class="nc" id="L87">		long time = 0L;</span>
+
+<span class="nc bnc" id="L89" title="All 2 branches missed.">		for (int i = 0; i &lt; numReads; i++) {</span>
+<span class="nc" id="L90">			Date start = new Date();</span>
+
+			// parse from memory
+<span class="nc" id="L93">			ObjectProductHandler.getProduct(new BinaryProductSource(StreamUtils</span>
+<span class="nc" id="L94">					.getInputStream(bytes)));</span>
+
+<span class="nc" id="L96">			Date end = new Date();</span>
+<span class="nc" id="L97">			time += end.getTime() - start.getTime();</span>
+		}
+
+<span class="nc" id="L100">		System.err.println(&quot;binary\tlength=&quot; + bytes.length + &quot;,\tnumReads=&quot;</span>
+				+ numReads + &quot;,\tread average=&quot; + ((double) time / numReads));
+<span class="nc" id="L102">	}</span>
+
+	public static void testBinaryWrites(final Product product, int numWrites)
+			throws Exception {
+		// read product into memory
+<span class="nc" id="L107">		ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="nc" id="L108">		new ObjectProductSource(product)</span>
+<span class="nc" id="L109">				.streamTo(new BinaryProductHandler(baos));</span>
+<span class="nc" id="L110">		byte[] bytes = baos.toByteArray();</span>
+
+<span class="nc" id="L112">		long time = 0L;</span>
+
+<span class="nc bnc" id="L114" title="All 2 branches missed.">		for (int i = 0; i &lt; numWrites; i++) {</span>
+<span class="nc" id="L115">			baos.reset();</span>
+<span class="nc" id="L116">			Date start = new Date();</span>
+
+			// parse from memory
+<span class="nc" id="L119">			new BinaryProductSource(StreamUtils.getInputStream(bytes))</span>
+<span class="nc" id="L120">					.streamTo(new BinaryProductHandler(baos));</span>
+
+<span class="nc" id="L122">			Date end = new Date();</span>
+<span class="nc" id="L123">			time += end.getTime() - start.getTime();</span>
+		}
+
+<span class="nc" id="L126">		System.err.println(&quot;binary\tlength=&quot; + baos.toByteArray().length</span>
+				+ &quot;,\tnumWrites=&quot; + numWrites + &quot;,\twrite average=&quot;
+				+ ((double) time / numWrites));
+<span class="nc" id="L129">	}</span>
+
+	public static void testXmlWrites(final Product product, int numWrites)
+			throws Exception {
+		// read product into memory
+<span class="nc" id="L134">		ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="nc" id="L135">		new ObjectProductSource(product)</span>
+<span class="nc" id="L136">				.streamTo(new BinaryProductHandler(baos));</span>
+<span class="nc" id="L137">		byte[] bytes = baos.toByteArray();</span>
+
+<span class="nc" id="L139">		long time = 0L;</span>
+
+<span class="nc bnc" id="L141" title="All 2 branches missed.">		for (int i = 0; i &lt; numWrites; i++) {</span>
+<span class="nc" id="L142">			baos.reset();</span>
+<span class="nc" id="L143">			Date start = new Date();</span>
+
+			// parse from memory
+<span class="nc" id="L146">			new BinaryProductSource(StreamUtils.getInputStream(bytes))</span>
+<span class="nc" id="L147">					.streamTo(new XmlProductHandler(baos));</span>
+
+<span class="nc" id="L149">			Date end = new Date();</span>
+<span class="nc" id="L150">			time += end.getTime() - start.getTime();</span>
+		}
+
+<span class="nc" id="L153">		System.err.println(&quot;xml\tlength=&quot; + baos.toByteArray().length</span>
+				+ &quot;,\tnumWrites=&quot; + numWrites + &quot;,\twrite average=&quot;
+				+ ((double) time / numWrites));
+<span class="nc" id="L156">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

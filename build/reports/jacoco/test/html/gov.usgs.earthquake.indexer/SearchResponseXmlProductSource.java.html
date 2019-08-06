@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchResponseXmlProductSource.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">SearchResponseXmlProductSource.java</span></div><h1>SearchResponseXmlProductSource.java</h1><pre class="source lang-java linenums">/*
+ * SearchResponseXmlProductSource
+ */
+package gov.usgs.earthquake.indexer;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
+import gov.usgs.earthquake.distribution.FileProductStorage;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.product.io.ProductHandler;
+import gov.usgs.earthquake.product.io.XmlProductHandler;
+import gov.usgs.earthquake.product.io.XmlProductSource;
+
+/**
+ * Used by SearchResponseParser to store products during parsing.
+ * 
+ * Creates a &quot;background&quot; storage thread for storing, while this classes
+ * startElement, characters, and endElement methods are called by the
+ * &quot;foreground&quot; xml parsing thread.
+ */
+public class SearchResponseXmlProductSource extends XmlProductSource {
+
+	/** Logging object. */
+<span class="fc" id="L29">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L30">			.getLogger(SearchResponseXmlProductSource.class.getName());</span>
+
+	/** The storage where the product is streamed. */
+	private FileProductStorage storage;
+
+	/** The stored id. */
+<span class="fc" id="L36">	private Product storedProduct = null;</span>
+
+	/** The thread where storage does its thing (current thread is xml parsing). */
+	private Thread storageThread;
+
+	/** */
+<span class="fc" id="L42">	private final Object waitForSetHandlerSync = new Object();</span>
+
+	/** */
+<span class="fc" id="L45">	private final Object waitForStreamToSync = new Object();</span>
+
+	/** start product attributes, for acquiring writelock in background thread */
+	private String uri;
+	private String localName;
+	private String qName;
+	private Attributes attributes;
+	private SAXException exception;
+
+	/**
+	 * Construct a SearchResponseXmlProductSource.
+	 * 
+	 * @param storage
+	 *            the storage where the parsed product is stored.
+	 */
+	public SearchResponseXmlProductSource(final FileProductStorage storage) {
+<span class="fc" id="L61">		super((ProductHandler) null);</span>
+<span class="fc" id="L62">		this.setStorage(storage);</span>
+<span class="fc" id="L63">	}</span>
+
+	/**
+	 * Called by the underlying product storage as part os storeProductSource.
+	 * 
+	 * This method notifies the XML parsing thread that parsing may continue,
+	 * since the handler is now setup.
+	 */
+	@Override
+	public void streamTo(final ProductHandler handler) {
+<span class="fc" id="L73">		this.setHandler(handler);</span>
+
+		try {
+			// start the product in this thread, so the write lock is acquired
+			// and released in the same thread
+<span class="fc" id="L78">			super.startElement(uri, localName, qName, attributes);</span>
+<span class="nc" id="L79">		} catch (SAXException e) {</span>
+<span class="nc" id="L80">			exception = e;</span>
+<span class="fc" id="L81">		}</span>
+		// clear references that are no longer needed
+<span class="fc" id="L83">		this.uri = null;</span>
+<span class="fc" id="L84">		this.localName = null;</span>
+<span class="fc" id="L85">		this.qName = null;</span>
+<span class="fc" id="L86">		this.attributes = null;</span>
+
+<span class="fc" id="L88">		synchronized (waitForSetHandlerSync) {</span>
+			// notify xml parsing thread that handler is all set
+<span class="fc" id="L90">			waitForSetHandlerSync.notify();</span>
+<span class="fc" id="L91">		}</span>
+
+<span class="fc" id="L93">		synchronized (waitForStreamToSync) {</span>
+			try {
+				// wait for xml parsing thread to notify streamTo is complete
+<span class="fc" id="L96">				waitForStreamToSync.wait();</span>
+<span class="nc" id="L97">			} catch (Exception e) {</span>
+				// ignore
+<span class="fc" id="L99">			}</span>
+<span class="fc" id="L100">		}</span>
+<span class="fc" id="L101">	}</span>
+
+	@Override
+	public void startElement(final String uri, final String localName,
+			final String qName, final Attributes attributes)
+			throws SAXException {
+<span class="fc" id="L107">		boolean startElementAlreadySent = false;</span>
+
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">		if (uri.equals(XmlProductHandler.PRODUCT_XML_NAMESPACE)</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">			&amp;&amp; localName.equals(XmlProductHandler.PRODUCT_ELEMENT)) {</span>
+			// save these to write lock can be acquired by correct thread.
+<span class="fc" id="L112">			this.uri = uri;</span>
+<span class="fc" id="L113">			this.localName = localName;</span>
+<span class="fc" id="L114">			this.qName = qName;</span>
+<span class="fc" id="L115">			this.attributes = attributes;</span>
+
+			// starting a product, set up the storage handler/thread
+			// reference used by storage thread to set product
+<span class="fc" id="L119">			final SearchResponseXmlProductSource thisSource = this;</span>
+<span class="fc" id="L120">			storageThread = new Thread() {</span>
+				public void run() {
+					try {
+<span class="fc" id="L123">						ProductId id = storage</span>
+<span class="fc" id="L124">								.storeProductSource(thisSource);</span>
+<span class="fc" id="L125">						thisSource.setProduct(storage.getProduct(id));</span>
+<span class="nc" id="L126">					} catch (Exception e) {</span>
+<span class="nc" id="L127">						LOGGER.log(Level.WARNING,</span>
+								&quot;Exception while storing product&quot;, e);
+<span class="nc" id="L129">						thisSource.setProduct(null);</span>
+<span class="fc" id="L130">					}</span>
+<span class="fc" id="L131">				}</span>
+			};
+
+<span class="fc" id="L134">			synchronized (waitForSetHandlerSync) {</span>
+<span class="fc" id="L135">				storageThread.start();</span>
+				try {
+					// wait for storage thread to call streamTo with
+					// handler
+<span class="fc" id="L139">					waitForSetHandlerSync.wait();</span>
+<span class="nc" id="L140">				} catch (InterruptedException e) {</span>
+					// ignore
+<span class="fc" id="L142">				}</span>
+				// handler set, ready to continue parsing
+
+				// signal that we've already sent the startElement
+<span class="fc" id="L146">				startElementAlreadySent = true;</span>
+
+				// if an exception was generated in background thread, throw
+				// it here
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">				if (exception != null) {</span>
+<span class="nc" id="L151">					throw exception;</span>
+				}
+<span class="fc" id="L153">			}</span>
+		}
+
+<span class="fc bfc" id="L156" title="All 2 branches covered.">		if (!startElementAlreadySent) {</span>
+			// forward call to parser
+<span class="fc" id="L158">			super.startElement(uri, localName, qName, attributes);</span>
+		}
+<span class="fc" id="L160">	}</span>
+
+	public void endElement(final String uri, final String localName,
+			final String qName) throws SAXException {
+
+		// forward call to parser
+<span class="fc" id="L166">		super.endElement(uri, localName, qName);</span>
+
+<span class="pc bpc" id="L168" title="1 of 2 branches missed.">		if (!uri.equals(XmlProductHandler.PRODUCT_XML_NAMESPACE)) {</span>
+<span class="nc" id="L169">			return;</span>
+		}
+
+<span class="fc bfc" id="L172" title="All 2 branches covered.">		if (localName.equals(XmlProductHandler.PRODUCT_ELEMENT)) {</span>
+			// done parsing the product
+
+<span class="fc" id="L175">			synchronized (waitForStreamToSync) {</span>
+				// notify storageThread streamTo is complete
+<span class="fc" id="L177">				waitForStreamToSync.notify();</span>
+<span class="fc" id="L178">			}</span>
+
+			try {
+				// wait for storageThread to complete so storage will have
+				// called setProduct before returning
+<span class="fc" id="L183">				storageThread.join();</span>
+<span class="nc" id="L184">			} catch (InterruptedException e) {</span>
+				// ignore
+			} finally {
+<span class="fc" id="L187">				storageThread = null;</span>
+			}
+		}
+<span class="fc" id="L190">	}</span>
+
+	public void setStorage(FileProductStorage storage) {
+<span class="fc" id="L193">		this.storage = storage;</span>
+<span class="fc" id="L194">	}</span>
+
+	public FileProductStorage getStorage() {
+<span class="nc" id="L197">		return storage;</span>
+	}
+
+	/**
+	 * @return the parsed, stored product.
+	 */
+	public Product getProduct() {
+<span class="fc" id="L204">		return this.storedProduct;</span>
+	}
+
+	/**
+	 * Method used by storage to provide the parsed product.
+	 * 
+	 * @param product
+	 */
+	protected void setProduct(final Product product) {
+<span class="fc" id="L213">		this.storedProduct = product;</span>
+<span class="fc" id="L214">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

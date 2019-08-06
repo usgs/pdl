@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RegionsJSON.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.geoserve</a> &gt; <span class="el_source">RegionsJSON.java</span></div><h1>RegionsJSON.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.geoserve;
+
+
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
+import gov.usgs.earthquake.qdm.Point;
+import gov.usgs.earthquake.qdm.Region;
+import gov.usgs.earthquake.qdm.Regions;
+
+/**
+ * RegionsJSON reads GeoJSON formatted ANSS Authoritative Regions.
+ */
+<span class="fc" id="L15">public class RegionsJSON {</span>
+
+    /**
+     * Parse {@link gov.usgs.earthquake.qdm.Regions} from a GeoJSON feature collection.
+     *
+     * @param json geojson feature collection.
+     */
+    public Regions parseRegions(final JsonObject json) {
+<span class="fc" id="L23">        Regions regions = new Regions();</span>
+        // NEIC is always the default
+<span class="fc" id="L25">        regions.defaultNetid = &quot;us&quot;;</span>
+
+<span class="fc" id="L27">        JsonArray features = json.getJsonArray(&quot;features&quot;);</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        for (JsonValue value : features) {</span>
+<span class="fc" id="L29">            JsonObject jsonRegion = value.asJsonObject();            </span>
+<span class="fc" id="L30">            Region region = parseRegion(jsonRegion);</span>
+<span class="fc" id="L31">            regions.netids.add(region.netid);</span>
+<span class="fc" id="L32">            regions.regions.add(region);</span>
+<span class="fc" id="L33">        }</span>
+
+<span class="fc" id="L35">        return regions;</span>
+    }
+
+    /**
+     * Parse {@link gov.usgs.earthquake.qdm.Region} from a GeoJSON feature.
+     *
+     * @param json geojson feature.
+     */
+    public Region parseRegion(final JsonObject json) {
+<span class="fc" id="L44">        JsonObject properties = json.getJsonObject(&quot;properties&quot;);</span>
+<span class="fc" id="L45">        String networkId = properties.getString(&quot;network&quot;);</span>
+<span class="fc" id="L46">        String regionId = properties.getString(&quot;region&quot;);</span>
+
+<span class="fc" id="L48">        Region region = new Region(networkId, regionId);</span>
+<span class="fc" id="L49">        JsonArray coordinates = json.getJsonObject(&quot;geometry&quot;)</span>
+<span class="fc" id="L50">                .getJsonArray(&quot;coordinates&quot;);</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        for (JsonValue coord : coordinates.getJsonArray(0)) {</span>
+<span class="fc" id="L52">            JsonArray point = coord.asJsonArray();</span>
+<span class="fc" id="L53">            region.points.add(new Point(</span>
+<span class="fc" id="L54">                point.getJsonNumber(0).doubleValue(),</span>
+<span class="fc" id="L55">                point.getJsonNumber(1).doubleValue()));</span>
+<span class="fc" id="L56">        }</span>
+
+<span class="fc" id="L58">        return region;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

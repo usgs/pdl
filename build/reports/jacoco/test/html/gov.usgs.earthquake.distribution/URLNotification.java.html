@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>URLNotification.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">URLNotification.java</span></div><h1>URLNotification.java</h1><pre class="source lang-java linenums">/*
+ * URLNotification
+ */
+package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.StreamUtils;
+import gov.usgs.util.XmlUtils;
+
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Date;
+
+/**
+ * A URLNotification represents a product that is available via a URL.
+ */
+public class URLNotification extends DefaultNotification {
+
+	/** Location where product is available. */
+	private final URL productURL;
+
+	/**
+	 * Construct a URLNotification.
+	 * 
+	 * @param id
+	 *            which product is available.
+	 * @param expirationDate
+	 *            how long the product is available.
+	 * @param trackerURL
+	 *            where to send status updates.
+	 * @param productURL
+	 *            where product is available.
+	 */
+	public URLNotification(ProductId id, Date expirationDate, URL trackerURL,
+			URL productURL) {
+<span class="fc" id="L36">		super(id, expirationDate, trackerURL);</span>
+<span class="fc" id="L37">		this.productURL = productURL;</span>
+<span class="fc" id="L38">	}</span>
+
+	/**
+	 * @return Location where this product can be downloaded.
+	 */
+	public URL getProductURL() {
+<span class="fc" id="L44">		return productURL;</span>
+	}
+
+	/** A comparison method to see if two notifications are equal. */
+	public boolean equals(Notification that) {
+<span class="fc bfc" id="L49" title="All 2 branches covered.">		return (that instanceof URLNotification</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">				&amp;&amp; getExpirationDate().equals(that.getExpirationDate())</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">				&amp;&amp; getProductId().equals(that.getProductId())</span>
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">				&amp;&amp; getTrackerURL().equals(that.getTrackerURL()) &amp;&amp; getProductURL()</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">				.equals(((URLNotification) that).getProductURL()));</span>
+	}
+
+	/**
+	 * Parse an XML URL Notification from an input stream.
+	 * 
+	 * @param in
+	 *            the input stream containing a URLNotification.
+	 * @return the parsed URLNotification
+	 * @throws Exception
+	 */
+	public static URLNotification parse(final InputStream in) throws Exception {
+		try {
+<span class="fc" id="L66">			URLNotificationParser parser = new URLNotificationParser();</span>
+			// do actual parsing
+<span class="fc" id="L68">			parser.parse(in);</span>
+			// return parsed notification
+<span class="fc" id="L70">			return parser.getNotification();</span>
+		} finally {
+<span class="fc" id="L72">			StreamUtils.closeStream(in);</span>
+		}
+	}
+
+	/**
+	 * Generate an XML URL Notification
+	 * 
+	 * @return the URL notification as an XML string.
+	 */
+	public String toXML() {
+<span class="fc" id="L82">		StringBuffer buf = new StringBuffer();</span>
+
+<span class="fc" id="L84">		buf.append(&quot;&lt;?xml version=\&quot;1.0\&quot;?&gt;\n&quot;);</span>
+		// start element
+<span class="fc" id="L86">		buf.append(&quot;&lt;&quot;).append(URLNotificationParser.NOTIFICATION_ELEMENT);</span>
+<span class="fc" id="L87">		buf.append(&quot; xmlns=\&quot;&quot;).append(</span>
+<span class="fc" id="L88">				URLNotificationParser.PRODUCT_XML_NAMESPACE).append(&quot;\&quot;&quot;);</span>
+
+		// add attributes
+<span class="fc" id="L91">		buf.append(&quot; &quot;).append(URLNotificationParser.ATTRIBUTE_PRODUCT_ID)</span>
+<span class="fc" id="L92">				.append(&quot;=\&quot;&quot;).append(this.getProductId().toString()).append(</span>
+						&quot;\&quot;&quot;);
+<span class="fc" id="L94">		buf</span>
+<span class="fc" id="L95">				.append(&quot; &quot;)</span>
+<span class="fc" id="L96">				.append(URLNotificationParser.ATTRIBUTE_PRODUCT_UPDATED)</span>
+<span class="fc" id="L97">				.append(&quot;=\&quot;&quot;)</span>
+<span class="fc" id="L98">				.append(</span>
+						XmlUtils
+<span class="fc" id="L100">								.formatDate(this.getProductId().getUpdateTime()))</span>
+<span class="fc" id="L101">				.append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L102">		buf.append(&quot; &quot;).append(URLNotificationParser.ATTRIBUTE_TRACKER_URL)</span>
+<span class="fc" id="L103">				.append(&quot;=\&quot;&quot;).append(this.getTrackerURL().toString()).append(</span>
+						&quot;\&quot;&quot;);
+<span class="fc" id="L105">		buf.append(&quot; &quot;).append(URLNotificationParser.ATTRIBUTE_EXPIRES).append(</span>
+<span class="fc" id="L106">				&quot;=\&quot;&quot;).append(XmlUtils.formatDate(this.getExpirationDate()))</span>
+<span class="fc" id="L107">				.append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L108">		buf.append(&quot; &quot;).append(URLNotificationParser.ATTRIBUTE_URL).append(</span>
+<span class="fc" id="L109">				&quot;=\&quot;&quot;).append(this.getProductURL().toString()).append(&quot;\&quot;&quot;);</span>
+
+		// end element
+<span class="fc" id="L112">		buf.append(&quot;/&gt;&quot;);</span>
+
+<span class="fc" id="L114">		return buf.toString();</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

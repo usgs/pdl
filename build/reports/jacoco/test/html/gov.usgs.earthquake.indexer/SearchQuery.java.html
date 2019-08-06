@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchQuery.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">SearchQuery.java</span></div><h1>SearchQuery.java</h1><pre class="source lang-java linenums">/*
+ * SearchQuery
+ */
+package gov.usgs.earthquake.indexer;
+
+/**
+ * A search to execute against a ProductIndex, or ProductStorage.
+ */
+public abstract class SearchQuery implements Comparable&lt;SearchQuery&gt; {
+
+	/** The type of response that is expected. */
+	private final SearchMethod type;
+
+	/** The search parameters. */
+	private final ProductIndexQuery query;
+	
+	/** Contains an error returned in a SearchResult if one occurred **/
+	private String error;
+
+	/**
+	 * Construct a new SearchQuery object.
+	 * 
+	 * @param type
+	 *            the type of search.
+	 * @param query
+	 *            the query parameters.
+	 */
+<span class="fc" id="L28">	protected SearchQuery(final SearchMethod type, final ProductIndexQuery query) {</span>
+<span class="fc" id="L29">		this.type = type;</span>
+<span class="fc" id="L30">		this.query = query;</span>
+<span class="fc" id="L31">		this.error = null;</span>
+<span class="fc" id="L32">	}</span>
+
+	public SearchMethod getType() {
+<span class="fc" id="L35">		return this.type;</span>
+	}
+
+	public ProductIndexQuery getProductIndexQuery() {
+<span class="fc" id="L39">		return this.query;</span>
+	}
+
+	/**
+	 * Get the result associated with a specific query type.
+	 * 
+	 * @return the result, or null if the search has not yet executed.
+	 */
+	public abstract Object getResult();
+
+	/**
+	 * Create a SearchQuery object based on a SearchType.
+	 * 
+	 * @param type
+	 *            the search type to create
+	 * @param query
+	 *            the associated query
+	 * @return a SearchQuery, or null if type is unknown.
+	 */
+	public static SearchQuery getSearchQuery(final SearchMethod type,
+			final ProductIndexQuery query) {
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">		if (type == null) {</span>
+<span class="nc" id="L61">			return null;</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">		} else if (type.equals(SearchMethod.EVENTS_SUMMARY)) {</span>
+<span class="fc" id="L63">			return new EventsSummaryQuery(query);</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">		} else if (type.equals(SearchMethod.EVENT_DETAIL)) {</span>
+<span class="fc" id="L65">			return new EventDetailQuery(query);</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">		} else if (type.equals(SearchMethod.PRODUCTS_SUMMARY)) {</span>
+<span class="fc" id="L67">			return new ProductsSummaryQuery(query);</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">		} else if (type.equals(SearchMethod.PRODUCT_DETAIL)) {</span>
+<span class="fc" id="L69">			return new ProductDetailQuery(query);</span>
+		} else {
+<span class="nc" id="L71">			return null;</span>
+		}
+	}
+
+	@Override
+	public boolean equals(Object that) {
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">		return (this.compareTo((SearchQuery) that)) == 0;</span>
+	}
+
+	@Override
+	public int compareTo(SearchQuery that) {
+		int r;
+
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">		if ((r = this.type.compareTo(that.type)) != 0) {</span>
+<span class="nc" id="L85">			return r;</span>
+		}
+
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">		if ((r = this.query.compareTo(that.query)) != 0) {</span>
+<span class="nc" id="L89">			return r;</span>
+		}
+
+		//both have results
+<span class="fc" id="L93">		Object thatResult = that.getResult();</span>
+<span class="fc" id="L94">		Object thisResult = this.getResult();</span>
+<span class="pc bpc" id="L95" title="1 of 4 branches missed.">		if (thisResult == null &amp;&amp; thatResult == null) {</span>
+<span class="fc" id="L96">			return 0;</span>
+<span class="pc bpc" id="L97" title="2 of 4 branches missed.">		} else if (thisResult != null &amp;&amp; thatResult == null) {</span>
+<span class="nc" id="L98">			return -1;</span>
+<span class="pc bpc" id="L99" title="3 of 4 branches missed.">		} else if (thisResult == null &amp;&amp; thatResult != null) {</span>
+<span class="nc" id="L100">			return 1;</span>
+		}
+
+<span class="fc" id="L103">		return 0;</span>
+	}
+
+	/**
+	 * @param error the error to set
+	 */
+	public void setError(String error) {
+<span class="nc" id="L110">		this.error = error;</span>
+<span class="nc" id="L111">	}</span>
+
+	/**
+	 * @return the error or null if no error occurred.
+	 */
+	public String getError() {
+<span class="nc" id="L117">		return error;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

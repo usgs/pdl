@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultAssociator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">DefaultAssociator.java</span></div><h1>DefaultAssociator.java</h1><pre class="source lang-java linenums">/*
+ * DefaultAssociator
+ */
+package gov.usgs.earthquake.indexer;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Utilities for associating events.
+ * 
+ * Based on the QDM EQEventsUtils class.
+ */
+<span class="fc" id="L23">public class DefaultAssociator implements Associator {</span>
+
+<span class="fc" id="L25">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L26">			.getLogger(DefaultAssociator.class.getName());</span>
+
+	// time
+	/** Distance between related events in time, in milliseconds. */
+	public static final long TIME_DIFF_MILLISECONDS = 16 * 1000;
+
+	// space
+	/** Distance between related events in space, in kilometers. */
+<span class="fc" id="L34">	public static final BigDecimal LOCATION_DIFF_KILOMETER = new BigDecimal(100);</span>
+
+	/** Number of kilometers in a degree at the equator. */
+<span class="fc" id="L37">	public static final BigDecimal KILOMETERS_PER_DEGREE = new BigDecimal(&quot;111.12&quot;);</span>
+
+	/**
+	 * Distance between related events latitude, in degrees.
+	 * 
+	 * This is based on the max number of kilometers per degree, and provides
+	 * the maximum latitude separation (assuming events share a longitude).
+	 * 
+	 * Used as a pre-filter before more expensive checks.
+	 */
+<span class="fc" id="L47">	public static final BigDecimal LOCATION_DIFF_DEGREES = new BigDecimal(</span>
+<span class="fc" id="L48">			LOCATION_DIFF_KILOMETER.doubleValue()</span>
+<span class="fc" id="L49">					/ KILOMETERS_PER_DEGREE.doubleValue());</span>
+
+	/**
+	 * Build an index search that searches for associated products. Products are
+	 * considered associated if the eventid matches or their location is within
+	 * a certain distance.
+	 */
+	public SearchRequest getSearchRequest(ProductSummary summary) {
+<span class="fc" id="L57">		SearchRequest request = new SearchRequest();</span>
+
+		// Order is important here. The eventId query must be added first
+<span class="fc" id="L60">		ProductIndexQuery eventIdQuery = getEventIdQuery(</span>
+<span class="fc" id="L61">				summary.getEventSource(), summary.getEventSourceCode());</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">		if (eventIdQuery != null) {</span>
+<span class="fc" id="L63">			request.addQuery(new EventDetailQuery(eventIdQuery));</span>
+		}
+
+		// Now a query that looks for location
+<span class="fc" id="L67">		ProductIndexQuery locationQuery = getLocationQuery(</span>
+<span class="fc" id="L68">				summary.getEventTime(), summary.getEventLatitude(),</span>
+<span class="fc" id="L69">				summary.getEventLongitude());</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">		if (locationQuery != null) {</span>
+<span class="fc" id="L71">			request.addQuery(new EventDetailQuery(locationQuery));</span>
+		}
+
+<span class="fc" id="L74">		return request;</span>
+	}
+
+	/**
+	 * Choose and return the most closely associated event.
+	 * 
+	 * @param events
+	 *            a list of candidate events.
+	 * @param summary
+	 *            the summary being associated.
+	 * @return the best match event from the list of events.
+	 */
+	public Event chooseEvent(final List&lt;Event&gt; events,
+			final ProductSummary summary) {
+<span class="fc" id="L88">		List&lt;Event&gt; filteredEvents = new LinkedList&lt;Event&gt;();</span>
+
+		// remove events that are from the same source with a different code
+<span class="fc" id="L91">		String summarySource = summary.getEventSource();</span>
+<span class="fc" id="L92">		String summaryCode = summary.getEventSourceCode();</span>
+<span class="pc bpc" id="L93" title="1 of 4 branches missed.">		if (summarySource == null || summaryCode == null) {</span>
+			// can't check if same source with different code
+<span class="fc" id="L95">			filteredEvents = events;</span>
+		} else {
+			// try to associate by event id
+<span class="fc" id="L98">			Iterator&lt;Event&gt; iter = events.iterator();</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">			while (iter.hasNext()) {</span>
+<span class="fc" id="L100">				Event event = iter.next();</span>
+
+<span class="fc" id="L102">				boolean sameSourceDifferentCode = false;</span>
+				Iterator&lt;ProductSummary&gt; summaryIter;
+
+<span class="fc bfc" id="L105" title="All 2 branches covered.">				if (event.isDeleted()) {</span>
+					// ignore delete products before checking
+<span class="fc" id="L107">					summaryIter = Event.getWithoutSuperseded(</span>
+<span class="fc" id="L108">							Event.getWithoutDeleted(event.getAllProductList())).iterator();</span>
+				} else {
+<span class="fc" id="L110">					summaryIter = event.getProductList()</span>
+<span class="fc" id="L111">							.iterator();</span>
+				}
+<span class="fc bfc" id="L113" title="All 2 branches covered.">				while (summaryIter.hasNext()) {</span>
+<span class="fc" id="L114">					ProductSummary nextSummary = summaryIter.next();</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">					if (summarySource.equalsIgnoreCase(nextSummary</span>
+<span class="fc" id="L116">							.getEventSource())) {</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">						if (summaryCode.equalsIgnoreCase(nextSummary</span>
+<span class="fc" id="L118">								.getEventSourceCode())) {</span>
+							// this is the event we are looking for! so stop
+							// already
+<span class="fc" id="L121">							return event;</span>
+						} else {
+							// different event code from same source, probably a
+							// different event. Don't give up yet, because
+							// associate may force multiple codes from same
+							// source in same event.
+<span class="fc" id="L127">							sameSourceDifferentCode = true;</span>
+						}
+					}
+<span class="fc" id="L130">				}</span>
+
+<span class="fc bfc" id="L132" title="All 2 branches covered.">				if (!sameSourceDifferentCode) {</span>
+<span class="fc" id="L133">					filteredEvents.add(event);</span>
+				}
+<span class="fc" id="L135">			}</span>
+		}
+
+		// no events found
+<span class="fc bfc" id="L139" title="All 2 branches covered.">		if (filteredEvents.size() == 0) {</span>
+<span class="fc" id="L140">			return null;</span>
+		}
+
+		// more than one event found
+<span class="fc bfc" id="L144" title="All 2 branches covered.">		else if (filteredEvents.size() &gt; 1) {</span>
+<span class="fc" id="L145">			ArrayList&lt;String&gt; matches = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L146">			Iterator&lt;Event&gt; iter = filteredEvents.iterator();</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">			while (iter.hasNext()) {</span>
+<span class="fc" id="L148">				Event match = iter.next();</span>
+<span class="fc" id="L149">				matches.add(match.getEventId());</span>
+<span class="fc" id="L150">			}</span>
+<span class="fc" id="L151">			LOGGER.log(Level.WARNING, &quot;Potential merge, product id=&quot;</span>
+<span class="fc" id="L152">					+ summary.getId().toString() + &quot;, nearby events: &quot;</span>
+<span class="fc" id="L153">					+ matches.toString());</span>
+
+			// Return the &quot;closest&quot; event
+<span class="fc" id="L156">			Event mostSimilar = chooseMostSimilar(summary, filteredEvents);</span>
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">			if (mostSimilar != null) {</span>
+<span class="fc" id="L158">				LOGGER.log(Level.FINE, &quot;Associated product id=&quot;</span>
+<span class="fc" id="L159">						+ summary.getId().toString() + &quot;, to event id=&quot;</span>
+<span class="fc" id="L160">						+ mostSimilar.getEventId());</span>
+			}
+<span class="fc" id="L162">			return mostSimilar;</span>
+		}
+
+		// one event found
+		else {
+<span class="fc" id="L167">			return filteredEvents.get(0);</span>
+		}
+	}
+
+	/**
+	 * For the given list of events, find the one that is &quot;closest&quot; to the given
+	 * product. Similarity is calculated by first subtracting the event
+	 * parameter from the product parameter, normalizing between 1 and -1, then
+	 * calculating the Euclidean distance in the 3D space composed of the
+	 * normalized lat, lon, and time vectors.
+	 * 
+	 * @param summary
+	 * @param events
+	 * @return Event with lowest distance
+	 */
+	protected Event chooseMostSimilar(ProductSummary summary, List&lt;Event&gt; events) {
+<span class="fc" id="L183">		double lowest = Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L184">		Event bestMatch = null;</span>
+
+<span class="pc bpc" id="L186" title="1 of 2 branches missed.">		if (summary.getEventLatitude() == null</span>
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">				|| summary.getEventLongitude() == null</span>
+<span class="pc bpc" id="L188" title="1 of 2 branches missed.">				|| summary.getEventTime() == null) {</span>
+			// cannot choose most similar
+<span class="nc bnc" id="L190" title="All 2 branches missed.">			if (events.size() &gt; 0) {</span>
+				// choose first
+<span class="nc" id="L192">				return events.get(0);</span>
+			} else {
+<span class="nc" id="L194">				return null;</span>
+			}
+		}
+
+		// find &quot;closest&quot; event
+<span class="fc" id="L199">		Iterator&lt;Event&gt; iter = events.iterator();</span>
+<span class="fc bfc" id="L200" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L201">			Event event = iter.next();</span>
+			try {
+<span class="fc" id="L203">				EventSummary eventSummary = event.getEventSummary();</span>
+				// First get the difference between the lat, lon, and time
+<span class="fc" id="L205">				double deltaLat = summary.getEventLatitude()</span>
+<span class="fc" id="L206">						.subtract(eventSummary.getLatitude()).doubleValue();</span>
+<span class="fc" id="L207">				double deltaLon = summary.getEventLongitude()</span>
+<span class="fc" id="L208">						.subtract(eventSummary.getLongitude()).doubleValue();</span>
+<span class="fc" id="L209">				double deltaTime = summary.getEventTime().getTime()</span>
+<span class="fc" id="L210">						- eventSummary.getTime().getTime();</span>
+				// Each of the deltas will now be between the range
+				// -TIME_DIFF_MILLISECONDS to +TIME_DIFF_MILLISECONDS (or
+				// whatever
+				// the units are). To normalize, between -1 and 1, we just need
+				// to
+				// divide by TIME_DIFF_MILLISECONDS
+<span class="fc" id="L217">				deltaLat = deltaLat / LOCATION_DIFF_DEGREES.doubleValue();</span>
+<span class="fc" id="L218">				deltaLon = deltaLon / LOCATION_DIFF_DEGREES.doubleValue();</span>
+<span class="fc" id="L219">				deltaTime = deltaTime / TIME_DIFF_MILLISECONDS;</span>
+
+				// Calculate the Euclidean distance between the summary and the
+				// vector representing this event
+<span class="fc" id="L223">				double distance = Math.sqrt(deltaLat * deltaLat + deltaLon</span>
+						* deltaLon + deltaTime * deltaTime);
+<span class="fc bfc" id="L225" title="All 2 branches covered.">				if (distance &lt; lowest) {</span>
+<span class="fc" id="L226">					lowest = distance;</span>
+<span class="fc" id="L227">					bestMatch = event;</span>
+				}
+<span class="nc" id="L229">			} catch (Exception e) {</span>
+<span class="nc" id="L230">				LOGGER.log(Level.WARNING,</span>
+						&quot;Exception checking for most similar event&quot;, e);
+				// only log, but continue processing
+<span class="nc bnc" id="L233" title="All 2 branches missed.">				if (bestMatch == null) {</span>
+					// pick an event, but don't update &quot;lowest&quot;
+<span class="nc" id="L235">					bestMatch = event;</span>
+				}
+<span class="fc" id="L237">			}</span>
+<span class="fc" id="L238">		}</span>
+
+<span class="fc" id="L240">		return bestMatch;</span>
+	}
+
+	/**
+	 * Check if two events are associated to each other.
+	 * 
+	 * Reasons events may be considered disassociated:
+	 * &lt;ol&gt;
+	 * &lt;li&gt;Share a common EVENTSOURCE with different EVENTSOURCECODE.&lt;/li&gt;
+	 * &lt;li&gt;Either has a disassociate product for the other.&lt;/li&gt;
+	 * &lt;li&gt;Preferred location in space and time is NOT nearby, and no other
+	 * reason to associate.&lt;/li&gt;
+	 * &lt;/ol&gt;
+	 * 
+	 * Reasons events may be considered associated:
+	 * &lt;ol&gt;
+	 * &lt;li&gt;Share a common EVENTID&lt;/li&gt;
+	 * &lt;li&gt;Either has an associate product for the other.&lt;/li&gt;
+	 * &lt;li&gt;Their preferred location in space and time is nearby.&lt;/li&gt;
+	 * &lt;/ol&gt;
+	 * 
+	 * @param event1
+	 *            candidate event to test.
+	 * @param event2
+	 *            candidate event to test.
+	 * @return true if associated, false otherwise.
+	 */
+	@Override
+	public boolean eventsAssociated(Event event1, Event event2) {
+
+		// ---------------------------------------------------------//
+		// -- Is there an explicit association or disassocation? -- //
+		// ---------------------------------------------------------//
+
+		// check disassociation first
+<span class="fc bfc" id="L275" title="All 2 branches covered.">		if (event1.hasDisassociateProduct(event2)</span>
+<span class="pc bpc" id="L276" title="1 of 2 branches missed.">				|| event2.hasDisassociateProduct(event1)) {</span>
+			// explicitly disassociated
+<span class="fc" id="L278">			return false;</span>
+		}
+
+		// associate overrides usual event source rules.
+<span class="fc bfc" id="L282" title="All 2 branches covered.">		if (event1.hasAssociateProduct(event2)</span>
+<span class="pc bpc" id="L283" title="1 of 2 branches missed.">				|| event2.hasAssociateProduct(event1)) {</span>
+			// explicitly associated
+<span class="fc" id="L285">			return true;</span>
+		}
+
+<span class="fc" id="L288">		EventSummary event1Summary = event1.getEventSummary();</span>
+<span class="fc" id="L289">		EventSummary event2Summary = event2.getEventSummary();</span>
+
+		// ---------------------------------- //
+		// -- Do events share an eventid ? -- //
+		// ---------------------------------- //
+		// this check happens after associate and disassociate to allow two
+		// events from the same source to be forced to associate
+		// (bad network, bad)
+
+		// THIS CHECKS PREFERRED EVENT ID
+		// if source is same, check code
+<span class="fc" id="L300">		String event1Source = event1Summary.getSource();</span>
+<span class="fc" id="L301">		String event2Source = event2Summary.getSource();</span>
+<span class="pc bpc" id="L302" title="2 of 4 branches missed.">		if (event1Source != null &amp;&amp; event2Source != null</span>
+<span class="fc bfc" id="L303" title="All 2 branches covered.">				&amp;&amp; event1Source.equalsIgnoreCase(event2Source)) {</span>
+<span class="fc" id="L304">			String event1Code = event1Summary.getSourceCode();</span>
+<span class="fc" id="L305">			String event2Code = event2Summary.getSourceCode();</span>
+			// this is somewhat implied, (preferred source+code are
+			// combination) but be safe anyways
+<span class="pc bpc" id="L308" title="2 of 4 branches missed.">			if (event1Code != null &amp;&amp; event2Code != null) {</span>
+<span class="pc bpc" id="L309" title="1 of 2 branches missed.">				if (event1Code.equalsIgnoreCase(event2Code)) {</span>
+					// same event id
+<span class="nc" id="L311">					return true;</span>
+				} else {
+					// different event id from same source
+<span class="fc" id="L314">					return false;</span>
+				}
+			}
+		}
+
+		// THIS CHECKS NON-PREFERRED EVENT IDS Map&lt;String, String&gt;
+		// ignore deleted sub events for this comparison
+<span class="fc" id="L321">		Map&lt;String, List&lt;String&gt;&gt; event1Codes = event1</span>
+<span class="fc" id="L322">				.getAllEventCodes(false);</span>
+<span class="fc" id="L323">		Map&lt;String, List&lt;String&gt;&gt; event2Codes = event2</span>
+<span class="fc" id="L324">				.getAllEventCodes(false);</span>
+<span class="fc" id="L325">		Set&lt;String&gt; commonSources = event1Codes.keySet();</span>
+<span class="fc" id="L326">		commonSources.retainAll(event2Codes.keySet());</span>
+
+<span class="fc" id="L328">		Iterator&lt;String&gt; eventSourceIter = commonSources.iterator();</span>
+<span class="fc bfc" id="L329" title="All 2 branches covered.">		while (eventSourceIter.hasNext()) {</span>
+<span class="fc" id="L330">			String source = eventSourceIter.next();</span>
+<span class="fc" id="L331">			List&lt;String&gt; event1SourceCodes = event1Codes.get(source);</span>
+<span class="fc" id="L332">			List&lt;String&gt; event2SourceCodes = event2Codes.get(source);</span>
+
+<span class="fc" id="L334">			Iterator&lt;String&gt; iter = event1SourceCodes.iterator();</span>
+<span class="pc bpc" id="L335" title="1 of 2 branches missed.">			while (iter.hasNext()) {</span>
+<span class="pc bpc" id="L336" title="1 of 2 branches missed.">				if (!event2SourceCodes.contains(iter.next())) {</span>
+<span class="fc" id="L337">					return false;</span>
+				}
+			}
+
+<span class="nc" id="L341">			iter = event1SourceCodes.iterator();</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">			while (iter.hasNext()) {</span>
+<span class="nc bnc" id="L343" title="All 2 branches missed.">				if (!event1SourceCodes.contains(iter.next())) {</span>
+<span class="nc" id="L344">					return false;</span>
+				}
+			}
+<span class="nc" id="L347">		}</span>
+
+		// --------------------------------------------------- //
+		// -- Are event locations (lat/lon/time) &quot;nearby&quot; ? -- //
+		// --------------------------------------------------- //
+<span class="fc bfc" id="L352" title="All 2 branches covered.">		if (queryContainsLocation(</span>
+<span class="fc" id="L353">				getLocationQuery(event1Summary.getTime(), event1Summary.getLatitude(),</span>
+<span class="fc" id="L354">						event1Summary.getLongitude()), event2Summary.getTime(),</span>
+<span class="fc" id="L355">				event2Summary.getLatitude(), event2Summary.getLongitude())) {</span>
+			// location matches
+<span class="fc" id="L357">			return true;</span>
+		}
+
+<span class="fc" id="L360">		return false;</span>
+	}
+
+	/**
+	 * Build a ProductIndexQuery that searches based on event id.
+	 * 
+	 * @param eventSource
+	 *            the eventSource to search
+	 * @param eventCode
+	 *            the eventCode to search
+	 * @return null if eventSource or eventCode are null, otherwise a
+	 *         ProductIndexQuery. A returned ProductIndexQuery will have
+	 *         EventSearchType SEARCH_EVENT_PREFERRED and ResultType
+	 *         RESULT_TYPE_ALL.
+	 */
+	@Override
+	public ProductIndexQuery getEventIdQuery(final String eventSource,
+			final String eventCode) {
+<span class="fc" id="L378">		ProductIndexQuery query = null;</span>
+
+<span class="pc bpc" id="L380" title="1 of 4 branches missed.">		if (eventSource != null &amp;&amp; eventCode != null) {</span>
+<span class="fc" id="L381">			query = new ProductIndexQuery();</span>
+			// search all products, not just preferred (in case the preferred is
+			// a delete)
+<span class="fc" id="L384">			query.setEventSearchType(ProductIndexQuery.SEARCH_EVENT_PRODUCTS);</span>
+<span class="fc" id="L385">			query.setResultType(ProductIndexQuery.RESULT_TYPE_ALL);</span>
+
+<span class="fc" id="L387">			query.setEventSource(eventSource);</span>
+<span class="fc" id="L388">			query.setEventSourceCode(eventCode);</span>
+
+<span class="fc" id="L390">			query.log(LOGGER);</span>
+		}
+
+<span class="fc" id="L393">		return query;</span>
+	}
+
+	/**
+	 * Build a ProductIndexQuery that searches based on location.
+	 * 
+	 * 
+	 * @param time
+	 *            the time to search around.
+	 * @param latitude
+	 *            the latitude to search around.
+	 * @param longitude
+	 *            the longitude to search around.
+	 * @return null if time, latitude, or longitude are null, otherwise a
+	 *         ProductIndexQuery. A returned ProductIndexQuery will have
+	 *         EventSearchType SEARCH_EVENT_PREFERRED and ResultType
+	 *         RESULT_TYPE_ALL.
+	 */
+	@Override
+	public ProductIndexQuery getLocationQuery(final Date time,
+			final BigDecimal latitude, final BigDecimal longitude) {
+<span class="fc" id="L414">		ProductIndexQuery query = null;</span>
+<span class="pc bpc" id="L415" title="1 of 6 branches missed.">		if (time != null &amp;&amp; latitude != null &amp;&amp; longitude != null) {</span>
+<span class="fc" id="L416">			query = new ProductIndexQuery();</span>
+
+			// search all products, not just preferred (in case the preferred is
+			// a delete)
+<span class="fc" id="L420">			query.setEventSearchType(ProductIndexQuery.SEARCH_EVENT_PREFERRED);</span>
+<span class="fc" id="L421">			query.setResultType(ProductIndexQuery.RESULT_TYPE_ALL);</span>
+
+			// time
+<span class="fc" id="L424">			query.setMinEventTime(new Date(time.getTime()</span>
+					- TIME_DIFF_MILLISECONDS));
+<span class="fc" id="L426">			query.setMaxEventTime(new Date(time.getTime()</span>
+					+ TIME_DIFF_MILLISECONDS));
+
+			// latitude
+<span class="fc" id="L430">			query.setMinEventLatitude(latitude.subtract(LOCATION_DIFF_DEGREES));</span>
+<span class="fc" id="L431">			query.setMaxEventLatitude(latitude.add(LOCATION_DIFF_DEGREES));</span>
+
+			// longitude
+<span class="fc" id="L434">			double lat = latitude.abs().doubleValue();</span>
+<span class="fc bfc" id="L435" title="All 2 branches covered.">			if (lat &lt; 89.0) {</span>
+				// only restrict longitude when not close to a pole...
+<span class="fc" id="L437">				BigDecimal adjustedLongitudeDiff = new BigDecimal(</span>
+<span class="fc" id="L438">						LOCATION_DIFF_DEGREES.doubleValue()</span>
+<span class="fc" id="L439">								/ Math.cos(Math.toRadians(lat)));</span>
+<span class="fc" id="L440">				query.setMinEventLongitude(longitude</span>
+<span class="fc" id="L441">						.subtract(adjustedLongitudeDiff));</span>
+<span class="fc" id="L442">				query.setMaxEventLongitude(longitude.add(adjustedLongitudeDiff));</span>
+
+				/* make sure to compare across date/time line */
+<span class="fc" id="L445">				JDBCProductIndex jdbcProductIndex = null;</span>
+				try {
+<span class="fc" id="L447">					jdbcProductIndex = new JDBCProductIndex();</span>
+<span class="nc" id="L448">				} catch (Exception e) {</span>
+<span class="nc" id="L449">					e.printStackTrace();</span>
+<span class="fc" id="L450">				}</span>
+
+<span class="fc" id="L452">				BigDecimal minLon = query.getMinEventLongitude();</span>
+<span class="fc" id="L453">				BigDecimal maxLon = query.getMaxEventLongitude();</span>
+
+				// Normalize the longitudes between -180 and 180
+<span class="fc" id="L456">				query.setMinEventLongitude(jdbcProductIndex</span>
+<span class="fc" id="L457">						.normalizeLongitude(minLon));</span>
+<span class="fc" id="L458">				query.setMaxEventLongitude(jdbcProductIndex</span>
+<span class="fc" id="L459">						.normalizeLongitude(maxLon));</span>
+
+			}
+
+<span class="fc" id="L463">			query.log(LOGGER);</span>
+		}
+
+<span class="fc" id="L466">		return query;</span>
+	}
+
+	/**
+	 * Check if a location would be matched by a ProductIndexQuery.
+	 * 
+	 * @param query
+	 *            location query
+	 * @param time
+	 *            time to check
+	 * @param latitude
+	 *            latitude to check
+	 * @param longitude
+	 *            longitude to check
+	 * @return false if query, time, latitude, or longitude are null, or if
+	 *         min/max time, latitude, longitude are set and do not match time,
+	 *         latitude, or longitude. otherwise, true.
+	 */
+	protected boolean queryContainsLocation(final ProductIndexQuery query,
+			final Date time, final BigDecimal latitude,
+			final BigDecimal longitude) {
+
+<span class="pc bpc" id="L488" title="4 of 8 branches missed.">		if (query == null || time == null || latitude == null</span>
+				|| longitude == null) {
+			// no query or location? no contains
+<span class="nc" id="L491">			return false;</span>
+		}
+
+<span class="pc bpc" id="L494" title="1 of 2 branches missed.">		if (query.getMinEventTime() != null</span>
+<span class="pc bpc" id="L495" title="1 of 2 branches missed.">				&amp;&amp; query.getMinEventTime().after(time)) {</span>
+			// time too early
+<span class="nc" id="L497">			return false;</span>
+		}
+<span class="pc bpc" id="L499" title="1 of 2 branches missed.">		if (query.getMaxEventTime() != null</span>
+<span class="pc bpc" id="L500" title="1 of 2 branches missed.">				&amp;&amp; query.getMaxEventTime().before(time)) {</span>
+			// time too late
+<span class="nc" id="L502">			return false;</span>
+		}
+
+<span class="pc bpc" id="L505" title="1 of 2 branches missed.">		if (query.getMinEventLatitude() != null</span>
+<span class="fc bfc" id="L506" title="All 2 branches covered.">				&amp;&amp; query.getMinEventLatitude().compareTo(latitude) &gt; 0) {</span>
+			// latitude too small
+<span class="fc" id="L508">			return false;</span>
+		}
+<span class="pc bpc" id="L510" title="1 of 2 branches missed.">		if (query.getMaxEventLatitude() != null</span>
+<span class="pc bpc" id="L511" title="1 of 2 branches missed.">				&amp;&amp; query.getMaxEventLatitude().compareTo(latitude) &lt; 0) {</span>
+			// latitude too large
+<span class="nc" id="L513">			return false;</span>
+		}
+
+<span class="pc bpc" id="L516" title="1 of 2 branches missed.">		if (query.getMinEventLongitude() != null</span>
+<span class="pc bpc" id="L517" title="1 of 2 branches missed.">				&amp;&amp; query.getMaxEventLongitude() != null) {</span>
+
+			/*
+			 * longitude range check for min &amp; max longitude when the
+			 * locationQuery spans the date line
+			 */
+<span class="fc bfc" id="L523" title="All 2 branches covered.">			if (query.getMinEventLongitude().compareTo(</span>
+<span class="fc" id="L524">					query.getMaxEventLongitude()) &gt; 0) {</span>
+
+<span class="fc" id="L526">				boolean inBounds = false;</span>
+
+				// MAX:: getMaxLongitude &lt; longitude &lt;= -180
+<span class="fc bfc" id="L529" title="All 2 branches covered.">				if (longitude.compareTo(query.getMaxEventLongitude()) &lt; 0</span>
+<span class="pc bpc" id="L530" title="1 of 2 branches missed.">						&amp;&amp; longitude.compareTo(new BigDecimal(&quot;-180&quot;)) &gt;= 0) {</span>
+<span class="fc" id="L531">					inBounds = true;</span>
+				}
+
+				// MIN:: 180 &gt;= longitude &gt; getMinEventLongitude
+<span class="fc bfc" id="L535" title="All 2 branches covered.">				if (longitude.compareTo(query.getMinEventLongitude()) &gt; 0</span>
+<span class="pc bpc" id="L536" title="1 of 2 branches missed.">						&amp;&amp; longitude.compareTo(new BigDecimal(&quot;180&quot;)) &lt;= 0) {</span>
+<span class="fc" id="L537">					inBounds = true;</span>
+				}
+
+<span class="pc bpc" id="L540" title="1 of 2 branches missed.">				if (!inBounds) {</span>
+<span class="nc" id="L541">					return false;</span>
+				}
+
+<span class="fc" id="L544">			} else {</span>
+
+<span class="pc bpc" id="L546" title="1 of 2 branches missed.">				if (query.getMinEventLongitude().compareTo(longitude) &gt; 0) {</span>
+					// longitude too small
+<span class="nc" id="L548">					return false;</span>
+				}
+<span class="fc bfc" id="L550" title="All 2 branches covered.">				if (query.getMaxEventLongitude().compareTo(longitude) &lt; 0) {</span>
+					// longitude too large
+<span class="fc" id="L552">					return false;</span>
+				}
+			}
+		}
+
+		// must contain location
+<span class="fc" id="L558">		return true;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

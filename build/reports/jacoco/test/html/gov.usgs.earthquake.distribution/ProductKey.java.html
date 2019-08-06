@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductKey.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">ProductKey.java</span></div><h1>ProductKey.java</h1><pre class="source lang-java linenums">/**
+ * ProductKey
+ */
+package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.Config;
+import gov.usgs.util.CryptoUtils;
+import gov.usgs.util.DefaultConfigurable;
+import gov.usgs.util.StringUtils;
+
+import java.security.PublicKey;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Logger;
+
+/**
+ * This represents a public key used to verify product signatures.
+ * 
+ * A key should have at least one source and/or one type.
+ */
+public class ProductKey extends DefaultConfigurable {
+
+<span class="fc" id="L24">	public final Logger LOGGER = Logger.getLogger(ProductKey.class.getName());</span>
+
+	/** Property name for sources. */
+<span class="fc" id="L27">	public final String SOURCES_PROPERTY_NAME = &quot;sources&quot;;</span>
+
+	/** Property name for types. */
+<span class="fc" id="L30">	public final String TYPES_PROPERTY_NAME = &quot;types&quot;;</span>
+
+	/** Property name for key. */
+<span class="fc" id="L33">	public final String KEY_PROPERTY_NAME = &quot;key&quot;;</span>
+
+	/** The source(s) used for this key. */
+<span class="fc" id="L36">	private List&lt;String&gt; sources = new LinkedList&lt;String&gt;();</span>
+
+	/** The type(s) used for this key. */
+<span class="fc" id="L39">	private List&lt;String&gt; types = new LinkedList&lt;String&gt;();</span>
+
+	/** The key itself. */
+	private PublicKey key;
+
+	/**
+	 * Empty constructor for the Configurable interface.
+	 */
+<span class="fc" id="L47">	public ProductKey() {</span>
+<span class="fc" id="L48">	}</span>
+
+	/**
+	 * Construct a new ProductPublicKey.
+	 * 
+	 * Sources
+	 * 
+	 * @param key
+	 *            the public key.
+	 * @param sources
+	 *            the sources to use with this key.
+	 * @param types
+	 *            the types to use with this key.
+	 */
+	public ProductKey(final PublicKey key, final List&lt;String&gt; sources,
+<span class="fc" id="L63">			final List&lt;String&gt; types) {</span>
+<span class="fc" id="L64">		setKey(key);</span>
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">		if (sources != null) {</span>
+<span class="nc" id="L66">			getSources().addAll(sources);</span>
+		}
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">		if (types != null) {</span>
+<span class="nc" id="L69">			getTypes().addAll(types);</span>
+		}
+<span class="fc" id="L71">	}</span>
+
+	/**
+	 * Check whether this key is a candidate for verifying a signature.
+	 * 
+	 * If any sources, product source must be in list. If any types, product
+	 * type must be in list.
+	 * 
+	 * @param id
+	 *            which product to check.
+	 * @return true if this key might verify the signature for given product.
+	 */
+	public boolean isForProduct(final ProductId id) {
+<span class="pc bpc" id="L84" title="1 of 4 branches missed.">		if ((sources.size() == 0 || sources.contains(id.getSource()))</span>
+<span class="pc bpc" id="L85" title="1 of 4 branches missed.">				&amp;&amp; (types.size() == 0 || types.contains(id.getType()))) {</span>
+<span class="fc" id="L86">			return true;</span>
+		}
+<span class="nc" id="L88">		return false;</span>
+	}
+
+	public void configure(final Config config) throws Exception {
+<span class="fc" id="L92">		String key = config.getProperty(KEY_PROPERTY_NAME);</span>
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">		if (key == null) {</span>
+<span class="nc" id="L94">			throw new ConfigurationException(</span>
+					&quot;'key' is a required configuration property&quot;);
+		}
+<span class="fc" id="L97">		LOGGER.config(&quot;key is '&quot; + key + &quot;'&quot;);</span>
+<span class="fc" id="L98">		setKey(CryptoUtils.readOpenSSHPublicKey(key.getBytes()));</span>
+
+<span class="fc" id="L100">		String sources = config.getProperty(SOURCES_PROPERTY_NAME);</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">		if (sources != null) {</span>
+<span class="nc" id="L102">			LOGGER.config(&quot;key sources '&quot; + sources + &quot;'&quot;);</span>
+<span class="nc" id="L103">			getSources().addAll(StringUtils.split(sources, &quot;,&quot;));</span>
+		}
+
+<span class="fc" id="L106">		String types = config.getProperty(TYPES_PROPERTY_NAME);</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">		if (types != null) {</span>
+<span class="nc" id="L108">			LOGGER.config(&quot;key types '&quot; + types + &quot;'&quot;);</span>
+<span class="nc" id="L109">			getTypes().addAll(StringUtils.split(types, &quot;,&quot;));</span>
+		}
+<span class="fc" id="L111">	}</span>
+
+	public void shutdown() throws Exception {
+		// Nothing to do
+<span class="nc" id="L115">	}</span>
+
+	public void startup() throws Exception {
+		// Nothing to do
+<span class="nc" id="L119">	}</span>
+
+	/**
+	 * @return the key
+	 */
+	public PublicKey getKey() {
+<span class="fc" id="L125">		return key;</span>
+	}
+
+	/**
+	 * @param key
+	 *            the key to set
+	 */
+	public void setKey(PublicKey key) {
+<span class="fc" id="L133">		this.key = key;</span>
+<span class="fc" id="L134">	}</span>
+
+	/**
+	 * @return the sources
+	 */
+	public List&lt;String&gt; getSources() {
+<span class="fc" id="L140">		return sources;</span>
+	}
+
+	/**
+	 * @return the types
+	 */
+	public List&lt;String&gt; getTypes() {
+<span class="fc" id="L147">		return types;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

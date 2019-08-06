@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FileContent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product</a> &gt; <span class="el_source">FileContent.java</span></div><h1>FileContent.java</h1><pre class="source lang-java linenums">/*
+ * FileContent
+ */
+package gov.usgs.earthquake.product;
+
+import gov.usgs.util.StreamUtils;
+
+import java.io.File;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
+
+import java.util.Date;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.regex.Pattern;
+
+import javax.activation.MimetypesFileTypeMap;
+
+/**
+ * Content stored in a file.
+ */
+public class FileContent extends AbstractContent {
+
+	/** Used to look up file types. */
+<span class="fc" id="L27">	private static MimetypesFileTypeMap SYSTEM_MIME_TYPES = new MimetypesFileTypeMap();</span>
+
+	/** Explicit list of file extensions with standard mime types. */
+<span class="fc" id="L30">	private static Map&lt;String, String&gt; MIME_TYPES = new HashMap&lt;String, String&gt;();</span>
+	static {
+<span class="fc" id="L32">		MIME_TYPES.put(&quot;atom&quot;, &quot;application/atom+xml&quot;);</span>
+<span class="fc" id="L33">		MIME_TYPES.put(&quot;css&quot;, &quot;text/css&quot;);</span>
+<span class="fc" id="L34">		MIME_TYPES.put(&quot;gif&quot;, &quot;image/gif&quot;);</span>
+<span class="fc" id="L35">		MIME_TYPES.put(&quot;gz&quot;, &quot;application/gzip&quot;);</span>
+<span class="fc" id="L36">		MIME_TYPES.put(&quot;html&quot;, &quot;text/html&quot;);</span>
+<span class="fc" id="L37">		MIME_TYPES.put(&quot;jpg&quot;, &quot;image/jpeg&quot;);</span>
+<span class="fc" id="L38">		MIME_TYPES.put(&quot;js&quot;, &quot;text/javascript&quot;);</span>
+<span class="fc" id="L39">		MIME_TYPES.put(&quot;json&quot;, &quot;application/json&quot;);</span>
+<span class="fc" id="L40">		MIME_TYPES.put(&quot;kml&quot;, &quot;application/vnd.google-earth.kml+xml&quot;);</span>
+<span class="fc" id="L41">		MIME_TYPES.put(&quot;kmz&quot;, &quot;application/vnd.google-earth.kmz&quot;);</span>
+<span class="fc" id="L42">		MIME_TYPES.put(&quot;pdf&quot;, &quot;application/pdf&quot;);</span>
+<span class="fc" id="L43">		MIME_TYPES.put(&quot;png&quot;, &quot;image/png&quot;);</span>
+<span class="fc" id="L44">		MIME_TYPES.put(&quot;ps&quot;, &quot;application/postscript&quot;);</span>
+<span class="fc" id="L45">		MIME_TYPES.put(&quot;txt&quot;, &quot;text/plain&quot;);</span>
+<span class="fc" id="L46">		MIME_TYPES.put(&quot;xml&quot;, &quot;application/xml&quot;);</span>
+<span class="fc" id="L47">		MIME_TYPES.put(&quot;zip&quot;, &quot;application/zip&quot;);</span>
+<span class="fc" id="L48">	}</span>
+
+	/** The actual content. */
+	private File content;
+
+	/**
+	 * Construct a new FileContent that does not use a nested path. same as new
+	 * FileContent(file, file.getParentFile());
+	 * 
+	 * @param file
+	 *            the source of content.
+	 */
+<span class="fc" id="L60">	public FileContent(final File file) {</span>
+<span class="fc" id="L61">		this.content = file;</span>
+<span class="fc" id="L62">		this.setLastModified(new Date(file.lastModified()));</span>
+<span class="fc" id="L63">		this.setLength(file.length());</span>
+<span class="fc" id="L64">		this.setContentType(getMimeType(file));</span>
+<span class="fc" id="L65">	}</span>
+
+	/**
+	 * Construct a new FileContent from a URLContent for legacy products
+	 * 
+	 * @param urlc
+	 *            the source of content.
+	 * @throws URISyntaxException
+	 */
+	public FileContent(final URLContent urlc) throws URISyntaxException {
+<span class="fc" id="L75">		super(urlc);</span>
+<span class="fc" id="L76">		this.content = new File(urlc.getURL().toURI());</span>
+<span class="fc" id="L77">	}</span>
+
+	/**
+	 * Convert a Content to a file backed content.
+	 * 
+	 * The file written is new File(baseDirectory, content.getPath()).
+	 * 
+	 * @param content
+	 *            the content that will be converted to a file.
+	 * @param toWrite
+	 *            the file where content is written.
+	 */
+	public FileContent(final Content content, final File toWrite)
+			throws IOException {
+<span class="fc" id="L91">		super(content);</span>
+
+		// this file content object will use the newly created file
+<span class="fc" id="L94">		this.content = toWrite;</span>
+
+		// make sure the parent directory exists
+<span class="fc" id="L97">		File parent = toWrite.getCanonicalFile().getParentFile();</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">		if (!parent.isDirectory()) {</span>
+<span class="fc" id="L99">			parent.mkdirs();</span>
+		}
+
+		// save handle to stream to force it closed
+<span class="fc" id="L103">		OutputStream out = null;</span>
+<span class="fc" id="L104">		InputStream in = null;</span>
+		try {
+<span class="fc" id="L106">			in = content.getInputStream();</span>
+<span class="fc" id="L107">			out = StreamUtils.getOutputStream(toWrite);</span>
+			// write the file
+<span class="fc" id="L109">			StreamUtils.transferStream(in, out);</span>
+		} finally {
+			// force the stream closed
+<span class="fc" id="L112">			StreamUtils.closeStream(in);</span>
+<span class="fc" id="L113">			StreamUtils.closeStream(out);</span>
+		}
+
+		// update modification date in filesystem
+<span class="fc" id="L117">		toWrite.setLastModified(content.getLastModified().getTime());</span>
+
+		// verify file length
+<span class="fc" id="L120">		Long length = getLength();</span>
+<span class="fc bfc" id="L121" title="All 4 branches covered.">		if (length &gt; 0 &amp;&amp; !length.equals(toWrite.length())) {</span>
+<span class="fc" id="L122">			throw new IOException(&quot;Written file length (&quot;</span>
+<span class="fc" id="L123">					+ toWrite.length()</span>
+					+ &quot;) does not match non-zero content length (&quot; + length
+					+ &quot;)&quot;);
+		}
+
+		// length may still be &lt;= 0 if content was input stream.
+<span class="fc" id="L129">		setLength(toWrite.length());</span>
+<span class="fc" id="L130">	}</span>
+
+	/**
+	 * @return an InputStream for the wrapped content.
+	 */
+	public InputStream getInputStream() throws IOException {
+<span class="fc" id="L136">		return StreamUtils.getInputStream(content);</span>
+	}
+
+	/**
+	 * @return the wrapped file.
+	 */
+	public File getFile() {
+<span class="fc" id="L143">		return content;</span>
+	}
+
+	/**
+	 * Search a directory for files. This is equivalent to
+	 * getDirectoryContents(directory, directory).
+	 * 
+	 * @param directory
+	 *            the directory to search.
+	 * @return a map of relative paths to FileContent objects.
+	 * @throws IOException
+	 */
+	public static Map&lt;String, FileContent&gt; getDirectoryContents(
+			final File directory) throws IOException {
+<span class="fc" id="L157">		File absDirectory = directory.getCanonicalFile();</span>
+<span class="fc" id="L158">		return getDirectoryContents(absDirectory, absDirectory);</span>
+	}
+
+	/**
+	 * Search a directory for files. The path to files relative to baseDirectory
+	 * is used as a key in the returned map.
+	 * 
+	 * @param directory
+	 *            the directory to search.
+	 * @param baseDirectory
+	 *            the directory used to compute relative paths.
+	 * @return a map of relative paths to FileContent objects.
+	 * @throws IOException
+	 */
+	public static Map&lt;String, FileContent&gt; getDirectoryContents(
+			final File directory, final File baseDirectory) throws IOException {
+<span class="fc" id="L174">		Map&lt;String, FileContent&gt; contents = new HashMap&lt;String, FileContent&gt;();</span>
+
+		// compute the base path once, and escape the pattern being matched
+<span class="fc" id="L177">		String basePath = Pattern.quote(baseDirectory.getCanonicalPath()</span>
+				+ File.separator);
+
+<span class="fc" id="L180">		File[] files = directory.listFiles();</span>
+<span class="fc bfc" id="L181" title="All 2 branches covered.">		for (File file : files) {</span>
+<span class="pc bpc" id="L182" title="1 of 2 branches missed.">			if (file.isDirectory()) {</span>
+				// recurse into sub directory
+<span class="nc" id="L184">				contents.putAll(getDirectoryContents(file.getCanonicalFile(),</span>
+<span class="nc" id="L185">						baseDirectory.getCanonicalFile()));</span>
+			} else {
+<span class="fc" id="L187">				String path = file.getCanonicalPath().replaceAll(basePath, &quot;&quot;);</span>
+<span class="fc" id="L188">				contents.put(path, new FileContent(file));</span>
+			}
+		}
+
+<span class="fc" id="L192">		return contents;</span>
+	}
+
+	/**
+	 * This implementation calls defaultGetMimeType, and exists so subclasses
+	 * can override.
+	 * 
+	 * @param file
+	 *            file to check.
+	 * @return corresponding mime type.
+	 */
+	public String getMimeType(final File file) {
+<span class="fc" id="L204">		return defaultGetMimeType(file);</span>
+	}
+
+	/**
+	 * Check a local list of mime types, and fall back to MimetypeFileTypesMap
+	 * if not specified.
+	 * 
+	 * @param file
+	 *            file to check.
+	 * @return corresponding mime type.
+	 */
+	protected static String defaultGetMimeType(final File file) {
+<span class="fc" id="L216">		String name = file.getName();</span>
+<span class="fc" id="L217">		int index = name.lastIndexOf('.');</span>
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">		if (index != -1) {</span>
+<span class="fc" id="L219">			String extension = name.substring(index + 1);</span>
+<span class="fc bfc" id="L220" title="All 2 branches covered.">			if (MIME_TYPES.containsKey(extension)) {</span>
+<span class="fc" id="L221">				return MIME_TYPES.get(extension);</span>
+			}
+		}
+<span class="fc" id="L224">		return SYSTEM_MIME_TYPES.getContentType(file);</span>
+	}
+
+	/**
+	 * Free any resources associated with this content.
+	 */
+	public void close() {
+		// nothing to free
+<span class="nc" id="L232">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

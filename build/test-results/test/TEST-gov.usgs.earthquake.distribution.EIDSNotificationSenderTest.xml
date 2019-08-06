@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="gov.usgs.earthquake.distribution.EIDSNotificationSenderTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2019-08-05T22:06:40" hostname="igskcicgwsgm015" time="5.054">
+  <properties/>
+  <testcase name="testDuplicateHandling" classname="gov.usgs.earthquake.distribution.EIDSNotificationSenderTest" time="5.054"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[
+###
+Mon Aug 05 16:06:40 MDT 2019
+FINER	thread=271	[sender] running listener cleanup
+INFO	thread=13	[receiver] requeueing notification index 'null'
+INFO	thread=13	Done finding existing notifications
+INFO	thread=13	All notifications queued
+FINE	thread=13	Digest='9js5wd4OPc935bk6Q9GMgwiucaw=' , 2ms
+FINER	thread=13	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1565042800326, status=UPDATE
+FINE	thread=13	Notification Received source=us, type=shakemap, code=abcd1234, updateTime=Mon Aug 05 16:06:40 MDT 2019
+FINE	thread=13	[receiver] listener (sender) has 0 queued notifications
+FINER	thread=276	[sender] processing notification for id=urn:usgs-product:us:shakemap:abcd1234:1565042800326
+FINER	thread=276	[sender] processing product for id=urn:usgs-product:us:shakemap:abcd1234:1565042800326
+FINER	thread=276	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1565042800326, status=UPDATE
+INFO	thread=276	[sender] sent notification to EIDS via testSenderPolldir/out_1565042800348.xml
+FINE	thread=276	Notification Sent source=us, type=shakemap, code=abcd1234, updateTime=Mon Aug 05 16:06:40 MDT 2019
+FINE	thread=13	Notification Received source=us, type=shakemap, code=abcd1234, updateTime=Mon Aug 05 16:06:40 MDT 2019
+FINER	thread=276	[sender] skipping existing product urn:usgs-product:us:shakemap:abcd1234:1565042800326
+FINE	thread=13	[receiver] listener (sender) has 0 queued notifications
+Mon Aug 05 16:06:45 MDT 2019
+FINER	thread=13	[null] product removed, id=urn:usgs-product:us:shakemap:abcd1234:1565042800326
+FINE	thread=13	Notification Received source=us, type=shakemap, code=abcd1234, updateTime=Mon Aug 05 16:06:40 MDT 2019
+FINE	thread=13	[receiver] listener (sender) has 1 queued notifications
+FINER	thread=276	[sender] found notifications, but product missing from storage urn:usgs-product:us:shakemap:abcd1234:1565042800326
+FINER	thread=276	[sender] processing notification for id=urn:usgs-product:us:shakemap:abcd1234:1565042800326
+FINER	thread=276	[sender] processing product for id=urn:usgs-product:us:shakemap:abcd1234:1565042800326
+FINER	thread=276	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1565042800326, status=UPDATE
+INFO	thread=276	[sender] sent notification to EIDS via testSenderPolldir/out_1565042805365.xml
+FINE	thread=276	Notification Sent source=us, type=shakemap, code=abcd1234, updateTime=Mon Aug 05 16:06:40 MDT 2019
+]]></system-err>
+</testsuite>

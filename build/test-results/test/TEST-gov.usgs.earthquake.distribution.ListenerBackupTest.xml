@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="gov.usgs.earthquake.distribution.ListenerBackupTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2019-08-05T22:06:52" hostname="igskcicgwsgm015" time="9.816">
+  <properties/>
+  <testcase name="testListenerBackup" classname="gov.usgs.earthquake.distribution.ListenerBackupTest" time="9.816"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[50 ms reading us_shakemap_usa00040xz_1287260900624.bin
+retrieving product pool-12-thread-1
+retrieving product pool-11-thread-1
+
+###
+Mon Aug 05 16:06:52 MDT 2019
+WARNING	thread=344	[null] exception while retrieving product
+java.net.ConnectException: Connection refused (Connection refused)
+	at java.base/java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.base/java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:399)
+	at java.base/java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:242)
+	at java.base/java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:224)
+	at java.base/java.net.Socket.connect(Socket.java:591)
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:177)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:474)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:569)
+	at java.base/sun.net.www.http.HttpClient.<init>(HttpClient.java:242)
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:341)
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:362)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getNewHttpClient(HttpURLConnection.java:1242)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1181)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1075)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:1009)
+	at gov.usgs.util.StreamUtils.getURLInputStream(StreamUtils.java:117)
+	at gov.usgs.earthquake.distribution.DefaultNotificationReceiver.retrieveProduct(DefaultNotificationReceiver.java:303)
+	at gov.usgs.earthquake.distribution.ListenerBackupTest$TestNotificationListener.retrieveProduct(ListenerBackupTest.java:257)
+	at gov.usgs.earthquake.distribution.ListenerBackupTest$TestNotificationListener.onNotification(ListenerBackupTest.java:246)
+	at gov.usgs.earthquake.distribution.NotificationListenerCallable.call(NotificationListenerCallable.java:34)
+	at gov.usgs.earthquake.distribution.NotificationListenerCallable.call(NotificationListenerCallable.java:10)
+	at gov.usgs.util.ExecutorTask.run(ExecutorTask.java:183)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+There are 1 active/queued socket connections
+5888ms serving product urn:usgs-product:us:shakemap:usa00040xz:1287260900624
+retrieved product pool-11-thread-1
+retrieved product pool-12-thread-1
+5964ms sending urn:usgs-product:us:shakemap:usa00040xz:1287260900624
+27 ms reading us_losspager_usa00040xz_1287260989064.bin
+retrieving product pool-11-thread-1
+retrieving product pool-12-thread-1
+There are 1 active/queued socket connections
+3717ms serving product urn:usgs-product:us:losspager:usa00040xz:1287260989064
+retrieved product pool-11-thread-1
+retrieved product pool-12-thread-1
+3752ms sending urn:usgs-product:us:losspager:usa00040xz:1287260989064
+]]></system-err>
+</testsuite>

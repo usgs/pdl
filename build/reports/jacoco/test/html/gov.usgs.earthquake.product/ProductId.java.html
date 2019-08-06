@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductId.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product</a> &gt; <span class="el_source">ProductId.java</span></div><h1>ProductId.java</h1><pre class="source lang-java linenums">/*
+ * ProductId
+ */
+package gov.usgs.earthquake.product;
+
+
+import java.util.Date;
+import java.util.Objects;
+
+/**
+ * Attributes that uniquely identify a product.
+ *
+ * &lt;dl&gt;
+ * &lt;dt&gt;Source&lt;/dt&gt;
+ * &lt;dd&gt;
+ *   The organization &lt;u&gt;sending&lt;/u&gt; the product;
+ *   not necessarily the author of the product.
+ * 
+ *   Typically a FDSN network code.
+ * &lt;/dd&gt;
+ * 
+ * &lt;dt&gt;Type&lt;/dt&gt;
+ * &lt;dd&gt;
+ *   The type of product being sent.
+ * &lt;/dd&gt;
+ * 
+ * &lt;dt&gt;Code&lt;/dt&gt;
+ * &lt;dd&gt;
+ *   A unique code assigned by the &lt;code&gt;source&lt;/code&gt; and &lt;code&gt;type&lt;/code&gt;.
+ *   Source and Type are effectively a namespace for codes.
+ * 
+ *   If the same &lt;code&gt;code&lt;/code&gt; is re-used, it indicates a different
+ *   version of the same product.
+ * &lt;/dd&gt;
+ * 
+ * &lt;dt&gt;Update Time&lt;/dt&gt;
+ * &lt;dd&gt;
+ *   A timestamp representing when a product was created.
+ * 
+ *   Update Time is also used as a &lt;strong&gt;version&lt;/strong&gt;.
+ *   Products from the same &lt;code&gt;source&lt;/code&gt; and &lt;code&gt;type&lt;/code&gt; with
+ *   the same &lt;code&gt;code&lt;/code&gt; are considered different versions of the
+ *   same product.
+ * 
+ *   More recent (newer) &lt;code&gt;updateTime&lt;/code&gt;s
+ *   supersede less recent (older) &lt;code&gt;updateTimes&lt;/code&gt;.
+ * &lt;/dd&gt;
+ * &lt;/dl&gt;
+ */
+public class ProductId implements Comparable&lt;ProductId&gt; {
+
+	/** Product source. */
+	private String source;
+
+	/** Product type. */
+	private String type;
+
+	/** Product code. */
+	private String code;
+
+	/** Product update time. */
+	private Date updateTime;
+
+	/**
+	 * Create a new ProductId.
+	 * 
+	 * Same as new ProductId(type, code, source, new Date()).
+	 */
+	public ProductId(final String source, final String type, final String code) {
+<span class="fc" id="L70">		this(source, type, code, new Date());</span>
+<span class="fc" id="L71">	}</span>
+
+	/**
+	 * Create a new ProductId.
+	 * 
+	 * @param source
+	 *            the product source.
+	 * @param type
+	 *            the product type.
+	 * @param code
+	 *            the product code.
+	 * @param updateTime
+	 *            when the product was updated.
+	 */
+	public ProductId(final String source, final String type, final String code,
+<span class="fc" id="L86">			final Date updateTime) {</span>
+<span class="fc" id="L87">		setSource(source);</span>
+<span class="fc" id="L88">		setType(type);</span>
+<span class="fc" id="L89">		setCode(code);</span>
+<span class="fc" id="L90">		setUpdateTime(updateTime);</span>
+<span class="fc" id="L91">	}</span>
+
+	/**
+	 * @return the source
+	 */
+	public String getSource() {
+<span class="fc" id="L97">		return source;</span>
+	}
+
+	/**
+	 * @param source
+	 *            the source to set
+	 */
+	public void setSource(String source) {
+<span class="fc" id="L105">		this.source = escapeIdPart(source);</span>
+<span class="fc" id="L106">	}</span>
+
+	/**
+	 * @return the type
+	 */
+	public String getType() {
+<span class="fc" id="L112">		return type;</span>
+	}
+
+	/**
+	 * @param type
+	 *            the type to set
+	 */
+	public void setType(String type) {
+<span class="fc" id="L120">		this.type = escapeIdPart(type);</span>
+<span class="fc" id="L121">	}</span>
+
+	/**
+	 * @return the code
+	 */
+	public String getCode() {
+<span class="fc" id="L127">		return code;</span>
+	}
+
+	/**
+	 * @param code
+	 *            the code to set
+	 */
+	public void setCode(String code) {
+<span class="fc" id="L135">		this.code = escapeIdPart(code);</span>
+<span class="fc" id="L136">	}</span>
+
+	/**
+	 * @return the updateTime
+	 */
+	public Date getUpdateTime() {
+<span class="fc" id="L142">		return updateTime;</span>
+	}
+
+	/**
+	 * @param updateTime
+	 *            the updateTime to set
+	 */
+	public void setUpdateTime(Date updateTime) {
+<span class="fc" id="L150">		this.updateTime = updateTime;</span>
+<span class="fc" id="L151">	}</span>
+
+	/**
+	 * Convert this product id to a string. This string does not include the
+	 * update time.
+	 * 
+	 * @return a product id string.
+	 */
+	public String toString() {
+<span class="fc" id="L160">		return &quot;urn:usgs-product:&quot; + source + &quot;:&quot; + type + &quot;:&quot; + code + &quot;:&quot;</span>
+<span class="fc" id="L161">				+ Long.toString(updateTime.getTime());</span>
+	}
+
+	/**
+	 * Parse a product id string.
+	 * 
+	 * @param str
+	 *            a valid product id string.
+	 * @return a ProductId object.
+	 */
+	public static ProductId parse(final String str) {
+<span class="fc" id="L172">		String[] parts = str.split(&quot;:&quot;);</span>
+		try {
+<span class="pc bpc" id="L174" title="1 of 4 branches missed.">			if (!&quot;urn&quot;.equals(parts[0]) || !&quot;usgs-product&quot;.equals(parts[1])) {</span>
+<span class="fc" id="L175">				throw new Exception(&quot;Expected product urn&quot;);</span>
+			}
+<span class="fc" id="L177">			String source = parts[2];</span>
+<span class="fc" id="L178">			String type = parts[3];</span>
+<span class="fc" id="L179">			String code = parts[4];</span>
+<span class="fc" id="L180">			String updateTime = parts[5];</span>
+<span class="fc" id="L181">			return new ProductId(source, type, code, new Date(Long</span>
+<span class="fc" id="L182">					.valueOf(updateTime)));</span>
+<span class="fc" id="L183">		} catch (Exception e) {</span>
+<span class="fc" id="L184">			throw new IllegalArgumentException(&quot;Invalid ProductId '&quot; + str + &quot;'&quot;);</span>
+		}
+	}
+
+	/**
+	 * Override the default Object.equals().
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+<span class="pc bpc" id="L193" title="2 of 4 branches missed.">		return obj != null &amp;&amp; obj instanceof ProductId</span>
+<span class="fc bfc" id="L194" title="All 2 branches covered.">				&amp;&amp; this.compareTo((ProductId) obj) == 0;</span>
+	}
+
+	/**
+	 * Implement the Comparable interface.
+	 * 
+	 * @param that
+	 *            product id being compared.
+	 * @return -1 if this precedes that, 0 if same, and 1 if that precedes this.
+	 */
+	@Override
+	public int compareTo(ProductId that) {
+<span class="fc" id="L206">		int compare = getUpdateTime().compareTo(that.getUpdateTime());</span>
+
+		// same update time?
+<span class="fc bfc" id="L209" title="All 2 branches covered.">		if (compare == 0) {</span>
+			// to string includes source, type, code
+<span class="fc" id="L211">			compare = toString().compareTo(that.toString());</span>
+		}
+
+<span class="fc" id="L214">		return compare;</span>
+	}
+
+	/**
+	 * Override default Object.hashCode().
+	 */
+	@Override
+	public int hashCode() {
+<span class="fc" id="L222">		return Objects.hash(getSource(), getType(), getCode(), getUpdateTime());</span>
+	}
+
+	/**
+	 * Whether these are the same product, even if they are different versions.
+	 * 
+	 * It is possible for isSameProduct to return true if equals returns false,
+	 * but if equals returns true isSameProduct will also return true.
+	 * 
+	 * @param that
+	 *            a ProductId to test.
+	 * @return true if these are the same product (source,type,code), false
+	 *         otherwise.
+	 */
+	public boolean isSameProduct(ProductId that) {
+<span class="fc bfc" id="L237" title="All 2 branches covered.">		if (getSource().equals(that.getSource())</span>
+<span class="pc bpc" id="L238" title="1 of 2 branches missed.">				&amp;&amp; getType().equals(that.getType())</span>
+<span class="pc bpc" id="L239" title="1 of 2 branches missed.">				&amp;&amp; getCode().equals(that.getCode())) {</span>
+<span class="fc" id="L240">			return true;</span>
+		}
+<span class="fc" id="L242">		return false;</span>
+	}
+
+	/**
+	 * Escape id parts so they do not interfere with formatting/parsing.
+	 * 
+	 * @param part
+	 *            part to escape.
+	 * @return escaped part.
+	 */
+	private String escapeIdPart(final String part) {
+<span class="fc bfc" id="L253" title="All 2 branches covered.">		if (part == null) {</span>
+<span class="fc" id="L254">			return null;</span>
+		}
+
+<span class="fc" id="L257">		String escaped = part;</span>
+<span class="pc bpc" id="L258" title="1 of 2 branches missed.">		if (escaped.indexOf(&quot;:&quot;) != -1) {</span>
+<span class="nc" id="L259">			escaped = escaped.replace(&quot;:&quot;, &quot;_&quot;);</span>
+		}
+<span class="fc" id="L261">		return escaped;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

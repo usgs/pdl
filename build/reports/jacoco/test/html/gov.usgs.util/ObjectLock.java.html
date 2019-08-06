@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ObjectLock.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util</a> &gt; <span class="el_source">ObjectLock.java</span></div><h1>ObjectLock.java</h1><pre class="source lang-java linenums">/*
+ * ObjectLock
+ *
+ * $Id$
+ * $URL$
+ */
+package gov.usgs.util;
+
+import java.util.HashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+/**
+ * Reentrant ReadWrite Locking per object.
+ *
+ * This is intended for use when multiple sections of code should allow
+ * concurrent access, but only when operating on independent objects.
+ *
+ * @param &lt;T&gt;
+ *            The type of object used for locking. This object is used as a key
+ *            in a HashMap. Objects that are equal, but not necessarily ==,
+ *            reference the same lock.
+ */
+public class ObjectLock&lt;T&gt; {
+
+	/** map object to corresponding lock for object. */
+<span class="fc" id="L26">	private HashMap&lt;T, ReentrantReadWriteLock&gt; locks = new HashMap&lt;T, ReentrantReadWriteLock&gt;();</span>
+
+	/**
+	 * keep track of how many threads have, or are about to, use the lock object
+	 * in the map 'locks'. When this count reaches zero, it is safe to remove
+	 * the lock object.
+	 */
+<span class="fc" id="L33">	private HashMap&lt;T, Integer&gt; lockThreadCounts = new HashMap&lt;T, Integer&gt;();</span>
+
+<span class="fc" id="L35">	private final Object syncObject = new Object();</span>
+
+	/**
+	 * Construct a new ObjectLock object.
+	 */
+<span class="fc" id="L40">	public ObjectLock() {</span>
+<span class="fc" id="L41">	}</span>
+
+	/**
+	 * Get the lock for an object.
+	 *
+	 * This method must only be called by one thread at a time. synchronization
+	 * is handled by other methods in this class.
+	 *
+	 * @param object
+	 *            object to lock.
+	 * @return lock corresponding to object.
+	 */
+	private ReentrantReadWriteLock getLock(final T object) {
+<span class="fc" id="L54">		ReentrantReadWriteLock lock = locks.get(object);</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">		if (lock == null) {</span>
+<span class="fc" id="L56">			lock = new ReentrantReadWriteLock(true);</span>
+<span class="fc" id="L57">			locks.put(object, lock);</span>
+		}
+
+<span class="fc" id="L60">		return lock;</span>
+	}
+
+	/**
+	 * Increment the thread count for an object.
+	 *
+	 * This method must only be called by one thread at a time. synchronization
+	 * is handled by other methods in this class.
+	 *
+	 * @param object
+	 */
+	private void incrementThreadCount(final T object) {
+<span class="fc" id="L72">		Integer threadCount = lockThreadCounts.get(object);</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">		if (threadCount == null) {</span>
+<span class="fc" id="L74">			threadCount = Integer.valueOf(0);</span>
+		}
+<span class="fc" id="L76">		threadCount = threadCount + 1;</span>
+<span class="fc" id="L77">		lockThreadCounts.put(object, threadCount);</span>
+<span class="fc" id="L78">	}</span>
+
+	/**
+	 * Decrement the thread count for an object. Also, when the thread count
+	 * reaches zero, the lock corresponding to this object is removed from the
+	 * locks map.
+	 *
+	 * This method must only be called by one thread at a time. synchronization
+	 * is handled by other methods in this class.
+	 *
+	 * @param object
+	 */
+	private void decrementThreadCount(final T object) {
+<span class="fc" id="L91">		Integer threadCount = lockThreadCounts.get(object);</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">		if (threadCount == null) {</span>
+<span class="nc" id="L93">			throw new IllegalStateException(</span>
+					&quot;Trying to decrement thread count that does not exist.&quot;);
+		}
+<span class="fc" id="L96">		threadCount = threadCount - 1;</span>
+<span class="fc" id="L97">		lockThreadCounts.put(object, threadCount);</span>
+
+<span class="fc bfc" id="L99" title="All 2 branches covered.">		if (threadCount == 0) {</span>
+			// no threads are using this lock anymore, cleanup
+<span class="fc" id="L101">			locks.remove(object);</span>
+<span class="fc" id="L102">			lockThreadCounts.remove(object);</span>
+		}
+<span class="fc" id="L104">	}</span>
+
+	/**
+	 * Acquire a read lock for an object.
+	 *
+	 * Callers MUST subsequently call releaseReadLock.
+	 *
+	 * @param object
+	 *            the object to lock for reading.
+	 * @throws InterruptedException
+	 */
+	public void acquireReadLock(final T object) throws InterruptedException {
+<span class="fc" id="L116">		ReentrantReadWriteLock lock = null;</span>
+<span class="fc" id="L117">		synchronized (syncObject) {</span>
+<span class="fc" id="L118">			lock = getLock(object);</span>
+<span class="fc" id="L119">			incrementThreadCount(object);</span>
+<span class="fc" id="L120">		}</span>
+		// do this outside synchronized for concurrency
+<span class="fc" id="L122">		lock.readLock().lockInterruptibly();</span>
+<span class="fc" id="L123">	}</span>
+
+	/**
+	 * Check if the calling thread currently has a write lock for the object.
+	 *
+	 * @param object
+	 *            object to check.
+	 * @return true if the current thread currently holds a write lock, false
+	 *         otherwise.
+	 */
+	public boolean haveWriteLock(final T object) {
+<span class="nc" id="L134">		ReentrantReadWriteLock lock = locks.get(object);</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">		if (lock == null) {</span>
+<span class="nc" id="L136">			return false;</span>
+		}
+<span class="nc" id="L138">		return lock.isWriteLockedByCurrentThread();</span>
+	}
+
+	/**
+	 * Release a held read lock for an object.
+	 *
+	 * Callers MUST have previously called acquireReadLock(object).
+	 *
+	 * @param object
+	 *            the object to unlock for reading.
+	 */
+	public void releaseReadLock(final T object) {
+<span class="fc" id="L150">		synchronized (syncObject) {</span>
+<span class="fc" id="L151">			ReentrantReadWriteLock lock = getLock(object);</span>
+<span class="fc" id="L152">			decrementThreadCount(object);</span>
+<span class="fc" id="L153">			lock.readLock().unlock();</span>
+<span class="fc" id="L154">		}</span>
+<span class="fc" id="L155">	}</span>
+
+	/**
+	 * Acquire a write lock for an object.
+	 *
+	 * Callers MUST also call releaseWriteLock(object).
+	 *
+	 * @param object
+	 *            the object to lock for writing.
+	 * @throws InterruptedException
+	 */
+	public void acquireWriteLock(final T object) throws InterruptedException {
+<span class="fc" id="L167">		ReentrantReadWriteLock lock = null;</span>
+<span class="fc" id="L168">		synchronized (syncObject) {</span>
+<span class="fc" id="L169">			lock = getLock(object);</span>
+<span class="fc" id="L170">			incrementThreadCount(object);</span>
+<span class="fc" id="L171">		}</span>
+		// do this outside synchronized for concurrency
+<span class="fc" id="L173">		lock.writeLock().lockInterruptibly();</span>
+<span class="fc" id="L174">	}</span>
+
+	/**
+	 * Release a held write lock for an object.
+	 *
+	 * Callers MUST have previously called acquireWriteLock(object).
+	 *
+	 * @param object
+	 *            the object to unlock for writing.
+	 */
+	public void releaseWriteLock(final T object) {
+<span class="fc" id="L185">		synchronized (syncObject) {</span>
+<span class="fc" id="L186">			ReentrantReadWriteLock lock = getLock(object);</span>
+<span class="fc" id="L187">			decrementThreadCount(object);</span>
+<span class="fc" id="L188">			lock.writeLock().unlock();</span>
+<span class="fc" id="L189">		}</span>
+<span class="fc" id="L190">	}</span>
+
+	/**
+	 * This is a synonym for acquireWriteLock, which is an exclusive lock for
+	 * this object.
+	 *
+	 * @param object
+	 *            the object to lock.
+	 * @throws InterruptedException
+	 */
+	public void acquireLock(final T object) throws InterruptedException {
+<span class="fc" id="L201">		acquireWriteLock(object);</span>
+<span class="fc" id="L202">	}</span>
+
+	/**
+	 * This is a synonym for releaseWriteLock, which is an exclusive lock for
+	 * this object.
+	 *
+	 * @param object
+	 *            the object to unlock.
+	 */
+	public void releaseLock(final T object) {
+<span class="fc" id="L212">		releaseWriteLock(object);</span>
+<span class="fc" id="L213">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RoundRobinListenerNotifier.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution.roundrobinnotifier</a> &gt; <span class="el_source">RoundRobinListenerNotifier.java</span></div><h1>RoundRobinListenerNotifier.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution.roundrobinnotifier;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import gov.usgs.earthquake.distribution.DefaultNotificationListener;
+import gov.usgs.earthquake.distribution.ListenerNotifier;
+import gov.usgs.earthquake.distribution.Notification;
+import gov.usgs.earthquake.distribution.NotificationEvent;
+import gov.usgs.earthquake.distribution.NotificationIndex;
+import gov.usgs.earthquake.distribution.NotificationListener;
+import gov.usgs.earthquake.distribution.DefaultNotificationReceiver;
+import gov.usgs.util.DefaultConfigurable;
+
+/**
+ * Use round-robin queues to notify listeners.
+ * 
+ * This attempts to prevent any one product source+type from blocking processing
+ * of notifications from other product source+type.
+ */
+public class RoundRobinListenerNotifier extends DefaultConfigurable implements
+		ListenerNotifier, Runnable {
+
+	/** Logging object. */
+<span class="nc" id="L30">	private static final Logger LOGGER = Logger</span>
+<span class="nc" id="L31">			.getLogger(RoundRobinListenerNotifier.class.getName());</span>
+
+	/** List of indexes that have already been requeued. */
+<span class="nc" id="L34">	private static final ArrayList&lt;String&gt; AUTOLOADED_INDEXES = new ArrayList&lt;String&gt;();</span>
+
+	/** The receiver using this notifier. */
+	private final DefaultNotificationReceiver receiver;
+	/** Registered notification listeners. */
+	private final HashMap&lt;NotificationListener, ListenerNotifierThread&gt; listeners;
+	/** Status/requeue thread. */
+	private Thread thread;
+	/** How often to print status and check for notifications to requeue. */
+<span class="nc" id="L43">	private long statusInterval = 5000L;</span>
+
+	/**
+	 * Create new RoundRobinListenerNotifier.
+	 * 
+	 * @param receiver
+	 *            the receiver using this notifier.
+	 */
+<span class="nc" id="L51">	public RoundRobinListenerNotifier(final DefaultNotificationReceiver receiver) {</span>
+<span class="nc" id="L52">		this.receiver = receiver;</span>
+<span class="nc" id="L53">		this.listeners = new HashMap&lt;NotificationListener, ListenerNotifierThread&gt;();</span>
+<span class="nc" id="L54">		this.thread = null;</span>
+<span class="nc" id="L55">	}</span>
+
+	/**
+	 * Start the status/requeue thread.
+	 */
+	public void startup() throws Exception {
+<span class="nc bnc" id="L61" title="All 2 branches missed.">		if (thread == null) {</span>
+<span class="nc" id="L62">			thread = new Thread(this);</span>
+<span class="nc" id="L63">			thread.start();</span>
+
+<span class="nc" id="L65">			requeue();</span>
+		}
+<span class="nc" id="L67">	}</span>
+
+	/**
+	 * Stop the status/requeue thread.
+	 */
+	public void shutdown() {
+<span class="nc bnc" id="L73" title="All 2 branches missed.">		if (thread != null) {</span>
+<span class="nc" id="L74">			thread.interrupt();</span>
+<span class="nc" id="L75">			thread = null;</span>
+		}
+<span class="nc" id="L77">	}</span>
+
+	/**
+	 * Add a notification listener.
+	 */
+	@Override
+	public void addNotificationListener(NotificationListener listener)
+			throws Exception {
+<span class="nc bnc" id="L85" title="All 2 branches missed.">		if (!listeners.containsKey(listener)) {</span>
+<span class="nc" id="L86">			ListenerNotifierThread notifier = new ListenerNotifierThread(</span>
+					listener);
+<span class="nc" id="L88">			listeners.put(listener, notifier);</span>
+<span class="nc" id="L89">			notifier.start();</span>
+		}
+<span class="nc" id="L91">	}</span>
+
+	/**
+	 * Remove a notification listener.
+	 */
+	@Override
+	public void removeNotificationListener(NotificationListener listener)
+			throws Exception {
+<span class="nc bnc" id="L99" title="All 2 branches missed.">		if (listeners.containsKey(listener)) {</span>
+<span class="nc" id="L100">			ListenerNotifierThread notifier = listeners.remove(listener);</span>
+<span class="nc" id="L101">			notifier.stop();</span>
+		}
+<span class="nc" id="L103">	}</span>
+
+	/**
+	 * Notify listeners.
+	 */
+	@Override
+	public void notifyListeners(NotificationEvent event) throws Exception {
+<span class="nc" id="L110">		notifyListeners(event, listeners.values());</span>
+<span class="nc" id="L111">	}</span>
+
+	/**
+	 * Notify a specific list of listeners.
+	 * 
+	 * Used during renotification to only notify listeners that have an index.
+	 * 
+	 * @param event
+	 *            notification.
+	 * @param toNotify
+	 *            list of listeners to notify.
+	 * @throws Exception
+	 */
+	protected void notifyListeners(NotificationEvent event,
+			final Collection&lt;ListenerNotifierThread&gt; toNotify) throws Exception {
+<span class="nc" id="L126">		Iterator&lt;ListenerNotifierThread&gt; iter = toNotify.iterator();</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L128">			iter.next().notify(event);</span>
+		}
+<span class="nc" id="L130">	}</span>
+
+	/**
+	 * Run status/requeue tasks.
+	 */
+	public void run() {
+<span class="nc bnc" id="L136" title="All 2 branches missed.">		while (!Thread.currentThread().isInterrupted()) {</span>
+			try {
+				// run every 5 seconds
+<span class="nc" id="L139">				Thread.sleep(statusInterval);</span>
+
+<span class="nc" id="L141">				Iterator&lt;ListenerNotifierThread&gt; iter = listeners.values()</span>
+<span class="nc" id="L142">						.iterator();</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">				while (iter.hasNext()) {</span>
+<span class="nc" id="L144">					ListenerNotifierThread notifier = iter.next();</span>
+					// requeue errors
+<span class="nc" id="L146">					notifier.requeueErrors();</span>
+<span class="nc" id="L147">					int queued = notifier.getQueue().size();</span>
+<span class="nc" id="L148">					int errors = notifier.getErrorQueue().size();</span>
+					// print status
+<span class="nc" id="L150">					LOGGER.fine(&quot;[&quot; + receiver.getName()</span>
+							+ &quot;-notifier] listener &quot;
+<span class="nc" id="L152">							+ notifier.getListener().getName() + &quot; &quot; + queued</span>
+							+ &quot; queued, &quot; + errors + &quot; to retry&quot;);
+<span class="nc" id="L154">				}</span>
+<span class="nc" id="L155">			} catch (InterruptedException ie) {</span>
+				// stopping
+<span class="nc" id="L157">			} catch (Exception e) {</span>
+<span class="nc" id="L158">				LOGGER.log(Level.WARNING, &quot;exception running notifier status&quot;,</span>
+						e);
+<span class="nc" id="L160">			}</span>
+		}
+<span class="nc" id="L162">	}</span>
+
+	/**
+	 * Requeue existing notifications at startup.
+	 * 
+	 * @throws Exception
+	 */
+	protected void requeue() throws Exception {
+<span class="nc" id="L170">		NotificationIndex index = receiver.getNotificationIndex();</span>
+
+<span class="nc" id="L172">		ArrayList&lt;ListenerNotifierThread&gt; toRenotify = new ArrayList&lt;ListenerNotifierThread&gt;();</span>
+<span class="nc" id="L173">		Iterator&lt;ListenerNotifierThread&gt; iter = listeners.values().iterator();</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L175">			ListenerNotifierThread notifier = iter.next();</span>
+<span class="nc" id="L176">			NotificationListener listener = notifier.getListener();</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">			if (listener instanceof DefaultNotificationListener</span>
+					&amp;&amp; ((DefaultNotificationListener) listener)
+<span class="nc bnc" id="L179" title="All 2 branches missed.">							.getNotificationIndex() != null) {</span>
+				// listener that has notification index
+<span class="nc" id="L181">				String key = index.getName() + &quot;|&quot; + listener.getName();</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">				if (!AUTOLOADED_INDEXES.contains(key)) {</span>
+					// not already renotified
+<span class="nc" id="L184">					toRenotify.add(notifier);</span>
+				}
+			}
+<span class="nc" id="L187">		}</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">		if (toRenotify.size() == 0) {</span>
+			// no listeners to renotify
+<span class="nc" id="L190">			return;</span>
+		}
+
+<span class="nc" id="L193">		LOGGER.fine(&quot;[&quot; + receiver.getName()</span>
+				+ &quot;-notifier] requeuing notifications&quot;);
+<span class="nc" id="L195">		Iterator&lt;Notification&gt; notifications = index.findNotifications(</span>
+				(List&lt;String&gt;) null, (List&lt;String&gt;) null, (List&lt;String&gt;) null)
+<span class="nc" id="L197">				.iterator();</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">		while (notifications.hasNext()) {</span>
+<span class="nc" id="L199">			Notification notification = notifications.next();</span>
+<span class="nc" id="L200">			notifyListeners(new NotificationEvent(receiver, notification),</span>
+					toRenotify);
+<span class="nc" id="L202">		}</span>
+<span class="nc" id="L203">		LOGGER.fine(&quot;[&quot; + receiver.getName()</span>
+				+ &quot;-notifier] done requeuing notifications&quot;);
+<span class="nc" id="L205">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

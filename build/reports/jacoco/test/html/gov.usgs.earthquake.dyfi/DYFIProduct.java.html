@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DYFIProduct.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.dyfi</a> &gt; <span class="el_source">DYFIProduct.java</span></div><h1>DYFIProduct.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.dyfi;
+
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.util.StreamUtils;
+
+import java.io.InputStream;
+import java.math.BigDecimal;
+
+/**
+ * DYFIProduct object to add additional Product properties based on contents.
+ *
+ * This subclass of Product provides access to additional DYFI-specific
+ * attributes and loads these attributes, as well as additional Product
+ * attributes from ShakeMap source XML files.
+ */
+public class DYFIProduct extends Product {
+
+	// References the event_data.xml file in the Product
+	public static final String DYFI_EVENT_XML_ATTACHMENT = &quot;event_data.xml&quot;;
+
+	// These attributes are read from the XML file
+	public static final String DYFI_NUM_RESP_ATTRIBUTE = &quot;nresponses&quot;;
+	public static final String DYFI_MAX_MMI_ATTRIBUTE = &quot;max_intensity&quot;;
+
+	// These properties are what we set internally
+	public static final String DYFI_NUM_RESP_PROPERTY = &quot;numResp&quot;;
+	public static final String DYFI_MAX_MMI_PROPERTY = &quot;maxmmi&quot;;
+
+	/**
+	 * Creates a new DYFIProduct using the given &lt;code&gt;Product&lt;/code&gt; as a
+	 * basis. The given product must have a
+	 * &lt;code&gt;DYFI_EVENT_XML_ATTACHMENT&lt;/code&gt; in order to successfully create a
+	 * DYFIProduct.
+	 * 
+	 * @param product
+	 *            The product serving as a basis for this instance.
+	 */
+	public DYFIProduct(final Product product) {
+<span class="fc" id="L40">		super(product);</span>
+
+		// Parse event_data.xml for more information about product
+<span class="fc" id="L43">		Content source = product.getContents().get(DYFI_EVENT_XML_ATTACHMENT);</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">		if (source != null) {</span>
+<span class="fc" id="L45">			EventDataXMLHandler handler = new EventDataXMLHandler(this);</span>
+<span class="fc" id="L46">			InputStream in = null;</span>
+			try {
+<span class="fc" id="L48">				in = source.getInputStream();</span>
+<span class="fc" id="L49">				handler.parse(in);</span>
+<span class="nc" id="L50">			} catch (Exception e) {</span>
+<span class="nc" id="L51">				throw new IllegalArgumentException(e);</span>
+			} finally {
+<span class="fc" id="L53">				StreamUtils.closeStream(in);</span>
+			}
+<span class="fc" id="L55">		} else {</span>
+<span class="fc" id="L56">			throw new IllegalArgumentException(&quot;Given product lacked the &quot;</span>
+					+ &quot;required file to be a DYFIProduct. (&quot;
+					+ DYFI_EVENT_XML_ATTACHMENT + &quot;)&quot;);
+		}
+<span class="fc" id="L60">	}</span>
+
+	/**
+	 * @return The number of felt reports submitted for this event.
+	 */
+	public int getNumResponses() {
+<span class="fc" id="L66">		return Integer.parseInt(getProperties().get(DYFI_NUM_RESP_PROPERTY));</span>
+	}
+
+	/**
+	 * Set the number of felt reports submitted for this event.
+	 * 
+	 * @param numResponses
+	 *            The new number of submitted felt reports.
+	 * @throws NumberFormatException
+	 *             If the given &lt;code&gt;numResponses&lt;/code&gt; could not be parsed
+	 *             into an integer.
+	 */
+	public void setNumResponses(final String numResponses)
+			throws NumberFormatException {
+		// This is a throw-away line, but makes sure the value being passed
+		// at least makes sense; an exception is thrown for garbage input.
+<span class="fc" id="L82">		Integer.parseInt(numResponses);</span>
+
+<span class="fc" id="L84">		getProperties().put(DYFI_NUM_RESP_PROPERTY, numResponses);</span>
+<span class="fc" id="L85">	}</span>
+
+	/**
+	 * @return The maximum reported intensity for this event.
+	 */
+	public BigDecimal getMaxMMI() {
+<span class="fc" id="L91">		return new BigDecimal(getProperties().get(DYFI_MAX_MMI_PROPERTY));</span>
+	}
+
+	/**
+	 * Sets the maximum reported intensity for this event.
+	 * 
+	 * @param maxMMI
+	 *            The new maximum reported intensity.
+	 * @throws NumberFormatException
+	 *             If the given &lt;code&gt;maxMMI&lt;/code&gt; could not be parsed
+	 *             into a double.
+	 */
+	public void setMaxMMI(final String maxMMI) throws NumberFormatException {
+		// This is a throw-away line, but makes sure the value being passed
+		// at least makes sense; an exception is thrown for garbage input.
+<span class="fc" id="L106">		Double.parseDouble(maxMMI);</span>
+
+<span class="fc" id="L108">		getProperties().put(&quot;maxmmi&quot;, maxMMI);</span>
+<span class="fc" id="L109">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

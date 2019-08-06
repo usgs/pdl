@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NotificationEvent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">NotificationEvent.java</span></div><h1>NotificationEvent.java</h1><pre class="source lang-java linenums">/*
+ * NotificationEvent
+ */
+package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.Product;
+
+import java.io.IOException;
+
+import java.util.EventObject;
+
+/**
+ * An event sent to a NotificationListener.
+ * 
+ * These events are sent by a NotificationReceiver.
+ */
+public class NotificationEvent extends EventObject {
+
+	/** For serialization. */
+	private static final long serialVersionUID = 1L;
+
+	/** The notification that generated this event. */
+	private final Notification notification;
+
+	/**
+	 * Construct a new NotificationEvent.
+	 * 
+	 * @param source
+	 *            the source of this event, usually a NotificationReceiver.
+	 * @param notification
+	 *            the notification that generated this event.
+	 */
+	public NotificationEvent(final NotificationReceiver source,
+			final Notification notification) {
+<span class="fc" id="L35">		super(source);</span>
+<span class="fc" id="L36">		this.notification = notification;</span>
+<span class="fc" id="L37">	}</span>
+
+	/**
+	 * Get the notification associated with this NotificationEvent.
+	 * 
+	 * @return the associated notification.
+	 */
+	public Notification getNotification() {
+<span class="fc" id="L45">		return notification;</span>
+	}
+
+	/**
+	 * A convenience method that casts event source into a NotificationReceiver.
+	 * 
+	 * @return source as a NotificationReceiver.
+	 */
+	public NotificationReceiver getNotificationReceiver() {
+<span class="fc" id="L54">		return (NotificationReceiver) getSource();</span>
+	}
+
+	/**
+	 * A convenience method to request a product.
+	 * 
+	 * @return the requested product.
+	 * @throws IOException
+	 *             if any errors occur while retrieving the product.
+	 */
+	public Product getProduct() throws Exception {
+<span class="fc" id="L65">		return getNotificationReceiver().retrieveProduct(</span>
+<span class="fc" id="L66">				notification.getProductId());</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

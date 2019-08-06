@@ -1,0 +1,557 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CryptoUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util</a> &gt; <span class="el_source">CryptoUtils.java</span></div><h1>CryptoUtils.java</h1><pre class="source lang-java linenums">/*
+ * CryptoUtils
+ *
+ * $Id$
+ * $URL$
+ */
+package gov.usgs.util;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.security.Key;
+import java.security.PublicKey;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.DSAPublicKeySpec;
+import java.security.spec.DSAPrivateKeySpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAPublicKeySpec;
+import java.security.spec.RSAPrivateKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.crypto.Cipher;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+
+import ch.ethz.ssh2.crypto.PEMDecoder;
+
+/**
+ * Encryption and signing utilities.
+ */
+<span class="nc" id="L54">public class CryptoUtils {</span>
+
+	/** Algorithm used by AES keys and ciphers. */
+	public static final String AES_ALGORITHM = &quot;AES&quot;;
+	/** Number of bits for AES 128 bit key. */
+	public static final int AES_128 = 128;
+	/** Number of bits for AES 256 bit key. */
+	public static final int AES_256 = 256;
+
+	/** Algorithm used by DSA keys. */
+	public static final String DSA_ALGORITHM = &quot;DSA&quot;;
+	/** Algorithm used for signature with DSA key. */
+	public static final String DSA_SIGNATURE_ALGORITHM = &quot;SHA1withDSA&quot;;
+	/** Number of bits for DSA 1024 bit key. */
+	public static final int DSA_1024 = 1024;
+
+	/** Algorithm used by RSA keys and ciphers. */
+	public static final String RSA_ALGORITHM = &quot;RSA&quot;;
+	/** Algorithm used for signature with RSA key. */
+	public static final String RSA_SIGNATURE_ALGORITHM = &quot;SHA1withRSA&quot;;
+	/** Number of bits for RSA 2048 bit key. */
+	public static final int RSA_2048 = 2048;
+	/** Number of bits for RSA 4096 bit key. */
+	public static final int RSA_4096 = 4096;
+
+	/**
+	 * Generate a signature.
+	 *
+	 * @param algorithm
+	 *            signature algorithm to use, as accepted by
+	 *            Signature.getInstance.
+	 * @param privateKey
+	 *            private key to use, should be acceptable by signature
+	 *            instance.
+	 * @param data
+	 *            data/hash to sign.
+	 * @return signature as hex encoded string.
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
+	 * @throws SignatureException
+	 */
+	public static String sign(final String algorithm,
+			final PrivateKey privateKey, final byte[] data)
+			throws NoSuchAlgorithmException, InvalidKeyException,
+			SignatureException {
+<span class="fc" id="L99">		Signature signature = Signature.getInstance(algorithm);</span>
+<span class="fc" id="L100">		signature.initSign(privateKey);</span>
+<span class="fc" id="L101">		signature.update(data);</span>
+<span class="fc" id="L102">		return Base64.getEncoder().encodeToString(signature.sign());</span>
+	}
+
+	/**
+	 * Verify a signature.
+	 *
+	 * @param algorithm
+	 *            signature algorithm used to generate signature.
+	 * @param publicKey
+	 *            public key corresponding to private key that generated
+	 *            signature.
+	 * @param data
+	 *            the data/hash that was signed.
+	 * @param allegedSignature
+	 *            the signature being verified.
+	 * @return true if computed signature matches allegedSignature.
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
+	 * @throws SignatureException
+	 * @throws IOException
+	 */
+	public static boolean verify(final String algorithm,
+			final PublicKey publicKey, final byte[] data,
+			final String allegedSignature) throws NoSuchAlgorithmException,
+			InvalidKeyException, SignatureException, IOException {
+<span class="fc" id="L127">		Signature signature = Signature.getInstance(algorithm);</span>
+<span class="fc" id="L128">		signature.initVerify(publicKey);</span>
+<span class="fc" id="L129">		signature.update(data);</span>
+<span class="fc" id="L130">		return signature.verify(Base64.getDecoder().decode(allegedSignature));</span>
+	}
+
+	/**
+	 * Process a data stream using a cipher.
+	 *
+	 * If cipher is initialized to ENCRYPT_MODE, the input stream will be
+	 * encrypted. If cipher is initialized to DECRYPT_MODE, the input stream
+	 * will be decrypted.
+	 *
+	 * @param cipher
+	 *            an initialized cipher.
+	 * @param in
+	 *            the data to encrypt.
+	 * @param out
+	 *            where encrypted data is written.
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchPaddingException
+	 * @throws InvalidKeyException
+	 * @throws IOException
+	 */
+	public static void processCipherStream(final Cipher cipher,
+			final InputStream in, final OutputStream out)
+			throws NoSuchAlgorithmException, NoSuchPaddingException,
+			InvalidKeyException, IOException {
+<span class="fc" id="L155">		CipherOutputStream cos = new CipherOutputStream(out, cipher);</span>
+<span class="fc" id="L156">		StreamUtils.transferStream(in, cos);</span>
+<span class="fc" id="L157">	}</span>
+
+	/**
+	 * Create and initialize an encrypting cipher using key.getAlgorithm() as
+	 * transformation.
+	 *
+	 * @param key
+	 *            the key used to encrypt.
+	 * @return a cipher used to encrypt.
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchPaddingException
+	 * @throws InvalidKeyException
+	 */
+	public static Cipher getEncryptCipher(final Key key)
+			throws NoSuchAlgorithmException, NoSuchPaddingException,
+			InvalidKeyException {
+<span class="fc" id="L173">		Cipher cipher = Cipher.getInstance(key.getAlgorithm());</span>
+<span class="fc" id="L174">		cipher.init(Cipher.ENCRYPT_MODE, key);</span>
+<span class="fc" id="L175">		return cipher;</span>
+	}
+
+	/**
+	 * Create and initialize a decrypting cipher using key.getAlgorithm as
+	 * transformation.
+	 *
+	 * @param key
+	 *            the key used to decrypt.
+	 * @return a cipher used to decrypt.
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchPaddingException
+	 * @throws InvalidKeyException
+	 */
+	public static Cipher getDecryptCipher(final Key key)
+			throws NoSuchAlgorithmException, NoSuchPaddingException,
+			InvalidKeyException {
+<span class="fc" id="L192">		Cipher cipher = Cipher.getInstance(key.getAlgorithm());</span>
+<span class="fc" id="L193">		cipher.init(Cipher.DECRYPT_MODE, key);</span>
+<span class="fc" id="L194">		return cipher;</span>
+	}
+
+	/**
+	 * A convenience method that chooses a signature algorithm based on the key
+	 * type. Works with DSA and RSA keys.
+	 */
+	public static String sign(final PrivateKey privateKey, final byte[] data)
+			throws InvalidKeyException, NoSuchAlgorithmException,
+			SignatureException {
+<span class="fc bfc" id="L204" title="All 2 branches covered.">		if (privateKey instanceof DSAPrivateKey) {</span>
+<span class="fc" id="L205">			return sign(DSA_SIGNATURE_ALGORITHM, privateKey, data);</span>
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">		} else if (privateKey instanceof RSAPrivateKey) {</span>
+<span class="fc" id="L207">			return sign(RSA_SIGNATURE_ALGORITHM, privateKey, data);</span>
+		} else {
+<span class="nc" id="L209">			throw new InvalidKeyException(&quot;Expected a DSA or RSA key.&quot;);</span>
+		}
+	}
+
+	/**
+	 * A convenience method that chooses a signature algorithm based on the key
+	 * type. Works with DSA and RSA keys.
+	 */
+	public static boolean verify(final PublicKey publicKey, final byte[] data,
+			final String allegedSignature) throws InvalidKeyException,
+			NoSuchAlgorithmException, SignatureException, IOException {
+<span class="fc bfc" id="L220" title="All 2 branches covered.">		if (publicKey instanceof DSAPublicKey) {</span>
+<span class="fc" id="L221">			return verify(DSA_SIGNATURE_ALGORITHM, publicKey, data,</span>
+					allegedSignature);
+<span class="pc bpc" id="L223" title="1 of 2 branches missed.">		} else if (publicKey instanceof RSAPublicKey) {</span>
+<span class="fc" id="L224">			return verify(RSA_SIGNATURE_ALGORITHM, publicKey, data,</span>
+					allegedSignature);
+		} else {
+<span class="nc" id="L227">			throw new InvalidKeyException(&quot;Expected a DSA or RSA key.&quot;);</span>
+		}
+	}
+
+	/**
+	 * A convenience method to encrypt a byte array.
+	 *
+	 * @param key
+	 *            a key that can be used to encrypt.
+	 * @param toEncrypt
+	 *            the data to encrypt.
+	 * @return encrypted byte array.
+	 * @throws InvalidKeyException
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchPaddingException
+	 * @throws IllegalArgumentException
+	 * @throws IOException
+	 */
+	public static byte[] encrypt(final Key key, final byte[] toEncrypt)
+			throws InvalidKeyException, NoSuchAlgorithmException,
+			NoSuchPaddingException, IllegalArgumentException, IOException {
+<span class="fc" id="L248">		ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="fc" id="L249">		processCipherStream(getEncryptCipher(key),</span>
+<span class="fc" id="L250">				StreamUtils.getInputStream(toEncrypt), baos);</span>
+<span class="fc" id="L251">		return baos.toByteArray();</span>
+	}
+
+	/**
+	 * A convenience method to decrypt a byte array.
+	 *
+	 * @param key
+	 *            a key that can be used to decrypt.
+	 * @param toDecrypt
+	 *            the data to decrypt.
+	 * @return decrypted byte array.
+	 * @throws InvalidKeyException
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchPaddingException
+	 * @throws IllegalArgumentException
+	 * @throws IOException
+	 */
+	public static byte[] decrypt(final Key key, final byte[] toDecrypt)
+			throws InvalidKeyException, NoSuchAlgorithmException,
+			NoSuchPaddingException, IllegalArgumentException, IOException {
+<span class="fc" id="L271">		ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="fc" id="L272">		processCipherStream(getDecryptCipher(key),</span>
+<span class="fc" id="L273">				StreamUtils.getInputStream(toDecrypt), baos);</span>
+<span class="fc" id="L274">		return baos.toByteArray();</span>
+	}
+
+	/**
+	 * Generate a new symmetric encryption key.
+	 *
+	 * @param bits
+	 *            how many bits. This should be AES_128 or AES256.
+	 * @return generated AES key.
+	 * @throws NoSuchAlgorithmException
+	 */
+	public static Key generateAESKey(final int bits)
+			throws NoSuchAlgorithmException {
+<span class="fc" id="L287">		KeyGenerator gen = KeyGenerator.getInstance(AES_ALGORITHM);</span>
+<span class="fc" id="L288">		gen.init(bits);</span>
+<span class="fc" id="L289">		return gen.generateKey();</span>
+	}
+
+	/**
+	 * Generate a new asymmetric encryption key pair.
+	 *
+	 * @param bits
+	 *            how many bits. Must be a valid RSA size.
+	 * @return generated RSA key pair.
+	 * @throws NoSuchAlgorithmException
+	 */
+	public static KeyPair generateRSAKeyPair(final int bits)
+			throws NoSuchAlgorithmException {
+<span class="fc" id="L302">		KeyPairGenerator gen = KeyPairGenerator.getInstance(RSA_ALGORITHM);</span>
+<span class="fc" id="L303">		gen.initialize(bits);</span>
+<span class="fc" id="L304">		return gen.generateKeyPair();</span>
+	}
+
+	/**
+	 * Generate a new asymmetric signature key pair.
+	 *
+	 * @param bits
+	 *            how many bits. Must be a valid DSA size.
+	 * @return generated DSA key pair.
+	 * @throws NoSuchAlgorithmException
+	 */
+	public static KeyPair generateDSAKeyPair(final int bits)
+			throws NoSuchAlgorithmException {
+<span class="fc" id="L317">		KeyPairGenerator gen = KeyPairGenerator.getInstance(DSA_ALGORITHM);</span>
+<span class="fc" id="L318">		gen.initialize(bits);</span>
+<span class="fc" id="L319">		return gen.generateKeyPair();</span>
+	}
+
+	/**
+	 * Read a X509 encoded certificate. May be DER or PEM encoded.
+	 *
+	 * @param bytes
+	 *            the certificate data as a byte array.
+	 * @return parsed certificate.
+	 * @throws CertificateException
+	 * @throws IOException
+	 */
+	public static Certificate readCertificate(final byte[] bytes)
+			throws CertificateException, IOException {
+<span class="nc" id="L333">		byte[] data = bytes;</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">		if (((char) data[0]) == '-') {</span>
+<span class="nc" id="L335">			data = convertPEMToDER(new String(data));</span>
+		}
+<span class="nc" id="L337">		Certificate certificate = CertificateFactory.getInstance(&quot;X.509&quot;)</span>
+<span class="nc" id="L338">				.generateCertificate(new ByteArrayInputStream(data));</span>
+<span class="nc" id="L339">		return certificate;</span>
+	}
+
+	/**
+	 * Read a X509 encoded public key. May be DER or PEM encoded.
+	 *
+	 * @param bytes
+	 *            the key data as a byte array.
+	 * @return parsed public key.
+	 * @throws IOException
+	 * @throws NoSuchAlgorithmException
+	 */
+	public static PublicKey readPublicKey(final byte[] bytes)
+			throws IOException, NoSuchAlgorithmException {
+<span class="fc" id="L353">		byte[] data = bytes;</span>
+		// decode from PEM format
+<span class="pc bpc" id="L355" title="1 of 2 branches missed.">		if (((char) data[0]) == '-') {</span>
+<span class="fc" id="L356">			data = convertPEMToDER(new String(data));</span>
+		}
+<span class="fc" id="L358">		X509EncodedKeySpec spec = new X509EncodedKeySpec(data);</span>
+
+		try {
+<span class="nc" id="L361">			return KeyFactory.getInstance(DSA_ALGORITHM).generatePublic(spec);</span>
+<span class="fc" id="L362">		} catch (InvalidKeySpecException e) {</span>
+			try {
+<span class="fc" id="L364">				return KeyFactory.getInstance(RSA_ALGORITHM).generatePublic(</span>
+						spec);
+<span class="nc" id="L366">			} catch (InvalidKeySpecException e2) {</span>
+				// ignore
+			}
+		}
+
+<span class="nc" id="L371">		return null;</span>
+	}
+
+	/**
+	 * Read a PKCS#8 encoded private key. May be DER or PEM encoded.
+	 *
+	 * @param bytes
+	 *            the key data as a byte array.
+	 * @return parsed private key.
+	 * @throws IOException
+	 * @throws NoSuchAlgorithmException
+	 */
+	public static PrivateKey readPrivateKey(final byte[] bytes)
+			throws IOException, NoSuchAlgorithmException {
+<span class="fc" id="L385">		byte[] data = bytes;</span>
+		// decode from PEM format
+<span class="pc bpc" id="L387" title="1 of 2 branches missed.">		if (((char) data[0]) == '-') {</span>
+<span class="fc" id="L388">			data = convertPEMToDER(new String(data));</span>
+		}
+<span class="fc" id="L390">		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(data);</span>
+
+		try {
+<span class="nc" id="L393">			return KeyFactory.getInstance(DSA_ALGORITHM).generatePrivate(spec);</span>
+<span class="fc" id="L394">		} catch (InvalidKeySpecException e) {</span>
+			try {
+<span class="fc" id="L396">				return KeyFactory.getInstance(RSA_ALGORITHM).generatePrivate(</span>
+						spec);
+<span class="nc" id="L398">			} catch (InvalidKeySpecException e2) {</span>
+				// ignore
+			}
+		}
+
+<span class="nc" id="L403">		return null;</span>
+	}
+
+	/**
+	 * Read an OpenSSH private key from a stream.
+	 *
+	 * @param bytes
+	 *            the byte array containing an OpenSSH private key.
+	 * @param password
+	 *            password if the key is encrypted.
+	 * @return decoded PrivateKey.
+	 * @throws IOException
+	 * @throws InvalidKeySpecException
+	 * @throws NoSuchAlgorithmException
+	 */
+	public static PrivateKey readOpenSSHPrivateKey(final byte[] bytes,
+			final String password) throws IOException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
+<span class="fc" id="L421">		PrivateKey key = null;</span>
+
+		// this returns an ethz DSAPrivateKey or RSAPrivateKey
+<span class="fc" id="L424">		Object obj = PEMDecoder.decode(new String(bytes).toCharArray(),</span>
+				password);
+
+<span class="fc bfc" id="L427" title="All 2 branches covered.">		if (obj instanceof ch.ethz.ssh2.signature.DSAPrivateKey) {</span>
+<span class="fc" id="L428">			ch.ethz.ssh2.signature.DSAPrivateKey ethzDSAKey = (ch.ethz.ssh2.signature.DSAPrivateKey) obj;</span>
+<span class="fc" id="L429">			key = (DSAPrivateKey) KeyFactory.getInstance(&quot;DSA&quot;)</span>
+<span class="fc" id="L430">					.generatePrivate(</span>
+<span class="fc" id="L431">							new DSAPrivateKeySpec(ethzDSAKey.getX(), ethzDSAKey</span>
+<span class="fc" id="L432">									.getP(), ethzDSAKey.getQ(), ethzDSAKey</span>
+<span class="fc" id="L433">									.getG()));</span>
+<span class="pc bpc" id="L434" title="1 of 2 branches missed.">		} else if (obj instanceof ch.ethz.ssh2.signature.RSAPrivateKey) {</span>
+<span class="fc" id="L435">			ch.ethz.ssh2.signature.RSAPrivateKey ethzRSAKey = (ch.ethz.ssh2.signature.RSAPrivateKey) obj;</span>
+<span class="fc" id="L436">			key = (RSAPrivateKey) KeyFactory.getInstance(&quot;RSA&quot;)</span>
+<span class="fc" id="L437">					.generatePrivate(</span>
+<span class="fc" id="L438">							new RSAPrivateKeySpec(ethzRSAKey.getN(), ethzRSAKey</span>
+<span class="fc" id="L439">									.getD()));</span>
+		}
+
+<span class="fc" id="L442">		return key;</span>
+	}
+
+	/**
+	 * Read an OpenSSH PublicKey from a stream.
+	 *
+	 * @param bytes
+	 *            bytes to read.
+	 * @throws IOException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeySpecException
+	 */
+	public static PublicKey readOpenSSHPublicKey(final byte[] bytes)
+			throws IOException, InvalidKeySpecException,
+			NoSuchAlgorithmException {
+
+		// format is &lt;type&gt;&lt;space&gt;&lt;base64data&gt;&lt;space&gt;&lt;comment&gt;
+<span class="fc" id="L459">		String[] line = new String(bytes).trim().split(&quot; &quot;, 3);</span>
+<span class="fc" id="L460">		String type = line[0];</span>
+<span class="fc" id="L461">		String content = line[1];</span>
+		// String comment = line[2];
+
+<span class="fc" id="L464">		ByteBuffer buf = ByteBuffer.wrap(Base64.getDecoder().decode(content));</span>
+
+		// format of decoded content is: &lt;type&gt;&lt;keyparams&gt;
+		// where type and each param is a DER string
+<span class="fc" id="L468">		String decodedType = new String(readDERString(buf));</span>
+<span class="pc bpc" id="L469" title="1 of 2 branches missed.">		if (!decodedType.equals(type)) {</span>
+<span class="nc" id="L470">			throw new IllegalArgumentException(&quot;expected &quot; + type + &quot;, got &quot;</span>
+					+ decodedType);
+		}
+<span class="fc bfc" id="L473" title="All 2 branches covered.">		if (type.equals(&quot;ssh-dss&quot;)) {</span>
+			// dsa key params are p, q, g, y
+<span class="fc" id="L475">			BigInteger p = new BigInteger(readDERString(buf));</span>
+<span class="fc" id="L476">			BigInteger q = new BigInteger(readDERString(buf));</span>
+<span class="fc" id="L477">			BigInteger g = new BigInteger(readDERString(buf));</span>
+<span class="fc" id="L478">			BigInteger y = new BigInteger(readDERString(buf));</span>
+<span class="fc" id="L479">			return KeyFactory.getInstance(DSA_ALGORITHM).generatePublic(</span>
+					new DSAPublicKeySpec(y, p, q, g));
+<span class="pc bpc" id="L481" title="1 of 2 branches missed.">		} else if (type.equals(&quot;ssh-rsa&quot;)) {</span>
+			// rsa key params are e, y
+<span class="fc" id="L483">			BigInteger e = new BigInteger(readDERString(buf));</span>
+<span class="fc" id="L484">			BigInteger y = new BigInteger(readDERString(buf));</span>
+<span class="fc" id="L485">			return KeyFactory.getInstance(RSA_ALGORITHM).generatePublic(</span>
+					new RSAPublicKeySpec(y, e));
+		} else {
+<span class="nc" id="L488">			throw new InvalidKeySpecException(&quot;Unknown key type '&quot; + type + &quot;'&quot;);</span>
+		}
+	}
+
+	/**
+	 * This method reads a DER encoded byte string from a ByteBuffer.
+	 *
+	 * A DER encoded string has
+	 *
+	 * length = 4 bytes big-endian integer&lt;br&gt;
+	 * string = length bytes
+	 *
+	 * @param buf
+	 *            buffer containing DER encoded bytes.
+	 * @return bytes the decoded bytes.
+	 */
+	public static byte[] readDERString(ByteBuffer buf) {
+<span class="fc" id="L505">		int length = buf.getInt();</span>
+<span class="pc bpc" id="L506" title="1 of 2 branches missed.">		if (length &gt; 8192) {</span>
+<span class="nc" id="L507">			throw new IllegalArgumentException(&quot;DER String Length &quot; + length</span>
+					+ &quot; &gt; 8192&quot;);
+		}
+<span class="fc" id="L510">		byte[] bytes = new byte[length];</span>
+<span class="fc" id="L511">		buf.get(bytes);</span>
+<span class="fc" id="L512">		return bytes;</span>
+	}
+
+	/**
+	 * Read a PEM format.
+	 *
+	 * This does not currently support encrypted PEM formats.
+	 *
+	 * @param string
+	 *            string containing PEM formatted data.
+	 * @return DER formatted data.
+	 * @throws IOException
+	 */
+	public static byte[] convertPEMToDER(final String string)
+			throws IOException {
+<span class="fc" id="L527">		List&lt;String&gt; lines = StringUtils.split(string, &quot;\n&quot;);</span>
+<span class="fc" id="L528">		String header = lines.remove(0);</span>
+<span class="fc" id="L529">		String footer = lines.remove(lines.size() - 1);</span>
+		String type;
+
+<span class="pc bpc" id="L532" title="2 of 4 branches missed.">		if (header.startsWith(&quot;-----BEGIN &quot;) &amp;&amp; header.endsWith(&quot;-----&quot;)) {</span>
+<span class="fc" id="L533">			type = header;</span>
+<span class="fc" id="L534">			type = type.replace(&quot;-----BEGIN &quot;, &quot;&quot;);</span>
+<span class="fc" id="L535">			type = type.replace(&quot;-----&quot;, &quot;&quot;);</span>
+
+<span class="pc bpc" id="L537" title="1 of 2 branches missed.">			if (type.contains(&quot;ENCRYPTED&quot;)) {</span>
+<span class="nc" id="L538">				throw new IllegalArgumentException(</span>
+						&quot;Encrypted keys are not supported.&quot;);
+			}
+
+<span class="pc bpc" id="L542" title="1 of 2 branches missed.">			if (footer.equals(&quot;-----END &quot; + type + &quot;-----&quot;)) {</span>
+				// expected match
+<span class="fc" id="L544">				return Base64.getMimeDecoder().decode(</span>
+<span class="fc" id="L545">						StringUtils.join(new LinkedList&lt;Object&gt;(lines), &quot;\n&quot;));</span>
+			} else {
+<span class="nc" id="L547">				throw new IllegalArgumentException(&quot;Unexpected PEM footer '&quot;</span>
+						+ footer + &quot;'&quot;);
+			}
+		} else {
+<span class="nc" id="L551">			throw new IllegalArgumentException(&quot;Unexpected PEM header '&quot;</span>
+					+ header + &quot;'&quot;);
+		}
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SocketAcceptor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util</a> &gt; <span class="el_source">SocketAcceptor.java</span></div><h1>SocketAcceptor.java</h1><pre class="source lang-java linenums">/*
+ * SocketAcceptor
+ * 
+ * $Id$
+ * $HeadURL$
+ */
+package gov.usgs.util;
+
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Accept socket connections from a ServerSocket, and notify a listener using a
+ * separate thread.
+ * 
+ * @author jmfee
+ * 
+ */
+public class SocketAcceptor implements Runnable {
+
+    /** Track active sockets. */
+<span class="fc" id="L29">    private LinkedList&lt;Future&lt;?&gt;&gt; activeSockets = new LinkedList&lt;Future&lt;?&gt;&gt;();</span>
+
+    /** Socket used to accept connections. */
+    private ServerSocket listener;
+
+    /** Handler used to process accepted connections. */
+    private SocketListenerInterface callback;
+
+    /** Sockets are processed by this executor. */
+    private ExecutorService socketExecutor;
+
+    /** Whether to keep accepting connections. */
+<span class="fc" id="L41">    private boolean listening = true;</span>
+
+    /**
+     * Create a new SocketAcceptor object that uses a single thread executor.
+     * 
+     * @param listener
+     *            the server socket to accept connections from.
+     * @param callback
+     *            the object that processes accepted connections.
+     */
+    public SocketAcceptor(final ServerSocket listener,
+            SocketListenerInterface callback) {
+<span class="fc" id="L53">        this(listener, callback, Executors.newSingleThreadExecutor());</span>
+<span class="fc" id="L54">    }</span>
+
+    /**
+     * 
+     * @param listener
+     *            the server socket to accept connections from.
+     * @param callback
+     *            the object that processes accepted connections.
+     * @param executor
+     *            the executor used to invoke callback.
+     */
+    public SocketAcceptor(final ServerSocket listener, 
+<span class="fc" id="L66">    		SocketListenerInterface callback, ExecutorService executor) {</span>
+<span class="fc" id="L67">        this.listener = listener;</span>
+<span class="fc" id="L68">        this.callback = callback;</span>
+<span class="fc" id="L69">        this.socketExecutor = executor;</span>
+<span class="fc" id="L70">    }</span>
+
+    /**
+     * Start accepting connections in a background thread.
+     */
+    public void start() {
+<span class="fc" id="L76">        new Thread(this).start();</span>
+<span class="fc" id="L77">    }</span>
+
+    /**
+     * Stop accepting connections.
+     */
+    public void stop() {
+        // tell accept thread to stop accepting
+<span class="fc" id="L84">        listening = false;</span>
+        try {
+            // close the server socket, will cause exception in blocking accept
+            // call
+<span class="fc" id="L88">            listener.close();</span>
+<span class="nc" id="L89">        } catch (Exception e) {</span>
+            // ignore
+<span class="fc" id="L91">        }</span>
+
+        // process any queued sockets
+<span class="fc" id="L94">        socketExecutor.shutdown();</span>
+<span class="fc" id="L95">    }</span>
+
+    /**
+     * Accept connections until the shutdown method is called.
+     */
+    public void run() {
+<span class="fc" id="L101">        Socket socket = null;</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">        while (listening) {</span>
+            try {
+<span class="fc" id="L104">                socket = listener.accept();</span>
+<span class="fc" id="L105">            } catch (Exception e) {</span>
+<span class="fc" id="L106">                socket = null;</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">                if (!listening) {</span>
+                    //exception was thrown because socket was closed
+<span class="fc" id="L109">                    break;</span>
+                }
+<span class="nc" id="L111">                System.err.println(&quot;Error accepting connection&quot;);</span>
+<span class="nc" id="L112">                e.printStackTrace();</span>
+<span class="fc" id="L113">            }</span>
+
+            // check if this is a valid socket
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">            if (socket != null) {</span>
+<span class="fc" id="L117">                final Socket threadSocket = socket;</span>
+<span class="fc" id="L118">                final SocketListenerInterface threadCallback = callback;</span>
+
+                // schedule processing
+<span class="fc" id="L121">                Future&lt;?&gt; socketThread = socketExecutor.submit(new Runnable() {</span>
+                    public void run() {
+                        try {
+<span class="fc" id="L124">                            threadCallback.onSocket(threadSocket);</span>
+<span class="nc" id="L125">                        } catch (Exception e) {</span>
+<span class="nc" id="L126">                            System.err.println(&quot;SocketListener callback threw exception:&quot;);</span>
+<span class="nc" id="L127">                            e.printStackTrace();</span>
+<span class="fc" id="L128">                        }</span>
+<span class="fc" id="L129">                    }</span>
+                });
+                //track this to see if a socket is blocking...
+<span class="fc" id="L132">                activeSockets.add(socketThread);</span>
+<span class="fc" id="L133">            } else {</span>
+<span class="nc" id="L134">                System.err.println(&quot;Socket is null while accepting connection.&quot;);</span>
+            }
+
+            // see how many sockets are still in the queue
+            // but first remove any completed sockets
+<span class="fc" id="L139">            Iterator&lt;Future&lt;?&gt;&gt; iter = activeSockets.iterator();</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">            while (iter.hasNext()) {</span>
+<span class="fc" id="L141">                Future&lt;?&gt; next = iter.next();</span>
+                try {
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">                    if ( (next.get(0, TimeUnit.MILLISECONDS)) == null ) {</span>
+<span class="fc" id="L144">                        iter.remove();</span>
+                    }
+<span class="fc" id="L146">                } catch (Exception e) {</span>
+                    //ignore
+<span class="fc" id="L148">                }</span>
+<span class="fc" id="L149">            }</span>
+<span class="fc" id="L150">            System.err.println(&quot;There are &quot; + activeSockets.size() + &quot; active/queued socket connections&quot;);</span>
+<span class="fc" id="L151">        }</span>
+<span class="fc" id="L152">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

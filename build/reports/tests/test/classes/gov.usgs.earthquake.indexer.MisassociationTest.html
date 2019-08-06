@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - Class gov.usgs.earthquake.indexer.MisassociationTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>Class gov.usgs.earthquake.indexer.MisassociationTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/gov.usgs.earthquake.indexer.html">gov.usgs.earthquake.indexer</a> &gt; MisassociationTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">1</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">0.059s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="tabs">
+<ul class="tabLinks">
+<li>
+<a href="#tab0">Tests</a>
+</li>
+<li>
+<a href="#tab1">Standard error</a>
+</li>
+</ul>
+<div id="tab0" class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">associate</td>
+<td class="success">0.059s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div id="tab1" class="tab">
+<h2>Standard error</h2>
+<span class="code">
+<pre>
+###
+Mon Aug 05 16:07:28 MDT 2019
+FINEST	thread=13	[null] storing product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
+FINEST	thread=13	[null] acquiring write lock for product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
+FINEST	thread=13	[null] acquired write lock for product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
+FINEST	thread=13	[null] acquiring read lock for product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
+FINEST	thread=13	[null] acquired read lock for product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
+FINEST	thread=13	[null] releasing read lock for product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
+FINEST	thread=13	[null] released read lock for product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
+FINER	thread=13	[null] product stored id=urn:usgs-product:us:origin:usc00053hg:1311534397000, status=UPDATE
+FINEST	thread=13	[null] releasing write lock for product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
+FINEST	thread=13	[null] released write lock for product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
+FINEST	thread=13	[null] stored product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
+FINER	thread=13	[null] summarizing product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
+FINEST	thread=13	[null] beginning index transaction
+FINER	thread=13	[null] finding previous version
+FINEST	thread=13	[null] running query 
+SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND p.id = (SELECT id FROM productSummary ps WHERE ps.source='us' AND ps.type='origin' AND ps.code='usc00053hg' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='us' AND type='origin' AND code='usc00053hg'
+FINEST	thread=13	[null] query complete
+FINER	thread=13	[null] finding previous event
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PRODUCTS
+resultType=RESULT_TYPE_ALL
+eventSource=us
+eventSourceCode=c00053hg
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Sun Jul 24 12:51:09 MDT 2011
+maxEventTime=Sun Jul 24 12:51:41 MDT 2011
+minEventLatitude=36.85807199424046075986183268469176255166530609130859375
+maxEventLatitude=38.65792800575953924013816731530823744833469390869140625
+minEventLongitude=140.40152102631242314600967802107334136962890625
+maxEventLongitude=142.678078973687576080919825471937656402587890625
+FINER	thread=13	[null] adding summary to index
+FINEST	thread=13	[null] Added property magnitude-type:Mwb for product 1
+FINEST	thread=13	[null] Added property error-axis-3-length:14.30 for product 1
+FINEST	thread=13	[null] Added property origin-source:NEIC for product 1
+FINEST	thread=13	[null] Added property location-method-algorithm:Hydra for product 1
+FINEST	thread=13	[null] Added property magnitude-source:NEIC for product 1
+FINEST	thread=13	[null] Added property eventtime:2011-07-24T18:51:25.380Z for product 1
+FINEST	thread=13	[null] Added property error-axis-1-length:9.10 for product 1
+FINEST	thread=13	[null] Added property error-axis-2-length-unit:km for product 1
+FINEST	thread=13	[null] Added property error-axis-2-length:11.70 for product 1
+FINEST	thread=13	[null] Added property error-axis-count:3 for product 1
+FINEST	thread=13	[null] Added property eventsource:us for product 1
+FINEST	thread=13	[null] Added property latitude-error:8.10 for product 1
+FINEST	thread=13	[null] Added property num-stations-associated:377 for product 1
+FINEST	thread=13	[null] Added property error-axis-3-length-unit:km for product 1
+FINEST	thread=13	[null] Added property standard-error:0.74 for product 1
+FINEST	thread=13	[null] Added property eqxml-usage:Actual for product 1
+FINEST	thread=13	[null] Added property eqxml-action:Update for product 1
+FINEST	thread=13	[null] Added property eventsourcecode:c00053hg for product 1
+FINEST	thread=13	[null] Added property longitude:141.5398 for product 1
+FINEST	thread=13	[null] Added property minimum-distance:2.93 for product 1
+FINEST	thread=13	[null] Added property depth-error:6.00 for product 1
+FINEST	thread=13	[null] Added property eids-feeder:gvoutput2.anss.gs.ad for product 1
+FINEST	thread=13	[null] Added property error-axis-2-azimuth:28 for product 1
+FINEST	thread=13	[null] Added property error-axis-1-plunge:87 for product 1
+FINEST	thread=13	[null] Added property error-axis-3-plunge:2 for product 1
+FINEST	thread=13	[null] Added property version:8 for product 1
+FINEST	thread=13	[null] Added property num-phases-used:378 for product 1
+FINEST	thread=13	[null] Added property vertical-error:9.09 for product 1
+FINEST	thread=13	[null] Added property eventtime-error:1.50 for product 1
+FINEST	thread=13	[null] Added property location-method-class:Rank-sum for product 1
+FINEST	thread=13	[null] Added property error-axis-1-length-unit:km for product 1
+FINEST	thread=13	[null] Added property magnitude-error:0.000 for product 1
+FINEST	thread=13	[null] Added property region:NEAR EAST COAST OF HONSHU, JAPAN for product 1
+FINEST	thread=13	[null] Added property latitude:37.7580 for product 1
+FINEST	thread=13	[null] Added property magnitude-num-stations-used:0 for product 1
+FINEST	thread=13	[null] Added property num-phases-associated:378 for product 1
+FINEST	thread=13	[null] Added property depth-method:Free for product 1
+FINEST	thread=13	[null] Added property horizontal-error:14.29 for product 1
+FINEST	thread=13	[null] Added property magnitude:6.2 for product 1
+FINEST	thread=13	[null] Added property longitude-error:9.00 for product 1
+FINEST	thread=13	[null] Added property error-axis-1-azimuth:297 for product 1
+FINEST	thread=13	[null] Added property cube-magnitude-type:T for product 1
+FINEST	thread=13	[null] Added property azimuthal-gap:36 for product 1
+FINEST	thread=13	[null] Added property error-axis-2-plunge:0 for product 1
+FINEST	thread=13	[null] Added property review-status:Reviewed for product 1
+FINEST	thread=13	[null] Added property num-stations-used:377 for product 1
+FINEST	thread=13	[null] Added property location-method-model:AK135 for product 1
+FINEST	thread=13	[null] Added property depth:35.57 for product 1
+FINEST	thread=13	[null] Added property eqxml-scope:Public for product 1
+FINEST	thread=13	[null] Added property error-axis-3-azimuth:118 for product 1
+FINEST	thread=13	[null] Added property eids-feeder-sequence:5139 for product 1
+FINEST	thread=13	[null] Added productSummary urn:usgs-product:us:origin:usc00053hg:1311534397000, indexid=1 to product index
+FINEST	thread=13	Added event id=1
+FINEST	thread=13	[null] Added event to Product Index
+FINER	thread=13	[null] Added associations event id=1, productSummary source=us, type=origin, code=usc00053hg (id=1)
+FINER	thread=13	[null] created event indexid=1
+FINE	thread=13	Eventindexid=1, eventid=usc00053hg, latitude=37.7580, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:us:origin:usc00053hg:1311534397000, eventid=usc00053hg, latitude=37.7580, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011
+FINER	thread=13	[null] checking for event merges
+FINER	thread=13	[null] searching for unassociated products
+FINER	thread=13	[null] search for unassociated products complete
+FINER	thread=13	[null] updating event summary parameters
+FINER	thread=13	[null] Updating event indexid=1
+FINE	thread=13	Eventindexid=1, eventid=usc00053hg, latitude=37.7580, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:us:origin:usc00053hg:1311534397000, eventid=usc00053hg, latitude=37.7580, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011
+FINEST	thread=13	[null] Updated event properties in Product Index
+FINER	thread=13	[null] committing transaction
+FINE	thread=13	[null] notifying listeners
+INFO	thread=13	[null] indexed product id=urn:usgs-product:us:origin:usc00053hg:1311534397000, status=UPDATE
+EVENT_ADDED null =&gt; usc00053hg
+FINEST	thread=13	[null] storing product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
+FINEST	thread=13	[null] acquiring write lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
+FINEST	thread=13	[null] acquired write lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
+FINEST	thread=13	[null] acquiring read lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
+FINEST	thread=13	[null] acquired read lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
+FINEST	thread=13	[null] releasing read lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
+FINEST	thread=13	[null] released read lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
+FINER	thread=13	[null] product stored id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000, status=UPDATE
+FINEST	thread=13	[null] releasing write lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
+FINEST	thread=13	[null] released write lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
+FINEST	thread=13	[null] stored product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
+FINER	thread=13	[null] summarizing product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
+FINEST	thread=13	[null] beginning index transaction
+FINER	thread=13	[null] finding previous version
+FINEST	thread=13	[null] running query 
+SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND p.id = (SELECT id FROM productSummary ps WHERE ps.source='us' AND ps.type='focal-mechanism' AND ps.code='usc00053hg-neic-mwc' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='us' AND type='focal-mechanism' AND code='usc00053hg-neic-mwc'
+FINEST	thread=13	[null] query complete
+FINER	thread=13	[null] finding previous event
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PRODUCTS
+resultType=RESULT_TYPE_ALL
+eventSource=us
+eventSourceCode=c00053hg
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Sun Jul 24 12:51:23 MDT 2011
+maxEventTime=Sun Jul 24 12:51:55 MDT 2011
+minEventLatitude=36.63027199424046075986183268469176255166530609130859375
+maxEventLatitude=38.43012800575953924013816731530823744833469390869140625
+minEventLongitude=140.729506449337662843390717171132564544677734375
+maxEventLongitude=142.999093550662337293033488094806671142578125
+FINER	thread=13	[null] adding summary to index
+FINEST	thread=13	[null] Added property tensor-mrt:8.766E+17 for product 2
+FINEST	thread=13	[null] Added property nodal-plane-1-dip:68.32 for product 2
+FINEST	thread=13	[null] Added property tensor-mpp:-2.0451E+18 for product 2
+FINEST	thread=13	[null] Added property tensor-mrr:2.5841E+18 for product 2
+FINEST	thread=13	[null] Added property tensor-mtt:-5.39E+17 for product 2
+FINEST	thread=13	[null] Added property nodal-plane-2-slip:90.713 for product 2
+FINEST	thread=13	[null] Added property percent-double-couple:84.06 for product 2
+FINEST	thread=13	[null] Added property latitude:37.5302 for product 2
+FINEST	thread=13	[null] Added property eventtime:2011-07-24T18:51:39.500Z for product 2
+FINEST	thread=13	[null] Added property nodal-plane-2-dip:21.68 for product 2
+FINEST	thread=13	[null] Added property tensor-mrp:2.427E+18 for product 2
+FINEST	thread=13	[null] Added property eventsource:us for product 2
+FINEST	thread=13	[null] Added property tensor-mtp:-6.541E+17 for product 2
+FINEST	thread=13	[null] Added property eqxml-usage:Actual for product 2
+FINEST	thread=13	[null] Added property eqxml-action:Update for product 2
+FINEST	thread=13	[null] Added property eventsourcecode:c00053hg for product 2
+FINEST	thread=13	[null] Added property focal-mechanism-source:NEIC for product 2
+FINEST	thread=13	[null] Added property magnitude:6.3 for product 2
+FINEST	thread=13	[null] Added property longitude:141.8643 for product 2
+FINEST	thread=13	[null] Added property eids-feeder:gvoutput1.anss.gs.ad for product 2
+FINEST	thread=13	[null] Added property version:A for product 2
+FINEST	thread=13	[null] Added property num-stations-used:83 for product 2
+FINEST	thread=13	[null] Added property scalar-moment:3.55E+18 for product 2
+FINEST	thread=13	[null] Added property nodal-plane-2-strike:200.81 for product 2
+FINEST	thread=13	[null] Added property depth:47.30 for product 2
+FINEST	thread=13	[null] Added property eqxml-scope:Public for product 2
+FINEST	thread=13	[null] Added property nodal-plane-1-slip:89.72 for product 2
+FINEST	thread=13	[null] Added property nodal-plane-1-strike:20.05 for product 2
+FINEST	thread=13	[null] Added property focal-mechanism-type:Mwc for product 2
+FINEST	thread=13	[null] Added property eids-feeder-sequence:4653 for product 2
+FINEST	thread=13	[null] Added productSummary urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000, indexid=2 to product index
+FINER	thread=13	[null] found existing event indexid=1
+FINE	thread=13	Eventindexid=1, eventid=usc00053hg, latitude=37.7580, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:us:origin:usc00053hg:1311534397000, eventid=usc00053hg, latitude=37.7580, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011
+FINER	thread=13	[null] Added associations event id=1, productSummary source=us, type=focal-mechanism, code=usc00053hg-neic-mwc (id=2)
+FINER	thread=13	[null] checking for event splits
+FINER	thread=13	[null] checking for event merges
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Sun Jul 24 12:51:09 MDT 2011
+maxEventTime=Sun Jul 24 12:51:41 MDT 2011
+minEventLatitude=36.85807199424046075986183268469176255166530609130859375
+maxEventLatitude=38.65792800575953924013816731530823744833469390869140625
+minEventLongitude=140.40152102631242314600967802107334136962890625
+maxEventLongitude=142.678078973687576080919825471937656402587890625
+FINER	thread=13	[null] searching for nearby events
+FINER	thread=13	[null] search for nearby events complete
+FINER	thread=13	[null] searching for unassociated products
+FINER	thread=13	[null] search for unassociated products complete
+FINER	thread=13	[null] updating event summary parameters
+FINER	thread=13	[null] Updating event indexid=1
+FINE	thread=13	Eventindexid=1, eventid=usc00053hg, latitude=37.7580, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:us:origin:usc00053hg:1311534397000, eventid=usc00053hg, latitude=37.7580, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011
+	status=UPDATE, id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000, eventid=usc00053hg, latitude=37.5302, longitude=141.8643, time=Sun Jul 24 12:51:39 MDT 2011
+FINEST	thread=13	[null] Updated event properties in Product Index
+FINER	thread=13	[null] committing transaction
+FINE	thread=13	[null] notifying listeners
+INFO	thread=13	[null] indexed product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000, status=UPDATE
+EVENT_UPDATED usc00053hg =&gt; usc00053hg
+FINEST	thread=13	[null] storing product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
+FINEST	thread=13	[null] acquiring write lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
+FINEST	thread=13	[null] acquired write lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
+FINEST	thread=13	[null] acquiring read lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
+FINEST	thread=13	[null] acquired read lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
+FINEST	thread=13	[null] releasing read lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
+FINEST	thread=13	[null] released read lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
+FINER	thread=13	[null] product stored id=urn:usgs-product:nc:origin:nc71606670:1311633433000, status=UPDATE
+FINEST	thread=13	[null] releasing write lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
+FINEST	thread=13	[null] released write lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
+FINEST	thread=13	[null] stored product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
+FINER	thread=13	[null] summarizing product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
+FINEST	thread=13	[null] beginning index transaction
+FINER	thread=13	[null] finding previous version
+FINEST	thread=13	[null] running query 
+SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND p.id = (SELECT id FROM productSummary ps WHERE ps.source='nc' AND ps.type='origin' AND ps.code='nc71606670' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='nc' AND type='origin' AND code='nc71606670'
+FINEST	thread=13	[null] query complete
+FINER	thread=13	[null] finding previous event
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PRODUCTS
+resultType=RESULT_TYPE_ALL
+eventSource=nc
+eventSourceCode=71606670
+FINEST	thread=13	Product Index Query
+eventSearchType=SEARCH_EVENT_PREFERRED
+resultType=RESULT_TYPE_ALL
+minEventTime=Sun Jul 24 12:51:37 MDT 2011
+maxEventTime=Sun Jul 24 12:52:09 MDT 2011
+minEventLatitude=35.76727199424046075986183268469176255166530609130859375
+maxEventLatitude=37.56712800575953924013816731530823744833469390869140625
+minEventLongitude=-122.414140183688459728728048503398895263671875
+maxEventLongitude=-120.1702598163115425222713383845984935760498046875
+FINER	thread=13	[null] adding summary to index
+FINEST	thread=13	[null] Added property magnitude-type:Md for product 3
+FINEST	thread=13	[null] Added property location-method-algorithm:Hypoinverse for product 3
+FINEST	thread=13	[null] Added property latitude:36.6672 for product 3
+FINEST	thread=13	[null] Added property magnitude-num-stations-used:8 for product 3
+FINEST	thread=13	[null] Added property eventtime:2011-07-24T18:51:53.100Z for product 3
+FINEST	thread=13	[null] Added property eventsource:nc for product 3
+FINEST	thread=13	[null] Added property standard-error:0.05 for product 3
+FINEST	thread=13	[null] Added property eqxml-usage:Actual for product 3
+FINEST	thread=13	[null] Added property horizontal-error:0.4 for product 3
+FINEST	thread=13	[null] Added property eqxml-action:Update for product 3
+FINEST	thread=13	[null] Added property eventsourcecode:71606670 for product 3
+FINEST	thread=13	[null] Added property magnitude:0.3 for product 3
+FINEST	thread=13	[null] Added property longitude:-121.2922 for product 3
+FINEST	thread=13	[null] Added property minimum-distance:0.01796631 for product 3
+FINEST	thread=13	[null] Added property cube-magnitude-type:D for product 3
+FINEST	thread=13	[null] Added property eids-feeder:ucbpp.ncss-ucb.cisn.org for product 3
+FINEST	thread=13	[null] Added property azimuthal-gap:108.0 for product 3
+FINEST	thread=13	[null] Added property review-status:Reviewed for product 3
+FINEST	thread=13	[null] Added property version:2 for product 3
+FINEST	thread=13	[null] Added property num-phases-used:10 for product 3
+FINEST	thread=13	[null] Added property vertical-error:0.8 for product 3
+FINEST	thread=13	[null] Added property location-method-class:Geiger's Method and Least Squares for product 3
+FINEST	thread=13	[null] Added property depth:5.3 for product 3
+FINEST	thread=13	[null] Added property eqxml-scope:Public for product 3
+FINEST	thread=13	[null] Added property cube-location-method:h for product 3
+FINEST	thread=13	[null] Added property magnitude-error:0.2 for product 3
+FINEST	thread=13	[null] Added property eids-feeder-sequence:64433 for product 3
+FINEST	thread=13	[null] Added productSummary urn:usgs-product:nc:origin:nc71606670:1311633433000, indexid=3 to product index
+FINEST	thread=13	Added event id=2
+FINEST	thread=13	[null] Added event to Product Index
+FINER	thread=13	[null] Added associations event id=2, productSummary source=nc, type=origin, code=nc71606670 (id=3)
+FINER	thread=13	[null] created event indexid=2
+FINE	thread=13	Eventindexid=2, eventid=nc71606670, latitude=36.6672, longitude=-121.2922, time=Sun Jul 24 12:51:53 MDT 2011, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nc:origin:nc71606670:1311633433000, eventid=nc71606670, latitude=36.6672, longitude=-121.2922, time=Sun Jul 24 12:51:53 MDT 2011
+FINER	thread=13	[null] checking for event merges
+FINER	thread=13	[null] searching for unassociated products
+FINER	thread=13	[null] search for unassociated products complete
+FINER	thread=13	[null] updating event summary parameters
+FINER	thread=13	[null] Updating event indexid=2
+FINE	thread=13	Eventindexid=2, eventid=nc71606670, latitude=36.6672, longitude=-121.2922, time=Sun Jul 24 12:51:53 MDT 2011, deleted=false
+FINER	thread=13	Products in event
+	status=UPDATE, id=urn:usgs-product:nc:origin:nc71606670:1311633433000, eventid=nc71606670, latitude=36.6672, longitude=-121.2922, time=Sun Jul 24 12:51:53 MDT 2011
+FINEST	thread=13	[null] Updated event properties in Product Index
+FINER	thread=13	[null] committing transaction
+FINE	thread=13	[null] notifying listeners
+INFO	thread=13	[null] indexed product id=urn:usgs-product:nc:origin:nc71606670:1311633433000, status=UPDATE
+EVENT_ADDED null =&gt; nc71606670
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="http://www.gradle.org">Gradle 5.4.1</a> at Aug 5, 2019, 4:07:43 PM</p>
+</div>
+</div>
+</body>
+</html>

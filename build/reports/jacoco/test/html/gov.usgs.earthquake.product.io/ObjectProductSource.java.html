@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ObjectProductSource.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product.io</a> &gt; <span class="el_source">ObjectProductSource.java</span></div><h1>ObjectProductSource.java</h1><pre class="source lang-java linenums">/*
+ * ObjectProductSource
+ */
+package gov.usgs.earthquake.product.io;
+
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+
+import java.net.URI;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.List;
+import java.util.TreeSet;
+
+/**
+ * Convert a java Product object into events for a ProductHandler.
+ * 
+ * ObjectProductSource turns a product object into a stream of events for
+ * ProductOutputs.
+ * 
+ * ObjectProductSources are reuseable for a given product.
+ */
+public class ObjectProductSource implements ProductSource {
+
+	/** The product being sent. */
+	private Product product;
+
+	/**
+	 * Construct a new ObjectProductSource.
+	 * 
+	 * @param product
+	 *            the product used for input.
+	 */
+<span class="fc" id="L36">	public ObjectProductSource(final Product product) {</span>
+<span class="fc" id="L37">		this.product = product;</span>
+<span class="fc" id="L38">	}</span>
+
+	/**
+	 * Send a product object to a ProductOutput.
+	 * 
+	 * Calls these methods in the following order:
+	 * &lt;ol&gt;
+	 * &lt;li&gt;sendBeginProduct
+	 * &lt;li&gt;sendProperties
+	 * &lt;li&gt;sendLinks
+	 * &lt;li&gt;sendContents
+	 * &lt;li&gt;sendSignature
+	 * &lt;li&gt;sendEndProducct
+	 * &lt;/ol&gt;
+	 * 
+	 * @param out
+	 *            the ProductOutput that will receive the Product.
+	 */
+	public void streamTo(final ProductHandler out) throws Exception {
+<span class="fc" id="L57">		sendBeginProduct(out);</span>
+<span class="fc" id="L58">		sendProperties(out);</span>
+<span class="fc" id="L59">		sendLinks(out);</span>
+<span class="fc" id="L60">		sendContents(out);</span>
+<span class="fc" id="L61">		sendSignature(out);</span>
+<span class="fc" id="L62">		sendEndProduct(out);</span>
+<span class="fc" id="L63">	}</span>
+
+	/**
+	 * Call out's onBeginProduct method for this product.
+	 * 
+	 * @param out
+	 *            the receiving ProductOutput.
+	 * @throws Exception
+	 *             if out.onBeginProduct throws an Exception.
+	 */
+	public void sendBeginProduct(final ProductHandler out) throws Exception {
+<span class="fc" id="L74">		out.onBeginProduct(product.getId(), product.getStatus(), product</span>
+<span class="fc" id="L75">				.getTrackerURL());</span>
+<span class="fc" id="L76">	}</span>
+
+	/**
+	 * Call out's onProperty method for each product property. Calls in
+	 * alphabetical order by property name.
+	 * 
+	 * @param out
+	 *            the receiving ProductOutput.
+	 * @throws Exception
+	 *             if out.onProperty throws an Exception.
+	 */
+	public void sendProperties(final ProductHandler out) throws Exception {
+<span class="fc" id="L88">		ProductId id = product.getId();</span>
+<span class="fc" id="L89">		Map&lt;String, String&gt; props = product.getProperties();</span>
+		// in alphabetical order by property name
+<span class="fc" id="L91">		Iterator&lt;String&gt; keys = new TreeSet&lt;String&gt;(props.keySet()).iterator();</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">		while (keys.hasNext()) {</span>
+<span class="fc" id="L93">			String key = keys.next().toString();</span>
+<span class="fc" id="L94">			String value = props.get(key);</span>
+<span class="fc" id="L95">			out.onProperty(id, key, value);</span>
+<span class="fc" id="L96">		}</span>
+<span class="fc" id="L97">	}</span>
+
+	/**
+	 * Call out's onLink method for each product link. Calls in alphabetical
+	 * order by relation name, by URI.
+	 * 
+	 * @param out
+	 * @throws Exception
+	 */
+	public void sendLinks(final ProductHandler out) throws Exception {
+<span class="fc" id="L107">		ProductId id = product.getId();</span>
+<span class="fc" id="L108">		Map&lt;String, List&lt;URI&gt;&gt; links = product.getLinks();</span>
+		// in alphabetical order by relation name
+<span class="fc" id="L110">		Iterator&lt;String&gt; linkRelations = new TreeSet&lt;String&gt;(links.keySet())</span>
+<span class="fc" id="L111">				.iterator();</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">		while (linkRelations.hasNext()) {</span>
+<span class="fc" id="L113">			String relation = linkRelations.next();</span>
+			// in alphabetical order by URI
+<span class="fc" id="L115">			Iterator&lt;URI&gt; linkURIs = new TreeSet&lt;URI&gt;(links.get(relation))</span>
+<span class="fc" id="L116">					.iterator();</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">			while (linkURIs.hasNext()) {</span>
+<span class="fc" id="L118">				URI uri = linkURIs.next();</span>
+<span class="fc" id="L119">				out.onLink(id, relation, uri);</span>
+<span class="fc" id="L120">			}</span>
+<span class="fc" id="L121">		}</span>
+<span class="fc" id="L122">	}</span>
+
+	/**
+	 * Call out's onContent method for each product content. Calls
+	 * alphabetically by content path.
+	 * 
+	 * @param out
+	 *            the receiving ProductOutput.
+	 * @throws Exception
+	 *             if out.onContent throws an Exception.
+	 */
+	public void sendContents(final ProductHandler out) throws Exception {
+<span class="fc" id="L134">		ProductId id = product.getId();</span>
+<span class="fc" id="L135">		Map&lt;String, Content&gt; contents = product.getContents();</span>
+		// in alphabetical order by content path
+<span class="fc" id="L137">		Iterator&lt;String&gt; paths = new TreeSet&lt;String&gt;(contents.keySet())</span>
+<span class="fc" id="L138">				.iterator();</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">		while (paths.hasNext()) {</span>
+<span class="fc" id="L140">			String path = paths.next();</span>
+<span class="fc" id="L141">			out.onContent(id, path, contents.get(path));</span>
+<span class="fc" id="L142">		}</span>
+<span class="fc" id="L143">	}</span>
+
+	/**
+	 * Call out's onSignature method with product signature.
+	 * 
+	 * @param out
+	 *            the receiving ProductOutput.
+	 * @throws Exception
+	 *             if out.onSignature throws an Exception.
+	 */
+	public void sendSignature(final ProductHandler out) throws Exception {
+<span class="fc" id="L154">		out.onSignature(product.getId(), product.getSignature());</span>
+<span class="fc" id="L155">	}</span>
+
+	/**
+	 * Call out's onEndProduct method for product.
+	 * 
+	 * @param out
+	 *            the receiving ProductOutput.
+	 * @throws Exception
+	 *             if out.onEndProduct throws an Exception.
+	 */
+	public void sendEndProduct(final ProductHandler out) throws Exception {
+<span class="fc" id="L166">		out.onEndProduct(product.getId());</span>
+<span class="fc" id="L167">	}</span>
+
+
+	/**
+	 * Free any resources associated with this source.
+	 */
+	@Override
+	public void close() {
+<span class="fc" id="L175">		this.product = null;</span>
+<span class="fc" id="L176">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

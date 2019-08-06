@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">ProductBuilder.java</span></div><h1>ProductBuilder.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.util.Config;
+import gov.usgs.util.CryptoUtils;
+import gov.usgs.util.DefaultConfigurable;
+import gov.usgs.util.StreamUtils;
+import gov.usgs.util.StringUtils;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.PrivateKey;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Essentials for building/sending products.
+ *
+ * This is the base class for other builders.
+ *
+ * Supported configurable properties:
+ * &lt;dl&gt;
+ * &lt;dt&gt;senders&lt;/dt&gt;
+ * &lt;dd&gt;A comma delimited list of product senders to use when sending products.&lt;/dd&gt;
+ * &lt;dt&gt;trackerURL&lt;/dt&gt;
+ * &lt;dd&gt;Default tracker URL to assign to products that don't already have one.&lt;/dd&gt;
+ * &lt;dt&gt;privateKeyFile&lt;/dt&gt;
+ * &lt;dd&gt;Path to a private key that can be used to sign products.&lt;/dd&gt;
+ * &lt;/dl&gt;
+ */
+public class ProductBuilder extends DefaultConfigurable {
+
+<span class="fc" id="L39">	private static final Logger LOGGER = Logger.getLogger(ProductBuilder.class</span>
+<span class="fc" id="L40">			.getSimpleName());</span>
+
+	/** Configurable property for senders. */
+	public static final String SENDERS_PROPERTY = &quot;senders&quot;;
+
+	/** Property name used for configuring a tracker url. */
+	public static final String TRACKER_URL_PROPERTY = &quot;trackerURL&quot;;
+
+	/** Private key filename configuration property. */
+	public static final String PRIVATE_KEY_PROPERTY = &quot;privateKeyFile&quot;;
+
+	/** Default tracker url. */
+	public static final URL DEFAULT_TRACKER_URL;
+	static {
+<span class="fc" id="L54">		URL url = null;</span>
+		try {
+<span class="fc" id="L56">			url = new URL(&quot;http://ehppdl1.cr.usgs.gov/tracker/&quot;);</span>
+<span class="nc" id="L57">		} catch (MalformedURLException mue) {</span>
+<span class="nc" id="L58">			LOGGER.severe(&quot;Failed to parse default tracker url.&quot;);</span>
+<span class="nc" id="L59">			System.exit(1);</span>
+<span class="fc" id="L60">		}</span>
+<span class="fc" id="L61">		DEFAULT_TRACKER_URL = url;</span>
+<span class="fc" id="L62">	}</span>
+
+	/** List of senders where built products are sent. */
+<span class="fc" id="L65">	private List&lt;ProductSender&gt; senders = new LinkedList&lt;ProductSender&gt;();</span>
+
+	/** Default trackerURL to set on sent products. */
+	private URL trackerURL;
+
+	/** Key used to sign sent products. */
+	private PrivateKey privateKey;
+
+<span class="fc" id="L73">	public ProductBuilder() {</span>
+<span class="fc" id="L74">		trackerURL = DEFAULT_TRACKER_URL;</span>
+<span class="fc" id="L75">	}</span>
+
+	/**
+	 * Send a product.
+	 *
+	 * If the product doesn't yet have a tracker URL, assigns current tracker
+	 * URL to product. If the product has not yet been signed, and a privateKey
+	 * is configured, signs the product before sending.
+	 *
+	 * @param product
+	 *            the product to send.
+	 * @return map of all exceptions thrown, from Sender to corresponding
+	 *         Exception.
+	 * @throws Exception
+	 *             if an error occurs while signing product.
+	 */
+	public Map&lt;ProductSender, Exception&gt; sendProduct(final Product product)
+			throws Exception {
+
+		// doesn't already have a tracker url
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">		if (product.getTrackerURL() == null) {</span>
+<span class="fc" id="L96">			product.setTrackerURL(trackerURL);</span>
+		}
+
+		// mark which version of client was used to create product
+<span class="fc" id="L100">		product.getProperties().put(ProductClient.PDL_CLIENT_VERSION_PROPERTY,</span>
+				ProductClient.RELEASE_VERSION);
+
+		// doesn't already have a signature.
+<span class="pc bpc" id="L104" title="1 of 4 branches missed.">		if (privateKey != null &amp;&amp; product.getSignature() == null) {</span>
+<span class="fc" id="L105">			product.sign(privateKey);</span>
+		}
+
+		// send tracker update
+<span class="fc" id="L109">		new ProductTracker(product.getTrackerURL()).productCreated(</span>
+<span class="fc" id="L110">				this.getName(), product.getId());</span>
+
+		// send product using all product senders.
+<span class="fc" id="L113">		Map&lt;ProductSender, Exception&gt; errors = new HashMap&lt;ProductSender, Exception&gt;();</span>
+<span class="fc" id="L114">		Iterator&lt;ProductSender&gt; iter = new LinkedList&lt;ProductSender&gt;(senders)</span>
+<span class="fc" id="L115">				.iterator();</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L117">			ProductSender sender = iter.next();</span>
+			try {
+<span class="fc" id="L119">				sender.sendProduct(product);</span>
+<span class="nc" id="L120">			} catch (Exception e) {</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">				if (e instanceof ProductAlreadyInStorageException) {</span>
+					// condense this message...
+<span class="nc" id="L123">					LOGGER.info(&quot;Product already in storage, id=&quot;</span>
+<span class="nc" id="L124">							+ product.getId().toString());</span>
+				} else {
+<span class="nc" id="L126">					LOGGER.log(Level.WARNING, &quot;[&quot; + sender.getName()</span>
+							+ &quot;] error sending product&quot;, e);
+<span class="nc" id="L128">					errors.put(sender, e);</span>
+				}
+<span class="fc" id="L130">			}</span>
+<span class="fc" id="L131">		}</span>
+
+<span class="fc" id="L133">		return errors;</span>
+	}
+
+	/**
+	 * @return list of product senders
+	 */
+	public List&lt;ProductSender&gt; getProductSenders() {
+<span class="fc" id="L140">		return senders;</span>
+	}
+
+	/**
+	 * Add a ProductSender.
+	 *
+	 * @param sender
+	 */
+	public void addProductSender(final ProductSender sender) {
+<span class="fc" id="L149">		senders.add(sender);</span>
+<span class="fc" id="L150">	}</span>
+
+	/**
+	 * Remove a previously added ProductSender.
+	 *
+	 * @param sender
+	 */
+	public void removeProductSender(final ProductSender sender) {
+<span class="nc" id="L158">		senders.remove(sender);</span>
+<span class="nc" id="L159">	}</span>
+
+	public URL getTrackerURL() {
+<span class="nc" id="L162">		return trackerURL;</span>
+	}
+
+	public void setTrackerURL(URL trackerURL) {
+<span class="nc" id="L166">		this.trackerURL = trackerURL;</span>
+<span class="nc" id="L167">	}</span>
+
+	public PrivateKey getPrivateKey() {
+<span class="nc" id="L170">		return privateKey;</span>
+	}
+
+	public void setPrivateKey(PrivateKey privateKey) {
+<span class="fc" id="L174">		this.privateKey = privateKey;</span>
+<span class="fc" id="L175">	}</span>
+
+	@Override
+	public void configure(final Config config) throws Exception {
+<span class="nc" id="L179">		Iterator&lt;String&gt; senderNames = StringUtils.split(</span>
+<span class="nc" id="L180">				config.getProperty(SENDERS_PROPERTY), &quot;,&quot;).iterator();</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">		while (senderNames.hasNext()) {</span>
+<span class="nc" id="L182">			String name = senderNames.next();</span>
+<span class="nc" id="L183">			LOGGER.config(&quot;Loading sender &quot; + name);</span>
+
+<span class="nc" id="L185">			ProductSender sender = (ProductSender) Config.getConfig()</span>
+<span class="nc" id="L186">					.getObject(name);</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">			if (sender == null) {</span>
+<span class="nc" id="L188">				throw new ConfigurationException(&quot;Unable to load sender '&quot;</span>
+						+ name + &quot;', make sure it is properly configured.&quot;);
+			}
+<span class="nc" id="L191">			addProductSender(sender);</span>
+<span class="nc" id="L192">		}</span>
+
+<span class="nc" id="L194">		String url = config.getProperty(TRACKER_URL_PROPERTY);</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">		if (url != null) {</span>
+<span class="nc" id="L196">			trackerURL = new URL(url);</span>
+		}
+<span class="nc" id="L198">		LOGGER.config(&quot;[&quot; + getName() + &quot;] Using tracker URL '&quot;</span>
+<span class="nc" id="L199">				+ trackerURL.toString() + &quot;'&quot;);</span>
+
+<span class="nc" id="L201">		String keyFilename = config.getProperty(PRIVATE_KEY_PROPERTY);</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">		if (keyFilename != null) {</span>
+<span class="nc" id="L203">			LOGGER.config(&quot;[&quot; + getName() + &quot;] Loading private key file '&quot;</span>
+					+ keyFilename + &quot;'&quot;);
+<span class="nc" id="L205">			privateKey = CryptoUtils.readOpenSSHPrivateKey(</span>
+<span class="nc" id="L206">					StreamUtils.readStream(new File(keyFilename)), null);</span>
+		}
+<span class="nc" id="L208">	}</span>
+
+	@Override
+	public void shutdown() throws Exception {
+<span class="nc" id="L212">		Iterator&lt;ProductSender&gt; iter = senders.iterator();</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L214">			iter.next().shutdown();</span>
+		}
+<span class="nc" id="L216">	}</span>
+
+	@Override
+	public void startup() throws Exception {
+<span class="nc" id="L220">		Iterator&lt;ProductSender&gt; iter = senders.iterator();</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L222">			iter.next().startup();</span>
+		}
+<span class="nc" id="L224">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ZipProductSource.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product.io</a> &gt; <span class="el_source">ZipProductSource.java</span></div><h1>ZipProductSource.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.product.io;
+
+import gov.usgs.earthquake.product.InputStreamContent;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+
+import java.io.File;
+import java.util.Date;
+import java.util.Enumeration;
+
+import java.util.zip.ZipFile;
+import java.util.zip.ZipEntry;
+
+/**
+ * Load a product from an InputStream containing ZIP.
+ * 
+ * ZipProductSource reads an input stream containing a product zip file.
+ * 
+ * This zip file's first entry must be a product xml file containing all product
+ * metadata and inline content.
+ */
+public class ZipProductSource implements ProductSource {
+
+	/** The input stream where zip content is read. */
+	private File zip;
+
+	/**
+	 * Construct a new ZipProductSource.
+	 * 
+	 * @param zip
+	 *            the input stream where zip content is read.
+	 */
+<span class="fc" id="L33">	public ZipProductSource(final File zip) {</span>
+<span class="fc" id="L34">		this.zip = zip;</span>
+<span class="fc" id="L35">	}</span>
+
+	/**
+	 * Parse the zip stream and send product to product output.
+	 * 
+	 * @param out
+	 *            ProductOutput that will receive the product.
+	 */
+	public void streamTo(ProductHandler out) throws Exception {
+<span class="fc" id="L44">		ZipFile zis = null;</span>
+
+		try {
+<span class="fc" id="L47">			zis = new ZipFile(this.zip);</span>
+	
+<span class="fc" id="L49">			Enumeration&lt;? extends ZipEntry&gt; entries = zis.entries();</span>
+<span class="fc" id="L50">			ZipEntry entry = entries.nextElement();</span>
+	
+<span class="fc" id="L52">			if (!entry.getName()</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">					.equals(ZipProductHandler.PRODUCT_XML_ZIP_ENTRYNAME)) {</span>
+<span class="nc" id="L54">				throw new Exception(&quot;Unexpected first entry &quot; + entry.getName()</span>
+						+ &quot;, expected &quot;
+						+ ZipProductHandler.PRODUCT_XML_ZIP_ENTRYNAME);
+			}
+	
+<span class="fc" id="L59">			Product product = ObjectProductHandler.getProduct(new XmlProductSource(</span>
+<span class="fc" id="L60">					zis.getInputStream(entry)));</span>
+<span class="fc" id="L61">			ProductId id = product.getId();</span>
+	
+			// send all except signature and end product, until after all
+			// contents
+<span class="fc" id="L65">			new ObjectProductSource(product) {</span>
+				public void sendSignature(final ProductHandler out)
+						throws Exception {
+					// do nothing
+<span class="fc" id="L69">				}</span>
+	
+				public void sendEndProduct(final ProductHandler out)
+						throws Exception {
+					// do nothing
+<span class="fc" id="L74">				}</span>
+<span class="fc" id="L75">			}.streamTo(out);</span>
+	
+			// send other contents
+<span class="fc bfc" id="L78" title="All 2 branches covered.">			while (entries.hasMoreElements()) {</span>
+<span class="fc" id="L79">				entry = entries.nextElement();</span>
+<span class="fc" id="L80">				InputStreamContent content = new InputStreamContent(</span>
+<span class="fc" id="L81">						zis.getInputStream(entry));</span>
+<span class="fc" id="L82">				content.setLength(entry.getSize());</span>
+<span class="fc" id="L83">				content.setLastModified(new Date(entry.getTime()));</span>
+<span class="fc" id="L84">				content.setContentType(entry.getComment());</span>
+<span class="fc" id="L85">				out.onContent(id, entry.getName(), content);</span>
+<span class="fc" id="L86">			}</span>
+	
+			// finish sending product
+<span class="fc" id="L89">			out.onSignature(id, product.getSignature());</span>
+<span class="fc" id="L90">			out.onEndProduct(id);</span>
+		} finally {
+			try {
+<span class="fc" id="L93">				zis.close();</span>
+<span class="nc" id="L94">			} catch (Exception ignore) {</span>
+<span class="fc" id="L95">			}</span>
+		}
+<span class="fc" id="L97">	}</span>
+
+	/**
+	 * Free any resources associated with this handler.
+	 */
+	@Override
+	public void close() {
+<span class="fc" id="L104">		this.zip = null;</span>
+<span class="fc" id="L105">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DirectoryPoller.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util</a> &gt; <span class="el_source">DirectoryPoller.java</span></div><h1>DirectoryPoller.java</h1><pre class="source lang-java linenums">/*
+ * DirectoryPoller
+ *
+ * $Id$
+ * $HeadURL$
+ */
+package gov.usgs.util;
+
+import java.io.File;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Timer;
+import java.util.TimerTask;
+
+/**
+ * Monitor a directory for files, notifying FileListenerInterfaces.
+ * 
+ * Implementers of the FileListenerInterface should process files before
+ * returning, because these files may move or disappear.
+ */
+public class DirectoryPoller {
+
+	/** Timer schedules polling frequency. */
+<span class="nc" id="L26">	private Timer timer = new Timer();</span>
+
+	/** Directory to watch. */
+	private final File pollDirectory;
+
+	/** Directory to store files in. */
+	private final File storageDirectory;
+
+	/** Notification of files. */
+<span class="nc" id="L35">	private List&lt;FileListenerInterface&gt; listeners = new LinkedList&lt;FileListenerInterface&gt;();</span>
+
+	/**
+	 * Create a DirectoryPoller.
+	 * 
+	 * @param pollDirectory
+	 *            directory that is polled for new files.
+	 * @param storageDirectory
+	 *            directory where polled files are moved. When null, polled
+	 *            files are deleted after calling listeners.
+	 */
+<span class="nc" id="L46">	public DirectoryPoller(final File pollDirectory, final File storageDirectory) {</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">		if (!pollDirectory.exists()) {</span>
+<span class="nc" id="L48">			pollDirectory.mkdirs();</span>
+		}
+<span class="nc" id="L50">		this.pollDirectory = pollDirectory;</span>
+
+<span class="nc bnc" id="L52" title="All 4 branches missed.">		if (storageDirectory != null &amp;&amp; !storageDirectory.exists()) {</span>
+<span class="nc" id="L53">			storageDirectory.mkdirs();</span>
+		}
+<span class="nc" id="L55">		this.storageDirectory = storageDirectory;</span>
+<span class="nc" id="L56">	}</span>
+
+	public File getPollDirectory() {
+<span class="nc" id="L59">		return this.pollDirectory;</span>
+	}
+
+	public File getStorageDirectory() {
+<span class="nc" id="L63">		return this.storageDirectory;</span>
+	}
+
+	public void addFileListener(final FileListenerInterface listener) {
+<span class="nc" id="L67">		listeners.add(listener);</span>
+<span class="nc" id="L68">	}</span>
+
+	public void removeFileListener(final FileListenerInterface listener) {
+<span class="nc" id="L71">		listeners.remove(listener);</span>
+<span class="nc" id="L72">	}</span>
+
+	/**
+	 * Start polling in a background thread.
+	 * 
+	 * Any previously scheduled polling is stopped before starting at this
+	 * frequency. This schedules using fixed-delay (time between complete polls)
+	 * as opposed to fixed-rate (how often to start polling).
+	 * 
+	 * @param frequencyInMilliseconds
+	 *            how often to poll.
+	 */
+	public void start(final long frequencyInMilliseconds) {
+<span class="nc bnc" id="L85" title="All 2 branches missed.">		if (timer != null) {</span>
+			// already started
+<span class="nc" id="L87">			stop();</span>
+		}
+
+<span class="nc" id="L90">		timer = new Timer();</span>
+<span class="nc" id="L91">		timer.schedule(new PollTask(), 0L, frequencyInMilliseconds);</span>
+<span class="nc" id="L92">	}</span>
+
+	/**
+	 * Stop any currently scheduled polling.
+	 */
+	public void stop() {
+<span class="nc bnc" id="L98" title="All 2 branches missed.">		if (timer != null) {</span>
+<span class="nc" id="L99">			timer.cancel();</span>
+<span class="nc" id="L100">			timer = null;</span>
+		}
+<span class="nc" id="L102">	}</span>
+
+	/**
+	 * The Polling Task. Notifies all listeners then either deletes or moves the
+	 * file to storage.
+	 * 
+	 * @author jmfee
+	 * 
+	 */
+<span class="nc" id="L111">	protected class PollTask extends TimerTask {</span>
+		public void run() {
+			// get files from poll directory
+<span class="nc" id="L114">			File[] files = pollDirectory.listFiles();</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">			for (File file : files) {</span>
+				// send file to listeners
+<span class="nc" id="L117">				notifyListeners(file);</span>
+				// move file to storage
+<span class="nc" id="L119">				moveToStorage(file);</span>
+			}
+<span class="nc" id="L121">		}</span>
+	}
+
+	/**
+	 * Notify all listeners that files exist and need to be processed.
+	 * 
+	 * @param file
+	 */
+	public void notifyListeners(final File file) {
+<span class="nc" id="L130">		Iterator&lt;FileListenerInterface&gt; iter = new LinkedList&lt;FileListenerInterface&gt;(</span>
+<span class="nc" id="L131">				listeners).iterator();</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+			try {
+<span class="nc" id="L134">				iter.next().onFile(file);</span>
+<span class="nc" id="L135">			} catch (Exception e) {</span>
+				// keep notifying other listeners
+<span class="nc" id="L137">			}</span>
+		}
+<span class="nc" id="L139">	}</span>
+
+	/**
+	 * Move a file from polldir to storage directory. Attempts to move file into
+	 * storage directory. The file is not moved if no storage directory was
+	 * specified, or if the file no longer exists.
+	 * 
+	 * @param file
+	 *            file to move.
+	 */
+	private void moveToStorage(final File file) {
+<span class="nc bnc" id="L150" title="All 2 branches missed.">		if (storageDirectory == null) {</span>
+			// nowhere to move, just delete
+<span class="nc" id="L152">			file.delete();</span>
+<span class="nc" id="L153">			return;</span>
+		}
+
+<span class="nc bnc" id="L156" title="All 2 branches missed.">		if (!file.exists()) {</span>
+			// was already removed, done
+<span class="nc" id="L158">			return;</span>
+		}
+
+		// build a filename that doesn't exist
+<span class="nc" id="L162">		String fileName = file.getName();</span>
+<span class="nc" id="L163">		File storageFile = new File(storageDirectory, fileName);</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">		if (storageFile.exists()) {</span>
+<span class="nc" id="L165">			fileName = new Date().getTime() + &quot;_&quot; + fileName;</span>
+<span class="nc" id="L166">			storageFile = new File(storageDirectory, fileName);</span>
+		}
+		// rename file
+<span class="nc" id="L169">		file.renameTo(storageFile);</span>
+<span class="nc" id="L170">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

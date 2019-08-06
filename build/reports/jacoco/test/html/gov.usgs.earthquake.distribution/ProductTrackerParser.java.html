@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductTrackerParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">ProductTrackerParser.java</span></div><h1>ProductTrackerParser.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.ProductId;
+
+import gov.usgs.util.SAXAdapter;
+import gov.usgs.util.XmlUtils;
+
+import java.net.InetAddress;
+import java.net.URL;
+
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
+/**
+ * Parser for ProductTracker responses.
+ */
+public class ProductTrackerParser extends SAXAdapter {
+
+	/** The tracker that generated the list being parsed. */
+	private URL trackerURL;
+
+	/** A list of parsed updates. */
+<span class="nc" id="L27">	private List&lt;ProductTrackerUpdate&gt; updates = new LinkedList&lt;ProductTrackerUpdate&gt;();</span>
+
+	/** The current update being parsed. */
+<span class="nc" id="L30">	private ProductTrackerUpdate update = null;</span>
+
+	/** Create a new TrackerUpdateParser. */
+<span class="nc" id="L33">	public ProductTrackerParser(final URL trackerURL) {</span>
+<span class="nc" id="L34">		this.trackerURL = trackerURL;</span>
+<span class="nc" id="L35">	}</span>
+
+	/** Get the parsed updates. */
+	public List&lt;ProductTrackerUpdate&gt; getUpdates() {
+<span class="nc" id="L39">		return updates;</span>
+	}
+
+	/**
+	 * SAXAdapter start element handler.
+	 * 
+	 * @param uri
+	 *            element uri.
+	 * @param localName
+	 *            element localName.
+	 * @param qName
+	 *            element qName.
+	 * @param attributes
+	 *            element attributes.
+	 * @throws SAXException
+	 *             if there is an error.
+	 */
+	public void onStartElement(final String uri, final String localName,
+			final String qName, final Attributes attributes)
+			throws SAXException {
+<span class="nc bnc" id="L59" title="All 2 branches missed.">		if (localName.equals(&quot;update&quot;)) {</span>
+			try {
+<span class="nc" id="L61">				Long sequenceNumber = Long.valueOf(XmlUtils.getAttribute(</span>
+						attributes, uri, &quot;sequenceNumber&quot;));
+<span class="nc" id="L63">				Date created = XmlUtils.getDate(XmlUtils.getAttribute(</span>
+						attributes, uri, &quot;created&quot;));
+<span class="nc" id="L65">				InetAddress host = InetAddress.getByName(XmlUtils.getAttribute(</span>
+						attributes, uri, &quot;host&quot;));
+<span class="nc" id="L67">				ProductId id = new ProductId(XmlUtils.getAttribute(attributes,</span>
+<span class="nc" id="L68">						uri, &quot;source&quot;), XmlUtils.getAttribute(attributes,</span>
+<span class="nc" id="L69">								uri, &quot;type&quot;), XmlUtils.getAttribute(attributes, uri,</span>
+<span class="nc" id="L70">						&quot;code&quot;), XmlUtils.getDate(XmlUtils.getAttribute(</span>
+						attributes, uri, &quot;updateTime&quot;)));
+<span class="nc" id="L72">				String className = XmlUtils.getAttribute(attributes, uri,</span>
+						&quot;className&quot;);
+<span class="nc" id="L74">				update = new ProductTrackerUpdate(trackerURL, sequenceNumber,</span>
+						created, host, id, className, null);
+<span class="nc" id="L76">			} catch (Exception e) {</span>
+<span class="nc" id="L77">				throw new SAXException(e);</span>
+<span class="nc" id="L78">			}</span>
+		}
+<span class="nc" id="L80">	}</span>
+
+	/**
+	 * SAXAdapter end element handler. Content only includes characters that
+	 * were read from this element, NOT any characters from child elements.
+	 * 
+	 * @param uri
+	 *            element uri.
+	 * @param localName
+	 *            element localName.
+	 * @param qName
+	 *            element qName.
+	 * @param content
+	 *            element content.
+	 * @throws SAXException
+	 *             if onEndElement throws a SAXException.
+	 */
+	public void onEndElement(final String uri, final String localName,
+			final String qName, final String content) throws SAXException {
+		// message is element content
+<span class="nc" id="L100">		update.setMessage(content);</span>
+		// add update to list of parsed updates
+<span class="nc" id="L102">		updates.add(update);</span>
+		// reset update to null
+<span class="nc" id="L104">		update = null;</span>
+<span class="nc" id="L105">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
