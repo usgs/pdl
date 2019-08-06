@@ -129,6 +129,8 @@ public class FileProductStorage extends DefaultConfigurable implements
 	/** Locks used to make storage operations atomic. */
 	private ObjectLock<ProductId> storageLocks = new ObjectLock<ProductId>();
 
+	private SignatureVerifier verifier = new SignatureVerifier();
+
 	/**
 	 * @return the storageLocks
 	 */
@@ -146,8 +148,6 @@ public class FileProductStorage extends DefaultConfigurable implements
 	private ProductKeyChain keychain;
 
 	private Map<StorageListener, ExecutorService> listeners = new HashMap<StorageListener, ExecutorService>();
-
-	private SignatureVerifier verifier = new SignatureVerifier();
 
 	/**
 	 * A list of product storages used only for retrieving products, never for
