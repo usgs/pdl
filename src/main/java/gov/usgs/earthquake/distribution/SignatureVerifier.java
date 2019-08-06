@@ -1,5 +1,7 @@
 package gov.usgs.earthquake.distribution;
 
+import java.io.File;
+import java.io.InputStream;
 import java.security.PublicKey;
 import java.util.logging.Logger;
 
@@ -7,6 +9,7 @@ import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.util.Config;
 import gov.usgs.util.DefaultConfigurable;
+import gov.usgs.util.StreamUtils;
 
 public class SignatureVerifier extends DefaultConfigurable {
 
@@ -19,12 +22,16 @@ public class SignatureVerifier extends DefaultConfigurable {
 	/** Don't verify signatures (Default). */
 	public static final String DEFAULT_VERIFY_SIGNATURE = "off";
 	/** Test signatures, but don't reject invalid. */
+
 	public static final String TEST_VERIFY_SIGNATURE = "test";
 	/** Allow products that do not have a configured key. */
 	public static final String ONLY_VERIFY_KNOWN = "allowUnknownSigner";
 
 	/** Property for a list of keys. */
 	public static final String KEYCHAIN_PROPERTY_NAME = "keychain";
+
+	/** Property for a file of keys. */
+	public static final String KEYCHAIN_FILE_PROPERTY_NAME = "keychainFile";
 
 	/** Whether or not to reject invalid signatures. */
 	private boolean rejectInvalidSignatures = false;
@@ -52,7 +59,6 @@ public class SignatureVerifier extends DefaultConfigurable {
 				testSignatures = true;
 				LOGGER.config("[" + getName() + "] test message signatures");
 			}
-
 			// not "off"
 			else if (!verifySignatures.equals(DEFAULT_VERIFY_SIGNATURE)) {
 				rejectInvalidSignatures = true;
@@ -63,11 +69,25 @@ public class SignatureVerifier extends DefaultConfigurable {
 			if (keyNames != null) {
 				LOGGER.config("[" + getName() + "] using product keys "
 						+ keyNames);
+				keychain = new ProductKeyChain(keyNames, Config.getConfig());
 			} else {
-				LOGGER.warning("[" + getName() + "] no product keys configured");
+				String keychainFileName = config.getProperty(KEYCHAIN_FILE_PROPERTY_NAME);
+				if (keychainFileName != null) {
+					Config keychainConfig = new Config();
+					InputStream keychainFileInputStream = StreamUtils.getInputStream(new File(keychainFileName));
+					try {
+						keychainConfig.load(keychainFileInputStream);
+					} finally {
+						StreamUtils.closeStream(keychainFileInputStream);
+					}
+					keyNames = keychainConfig.getProperty(KEYCHAIN_PROPERTY_NAME);
+					keychain = new ProductKeyChain(keyNames,keychainConfig);
+				} else {
+					LOGGER.warning("[" + getName() + "] no product keys configured");
+				}
 			}
 
-			keychain = new ProductKeyChain(keyNames, Config.getConfig());
+
 		}
 
 	}
