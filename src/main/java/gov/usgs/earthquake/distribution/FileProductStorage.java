@@ -175,6 +175,8 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 */
 	public static final int DIRECTORY_NAME_LENGTH = 3;
 
+	private SignatureVerifier verifier = new SignatureVerifier();
+
 	/**
 	 * Create a new FileProductStorage using the default storage path.
 	 */
@@ -241,6 +243,10 @@ public class FileProductStorage extends DefaultConfigurable implements
 					keychain = new ProductKeyChain();
 				}
 			}
+
+			verifier.setTestSignatures(testSignatures);
+			verifier.setRejectInvalidSignatures(rejectInvalidSignatures);
+			verifier.setKeychain(keychain);
 		}
 
 		// Set up our configured listeners
@@ -696,30 +702,8 @@ public class FileProductStorage extends DefaultConfigurable implements
 			LOGGER.finer("[" + getName() + "] product stored id=" + id
 					+ ", status=" + output.getStatus());
 
-			if (testSignatures || rejectInvalidSignatures) {
-				Product product = getProduct(id);
+			verifier.verifySignature(getProduct(id));
 
-				boolean verified = false;
-				if (keychain != null) {
-					PublicKey[] candidateKeys = keychain.getProductKeys(id);
-					LOGGER.finer("[" + getName()
-							+ "] number of candidate keys="
-							+ candidateKeys.length);
-					verified = product.verifySignature(candidateKeys);
-				} else {
-					LOGGER.warning("[" + getName()
-							+ "] missing Signature Keychain");
-				}
-
-				LOGGER.fine("[" + getName() + "] signature verified="
-						+ verified + ", id=" + product.getId());
-
-				if (!verified && rejectInvalidSignatures) {
-					removeProduct(id);
-					throw new InvalidSignatureException("[" + getName()
-							+ "] bad signature for id=" + id);
-				}
-			}
 		} catch (Exception e) {
 			if (!(e instanceof ProductAlreadyInStorageException)
 					&& !(e.getCause() instanceof ProductAlreadyInStorageException)) {
@@ -938,6 +922,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 */
 	public void setRejectInvalidSignatures(boolean rejectInvalidSignatures) {
 		this.rejectInvalidSignatures = rejectInvalidSignatures;
+		verifier.setRejectInvalidSignatures(rejectInvalidSignatures);
 	}
 
 	/**
@@ -953,6 +938,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 */
 	public void setTestSignatures(boolean testSignatures) {
 		this.testSignatures = testSignatures;
+		verifier.setTestSignatures(testSignatures);
 	}
 
 	/**
@@ -968,6 +954,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 */
 	public void setKeychain(ProductKeyChain keychain) {
 		this.keychain = keychain;
+		verifier.setKeychain(keychain);
 	}
 
 	/**

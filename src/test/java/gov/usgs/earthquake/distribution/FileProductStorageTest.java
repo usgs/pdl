@@ -211,6 +211,7 @@ public class FileProductStorageTest {
 				ProductTest.SIGNATURE_KEY_PAIR.getPublic(), null, null);
 		// key.getSources().add(product1.getId().getSource());
 		// key.getTypes().add(product1.getId().getType());
+		key.setName("testKey");
 		chain.getKeychain().add(key);
 
 		storage.setKeychain(chain);

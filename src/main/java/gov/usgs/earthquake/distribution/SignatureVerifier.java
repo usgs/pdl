@@ -144,7 +144,7 @@ public class SignatureVerifier extends DefaultConfigurable {
 			}
 
 
-			LOGGER.fine("[" + getName() + "] signature verified=" + ((verifiedKey != null) ? "true, key=" + verifiedKey.getName() : "false")
+			LOGGER.fine("[" + getName() + "] signature verified=" + ((verifiedKey != null) ? "true, keyName=" + verifiedKey.getName() : "false")
 					+ ", id=" + product.getId());
 
 			if (allowUnknownSigner && candidateKeys.length == 0) {
