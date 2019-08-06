@@ -117,14 +117,6 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 			final File file, final Map<String, Content> attachContent)
 			throws Exception {
 
-		// perform null byte bug check (bug JDK-8222187, https://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8222187) unless told not to
-		if (doBufferFix && file.length() % 4096 == 1) {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(file,true));
-			writer.write(' ');
-			writer.close();
-		}
-
-
 		Map<ProductId, Map<ProductSender, Exception>> sendProductResults = new HashMap<ProductId, Map<ProductSender, Exception>>();
 
 		List<Product> products = productCreator.getProducts(file);
@@ -253,7 +245,7 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 			if (parserObj instanceof ProductCreator) {
 				productCreator = (ProductCreator) parserObj;
 			} else if (parserObj instanceof FileToQuakemlConverter) {
-				QuakemlProductCreator quakemlCreator = new QuakemlProductCreator();
+				QuakemlProductCreator quakemlCreator = new QuakemlProductCreator(doBufferFix);
 				quakemlCreator.setConverter((FileToQuakemlConverter) parserObj);
 				productCreator = quakemlCreator;
 			} else {

@@ -89,6 +89,16 @@ public class QuakemlProductCreator implements ProductCreator {
 	private Converter formatConverter = new Converter();
 	private boolean validate = false;
 
+	private boolean padForBase64Bug = false;
+
+	public QuakemlProductCreator() {
+		super();
+	}
+
+	public QuakemlProductCreator(boolean padForBase64Bug) {
+		this.padForBase64Bug = padForBase64Bug;
+	}
+
 	public List<Product> getQuakemlProducts(final Quakeml message)
 			throws Exception {
 		return getQuakemlProducts(message, null);
@@ -120,7 +130,9 @@ public class QuakemlProductCreator implements ProductCreator {
 		// serialize for embedding in product
 		quakemlXML = rawQuakeml;
 		if (quakemlXML == null) {
-			quakemlXML = new Converter().getString(message, validate);
+			quakemlXML = convertQuakemlToString(message);
+		} else {
+			quakemlXML = fixRawQuakeml(quakemlXML);
 		}
 
 		EventParameters eventParameters = message.getEventParameters();
@@ -496,8 +508,7 @@ public class QuakemlProductCreator implements ProductCreator {
 
 					mechProduct = getFocalMechanismProduct(lightweightQuakeml,
 							lightweightEvent, lightweightMech,
-							formatConverter.getString(lightweightQuakeml,
-									validate));
+							convertQuakemlToString(lightweightQuakeml));
 				} else {
 					// otherwise, fall back to original
 					mechProduct = getFocalMechanismProduct(message, event,
@@ -520,8 +531,7 @@ public class QuakemlProductCreator implements ProductCreator {
 					.getLightweightOrigin(message);
 
 			// serialize xml without phase data
-			ByteContent lightweightContent = new ByteContent(formatConverter
-					.getString(lightweightQuakeml, validate).getBytes());
+			ByteContent lightweightContent = new ByteContent(convertQuakemlToString(lightweightQuakeml).getBytes());
 			lightweightContent.setContentType(XML_CONTENT_TYPE);
 			lightweightContent.setLastModified(updateTime);
 			lightweightOrigin.getContents().put(QUAKEML_CONTENT_PATH,
@@ -878,6 +888,33 @@ public class QuakemlProductCreator implements ProductCreator {
 
 	public boolean isSendMechanismWhenPhasesExist() {
 		return sendMechanismWhenPhasesExist;
+	}
+
+	/**
+	 * Utility function that converts quakeml to a string
+	 *
+	 * @param message
+	 * 						The quakeml to be converted
+	 *
+	 * @return raw string
+	 * @throws Exception if quakeml doesn't validate
+	 */
+	private String convertQuakemlToString(Quakeml message) throws Exception{
+		return formatConverter.getString(message,validate);
+	}
+
+	/**
+	 * Fixes base 64 bug: https://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8222187
+	 *
+	 * @param rawMessage
+	 * 							the message to edit
+	 * @return the fixed string
+	 */
+	public String fixRawQuakeml(String rawMessage) {
+		if (padForBase64Bug && rawMessage.getBytes().length % 4096 == 1) {
+			rawMessage += ' ';
+		}
+		return rawMessage;
 	}
 
 	/**
