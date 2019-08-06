@@ -3,7 +3,6 @@
  */
 package gov.usgs.earthquake.product;
 
-import gov.usgs.earthquake.distribution.ProductKey;
 import gov.usgs.util.CryptoUtils;
 import gov.usgs.util.XmlUtils;
 

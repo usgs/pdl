@@ -147,6 +147,8 @@ public class FileProductStorage extends DefaultConfigurable implements
 
 	private Map<StorageListener, ExecutorService> listeners = new HashMap<StorageListener, ExecutorService>();
 
+	private SignatureVerifier verifier = new SignatureVerifier();
+
 	/**
 	 * A list of product storages used only for retrieving products, never for
 	 * storing. Assists with migration between formats and other settings.
@@ -174,8 +176,6 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 * subdirectory limit.
 	 */
 	public static final int DIRECTORY_NAME_LENGTH = 3;
-
-	private SignatureVerifier verifier = new SignatureVerifier();
 
 	/**
 	 * Create a new FileProductStorage using the default storage path.
