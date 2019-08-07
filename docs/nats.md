@@ -20,9 +20,9 @@ This stops the instance, but doesn't remove it.
 `docker run -p 4222:4222 -p 8222:8222 -d nats-streaming`
 
 ### Stopping
-`docker stop <NAME>
+`docker stop <NAME>`
 
 
 ## Notes:
-- Clients run (by default) on port 4222
+- Server listens for client connections on port 4222
 - HTTP management points to port 8222
