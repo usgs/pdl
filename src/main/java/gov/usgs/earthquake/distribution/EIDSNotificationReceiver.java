@@ -55,6 +55,9 @@ public class EIDSNotificationReceiver extends DefaultNotificationReceiver
 	/** Property name for eids client log level. */
 	public static final String EIDS_DEBUG = "eidsDebug";
 
+	/** Property name for eids max server event age. */
+	public static final String EIDS_MAX_EVENT_AGE = "maxServerEventAgeDays";
+
 	/** EIDSClient that receives notifications. */
 	private EIDSClient client;
 
@@ -127,6 +130,12 @@ public class EIDSNotificationReceiver extends DefaultNotificationReceiver
 			LOGGER.config("[" + getName() + "] EIDS debug mode = '" + debug
 					+ "'");
 			client.setDebug(Boolean.parseBoolean(debug));
+		}
+
+		String maxEventAgeString = config.getProperty(EIDS_MAX_EVENT_AGE);
+		if (maxEventAgeString != null) {
+			LOGGER.config("[" + getName() + "] EIDS max event age is " + maxEventAgeString + " days");
+			client.setMaxServerEventAgeDays(Double.parseDouble(maxEventAgeString));
 		}
 	}
 
