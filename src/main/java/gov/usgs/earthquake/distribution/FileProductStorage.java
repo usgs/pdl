@@ -18,14 +18,11 @@ import gov.usgs.util.Config;
 import gov.usgs.util.DefaultConfigurable;
 import gov.usgs.util.FileUtils;
 import gov.usgs.util.ObjectLock;
-import gov.usgs.util.StreamUtils;
 import gov.usgs.util.StringUtils;
 
 import java.io.File;
-import java.io.InputStream;
 import java.net.URL;
 import java.security.MessageDigest;
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,36 +35,36 @@ import java.util.logging.Logger;
 
 /**
  * Store products in the file system.
- * 
+ *
  * This implementation of ProductStorage extracts products into directories.
- * 
+ *
  * The FileProductStorage implements the Configurable interface and can use the
  * following configuration parameters:
- * 
+ *
  * <dl>
  * <dt>directory</dt>
  * <dd>(Optional, default = storage) The base directory where products are
  * stored. Each product is stored in a separate directory within this directory.
  * </dd>
- * 
+ *
  * <dt>verifySignatures</dt>
  * <dd>(Optional, default = off) Whether or not to verify signatures:
  * <dl>
  * <dt>off</dt>
  * <dd>no verification</dd>
- * 
+ *
  * <dt>test</dt>
  * <dd>test but accept invalid signatures</dd>
- * 
+ *
  * <dt>anything else</dt>
  * <dd>reject invalid signatures.</dd>
  * </dl>
  * </dd>
- * 
+ *
  * <dt>keychain</dt>
  * <dd>(Optional) List of key section names to load for signature verification.</dd>
  * </dl>
- * 
+ *
  * An attempt is made to make storage operations atomic by using read and write
  * locks. While a write operation (store or remove) is in progress, read
  * operations will block. It is possible for a remove operation to occur between
@@ -75,10 +72,10 @@ import java.util.logging.Logger;
  * loaded from a file. Users who are concerned about this should use the
  * getInMemoryProduct() method, which holds a read lock until all product files
  * are read.
- * 
+ *
  * To override the directory structure or format, override one or more of the
  * following methods:
- * 
+ *
  * <pre>
  * String getProductPath(ProductId)
  * ProductSource getProductSourceFormat(File)
@@ -164,7 +161,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 
 	/**
 	 * Create a new FileProductStorage.
-	 * 
+	 *
 	 * @param baseDirectory
 	 *            the base directory for all products being stored.
 	 */
@@ -174,7 +171,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 
 	/**
 	 * Configure this object.
-	 * 
+	 *
 	 * Expects a key named "directory".
 	 */
 	public void configure(Config config) throws Exception {
@@ -259,10 +256,10 @@ public class FileProductStorage extends DefaultConfigurable implements
 
 	/**
 	 * A method for subclasses to override the storage path.
-	 * 
+	 *
 	 * The returned path is appended to the base directory when storing and
 	 * retrieving products.
-	 * 
+	 *
 	 * @param id
 	 *            the product id to convert.
 	 * @return the directory used to store id.
@@ -315,7 +312,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 * Convert an array of bytes into a hex string. The string will always be
 	 * twice as long as the input byte array, because bytes < 0x10 are zero
 	 * padded.
-	 * 
+	 *
 	 * @param bytes
 	 *            byte array to convert to hex.
 	 * @return hex string equivalent of input byte array.
@@ -347,10 +344,10 @@ public class FileProductStorage extends DefaultConfigurable implements
 
 	/**
 	 * A method for subclasses to override the storage format.
-	 * 
+	 *
 	 * When overriding this method, the method getProductSourceFormat should
 	 * also be overridden.
-	 * 
+	 *
 	 * @param file
 	 *            a file that should be converted into a ProductHandler.
 	 * @return the ProductHandler.
@@ -362,10 +359,10 @@ public class FileProductStorage extends DefaultConfigurable implements
 
 	/**
 	 * A method for subclasses to override the storage format.
-	 * 
+	 *
 	 * When overriding this method, the method getProductHandlerFormat should
 	 * also be overridden.
-	 * 
+	 *
 	 * @param file
 	 *            a file that should be converted into a ProductSource.
 	 * @return the ProductSource.
@@ -377,7 +374,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 
 	/**
 	 * Get the file or directory used to store a specific product.
-	 * 
+	 *
 	 * @param id
 	 *            which product.
 	 * @return a file or directory where the product would be stored.
@@ -393,10 +390,10 @@ public class FileProductStorage extends DefaultConfigurable implements
 
 	/**
 	 * Get a product from storage.
-	 * 
+	 *
 	 * Calls the getProductSource method, and uses ObjectProductHandler to
 	 * convert the ProductSource into a Product.
-	 * 
+	 *
 	 * @param id
 	 *            the product to retrieve.
 	 * @return the product, or null if not in this storage.
@@ -412,9 +409,9 @@ public class FileProductStorage extends DefaultConfigurable implements
 
 	/**
 	 * Get a product from storage, loading all file contents into memory.
-	 * 
+	 *
 	 * This method may cause memory problems if product contents are large.
-	 * 
+	 *
 	 * @param id
 	 *            the product to retrieve.
 	 * @return the loaded product.
@@ -449,7 +446,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 
 	/**
 	 * Get a ProductSource from storage.
-	 * 
+	 *
 	 * @param id
 	 *            the product to retrieve.
 	 * @return a ProductSource for the product, or null if not in this storage.
@@ -497,7 +494,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 
 	/**
 	 * Check whether a product exists in storage.
-	 * 
+	 *
 	 * @param id
 	 *            the product to check.
 	 * @return true if the product exists, false otherwise.
@@ -560,7 +557,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 
 	/**
 	 * Remove a product from storage.
-	 * 
+	 *
 	 * @param id
 	 *            product to remove.
 	 */
@@ -608,9 +605,9 @@ public class FileProductStorage extends DefaultConfigurable implements
 
 	/**
 	 * Store a product in storage.
-	 * 
+	 *
 	 * Same as storeProductSource(new ObjectProductSource(product)).
-	 * 
+	 *
 	 * @param product
 	 *            the product to store.
 	 * @return the id of the stored product.
@@ -621,10 +618,10 @@ public class FileProductStorage extends DefaultConfigurable implements
 
 	/**
 	 * Store a ProductSource to storage.
-	 * 
+	 *
 	 * If any exceptions occur while storing a product (other than the product
 	 * already existing in storage) the incompletely stored product is removed.
-	 * 
+	 *
 	 * @param source
 	 *            the ProductSource to store.
 	 * @return the id of the stored product.
@@ -711,7 +708,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 
 	/**
 	 * Used when storing products.
-	 * 
+	 *
 	 * When onBeginProduct is called with the ProductId being stored, a
 	 * DirectoryProductOutput is created which manages storage.
 	 */
