@@ -2,7 +2,6 @@ package gov.usgs.earthquake.distribution;
 
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,7 +9,6 @@ import org.junit.Test;
 import java.io.File;
 import java.net.URL;
 import java.util.Date;
-import java.util.logging.Logger;
 
 public class DefaultNotificationSenderTest {
 

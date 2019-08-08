@@ -11,7 +11,7 @@ docker version > /dev/null 2>&1 || (echo >&2 "Docker isn't running. Exiting."; e
 
 function start {
 	echo "Starting nats streaming server"
-	docker start nats-streaming-dev 2>/dev/null || docker run -p 4222:4222 -p 8222:8222 -v nats-store --name nats-streaming-dev -d nats-streaming
+	docker start nats-streaming-dev 2>/dev/null || docker run -p 4222:4222 -p 8222:8222 --name nats-streaming-dev -d nats-streaming
 }
 function stop {
 	echo "Stopping nats streaming server"
