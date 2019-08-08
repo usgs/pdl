@@ -3,6 +3,7 @@ package gov.usgs.earthquake.distribution;
 import java.io.File;
 import java.io.InputStream;
 import java.security.PublicKey;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import gov.usgs.earthquake.product.Product;
@@ -74,11 +75,10 @@ public class SignatureVerifier extends DefaultConfigurable {
 				String keychainFileName = config.getProperty(KEYCHAIN_FILE_PROPERTY_NAME);
 				if (keychainFileName != null) {
 					Config keychainConfig = new Config();
-					InputStream keychainFileInputStream = StreamUtils.getInputStream(new File(keychainFileName));
-					try {
-						keychainConfig.load(keychainFileInputStream);
-					} finally {
-						StreamUtils.closeStream(keychainFileInputStream);
+
+					try (InputStream in = StreamUtils.getInputStream(
+							new File(keychainFileName))) {
+						keychainConfig.load(in);
 					}
 					keyNames = keychainConfig.getProperty(KEYCHAIN_PROPERTY_NAME);
 					keychain = new ProductKeyChain(keyNames,keychainConfig);
@@ -86,10 +86,7 @@ public class SignatureVerifier extends DefaultConfigurable {
 					LOGGER.warning("[" + getName() + "] no product keys configured");
 				}
 			}
-
-
 		}
-
 	}
 
 	public boolean isRejectInvalidSignatures() {
@@ -126,7 +123,7 @@ public class SignatureVerifier extends DefaultConfigurable {
 
 	/**
 	 * Attempt to verify a products signature.
-	 * 
+	 *
 	 * @param product
 	 *            product to verify.
 	 * @return true if the signature is from a key in the keychain.
@@ -137,7 +134,8 @@ public class SignatureVerifier extends DefaultConfigurable {
 	 * @throws Exception
 	 */
 	public boolean verifySignature(final Product product) throws Exception {
-		ProductKey verifiedKey = null;
+		boolean verified = false;
+		String verifiedKeyName = null;
 
 		if (testSignatures || rejectInvalidSignatures) {
 			ProductId id = product.getId();
@@ -148,14 +146,16 @@ public class SignatureVerifier extends DefaultConfigurable {
 				LOGGER.finer("[" + getName() + "] number of candidate keys="
 						+ candidateKeys.length);
 				if (candidateKeys.length > 0) {
-					PublicKey tmp = product.verifySignatureKey(candidateKeys);
-					if (tmp != null) {
-						for (ProductKey productKey : keychain.getKeychain()) {
-							if (tmp.equals(productKey.getKey())) {
-								verifiedKey = productKey;
-								LOGGER.info("[" + getName() + "] has verified key " + verifiedKey.getName());
-								break;
-							}
+					PublicKey publicKey = product.verifySignatureKey(candidateKeys);
+					if (publicKey != null) {
+						verified = true;
+						// find key that verified
+						Optional<ProductKey> verifiedKey = keychain.getKeychain()
+								.stream().filter(key -> {
+									return publicKey.equals(key.getKey());
+								}).findAny();
+						if (verifiedKey.isPresent()) {
+							verifiedKeyName = verifiedKey.get().getName();
 						}
 					}
 				}
@@ -163,8 +163,8 @@ public class SignatureVerifier extends DefaultConfigurable {
 				LOGGER.warning("[" + getName() + "] missing Signature Keychain");
 			}
 
-
-			LOGGER.fine("[" + getName() + "] signature verified=" + ((verifiedKey != null) ? "true, keyName=" + verifiedKey.getName() : "false")
+			LOGGER.fine("[" + getName() + "] signature verified=" + verified
+					+ (verified ? " (key=" + verifiedKeyName + ")" : "")
 					+ ", id=" + product.getId());
 
 			if (allowUnknownSigner && candidateKeys.length == 0) {
@@ -173,13 +173,13 @@ public class SignatureVerifier extends DefaultConfigurable {
 					return false;
 			}
 
-			if (verifiedKey == null && rejectInvalidSignatures) {
-					throw new InvalidSignatureException("[" + getName()
-							+ "] bad signature for id=" + id);
+			if (!verified && rejectInvalidSignatures) {
+				throw new InvalidSignatureException("[" + getName()
+						+ "] bad signature for id=" + id);
 			}
 		}
 
-		return verifiedKey != null;
+		return verified;
 	}
 
 }
