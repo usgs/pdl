@@ -33,10 +33,10 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
   public static final String PRODUCT_STORAGE_MAX_AGE_PROPERTY = "storageage";
   public static final String DEFAULT_PRODUCT_STORAGE_MAX_AGE = "604800000";
 
-  private String serverHost;
-  private String serverPort;
-  private URLProductStorage productStorage;
-  private long productStorageMaxAge;
+  protected String serverHost;
+  protected String serverPort;
+  protected URLProductStorage productStorage;
+  protected long productStorageMaxAge;
 
 
   /**
@@ -47,7 +47,13 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
    * @throws Exception
    */
   public void configure(Config config) throws Exception {
+    // let default notification listener configure itself
     super.configure(config);
+
+    if (getNotificationIndex() == null) {
+      throw new ConfigurationException("[" + getName()
+              + "] 'index' is a required configuration property");
+    }
 
     String productStorageName = config.getProperty(PRODUCT_STORAGE_PROPERTY);
     if (productStorageName == null) {
@@ -156,6 +162,30 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
    */
   protected String notificationToString(final Notification notification) throws Exception {
     return notification.toString();
+  }
+
+  /**
+   * Start up storage
+   *
+   * @throws Exception if something goes wrong
+   */
+  public void startup() throws Exception{
+    productStorage.startup();
+    super.startup();
+  }
+
+  /**
+   * Shut down storage
+   *
+   * @throws Exception if something goes wrong
+   */
+  public void shutdown() throws Exception{
+    super.shutdown();
+    try {
+      productStorage.shutdown();
+    } catch (Exception e) {
+      //do nothing
+    }
   }
 
 
