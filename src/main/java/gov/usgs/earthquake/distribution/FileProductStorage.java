@@ -100,23 +100,10 @@ public class FileProductStorage extends DefaultConfigurable implements
 	/** Default storage path if none is provided. */
 	public static final String DEFAULT_DIRECTORY = "storage";
 
-	/** Property for whether or not to verify signatures. */
-	public static final String VERIFY_SIGNATURES_PROPERTY_NAME = "verifySignatures";
-	/** Don't verify signatures (Default). */
-	public static final String DEFAULT_VERIFY_SIGNATURE = "off";
-	/** Test signatures, but don't reject invalid. */
-	public static final String TEST_VERIFY_SIGNATURE = "test";
-
 	/** Property for whether or not to hash file paths. */
 	public static final String USE_HASH_PATHS_PROPERTY = "useHashes";
 	/** Do not use hashes (Default). */
 	public static final boolean USE_HASH_PATHS_DEFAULT = false;
-
-	/** Property for a list of keys. */
-	public static final String KEYCHAIN_PROPERTY_NAME = "keychain";
-
-	/** Property for a file of keys. */
-	public static final String KEYCHAIN_FILE_PROPERTY_NAME = "keychainFile";
 
 	/** Property for legacyStorages. */
 	public static final String LEGACY_STORAGES_PROPERTY = "legacyStorages";
@@ -129,21 +116,14 @@ public class FileProductStorage extends DefaultConfigurable implements
 	/** Locks used to make storage operations atomic. */
 	private ObjectLock<ProductId> storageLocks = new ObjectLock<ProductId>();
 
+	private SignatureVerifier verifier = new SignatureVerifier();
+
 	/**
 	 * @return the storageLocks
 	 */
 	public ObjectLock<ProductId> getStorageLocks() {
 		return storageLocks;
 	}
-
-	/** Whether or not to reject invalid signatures. */
-	private boolean rejectInvalidSignatures = false;
-
-	/** If not rejecting invalid signatures, test them anyways. */
-	private boolean testSignatures = false;
-
-	/** Keys used when testing signatures. */
-	private ProductKeyChain keychain;
 
 	private Map<StorageListener, ExecutorService> listeners = new HashMap<StorageListener, ExecutorService>();
 
@@ -204,44 +184,8 @@ public class FileProductStorage extends DefaultConfigurable implements
 		LOGGER.config("[" + getName() + "] using storage directory "
 				+ baseDirectory.getCanonicalPath());
 
-		String verifySignatures = config
-				.getProperty(VERIFY_SIGNATURES_PROPERTY_NAME);
-		if (verifySignatures != null) {
-			if (verifySignatures.equals(TEST_VERIFY_SIGNATURE)) {
-				testSignatures = true;
-				LOGGER.config("[" + getName() + "] test message signatures");
-			} else if (!verifySignatures.equals(DEFAULT_VERIFY_SIGNATURE)) {
-				rejectInvalidSignatures = true;
-				LOGGER.config("[" + getName() + "] reject invalid signatures");
-			}
-
-			String keyNames = config.getProperty(KEYCHAIN_PROPERTY_NAME);
-			if (keyNames != null) {
-				LOGGER.config("[" + getName() + "] using product keys "
-						+ keyNames);
-				keychain = new ProductKeyChain(keyNames, Config.getConfig());
-			} else {
-				String keychainFileName = config
-						.getProperty(KEYCHAIN_FILE_PROPERTY_NAME);
-				if (keychainFileName != null) {
-					Config keychainConfig = new Config();
-					InputStream keychainFileInputStream = StreamUtils.getInputStream(
-							new File(keychainFileName));
-					try {
-						keychainConfig.load(keychainFileInputStream);
-					} finally {
-						StreamUtils.closeStream(keychainFileInputStream);
-					}
-					keyNames = keychainConfig
-							.getProperty(KEYCHAIN_PROPERTY_NAME);
-					keychain = new ProductKeyChain(keyNames, keychainConfig);
-				} else {
-					LOGGER.warning("[" + getName()
-							+ "] no product keys configured");
-					keychain = new ProductKeyChain();
-				}
-			}
-		}
+		// Configure verifier
+		verifier.configure(config);
 
 		// Set up our configured listeners
 		Iterator<String> listenerIter = StringUtils.split(
@@ -696,30 +640,8 @@ public class FileProductStorage extends DefaultConfigurable implements
 			LOGGER.finer("[" + getName() + "] product stored id=" + id
 					+ ", status=" + output.getStatus());
 
-			if (testSignatures || rejectInvalidSignatures) {
-				Product product = getProduct(id);
+			verifier.verifySignature(getProduct(id));
 
-				boolean verified = false;
-				if (keychain != null) {
-					PublicKey[] candidateKeys = keychain.getProductKeys(id);
-					LOGGER.finer("[" + getName()
-							+ "] number of candidate keys="
-							+ candidateKeys.length);
-					verified = product.verifySignature(candidateKeys);
-				} else {
-					LOGGER.warning("[" + getName()
-							+ "] missing Signature Keychain");
-				}
-
-				LOGGER.fine("[" + getName() + "] signature verified="
-						+ verified + ", id=" + product.getId());
-
-				if (!verified && rejectInvalidSignatures) {
-					removeProduct(id);
-					throw new InvalidSignatureException("[" + getName()
-							+ "] bad signature for id=" + id);
-				}
-			}
 		} catch (Exception e) {
 			if (!(e instanceof ProductAlreadyInStorageException)
 					&& !(e.getCause() instanceof ProductAlreadyInStorageException)) {
@@ -929,7 +851,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 * @return the rejectInvalidSignatures
 	 */
 	public boolean isRejectInvalidSignatures() {
-		return rejectInvalidSignatures;
+		return verifier.isRejectInvalidSignatures();
 	}
 
 	/**
@@ -937,14 +859,14 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 *            the rejectInvalidSignatures to set
 	 */
 	public void setRejectInvalidSignatures(boolean rejectInvalidSignatures) {
-		this.rejectInvalidSignatures = rejectInvalidSignatures;
+		verifier.setRejectInvalidSignatures(rejectInvalidSignatures);
 	}
 
 	/**
 	 * @return the testSignatures
 	 */
 	public boolean isTestSignatures() {
-		return testSignatures;
+		return verifier.isTestSignatures();
 	}
 
 	/**
@@ -952,14 +874,14 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 *            the testSignatures to set
 	 */
 	public void setTestSignatures(boolean testSignatures) {
-		this.testSignatures = testSignatures;
+		verifier.setTestSignatures(testSignatures);
 	}
 
 	/**
 	 * @return the keychain
 	 */
 	public ProductKeyChain getKeychain() {
-		return keychain;
+		return verifier.getKeychain();
 	}
 
 	/**
@@ -967,7 +889,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 *            the keychain to set
 	 */
 	public void setKeychain(ProductKeyChain keychain) {
-		this.keychain = keychain;
+		verifier.setKeychain(keychain);
 	}
 
 	/**
