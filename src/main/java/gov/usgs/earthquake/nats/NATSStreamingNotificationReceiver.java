@@ -1,4 +1,7 @@
 package gov.usgs.earthquake.nats;
 
-public class NATSStreamingNotificationReceiver {
+import gov.usgs.earthquake.distribution.DefaultNotificationReceiver;
+
+public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiver {
+
 }
