@@ -1,8 +1,12 @@
 package gov.usgs.earthquake.distribution;
 
 import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.util.Config;
 
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -65,19 +69,50 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
     LOGGER.config("[" + getName() + "] messenger server port: " + serverPort);
   }
 
-  //TODO: Implement me
   /**
-   * Called on receipt of a new product.
+   * Called on receipt of a new product. Stores this product and calls sendMessage()
+   * Most of this logic was lifted from the pre-08/2019 EIDSNotificationSender class.
    *
    * @param product
    *            a product whose notification was accepted.
    * @throws Exception
    */
   public void onProduct(final Product product) throws Exception {
+    ProductId id = product.getId();
 
+    // store product
+    try {
+      productStorage.storeProduct(product);
+    } catch (ProductAlreadyInStorageException e) {
+      // ignore
+    }
+
+    // create notification
+    // make expiration relative to now
+    Date expirationDate = new Date(new Date().getTime()
+            + productStorageMaxAge);
+    URLNotification notification = new URLNotification(id, expirationDate,
+            product.getTrackerURL(), productStorage.getProductURL(id));
+
+    // remove any existing notifications, generally there won't be any
+    Iterator<Notification> existing = getNotificationIndex()
+            .findNotifications(id).iterator();
+    while (existing.hasNext()) {
+      getNotificationIndex().removeNotification(existing.next());
+    }
+
+    // add created notification to index. Used to track which products
+    // have been processed, and to delete after expirationDate
+    getNotificationIndex().addNotification(notification);
+
+    // send notification
+    sendMessage(notificationToString(notification));
+
+    // track that notification was sent
+    new ProductTracker(notification.getTrackerURL()).notificationSent(
+            this.getName(), notification);
   }
 
-  //TODO: Implement me
   /**
    * Called when a notification expires
    *
@@ -87,18 +122,40 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
    */
   @Override
   protected void onExpiredNotification(final Notification notification) throws Exception{
-
+    List<Notification> notifications = getNotificationIndex()
+            .findNotifications(notification.getProductId());
+    if (notifications.size() <= 1) {
+      // this is called before removing notification from index.
+      productStorage.removeProduct(notification.getProductId());
+      LOGGER.finer("[" + getName()
+              + "] removed expired product from sender storage "
+              + notification.getProductId().toString());
+    } else {
+      // still have notifications left for product, don't remove
+    }
   }
 
   /**
-   * Utility method to do the actual message sending. Should be overridden by subclasses.
+   * Utility method to do the actual notification sending. Should be overridden by subclasses.
    *
    * @param message
    *            The text message to send
    * @throws Exception
    */
-  protected void sendMessage(final String message) throws Exception{
-    LOGGER.info("[" + getName() + "] sending notification: " + message);
+  protected void sendMessage(final String message) throws Exception {
+    LOGGER.info("[" + getName() + "] sent message " + message);
+  }
+
+  /**
+   * Utility method to convert notifications to message strings. Should be overridden by subclasses to have
+   * child-specific message strings
+   *
+   * @param notification
+   *                The notification to be converted
+   * @return message
+   */
+  protected String notificationToString(final Notification notification) throws Exception {
+    return notification.toString();
   }
 
 
