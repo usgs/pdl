@@ -23,6 +23,7 @@ public class NATSStreamingNotificationSender extends DefaultNotificationSender {
   private String subject;
   private StreamingConnection stanConnection;
 
+  @Override
   public void configure(Config config) throws Exception{
     super.configure(config);
 
@@ -65,11 +66,15 @@ public class NATSStreamingNotificationSender extends DefaultNotificationSender {
     return URLNotificationJSONConverter.toJSON((URLNotification) notification);
   }
 
+  @Override
   public void startup() throws Exception {
+    super.startup();
     stanConnection = new StreamingConnectionFactory(clusterId,clientId).createConnection();
   }
 
+  @Override
   public void shutdown() throws Exception {
     stanConnection.close();
+    super.shutdown();
   }
 }

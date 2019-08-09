@@ -58,6 +58,7 @@ public class EIDSNotificationReceiver extends DefaultNotificationReceiver
 	/** EIDSClient that receives notifications. */
 	private EIDSClient client;
 
+	//TODO: Change condition using URLNotificationParser
 	/**
 	 * Implement the EIDSListener interface to process messages from EIDS.
 	 * 
