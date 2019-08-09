@@ -73,7 +73,7 @@ public class EIDSNotificationReceiver extends DefaultNotificationReceiver
 			try {
 				in = StreamUtils.getInputStream(event.getMessage());
 				// this is a notification message
-				URLNotification notification = URLNotification.parse(in);
+				URLNotification notification = URLNotificationXMLConverter.parseXML(in);
 				// process the notification
 				receiveNotification(notification);
 			} catch (Exception e) {

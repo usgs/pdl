@@ -107,7 +107,7 @@ public class EIDSNotificationSender extends DefaultNotificationSender {
 
 	@Override
 	protected String notificationToString(final Notification notification) throws Exception {
-		return ((URLNotification)notification).toXML();
+		return URLNotificationXMLConverter.toXML(((URLNotification)notification));
 	}
 
 	public void configure(Config config) throws Exception {

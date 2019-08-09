@@ -70,9 +70,5 @@ public class URLNotificationJSONConverter {
     String JSON = toJSON(testNotification);
 
     System.out.println(JSON);
-
-    URLNotification outNotification = parseJSON(new ByteArrayInputStream(JSON.getBytes()));
-
-    System.out.println("Notifications " + ((testNotification.equals(outNotification))?"are":"are not") + " equivalent");
   }
 }
