@@ -7,6 +7,7 @@ import io.nats.streaming.StreamingConnectionFactory;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 //TODO: How are host and port used? Shouldn't they be?
@@ -42,27 +43,17 @@ public class NATSStreamingNotificationSender extends DefaultNotificationSender {
     }
   }
 
-  //TODO: paradigm for exception handling
   @Override
-  public void sendMessage(String message) throws Exception{
+  public void sendMessage(String message) throws Exception {
     try {
       stanConnection.publish(subject, message.getBytes());
-    } catch (TimeoutException te) {
-      // if we lose connection to server
-      LOGGER.warning("[" + getName() + "] NATS Streaming server inaccessible. Can't publish notification " + message);
-      throw te;
-    } catch (InterruptedException ie) {
-      // if we're interrupted when sending
-      LOGGER.warning("[" + getName() + "] Interrupted while sending notification " + message);
-      throw ie;
-    } catch (IOException ioe) {
-      // if there's a problem with the message
-      throw ioe;
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "[" + getName() + "] exception publishing NATSStreaming notification:");
+      throw e;
     }
   }
 
-  //TODO: Decide if DefaultNotificationSender should always be using URLNotifications, or if a Notification is sufficient
-  // everywhere
+  //TODO: Consider merging with sendMessage
   @Override
   public String notificationToString(Notification notification) throws Exception{
     return URLNotificationJSONConverter.toJSON((URLNotification) notification);
