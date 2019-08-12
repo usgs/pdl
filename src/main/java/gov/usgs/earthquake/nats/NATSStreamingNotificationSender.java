@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
+//TODO: How are host and port used? Shouldn't they be?
 public class NATSStreamingNotificationSender extends DefaultNotificationSender {
 
   private static final Logger LOGGER = Logger
@@ -41,6 +42,7 @@ public class NATSStreamingNotificationSender extends DefaultNotificationSender {
     }
   }
 
+  //TODO: paradigm for exception handling
   @Override
   public void sendMessage(String message) throws Exception{
     try {
