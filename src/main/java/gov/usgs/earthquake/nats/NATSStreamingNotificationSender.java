@@ -8,6 +8,9 @@ import io.nats.streaming.StreamingConnectionFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+//TODO: Generate clientID in a unique manner
+//  - connecting IP address
+//  - hash of machine MAC address
 public class NATSStreamingNotificationSender extends DefaultNotificationSender {
 
   private static final Logger LOGGER = Logger

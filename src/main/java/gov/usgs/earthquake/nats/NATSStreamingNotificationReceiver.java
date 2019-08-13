@@ -12,10 +12,15 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.*;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+//TODO: Generate clientID in a unique manner
+//  - connecting IP address
+//  - hash of machine MAC address
 public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiver implements MessageHandler {
 
   private static final Logger LOGGER = Logger
@@ -135,6 +140,22 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
     super.shutdown();
   }
 
+  private static void generateClientId() throws Exception {
+    InetAddress ip = InetAddress.getLocalHost();
+    NetworkInterface net = NetworkInterface.getByInetAddress(ip);
+
+    System.out.println("IP Address: " + ip.getHostAddress());
+    byte[] mac =  net.getHardwareAddress();
+    for (int i = 0; i < mac.length; i++) {
+      System.out.print(String.format("%02x",mac[i]));
+      System.out.print(' ');
+    }
+  }
+
+  public static void main(String[] args) throws Exception{
+    generateClientId();
+  }
+
   /**
    * Writes pertinent configuration information to tracking file
    */
@@ -180,6 +201,9 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
    */
   @Override
   //TODO: Figure out how to throw exception W/O clash with superclass
+  // Two options (configurable):
+  //    - Stop on exception
+  //    - Ignore exception (catch, print message contents, continue)
   public void onMessage(Message message) {
     // parse message
     try {
