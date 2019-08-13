@@ -112,7 +112,7 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
     getNotificationIndex().addNotification(notification);
 
     // send notification
-    sendMessage(notificationToString(notification));
+    sendNotification(notification);
 
     // track that notification was sent
     new ProductTracker(notification.getTrackerURL()).notificationSent(
@@ -144,24 +144,12 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
   /**
    * Utility method to do the actual notification sending. Should be overridden by subclasses.
    *
-   * @param message
-   *            The text message to send
+   * @param notification
+   *            The notification to send
    * @throws Exception
    */
-  protected void sendMessage(final String message) throws Exception {
-    LOGGER.info("[" + getName() + "] sent message " + message);
-  }
-
-  /**
-   * Utility method to convert notifications to message strings. Should be overridden by subclasses to have
-   * child-specific message strings
-   *
-   * @param notification
-   *                The notification to be converted
-   * @return message
-   */
-  protected String notificationToString(final Notification notification) throws Exception {
-    return notification.toString();
+  protected void sendNotification(final Notification notification) throws Exception {
+    LOGGER.info("[" + getName() + "] sent message " + notification.toString());
   }
 
   /**

@@ -36,19 +36,14 @@ public class NATSStreamingNotificationSender extends DefaultNotificationSender {
   }
 
   @Override
-  public void sendMessage(String message) throws Exception {
+  public void sendNotification(final Notification notification) throws Exception {
+    String message = URLNotificationJSONConverter.toJSON((URLNotification) notification);
     try {
       stanConnection.publish(subject, message.getBytes());
     } catch (Exception e) {
       LOGGER.log(Level.WARNING, "[" + getName() + "] exception publishing NATSStreaming notification:");
       throw e;
     }
-  }
-
-  //TODO: Consider merging with sendMessage
-  @Override
-  public String notificationToString(Notification notification) throws Exception{
-    return URLNotificationJSONConverter.toJSON((URLNotification) notification);
   }
 
   @Override

@@ -66,8 +66,9 @@ public class EIDSNotificationSender extends DefaultNotificationSender {
 	}
 
 	@Override
-	protected void sendMessage(final String message) throws Exception {
+	protected void sendNotification(final Notification notification) throws Exception {
 		boolean sent = false;
+		String message = URLNotificationXMLConverter.toXML((URLNotification) notification);
 
 		if (serverHost != null && serverPort != null) {
 			try {
@@ -103,11 +104,6 @@ public class EIDSNotificationSender extends DefaultNotificationSender {
 			LOGGER.log(Level.INFO, "[" + getName()
 					+ "] sent notification to EIDS via " + outFile.getPath());
 		}
-	}
-
-	@Override
-	protected String notificationToString(final Notification notification) throws Exception {
-		return URLNotificationXMLConverter.toXML(((URLNotification)notification));
 	}
 
 	public void configure(Config config) throws Exception {

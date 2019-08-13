@@ -56,15 +56,9 @@ public class DefaultNotificationSenderTest {
   }
 
   private class TestDefaultNotificationSender extends DefaultNotificationSender {
-
     @Override
-    public String notificationToString(final Notification notification) throws Exception {
-      return notification.getProductId().toString();
-    }
-
-    @Override
-    public void sendMessage (String message) throws Exception {
-      sentMessage = message;
+    public void sendNotification (final Notification notification) throws Exception {
+      sentMessage = notification.getProductId().toString();
     }
   }
 
