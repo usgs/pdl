@@ -138,7 +138,7 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
   /**
    * Writes pertinent configuration information to tracking file
    */
-  private void writeTrackingFile() throws Exception {
+  public void writeTrackingFile() throws Exception {
     JsonObject json = Json.createObjectBuilder()
       .add(SERVER_HOST_PROPERTY,serverHost)
       .add(SERVER_PORT_PROPERTY,serverPort)
@@ -159,7 +159,7 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
    *
    * @return JsonObject containing tracking file contents, or null if file doesn't exist
    */
-  private JsonObject readTrackingFile() throws Exception {
+  public JsonObject readTrackingFile() throws Exception {
     JsonObject json = null;
 
     File trackingFile = new File(trackingFileName);
