@@ -138,7 +138,7 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
   /**
    * Writes pertinent configuration information to tracking file
    */
-  private void writeTrackingFile() throws Exception{
+  private void writeTrackingFile() throws Exception {
     JsonObject json = Json.createObjectBuilder()
       .add(SERVER_HOST_PROPERTY,serverHost)
       .add(SERVER_PORT_PROPERTY,serverPort)
@@ -196,4 +196,51 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
     //writeTrackingFile(); TODO: Uncomment as soon as you figure out the exception BS
   }
 
+  public String getServerHost() {
+    return serverHost;
+  }
+
+  public void setServerHost(String serverHost) {
+    this.serverHost = serverHost;
+  }
+
+  public int getServerPort() {
+    return serverPort;
+  }
+
+  public void setServerPort(int serverPort) {
+    this.serverPort = serverPort;
+  }
+
+  public String getClusterId() {
+    return clusterId;
+  }
+
+  public void setClusterId(String clusterId) {
+    this.clusterId = clusterId;
+  }
+
+  public String getClientId() {
+    return clientId;
+  }
+
+  public void setClientId(String clientId) {
+    this.clientId = clientId;
+  }
+
+  public String getSubject() {
+    return subject;
+  }
+
+  public void setSubject(String subject) {
+    this.subject = subject;
+  }
+
+  public String getTrackingFileName() {
+    return trackingFileName;
+  }
+
+  public void setTrackingFileName(String trackingFileName) {
+    this.trackingFileName = trackingFileName;
+  }
 }
