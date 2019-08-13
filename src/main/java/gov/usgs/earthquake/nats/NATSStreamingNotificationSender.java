@@ -5,12 +5,9 @@ import gov.usgs.util.Config;
 import io.nats.streaming.StreamingConnection;
 import io.nats.streaming.StreamingConnectionFactory;
 
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-//TODO: How are host and port used? Shouldn't they be?
 public class NATSStreamingNotificationSender extends DefaultNotificationSender {
 
   private static final Logger LOGGER = Logger
@@ -19,6 +16,10 @@ public class NATSStreamingNotificationSender extends DefaultNotificationSender {
   public static String CLUSTER_ID_PROPERTY = "clusterid";
   public static String CLIENT_ID_PROPERTY = "clientid";
   public static String SUBJECT_PROPERTY = "subject";
+
+  public static String DEFAULT_CLUSTER_ID_PROPERTY = "";
+  public static String DEFAULT_CLIENT_ID_PROPERTY = "";
+  public static String DEFAULT_SUBJECT_PROPERTY = "";
 
   private String clusterId;
   private String clientId;
@@ -29,18 +30,9 @@ public class NATSStreamingNotificationSender extends DefaultNotificationSender {
   public void configure(Config config) throws Exception{
     super.configure(config);
 
-    clusterId = config.getProperty(CLUSTER_ID_PROPERTY);
-    if (clusterId == null) {
-      throw new ConfigurationException("[" + getName() + "] " + CLUSTER_ID_PROPERTY + " must be defined");
-    }
-    clientId = config.getProperty(CLIENT_ID_PROPERTY);
-    if (clientId == null) {
-      throw new ConfigurationException("[" + getName() + "] " + CLIENT_ID_PROPERTY + " must be defined");
-    }
-    subject = config.getProperty(SUBJECT_PROPERTY);
-    if (subject == null) {
-      throw new ConfigurationException("[" + getName() + "] " + SUBJECT_PROPERTY + " must be defined");
-    }
+    clusterId = config.getProperty(CLUSTER_ID_PROPERTY, DEFAULT_CLUSTER_ID_PROPERTY);
+    clientId = config.getProperty(CLIENT_ID_PROPERTY, DEFAULT_CLIENT_ID_PROPERTY);
+    subject = config.getProperty(SUBJECT_PROPERTY, DEFAULT_SUBJECT_PROPERTY);
   }
 
   @Override
@@ -62,12 +54,19 @@ public class NATSStreamingNotificationSender extends DefaultNotificationSender {
   @Override
   public void startup() throws Exception {
     super.startup();
-    stanConnection = new StreamingConnectionFactory(clusterId,clientId).createConnection();
+    StreamingConnectionFactory factory = new StreamingConnectionFactory(clusterId,clientId);
+    factory.setNatsUrl("nats://" + this.serverHost + ":" + this.serverPort);
+    stanConnection = factory.createConnection();
   }
 
   @Override
   public void shutdown() throws Exception {
-    stanConnection.close();
+    try {
+      stanConnection.close();
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "[" + getName() + "] failed to close NATS connection");
+    }
+    stanConnection = null;
     super.shutdown();
   }
 }
