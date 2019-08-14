@@ -39,7 +39,7 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
   public static String DEFAULT_SERVER_PORT_PROPERTY = "4222";
   public static String DEFAULT_CLUSTER_ID_PROPERTY = "";
   public static String DEFAULT_SUBJECT_PROPERTY = "";
-  public static String DEFAULT_TRACKING_FILE_NAME_PROPERTY = "etc/STANReceiverInfo.json";
+  public static String DEFAULT_TRACKING_FILE_NAME_PROPERTY = "data/STANReceiverInfo.json";
   public static String DEFAULT_UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY = "true";
 
   private StreamingConnection connection;
@@ -96,7 +96,7 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
     try {
       clientId = generateClientId();
     } catch (Exception e) {
-      LOGGER.log(Level.WARNING, "[" + getName() + "] could not generate client ID. Are you connected to the internet?");
+      LOGGER.log(Level.WARNING, "[" + getName() + "] could not generate client ID. Is this machine connected to the internet?");
       throw e;
     }
 

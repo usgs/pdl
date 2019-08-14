@@ -12,7 +12,6 @@ import java.io.ByteArrayInputStream;
 import java.net.URL;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class NATSStreamingNotificationSenderTest {
@@ -29,7 +28,6 @@ public class NATSStreamingNotificationSenderTest {
     notificationSender.setServerHost("localhost/");
     notificationSender.setServerPort("4222");
     notificationSender.setClusterId("test-cluster");
-    notificationSender.setClientId("test-client");
     notificationSender.setSubject("test-subject");
     notificationSender.setProductStorage(new URLProductStorage());
 
