@@ -12,15 +12,14 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.*;
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.security.MessageDigest;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-//TODO: Generate clientID in a unique manner
-//  - connecting IP address
-//  - hash of machine MAC address
 public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiver implements MessageHandler {
 
   private static final Logger LOGGER = Logger
@@ -32,15 +31,16 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
   public static String CLIENT_ID_PROPERTY = "clientId";
   public static String SUBJECT_PROPERTY = "subject";
   public static String TRACKING_FILE_NAME_PROPERTY = "trackingFile";
+  public static String UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY = "updateSequenceAfterException";
   public static String SEQUENCE_PROPERTY = "sequence";
 
   //TODO: Determine default values
   public static String DEFAULT_SERVER_HOST_PROPERTY = "";
   public static String DEFAULT_SERVER_PORT_PROPERTY = "4222";
   public static String DEFAULT_CLUSTER_ID_PROPERTY = "";
-  public static String DEFAULT_CLIENT_ID_PROPERTY = "";
   public static String DEFAULT_SUBJECT_PROPERTY = "";
   public static String DEFAULT_TRACKING_FILE_NAME_PROPERTY = "etc/STANReceiverInfo.json";
+  public static String DEFAULT_UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY = "true";
 
   private StreamingConnection connection;
   private Subscription subscription;
@@ -52,6 +52,8 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
   private String subject;
   private long sequence = 0;
   private String trackingFileName;
+  private boolean updateSequenceAfterException;
+  private boolean exceptionThrown = false;
 
   /**
    * Configures receiver based on included properties
@@ -72,9 +74,11 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
       throw new ConfigurationException (SERVER_PORT_PROPERTY + " must be an integer [0-9999]");
     }
     clusterId = config.getProperty(CLUSTER_ID_PROPERTY, DEFAULT_CLUSTER_ID_PROPERTY);
-    clientId = config.getProperty(CLIENT_ID_PROPERTY, DEFAULT_CLIENT_ID_PROPERTY);
     subject = config.getProperty(SUBJECT_PROPERTY, DEFAULT_SUBJECT_PROPERTY);
     trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME_PROPERTY);
+    updateSequenceAfterException = Boolean.parseBoolean(config.getProperty(
+      UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY,
+      DEFAULT_UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY));
   }
 
   /**
@@ -87,6 +91,14 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
   @Override
   public void startup() throws Exception {
     super.startup();
+
+    // generate client ID
+    try {
+      clientId = generateClientId();
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "[" + getName() + "] could not generate client ID. Are you connected to the internet?");
+      throw e;
+    }
 
     //Check properties if tracking file exists
     JsonObject properties = readTrackingFile();
@@ -140,20 +152,34 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
     super.shutdown();
   }
 
-  private static void generateClientId() throws Exception {
-    InetAddress ip = InetAddress.getLocalHost();
-    NetworkInterface net = NetworkInterface.getByInetAddress(ip);
-
-    System.out.println("IP Address: " + ip.getHostAddress());
-    byte[] mac =  net.getHardwareAddress();
-    for (int i = 0; i < mac.length; i++) {
-      System.out.print(String.format("%02x",mac[i]));
-      System.out.print(' ');
+  /**
+   * Creates a client ID based on the host IP and MAC address
+   *
+   * @return clientId
+   * @throws Exception if there's an issue accessing IP or MAC addresses, or can't do sha1 hash
+   */
+  private static String generateClientId() throws Exception {
+    // get mac address
+    InetAddress host = InetAddress.getLocalHost();
+    NetworkInterface net = NetworkInterface.getByInetAddress(host);
+    String mac = "";
+    byte[] macRaw =  net.getHardwareAddress();
+    for (int i = 0; i < macRaw.length; i++) {
+      mac += String.format("%02x",macRaw[i]);
+      mac += ':';
     }
-  }
+    mac = mac.substring(0,mac.length()-1);
 
-  public static void main(String[] args) throws Exception{
-    generateClientId();
+    // do a sha1 hash
+    MessageDigest digest = MessageDigest.getInstance("SHA-1");
+    digest.reset();
+    digest.update(mac.getBytes("utf8"));
+    String sha1 = String.format("%040x", new BigInteger(1, digest.digest()));
+
+    // create client id
+    String clientId = host.getHostAddress().replace('.','-') + '_' + sha1;
+
+    return clientId;
   }
 
   /**
@@ -194,30 +220,28 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
   }
 
   /**
-   * Defines behavior for message receipt
+   * Defines behavior for message receipt. Attempts to process notifications, with configurable behavior
+   * for exception handling
    *
    * @param message
    *            The message received from the STAN server
    */
   @Override
-  //TODO: Figure out how to throw exception W/O clash with superclass
-  // Two options (configurable):
-  //    - Stop on exception
-  //    - Ignore exception (catch, print message contents, continue)
   public void onMessage(Message message) {
-    // parse message
     try {
+      // parse message, send to listeners
       URLNotification notification = URLNotificationJSONConverter.parseJSON(new ByteArrayInputStream(message.getData()));
-      // send to listeners
       receiveNotification(notification);
+      // update sequence and tracking file if exception not thrown or we still want to update sequence anyway
+      if (!exceptionThrown || updateSequenceAfterException) {
+        sequence = message.getSequence();
+        writeTrackingFile();
+      }
     } catch (Exception e) {
-      //TODO: Throw exceptions instead of catching
-      LOGGER.log(Level.WARNING, "[" + getName() + "]" + " exception converting message to JSON");
+      exceptionThrown = true;
+      LOGGER.log(Level.WARNING, "[" + getName() + "] exception handling NATSStreaming message." +
+        (!updateSequenceAfterException ? " Will no longer update sequence; restart PDL to reprocess":""));
     }
-
-    // set sequence, update tracking file
-    sequence = message.getSequence();
-    //writeTrackingFile(); TODO: Uncomment as soon as you figure out the exception BS
   }
 
   public String getServerHost() {
