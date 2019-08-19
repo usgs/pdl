@@ -78,6 +78,11 @@ public class NATSStreamingNotificationSender extends DefaultNotificationSender {
     return clientId;
   }
 
+  /**
+   * Starts NATSStreaming connection and superclasses
+   *
+   * @throws Exception if there's an issue with superclasses, generating a client ID, or connecting to server
+   */
   @Override
   public void startup() throws Exception {
     super.startup();
@@ -95,6 +100,11 @@ public class NATSStreamingNotificationSender extends DefaultNotificationSender {
     stanConnection = factory.createConnection();
   }
 
+  /**
+   * Safely closes the NATSStreaming connection and superclasses
+   *
+   * @throws Exception if superclasses throw exceptions
+   */
   @Override
   public void shutdown() throws Exception {
     try {

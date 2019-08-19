@@ -13,17 +13,23 @@ import javax.json.JsonObject;
 import java.io.File;
 import java.net.URL;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Logger;
 
 public class NATSStreamingNotificationReceiverTest {
 
+  private static final Logger LOGGER = Logger
+          .getLogger(NATSStreamingNotificationReceiverTest.class.getName());
+
   private NATSStreamingNotificationReceiver notificationReceiver;
-  private Notification receivedNotification;
+  private LinkedList<URLNotification> receivedNotifications = new LinkedList<>();
   private final CountDownLatch doneSignal = new CountDownLatch(1);
+  private Object publishedLock = new Object();
 
   @Before
   public void setup() throws Exception{
-    notificationReceiver = new NATSStreamingNotificationReceiver();
+    notificationReceiver = new TestNATSStreamingNotificationReceiver();
     notificationReceiver.setServerHost("localhost");
     notificationReceiver.setServerPort(4222);
     notificationReceiver.setClusterId("test-cluster");
@@ -79,17 +85,34 @@ public class NATSStreamingNotificationReceiverTest {
       new URL("http://localhost/product"));
     String message = URLNotificationJSONConverter.toJSON(notification);
 
-    // publish, wait
-    conn.publish("test-subject",message.getBytes());
+    LOGGER.info("Publishing message: " + message);
 
-    Assert.assertTrue(notification.equals(receivedNotification));
+    // publish, wait
+    synchronized(publishedLock) {
+      conn.publish("test-subject", message.getBytes());
+      publishedLock.wait();
+    }
+
+    // iterate over received notifications searching for ours
+    boolean foundSent = false;
+    for (URLNotification received : receivedNotifications) {
+      if (notification.equals(received)) {
+        foundSent = true;
+        break;
+      }
+    }
+
+    Assert.assertTrue(foundSent);
   }
 
   private class TestNATSStreamingNotificationReceiver extends NATSStreamingNotificationReceiver {
     @Override
     public void receiveNotification(Notification notification) {
-      receivedNotification = notification;
-      doneSignal.countDown();
+      synchronized (publishedLock) {
+        receivedNotifications.add((URLNotification) notification);
+        LOGGER.info("Received message: " + URLNotificationJSONConverter.toJSON((URLNotification) notification));
+        publishedLock.notify();
+      }
     }
   }
 }
