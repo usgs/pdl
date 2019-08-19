@@ -1,8 +1,6 @@
 package gov.usgs.earthquake.eids;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;

@@ -890,6 +890,14 @@ public class QuakemlProductCreator implements ProductCreator {
 		return sendMechanismWhenPhasesExist;
 	}
 
+	public void setPadForBase64Bug(boolean padForBase64Bug) {
+		this.padForBase64Bug = padForBase64Bug;
+	}
+
+	public boolean isPadForBase64Bug() {
+		return padForBase64Bug;
+	}
+
 	/**
 	 * Utility function that converts quakeml to a string
 	 *
@@ -900,7 +908,7 @@ public class QuakemlProductCreator implements ProductCreator {
 	 * @throws Exception if quakeml doesn't validate
 	 */
 	private String convertQuakemlToString(Quakeml message) throws Exception{
-		return formatConverter.getString(message,validate);
+		return fixRawQuakeml(formatConverter.getString(message,validate));
 	}
 
 	/**
