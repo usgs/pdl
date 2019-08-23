@@ -102,6 +102,10 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 	public static final String DEFAULT_POLL_CAREFULLY = "false";
 	private boolean pollCarefully = false;
 
+	public static final String DO_BUFFER_FIX_PROPERTY = "doBufferFix";
+	public static final String DEFAULT_DO_BUFFER_FIX = "true";
+	private boolean doBufferFix = true;
+
 	private Thread pollThread = null;
 
 	public EIDSInputWedge() throws Exception {
@@ -110,6 +114,7 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 	public Map<ProductId, Map<ProductSender, Exception>> parseAndSend(
 			final File file, final Map<String, Content> attachContent)
 			throws Exception {
+
 		Map<ProductId, Map<ProductSender, Exception>> sendProductResults = new HashMap<ProductId, Map<ProductSender, Exception>>();
 
 		List<Product> products = productCreator.getProducts(file);
@@ -238,7 +243,7 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 			if (parserObj instanceof ProductCreator) {
 				productCreator = (ProductCreator) parserObj;
 			} else if (parserObj instanceof FileToQuakemlConverter) {
-				QuakemlProductCreator quakemlCreator = new QuakemlProductCreator();
+				QuakemlProductCreator quakemlCreator = new QuakemlProductCreator(doBufferFix);
 				quakemlCreator.setConverter((FileToQuakemlConverter) parserObj);
 				productCreator = quakemlCreator;
 			} else {
@@ -312,6 +317,11 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 				.getProperty(CREATE_SCENARIO_PRODUCTS_PROPERTY,
 						DEFAULT_CREATE_SCENARIO_PRODUCTS));
 		LOGGER.config("createScenarioProducts = " + createScenarioProducts);
+
+		doBufferFix = Boolean.valueOf(config
+				.getProperty(DO_BUFFER_FIX_PROPERTY,
+								DEFAULT_DO_BUFFER_FIX));
+		LOGGER.config("doBufferFix = " + doBufferFix);
 	}
 
 	@Override
