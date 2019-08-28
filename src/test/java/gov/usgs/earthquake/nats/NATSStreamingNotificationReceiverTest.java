@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
 
+@Ignore ("Requires running NATS Streaming server")
 public class NATSStreamingNotificationReceiverTest {
 
   private static final Logger LOGGER = Logger
@@ -66,7 +67,6 @@ public class NATSStreamingNotificationReceiverTest {
     }
   }
 
-  @Ignore ("Requires running NATS Streaming server")
   @Test
   public void onMessageTest() throws Exception {
     // stan connection

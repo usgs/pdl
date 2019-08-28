@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
+@Ignore ("Requires running NATS Streaming server")
 public class NATSStreamingNotificationSenderTest {
 
   private static final Logger LOGGER = Logger
@@ -22,7 +23,6 @@ public class NATSStreamingNotificationSenderTest {
 
   private LinkedList<URLNotification> outNotifications = new LinkedList<>();
 
-  @Ignore("Requires running NATS Streaming server")
   @Test
   public void sendNotificationTest() throws Exception {
     // NotificationSender setup
