@@ -4,10 +4,7 @@ import gov.usgs.earthquake.distribution.*;
 import gov.usgs.earthquake.product.ProductId;
 import io.nats.streaming.StreamingConnection;
 import io.nats.streaming.StreamingConnectionFactory;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import javax.json.JsonObject;
 import java.io.File;
@@ -69,6 +66,7 @@ public class NATSStreamingNotificationReceiverTest {
     }
   }
 
+  @Ignore ("Requires running NATS Streaming server")
   @Test
   public void onMessageTest() throws Exception {
     // stan connection

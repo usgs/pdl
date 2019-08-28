@@ -6,6 +6,7 @@ import gov.usgs.earthquake.distribution.URLProductStorage;
 import gov.usgs.earthquake.product.ProductId;
 import io.nats.streaming.*;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -21,6 +22,7 @@ public class NATSStreamingNotificationSenderTest {
 
   private LinkedList<URLNotification> outNotifications = new LinkedList<>();
 
+  @Ignore("Requires running NATS Streaming server")
   @Test
   public void sendNotificationTest() throws Exception {
     // NotificationSender setup
