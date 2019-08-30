@@ -3,14 +3,10 @@ package gov.usgs.earthquake.distribution;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.util.XmlUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.TimeZone;
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
