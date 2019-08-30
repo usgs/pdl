@@ -11,7 +11,6 @@ import java.io.File;
 import java.net.URL;
 import java.util.Date;
 import java.util.LinkedList;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
 
 @Ignore ("Requires running NATS Streaming server")
@@ -22,7 +21,6 @@ public class NATSStreamingNotificationReceiverTest {
 
   private NATSStreamingNotificationReceiver notificationReceiver;
   private LinkedList<URLNotification> receivedNotifications = new LinkedList<>();
-  private final CountDownLatch doneSignal = new CountDownLatch(1);
   private Object publishedLock = new Object();
 
   @Before

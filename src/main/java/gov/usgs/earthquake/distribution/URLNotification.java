@@ -4,10 +4,6 @@
 package gov.usgs.earthquake.distribution;
 
 import gov.usgs.earthquake.product.ProductId;
-import gov.usgs.util.StreamUtils;
-import gov.usgs.util.XmlUtils;
-
-import java.io.InputStream;
 import java.net.URL;
 import java.util.Date;
 
