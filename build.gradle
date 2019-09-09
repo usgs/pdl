@@ -11,6 +11,7 @@ plugins {
   id "com.gradle.build-scan" version "2.0.2"       // post build results online
   id "org.ajoberstar.grgit" version "2.3.0"       // git repo information
   id "org.ajoberstar.git-publish" version "1.0.1" // publish gh-pages branch
+  id "io.spring.dependency-management" version "1.0.8.RELEASE" //micronaut
 }
 
 sourceCompatibility = 1.8
@@ -26,6 +27,20 @@ configurations {
 
 dependencies {
   codacy "com.codacy:codacy-coverage-reporter:4.0+"
+
+  // micronaut
+  annotationProcessor platform("io.micronaut:micronaut-bom:1.2.1")
+  annotationProcessor "io.micronaut:micronaut-inject-java"
+  annotationProcessor "io.micronaut:micronaut-validation"
+  implementation platform("io.micronaut:micronaut-bom:1.2.1")
+  implementation "io.micronaut:micronaut-inject"
+  implementation "io.micronaut:micronaut-validation"
+  implementation "io.micronaut:micronaut-runtime"
+  implementation "javax.annotation:javax.annotation-api"
+  implementation "io.micronaut:micronaut-http-server-netty"
+  implementation "io.micronaut:micronaut-http-client"
+  runtimeOnly "ch.qos.logback:logback-classic:1.2.3"
+
 
   // javax.json
   compile "javax.json:javax.json-api:1.1"
@@ -48,6 +63,14 @@ dependencies {
   // compile files("lib/cap-library-r11.jar")
 
   testCompile "junit:junit-dep:4.11"
+
+  // testing micronaut
+  testAnnotationProcessor platform("io.micronaut:micronaut-bom:1.2.1")
+  testAnnotationProcessor "io.micronaut:micronaut-inject-java"
+  testImplementation platform("io.micronaut:micronaut-bom:1.2.1")
+  testImplementation "org.junit.jupiter:junit-jupiter-api"
+  testImplementation "io.micronaut.test:micronaut-test-junit5"
+  testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
 }
 
 sourceSets {
