@@ -33,38 +33,6 @@ public class EIDSNotificationSender extends DefaultNotificationSender {
 	/** CORBA sending object. */
 	private CorbaSender corbaSender = null;
 
-	/**
-	 * Called just before this listener processes a notification.
-	 *
-	 * @param notification
-	 *            notification about to be processed.
-	 * @return true to process the notification, false to skip
-	 * @throws Exception
-	 */
-	protected boolean onBeforeProcessNotification(
-					final Notification notification) throws Exception {
-		if (!isProcessDuplicates()) {
-			// only check if we care
-			List<Notification> notifications = getNotificationIndex()
-							.findNotifications(notification.getProductId());
-			if (notifications.size() > 0) {
-				if (productStorage.hasProduct(notification.getProductId())) {
-					LOGGER.finer("[" + getName()
-									+ "] skipping existing product "
-									+ notification.getProductId().toString());
-					return false;
-				} else {
-					LOGGER.finer("["
-									+ getName()
-									+ "] found notifications, but product missing from storage "
-									+ notification.getProductId().toString());
-				}
-			}
-		}
-
-		return true;
-	}
-
 	@Override
 	protected void sendNotification(final Notification notification) throws Exception {
 		boolean sent = false;

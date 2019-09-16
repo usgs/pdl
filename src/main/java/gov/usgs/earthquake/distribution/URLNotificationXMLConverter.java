@@ -15,8 +15,6 @@ public class URLNotificationXMLConverter {
   public static final String ATTRIBUTE_EXPIRES = "expires";
   public static final String ATTRIBUTE_URL = "url";
 
-  private static URLNotificationParser parser = new URLNotificationParser();
-
   /**
    * Converts a URLNotification to XML
    *
@@ -70,6 +68,7 @@ public class URLNotificationXMLConverter {
    * @throws Exception If parse goes wrong
    */
   public static URLNotification parseXML(final InputStream message) throws Exception{
+    URLNotificationParser parser = new URLNotificationParser();
     parser.parse(message);
     return parser.getNotification();
   }

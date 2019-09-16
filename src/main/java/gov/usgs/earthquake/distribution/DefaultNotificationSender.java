@@ -107,16 +107,56 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
       getNotificationIndex().removeNotification(existing.next());
     }
 
+    // send notification
+    try {
+      sendNotification(notification);
+    } catch (Exception e) {
+      // if fails, try to remove from storage
+      productStorage.removeProduct(id);
+      throw e;
+    }
+
     // add created notification to index. Used to track which products
     // have been processed, and to delete after expirationDate
+    // done after send in case send fails
     getNotificationIndex().addNotification(notification);
-
-    // send notification
-    sendNotification(notification);
 
     // track that notification was sent
     new ProductTracker(notification.getTrackerURL()).notificationSent(
             this.getName(), notification);
+  }
+
+  /**
+   * Called just before this listener processes a notification.
+   *
+   * @param notification
+   *            notification about to be processed.
+   * @return true to process the notification, false to skip
+   * @throws Exception
+   */
+  @Override
+  protected boolean onBeforeProcessNotification(
+          final Notification notification) throws Exception {
+    if (!isProcessDuplicates()) {
+      // only check if we care
+      List<Notification> notifications = getNotificationIndex()
+              .findNotifications(notification.getProductId());
+      if (notifications.size() > 0) {
+        if (productStorage.hasProduct(notification.getProductId())) {
+          LOGGER.finer("[" + getName()
+                  + "] skipping existing product "
+                  + notification.getProductId().toString());
+          return false;
+        } else {
+          LOGGER.finer("["
+                  + getName()
+                  + "] found notifications, but product missing from storage "
+                  + notification.getProductId().toString());
+        }
+      }
+    }
+
+    return true;
   }
 
   /**
