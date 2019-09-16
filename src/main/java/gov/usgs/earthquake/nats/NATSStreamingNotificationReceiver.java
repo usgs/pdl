@@ -239,8 +239,11 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
       }
     } catch (Exception e) {
       exceptionThrown = true;
-      LOGGER.log(Level.WARNING, "[" + getName() + "] exception handling NATSStreaming message." +
-        (!updateSequenceAfterException ? " Will no longer update sequence; restart PDL to reprocess":""));
+      LOGGER.log(Level.WARNING,
+        "[" + getName() + "] exception handling NATSStreaming message." +
+        (!updateSequenceAfterException ? " Will no longer update sequence; restart PDL to reprocess.":"") +
+        " Stack Trace: " + e);
+      LOGGER.log(Level.FINE, "[" + getName() + "] Message: " + message.getData());
     }
   }
 
