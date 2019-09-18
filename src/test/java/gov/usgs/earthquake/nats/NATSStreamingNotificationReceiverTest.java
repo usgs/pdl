@@ -26,10 +26,10 @@ public class NATSStreamingNotificationReceiverTest {
   @Before
   public void setup() throws Exception{
     notificationReceiver = new TestNATSStreamingNotificationReceiver();
-    notificationReceiver.setServerHost("localhost");
-    notificationReceiver.setServerPort(4222);
-    notificationReceiver.setClusterId("test-cluster");
-    notificationReceiver.setSubject("test-subject");
+    notificationReceiver.getClient().setServerHost("localhost");
+    notificationReceiver.getClient().setServerPort("4222");
+    notificationReceiver.getClient().setClusterId("test-cluster");
+    notificationReceiver.getClient().setSubject("test-subject");
     notificationReceiver.setTrackingFileName(NATSStreamingNotificationReceiver.DEFAULT_TRACKING_FILE_NAME_PROPERTY + ".tmp");
     notificationReceiver.setProductStorage(new URLProductStorage());
     notificationReceiver.setNotificationIndex(new JDBCNotificationIndex());
@@ -48,11 +48,11 @@ public class NATSStreamingNotificationReceiverTest {
     JsonObject json = notificationReceiver.readTrackingFile();
 
     // assert properties are as configured
-    Assert.assertEquals(notificationReceiver.getServerHost(), json.getString(NATSStreamingNotificationReceiver.SERVER_HOST_PROPERTY));
-    Assert.assertEquals(notificationReceiver.getServerPort(), json.getInt(NATSStreamingNotificationReceiver.SERVER_PORT_PROPERTY));
-    Assert.assertEquals(notificationReceiver.getClusterId(), json.getString(NATSStreamingNotificationReceiver.CLUSTER_ID_PROPERTY));
-    Assert.assertEquals(notificationReceiver.getClientId(), json.getString(NATSStreamingNotificationReceiver.CLIENT_ID_PROPERTY));
-    Assert.assertEquals(notificationReceiver.getSubject(), json.getString(NATSStreamingNotificationReceiver.SUBJECT_PROPERTY));
+    Assert.assertEquals(notificationReceiver.getClient().getServerHost(), json.getString(NATSClient.SERVER_HOST_PROPERTY));
+    Assert.assertEquals(notificationReceiver.getClient().getServerPort(), json.getInt(NATSClient.SERVER_PORT_PROPERTY));
+    Assert.assertEquals(notificationReceiver.getClient().getClusterId(), json.getString(NATSClient.CLUSTER_ID_PROPERTY));
+    Assert.assertEquals(notificationReceiver.getClient().getClientId(), json.getString(NATSClient.CLIENT_ID_PROPERTY));
+    Assert.assertEquals(notificationReceiver.getClient().getSubject(), json.getString(NATSClient.SUBJECT_PROPERTY));
 
     // clean up
     //TODO: Figure out why tracking file isn't being deleted

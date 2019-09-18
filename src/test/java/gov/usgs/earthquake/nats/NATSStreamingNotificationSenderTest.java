@@ -27,10 +27,10 @@ public class NATSStreamingNotificationSenderTest {
   public void sendNotificationTest() throws Exception {
     // NotificationSender setup
     NATSStreamingNotificationSender notificationSender = new NATSStreamingNotificationSender();
-    notificationSender.setServerHost("localhost/");
-    notificationSender.setServerPort("4222");
-    notificationSender.setClusterId("test-cluster");
-    notificationSender.setSubject("test-subject");
+    notificationSender.getClient().setServerHost("localhost/");
+    notificationSender.getClient().setServerPort("4222");
+    notificationSender.getClient().setClusterId("test-cluster");
+    notificationSender.getClient().setSubject("test-subject");
     notificationSender.setProductStorage(new URLProductStorage());
 
     // start

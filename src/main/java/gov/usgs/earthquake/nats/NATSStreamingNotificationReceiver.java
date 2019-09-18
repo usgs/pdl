@@ -1,6 +1,5 @@
 package gov.usgs.earthquake.nats;
 
-import gov.usgs.earthquake.distribution.ConfigurationException;
 import gov.usgs.earthquake.distribution.DefaultNotificationReceiver;
 import gov.usgs.earthquake.distribution.URLNotification;
 import gov.usgs.earthquake.distribution.URLNotificationJSONConverter;
@@ -12,44 +11,29 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.*;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.security.MessageDigest;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+//TODO: Test me with running NATS Streaming Server
+/**
+ * Connects directly to a NATS streaming server to receive notifications using a NATSClient
+ */
 public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiver implements MessageHandler {
 
   private static final Logger LOGGER = Logger
           .getLogger(DefaultNotificationReceiver.class.getName());
 
-  public static String SERVER_HOST_PROPERTY = "serverHost";
-  public static String SERVER_PORT_PROPERTY = "serverPort";
-  public static String CLUSTER_ID_PROPERTY = "clusterId";
-  public static String CLIENT_ID_PROPERTY = "clientId";
-  public static String SUBJECT_PROPERTY = "subject";
   public static String TRACKING_FILE_NAME_PROPERTY = "trackingFile";
   public static String UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY = "updateSequenceAfterException";
   public static String SEQUENCE_PROPERTY = "sequence";
 
-  //TODO: Determine default values
-  public static String DEFAULT_SERVER_HOST_PROPERTY = "";
-  public static String DEFAULT_SERVER_PORT_PROPERTY = "4222";
-  public static String DEFAULT_CLUSTER_ID_PROPERTY = "";
-  public static String DEFAULT_SUBJECT_PROPERTY = "";
   public static String DEFAULT_TRACKING_FILE_NAME_PROPERTY = "data/STANReceiverInfo.json";
   public static String DEFAULT_UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY = "true";
 
-  private StreamingConnection connection;
+  private NATSClient client = new NATSClient();
   private Subscription subscription;
 
-  private String serverHost;
-  private int serverPort;
-  private String clusterId;
-  private String clientId;
-  private String subject;
   private long sequence = 0;
   private String trackingFileName;
   private boolean updateSequenceAfterException;
@@ -67,14 +51,6 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
   public void configure(Config config) throws Exception {
     super.configure(config);
 
-    serverHost = config.getProperty(SERVER_HOST_PROPERTY,DEFAULT_SERVER_HOST_PROPERTY);
-    try {
-      serverPort = Integer.parseInt(config.getProperty(SERVER_PORT_PROPERTY,DEFAULT_SERVER_PORT_PROPERTY));
-    } catch (Exception e) {
-      throw new ConfigurationException (SERVER_PORT_PROPERTY + " must be an integer [0-9999]");
-    }
-    clusterId = config.getProperty(CLUSTER_ID_PROPERTY, DEFAULT_CLUSTER_ID_PROPERTY);
-    subject = config.getProperty(SUBJECT_PROPERTY, DEFAULT_SUBJECT_PROPERTY);
     trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME_PROPERTY);
     updateSequenceAfterException = Boolean.parseBoolean(config.getProperty(
       UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY,
@@ -92,31 +68,22 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
   public void startup() throws Exception {
     super.startup();
 
-    // generate client ID
-    try {
-      clientId = generateClientId();
-    } catch (Exception e) {
-      LOGGER.log(Level.WARNING, "[" + getName() + "] could not generate client ID. Is this machine connected to the internet?");
-      throw e;
-    }
+    //Start client
+    client.startup();
 
     //Check properties if tracking file exists
     JsonObject properties = readTrackingFile();
     if (properties != null &&
-        properties.getString(SERVER_HOST_PROPERTY) == serverHost &&
-        properties.getInt(SERVER_PORT_PROPERTY) == serverPort &&
-        properties.getString(CLUSTER_ID_PROPERTY) == clusterId &&
-        properties.getString(CLIENT_ID_PROPERTY) == clientId &&
-        properties.getString(SUBJECT_PROPERTY) == subject) {
+        properties.getString(NATSClient.SERVER_HOST_PROPERTY) == client.getServerHost() &&
+        properties.getString(NATSClient.SERVER_PORT_PROPERTY) == client.getServerPort() &&
+        properties.getString(NATSClient.CLUSTER_ID_PROPERTY) == client.getClusterId() &&
+        properties.getString(NATSClient.CLIENT_ID_PROPERTY) == client.getClientId() &&
+        properties.getString(NATSClient.SUBJECT_PROPERTY) == client.getSubject()) {
       sequence = Long.parseLong(properties.getString(SEQUENCE_PROPERTY));
     }
 
-    // Create connection & subscription
-    StreamingConnectionFactory factory = new StreamingConnectionFactory(clusterId,clientId);
-    factory.setNatsUrl("nats://" + serverHost + ":" + serverPort);
-    connection = factory.createConnection();
-    subscription = connection.subscribe(
-      subject,
+    subscription = client.getConnection().subscribe(
+      client.getSubject(),
       this,
       new SubscriptionOptions.Builder().startAtSequence(sequence).build());
     // Always starts at stored sequence; initialized to 0 and overwritten by storage
@@ -142,44 +109,9 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
     } catch (Exception e) {
       LOGGER.log(Level.WARNING, "[" + getName() + "] failed to unsubscribe from NATS channel");
     }
-    try {
-      connection.close();
-    } catch (Exception e) {
-      LOGGER.log(Level.WARNING, "[" + getName() + "] failed to close NATS connection");
-    }
     subscription = null;
-    connection = null;
+    client.shutdown();
     super.shutdown();
-  }
-
-  /**
-   * Creates a client ID based on the host IP and MAC address
-   *
-   * @return clientId
-   * @throws Exception if there's an issue accessing IP or MAC addresses, or can't do sha1 hash
-   */
-  private static String generateClientId() throws Exception {
-    // get mac address
-    InetAddress host = InetAddress.getLocalHost();
-    NetworkInterface net = NetworkInterface.getByInetAddress(host);
-    String mac = "";
-    byte[] macRaw =  net.getHardwareAddress();
-    for (int i = 0; i < macRaw.length; i++) {
-      mac += String.format("%02x",macRaw[i]);
-      mac += ':';
-    }
-    mac = mac.substring(0,mac.length()-1);
-
-    // do a sha1 hash
-    MessageDigest digest = MessageDigest.getInstance("SHA-1");
-    digest.reset();
-    digest.update(mac.getBytes("utf8"));
-    String sha1 = String.format("%040x", new BigInteger(1, digest.digest()));
-
-    // create client id
-    String clientId = host.getHostAddress().replace('.','-') + '_' + sha1;
-
-    return clientId;
   }
 
   /**
@@ -187,11 +119,11 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
    */
   public void writeTrackingFile() throws Exception {
     JsonObject json = Json.createObjectBuilder()
-      .add(SERVER_HOST_PROPERTY,serverHost)
-      .add(SERVER_PORT_PROPERTY,serverPort)
-      .add(CLUSTER_ID_PROPERTY,clusterId)
-      .add(CLIENT_ID_PROPERTY,clientId)
-      .add(SUBJECT_PROPERTY,subject)
+      .add(NATSClient.SERVER_HOST_PROPERTY,client.getServerHost())
+      .add(NATSClient.SERVER_PORT_PROPERTY,client.getServerPort())
+      .add(NATSClient.CLUSTER_ID_PROPERTY,client.getClusterId())
+      .add(NATSClient.CLIENT_ID_PROPERTY,client.getClientId())
+      .add(NATSClient.SUBJECT_PROPERTY,client.getSubject())
       .add(SEQUENCE_PROPERTY,sequence)
     .build();
 
@@ -247,46 +179,6 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
     }
   }
 
-  public String getServerHost() {
-    return serverHost;
-  }
-
-  public void setServerHost(String serverHost) {
-    this.serverHost = serverHost;
-  }
-
-  public int getServerPort() {
-    return serverPort;
-  }
-
-  public void setServerPort(int serverPort) {
-    this.serverPort = serverPort;
-  }
-
-  public String getClusterId() {
-    return clusterId;
-  }
-
-  public void setClusterId(String clusterId) {
-    this.clusterId = clusterId;
-  }
-
-  public String getClientId() {
-    return clientId;
-  }
-
-  public void setClientId(String clientId) {
-    this.clientId = clientId;
-  }
-
-  public String getSubject() {
-    return subject;
-  }
-
-  public void setSubject(String subject) {
-    this.subject = subject;
-  }
-
   public String getTrackingFileName() {
     return trackingFileName;
   }
@@ -294,4 +186,13 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
   public void setTrackingFileName(String trackingFileName) {
     this.trackingFileName = trackingFileName;
   }
+
+  public NATSClient getClient() {
+    return client;
+  }
+
+  public void setClient(NATSClient client) {
+    this.client = client;
+  }
+
 }
