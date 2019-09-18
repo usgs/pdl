@@ -5,9 +5,17 @@ import gov.usgs.util.Configurable;
 import io.nats.streaming.StreamingConnection;
 import io.nats.streaming.StreamingConnectionFactory;
 
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.security.MessageDigest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Manages conserved NATS Streaming connection properties.
+ * Written so several concurrent connections can be created.
+ */
 public class NATSClient implements Configurable {
 
   public static Logger LOGGER  = Logger
@@ -27,15 +35,31 @@ public class NATSClient implements Configurable {
 
   private StreamingConnection connection;
 
+  /**
+   * Configures the required and optional parameters to connect to NATS Streaming server
+   *
+   * @param config
+   *            the Config to load.
+   * @throws Exception
+   */
   @Override
   public void configure(Config config) throws Exception {
+    // required parameters
     serverHost = config.getProperty(SERVER_HOST_PROPERTY);
     serverPort = config.getProperty(SERVER_PORT_PROPERTY);
     clusterId = config.getProperty(CLUSTER_ID_PROPERTY);
-    clientId = config.getProperty(CLIENT_ID_PROPERTY); //make optional (generated if not provided)
+
+    clientId = config.getProperty(CLIENT_ID_PROPERTY);
+    if (clientId == null) {
+      clientId = generateClientId();
+    }
     subject = config.getProperty (SUBJECT_PROPERTY); //make optional (provide default)
   }
 
+  /**
+   * Starts connection to NATS streaming server
+   * @throws Exception If something goes wrong when connecting to NATS streaming server
+   */
   @Override
   public void startup() throws Exception {
     // create connection
@@ -44,8 +68,11 @@ public class NATSClient implements Configurable {
     connection = factory.createConnection();
   }
 
+  /**
+   * Safely closes connection to NATS Streaming server
+   */
   @Override
-  public void shutdown() throws Exception {
+  public void shutdown() {
     try {
       connection.close();
     } catch (Exception e) {
@@ -54,9 +81,33 @@ public class NATSClient implements Configurable {
     connection = null;
   }
 
+  /**
+   * Creates a client ID based on the host IP and MAC address
+   *
+   * @return clientId
+   * @throws Exception if there's an issue accessing IP or MAC addresses, or can't do sha1 hash
+   */
+  private static String generateClientId() throws Exception {
+    // get mac address
+    InetAddress host = InetAddress.getLocalHost();
+    NetworkInterface net = NetworkInterface.getByInetAddress(host);
+    byte[] macRaw =  net.getHardwareAddress();
+
+    // do a sha1 hash
+    MessageDigest digest = MessageDigest.getInstance("SHA-1");
+    digest.reset();
+    digest.update(macRaw);
+    String sha1 = String.format("%040x", new BigInteger(1, digest.digest()));
+
+    // create client id
+    String clientId = host.getHostAddress().replace('.','-') + '_' + sha1+ '_' + Thread.currentThread().getId();
+
+    return clientId;
+  }
+
   @Override
   public String getName() {
-    return null;
+    return NATSClient.class.getName();
   }
 
   @Override
