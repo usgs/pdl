@@ -35,6 +35,21 @@ public class NATSClient implements Configurable {
 
   private StreamingConnection connection;
 
+  public NATSClient() {
+    this(Long.toString(Thread.currentThread().getId()));
+  }
+
+  public NATSClient(String clientIdSuffix) {
+    // try to generate a unique ID; use suffix only if fail
+    try {
+      clientId = generateClientId(clientIdSuffix);
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "[" + getName() + "] failed to generate client ID, so using provided suffix. Exception: ");
+      e.printStackTrace();
+      clientId = clientIdSuffix;
+    }
+  }
+
   /**
    * Configures the required and optional parameters to connect to NATS Streaming server
    *
@@ -59,11 +74,6 @@ public class NATSClient implements Configurable {
    */
   @Override
   public void startup() throws Exception {
-    // make sure we have a client ID
-    if (clientId == null) {
-      clientId = generateClientId();
-    }
-
     // create connection
     StreamingConnectionFactory factory = new StreamingConnectionFactory(clusterId,clientId);
     factory.setNatsUrl("nats://" + serverHost + ":" + serverPort);
@@ -86,10 +96,12 @@ public class NATSClient implements Configurable {
   /**
    * Creates a client ID based on the host IP and MAC address
    *
+   * @param suffix
+   *    Suffix to add to generated ID
    * @return clientId
    * @throws Exception if there's an issue accessing IP or MAC addresses, or can't do sha1 hash
    */
-  private static String generateClientId() throws Exception {
+  private static String generateClientId(String suffix) throws Exception{
     // get mac address
     InetAddress host = InetAddress.getLocalHost();
     NetworkInterface net = NetworkInterface.getByInetAddress(host);
@@ -102,7 +114,7 @@ public class NATSClient implements Configurable {
     String sha1 = String.format("%040x", new BigInteger(1, digest.digest()));
 
     // create client id
-    String clientId = host.getHostAddress().replace('.','-') + '_' + sha1+ '_' + Thread.currentThread().getId();
+    String clientId = host.getHostAddress().replace('.','-') + '_' + sha1+ '_' + suffix;
 
     return clientId;
   }

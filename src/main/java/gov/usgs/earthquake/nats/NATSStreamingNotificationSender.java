@@ -5,7 +5,6 @@ import gov.usgs.util.Config;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-//TODO: Test me with running NATS Streaming Server
 /**
  * Sends notifications directly to NATS streaming server using a NATS client
  */

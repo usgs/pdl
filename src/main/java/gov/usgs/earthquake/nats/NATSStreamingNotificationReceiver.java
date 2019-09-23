@@ -15,7 +15,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-//TODO: Test me with running NATS Streaming Server
 /**
  * Connects directly to a NATS streaming server to receive notifications using a NATSClient
  */
