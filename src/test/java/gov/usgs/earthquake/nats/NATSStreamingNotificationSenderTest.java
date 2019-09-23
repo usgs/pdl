@@ -31,6 +31,7 @@ public class NATSStreamingNotificationSenderTest {
     notificationSender.getClient().setServerPort("4222");
     notificationSender.getClient().setClusterId("test-cluster");
     notificationSender.getClient().setSubject("test-subject");
+    notificationSender.getClient().setClientId("test-id");
     notificationSender.setProductStorage(new URLProductStorage());
 
     // start

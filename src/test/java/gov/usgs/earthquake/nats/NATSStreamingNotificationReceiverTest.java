@@ -30,6 +30,7 @@ public class NATSStreamingNotificationReceiverTest {
     notificationReceiver.getClient().setServerPort("4222");
     notificationReceiver.getClient().setClusterId("test-cluster");
     notificationReceiver.getClient().setSubject("test-subject");
+    notificationReceiver.getClient().setClientId("test-id");
     notificationReceiver.setTrackingFileName(NATSStreamingNotificationReceiver.DEFAULT_TRACKING_FILE_NAME_PROPERTY + ".tmp");
     notificationReceiver.setProductStorage(new URLProductStorage());
     notificationReceiver.setNotificationIndex(new JDBCNotificationIndex());
@@ -49,7 +50,7 @@ public class NATSStreamingNotificationReceiverTest {
 
     // assert properties are as configured
     Assert.assertEquals(notificationReceiver.getClient().getServerHost(), json.getString(NATSClient.SERVER_HOST_PROPERTY));
-    Assert.assertEquals(notificationReceiver.getClient().getServerPort(), json.getInt(NATSClient.SERVER_PORT_PROPERTY));
+    Assert.assertEquals(notificationReceiver.getClient().getServerPort(), json.getString(NATSClient.SERVER_PORT_PROPERTY));
     Assert.assertEquals(notificationReceiver.getClient().getClusterId(), json.getString(NATSClient.CLUSTER_ID_PROPERTY));
     Assert.assertEquals(notificationReceiver.getClient().getClientId(), json.getString(NATSClient.CLIENT_ID_PROPERTY));
     Assert.assertEquals(notificationReceiver.getClient().getSubject(), json.getString(NATSClient.SUBJECT_PROPERTY));

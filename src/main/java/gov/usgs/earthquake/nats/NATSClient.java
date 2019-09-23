@@ -50,9 +50,6 @@ public class NATSClient implements Configurable {
     clusterId = config.getProperty(CLUSTER_ID_PROPERTY);
 
     clientId = config.getProperty(CLIENT_ID_PROPERTY);
-    if (clientId == null) {
-      clientId = generateClientId();
-    }
     subject = config.getProperty (SUBJECT_PROPERTY); //make optional (provide default)
   }
 
@@ -62,6 +59,11 @@ public class NATSClient implements Configurable {
    */
   @Override
   public void startup() throws Exception {
+    // make sure we have a client ID
+    if (clientId == null) {
+      clientId = generateClientId();
+    }
+
     // create connection
     StreamingConnectionFactory factory = new StreamingConnectionFactory(clusterId,clientId);
     factory.setNatsUrl("nats://" + serverHost + ":" + serverPort);
