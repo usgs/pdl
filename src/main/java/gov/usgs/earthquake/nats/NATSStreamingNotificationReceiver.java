@@ -1,5 +1,6 @@
 package gov.usgs.earthquake.nats;
 
+import gov.usgs.earthquake.distribution.ConfigurationException;
 import gov.usgs.earthquake.distribution.DefaultNotificationReceiver;
 import gov.usgs.earthquake.distribution.URLNotification;
 import gov.usgs.earthquake.distribution.URLNotificationJSONConverter;
@@ -33,6 +34,7 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
   private NATSClient client = new NATSClient();
   private Subscription subscription;
 
+  private String subject;
   private long sequence = 0;
   private String trackingFileName;
   private boolean updateSequenceAfterException;
@@ -49,6 +51,12 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
   @Override
   public void configure(Config config) throws Exception {
     super.configure(config);
+    client.configure(config);
+
+    subject = config.getProperty(NATSClient.SUBJECT_PROPERTY);
+    if (subject == null) {
+      throw new ConfigurationException(NATSClient.SUBJECT_PROPERTY + " is a required parameter");
+    }
 
     trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME_PROPERTY);
     updateSequenceAfterException = Boolean.parseBoolean(config.getProperty(
@@ -73,16 +81,16 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
     //Check properties if tracking file exists
     JsonObject properties = readTrackingFile();
     if (properties != null &&
-        properties.getString(NATSClient.SERVER_HOST_PROPERTY) == client.getServerHost() &&
-        properties.getString(NATSClient.SERVER_PORT_PROPERTY) == client.getServerPort() &&
-        properties.getString(NATSClient.CLUSTER_ID_PROPERTY) == client.getClusterId() &&
-        properties.getString(NATSClient.CLIENT_ID_PROPERTY) == client.getClientId() &&
-        properties.getString(NATSClient.SUBJECT_PROPERTY) == client.getSubject()) {
-      sequence = Long.parseLong(properties.getString(SEQUENCE_PROPERTY));
+        properties.getString(NATSClient.SERVER_HOST_PROPERTY).equals(client.getServerHost()) &&
+        properties.getString(NATSClient.SERVER_PORT_PROPERTY).equals(client.getServerPort()) &&
+        properties.getString(NATSClient.CLUSTER_ID_PROPERTY).equals(client.getClusterId()) &&
+        properties.getString(NATSClient.CLIENT_ID_PROPERTY).equals(client.getClientId()) &&
+        properties.getString(NATSClient.SUBJECT_PROPERTY).equals(subject)) {
+      sequence = Long.parseLong(properties.get(SEQUENCE_PROPERTY).toString());
     }
 
     subscription = client.getConnection().subscribe(
-      client.getSubject(),
+      subject,
       this,
       new SubscriptionOptions.Builder().startAtSequence(sequence).build());
     // Always starts at stored sequence; initialized to 0 and overwritten by storage
@@ -122,7 +130,7 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
       .add(NATSClient.SERVER_PORT_PROPERTY,client.getServerPort())
       .add(NATSClient.CLUSTER_ID_PROPERTY,client.getClusterId())
       .add(NATSClient.CLIENT_ID_PROPERTY,client.getClientId())
-      .add(NATSClient.SUBJECT_PROPERTY,client.getSubject())
+      .add(NATSClient.SUBJECT_PROPERTY,subject)
       .add(SEQUENCE_PROPERTY,sequence)
     .build();
 
@@ -192,6 +200,14 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
 
   public void setClient(NATSClient client) {
     this.client = client;
+  }
+
+  public String getSubject() {
+    return subject;
+  }
+
+  public void setSubject(String subject) {
+    this.subject = subject;
   }
 
 }

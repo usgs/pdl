@@ -2,6 +2,8 @@ package gov.usgs.earthquake.nats;
 
 import gov.usgs.earthquake.distribution.*;
 import gov.usgs.util.Config;
+
+import javax.security.auth.login.Configuration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,11 +16,16 @@ public class NATSStreamingNotificationSender extends DefaultNotificationSender {
           .getLogger(DefaultNotificationSender.class.getName());
 
   private NATSClient client = new NATSClient();
+  private String subject;
 
   @Override
   public void configure(Config config) throws Exception{
     super.configure(config);
     client.configure(config);
+    subject = config.getProperty(NATSClient.SUBJECT_PROPERTY);
+    if (subject == null) {
+      throw new ConfigurationException(NATSClient.SUBJECT_PROPERTY + " is a required parameter");
+    }
   }
 
   /**
@@ -32,7 +39,7 @@ public class NATSStreamingNotificationSender extends DefaultNotificationSender {
   public void sendNotification(final Notification notification) throws Exception {
     String message = URLNotificationJSONConverter.toJSON((URLNotification) notification);
     try {
-      client.getConnection().publish(client.getSubject(), message.getBytes());
+      client.getConnection().publish(subject, message.getBytes());
     } catch (Exception e) {
       LOGGER.log(Level.WARNING, "[" + getName() + "] exception publishing NATSStreaming notification:");
       throw e;
@@ -67,5 +74,13 @@ public class NATSStreamingNotificationSender extends DefaultNotificationSender {
 
   public void setClient(NATSClient client) {
     this.client = client;
+  }
+
+  public String getSubject() {
+    return subject;
+  }
+
+  public void setSubject(String subject) {
+    this.subject = subject;
   }
 }

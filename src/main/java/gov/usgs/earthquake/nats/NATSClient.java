@@ -31,7 +31,6 @@ public class NATSClient implements Configurable {
   private String serverPort;
   private String clusterId;
   private String clientId;
-  private String subject;
 
   private StreamingConnection connection;
 
@@ -65,7 +64,6 @@ public class NATSClient implements Configurable {
     clusterId = config.getProperty(CLUSTER_ID_PROPERTY);
 
     clientId = config.getProperty(CLIENT_ID_PROPERTY);
-    subject = config.getProperty (SUBJECT_PROPERTY); //make optional (provide default)
   }
 
   /**
@@ -159,14 +157,6 @@ public class NATSClient implements Configurable {
 
   public void setClientId(String clientId) {
     this.clientId = clientId;
-  }
-
-  public String getSubject() {
-    return subject;
-  }
-
-  public void setSubject(String subject) {
-    this.subject = subject;
   }
 
   public StreamingConnection getConnection() {

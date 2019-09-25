@@ -29,7 +29,7 @@ public class NATSStreamingNotificationReceiverTest {
     notificationReceiver.getClient().setServerHost("localhost");
     notificationReceiver.getClient().setServerPort("4222");
     notificationReceiver.getClient().setClusterId("test-cluster");
-    notificationReceiver.getClient().setSubject("test-subject");
+    notificationReceiver.setSubject("test-subject");
     notificationReceiver.getClient().setClientId("test-id");
     notificationReceiver.setTrackingFileName(NATSStreamingNotificationReceiver.DEFAULT_TRACKING_FILE_NAME_PROPERTY + ".tmp");
     notificationReceiver.setProductStorage(new URLProductStorage());
@@ -53,7 +53,7 @@ public class NATSStreamingNotificationReceiverTest {
     Assert.assertEquals(notificationReceiver.getClient().getServerPort(), json.getString(NATSClient.SERVER_PORT_PROPERTY));
     Assert.assertEquals(notificationReceiver.getClient().getClusterId(), json.getString(NATSClient.CLUSTER_ID_PROPERTY));
     Assert.assertEquals(notificationReceiver.getClient().getClientId(), json.getString(NATSClient.CLIENT_ID_PROPERTY));
-    Assert.assertEquals(notificationReceiver.getClient().getSubject(), json.getString(NATSClient.SUBJECT_PROPERTY));
+    Assert.assertEquals(notificationReceiver.getSubject(), json.getString(NATSClient.SUBJECT_PROPERTY));
 
     // clean up
     //TODO: Figure out why tracking file isn't being deleted
