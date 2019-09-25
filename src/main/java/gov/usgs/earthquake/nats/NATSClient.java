@@ -31,22 +31,20 @@ public class NATSClient implements Configurable {
   private String serverPort;
   private String clusterId;
   private String clientId;
+  private String clientIdSuffix;
 
   private StreamingConnection connection;
 
   public NATSClient() {
-    this(Long.toString(Thread.currentThread().getId()));
+    this("localhost","4222","test-cluster",Long.toString(Thread.currentThread().getId()));
   }
 
-  public NATSClient(String clientIdSuffix) {
+  public NATSClient(String serverHost, String serverPort, String clusterId, String clientIdSuffix) {
     // try to generate a unique ID; use suffix only if fail
-    try {
-      clientId = generateClientId(clientIdSuffix);
-    } catch (Exception e) {
-      LOGGER.log(Level.WARNING, "[" + getName() + "] failed to generate client ID, so using provided suffix. Exception: ");
-      e.printStackTrace();
-      clientId = clientIdSuffix;
-    }
+    this.serverHost = serverHost;
+    this.serverPort = serverPort;
+    this.clusterId = clusterId;
+    this.clientIdSuffix = clientIdSuffix;
   }
 
   /**
@@ -72,6 +70,11 @@ public class NATSClient implements Configurable {
    */
   @Override
   public void startup() throws Exception {
+    // generate client ID if we don't have one
+    if (clientId == null) {
+      clientId = generateClientId(clientIdSuffix);
+    }
+
     // create connection
     StreamingConnectionFactory factory = new StreamingConnectionFactory(clusterId,clientId);
     factory.setNatsUrl("nats://" + serverHost + ":" + serverPort);
