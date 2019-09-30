@@ -1,5 +1,6 @@
 package gov.usgs.earthquake.nats;
 
+import gov.usgs.earthquake.distribution.ConfigurationException;
 import gov.usgs.util.Config;
 import gov.usgs.util.Configurable;
 import io.nats.streaming.StreamingConnection;
@@ -58,8 +59,19 @@ public class NATSClient implements Configurable {
   public void configure(Config config) throws Exception {
     // required parameters
     serverHost = config.getProperty(SERVER_HOST_PROPERTY);
+    if (serverHost == null) {
+      throw new ConfigurationException(SERVER_HOST_PROPERTY + " is a required parameter");
+    }
+
     serverPort = config.getProperty(SERVER_PORT_PROPERTY);
+    if (serverHost == null) {
+      throw new ConfigurationException(SERVER_PORT_PROPERTY + " is a required parameter");
+    }
+
     clusterId = config.getProperty(CLUSTER_ID_PROPERTY);
+    if (serverHost == null) {
+      throw new ConfigurationException(CLUSTER_ID_PROPERTY + " is a required parameter");
+    }
 
     clientId = config.getProperty(CLIENT_ID_PROPERTY);
   }
