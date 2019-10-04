@@ -38,8 +38,6 @@ public class NATSServerSocket {
   private String subject;
   private String messageType;
 
-  //TODO: Should this be done here, or in NATSMiddleman?
-  // argument: here, so it isn't done on instantiation of each NATSMiddleman
   public NATSServerSocket() {
     host = System.getenv(HOST_PROPERTY);
     if (host == null) {

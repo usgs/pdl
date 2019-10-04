@@ -7,6 +7,12 @@ import io.nats.streaming.MessageHandler;
 import io.nats.streaming.Subscription;
 import io.nats.streaming.SubscriptionOptions;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
+import java.io.ByteArrayInputStream;
+
 /**
  * Responsible for subscribing to a single channel and forwarding messages
  */
@@ -47,19 +53,30 @@ public class NATSMiddleman implements MessageHandler {
     client.shutdown();
   }
 
-  //TODO: Format as JSON if message is json
-  //TODO: Include (formatted as JSON):
-  //  - Sequence
-  //  - Timestamp
-  //  - Data
   /**
-   * Forwards messages from NATSStreaming to session owner
+   * Forwards messages from NATSStreaming to session owner. If we expect JSON, then the message is formatted so.
    *
    * @param msg forwarded message
    */
   @Override
   public void onMessage(Message msg) {
-    // forward message
-    owner.send(new String(msg.getData()));
+    // get metadata
+    JsonObjectBuilder builder = Json.createObjectBuilder()
+      .add("sequence",msg.getSequence())
+      .add("timestamp",msg.getTimestamp());
+
+    // format according to whether we expect json or not
+    if (isMessageJson) {
+      JsonReader reader = Json.createReader(new ByteArrayInputStream(msg.getData()));
+      JsonObject inJson = reader.readObject();
+      reader.close();
+      builder.add("data",inJson);
+    } else {
+      builder.add("data",new String(msg.getData()));
+    }
+
+    // create and forward
+    JsonObject json = builder.build();
+    owner.send(json);
   }
 }
