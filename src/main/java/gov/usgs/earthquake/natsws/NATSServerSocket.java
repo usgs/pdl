@@ -4,7 +4,6 @@ import io.micronaut.websocket.CloseReason;
 import io.micronaut.websocket.WebSocketSession;
 import io.micronaut.websocket.annotation.*;
 
-import javax.xml.bind.annotation.XmlType;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
