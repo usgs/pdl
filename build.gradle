@@ -5,13 +5,13 @@
  */
 
 plugins {
-  id "java"
+  id "application" //java
   id "jacoco"                                     // code coverage
   id "pmd"                                        // static code analysis
   id "com.gradle.build-scan" version "2.0.2"       // post build results online
   id "org.ajoberstar.grgit" version "2.3.0"       // git repo information
   id "org.ajoberstar.git-publish" version "1.0.1" // publish gh-pages branch
-  id "io.spring.dependency-management" version "1.0.8.RELEASE" //micronaut
+  id "com.github.johnrengelman.shadow" version "5.0.0" //packaging fat jar
 }
 
 sourceCompatibility = 1.8
@@ -81,6 +81,8 @@ sourceSets {
 
 // show compile warnings
 tasks.withType(JavaCompile) {
+  options.compilerArgs.add("-parameters")
+  options.encoding="UTF-8"
   options.setDeprecation(true);
   options.setWarnings(true);
 }
@@ -142,6 +144,9 @@ javadoc {
   options.addBooleanOption('html5', true)
 }
 
+mainClassName = "gov.usgs.earthquake.distribution.Bootstrap"
+
+/*
 // create jar file
 jar {
   baseName = "ProductClient"
@@ -153,6 +158,26 @@ jar {
     // classes and dependencies
     configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
   }
+  from (".") {
+    // resources
+    include "etc/config/config.ini"
+    include "etc/config/regions.xml"
+    include "etc/schema/notificationIndex.db"
+    include "etc/schema/productIndex.db"
+  }
+}
+*/
+
+//TODO: Figure out why we're building two distinct jarfiles (shadowJar isn't inheriting from jar)
+// create jar file
+shadowJar {
+  archiveBaseName = "ProductClient"
+  archiveClassifier = null
+  manifest {
+    attributes "Git-Commit": grgit.head().id
+    attributes "Main-Class": "gov.usgs.earthquake.distribution.Bootstrap"
+  }
+  mergeServiceFiles();
   from (".") {
     // resources
     include "etc/config/config.ini"
