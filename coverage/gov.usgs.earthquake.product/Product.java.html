@@ -342,22 +342,26 @@ public class Product {
 	 */
 	public boolean verifySignature(final PublicKey[] publicKeys)
 			throws Exception {
-<span class="fc bfc" id="L345" title="All 2 branches covered.">		if (signature == null) {</span>
-<span class="fc" id="L346">			return false;</span>
+<span class="fc bfc" id="L345" title="All 2 branches covered.">		return verifySignatureKey(publicKeys) != null;</span>
+	}
+
+	public PublicKey verifySignatureKey(final PublicKey[] publicKeys) throws Exception {
+<span class="fc bfc" id="L349" title="All 2 branches covered.">		if (signature == null) {</span>
+<span class="fc" id="L350">			return null;</span>
 		}
 
-<span class="fc" id="L349">		byte[] digest = ProductDigest.digestProduct(this);</span>
-<span class="fc bfc" id="L350" title="All 2 branches covered.">		for (PublicKey key : publicKeys) {</span>
+<span class="fc" id="L353">		byte[] digest = ProductDigest.digestProduct(this);</span>
+<span class="fc bfc" id="L354" title="All 2 branches covered.">		for (PublicKey key : publicKeys) {</span>
 			try {
-<span class="fc bfc" id="L352" title="All 2 branches covered.">				if (CryptoUtils.verify(key, digest, getSignature())) {</span>
-<span class="fc" id="L353">					return true;</span>
+<span class="fc bfc" id="L356" title="All 2 branches covered.">				if (CryptoUtils.verify(key, digest, getSignature())) {</span>
+<span class="fc" id="L357">					return key;</span>
 				}
-<span class="nc" id="L355">			} catch (Exception e) {</span>
-<span class="nc" id="L356">				LOGGER.log(Level.FINEST, &quot;Exception while verifying signature&quot;,</span>
-						e);
-<span class="fc" id="L358">			}</span>
+<span class="nc" id="L359">			} catch (Exception e) {</span>
+<span class="nc" id="L360">				LOGGER.log(Level.FINEST, &quot;Exception while verifying signature&quot;,</span>
+								e);
+<span class="fc" id="L362">			}</span>
 		}
-<span class="fc" id="L360">		return false;</span>
+<span class="fc" id="L364">		return null;</span>
 	}
 
 	/**
@@ -369,12 +373,12 @@ public class Product {
 	 *         is null.
 	 */
 	public String getEventId() {
-<span class="fc" id="L372">		String eventSource = getEventSource();</span>
-<span class="fc" id="L373">		String eventSourceCode = getEventSourceCode();</span>
-<span class="pc bpc" id="L374" title="1 of 4 branches missed.">		if (eventSource == null &amp;&amp; eventSourceCode == null) {</span>
-<span class="fc" id="L375">			return null;</span>
+<span class="fc" id="L376">		String eventSource = getEventSource();</span>
+<span class="fc" id="L377">		String eventSourceCode = getEventSourceCode();</span>
+<span class="pc bpc" id="L378" title="1 of 4 branches missed.">		if (eventSource == null &amp;&amp; eventSourceCode == null) {</span>
+<span class="fc" id="L379">			return null;</span>
 		}
-<span class="fc" id="L377">		return (eventSource + eventSourceCode).toLowerCase();</span>
+<span class="fc" id="L381">		return (eventSource + eventSourceCode).toLowerCase();</span>
 	}
 
 	/**
@@ -386,9 +390,9 @@ public class Product {
 	 *            the originating network's id.
 	 */
 	public void setEventId(final String source, final String sourceCode) {
-<span class="fc" id="L389">		setEventSource(source);</span>
-<span class="fc" id="L390">		setEventSourceCode(sourceCode);</span>
-<span class="fc" id="L391">	}</span>
+<span class="fc" id="L393">		setEventSource(source);</span>
+<span class="fc" id="L394">		setEventSourceCode(sourceCode);</span>
+<span class="fc" id="L395">	}</span>
 
 	/**
 	 * Get the event source property.
@@ -397,7 +401,7 @@ public class Product {
 	 *         set.
 	 */
 	public String getEventSource() {
-<span class="fc" id="L400">		return this.properties.get(EVENTSOURCE_PROPERTY);</span>
+<span class="fc" id="L404">		return this.properties.get(EVENTSOURCE_PROPERTY);</span>
 	}
 
 	/**
@@ -407,13 +411,13 @@ public class Product {
 	 *            the event source to set.
 	 */
 	public void setEventSource(final String eventSource) {
-<span class="fc bfc" id="L410" title="All 2 branches covered.">		if (eventSource == null) {</span>
-<span class="fc" id="L411">			this.properties.remove(EVENTSOURCE_PROPERTY);</span>
+<span class="fc bfc" id="L414" title="All 2 branches covered.">		if (eventSource == null) {</span>
+<span class="fc" id="L415">			this.properties.remove(EVENTSOURCE_PROPERTY);</span>
 		} else {
-<span class="fc" id="L413">			this.properties</span>
-<span class="fc" id="L414">					.put(EVENTSOURCE_PROPERTY, eventSource.toLowerCase());</span>
+<span class="fc" id="L417">			this.properties</span>
+<span class="fc" id="L418">					.put(EVENTSOURCE_PROPERTY, eventSource.toLowerCase());</span>
 		}
-<span class="fc" id="L416">	}</span>
+<span class="fc" id="L420">	}</span>
 
 	/**
 	 * Get the event source code property.
@@ -422,7 +426,7 @@ public class Product {
 	 *         property set.
 	 */
 	public String getEventSourceCode() {
-<span class="fc" id="L425">		return this.properties.get(EVENTSOURCECODE_PROPERTY);</span>
+<span class="fc" id="L429">		return this.properties.get(EVENTSOURCECODE_PROPERTY);</span>
 	}
 
 	/**
@@ -432,13 +436,13 @@ public class Product {
 	 *            the event id to set.
 	 */
 	public void setEventSourceCode(final String eventSourceCode) {
-<span class="fc bfc" id="L435" title="All 2 branches covered.">		if (eventSourceCode == null) {</span>
-<span class="fc" id="L436">			this.properties.remove(EVENTSOURCECODE_PROPERTY);</span>
+<span class="fc bfc" id="L439" title="All 2 branches covered.">		if (eventSourceCode == null) {</span>
+<span class="fc" id="L440">			this.properties.remove(EVENTSOURCECODE_PROPERTY);</span>
 		} else {
-<span class="fc" id="L438">			this.properties.put(EVENTSOURCECODE_PROPERTY,</span>
-<span class="fc" id="L439">					eventSourceCode.toLowerCase());</span>
+<span class="fc" id="L442">			this.properties.put(EVENTSOURCECODE_PROPERTY,</span>
+<span class="fc" id="L443">					eventSourceCode.toLowerCase());</span>
 		}
-<span class="fc" id="L441">	}</span>
+<span class="fc" id="L445">	}</span>
 
 	/**
 	 * Get the event time property as a date.
@@ -447,11 +451,11 @@ public class Product {
 	 *         set.
 	 */
 	public Date getEventTime() {
-<span class="fc" id="L450">		String strDate = this.properties.get(EVENTTIME_PROPERTY);</span>
-<span class="fc bfc" id="L451" title="All 2 branches covered.">		if (strDate == null) {</span>
-<span class="fc" id="L452">			return null;</span>
+<span class="fc" id="L454">		String strDate = this.properties.get(EVENTTIME_PROPERTY);</span>
+<span class="fc bfc" id="L455" title="All 2 branches covered.">		if (strDate == null) {</span>
+<span class="fc" id="L456">			return null;</span>
 		}
-<span class="fc" id="L454">		return XmlUtils.getDate(strDate);</span>
+<span class="fc" id="L458">		return XmlUtils.getDate(strDate);</span>
 	}
 
 	/**
@@ -461,13 +465,13 @@ public class Product {
 	 *            the event time to set.
 	 */
 	public void setEventTime(final Date eventTime) {
-<span class="pc bpc" id="L464" title="1 of 2 branches missed.">		if (eventTime == null) {</span>
-<span class="nc" id="L465">			this.properties.remove(EVENTTIME_PROPERTY);</span>
+<span class="pc bpc" id="L468" title="1 of 2 branches missed.">		if (eventTime == null) {</span>
+<span class="nc" id="L469">			this.properties.remove(EVENTTIME_PROPERTY);</span>
 		} else {
-<span class="fc" id="L467">			this.properties.put(EVENTTIME_PROPERTY,</span>
-<span class="fc" id="L468">					XmlUtils.formatDate(eventTime));</span>
+<span class="fc" id="L471">			this.properties.put(EVENTTIME_PROPERTY,</span>
+<span class="fc" id="L472">					XmlUtils.formatDate(eventTime));</span>
 		}
-<span class="fc" id="L470">	}</span>
+<span class="fc" id="L474">	}</span>
 
 	/**
 	 * Get the magnitude property as a big decimal.
@@ -476,11 +480,11 @@ public class Product {
 	 *         property set.
 	 */
 	public BigDecimal getMagnitude() {
-<span class="fc" id="L479">		String strMag = this.properties.get(MAGNITUDE_PROPERTY);</span>
-<span class="fc bfc" id="L480" title="All 2 branches covered.">		if (strMag == null) {</span>
-<span class="fc" id="L481">			return null;</span>
+<span class="fc" id="L483">		String strMag = this.properties.get(MAGNITUDE_PROPERTY);</span>
+<span class="fc bfc" id="L484" title="All 2 branches covered.">		if (strMag == null) {</span>
+<span class="fc" id="L485">			return null;</span>
 		}
-<span class="fc" id="L483">		return new BigDecimal(strMag);</span>
+<span class="fc" id="L487">		return new BigDecimal(strMag);</span>
 	}
 
 	/**
@@ -490,12 +494,12 @@ public class Product {
 	 *            the magnitude to set.
 	 */
 	public void setMagnitude(final BigDecimal magnitude) {
-<span class="pc bpc" id="L493" title="1 of 2 branches missed.">		if (magnitude == null) {</span>
-<span class="nc" id="L494">			this.properties.remove(MAGNITUDE_PROPERTY);</span>
+<span class="pc bpc" id="L497" title="1 of 2 branches missed.">		if (magnitude == null) {</span>
+<span class="nc" id="L498">			this.properties.remove(MAGNITUDE_PROPERTY);</span>
 		} else {
-<span class="fc" id="L496">			this.properties.put(MAGNITUDE_PROPERTY, magnitude.toPlainString());</span>
+<span class="fc" id="L500">			this.properties.put(MAGNITUDE_PROPERTY, magnitude.toPlainString());</span>
 		}
-<span class="fc" id="L498">	}</span>
+<span class="fc" id="L502">	}</span>
 
 	/**
 	 * Get the latitude property as a big decimal.
@@ -504,11 +508,11 @@ public class Product {
 	 *         property set.
 	 */
 	public BigDecimal getLatitude() {
-<span class="fc" id="L507">		String strLat = this.properties.get(LATITUDE_PROPERTY);</span>
-<span class="fc bfc" id="L508" title="All 2 branches covered.">		if (strLat == null) {</span>
-<span class="fc" id="L509">			return null;</span>
+<span class="fc" id="L511">		String strLat = this.properties.get(LATITUDE_PROPERTY);</span>
+<span class="fc bfc" id="L512" title="All 2 branches covered.">		if (strLat == null) {</span>
+<span class="fc" id="L513">			return null;</span>
 		}
-<span class="fc" id="L511">		return new BigDecimal(strLat);</span>
+<span class="fc" id="L515">		return new BigDecimal(strLat);</span>
 	}
 
 	/**
@@ -518,12 +522,12 @@ public class Product {
 	 *            the latitude to set.
 	 */
 	public void setLatitude(final BigDecimal latitude) {
-<span class="pc bpc" id="L521" title="1 of 2 branches missed.">		if (latitude == null) {</span>
-<span class="nc" id="L522">			this.properties.remove(LATITUDE_PROPERTY);</span>
+<span class="pc bpc" id="L525" title="1 of 2 branches missed.">		if (latitude == null) {</span>
+<span class="nc" id="L526">			this.properties.remove(LATITUDE_PROPERTY);</span>
 		} else {
-<span class="fc" id="L524">			this.properties.put(LATITUDE_PROPERTY, latitude.toPlainString());</span>
+<span class="fc" id="L528">			this.properties.put(LATITUDE_PROPERTY, latitude.toPlainString());</span>
 		}
-<span class="fc" id="L526">	}</span>
+<span class="fc" id="L530">	}</span>
 
 	/**
 	 * Get the longitude property as a big decimal.
@@ -532,11 +536,11 @@ public class Product {
 	 *         property set.
 	 */
 	public BigDecimal getLongitude() {
-<span class="fc" id="L535">		String strLon = this.properties.get(LONGITUDE_PROPERTY);</span>
-<span class="fc bfc" id="L536" title="All 2 branches covered.">		if (strLon == null) {</span>
-<span class="fc" id="L537">			return null;</span>
+<span class="fc" id="L539">		String strLon = this.properties.get(LONGITUDE_PROPERTY);</span>
+<span class="fc bfc" id="L540" title="All 2 branches covered.">		if (strLon == null) {</span>
+<span class="fc" id="L541">			return null;</span>
 		}
-<span class="fc" id="L539">		return new BigDecimal(strLon);</span>
+<span class="fc" id="L543">		return new BigDecimal(strLon);</span>
 	}
 
 	/**
@@ -546,12 +550,12 @@ public class Product {
 	 *            the longitude to set.
 	 */
 	public void setLongitude(final BigDecimal longitude) {
-<span class="pc bpc" id="L549" title="1 of 2 branches missed.">		if (longitude == null) {</span>
-<span class="nc" id="L550">			this.properties.remove(LONGITUDE_PROPERTY);</span>
+<span class="pc bpc" id="L553" title="1 of 2 branches missed.">		if (longitude == null) {</span>
+<span class="nc" id="L554">			this.properties.remove(LONGITUDE_PROPERTY);</span>
 		} else {
-<span class="fc" id="L552">			this.properties.put(LONGITUDE_PROPERTY, longitude.toPlainString());</span>
+<span class="fc" id="L556">			this.properties.put(LONGITUDE_PROPERTY, longitude.toPlainString());</span>
 		}
-<span class="fc" id="L554">	}</span>
+<span class="fc" id="L558">	}</span>
 
 	/**
 	 * Get the depth property as a big decimal.
@@ -559,11 +563,11 @@ public class Product {
 	 * @return depth property as big decimal, or null if no depth property set.
 	 */
 	public BigDecimal getDepth() {
-<span class="fc" id="L562">		String strDepth = this.properties.get(DEPTH_PROPERTY);</span>
-<span class="fc bfc" id="L563" title="All 2 branches covered.">		if (strDepth == null) {</span>
-<span class="fc" id="L564">			return null;</span>
+<span class="fc" id="L566">		String strDepth = this.properties.get(DEPTH_PROPERTY);</span>
+<span class="fc bfc" id="L567" title="All 2 branches covered.">		if (strDepth == null) {</span>
+<span class="fc" id="L568">			return null;</span>
 		}
-<span class="fc" id="L566">		return new BigDecimal(strDepth);</span>
+<span class="fc" id="L570">		return new BigDecimal(strDepth);</span>
 	}
 
 	/**
@@ -573,12 +577,12 @@ public class Product {
 	 *            the depth to set.
 	 */
 	public void setDepth(final BigDecimal depth) {
-<span class="pc bpc" id="L576" title="1 of 2 branches missed.">		if (depth == null) {</span>
-<span class="nc" id="L577">			this.properties.remove(DEPTH_PROPERTY);</span>
+<span class="pc bpc" id="L580" title="1 of 2 branches missed.">		if (depth == null) {</span>
+<span class="nc" id="L581">			this.properties.remove(DEPTH_PROPERTY);</span>
 		} else {
-<span class="fc" id="L579">			this.properties.put(DEPTH_PROPERTY, depth.toPlainString());</span>
+<span class="fc" id="L583">			this.properties.put(DEPTH_PROPERTY, depth.toPlainString());</span>
 		}
-<span class="fc" id="L581">	}</span>
+<span class="fc" id="L585">	}</span>
 
 	/**
 	 * Get the version property.
@@ -586,7 +590,7 @@ public class Product {
 	 * @return the version property, or null if no version property set.
 	 */
 	public String getVersion() {
-<span class="fc" id="L589">		return this.properties.get(VERSION_PROPERTY);</span>
+<span class="fc" id="L593">		return this.properties.get(VERSION_PROPERTY);</span>
 	}
 
 	/**
@@ -596,12 +600,12 @@ public class Product {
 	 *            the version to set.
 	 */
 	public void setVersion(final String version) {
-<span class="pc bpc" id="L599" title="1 of 2 branches missed.">		if (version == null) {</span>
-<span class="nc" id="L600">			this.properties.remove(VERSION_PROPERTY);</span>
+<span class="pc bpc" id="L603" title="1 of 2 branches missed.">		if (version == null) {</span>
+<span class="nc" id="L604">			this.properties.remove(VERSION_PROPERTY);</span>
 		} else {
-<span class="fc" id="L602">			this.properties.put(VERSION_PROPERTY, version);</span>
+<span class="fc" id="L606">			this.properties.put(VERSION_PROPERTY, version);</span>
 		}
-<span class="fc" id="L604">	}</span>
+<span class="fc" id="L608">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

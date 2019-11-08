@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExtentIndex.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">ExtentIndex.java</span></div><h1>ExtentIndex.java</h1><pre class="source lang-java linenums">/**
+ * Extent Index
+ */
+package gov.usgs.earthquake.indexer;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Types;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.sqlite.SQLiteException;
+
+/**
+ * ExtentIndex is a type of JDBCProductIndex that can also send updates to the extentSummary table.
+ */
+public class ExtentIndex extends JDBCProductIndex {
+
+<span class="fc" id="L20">  private static final Logger LOGGER = Logger.getLogger(ExtentIndex.class.getName());</span>
+  public static final String EXTENT_TABLE = &quot;extentSummary&quot;;
+  public static final String EXTENT_INDEX_ID = &quot;productid&quot;;
+  public static final String EXTENT_START_TIME = &quot;starttime&quot;;
+  public static final String EXTENT_END_TIME = &quot;endtime&quot;;
+  public static final String EXTENT_MAX_LAT = &quot;maxlatitude&quot;;
+  public static final String EXTENT_MIN_LAT = &quot;minlatitude&quot;;
+  public static final String EXTENT_MAX_LONG = &quot;maxlongitude&quot;;
+  public static final String EXTENT_MIN_LONG = &quot;minlongitude&quot;;
+
+  public ExtentIndex() throws Exception {
+<span class="fc" id="L31">    super();</span>
+<span class="fc" id="L32">  }</span>
+
+  /**
+   * Queries extentSummary table for the largest index id.
+   * 
+   * @throws Exception if something goes wrong with database transaction
+   */
+  public long getLastExtentIndexId() throws Exception{
+    long lastIndex;
+
+    //Prepare statement
+<span class="fc" id="L43">    Connection connection = connect();</span>
+<span class="fc" id="L44">    String sql = &quot;SELECT MAX(&quot; + EXTENT_INDEX_ID + &quot;) AS &quot; + EXTENT_INDEX_ID + &quot; FROM &quot; + EXTENT_TABLE;</span>
+<span class="fc" id="L45">    try (PreparedStatement getLastIndex = connection.prepareStatement(sql)) {</span>
+      //Parse Results
+<span class="fc" id="L47">      ResultSet results = getLastIndex.executeQuery();</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">      if (results.next()) {</span>
+<span class="fc" id="L49">        lastIndex = results.getLong(EXTENT_INDEX_ID);</span>
+      } else {
+        //No index in extentSummary table
+<span class="nc" id="L52">        lastIndex = 0;</span>
+<span class="nc" id="L53">        LOGGER.log(Level.FINEST, &quot;[&quot; + getName() + &quot;] no products in extentSummary table; using index 0&quot;);</span>
+      }
+<span class="nc" id="L55">    } catch (SQLiteException e) {</span>
+      //Throws exception with SQL for debugging
+<span class="nc" id="L57">      throw new SQLiteException(e.getMessage() + &quot;. SQL query was: &quot; + sql, e.getResultCode());</span>
+<span class="fc" id="L58">    }</span>
+<span class="fc" id="L59">    return lastIndex;</span>
+  }
+
+  /**
+   * Inserts valid ExtentSummary products into extentSummary table
+   * 
+   * @param product the product to be added
+   * 
+   * @throws Exception if something goes wrong with the database transaction
+   */
+  public void addExtentSummary(ExtentSummary product) throws Exception {
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">    if (!product.isValid()) {</span>
+<span class="nc" id="L71">      LOGGER.log(Level.FINE,&quot;[&quot; + getName() + &quot;] product &quot; + product.getIndexId()</span>
+          + &quot; has no extent information; won't add to extent table&quot;);
+<span class="nc" id="L73">      return;</span>
+    }
+
+    //Prepare statement
+<span class="fc" id="L77">    Connection connection = connect();</span>
+<span class="fc" id="L78">    String sql = &quot;INSERT INTO &quot; + EXTENT_TABLE +</span>
+        &quot;(&quot; + 
+          EXTENT_INDEX_ID + &quot;,&quot; +
+          EXTENT_START_TIME + &quot;,&quot; + 
+          EXTENT_END_TIME + &quot;,&quot; +
+          EXTENT_MIN_LAT + &quot;,&quot; +
+          EXTENT_MAX_LAT + &quot;,&quot; +
+          EXTENT_MIN_LONG + &quot;,&quot; +
+          EXTENT_MAX_LONG +
+        &quot;) VALUES (?, ?, ?, ?, ?, ?, ?)&quot;;
+
+<span class="fc" id="L89">    try (PreparedStatement addProduct = connection.prepareStatement(sql)) {</span>
+
+      //Add values
+
+<span class="fc" id="L93">      addProduct.setLong(1, product.getIndexId());</span>
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">      if (product.getStartTime() != null) {</span>
+<span class="nc" id="L95">        addProduct.setLong(2, product.getStartTime().getTime());</span>
+      } else {
+<span class="fc" id="L97">        addProduct.setNull(2, Types.BIGINT);</span>
+      }
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">      if (product.getEndTime() != null) {</span>
+<span class="nc" id="L100">        addProduct.setLong(3, product.getEndTime().getTime());</span>
+      } else {
+<span class="fc" id="L102">        addProduct.setNull(3, Types.BIGINT);</span>
+      }
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">      if (product.getMinLatitude() != null) {</span>
+<span class="nc" id="L105">        addProduct.setBigDecimal(4, product.getMinLatitude());</span>
+      } else {
+<span class="fc" id="L107">        addProduct.setNull(4, Types.DECIMAL);</span>
+      }
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">      if (product.getMaxLatitude() != null) {</span>
+<span class="fc" id="L110">        addProduct.setBigDecimal(5, product.getMaxLatitude());</span>
+      } else {
+<span class="nc" id="L112">        addProduct.setNull(5, Types.DECIMAL);</span>
+      }
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">      if (product.getMinLongitude() != null) {</span>
+<span class="nc" id="L115">        addProduct.setBigDecimal(6, product.getMinLongitude());</span>
+      } else {
+<span class="fc" id="L117">        addProduct.setNull(6, Types.DECIMAL);</span>
+      }
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">      if (product.getMaxLongitude() != null) {</span>
+<span class="nc" id="L120">        addProduct.setBigDecimal(7, product.getMaxLongitude());</span>
+      } else {
+<span class="fc" id="L122">        addProduct.setNull(7, Types.DECIMAL);</span>
+      }
+
+      //Add to extentSummary table
+<span class="fc" id="L126">      addProduct.executeUpdate();</span>
+<span class="fc" id="L127">      addProduct.clearParameters();</span>
+    }
+<span class="fc" id="L129">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

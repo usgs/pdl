@@ -178,6 +178,24 @@ properties include:</p>
 	<dt>longitude</dt>
 	<dd>longitude of related event</dd>
 
+	<dt>maximum-latitude</dt>
+	<dd>for space-bounded products, the upper latitude bound</dd>
+
+	<dt>minimum-latitude</dt>
+	<dd>for space-bounded products, the lower latitude bound</dd>
+
+	<dt>maximum-longitude</dt>
+	<dd>for space-bounded products, the upper longitude bound</dd>
+
+	<dt>minimum-longitude</dt>
+	<dd>for space-bounded products, the lower longitude bound</dd>
+
+	<dt>start-time</dt>
+	<dd>for time-bounded products, the start time</dd>
+
+	<dt>end-time</dt>
+	<dd>for time-bounded products, the start time</dd>
+
 	<dt>depth</dt>
 	<dd>depth of related event</dd>
 
@@ -192,7 +210,8 @@ properties include:</p>
 <p>All of these properties are optional, but a combination of either
 <code>eventsource</code> and <code>eventsourcecode</code> OR <code>eventtime</code>,
 <code>latitude</code>, and <code>longitude</code> are recommended for
-event-related products for association purposes.</p>
+event-related products for association purposes. The inclusion of any of the
+time- or space-bounding properties will make products searchable using these extents.</p>
 
 
 <h4>Signature</h4>

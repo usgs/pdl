@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExtentSummary.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.indexer</a> &gt; <span class="el_source">ExtentSummary.java</span></div><h1>ExtentSummary.java</h1><pre class="source lang-java linenums">/**
+ * ExtentSummary
+ */
+package gov.usgs.earthquake.indexer;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Map;
+
+import gov.usgs.util.XmlUtils;
+
+/**
+ * Stores ExtentSummary information for products.
+ */
+public class ExtentSummary {
+  private Long id;
+  private Date startTime;
+  private Date endTime;
+  private BigDecimal maxLatitude;
+  private BigDecimal minLatitude;
+  private BigDecimal maxLongitude;
+  private BigDecimal minLongitude;
+
+  public static final String EXTENT_START_TIME_PROPERTY = &quot;starttime&quot;;
+  public static final String EXTENT_END_TIME_PROPERTY = &quot;endtime&quot;;
+  public static final String EXTENT_MAX_LAT_PROPERTY = &quot;maximum-latitude&quot;;
+  public static final String EXTENT_MIN_LAT_PROPERTY = &quot;minimum-latitude&quot;;
+  public static final String EXTENT_MAX_LONG_PROPERTY = &quot;maximum-longitude&quot;;
+  public static final String EXTENT_MIN_LONG_PROPERTY = &quot;minimum-longitude&quot;;
+
+
+<span class="fc" id="L32">  public ExtentSummary() {</span>
+    //Do nothing; this is if member vars are to be set manually
+<span class="fc" id="L34">  }</span>
+
+  /**
+   * Builds an extentSummary from product properties. If the product has none of the properties, the ExtentSummary is still built.
+   * 
+   * @param product the productSummary to build from
+   */
+<span class="fc" id="L41">  public ExtentSummary(ProductSummary product) {</span>
+<span class="fc" id="L42">    Map&lt;String,String&gt; properties = product.getProperties();</span>
+
+<span class="fc" id="L44">    id = product.getIndexId();</span>
+
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">    if (properties.get(EXTENT_START_TIME_PROPERTY) != null) {</span>
+<span class="fc" id="L47">      startTime = XmlUtils.getDate(properties.get(EXTENT_START_TIME_PROPERTY));</span>
+    }
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">    if (properties.get(EXTENT_END_TIME_PROPERTY) != null) {</span>
+<span class="fc" id="L50">      endTime = XmlUtils.getDate(properties.get(EXTENT_END_TIME_PROPERTY));</span>
+    }
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">    if (properties.get(EXTENT_MAX_LAT_PROPERTY) != null) {</span>
+<span class="fc" id="L53">      maxLatitude = new BigDecimal(properties.get(EXTENT_MAX_LAT_PROPERTY));</span>
+    }
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">    if (properties.get(EXTENT_MAX_LONG_PROPERTY) != null) {</span>
+<span class="fc" id="L56">      maxLongitude = new BigDecimal(properties.get(EXTENT_MAX_LONG_PROPERTY));</span>
+    }
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">    if (properties.get(EXTENT_MIN_LAT_PROPERTY) != null) {</span>
+<span class="fc" id="L59">      minLatitude = new BigDecimal(properties.get(EXTENT_MIN_LAT_PROPERTY));</span>
+    }
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">    if (properties.get(EXTENT_MIN_LONG_PROPERTY) != null) {</span>
+<span class="fc" id="L62">      minLongitude = new BigDecimal(properties.get(EXTENT_MIN_LONG_PROPERTY));</span>
+    }
+<span class="fc" id="L64">  }</span>
+
+  /**
+   * Returns TRUE if this extent should be put in the extentSummary table (at least one property is not null)
+   */
+  public boolean isValid() {
+<span class="pc bpc" id="L70" title="4 of 12 branches missed.">    return </span>
+      startTime != null || 
+      endTime != null || 
+      maxLatitude != null || 
+      maxLongitude != null || 
+      minLatitude != null || 
+      minLongitude != null;
+  }
+
+  public Long getIndexId() {
+<span class="fc" id="L80">    return this.id;</span>
+  }
+  public void setIndexId(Long id) {
+<span class="fc" id="L83">    this.id = id;</span>
+<span class="fc" id="L84">  }</span>
+
+  public Date getStartTime() {
+<span class="fc" id="L87">    return this.startTime;</span>
+  }
+  public void setStartTime(Date startTime) {
+<span class="nc" id="L90">    this.startTime = startTime;</span>
+<span class="nc" id="L91">  }</span>
+  
+  public Date getEndTime() {
+<span class="fc" id="L94">    return this.endTime;</span>
+  }
+  public void setEndTime(Date endTime) {
+<span class="nc" id="L97">    this.endTime = endTime;</span>
+<span class="nc" id="L98">  }</span>
+
+  public BigDecimal getMaxLatitude() {
+<span class="fc" id="L101">    return this.maxLatitude;</span>
+  }
+  public void setMaxLatitude(BigDecimal maxLatitude) {
+<span class="fc" id="L104">    this.maxLatitude = maxLatitude;</span>
+<span class="fc" id="L105">  }</span>
+
+  public BigDecimal getMinLatitude() {
+<span class="fc" id="L108">    return this.minLatitude;</span>
+  }
+  public void setMinLatitude(BigDecimal minLatitude) {
+<span class="nc" id="L111">    this.minLatitude = minLatitude;</span>
+<span class="nc" id="L112">  }</span>
+
+  public BigDecimal getMaxLongitude() {
+<span class="fc" id="L115">    return this.maxLongitude;</span>
+  }
+  public void setMaxLongitude(BigDecimal maxLongitude) {
+<span class="nc" id="L118">    this.maxLongitude = maxLongitude;</span>
+<span class="nc" id="L119">  }</span>
+
+  public BigDecimal getMinLongitude() {
+<span class="fc" id="L122">    return this.minLongitude;</span>
+  }
+  public void setMinLongitude(BigDecimal minLongitude) {
+<span class="fc" id="L125">    this.minLongitude = minLongitude;</span>
+<span class="fc" id="L126">  }</span>
+
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
