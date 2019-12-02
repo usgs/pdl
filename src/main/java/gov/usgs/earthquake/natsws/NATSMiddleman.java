@@ -12,6 +12,9 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import java.io.ByteArrayInputStream;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Responsible for subscribing to a single channel and forwarding messages
@@ -26,7 +29,19 @@ public class NATSMiddleman implements MessageHandler {
   private WebSocketSession owner;
 
   public NATSMiddleman(String host, String port, String clusterId, String subject, int sequence, boolean isMessageJson, WebSocketSession owner) {
-    client = new NATSClient(host,port,clusterId,owner.getId());
+    // do a sha1 hash
+    String hash = "";
+    try {
+      // do a hash if we can
+      MessageDigest digest = MessageDigest.getInstance("SHA-1");
+      digest.reset();
+      digest.update(owner.getId().getBytes());
+      hash = String.format("%040x", new BigInteger(1, digest.digest()));
+    } catch (NoSuchAlgorithmException e) {
+      // ignore hash if we don't have what we need
+    }
+
+    client = new NATSClient(host,port,clusterId,hash);
     this.subject = subject;
     this.sequence = sequence;
     this.isMessageJson = isMessageJson;

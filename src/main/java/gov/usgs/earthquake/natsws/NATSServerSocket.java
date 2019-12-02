@@ -8,7 +8,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 /**
  * Manages concurrent message sessions with NATSMiddlemen
  * Responsible for keeping a map of connections and instantiating, removing middleman instances
@@ -70,11 +69,13 @@ public class NATSServerSocket {
   @OnOpen
   public void onOpen(String sequence, WebSocketSession session) {
     // make sure sequence is valid
+    System.out.println("[socket_debug] entered open handler");
     int intSequence = 0;
     try {
       intSequence = Integer.parseInt(sequence);
     } catch (Exception e) {
       session.close(CloseReason.INVALID_FRAME_PAYLOAD_DATA);
+      System.out.println("[socket_debug] exiting from bad sequence");
       return;
     }
 
@@ -88,16 +89,28 @@ public class NATSServerSocket {
       messageType == "json",
       session);
 
+    System.out.println("[socket_debug] provided session id: " + session.getId());
+
     // start up middleman
     try {
       newMiddleman.startup();
     } catch (Exception e) {
+      System.out.println("[socket_debug] failed to start middleman. Exception: " );
+      e.printStackTrace();
       session.close(CloseReason.INTERNAL_ERROR);
       return;
     }
 
     // add middleman to set
     natsConnections.put(session.getId(),newMiddleman);
+
+    System.out.println("[socket_debug] middleman started, forwarding...");
+  }
+
+  @OnMessage
+  public void onMessage(String sequence, String message, WebSocketSession session) {
+    System.out.println("[socket_debug] received message, closing session");
+    session.close(CloseReason.POLICY_VIOLATION);
   }
 
   /**
@@ -108,6 +121,7 @@ public class NATSServerSocket {
    */
   @OnClose
   public void onClose(String sequence, WebSocketSession session) {
+    System.out.println("[socket_debug] entered close handler");
     // get middleman
     NATSMiddleman middleman = natsConnections.remove(session.getId());
 
@@ -117,9 +131,12 @@ public class NATSServerSocket {
         middleman.shutdown();
       } catch (Exception e) {
         LOGGER.log(Level.WARNING, "Failed to close NATS connection for session " + session.getId());
+        System.out.println("[socket_debug] failed to close middleman");
         e.printStackTrace();
       }
     }
+
+    System.out.println("[socket_debug] done closing session");
 
   }
 
