@@ -4,6 +4,7 @@ import io.micronaut.websocket.CloseReason;
 import io.micronaut.websocket.WebSocketSession;
 import io.micronaut.websocket.annotation.*;
 
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,6 +13,7 @@ import java.util.logging.Logger;
  * Manages concurrent message sessions with NATSMiddlemen
  * Responsible for keeping a map of connections and instantiating, removing middleman instances
  */
+@Singleton
 @ServerWebSocket("/subscribe/{sequence}")
 public class NATSServerSocket {
 

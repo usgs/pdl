@@ -6,6 +6,7 @@ import io.nats.streaming.Message;
 import io.nats.streaming.MessageHandler;
 import io.nats.streaming.Subscription;
 import io.nats.streaming.SubscriptionOptions;
+import org.reactivestreams.Publisher;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -75,6 +76,7 @@ public class NATSMiddleman implements MessageHandler {
    */
   @Override
   public void onMessage(Message msg) {
+    System.out.println("Middleman received message, attempting to forward");
     // get metadata
     JsonObjectBuilder builder = Json.createObjectBuilder()
       .add("sequence",msg.getSequence())
@@ -92,6 +94,9 @@ public class NATSMiddleman implements MessageHandler {
 
     // create and forward
     JsonObject json = builder.build();
-    owner.send(json);
+    System.out.println("Constructed JSON: " + json);
+    String status = owner.isOpen()?"open":"closed";
+    System.out.println("Owner connection status: " + status);
+    owner.sendSync(json.toString());
   }
 }
