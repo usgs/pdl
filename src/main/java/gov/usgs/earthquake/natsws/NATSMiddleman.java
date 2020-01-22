@@ -76,7 +76,6 @@ public class NATSMiddleman implements MessageHandler {
    */
   @Override
   public void onMessage(Message msg) {
-    System.out.println("Middleman received message, attempting to forward");
     // get metadata
     JsonObjectBuilder builder = Json.createObjectBuilder()
       .add("sequence",msg.getSequence())
@@ -94,9 +93,6 @@ public class NATSMiddleman implements MessageHandler {
 
     // create and forward
     JsonObject json = builder.build();
-    System.out.println("Constructed JSON: " + json);
-    String status = owner.isOpen()?"open":"closed";
-    System.out.println("Owner connection status: " + status);
     owner.sendSync(json.toString());
   }
 }
