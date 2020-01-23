@@ -24,7 +24,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
     int supportLevel = IndexerModule.LEVEL_UNSUPPORTED;
     String type = getBaseProductType(product.getId().getType());
 
-    if ("origin".equals(type) && "update".equalsIgnoreCase(product.getStatus())) {
+    if ("origin".equals(type) && !"DELETE".equalsIgnoreCase(product.getStatus())) {
       supportLevel = IndexerModule.LEVEL_SUPPORTED;
     }
 
