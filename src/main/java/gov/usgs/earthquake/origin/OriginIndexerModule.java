@@ -42,7 +42,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
         title = this.geoservePlaces.getEventTitle(latitude, longitude);
         summaryProperties.put("title", title);
       } catch (Exception ex) {
-        LOGGER.finer(ex.getMessage());
+        LOGGER.fine(ex.getMessage());
         // Do nothing, value-added failed. Move on.
       }
     }
