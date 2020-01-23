@@ -14,7 +14,7 @@ import javax.json.JsonReader;
 
 import gov.usgs.util.StreamUtils;
 
-public class GeoservePlacesService {
+public class GeoservePlacesService implements GeoservePlaces {
   /** Default URL for GeoServe Places service. */
   public static final String DEFAULT_GEOSERVE_PLACES_URL = "https://earthquake.usgs.gov/ws/geoserve/places.json";
 
