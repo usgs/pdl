@@ -4,9 +4,6 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-
 import gov.usgs.earthquake.geoserve.GeoservePlacesService;
 import gov.usgs.earthquake.indexer.DefaultIndexerModule;
 import gov.usgs.earthquake.indexer.IndexerModule;
