@@ -29,12 +29,49 @@ public class GeoservePlacesService implements GeoservePlaces {
     this.endpointUrl = endpointUrl;
   }
 
-  public String getEndpointURL() {
-    return this.endpointUrl;
+  /**
+   * Converts a decimal degree azimuth to a canonical compass direction
+   *
+   * @param {Number} azimuth The degrees azimuth to be converted
+   *
+   * @return {String} The canonical compass direction for the given input azimuth
+   */
+  public String azimuthToDirection(double azimuth) {
+    double fullwind = 22.5;
+    String[] directions = { "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW",
+        "NNW", "N" };
+
+    // Invert azimuth for proper directivity
+    // Maybe not needed in the future.
+    azimuth += 180.0;
+
+    // adjust azimuth if negative
+    while (azimuth < 0.0) {
+      azimuth = azimuth + 360.0;
+    }
+
+    return directions[(int) Math.round((azimuth % 360.0) / fullwind)];
   }
 
-  public void setEndpointURL(final String endpointUrl) {
-    this.endpointUrl = endpointUrl;
+  public String formatEventTitle(JsonObject feature) {
+    JsonObject properties = feature.getJsonObject("properties");
+
+    String name = properties.getString("name");
+    String country = properties.getString("country_code").toLowerCase();
+    String admin = properties.getString("country_name");
+    int distance = properties.getInt("distance");
+    double azimuth = properties.getJsonNumber("azimuth").doubleValue();
+    String direction = azimuthToDirection(azimuth);
+
+    if ("us".equals(country)) {
+      admin = properties.getString("admin1_name");
+    }
+
+    return String.format("%d km %s of %s, %s", distance, direction, name, admin);
+  }
+
+  public String getEndpointURL() {
+    return this.endpointUrl;
   }
 
   public JsonObject getEventPlaces(BigDecimal latitude, BigDecimal longitude)
@@ -54,46 +91,12 @@ public class GeoservePlacesService implements GeoservePlaces {
     JsonObject places = this.getEventPlaces(latitude, longitude);
     JsonArray features = places.getJsonArray("features");
     JsonObject feature = features.get(0).asJsonObject();
-    JsonObject properties = feature.getJsonObject("properties");
 
-    String name = properties.getString("name");
-    String country = properties.getString("country_code").toLowerCase();
-    String admin = properties.getString("country_name");
-    int distance = properties.getInt("distance");
-    double azimuth = properties.getJsonNumber("azimuth").doubleValue();
-    String direction = azimuthToDirection(azimuth);
-
-    if ("us".equals(country)) {
-      admin = properties.getString("admin1_name");
-    }
-
-    return String.format("%d km %s of %s, %s", distance, direction, name, admin);
-
+    return this.formatEventTitle(feature);
   }
 
-  /**
-   * Converts a decimal degree azimuth to a canonical compass direction
-   *
-   * @param {Number} azimuth The degrees azimuth to be converted
-   *
-   * @return {String} The canonical compass direction for the given input azimuth
-   */
-  public String azimuthToDirection(double azimuth) {
-    double fullwind = 22.5;
-    String[] directions = { "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW",
-        "NNW", "N" };
-
-    // Invert azimuth for proper directivity
-    // Maybe not needed in the future.
-    azimuth += 180.0;
-
-    // adjust azimuth if negative
-    azimuth = Math.abs(azimuth);
-    while (azimuth < 0.0) {
-      azimuth = azimuth + 360.0;
-    }
-
-    return directions[(int) Math.round((azimuth % 360.0) / fullwind)];
+  public void setEndpointURL(final String endpointUrl) {
+    this.endpointUrl = endpointUrl;
   }
 
   // TODO as needed, implement full GeoServe places API options
