@@ -4,13 +4,16 @@ import javax.websocket.*;
 import java.net.URI;
 
 @ClientEndpoint
-public class WebSocketNotificationClient {
+//TODO: Figure out how pings are handled - should be default
+public class WebSocketClient {
 
   private Session session;
-  private MessageHandler.Whole<String> messageHandler;
+  private WebSocketListener listener;
 
   //constructor tries to open socket on instantiation
-  public WebSocketNotificationClient (URI endpoint) throws Exception{
+  public WebSocketClient(URI endpoint, WebSocketListener listener) throws Exception {
+    this.listener = listener;
+
     WebSocketContainer container = ContainerProvider.getWebSocketContainer();
     container.connectToServer(this, endpoint);
   }
@@ -26,18 +29,20 @@ public class WebSocketNotificationClient {
   }
 
   @OnMessage
-  public void onMessage(String message) {
-    if (this.messageHandler != null) {
-      messageHandler.onMessage(message);
-    }
+  public void onMessage(String message){
+    listener.onMessage(message);
   }
 
-  public void setMessageHandler(MessageHandler.Whole<String> messageHandler) {
-    this.messageHandler = messageHandler;
+  public void shutdown() throws Exception{
+    this.session.close();
+  }
+
+  public void setListener(WebSocketListener listener) {
+    this.listener = listener;
   }
 
   public boolean isConnected() {
-    return this.session != null;
+    return this.session != null && this.session.isOpen();
   }
 
 }
