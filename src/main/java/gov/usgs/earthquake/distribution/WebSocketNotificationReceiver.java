@@ -50,7 +50,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
 
     serverHost = config.getProperty(SERVER_HOST_PROPERTY, DEFAULT_SERVER_HOST);
     serverPort = config.getProperty(SERVER_PORT_PROPERTY, DEFAULT_SERVER_PORT);
-    serverPath = config.getProperty(SERVER_PATH_PROPERTY, DEFAULT_SERVER_PATH)
+    serverPath = config.getProperty(SERVER_PATH_PROPERTY, DEFAULT_SERVER_PATH);
     trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME);
   }
 
