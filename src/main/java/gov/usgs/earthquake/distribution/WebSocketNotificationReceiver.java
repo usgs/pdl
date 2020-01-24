@@ -25,6 +25,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   public static final String SERVER_HOST_PROPERTY = "serverHost";
   public static final String SERVER_PORT_PROPERTY = "serverPort";
   public static final String SEQUENCE_PROPERTY = "sequence";
+  public static final String TIMESTAMP_PROPERTY = "timestamp";
   public static final String TRACKING_FILE_NAME_PROPERTY = "trackingFileName";
 
   public static final String DEFAULT_SERVER_HOST = "http://www.google.com";
@@ -123,15 +124,19 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   public void onMessage(String message) {
     InputStream in = null;
     try {
+      //parse input as json
       in = StreamUtils.getInputStream(message);
       JsonReader reader = Json.createReader(in);
       JsonObject json = reader.readObject();
       reader.close();
 
+      //convert to URLNotification and receive
       JsonObject dataJson = json.getJsonObject(ATTRIBUTE_DATA);
-
       URLNotification notification = URLNotificationJSONConverter.parseJSON(dataJson);
       receiveNotification(notification);
+
+      //send heartbeat
+      HeartbeatListener.sendHeartbeatMessage(getName(), "nats notification timestamp", json.getString(TIMESTAMP_PROPERTY));
 
       //write tracking file
       sequence = json.getString(SEQUENCE_PROPERTY);
