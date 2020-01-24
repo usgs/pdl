@@ -3,9 +3,9 @@ package gov.usgs.earthquake.distribution;
 import gov.usgs.util.Config;
 
 /**
- * Receives notifications from an arbitrary web service.
+ * Receives notifications from an arbitrary web socket.
  */
-public class ProductNotificationReceiver extends DefaultNotificationReceiver {
+public class WebSocketNotificationReceiver extends DefaultNotificationReceiver {
 
   public static final String SERVER_HOST_PROPERTY = "serverHost";
   public static final String SERVER_PORT_PROPERTY = "serverPort";
