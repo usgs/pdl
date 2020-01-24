@@ -44,13 +44,17 @@ public class URLNotificationJSONConverter {
     JsonObject json = jsonReader.readObject();
     jsonReader.close();
 
+    return parseJSON(json);
+  }
+
+  public static URLNotification parseJSON(final JsonObject json) throws Exception{
     JsonObject idJson = json.getJsonObject(ATTRIBUTE_PRODUCT_ID);
 
     ProductId id = new ProductId(
-      idJson.getString(ATTRIBUTE_SOURCE),
-      idJson.getString(ATTRIBUTE_TYPE),
-      idJson.getString(ATTRIBUTE_CODE),
-      XmlUtils.getDate(idJson.getString(ATTRIBUTE_UPDATE_TIME)));
+            idJson.getString(ATTRIBUTE_SOURCE),
+            idJson.getString(ATTRIBUTE_TYPE),
+            idJson.getString(ATTRIBUTE_CODE),
+            XmlUtils.getDate(idJson.getString(ATTRIBUTE_UPDATE_TIME)));
 
     return new URLNotification(
             id,
@@ -67,4 +71,5 @@ public class URLNotificationJSONConverter {
 
     System.out.println(JSON);
   }
+
 }
