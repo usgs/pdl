@@ -32,7 +32,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   public static final String DEFAULT_SERVER_HOST = "http://www.google.com";
   public static final String DEFAULT_SERVER_PORT = "4222";
   public static final String DEFAULT_SERVER_PATH = "/sequence/";
-  public static String DEFAULT_TRACKING_FILE_NAME = "data/WebSocketReceiverInfo.json";
+  public static String DEFAULT_TRACKING_FILE_NAME = "data/WebSocketReceiverInfo";
 
   public static final String ATTRIBUTE_DATA = "data";
 
@@ -65,7 +65,10 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
 
     //read sequence from tracking file if other parameters agree
     JsonObject json = readTrackingFile();
-    if (json != null && json.getString(SERVER_HOST_PROPERTY) == serverHost && json.getString(SERVER_PORT_PROPERTY) == serverPort) {
+    if (json != null &&
+            json.getString(SERVER_HOST_PROPERTY) == serverHost &&
+            json.getString(SERVER_PORT_PROPERTY) == serverPort &&
+            json.getString(SERVER_PATH_PROPERTY) == serverPath) {
       sequence = json.getString(SEQUENCE_PROPERTY);
     }
 
@@ -91,13 +94,14 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   public void writeTrackingFile() throws Exception {
     JsonObject json = Json.createObjectBuilder()
             .add(SERVER_HOST_PROPERTY,serverHost)
+            .add(SERVER_PATH_PROPERTY,serverPath)
             .add(SERVER_PORT_PROPERTY,serverPort)
             .add(SEQUENCE_PROPERTY,sequence)
             .build();
 
     FileUtils.writeFileThenMove(
-            new File(trackingFileName + "_tmp"),
-            new File(trackingFileName),
+            new File(trackingFileName + "_tmp.json"),
+            new File(trackingFileName + ".json"),
             json.toString().getBytes());
   }
 
@@ -109,7 +113,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   public JsonObject readTrackingFile() throws Exception {
     JsonObject json = null;
 
-    File trackingFile = new File(trackingFileName);
+    File trackingFile = new File(trackingFileName + ".json");
     if (trackingFile.exists()) {
       InputStream contents = new ByteArrayInputStream(FileUtils.readFile(trackingFile));
       JsonReader jsonReader = Json.createReader(contents);
@@ -151,5 +155,45 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
       StreamUtils.closeStream(in);
     }
 
+  }
+
+  public String getServerHost() {
+    return serverHost;
+  }
+
+  public void setServerHost(String serverHost) {
+    this.serverHost = serverHost;
+  }
+
+  public String getServerPort() {
+    return serverPort;
+  }
+
+  public void setServerPort(String serverPort) {
+    this.serverPort = serverPort;
+  }
+
+  public String getServerPath() {
+    return serverPath;
+  }
+
+  public void setServerPath(String serverPath) {
+    this.serverPath = serverPath;
+  }
+
+  public String getTrackingFileName() {
+    return trackingFileName;
+  }
+
+  public void setTrackingFileName(String trackingFileName) {
+    this.trackingFileName = trackingFileName;
+  }
+
+  public String getSequence() {
+    return sequence;
+  }
+
+  public void setSequence(String sequence) {
+    this.sequence = sequence;
   }
 }
