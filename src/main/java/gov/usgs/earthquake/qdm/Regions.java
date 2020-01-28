@@ -79,6 +79,9 @@ public class Regions {
         if (this.isDefaultNetID(netid)) {
             // if any non-default regions match, default is not authoritative
             for (Region region : this.regions) {
+                if (netid.equalsIgnoreCase(region.netid)) {
+                    continue;
+                }
                 if (region.inpoly(p)) {
                     // another region is authoritative
                     return false;
