@@ -13,8 +13,8 @@ import java.util.ArrayList;
  *         default network (US), add isAuthor method to check if the event is
  *         authoritative
  *
- *         2018-08-21: JMF, reimplement parsing logic outside class.
- *         Update code to Java 1.8+.
+ *         2018-08-21: JMF, reimplement parsing logic outside class. Update code
+ *         to Java 1.8+.
  */
 public class Regions {
 
@@ -79,7 +79,7 @@ public class Regions {
         if (this.isDefaultNetID(netid)) {
             // if any non-default regions match, default is not authoritative
             for (Region region : this.regions) {
-                if (netid.equalsIgnoreCase(region.netid)) {
+                if (region.netid.equalsIgnoreCase(netid)) {
                     continue;
                 }
                 if (region.inpoly(p)) {
@@ -92,7 +92,7 @@ public class Regions {
         } else {
             // if any network regions match, network is authoritative
             for (Region region : regions) {
-                if (netid.equalsIgnoreCase(region.netid) && region.inpoly(p)) {
+                if (region.netid.equalsIgnoreCase(netid) && region.inpoly(p)) {
                     // network is authoritative
                     return true;
                 }
