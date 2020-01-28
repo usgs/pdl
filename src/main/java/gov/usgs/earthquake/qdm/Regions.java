@@ -1,8 +1,6 @@
 package gov.usgs.earthquake.qdm;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Set of regions.
@@ -79,12 +77,8 @@ public class Regions {
      */
     public boolean isAuthor(final String netid, final Point p) {
         if (this.isDefaultNetID(netid)) {
-            // filter default region from list
-            List<Region> regions = this.regions.stream()
-                    .filter(region -> !this.isDefaultNetID(region.netid))
-                    .collect(Collectors.toList());
             // if any non-default regions match, default is not authoritative
-            for (Region region : regions) {
+            for (Region region : this.regions) {
                 if (region.inpoly(p)) {
                     // another region is authoritative
                     return false;
@@ -93,14 +87,10 @@ public class Regions {
             // no other regions authoritative
             return true;
         } else {
-            // filter to regions for network
-            List<Region> regions = this.regions.stream()
-                    .filter(region -> netid.equalsIgnoreCase(region.netid))
-                    .collect(Collectors.toList());
             // if any network regions match, network is authoritative
             for (Region region : regions) {
-                if (region.inpoly(p)) {
-                    // network is authoriative
+                if (netid.equalsIgnoreCase(region.netid) && region.inpoly(p)) {
+                    // network is authoritative
                     return true;
                 }
             }
