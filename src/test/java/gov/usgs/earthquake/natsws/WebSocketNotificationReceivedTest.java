@@ -41,6 +41,8 @@ public class WebSocketNotificationReceivedTest {
     receiver.setProductStorage(new URLProductStorage());
     receiver.setNotificationIndex(new JDBCNotificationIndex());
     receiver.setTrackingFileName(WebSocketNotificationReceiver.DEFAULT_TRACKING_FILE_NAME + "_test");
+    receiver.setAttempts(3);
+    receiver.setTimeout(300);
     receiver.setName("receiver");
     try {
       System.out.println("Connecting to webservice: " + receiver.getServerHost() + ":" + receiver.getServerPort() + receiver.getServerPath() + receiver.getSequence());
