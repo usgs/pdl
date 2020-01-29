@@ -28,11 +28,15 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   public static final String SEQUENCE_PROPERTY = "sequence";
   public static final String TIMESTAMP_PROPERTY = "timestamp";
   public static final String TRACKING_FILE_NAME_PROPERTY = "trackingFileName";
+  public static final String CONNECT_ATTEMPTS_PROPERTY = "connectAttempts";
+  public static final String CONNECT_TIMEOUT_PROPERTY = "connectTimeout";
 
   public static final String DEFAULT_SERVER_HOST = "http://www.google.com";
   public static final String DEFAULT_SERVER_PORT = "4222";
   public static final String DEFAULT_SERVER_PATH = "/sequence/";
-  public static String DEFAULT_TRACKING_FILE_NAME = "data/WebSocketReceiverInfo";
+  public static final String DEFAULT_TRACKING_FILE_NAME = "data/WebSocketReceiverInfo";
+  public static final String DEFAULT_CONNECT_ATTEMPTS = "5";
+  public static final String DEFAULT_CONNECT_TIMEOUT = "5000";
 
   public static final String ATTRIBUTE_DATA = "data";
 
@@ -40,6 +44,9 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   private String serverPort;
   private String serverPath;
   private String trackingFileName;
+  private int attempts;
+  private double timeout;
+
   private WebSocketClient client;
   private String sequence = "0";
 
@@ -51,7 +58,10 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     serverHost = config.getProperty(SERVER_HOST_PROPERTY, DEFAULT_SERVER_HOST);
     serverPort = config.getProperty(SERVER_PORT_PROPERTY, DEFAULT_SERVER_PORT);
     serverPath = config.getProperty(SERVER_PATH_PROPERTY, DEFAULT_SERVER_PATH);
+    attempts = Integer.parseInt(config.getProperty(CONNECT_ATTEMPTS_PROPERTY, DEFAULT_CONNECT_ATTEMPTS));
+    timeout = Double.parseDouble(config.getProperty(CONNECT_TIMEOUT_PROPERTY, DEFAULT_CONNECT_TIMEOUT));
     trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME);
+
   }
 
   /**
@@ -73,7 +83,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     }
 
     //open websocket
-    client = new WebSocketClient(new URI(serverHost + ":" + serverPort + serverPath + sequence), this);
+    client = new WebSocketClient(new URI(serverHost + ":" + serverPort + serverPath + sequence), this, attempts, timeout);
   }
 
   /**
@@ -195,5 +205,21 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
 
   public void setSequence(String sequence) {
     this.sequence = sequence;
+  }
+
+  public int getAttempts() {
+    return attempts;
+  }
+
+  public void setAttempts(int attempts) {
+    this.attempts = attempts;
+  }
+
+  public double getTimeout() {
+    return timeout;
+  }
+
+  public void setTimeout(double timeout) {
+    this.timeout = timeout;
   }
 }

@@ -11,11 +11,29 @@ public class WebSocketClient {
   private WebSocketListener listener;
 
   //constructor tries to open socket on instantiation
-  public WebSocketClient(URI endpoint, WebSocketListener listener) throws Exception {
+  public WebSocketClient(URI endpoint, WebSocketListener listener, int attempts, double timeoutMillis) throws Exception {
     this.listener = listener;
 
+    // try to connect to server
     WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-    container.connectToServer(this, endpoint);
+    int failedAttempts = 0;
+    Exception lastExcept = null;
+    for (int i = 0; i < attempts; i++) {
+      try {
+        container.connectToServer(this, endpoint);
+        break;
+      } catch (Exception e) {
+        // increment failed attempts, sleep
+        failedAttempts++;
+        lastExcept = e;
+        Thread.sleep((long) timeoutMillis/attempts);
+      }
+    }
+
+    // throw connect exception if all attempts fail
+    if (failedAttempts == attempts) {
+      throw lastExcept;
+    }
   }
 
   @OnOpen
