@@ -62,6 +62,7 @@ public class WebSocketNotificationReceivedTest {
 
     System.out.println("Sending notification...");
 
+    // send notification
     try {
       sender.sendNotification(notification);
     } catch (Exception e) {
@@ -71,6 +72,7 @@ public class WebSocketNotificationReceivedTest {
 
     System.out.println("Notification sent! Waiting for receipt...");
 
+    // wait 5 seconds to receive notification; check every second to see if notification received
     for (int i = 1; i <= 5; i++) {
       Thread.sleep(1000);
       System.out.println(i + "...");
@@ -92,12 +94,4 @@ public class WebSocketNotificationReceivedTest {
     System.out.println("Done.");
 
   }
-
-  /*
-  private class TestWebSocketNotificationReceiver extends WebSocketNotificationReceiver {
-    @Override
-    public void receiveNotification(Notification notification) {
-      receivedNotification = (URLNotification) notification;
-    }
-  }*/
 }

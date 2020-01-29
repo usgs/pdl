@@ -3,14 +3,24 @@ package gov.usgs.earthquake.distribution;
 import javax.websocket.*;
 import java.net.URI;
 
+/**
+ * Manages a simple connection to a websocket. Can also be overridden for more complex behavior.
+ */
 @ClientEndpoint
-//TODO: Figure out how pings are handled - should be default
 public class WebSocketClient {
 
   private Session session;
   private WebSocketListener listener;
 
-  //constructor tries to open socket on instantiation
+  /**
+   * Constructs the client. Also connects to the server.
+   *
+   * @param endpoint the URI to connect to
+   * @param listener a WebSocketListener to handle incoming messages
+   * @param attempts an integer number of times to try the connection
+   * @param timeoutMillis a double for the time span to connect over; divided over the number of attempts
+   * @throws Exception on thread interrupt or connection failure
+   */
   public WebSocketClient(URI endpoint, WebSocketListener listener, int attempts, double timeoutMillis) throws Exception {
     this.listener = listener;
 
