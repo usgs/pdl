@@ -25,9 +25,6 @@ public class EIDSNotificationSender extends DefaultNotificationSender {
 	/** Default directory where notifications are sent. */
 	public static final String EIDS_DEFAULT_POLLDIR = "polldir";
 
-	/** How long to wait until checking for expired notifications/products. */
-	private Long senderCleanupInterval;
-
 	/** Directory for Polldir send, in case CORBA send fails. */
 	private File serverPolldir = null;
 	/** CORBA sending object. */
@@ -112,14 +109,6 @@ public class EIDSNotificationSender extends DefaultNotificationSender {
 		}
 
 		super.startup();
-	}
-
-	public Long getSenderCleanupInterval() {
-		return senderCleanupInterval;
-	}
-
-	public void setSenderCleanupInterval(Long senderCleanupInterval) {
-		this.senderCleanupInterval = senderCleanupInterval;
 	}
 
 	public File getServerPolldir() {
