@@ -30,13 +30,15 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   public static final String TRACKING_FILE_NAME_PROPERTY = "trackingFileName";
   public static final String CONNECT_ATTEMPTS_PROPERTY = "connectAttempts";
   public static final String CONNECT_TIMEOUT_PROPERTY = "connectTimeout";
+  public static final String RETRY_ON_CLOSE_PROPERTY = "retryOnClose";
 
   public static final String DEFAULT_SERVER_HOST = "http://www.google.com";
   public static final String DEFAULT_SERVER_PORT = "4222";
   public static final String DEFAULT_SERVER_PATH = "/sequence/";
   public static final String DEFAULT_TRACKING_FILE_NAME = "data/WebSocketReceiverInfo";
   public static final String DEFAULT_CONNECT_ATTEMPTS = "5";
-  public static final String DEFAULT_CONNECT_TIMEOUT = "5000";
+  public static final String DEFAULT_CONNECT_TIMEOUT = "1000";
+  public static final String DEFAULT_RETRY_ON_CLOSE = "true";
 
   public static final String ATTRIBUTE_DATA = "data";
 
@@ -45,7 +47,8 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   private String serverPath;
   private String trackingFileName;
   private int attempts;
-  private double timeout;
+  private long timeout;
+  private boolean retryOnClose;
 
   private WebSocketClient client;
   private String sequence = "0";
@@ -59,9 +62,9 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     serverPort = config.getProperty(SERVER_PORT_PROPERTY, DEFAULT_SERVER_PORT);
     serverPath = config.getProperty(SERVER_PATH_PROPERTY, DEFAULT_SERVER_PATH);
     attempts = Integer.parseInt(config.getProperty(CONNECT_ATTEMPTS_PROPERTY, DEFAULT_CONNECT_ATTEMPTS));
-    timeout = Double.parseDouble(config.getProperty(CONNECT_TIMEOUT_PROPERTY, DEFAULT_CONNECT_TIMEOUT));
+    timeout = Long.parseLong(config.getProperty(CONNECT_TIMEOUT_PROPERTY, DEFAULT_CONNECT_TIMEOUT));
+    retryOnClose = Boolean.parseBoolean(config.getProperty(RETRY_ON_CLOSE_PROPERTY, DEFAULT_RETRY_ON_CLOSE));
     trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME);
-
   }
 
   /**
@@ -83,7 +86,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     }
 
     //open websocket
-    client = new WebSocketClient(new URI(serverHost + ":" + serverPort + serverPath + sequence), this, attempts, timeout);
+    client = new WebSocketClient(new URI(serverHost + ":" + serverPort + serverPath + sequence), this, attempts, timeout, true);
   }
 
   /**
@@ -215,11 +218,11 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     this.attempts = attempts;
   }
 
-  public double getTimeout() {
+  public long getTimeout() {
     return timeout;
   }
 
-  public void setTimeout(double timeout) {
+  public void setTimeout(long timeout) {
     this.timeout = timeout;
   }
 }
