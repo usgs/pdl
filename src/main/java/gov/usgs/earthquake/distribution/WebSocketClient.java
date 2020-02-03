@@ -10,7 +10,16 @@ import java.net.URI;
 public class WebSocketClient {
 
   private Session session;
+
+  private URI endpoint;
   private WebSocketListener listener;
+  private int attempts;
+  private long timeoutMillis;
+  private boolean retryOnClose;
+
+  public static final int DEFAULT_ATTEMPTS = 3;
+  public static final long DEFAULT_TIMEOUT_MILLIS = 100;
+  public static final boolean DEFAULT_RETRY_ON_CLOSE = true;
 
   /**
    * Constructs the client. Also connects to the server.
@@ -18,12 +27,24 @@ public class WebSocketClient {
    * @param endpoint the URI to connect to
    * @param listener a WebSocketListener to handle incoming messages
    * @param attempts an integer number of times to try the connection
-   * @param timeoutMillis a double for the time span to connect over; divided over the number of attempts
+   * @param timeoutMillis a long for the wait time between attempts
    * @throws Exception on thread interrupt or connection failure
    */
-  public WebSocketClient(URI endpoint, WebSocketListener listener, int attempts, double timeoutMillis) throws Exception {
+  public WebSocketClient(URI endpoint, WebSocketListener listener, int attempts, long timeoutMillis, boolean retryOnClose) throws Exception {
     this.listener = listener;
+    this.endpoint = endpoint;
+    this.attempts = attempts;
+    this.timeoutMillis = timeoutMillis;
+    this.retryOnClose = retryOnClose;
 
+    connect();
+  }
+
+  public WebSocketClient(URI endpoint, WebSocketListener listener) throws Exception {
+    this(endpoint, listener, DEFAULT_ATTEMPTS, DEFAULT_TIMEOUT_MILLIS, DEFAULT_RETRY_ON_CLOSE);
+  }
+
+  public void connect() throws Exception {
     // try to connect to server
     WebSocketContainer container = ContainerProvider.getWebSocketContainer();
     int failedAttempts = 0;
@@ -36,7 +57,7 @@ public class WebSocketClient {
         // increment failed attempts, sleep
         failedAttempts++;
         lastExcept = e;
-        Thread.sleep((long) timeoutMillis/attempts);
+        Thread.sleep(timeoutMillis);
       }
     }
 
@@ -54,6 +75,15 @@ public class WebSocketClient {
   @OnClose
   public void onClose(Session session, CloseReason reason) {
     this.session = null;
+
+    if (retryOnClose) {
+      try {
+        this.connect();
+      } catch (Exception e) {
+        // failed to reconnect
+        //TODO: figure out what to do here
+      }
+    }
   }
 
   @OnMessage
@@ -61,7 +91,8 @@ public class WebSocketClient {
     listener.onMessage(message);
   }
 
-  public void shutdown() throws Exception{
+  public void shutdown() throws Exception {
+    retryOnClose = false;
     this.session.close();
   }
 

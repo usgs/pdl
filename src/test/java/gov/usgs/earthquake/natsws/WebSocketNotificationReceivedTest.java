@@ -81,17 +81,20 @@ public class WebSocketNotificationReceivedTest {
         if (notification.equals(receivedNotification)) {
           System.out.println("Notification correct!");
         } else {
-          System.out.println("Error in notification...");
+          System.out.println("Error in notification.");
         }
         break;
       }
     }
 
     if (receivedNotification == null) {
-      System.out.println("Notification never received...");
+      System.out.println("Notification never received.");
     }
 
-    System.out.println("Done.");
+    sender.shutdown();
+    receiver.shutdown();
 
+    System.out.println("Done.");
+    System.exit(0);
   }
 }
