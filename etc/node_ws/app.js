@@ -2,8 +2,8 @@
 const host_name = '127.0.0.1';
 const port_name = 8080;
 const sub_path = "/subscribe/"
-const cluster_id = 'cluster-id'
-const channel = 'channel'
+const cluster_id = 'usgs'
+const channel = 'anss.pdl.realtime'
 
 // stan setup
 const stan = require('node-nats-streaming');
@@ -43,12 +43,11 @@ server.on('connection', function onConnection(ws, req) {
 
       // define stan message behavior
       subscription.on('message', function onStanMessage(message) {
-        //TODO: Do notification forwarding
         // format as json
-        var json;
+        var json = {sequence: message.getSequence(), timestamp: message.getTimestamp(), data: JSON.parse(message.getData())};
 
         // forward notification
-        ws.send(json);
+        ws.send(JSON.stringify(json));
       });
     });
   });
