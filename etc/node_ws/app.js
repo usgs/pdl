@@ -11,15 +11,20 @@ const stan = require('node-nats-streaming');
 // web socket setup
 const WebSocket = require('ws');
 const server = new WebSocket.Server({host: host_name, port:port_name});
-var last_id = 0;
+
+// uuid
+const { uuid } = require('uuidv4');
 
 console.log('Setup complete, waiting for connections...');
 
 server.on('connection', function onConnection(ws, req) {
-  //store stan connection
+  console.log('Connection opened with URL ' + req.url);
+  this.isAlive = true;
+
+  // store stan connection
   var conn;
 
-  console.log('Connection opened with URL ' + req.url);
+  var id = uuid();
 
   // get sequence
   var seq_pos = req.url.lastIndexOf(sub_path);
@@ -37,10 +42,9 @@ server.on('connection', function onConnection(ws, req) {
   console.log('Provided sequence: ' + seq_str);
 
   // do stan connection
-  conn = stan.connect(cluster_id, 'node-' + last_id); //need custom client id's for each ws connection; will use better behavior eventually.
-  last_id++;
+  conn = stan.connect(cluster_id, id); //need custom client id's for each ws connection; will use better behavior eventually.
 
-  console.log('Connecting to stan server with id: node-' + (last_id-1));
+  console.log('Connecting to stan server with id: ' + id);
 
   // set up connection behavior
   conn.on('connect', function onStanConnection() {
@@ -57,7 +61,7 @@ server.on('connection', function onConnection(ws, req) {
     subscription.on('message', function onStanMessage(message) {
       // format as json
       var json = {sequence: message.getSequence(), timestamp: message.getTimestamp(), data: JSON.parse(message.getData())};
-      console.log('Received message. Payload: ' + JSON.stringify(json));
+      //console.log('Received message. Payload: ' + JSON.stringify(json));
       // forward notification
       ws.send(JSON.stringify(json));
     });
@@ -74,5 +78,19 @@ server.on('connection', function onConnection(ws, req) {
     // close connection, or just get rid of this
   });
 
-  //TODO: send periodic pings
+  ws.on('pong', function heartbeat() {
+    //console.log('Received pong');
+    this.isAlive = true;
+  })
 });
+
+// periodic pings
+const interval = setInterval(function pingInterval() {
+  //console.log('Sending ping');
+  server.clients.forEach(function(ws) {
+    if (ws.isAlive === false) return ws.terminate();
+
+    ws.isAlive = false;
+    ws.ping();
+  });
+}, 30000); //ping interval should be configurable
