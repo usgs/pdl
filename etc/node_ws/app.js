@@ -13,48 +13,60 @@ const WebSocket = require('ws');
 const server = new WebSocket.Server({host: host_name, port:port_name});
 var last_id = 0;
 
+console.log('Setup complete, waiting for connections...');
+
 server.on('connection', function onConnection(ws, req) {
   //store stan connection
   var conn;
 
-  ws.on('open', function onOpen() {
-    // get sequence
-    var seq_pos = req.url.lastIndexOf(sub_path);
-    if (!seq_pos) {
-      ws.close(); //also do malformed URL?
-    }
-    seq_str = req.url.slice(seq_pos + sub_path.length);
-    var seq = parseInt(seq_str);
-    if (!seq) {
-      ws.close; //also do malformed URL?
-    }
+  console.log('Connection opened with URL ' + req.url);
 
-    // do stan connection
-    conn = stan.connect(cluster-id, 'node-' + last_id); //need custom client id's for each ws connection; will use better behavior eventually.
-    last_id++;
+  // get sequence
+  var seq_pos = req.url.lastIndexOf(sub_path);
+  if (seq_pos == -1) {
+    console.log('Sequence path does not exist')
+    ws.close(); //also do malformed URL?
+  }
+  seq_str = req.url.slice(seq_pos + sub_path.length);
+  var seq = parseInt(seq_str);
+  if (seq == NaN) {
+    console.log('Sequence ' + seq_str + ' is not an integer');
+    ws.close(); //also do malformed URL?
+  }
 
-    // set up connection behavior
-    conn.on('connect', function onStanConnection() {
-      // connect with provided sequence
-      var opts = conn.subscriptionOptions();
-      opts.setStartAtSequence(seq);
-      // subscribe to channel
-      var subscription = conn.subscribe(channel, opts);
+  console.log('Provided sequence: ' + seq_str);
 
-      // define stan message behavior
-      subscription.on('message', function onStanMessage(message) {
-        // format as json
-        var json = {sequence: message.getSequence(), timestamp: message.getTimestamp(), data: JSON.parse(message.getData())};
+  // do stan connection
+  conn = stan.connect(cluster_id, 'node-' + last_id); //need custom client id's for each ws connection; will use better behavior eventually.
+  last_id++;
 
-        // forward notification
-        ws.send(JSON.stringify(json));
-      });
+  console.log('Connecting to stan server with id: node-' + (last_id-1));
+
+  // set up connection behavior
+  conn.on('connect', function onStanConnection() {
+    console.log('Connected to stan server');
+    // connect with provided sequence
+    var opts = conn.subscriptionOptions();
+    opts.setStartAtSequence(seq);
+    // subscribe to channel
+    var subscription = conn.subscribe(channel, opts);
+
+    console.log('Subscribed to channel: ' + channel);
+
+    // define stan message behavior
+    subscription.on('message', function onStanMessage(message) {
+      // format as json
+      var json = {sequence: message.getSequence(), timestamp: message.getTimestamp(), data: JSON.parse(message.getData())};
+      console.log('Received message. Payload: ' + JSON.stringify(json));
+      // forward notification
+      ws.send(JSON.stringify(json));
     });
   });
 
   ws.on('close', function onClose() {
     // close stan connection
     conn.close();
+    console.log('Connection closed.');
 
   });
 
