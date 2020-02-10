@@ -28,7 +28,7 @@ server.on('connection', function onConnection(ws, req) {
   // store socket-specific parameters (should be member vars?)
   var conn;
   var id = uuid();
-  isAlive = true;
+  this.isAlive = true;
 
   // get sequence
   var seq_pos = req.url.lastIndexOf(SUB_PATH);
@@ -81,18 +81,18 @@ server.on('connection', function onConnection(ws, req) {
   });
 
   ws.on('pong', function heartbeat() {
-    this.isAlive = true;
+    ws.isAlive = true;
     if (LOG_LEVEL == 'all') console.log('Received pong from client with id ' + id);
   })
 });
 
 // periodic pings
 const interval = setInterval(function pingInterval() {
+  if (LOG_LEVEL == 'all') console.log('Pinging clients');
   server.clients.forEach(function(ws) {
-    if (isAlive === false) return ws.close(1008, 'Stale connection');
+    if (ws.isAlive === false) return ws.close(1008, 'Stale connection');
 
-    isAlive = false;
+    ws.isAlive = false;
     ws.ping();
-    if (LOG_LEVEL == 'all') console.log('Pinging clients');
   });
 }, PING_INTERVAL);
