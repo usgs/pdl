@@ -4,10 +4,6 @@
 package gov.usgs.earthquake.distribution;
 
 import gov.usgs.earthquake.product.ProductId;
-import gov.usgs.util.StreamUtils;
-import gov.usgs.util.XmlUtils;
-
-import java.io.InputStream;
 import java.net.URL;
 import java.util.Date;
 
@@ -51,67 +47,6 @@ public class URLNotification extends DefaultNotification {
 				&& getProductId().equals(that.getProductId())
 				&& getTrackerURL().equals(that.getTrackerURL()) && getProductURL()
 				.equals(((URLNotification) that).getProductURL()));
-	}
-
-	/**
-	 * Parse an XML URL Notification from an input stream.
-	 * 
-	 * @param in
-	 *            the input stream containing a URLNotification.
-	 * @return the parsed URLNotification
-	 * @throws Exception
-	 */
-	public static URLNotification parse(final InputStream in) throws Exception {
-		try {
-			URLNotificationParser parser = new URLNotificationParser();
-			// do actual parsing
-			parser.parse(in);
-			// return parsed notification
-			return parser.getNotification();
-		} finally {
-			StreamUtils.closeStream(in);
-		}
-	}
-
-	/**
-	 * Generate an XML URL Notification
-	 * 
-	 * @return the URL notification as an XML string.
-	 */
-	public String toXML() {
-		StringBuffer buf = new StringBuffer();
-
-		buf.append("<?xml version=\"1.0\"?>\n");
-		// start element
-		buf.append("<").append(URLNotificationParser.NOTIFICATION_ELEMENT);
-		buf.append(" xmlns=\"").append(
-				URLNotificationParser.PRODUCT_XML_NAMESPACE).append("\"");
-
-		// add attributes
-		buf.append(" ").append(URLNotificationParser.ATTRIBUTE_PRODUCT_ID)
-				.append("=\"").append(this.getProductId().toString()).append(
-						"\"");
-		buf
-				.append(" ")
-				.append(URLNotificationParser.ATTRIBUTE_PRODUCT_UPDATED)
-				.append("=\"")
-				.append(
-						XmlUtils
-								.formatDate(this.getProductId().getUpdateTime()))
-				.append("\"");
-		buf.append(" ").append(URLNotificationParser.ATTRIBUTE_TRACKER_URL)
-				.append("=\"").append(this.getTrackerURL().toString()).append(
-						"\"");
-		buf.append(" ").append(URLNotificationParser.ATTRIBUTE_EXPIRES).append(
-				"=\"").append(XmlUtils.formatDate(this.getExpirationDate()))
-				.append("\"");
-		buf.append(" ").append(URLNotificationParser.ATTRIBUTE_URL).append(
-				"=\"").append(this.getProductURL().toString()).append("\"");
-
-		// end element
-		buf.append("/>");
-
-		return buf.toString();
 	}
 
 }

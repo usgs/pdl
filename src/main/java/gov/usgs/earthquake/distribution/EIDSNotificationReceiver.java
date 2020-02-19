@@ -61,6 +61,7 @@ public class EIDSNotificationReceiver extends DefaultNotificationReceiver
 	/** EIDSClient that receives notifications. */
 	private EIDSClient client;
 
+	//TODO: Change condition using URLNotificationParser
 	/**
 	 * Implement the EIDSListener interface to process messages from EIDS.
 	 * 
@@ -76,7 +77,7 @@ public class EIDSNotificationReceiver extends DefaultNotificationReceiver
 			try {
 				in = StreamUtils.getInputStream(event.getMessage());
 				// this is a notification message
-				URLNotification notification = URLNotification.parse(in);
+				URLNotification notification = URLNotificationXMLConverter.parseXML(in);
 				// process the notification
 				receiveNotification(notification);
 			} catch (Exception e) {

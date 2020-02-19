@@ -34,11 +34,16 @@ dependencies {
   compile "javax.activation:activation:1.1.1"
   compile "javax.xml.bind:jaxb-api:2.3+"
   compile "org.glassfish.jaxb:jaxb-runtime:2.3+"
+  // javax.websocket (for notifications)
+  compile "javax.websocket:javax.websocket-api:1.1"
+  compile "org.glassfish.tyrus.bundles:tyrus-standalone-client:1.12"
   // database drivers
   compile "mysql:mysql-connector-java:5.1.47"
   compile "org.xerial:sqlite-jdbc:3.23.1"
   // ssh keys
   compile "ch.ethz.ganymed:ganymed-ssh2:262"
+  // nats
+  implementation "io.nats:java-nats-streaming:2.1.6"
 
   compile files("lib/MessageUtils.jar")
   compile files("lib/QWFileOutClient.jar")
