@@ -159,6 +159,12 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
     return true;
   }
 
+  @Override
+  protected void onAfterProcessNotification(final Notification notification) {
+    // function replaced so notifications not added to index
+    // this class responds to the index
+  }
+
   /**
    * Called when a notification expires
    *

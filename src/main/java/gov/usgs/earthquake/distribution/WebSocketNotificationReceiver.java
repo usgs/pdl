@@ -7,6 +7,8 @@ import gov.usgs.util.StreamUtils;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.websocket.CloseReason;
+import javax.websocket.Session;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -79,9 +81,9 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     //read sequence from tracking file if other parameters agree
     JsonObject json = readTrackingFile();
     if (json != null &&
-            json.getString(SERVER_HOST_PROPERTY) == serverHost &&
-            json.getString(SERVER_PORT_PROPERTY) == serverPort &&
-            json.getString(SERVER_PATH_PROPERTY) == serverPath) {
+            json.getString(SERVER_HOST_PROPERTY).equals(serverHost) &&
+            json.getString(SERVER_PORT_PROPERTY).equals(serverPort) &&
+            json.getString(SERVER_PATH_PROPERTY).equals(serverPath)) {
       sequence = json.getString(SEQUENCE_PROPERTY);
     }
 
@@ -136,6 +138,11 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     return json;
   }
 
+  @Override
+  public void onOpen(Session session) {
+    // do nothing
+  }
+
   /**
    * Message handler function passed to WebSocketClient
    * Parses the message as JSON, receives the contained URL notification, and writes the tracking file.
@@ -143,14 +150,15 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
    */
   @Override
   public void onMessage(String message) {
-    InputStream in = null;
-    try {
+    JsonObject json;
+    try (InputStream in = StreamUtils.getInputStream(message); JsonReader reader = Json.createReader(in)) {
       //parse input as json
-      in = StreamUtils.getInputStream(message);
-      JsonReader reader = Json.createReader(in);
-      JsonObject json = reader.readObject();
-      reader.close();
-
+      json = reader.readObject();
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "[" + getName() + "] exception while receiving notification; is it encoded as JSON? ", e);
+      return;
+    }
+    try {
       //convert to URLNotification and receive
       JsonObject dataJson = json.getJsonObject(ATTRIBUTE_DATA);
       URLNotification notification = URLNotificationJSONConverter.parseJSON(dataJson);
@@ -164,10 +172,22 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
       writeTrackingFile();
     } catch (Exception e) {
       LOGGER.log(Level.WARNING, "[" + getName() + "] exception while processing URLNotification ", e);
-    } finally {
-      StreamUtils.closeStream(in);
     }
+  }
 
+  @Override
+  public void onClose(Session session, CloseReason closeReason) {
+    // do nothing
+  }
+
+  @Override
+  public void onConnectFail() {
+    // do nothing
+  }
+
+  @Override
+  public void onReconnectFail() {
+    // do nothing
   }
 
   public String getServerHost() {

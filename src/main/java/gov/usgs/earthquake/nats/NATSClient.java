@@ -10,6 +10,7 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -124,7 +125,7 @@ public class NATSClient implements Configurable {
     MessageDigest digest = MessageDigest.getInstance("SHA-1");
     digest.reset();
     digest.update(macRaw);
-    String sha1 = String.format("%040x", new BigInteger(1, digest.digest()));
+    String sha1 = Base64.getEncoder().encodeToString(digest.digest());
 
     // create client id
     String clientId = host.getHostAddress().replace('.','-') + '_' + sha1+ '_' + suffix;

@@ -63,6 +63,7 @@ public class WebSocketClient {
 
     // throw connect exception if all attempts fail
     if (failedAttempts == attempts) {
+      this.listener.onConnectFail();
       throw lastExcept;
     }
   }
@@ -70,29 +71,30 @@ public class WebSocketClient {
   @OnOpen
   public void onOpen(Session session) {
     this.session = session;
+    this.listener.onOpen(session);
   }
 
   @OnClose
   public void onClose(Session session, CloseReason reason) {
+    this.listener.onClose(session, reason);
     this.session = null;
-
     if (retryOnClose) {
       try {
         this.connect();
       } catch (Exception e) {
         // failed to reconnect
-        //TODO: figure out what to do here
+        this.listener.onReconnectFail();
       }
     }
   }
 
   @OnMessage
   public void onMessage(String message){
-    listener.onMessage(message);
+    this.listener.onMessage(message);
   }
 
   public void shutdown() throws Exception {
-    retryOnClose = false;
+    this.retryOnClose = false;
     this.session.close();
   }
 
