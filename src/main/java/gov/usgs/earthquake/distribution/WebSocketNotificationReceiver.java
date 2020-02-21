@@ -88,7 +88,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     }
 
     //open websocket
-    client = new WebSocketClient(new URI(serverHost + ":" + serverPort + serverPath + sequence), this, attempts, timeout, true);
+    client = new WebSocketClient(new URI(serverHost + ":" + serverPort + serverPath + sequence), this, attempts, timeout, retryOnClose);
   }
 
   /**
@@ -140,7 +140,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
 
   @Override
   public void onOpen(Session session) {
-    // do nothing
+    LOGGER.log(Level.FINE, "[" + getName() + "] connected to socket");
   }
 
   /**
@@ -177,17 +177,18 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
 
   @Override
   public void onClose(Session session, CloseReason closeReason) {
-    // do nothing
+    LOGGER.log(Level.FINE, "[" + getName() + "] connection closed with code " + closeReason.toString());
   }
 
   @Override
   public void onConnectFail() {
-    // do nothing
+    LOGGER.log(Level.WARNING, "[" + getName() + "] failed to connect to socket.");
   }
 
   @Override
   public void onReconnectFail() {
-    // do nothing
+    LOGGER.log(Level.WARNING, "[" + getName() + "] failed to reconnect to socket. Retrying in one minute.");
+    //TODO: Implement reconnect
   }
 
   public String getServerHost() {

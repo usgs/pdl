@@ -3,7 +3,6 @@ package gov.usgs.earthquake.nats;
 import gov.usgs.earthquake.distribution.*;
 import gov.usgs.util.Config;
 
-import javax.security.auth.login.Configuration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

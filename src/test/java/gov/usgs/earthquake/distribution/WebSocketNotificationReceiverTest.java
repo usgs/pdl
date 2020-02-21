@@ -6,7 +6,6 @@ import org.junit.Test;
 
 import javax.json.Json;
 import javax.json.JsonObject;
-import java.util.Date;
 
 public class WebSocketNotificationReceiverTest {
 
