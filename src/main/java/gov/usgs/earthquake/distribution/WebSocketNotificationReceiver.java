@@ -34,6 +34,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   public static final String CONNECT_TIMEOUT_PROPERTY = "connectTimeout";
   public static final String RETRY_ON_CLOSE_PROPERTY = "retryOnClose";
 
+  //TODO: Improve defaults
   public static final String DEFAULT_SERVER_HOST = "http://www.google.com";
   public static final String DEFAULT_SERVER_PORT = "4222";
   public static final String DEFAULT_SERVER_PATH = "/sequence/";

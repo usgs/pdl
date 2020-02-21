@@ -1,6 +1,5 @@
 package gov.usgs.earthquake.nats;
 
-import gov.usgs.earthquake.distribution.ConfigurationException;
 import gov.usgs.util.Config;
 import gov.usgs.util.Configurable;
 import io.nats.streaming.StreamingConnection;
@@ -22,11 +21,16 @@ public class NATSClient implements Configurable {
   public static Logger LOGGER  = Logger
           .getLogger(NATSClient.class.getName());
 
-  public static String SERVER_HOST_PROPERTY = "serverHost";
-  public static String SERVER_PORT_PROPERTY = "serverPort";
-  public static String CLUSTER_ID_PROPERTY = "clusterId";
-  public static String CLIENT_ID_PROPERTY = "clientId";
-  public static String SUBJECT_PROPERTY = "subject";
+  public static final String SERVER_HOST_PROPERTY = "serverHost";
+  public static final String SERVER_PORT_PROPERTY = "serverPort";
+  public static final String CLUSTER_ID_PROPERTY = "clusterId";
+  public static final String CLIENT_ID_PROPERTY = "clientId";
+  public static final String SUBJECT_PROPERTY = "subject";
+
+  public static final String DEFAULT_SERVER_HOST = "localhost";
+  public static final String DEFAULT_SERVER_PORT = "4222";
+  public static final String DEFAULT_CLUSTER_ID = "pdl";
+  public static final String DEFAULT_SUBJECT = "product";
 
   private String serverHost;
   private String serverPort;
@@ -37,7 +41,7 @@ public class NATSClient implements Configurable {
   private StreamingConnection connection;
 
   public NATSClient() {
-    this("localhost","4222","test-cluster",Long.toString(Thread.currentThread().getId()));
+    this(DEFAULT_SERVER_HOST, DEFAULT_SERVER_PORT, DEFAULT_CLUSTER_ID, Long.toString(Thread.currentThread().getId()));
   }
 
   public NATSClient(String serverHost, String serverPort, String clusterId, String clientIdSuffix) {
@@ -58,21 +62,9 @@ public class NATSClient implements Configurable {
   @Override
   public void configure(Config config) throws Exception {
     // required parameters
-    serverHost = config.getProperty(SERVER_HOST_PROPERTY);
-    if (serverHost == null) {
-      throw new ConfigurationException(SERVER_HOST_PROPERTY + " is a required parameter");
-    }
-
-    serverPort = config.getProperty(SERVER_PORT_PROPERTY);
-    if (serverHost == null) {
-      throw new ConfigurationException(SERVER_PORT_PROPERTY + " is a required parameter");
-    }
-
-    clusterId = config.getProperty(CLUSTER_ID_PROPERTY);
-    if (serverHost == null) {
-      throw new ConfigurationException(CLUSTER_ID_PROPERTY + " is a required parameter");
-    }
-
+    serverHost = config.getProperty(SERVER_HOST_PROPERTY, DEFAULT_SERVER_HOST);
+    serverPort = config.getProperty(SERVER_PORT_PROPERTY, DEFAULT_SERVER_PORT);
+    clusterId = config.getProperty(CLUSTER_ID_PROPERTY, DEFAULT_CLUSTER_ID);
     clientId = config.getProperty(CLIENT_ID_PROPERTY);
   }
 

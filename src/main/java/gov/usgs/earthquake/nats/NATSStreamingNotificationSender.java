@@ -21,10 +21,7 @@ public class NATSStreamingNotificationSender extends DefaultNotificationSender {
   public void configure(Config config) throws Exception{
     super.configure(config);
     client.configure(config);
-    subject = config.getProperty(NATSClient.SUBJECT_PROPERTY);
-    if (subject == null) {
-      throw new ConfigurationException(NATSClient.SUBJECT_PROPERTY + " is a required parameter");
-    }
+    subject = config.getProperty(NATSClient.SUBJECT_PROPERTY, NATSClient.DEFAULT_SUBJECT);
   }
 
   /**
