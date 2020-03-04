@@ -3,6 +3,7 @@ package gov.usgs.earthquake.natsws;
 import gov.usgs.earthquake.distribution.*;
 import gov.usgs.earthquake.nats.NATSStreamingNotificationSender;
 import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.util.JSONTrackingFile;
 
 import java.net.URL;
 import java.util.Date;
@@ -40,7 +41,7 @@ public class WebSocketNotificationReceivedTest {
     receiver.setServerPort("8080");
     receiver.setProductStorage(new URLProductStorage());
     receiver.setNotificationIndex(new JDBCNotificationIndex());
-    receiver.setTrackingFileName(WebSocketNotificationReceiver.DEFAULT_TRACKING_FILE_NAME + "_test");
+    receiver.setTrackingFile(new JSONTrackingFile(WebSocketNotificationReceiver.DEFAULT_TRACKING_FILE_NAME + "_test"));
     receiver.setAttempts(3);
     receiver.setTimeout(300);
     receiver.setName("receiver");

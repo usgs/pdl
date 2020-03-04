@@ -2,12 +2,11 @@ package gov.usgs.earthquake.nats;
 
 import gov.usgs.earthquake.distribution.*;
 import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.util.JSONTrackingFile;
 import io.nats.streaming.StreamingConnection;
 import io.nats.streaming.StreamingConnectionFactory;
 import org.junit.*;
 
-import javax.json.JsonObject;
-import java.io.File;
 import java.net.URL;
 import java.util.Date;
 import java.util.LinkedList;
@@ -31,7 +30,7 @@ public class NATSStreamingNotificationReceiverTest {
     notificationReceiver.getClient().setClusterId("test-cluster");
     notificationReceiver.setSubject("test-subject");
     notificationReceiver.getClient().setClientId("test-id");
-    notificationReceiver.setTrackingFileName(NATSStreamingNotificationReceiver.DEFAULT_TRACKING_FILE_NAME_PROPERTY + ".tmp");
+    notificationReceiver.setTrackingFile(new JSONTrackingFile(NATSStreamingNotificationReceiver.DEFAULT_TRACKING_FILE_NAME_PROPERTY + ".tmp"));
     notificationReceiver.setProductStorage(new URLProductStorage());
     notificationReceiver.setNotificationIndex(new JDBCNotificationIndex());
 
@@ -41,29 +40,6 @@ public class NATSStreamingNotificationReceiverTest {
   @After
   public void shutdown() throws Exception{
     notificationReceiver.shutdown();
-  }
-
-  @Test
-  public void trackingFileWriteReadTest() throws Exception {
-    notificationReceiver.writeTrackingFile();
-    JsonObject json = notificationReceiver.readTrackingFile();
-
-    // assert properties are as configured
-    Assert.assertEquals(notificationReceiver.getClient().getServerHost(), json.getString(NATSClient.SERVER_HOST_PROPERTY));
-    Assert.assertEquals(notificationReceiver.getClient().getServerPort(), json.getString(NATSClient.SERVER_PORT_PROPERTY));
-    Assert.assertEquals(notificationReceiver.getClient().getClusterId(), json.getString(NATSClient.CLUSTER_ID_PROPERTY));
-    Assert.assertEquals(notificationReceiver.getClient().getClientId(), json.getString(NATSClient.CLIENT_ID_PROPERTY));
-    Assert.assertEquals(notificationReceiver.getSubject(), json.getString(NATSClient.SUBJECT_PROPERTY));
-
-    // clean up
-    //TODO: Figure out why tracking file isn't being deleted
-    File trackingFile = new File(notificationReceiver.getTrackingFileName());
-    System.out.println(trackingFile.getAbsolutePath());
-    if (trackingFile.delete()) {
-      System.out.println("Deleted tracking file");
-    } else {
-      System.out.println("Failed to delete tracking file");
-    }
   }
 
   @Test

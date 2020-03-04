@@ -4,8 +4,8 @@ import gov.usgs.earthquake.distribution.ConfigurationException;
 import gov.usgs.earthquake.distribution.DefaultNotificationReceiver;
 import gov.usgs.earthquake.distribution.URLNotification;
 import gov.usgs.earthquake.distribution.URLNotificationJSONConverter;
+import gov.usgs.earthquake.util.JSONTrackingFile;
 import gov.usgs.util.Config;
-import gov.usgs.util.FileUtils;
 import io.nats.streaming.Message;
 import io.nats.streaming.MessageHandler;
 import io.nats.streaming.Subscription;
@@ -13,10 +13,7 @@ import io.nats.streaming.SubscriptionOptions;
 
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -42,7 +39,7 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
 
   private String subject;
   private long sequence = 0;
-  private String trackingFileName;
+  private JSONTrackingFile trackingFile;
   private boolean updateSequenceAfterException;
   private boolean exceptionThrown = false;
 
@@ -64,7 +61,9 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
       throw new ConfigurationException(NATSClient.SUBJECT_PROPERTY + " is a required parameter");
     }
 
-    trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME_PROPERTY);
+    String trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME_PROPERTY);
+    trackingFile = new JSONTrackingFile(trackingFileName);
+
     updateSequenceAfterException = Boolean.parseBoolean(config.getProperty(
       UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY,
       DEFAULT_UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY));
@@ -85,7 +84,7 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
     client.startup();
 
     //Check properties if tracking file exists
-    JsonObject properties = readTrackingFile();
+    JsonObject properties = trackingFile.read();
     if (properties != null &&
         properties.getString(NATSClient.SERVER_HOST_PROPERTY).equals(client.getServerHost()) &&
         properties.getString(NATSClient.SERVER_PORT_PROPERTY).equals(client.getServerPort()) &&
@@ -113,7 +112,16 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
   @Override
   public void shutdown() throws Exception {
     try {
-      writeTrackingFile();
+      trackingFile.write(
+        Json.createObjectBuilder()
+        .add(NATSClient.SERVER_HOST_PROPERTY,client.getServerHost())
+        .add(NATSClient.SERVER_PORT_PROPERTY,client.getServerPort())
+        .add(NATSClient.CLUSTER_ID_PROPERTY,client.getClusterId())
+        .add(NATSClient.CLIENT_ID_PROPERTY,client.getClientId())
+        .add(NATSClient.SUBJECT_PROPERTY,subject)
+        .add(SEQUENCE_PROPERTY,sequence)
+        .build()
+      );
     } catch (Exception e) {
       LOGGER.log(Level.WARNING, "[" + getName() + "] failed to write to tracking file");
     }
@@ -125,43 +133,6 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
     subscription = null;
     client.shutdown();
     super.shutdown();
-  }
-
-  /**
-   * Writes pertinent configuration information to tracking file
-   */
-  public void writeTrackingFile() throws Exception {
-    JsonObject json = Json.createObjectBuilder()
-      .add(NATSClient.SERVER_HOST_PROPERTY,client.getServerHost())
-      .add(NATSClient.SERVER_PORT_PROPERTY,client.getServerPort())
-      .add(NATSClient.CLUSTER_ID_PROPERTY,client.getClusterId())
-      .add(NATSClient.CLIENT_ID_PROPERTY,client.getClientId())
-      .add(NATSClient.SUBJECT_PROPERTY,subject)
-      .add(SEQUENCE_PROPERTY,sequence)
-    .build();
-
-    FileUtils.writeFileThenMove(
-      new File(trackingFileName + "_tmp"),
-      new File(trackingFileName),
-      json.toString().getBytes());
-  }
-
-  /**
-   * Reads contents of tracking file
-   *
-   * @return JsonObject containing tracking file contents, or null if file doesn't exist
-   */
-  public JsonObject readTrackingFile() throws Exception {
-    JsonObject json = null;
-
-    File trackingFile = new File(trackingFileName);
-    if (trackingFile.exists()) {
-      InputStream contents = new ByteArrayInputStream(FileUtils.readFile(trackingFile));
-      JsonReader jsonReader = Json.createReader(contents);
-      json = jsonReader.readObject();
-      jsonReader.close();
-    }
-    return json;
   }
 
   /**
@@ -180,7 +151,16 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
       // update sequence and tracking file if exception not thrown or we still want to update sequence anyway
       if (!exceptionThrown || updateSequenceAfterException) {
         sequence = message.getSequence();
-        writeTrackingFile();
+        trackingFile.write(
+        Json.createObjectBuilder()
+        .add(NATSClient.SERVER_HOST_PROPERTY,client.getServerHost())
+        .add(NATSClient.SERVER_PORT_PROPERTY,client.getServerPort())
+        .add(NATSClient.CLUSTER_ID_PROPERTY,client.getClusterId())
+        .add(NATSClient.CLIENT_ID_PROPERTY,client.getClientId())
+        .add(NATSClient.SUBJECT_PROPERTY,subject)
+        .add(SEQUENCE_PROPERTY,sequence)
+        .build()
+      );
       }
     } catch (Exception e) {
       exceptionThrown = true;
@@ -192,12 +172,12 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
     }
   }
 
-  public String getTrackingFileName() {
-    return trackingFileName;
+  public JSONTrackingFile getTrackingFile() {
+    return trackingFile;
   }
 
-  public void setTrackingFileName(String trackingFileName) {
-    this.trackingFileName = trackingFileName;
+  public void setTrackingFile(JSONTrackingFile trackingFile) {
+    this.trackingFile = trackingFile;
   }
 
   public NATSClient getClient() {

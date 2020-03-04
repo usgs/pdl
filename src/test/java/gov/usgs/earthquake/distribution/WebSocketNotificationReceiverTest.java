@@ -4,9 +4,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import gov.usgs.earthquake.util.JSONTrackingFile;
+
 import javax.json.Json;
 import javax.json.JsonObject;
-import java.util.Date;
 
 public class WebSocketNotificationReceiverTest {
 
@@ -17,7 +18,7 @@ public class WebSocketNotificationReceiverTest {
   private String testServerPath = "/ws/sequence/";
   private String testServerPort = "8080";
   private String testSequence = "99";
-  private String testTrackingFileName = "data/WebSocketNotificationReceiverTest";
+  private String testTrackingFileName = "data/WebSocketNotificationReceiverTest.json";
 
   @Before
   public void setup() {
@@ -27,25 +28,7 @@ public class WebSocketNotificationReceiverTest {
     receiver.setServerPath(testServerPath);
     receiver.setServerPort(testServerPort);
     receiver.setSequence(testSequence);
-    receiver.setTrackingFileName(testTrackingFileName);
-  }
-
-  @Test
-  public void writeTrackingFileWriteReadTest() {
-    //write & read tracking file for WebSocketNotificationReceiver
-    JsonObject json = null;
-    try {
-      receiver.writeTrackingFile();
-      json = receiver.readTrackingFile();
-    } catch (Exception e) {
-      Assert.fail();
-    }
-
-    //confirm contents are correct
-    Assert.assertEquals(json.getString(WebSocketNotificationReceiver.SERVER_HOST_PROPERTY), testServerHost);
-    Assert.assertEquals(json.getString(WebSocketNotificationReceiver.SERVER_PATH_PROPERTY), testServerPath);
-    Assert.assertEquals(json.getString(WebSocketNotificationReceiver.SERVER_PORT_PROPERTY), testServerPort);
-    Assert.assertEquals(json.getString(WebSocketNotificationReceiver.SEQUENCE_PROPERTY), testSequence);
+    receiver.setTrackingFile(new JSONTrackingFile(testTrackingFileName));
   }
 
   @Test

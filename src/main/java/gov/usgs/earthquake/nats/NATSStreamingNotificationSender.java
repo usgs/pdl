@@ -3,7 +3,6 @@ package gov.usgs.earthquake.nats;
 import gov.usgs.earthquake.distribution.*;
 import gov.usgs.util.Config;
 
-import javax.security.auth.login.Configuration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,10 +21,7 @@ public class NATSStreamingNotificationSender extends DefaultNotificationSender {
   public void configure(Config config) throws Exception{
     super.configure(config);
     client.configure(config);
-    subject = config.getProperty(NATSClient.SUBJECT_PROPERTY);
-    if (subject == null) {
-      throw new ConfigurationException(NATSClient.SUBJECT_PROPERTY + " is a required parameter");
-    }
+    subject = config.getProperty(NATSClient.SUBJECT_PROPERTY, NATSClient.DEFAULT_SUBJECT);
   }
 
   /**

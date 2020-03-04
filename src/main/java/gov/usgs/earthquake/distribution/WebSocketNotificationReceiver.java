@@ -1,7 +1,7 @@
 package gov.usgs.earthquake.distribution;
 
+import gov.usgs.earthquake.util.JSONTrackingFile;
 import gov.usgs.util.Config;
-import gov.usgs.util.FileUtils;
 import gov.usgs.util.StreamUtils;
 
 import javax.json.Json;
@@ -9,8 +9,6 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.websocket.CloseReason;
 import javax.websocket.Session;
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.logging.Level;
@@ -34,10 +32,11 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   public static final String CONNECT_TIMEOUT_PROPERTY = "connectTimeout";
   public static final String RETRY_ON_CLOSE_PROPERTY = "retryOnClose";
 
+  //TODO: Improve defaults
   public static final String DEFAULT_SERVER_HOST = "http://www.google.com";
   public static final String DEFAULT_SERVER_PORT = "4222";
   public static final String DEFAULT_SERVER_PATH = "/sequence/";
-  public static final String DEFAULT_TRACKING_FILE_NAME = "data/WebSocketReceiverInfo";
+  public static final String DEFAULT_TRACKING_FILE_NAME = "data/WebSocketReceiverInfo.json";
   public static final String DEFAULT_CONNECT_ATTEMPTS = "5";
   public static final String DEFAULT_CONNECT_TIMEOUT = "1000";
   public static final String DEFAULT_RETRY_ON_CLOSE = "true";
@@ -47,10 +46,10 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   private String serverHost;
   private String serverPort;
   private String serverPath;
-  private String trackingFileName;
   private int attempts;
   private long timeout;
   private boolean retryOnClose;
+  private JSONTrackingFile trackingFile;
 
   private WebSocketClient client;
   private String sequence = "0";
@@ -66,7 +65,9 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     attempts = Integer.parseInt(config.getProperty(CONNECT_ATTEMPTS_PROPERTY, DEFAULT_CONNECT_ATTEMPTS));
     timeout = Long.parseLong(config.getProperty(CONNECT_TIMEOUT_PROPERTY, DEFAULT_CONNECT_TIMEOUT));
     retryOnClose = Boolean.parseBoolean(config.getProperty(RETRY_ON_CLOSE_PROPERTY, DEFAULT_RETRY_ON_CLOSE));
-    trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME);
+
+    String trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME);
+    trackingFile = new JSONTrackingFile(trackingFileName);
   }
 
   /**
@@ -79,7 +80,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     super.startup();
 
     //read sequence from tracking file if other parameters agree
-    JsonObject json = readTrackingFile();
+    JsonObject json = trackingFile.read();
     if (json != null &&
             json.getString(SERVER_HOST_PROPERTY).equals(serverHost) &&
             json.getString(SERVER_PORT_PROPERTY).equals(serverPort) &&
@@ -88,7 +89,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     }
 
     //open websocket
-    client = new WebSocketClient(new URI(serverHost + ":" + serverPort + serverPath + sequence), this, attempts, timeout, true);
+    client = new WebSocketClient(new URI(serverHost + ":" + serverPort + serverPath + sequence), this, attempts, timeout, retryOnClose);
   }
 
   /**
@@ -102,45 +103,9 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     super.shutdown();
   }
 
-  /**
-   * Writes tracking file to disc, storing latest sequence
-   * @throws Exception
-   */
-  public void writeTrackingFile() throws Exception {
-    JsonObject json = Json.createObjectBuilder()
-            .add(SERVER_HOST_PROPERTY,serverHost)
-            .add(SERVER_PATH_PROPERTY,serverPath)
-            .add(SERVER_PORT_PROPERTY,serverPort)
-            .add(SEQUENCE_PROPERTY,sequence)
-            .build();
-
-    FileUtils.writeFileThenMove(
-            new File(trackingFileName + "_tmp.json"),
-            new File(trackingFileName + ".json"),
-            json.toString().getBytes());
-  }
-
-  /**
-   * Reads tracking file from disc
-   * @return  JsonObject tracking file
-   * @throws Exception
-   */
-  public JsonObject readTrackingFile() throws Exception {
-    JsonObject json = null;
-
-    File trackingFile = new File(trackingFileName + ".json");
-    if (trackingFile.exists()) {
-      InputStream contents = new ByteArrayInputStream(FileUtils.readFile(trackingFile));
-      JsonReader jsonReader = Json.createReader(contents);
-      json = jsonReader.readObject();
-      jsonReader.close();
-    }
-    return json;
-  }
-
   @Override
   public void onOpen(Session session) {
-    // do nothing
+    LOGGER.log(Level.FINE, "[" + getName() + "] connected to socket");
   }
 
   /**
@@ -169,7 +134,14 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
 
       //write tracking file
       sequence = json.getJsonNumber(SEQUENCE_PROPERTY).toString();
-      writeTrackingFile();
+      trackingFile.write(
+        Json.createObjectBuilder()
+          .add(SERVER_HOST_PROPERTY, serverHost)
+          .add(SERVER_PATH_PROPERTY,serverPath)
+          .add(SERVER_PORT_PROPERTY,serverPort)
+          .add(SEQUENCE_PROPERTY,sequence)
+          .build()
+        );
     } catch (Exception e) {
       LOGGER.log(Level.WARNING, "[" + getName() + "] exception while processing URLNotification ", e);
     }
@@ -177,17 +149,25 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
 
   @Override
   public void onClose(Session session, CloseReason closeReason) {
-    // do nothing
+    LOGGER.log(Level.FINE, "[" + getName() + "] connection closed with code " + closeReason.toString());
   }
 
   @Override
   public void onConnectFail() {
-    // do nothing
+    LOGGER.log(Level.WARNING, "[" + getName() + "] failed to connect to socket.");
   }
 
   @Override
   public void onReconnectFail() {
-    // do nothing
+    LOGGER.log(Level.WARNING, "[" + getName() + "] failed to reconnect to socket. Retrying in one minute.");
+    try {
+      Thread.sleep(60000);
+      client.connect();
+    } catch (InterruptedException ie) {
+      LOGGER.log(Level.WARNING, "[" + getName() + "] interrupted while reconnecting.");
+    } catch (Exception e) {
+      // do nothing, will be handled
+    }
   }
 
   public String getServerHost() {
@@ -214,12 +194,12 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     this.serverPath = serverPath;
   }
 
-  public String getTrackingFileName() {
-    return trackingFileName;
+  public JSONTrackingFile getTrackingFile() {
+    return this.trackingFile;
   }
 
-  public void setTrackingFileName(String trackingFileName) {
-    this.trackingFileName = trackingFileName;
+  public void setTrackingFile(JSONTrackingFile trackingFile) {
+    this.trackingFile = trackingFile;
   }
 
   public String getSequence() {
