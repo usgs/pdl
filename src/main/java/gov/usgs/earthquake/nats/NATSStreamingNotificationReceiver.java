@@ -84,15 +84,7 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
     client.startup();
 
     //Check properties if tracking file exists
-    JsonObject properties = trackingFile.read();
-    if (properties != null &&
-        properties.getString(NATSClient.SERVER_HOST_PROPERTY).equals(client.getServerHost()) &&
-        properties.getString(NATSClient.SERVER_PORT_PROPERTY).equals(client.getServerPort()) &&
-        properties.getString(NATSClient.CLUSTER_ID_PROPERTY).equals(client.getClusterId()) &&
-        properties.getString(NATSClient.CLIENT_ID_PROPERTY).equals(client.getClientId()) &&
-        properties.getString(NATSClient.SUBJECT_PROPERTY).equals(subject)) {
-      sequence = Long.parseLong(properties.get(SEQUENCE_PROPERTY).toString());
-    }
+    readTrackingFile();
 
     subscription = client.getConnection().subscribe(
       subject,
@@ -112,16 +104,7 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
   @Override
   public void shutdown() throws Exception {
     try {
-      trackingFile.write(
-        Json.createObjectBuilder()
-        .add(NATSClient.SERVER_HOST_PROPERTY,client.getServerHost())
-        .add(NATSClient.SERVER_PORT_PROPERTY,client.getServerPort())
-        .add(NATSClient.CLUSTER_ID_PROPERTY,client.getClusterId())
-        .add(NATSClient.CLIENT_ID_PROPERTY,client.getClientId())
-        .add(NATSClient.SUBJECT_PROPERTY,subject)
-        .add(SEQUENCE_PROPERTY,sequence)
-        .build()
-      );
+      writeTrackingFile();
     } catch (Exception e) {
       LOGGER.log(Level.WARNING, "[" + getName() + "] failed to write to tracking file");
     }
@@ -133,6 +116,31 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
     subscription = null;
     client.shutdown();
     super.shutdown();
+  }
+
+  public void readTrackingFile() throws Exception {
+    JsonObject properties = trackingFile.read();
+    if (properties != null &&
+      properties.getString(NATSClient.SERVER_HOST_PROPERTY).equals(client.getServerHost()) &&
+      properties.getString(NATSClient.SERVER_PORT_PROPERTY).equals(client.getServerPort()) &&
+      properties.getString(NATSClient.CLUSTER_ID_PROPERTY).equals(client.getClusterId()) &&
+      properties.getString(NATSClient.CLIENT_ID_PROPERTY).equals(client.getClientId()) &&
+      properties.getString(NATSClient.SUBJECT_PROPERTY).equals(subject)) {
+        sequence = Long.parseLong(properties.get(SEQUENCE_PROPERTY).toString());
+    }
+  }
+
+  public void writeTrackingFile() throws Exception {
+    trackingFile.write(
+      Json.createObjectBuilder()
+        .add(NATSClient.SERVER_HOST_PROPERTY,client.getServerHost())
+        .add(NATSClient.SERVER_PORT_PROPERTY,client.getServerPort())
+        .add(NATSClient.CLUSTER_ID_PROPERTY,client.getClusterId())
+        .add(NATSClient.CLIENT_ID_PROPERTY,client.getClientId())
+        .add(NATSClient.SUBJECT_PROPERTY,subject)
+        .add(SEQUENCE_PROPERTY,sequence)
+        .build()
+    );
   }
 
   /**
@@ -151,16 +159,7 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
       // update sequence and tracking file if exception not thrown or we still want to update sequence anyway
       if (!exceptionThrown || updateSequenceAfterException) {
         sequence = message.getSequence();
-        trackingFile.write(
-        Json.createObjectBuilder()
-        .add(NATSClient.SERVER_HOST_PROPERTY,client.getServerHost())
-        .add(NATSClient.SERVER_PORT_PROPERTY,client.getServerPort())
-        .add(NATSClient.CLUSTER_ID_PROPERTY,client.getClusterId())
-        .add(NATSClient.CLIENT_ID_PROPERTY,client.getClientId())
-        .add(NATSClient.SUBJECT_PROPERTY,subject)
-        .add(SEQUENCE_PROPERTY,sequence)
-        .build()
-      );
+        writeTrackingFile();
       }
     } catch (Exception e) {
       exceptionThrown = true;

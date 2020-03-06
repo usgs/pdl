@@ -12,11 +12,11 @@ public class JSONTrackingFileTest {
   @Test
   public void writeTrackingFileWriteReadTest() {
     JsonObject outJson = Json.createObjectBuilder().add("entry1","abc").add("entry2",1).build();
-    JSONTrackingFile trackingFile = new JSONTrackingFile(outJson, "data/testFile.json");
+    JSONTrackingFile trackingFile = new JSONTrackingFile("data/testFile.json");
 
     JsonObject inJson = null;
     try {
-      trackingFile.write();
+      trackingFile.write(outJson);
       inJson = trackingFile.read();
     } catch (Exception e) {
       Assert.fail();

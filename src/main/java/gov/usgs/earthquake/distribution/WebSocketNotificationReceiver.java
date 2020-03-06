@@ -78,15 +78,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   @Override
   public void startup() throws Exception{
     super.startup();
-
-    //read sequence from tracking file if other parameters agree
-    JsonObject json = trackingFile.read();
-    if (json != null &&
-            json.getString(SERVER_HOST_PROPERTY).equals(serverHost) &&
-            json.getString(SERVER_PORT_PROPERTY).equals(serverPort) &&
-            json.getString(SERVER_PATH_PROPERTY).equals(serverPath)) {
-      sequence = json.getString(SEQUENCE_PROPERTY);
-    }
+    readTrackingFile();
 
     //open websocket
     client = new WebSocketClient(new URI(serverHost + ":" + serverPort + serverPath + sequence), this, attempts, timeout, retryOnClose);
@@ -101,6 +93,27 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     //close socket
     client.shutdown();
     super.shutdown();
+  }
+
+  public void readTrackingFile() throws Exception {
+    JsonObject json = trackingFile.read();
+    if (json != null &&
+            json.getString(SERVER_HOST_PROPERTY).equals(serverHost) &&
+            json.getString(SERVER_PORT_PROPERTY).equals(serverPort) &&
+            json.getString(SERVER_PATH_PROPERTY).equals(serverPath)) {
+      sequence = json.getString(SEQUENCE_PROPERTY);
+    }
+  }
+
+  public void writeTrackingFile() throws Exception {
+    trackingFile.write(
+      Json.createObjectBuilder()
+        .add(SERVER_HOST_PROPERTY, serverHost)
+        .add(SERVER_PATH_PROPERTY,serverPath)
+        .add(SERVER_PORT_PROPERTY,serverPort)
+        .add(SEQUENCE_PROPERTY,sequence)
+        .build()
+    );
   }
 
   @Override
@@ -134,14 +147,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
 
       //write tracking file
       sequence = json.getJsonNumber(SEQUENCE_PROPERTY).toString();
-      trackingFile.write(
-        Json.createObjectBuilder()
-          .add(SERVER_HOST_PROPERTY, serverHost)
-          .add(SERVER_PATH_PROPERTY,serverPath)
-          .add(SERVER_PORT_PROPERTY,serverPort)
-          .add(SEQUENCE_PROPERTY,sequence)
-          .build()
-        );
+      writeTrackingFile();
     } catch (Exception e) {
       LOGGER.log(Level.WARNING, "[" + getName() + "] exception while processing URLNotification ", e);
     }
