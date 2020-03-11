@@ -4,15 +4,29 @@ import gov.usgs.earthquake.distribution.*;
 import gov.usgs.earthquake.nats.NATSStreamingNotificationSender;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.earthquake.util.JSONTrackingFile;
+import gov.usgs.util.logging.SimpleLogFormatter;
 
 import java.net.URL;
 import java.util.Date;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 public class WebSocketNotificationReceivedTest {
 
   private static URLNotification receivedNotification = null;
 
   public static void main(String[] args) throws Exception {
+    // turn up logging during test
+    LogManager.getLogManager().reset();
+    ConsoleHandler handler = new ConsoleHandler();
+    //handler.setLevel(Level.FINEST);
+    handler.setFormatter(new SimpleLogFormatter());
+    Logger rootLogger = Logger.getLogger("");
+    rootLogger.addHandler(handler);
+    rootLogger.setLevel(Level.FINEST);
+
     // sender setup
     NATSStreamingNotificationSender sender = new NATSStreamingNotificationSender();
     sender.setServerHost("localhost");
@@ -42,16 +56,16 @@ public class WebSocketNotificationReceivedTest {
     receiver.setProductStorage(new URLProductStorage());
     receiver.setNotificationIndex(new JDBCNotificationIndex());
     receiver.setTrackingFile(new JSONTrackingFile(WebSocketNotificationReceiver.DEFAULT_TRACKING_FILE_NAME + "_test"));
-    receiver.setAttempts(3);
-    receiver.setTimeout(300);
     receiver.setName("receiver");
     try {
       System.out.println("Connecting to webservice: " + receiver.getServerHost() + ":" + receiver.getServerPort() + receiver.getServerPath() + receiver.getSequence());
       receiver.startup();
     } catch (Exception e) {
-      System.out.println("Exception starting notification receiver. Is the micronaut ws running?");
+      System.out.println("Exception starting notification receiver. Is the node ws running?");
       throw e;
     }
+
+    Thread.sleep(60000);
 
     // generate notification
     ProductId id = new ProductId("test-source", "test-type", "test-code");

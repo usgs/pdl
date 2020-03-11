@@ -9,7 +9,6 @@ class Handler {
     this.id = uuid();
     this.ip = request.connection.remoteAddress;
     this.socket = socket;
-
     this.sequence = this.getSequence(request.url);
   }
 

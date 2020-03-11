@@ -1,101 +1,140 @@
 package gov.usgs.earthquake.distribution;
 
 import javax.websocket.*;
+import java.io.IOException;
 import java.net.URI;
 
 /**
  * Manages a simple connection to a websocket. Can also be overridden for more complex behavior.
  */
 @ClientEndpoint
-public class WebSocketClient {
+public class WebSocketClient implements Runnable {
+
+  public static final long DEFAULT_TIMEOUT_MILLIS = 30000;
 
   private Session session;
-
   private URI endpoint;
   private WebSocketListener listener;
-  private int attempts;
+  private Thread thread;
   private long timeoutMillis;
-  private boolean retryOnClose;
+  private boolean stopThread;
+  private boolean doReconnect;
+  private Object sync = new Object();
 
-  public static final int DEFAULT_ATTEMPTS = 3;
-  public static final long DEFAULT_TIMEOUT_MILLIS = 100;
-  public static final boolean DEFAULT_RETRY_ON_CLOSE = true;
-
-  /**
-   * Constructs the client. Also connects to the server.
-   *
-   * @param endpoint the URI to connect to
-   * @param listener a WebSocketListener to handle incoming messages
-   * @param attempts an integer number of times to try the connection
-   * @param timeoutMillis a long for the wait time between attempts
-   * @throws Exception on thread interrupt or connection failure
-   */
-  public WebSocketClient(URI endpoint, WebSocketListener listener, int attempts, long timeoutMillis, boolean retryOnClose) throws Exception {
-    this.listener = listener;
-    this.endpoint = endpoint;
-    this.attempts = attempts;
-    this.timeoutMillis = timeoutMillis;
-    this.retryOnClose = retryOnClose;
-
-    connect();
+  public WebSocketClient (URI endpoint, WebSocketListener listener) {
+    this (endpoint, listener, DEFAULT_TIMEOUT_MILLIS);
   }
 
-  public WebSocketClient(URI endpoint, WebSocketListener listener) throws Exception {
-    this(endpoint, listener, DEFAULT_ATTEMPTS, DEFAULT_TIMEOUT_MILLIS, DEFAULT_RETRY_ON_CLOSE);
+  public WebSocketClient(URI endpoint, WebSocketListener listener, long timeoutMillis) {
+    this.listener = listener;
+    this.endpoint = endpoint;
+    this.timeoutMillis = timeoutMillis;
+  }
+
+
+  public void startup() {
+    stopThread = false;
+    this.thread = new Thread(this);
+    this.thread.start();
+  }
+
+  public void shutdown() throws Exception {
+    // bring down thread
+    stopThread = true;
+    thread.interrupt();
+    thread.join();
+  }
+
+  public void run() {
+    synchronized (sync) {
+      while (!stopThread) {
+        doReconnect = false;
+        try {
+          connect();
+          if (!doReconnect) {
+            System.out.println("Connected.");
+            sync.wait();
+          }
+        } catch (InterruptedException e1) {
+          // likely told to stop
+          stopThread = true;
+        } catch (Exception e2) {
+          // unresolvable problem connecting; try to resolve with listener
+          try {
+            listener.onConnectException(e2);
+          } catch (Exception e3) {
+            // unable to handle; quit
+            stopThread = true;
+          }
+        }
+      }
+
+      // make sure we're disconnected
+      if (this.session != null && this.session.isOpen()) {
+        try {
+          this.session.close();
+        } catch (IOException e) {
+          // ignore IOException; just close
+        }
+      }
+    }
+    listener.onDisconnect();
   }
 
   public void connect() throws Exception {
     // try to connect to server
+    System.out.println("Connecting to server");
     WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-    int failedAttempts = 0;
-    Exception lastExcept = null;
-    for (int i = 0; i < attempts; i++) {
+    try {
+      container.connectToServer(this, endpoint);
+    } catch (Exception e1) {
       try {
-        container.connectToServer(this, endpoint);
-        break;
-      } catch (Exception e) {
-        // increment failed attempts, sleep
-        failedAttempts++;
-        lastExcept = e;
-        Thread.sleep(timeoutMillis);
+        this.onConnectException(e1);
+      } catch (Exception e2) {
+        throw e2;
       }
     }
+  }
 
-    // throw connect exception if all attempts fail
-    if (failedAttempts == attempts) {
-      this.listener.onConnectFail();
-      throw lastExcept;
+  private void onConnectException(Exception e) throws Exception {
+    System.out.println("Exception connecting to server: " + e);
+    if (e instanceof IOException || e instanceof DeploymentException) {
+      reconnect();
+    } else {
+      throw e;
     }
+  }
+
+  private void reconnect() {
+    System.out.println("Reconnecting to server in " + timeoutMillis/1000 + " seconds");
+    try {
+      Thread.sleep(timeoutMillis);
+    } catch (InterruptedException e) {
+      // told to stop
+      stopThread = true;
+    }
+    doReconnect = true;
   }
 
   @OnOpen
   public void onOpen(Session session) {
     this.session = session;
-    this.listener.onOpen(session);
   }
 
   @OnClose
   public void onClose(Session session, CloseReason reason) {
-    this.listener.onClose(session, reason);
-    this.session = null;
-    if (retryOnClose) {
-      try {
-        this.connect();
-      } catch (Exception e) {
-        // failed to reconnect
-        this.listener.onReconnectFail();
-      }
+    System.out.println("Session closed");
+    // reconnect if abnormal closure
+    if (reason.getCloseCode().getCode() != 1000) {
+      reconnect();
+    } else {
+      this.session = null;
     }
   }
 
   @OnMessage
   public void onMessage(String message){
     this.listener.onMessage(message);
-  }
-
-  public void shutdown() throws Exception {
-    this.retryOnClose = false;
-    this.session.close();
   }
 
   public void setListener(WebSocketListener listener) {

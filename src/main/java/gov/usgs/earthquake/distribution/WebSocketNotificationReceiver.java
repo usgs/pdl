@@ -8,7 +8,9 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.websocket.CloseReason;
+import javax.websocket.DeploymentException;
 import javax.websocket.Session;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.logging.Level;
@@ -55,6 +57,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   private String sequence = "0";
 
 
+  //TODO: Ensure configure doesn't need to be run to set these properties
   @Override
   public void configure(Config config) throws Exception {
     super.configure(config);
@@ -81,7 +84,8 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     readTrackingFile();
 
     //open websocket
-    client = new WebSocketClient(new URI(serverHost + ":" + serverPort + serverPath + sequence), this, attempts, timeout, retryOnClose);
+    client = new WebSocketClient(new URI(serverHost + ":" + serverPort + serverPath + sequence), this);
+    client.startup();
   }
 
   /**
@@ -114,11 +118,6 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
         .add(SEQUENCE_PROPERTY,sequence)
         .build()
     );
-  }
-
-  @Override
-  public void onOpen(Session session) {
-    LOGGER.log(Level.FINE, "[" + getName() + "] connected to socket");
   }
 
   /**
@@ -154,26 +153,14 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   }
 
   @Override
-  public void onClose(Session session, CloseReason closeReason) {
-    LOGGER.log(Level.FINE, "[" + getName() + "] connection closed with code " + closeReason.toString());
+  public void onConnectException(Exception e) throws Exception {
+    LOGGER.log(Level.WARNING, "[" + getName() + "] fatal exception connecting to socket:", e);
+    throw e;
   }
 
   @Override
-  public void onConnectFail() {
-    LOGGER.log(Level.WARNING, "[" + getName() + "] failed to connect to socket.");
-  }
-
-  @Override
-  public void onReconnectFail() {
-    LOGGER.log(Level.WARNING, "[" + getName() + "] failed to reconnect to socket. Retrying in one minute.");
-    try {
-      Thread.sleep(60000);
-      client.connect();
-    } catch (InterruptedException ie) {
-      LOGGER.log(Level.WARNING, "[" + getName() + "] interrupted while reconnecting.");
-    } catch (Exception e) {
-      // do nothing, will be handled
-    }
+  public void onDisconnect() {
+    LOGGER.log(Level.FINE, "[" + getName() + "] disconnected web socket");
   }
 
   public String getServerHost() {
@@ -216,19 +203,4 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     this.sequence = sequence;
   }
 
-  public int getAttempts() {
-    return attempts;
-  }
-
-  public void setAttempts(int attempts) {
-    this.attempts = attempts;
-  }
-
-  public long getTimeout() {
-    return timeout;
-  }
-
-  public void setTimeout(long timeout) {
-    this.timeout = timeout;
-  }
 }
