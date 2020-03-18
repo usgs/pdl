@@ -52,7 +52,6 @@ public class WebSocketClient implements Runnable {
         try {
           connect();
           if (!doReconnect) {
-            System.out.println("Connected.");
             sync.wait();
           }
         } catch (InterruptedException e1) {
@@ -83,7 +82,6 @@ public class WebSocketClient implements Runnable {
 
   public void connect() throws Exception {
     // try to connect to server
-    System.out.println("Connecting to server");
     WebSocketContainer container = ContainerProvider.getWebSocketContainer();
     try {
       container.connectToServer(this, endpoint);
@@ -97,7 +95,6 @@ public class WebSocketClient implements Runnable {
   }
 
   private void onConnectException(Exception e) throws Exception {
-    System.out.println("Exception connecting to server: " + e);
     if (e instanceof IOException || e instanceof DeploymentException) {
       reconnect();
     } else {
@@ -106,7 +103,6 @@ public class WebSocketClient implements Runnable {
   }
 
   private void reconnect() {
-    System.out.println("Reconnecting to server in " + timeoutMillis/1000 + " seconds");
     try {
       Thread.sleep(timeoutMillis);
     } catch (InterruptedException e) {
@@ -123,7 +119,6 @@ public class WebSocketClient implements Runnable {
 
   @OnClose
   public void onClose(Session session, CloseReason reason) {
-    System.out.println("Session closed");
     // reconnect if abnormal closure
     if (reason.getCloseCode().getCode() != 1000) {
       reconnect();
