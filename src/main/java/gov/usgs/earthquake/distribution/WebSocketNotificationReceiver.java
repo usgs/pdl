@@ -7,10 +7,6 @@ import gov.usgs.util.StreamUtils;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.websocket.CloseReason;
-import javax.websocket.DeploymentException;
-import javax.websocket.Session;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.logging.Level;
@@ -30,34 +26,28 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   public static final String SEQUENCE_PROPERTY = "sequence";
   public static final String TIMESTAMP_PROPERTY = "timestamp";
   public static final String TRACKING_FILE_NAME_PROPERTY = "trackingFileName";
-  public static final String CONNECT_ATTEMPTS_PROPERTY = "connectAttempts";
-  public static final String CONNECT_TIMEOUT_PROPERTY = "connectTimeout";
-  public static final String RETRY_ON_CLOSE_PROPERTY = "retryOnClose";
+  public static final String RECONNECT_PROPERTY = "reconnect";
+  public static final String RECONNECT_INTERVAL_PROPERTY = "reconnectInterval";
 
   //TODO: Improve defaults
   public static final String DEFAULT_SERVER_HOST = "http://www.google.com";
   public static final String DEFAULT_SERVER_PORT = "4222";
   public static final String DEFAULT_SERVER_PATH = "/sequence/";
   public static final String DEFAULT_TRACKING_FILE_NAME = "data/WebSocketReceiverInfo.json";
-  public static final String DEFAULT_CONNECT_ATTEMPTS = "5";
-  public static final String DEFAULT_CONNECT_TIMEOUT = "1000";
-  public static final String DEFAULT_RETRY_ON_CLOSE = "true";
+  public static final String DEFAULT_RECONNECT = "true";
 
   public static final String ATTRIBUTE_DATA = "data";
 
   private String serverHost;
   private String serverPort;
   private String serverPath;
-  private int attempts;
-  private long timeout;
-  private boolean retryOnClose;
+  private long reconnectInterval;
+  private boolean reconnect;
   private JSONTrackingFile trackingFile;
 
   private WebSocketClient client;
   private String sequence = "0";
 
-
-  //TODO: Ensure configure doesn't need to be run to set these properties
   @Override
   public void configure(Config config) throws Exception {
     super.configure(config);
@@ -65,9 +55,13 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     serverHost = config.getProperty(SERVER_HOST_PROPERTY, DEFAULT_SERVER_HOST);
     serverPort = config.getProperty(SERVER_PORT_PROPERTY, DEFAULT_SERVER_PORT);
     serverPath = config.getProperty(SERVER_PATH_PROPERTY, DEFAULT_SERVER_PATH);
-    attempts = Integer.parseInt(config.getProperty(CONNECT_ATTEMPTS_PROPERTY, DEFAULT_CONNECT_ATTEMPTS));
-    timeout = Long.parseLong(config.getProperty(CONNECT_TIMEOUT_PROPERTY, DEFAULT_CONNECT_TIMEOUT));
-    retryOnClose = Boolean.parseBoolean(config.getProperty(RETRY_ON_CLOSE_PROPERTY, DEFAULT_RETRY_ON_CLOSE));
+    reconnect = Boolean.parseBoolean(config.getProperty(RECONNECT_PROPERTY, DEFAULT_RECONNECT));
+    String reconnectIntervalString = config.getProperty(RECONNECT_INTERVAL_PROPERTY);
+    if (reconnectIntervalString == null) {
+      reconnectInterval = WebSocketClient.DEFAULT_RECONNECT_INTERVAL;
+    } else {
+      reconnectInterval = Long.parseLong(reconnectIntervalString);
+    }
 
     String trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME);
     trackingFile = new JSONTrackingFile(trackingFileName);
@@ -81,10 +75,15 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   @Override
   public void startup() throws Exception{
     super.startup();
+
+    // try to read tracking file
+    if (trackingFile == null) {
+      trackingFile = new JSONTrackingFile(DEFAULT_TRACKING_FILE_NAME);
+    }
     readTrackingFile();
 
     //open websocket
-    client = new WebSocketClient(new URI(serverHost + ":" + serverPort + serverPath + sequence), this);
+    client = new WebSocketClient(new URI(serverHost + ":" + serverPort + serverPath + sequence), this, reconnect, reconnectInterval);
     client.startup();
   }
 
@@ -154,13 +153,12 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
 
   @Override
   public void onConnectException(Exception e) throws Exception {
-    LOGGER.log(Level.WARNING, "[" + getName() + "] fatal exception connecting to socket:", e);
-    throw e;
+    LOGGER.log(Level.WARNING, "[" + getName() + "] exception connecting to socket:", e);
   }
 
   @Override
-  public void onDisconnect() {
-    LOGGER.log(Level.FINE, "[" + getName() + "] disconnected web socket");
+  public void onClose() {
+    LOGGER.log(Level.WARNING, "[" + getName() + "] socket closed");
   }
 
   public String getServerHost() {
@@ -203,4 +201,19 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     this.sequence = sequence;
   }
 
+  public long getReconnectInterval() {
+    return reconnectInterval;
+  }
+
+  public void setReconnectInterval(long reconnectInterval) {
+    this.reconnectInterval = reconnectInterval;
+  }
+
+  public boolean isReconnect() {
+    return reconnect;
+  }
+
+  public void setReconnect(boolean reconnect) {
+    this.reconnect = reconnect;
+  }
 }

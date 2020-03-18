@@ -65,7 +65,7 @@ public class WebSocketNotificationReceivedTest {
       throw e;
     }
 
-    Thread.sleep(60000);
+    Thread.sleep(31000);
 
     // generate notification
     ProductId id = new ProductId("test-source", "test-type", "test-code");

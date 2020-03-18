@@ -10,106 +10,92 @@ import java.net.URI;
 @ClientEndpoint
 public class WebSocketClient implements Runnable {
 
-  public static final long DEFAULT_TIMEOUT_MILLIS = 30000;
+  public static final long DEFAULT_RECONNECT_INTERVAL = 30000;
 
   private Session session;
   private URI endpoint;
   private WebSocketListener listener;
   private Thread thread;
-  private long timeoutMillis;
+  private long reconnectInterval;
   private boolean stopThread;
-  private boolean doReconnect;
-  private Object sync = new Object();
+  private boolean reconnect;
+  private Object close = new Object();
 
   public WebSocketClient (URI endpoint, WebSocketListener listener) {
-    this (endpoint, listener, DEFAULT_TIMEOUT_MILLIS);
+    this (endpoint, listener, true, DEFAULT_RECONNECT_INTERVAL);
   }
 
-  public WebSocketClient(URI endpoint, WebSocketListener listener, long timeoutMillis) {
+  public WebSocketClient(URI endpoint, WebSocketListener listener, boolean reconnect, long reconnectInterval) {
     this.listener = listener;
     this.endpoint = endpoint;
-    this.timeoutMillis = timeoutMillis;
+    this.reconnect = reconnect;
+    this.reconnectInterval = reconnectInterval;
   }
 
 
   public void startup() {
     stopThread = false;
-    this.thread = new Thread(this);
-    this.thread.start();
+    thread = new Thread(this);
+    thread.start();
   }
 
   public void shutdown() throws Exception {
     // bring down thread
     stopThread = true;
-    thread.interrupt();
-    thread.join();
-  }
-
-  public void run() {
-    synchronized (sync) {
-      while (!stopThread) {
-        doReconnect = false;
-        try {
-          connect();
-          if (!doReconnect) {
-            sync.wait();
-          }
-        } catch (InterruptedException e1) {
-          // likely told to stop
-          stopThread = true;
-        } catch (Exception e2) {
-          // unresolvable problem connecting; try to resolve with listener
-          try {
-            listener.onConnectException(e2);
-          } catch (Exception e3) {
-            // unable to handle; quit
-            stopThread = true;
-          }
-        }
-      }
-
-      // make sure we're disconnected
-      if (this.session != null && this.session.isOpen()) {
-        try {
-          this.session.close();
-        } catch (IOException e) {
-          // ignore IOException; just close
-        }
-      }
+    synchronized (close) {
+      thread.interrupt();
     }
-    listener.onDisconnect();
+    thread.join();
+    thread = null;
   }
 
   public void connect() throws Exception {
     // try to connect to server
     WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-    try {
-      container.connectToServer(this, endpoint);
-    } catch (Exception e1) {
+    container.connectToServer(this, endpoint);
+  }
+
+  public void disconnect() throws Exception {
+    if (isConnected()) {
+      session.close();
+    }
+  }
+
+  public void run() {
+    while (!stopThread) {
+      // try to connect
       try {
-        this.onConnectException(e1);
-      } catch (Exception e2) {
-        throw e2;
+        synchronized(close) {
+          connect();
+          try {
+            // successful connection
+            close.wait();
+          } catch (InterruptedException ie) {
+            // gracefully close, disconnect if possible
+            stopThread = true;
+            disconnect();
+          }
+        }
+      } catch (Exception e1) { //exception on connect
+        // let listener handle if they want
+        try {
+          listener.onConnectException(e1);
+        } catch (Exception e2) {
+          // kill thread on listener exception
+          break;
+        }
+
+        // reconnect for unhandled connect exception
+        if (!stopThread && reconnect) {
+          try {
+            Thread.sleep(reconnectInterval);
+          } catch (InterruptedException ie) {
+            // gracefully close
+            stopThread = true;
+          }
+        }
       }
     }
-  }
-
-  private void onConnectException(Exception e) throws Exception {
-    if (e instanceof IOException || e instanceof DeploymentException) {
-      reconnect();
-    } else {
-      throw e;
-    }
-  }
-
-  private void reconnect() {
-    try {
-      Thread.sleep(timeoutMillis);
-    } catch (InterruptedException e) {
-      // told to stop
-      stopThread = true;
-    }
-    doReconnect = true;
   }
 
   @OnOpen
@@ -119,12 +105,10 @@ public class WebSocketClient implements Runnable {
 
   @OnClose
   public void onClose(Session session, CloseReason reason) {
-    // reconnect if abnormal closure
-    if (reason.getCloseCode().getCode() != 1000) {
-      reconnect();
-    } else {
-      this.session = null;
+    synchronized(close) {
+      close.notify();
     }
+    listener.onClose();
   }
 
   @OnMessage
