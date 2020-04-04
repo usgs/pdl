@@ -731,7 +731,11 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 						+ BINARY_FORMAT_ARGUMENT
 						+ "] ["
 						+ DISABLE_DEFLATE_ARGUMENT
-						+ "]");
+						+ "] ["
+						+ CLIProductBuilder.DISABLE_PARALLEL_SEND
+						+ "] ["
+						+ CLIProductBuilder.PARALLEL_SEND_TIMEOUT_ARGUMENT
+						+ "300]");
 
 		System.err.println();
 
@@ -807,6 +811,12 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 
 		System.err.println("\t" + DISABLE_DEFLATE_ARGUMENT);
 		System.err.println("\t\tdisable deflate compression when sending to hubs");
+
+		System.err.println("\t" + CLIProductBuilder.DISABLE_PARALLEL_SEND);
+		System.err.println("\t\tsend to servers sequentially");
+
+		System.err.println("\t" + CLIProductBuilder.PARALLEL_SEND_TIMEOUT_ARGUMENT);
+		System.err.println("\t\ttimeout for parallel sends in seconds");
 
 		System.exit(1);
 	}
