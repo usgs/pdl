@@ -282,7 +282,9 @@ public class CLIProductBuilder extends DefaultConfigurable {
 		ExecutorService sendExecutor = Executors.newFixedThreadPool(senders.size());
 		try {
 			sendExecutor.invokeAll(sendTasks, timeoutSeconds, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
+			// this may be Interupted, NullPointer, or RejectedExecution
+			// in any case, this part is done and move on to checking send status
 		}
 		sendExecutor.shutdown();
 		// check whether send completed or was interrupted
