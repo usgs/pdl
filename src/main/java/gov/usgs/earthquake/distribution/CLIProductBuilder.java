@@ -26,6 +26,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -114,6 +119,10 @@ public class CLIProductBuilder extends DefaultConfigurable {
 	public static final Integer DEFAULT_CONNECT_TIMEOUT = 15000;
 	public static final String BINARY_FORMAT_ARGUMENT = "--binaryFormat";
 	public static final String DISABLE_DEFLATE = "--disableDeflate";
+	public static final String DISABLE_PARALLEL_SEND = "--disableParallelSend";
+	public static final boolean DEFAULT_PARALLEL_SEND = true;
+	public static final String PARALLEL_SEND_TIMEOUT_ARGUMENT = "--parallelSendTimeout=";
+	public static final long DEFAULT_PARALLEL_SEND_TIMEOUT = 300; // 5 minutes
 
 	/** Tracker URL that is used when not overriden by an argument. */
 	private URL defaultTrackerURL;
@@ -125,6 +134,8 @@ public class CLIProductBuilder extends DefaultConfigurable {
 	private String[] args;
 
 	private Integer connectTimeout = DEFAULT_CONNECT_TIMEOUT;
+	private boolean parallelSend = DEFAULT_PARALLEL_SEND;
+	private long parallelSendTimeout = DEFAULT_PARALLEL_SEND_TIMEOUT;
 
 	/**
 	 * This class is not intended to be instantiated directly. f
@@ -233,6 +244,51 @@ public class CLIProductBuilder extends DefaultConfigurable {
 				sender.sendProduct(product);
 			} catch (Exception e) {
 				sendExceptions.put(sender, e);
+			}
+		}
+
+		return sendExceptions;
+	}
+
+	/**
+	 * Send a product to all configured ProductSenders.
+	 *
+	 * @param product the product to send.
+	 * @return exceptions that occured while sending. If map is empty, there were no
+	 *         exceptions.
+	 */
+	public Map<ProductSender, Exception> sendProductParallel(
+			final Product product, final long timeoutSeconds
+	) throws InterruptedException {
+		final Map<ProductSender, Boolean> sendComplete = new HashMap<ProductSender, Boolean>();
+		final Map<ProductSender, Exception> sendExceptions = new HashMap<ProductSender, Exception>();
+
+		Iterator<ProductSender> iter = senders.iterator();
+		List<Callable<Void>> sendTasks = new ArrayList<Callable<Void>>();
+		while (iter.hasNext()) {
+			final ProductSender sender = iter.next();
+			sendComplete.put(sender, false);
+			sendTasks.add(() -> {
+				try {
+					sender.sendProduct(product);
+					sendComplete.put(sender, true);
+				} catch (Exception e) {
+					sendExceptions.put(sender, e);
+				}
+				return null;
+			});
+		}
+		// run in parallel
+		ExecutorService sendExecutor = Executors.newFixedThreadPool(senders.size());
+		try {
+			sendExecutor.invokeAll(sendTasks, timeoutSeconds, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+		}
+		sendExecutor.shutdown();
+		// check whether send completed or was interrupted
+		for (ProductSender sender: sendComplete.keySet()) {
+			if (!sendComplete.get(sender) && sendExceptions.get(sender) == null) {
+				sendExceptions.put(sender, new InterruptedException());
 			}
 		}
 
@@ -350,6 +406,11 @@ public class CLIProductBuilder extends DefaultConfigurable {
 				binaryFormat = true;
 			} else if (arg.equals(DISABLE_DEFLATE)) {
 				enableDeflate = false;
+			} else if (arg.equals(DISABLE_PARALLEL_SEND)) {
+				parallelSend = false;
+			} else if (arg.startsWith(PARALLEL_SEND_TIMEOUT_ARGUMENT)) {
+				parallelSendTimeout = Long.valueOf(
+						arg.replace(PARALLEL_SEND_TIMEOUT_ARGUMENT, ""));
 			} else {
 				// not a builder argument
 			}
@@ -452,8 +513,9 @@ public class CLIProductBuilder extends DefaultConfigurable {
 				SocketProductSender.class.getName(), product.getId());
 
 		// send the product
-		Map<ProductSender, Exception> sendExceptions = builder
-				.sendProduct(product);
+		Map<ProductSender, Exception> sendExceptions = builder.parallelSend
+				? builder.sendProductParallel(product, builder.parallelSendTimeout)
+				: builder.sendProduct(product);
 
 		// handle any send exceptions
 		if (sendExceptions.size() != 0) {
@@ -569,6 +631,9 @@ public class CLIProductBuilder extends DefaultConfigurable {
 		buf.append("[--disableDeflate]       Send to hub without using deflate compression.\n");
 		buf.append("                         Only used with --servers argument\n");
 		buf.append("                         Must appear before --servers argument.\n");
+		buf.append("[--disableParallelSend]  Send to servers sequentially.\n");
+		buf.append("[--parallelSendTimeout=300]\n");
+		buf.append("                         timeout for parallel send in seconds.\n");
 		buf.append("[--servers=SERVERLIST]   server:port[,server:port]\n");
 		buf.append("                         Overrides any configured senders\n");
 		buf.append("                         Example: pdldevel.cr.usgs.gov:11235\n");
