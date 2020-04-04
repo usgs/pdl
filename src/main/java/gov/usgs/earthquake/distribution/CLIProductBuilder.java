@@ -195,8 +195,8 @@ public class CLIProductBuilder extends DefaultConfigurable {
 		}
 
 		parallelSend = Boolean.valueOf(config.getProperty(
-			ProductBuilder.PARALLEL_SEND_PROPERTY,
-			ProductBuilder.DEFAULT_PARALLEL_SEND));
+				ProductBuilder.PARALLEL_SEND_PROPERTY,
+				ProductBuilder.DEFAULT_PARALLEL_SEND));
 		parallelSendTimeout = Long.valueOf(config.getProperty(
 				ProductBuilder.PARALLEL_SEND_TIMEOUT_PROPERTY,
 				ProductBuilder.DEFAULT_PARALLEL_SEND_TIMEOUT));
