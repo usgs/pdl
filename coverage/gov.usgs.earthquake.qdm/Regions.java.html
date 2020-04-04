@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 /**
  * Set of regions.
- *  
+ *
  * @author - Alan Jones, 1999.09.10 &lt;br&gt;
  *         2002.01.16: Convert from &quot;regions&quot; directory with above files to
  *         regions.xml file. &lt;br&gt;
@@ -13,8 +13,8 @@ import java.util.ArrayList;
  *         default network (US), add isAuthor method to check if the event is
  *         authoritative
  *
- *         2018-08-21: JMF, reimplement parsing logic outside class.
- *         Update code to Java 1.8+.
+ *         2018-08-21: JMF, reimplement parsing logic outside class. Update code
+ *         to Java 1.8+.
  */
 public class Regions {
 
@@ -45,7 +45,7 @@ public class Regions {
 
     /**
      * Checks if network ID is the default network.
-     * 
+     *
      * @param netid network ID
      * @return true if default network.
      */
@@ -55,7 +55,7 @@ public class Regions {
 
     /**
      * Checks if an event's network ID is the default network.
-     * 
+     *
      * @param eq EQ event
      * @return true if default network.
      */
@@ -70,44 +70,46 @@ public class Regions {
 
     /**
      * Determines if the event is from the authoritative network.
-     * 
+     *
      * @param netid network ID
      * @param p     event point
      * @return true if event is authoritative
      */
     public boolean isAuthor(final String netid, final Point p) {
 <span class="fc bfc" id="L79" title="All 2 branches covered.">        if (this.isDefaultNetID(netid)) {</span>
-            // default region is authoritative where others are not.
+            // if any non-default regions match, default is not authoritative
 <span class="fc bfc" id="L81" title="All 2 branches covered.">            for (Region region : this.regions) {</span>
 <span class="pc bpc" id="L82" title="1 of 2 branches missed.">                if (region.netid.equalsIgnoreCase(netid)) {</span>
-                    // default region includes all points
-<span class="nc" id="L84">                    continue;</span>
+<span class="nc" id="L83">                    continue;</span>
                 }
-<span class="fc bfc" id="L86" title="All 2 branches covered.">                if (region.inpoly(p)) {</span>
-                    // if any region is authoritative, default is not
-<span class="fc" id="L88">                    return false;</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">                if (region.inpoly(p)) {</span>
+                    // another region is authoritative
+<span class="fc" id="L87">                    return false;</span>
                 }
-<span class="fc" id="L90">            }</span>
+<span class="fc" id="L89">            }</span>
+            // no other regions authoritative
 <span class="fc" id="L91">            return true;</span>
         } else {
-            // non-default regions are authoritative in their own region
-<span class="fc bfc" id="L94" title="All 2 branches covered.">            for (Region region : this.regions) {</span>
-<span class="fc bfc" id="L95" title="All 2 branches covered.">                if (region.netid.equalsIgnoreCase(netid)) {</span>
-<span class="fc" id="L96">                    return region.inpoly(p);</span>
+            // if any network regions match, network is authoritative
+<span class="fc bfc" id="L94" title="All 2 branches covered.">            for (Region region : regions) {</span>
+<span class="fc bfc" id="L95" title="All 4 branches covered.">                if (region.netid.equalsIgnoreCase(netid) &amp;&amp; region.inpoly(p)) {</span>
+                    // network is authoritative
+<span class="fc" id="L97">                    return true;</span>
                 }
-<span class="fc" id="L98">            }</span>
-<span class="fc" id="L99">            return false;</span>
+<span class="fc" id="L99">            }</span>
+            // network is not authoritative
+<span class="fc" id="L101">            return false;</span>
         }
     }
 
     /**
      * Determines if the event is from the authoritative network.
-     * 
+     *
      * @param eq EQ event
      * @return true if event is authoritative
      */
     public boolean isAuthor(final EQEvent eq) {
-<span class="nc" id="L110">        return this.isAuthor(eq.getNetID(), eq.getPoint());</span>
+<span class="nc" id="L112">        return this.isAuthor(eq.getNetID(), eq.getPoint());</span>
     }
 
 }

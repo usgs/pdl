@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NatsStreamingConnectionTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.nats</a> &gt; <span class="el_source">NatsStreamingConnectionTest.java</span></div><h1>NatsStreamingConnectionTest.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.nats;
+
+import io.nats.streaming.*;
+
+import java.util.concurrent.CountDownLatch;
+
+<span class="nc" id="L7">public class NatsStreamingConnectionTest {</span>
+
+  /**
+   * Tests the connection of NATS streaming server
+   * Code lifted from https://github.com/nats-io/stan.java
+   *
+   * @param args
+   *          Input arguments
+   *
+   * @throws Exception When something goes wrong
+   */
+  public static void main(String[] args) throws Exception{
+    // Connection factory
+    // Produces streaming connections
+    // Note: Should not make multiple factories; this should really only be done once
+<span class="nc" id="L22">    StreamingConnectionFactory factory = new StreamingConnectionFactory(&quot;test-cluster&quot;,&quot;test-client&quot;);</span>
+
+    // Connection
+    // It looks like we shouldn't be producing a bunch of NATS connections; instead, we pass them in to new streaming connections
+    // Look into this in the future
+<span class="nc" id="L27">    StreamingConnection connection = factory.createConnection(); //Exception just tossed out of main</span>
+
+<span class="nc" id="L29">    System.out.println(&quot;NATS Streaming Connection Test\n&quot;);</span>
+
+    // Publish blocks until we get a response from the server
+    // In the future, we might want to use some more intelligent logic (with a time out)
+    // Basically, if we can't hit the server, it's down and that's not good
+<span class="nc" id="L34">    System.out.println(&quot;Trying to publish message...&quot;);</span>
+    try {
+<span class="nc" id="L36">      connection.publish(&quot;test-subject&quot;, &quot;test-data&quot;.getBytes());</span>
+<span class="nc" id="L37">      System.out.println(&quot;Message published&quot;);</span>
+<span class="nc" id="L38">    } catch (Exception e) {</span>
+<span class="nc" id="L39">      System.err.println(&quot;Unable to store message in NATS Streaming. Exception:&quot;);</span>
+<span class="nc" id="L40">      throw e;</span>
+<span class="nc" id="L41">    }</span>
+
+    // Creating countdown latch to wait for subscriber message receipt
+    // This lets this thread wait until an operation in other threads finishes
+<span class="nc" id="L45">    final CountDownLatch doneSignal = new CountDownLatch(1);</span>
+
+    // Asynchronous subscriber receiving messages
+    // Evidently listens in another thread (that is what asynchronous means)
+<span class="nc" id="L49">    Subscription subscription = connection.subscribe(&quot;test-subject&quot;, new MessageHandler() {</span>
+      public void onMessage(Message m) {
+<span class="nc" id="L51">        System.out.printf(&quot;Received a message: %s\n&quot;, new String(m.getData()));</span>
+<span class="nc" id="L52">        doneSignal.countDown();</span>
+<span class="nc" id="L53">      }</span>
+<span class="nc" id="L54">    }, new SubscriptionOptions.Builder().deliverAllAvailable().build());</span>
+
+    // Wait for countdown latch
+<span class="nc" id="L57">    doneSignal.await();</span>
+
+    // Unsubscribe for cleanup (is this necessary?)
+<span class="nc" id="L60">    subscription.unsubscribe();</span>
+
+    // Close connection
+<span class="nc" id="L63">    connection.close();</span>
+
+<span class="nc" id="L65">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

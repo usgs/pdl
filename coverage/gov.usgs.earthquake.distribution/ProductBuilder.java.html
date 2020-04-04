@@ -11,11 +11,16 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.PrivateKey;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,8 +41,8 @@ import java.util.logging.Logger;
  */
 public class ProductBuilder extends DefaultConfigurable {
 
-<span class="fc" id="L39">	private static final Logger LOGGER = Logger.getLogger(ProductBuilder.class</span>
-<span class="fc" id="L40">			.getSimpleName());</span>
+<span class="fc" id="L44">	private static final Logger LOGGER = Logger.getLogger(ProductBuilder.class</span>
+<span class="fc" id="L45">			.getSimpleName());</span>
 
 	/** Configurable property for senders. */
 	public static final String SENDERS_PROPERTY = &quot;senders&quot;;
@@ -48,21 +53,29 @@ public class ProductBuilder extends DefaultConfigurable {
 	/** Private key filename configuration property. */
 	public static final String PRIVATE_KEY_PROPERTY = &quot;privateKeyFile&quot;;
 
+	/** Send in parallel. */
+	public static final String PARALLEL_SEND_PROPERTY = &quot;parallelSend&quot;;
+	public static final String DEFAULT_PARALLEL_SEND = &quot;true&quot;;
+
+	/** Timeout in seconds for parallel send. */
+	public static final String PARALLEL_SEND_TIMEOUT_PROPERTY = &quot;parallelSendTimeout&quot;;
+	public static final String DEFAULT_PARALLEL_SEND_TIMEOUT = &quot;300&quot;;
+
 	/** Default tracker url. */
 	public static final URL DEFAULT_TRACKER_URL;
 	static {
-<span class="fc" id="L54">		URL url = null;</span>
+<span class="fc" id="L67">		URL url = null;</span>
 		try {
-<span class="fc" id="L56">			url = new URL(&quot;http://ehppdl1.cr.usgs.gov/tracker/&quot;);</span>
-<span class="nc" id="L57">		} catch (MalformedURLException mue) {</span>
-<span class="nc" id="L58">			LOGGER.severe(&quot;Failed to parse default tracker url.&quot;);</span>
-<span class="nc" id="L59">			System.exit(1);</span>
-<span class="fc" id="L60">		}</span>
-<span class="fc" id="L61">		DEFAULT_TRACKER_URL = url;</span>
-<span class="fc" id="L62">	}</span>
+<span class="fc" id="L69">			url = new URL(&quot;http://ehppdl1.cr.usgs.gov/tracker/&quot;);</span>
+<span class="nc" id="L70">		} catch (MalformedURLException mue) {</span>
+<span class="nc" id="L71">			LOGGER.severe(&quot;Failed to parse default tracker url.&quot;);</span>
+<span class="nc" id="L72">			System.exit(1);</span>
+<span class="fc" id="L73">		}</span>
+<span class="fc" id="L74">		DEFAULT_TRACKER_URL = url;</span>
+<span class="fc" id="L75">	}</span>
 
 	/** List of senders where built products are sent. */
-<span class="fc" id="L65">	private List&lt;ProductSender&gt; senders = new LinkedList&lt;ProductSender&gt;();</span>
+<span class="fc" id="L78">	private List&lt;ProductSender&gt; senders = new LinkedList&lt;ProductSender&gt;();</span>
 
 	/** Default trackerURL to set on sent products. */
 	private URL trackerURL;
@@ -70,9 +83,15 @@ public class ProductBuilder extends DefaultConfigurable {
 	/** Key used to sign sent products. */
 	private PrivateKey privateKey;
 
-<span class="fc" id="L73">	public ProductBuilder() {</span>
-<span class="fc" id="L74">		trackerURL = DEFAULT_TRACKER_URL;</span>
-<span class="fc" id="L75">	}</span>
+	/** Whether to send in parallel. */
+<span class="fc" id="L87">	protected boolean parallelSend = true;</span>
+
+	/** How long to wait before parallel send timeout. */
+<span class="fc" id="L90">	protected long parallelSendTimeout = 300L;</span>
+
+<span class="fc" id="L92">	public ProductBuilder() {</span>
+<span class="fc" id="L93">		trackerURL = DEFAULT_TRACKER_URL;</span>
+<span class="fc" id="L94">	}</span>
 
 	/**
 	 * Send a product.
@@ -92,52 +111,57 @@ public class ProductBuilder extends DefaultConfigurable {
 			throws Exception {
 
 		// doesn't already have a tracker url
-<span class="pc bpc" id="L95" title="1 of 2 branches missed.">		if (product.getTrackerURL() == null) {</span>
-<span class="fc" id="L96">			product.setTrackerURL(trackerURL);</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">		if (product.getTrackerURL() == null) {</span>
+<span class="fc" id="L115">			product.setTrackerURL(trackerURL);</span>
 		}
 
 		// mark which version of client was used to create product
-<span class="fc" id="L100">		product.getProperties().put(ProductClient.PDL_CLIENT_VERSION_PROPERTY,</span>
+<span class="fc" id="L119">		product.getProperties().put(ProductClient.PDL_CLIENT_VERSION_PROPERTY,</span>
 				ProductClient.RELEASE_VERSION);
 
 		// doesn't already have a signature.
-<span class="pc bpc" id="L104" title="1 of 4 branches missed.">		if (privateKey != null &amp;&amp; product.getSignature() == null) {</span>
-<span class="fc" id="L105">			product.sign(privateKey);</span>
+<span class="pc bpc" id="L123" title="1 of 4 branches missed.">		if (privateKey != null &amp;&amp; product.getSignature() == null) {</span>
+<span class="fc" id="L124">			product.sign(privateKey);</span>
 		}
 
 		// send tracker update
-<span class="fc" id="L109">		new ProductTracker(product.getTrackerURL()).productCreated(</span>
-<span class="fc" id="L110">				this.getName(), product.getId());</span>
+<span class="fc" id="L128">		new ProductTracker(product.getTrackerURL()).productCreated(</span>
+<span class="fc" id="L129">				this.getName(), product.getId());</span>
 
 		// send product using all product senders.
-<span class="fc" id="L113">		Map&lt;ProductSender, Exception&gt; errors = new HashMap&lt;ProductSender, Exception&gt;();</span>
-<span class="fc" id="L114">		Iterator&lt;ProductSender&gt; iter = new LinkedList&lt;ProductSender&gt;(senders)</span>
-<span class="fc" id="L115">				.iterator();</span>
-<span class="fc bfc" id="L116" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
-<span class="fc" id="L117">			ProductSender sender = iter.next();</span>
-			try {
-<span class="fc" id="L119">				sender.sendProduct(product);</span>
-<span class="nc" id="L120">			} catch (Exception e) {</span>
-<span class="nc bnc" id="L121" title="All 2 branches missed.">				if (e instanceof ProductAlreadyInStorageException) {</span>
-					// condense this message...
-<span class="nc" id="L123">					LOGGER.info(&quot;Product already in storage, id=&quot;</span>
-<span class="nc" id="L124">							+ product.getId().toString());</span>
-				} else {
-<span class="nc" id="L126">					LOGGER.log(Level.WARNING, &quot;[&quot; + sender.getName()</span>
-							+ &quot;] error sending product&quot;, e);
-<span class="nc" id="L128">					errors.put(sender, e);</span>
-				}
-<span class="fc" id="L130">			}</span>
-<span class="fc" id="L131">		}</span>
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">		if (parallelSend) {</span>
+<span class="fc" id="L133">			return parallelSendProduct(senders, product, parallelSendTimeout);</span>
+		}
 
-<span class="fc" id="L133">		return errors;</span>
+		// send sequentially if not parallel
+<span class="nc" id="L137">		Map&lt;ProductSender, Exception&gt; errors = new HashMap&lt;ProductSender, Exception&gt;();</span>
+<span class="nc" id="L138">		Iterator&lt;ProductSender&gt; iter = new LinkedList&lt;ProductSender&gt;(senders)</span>
+<span class="nc" id="L139">				.iterator();</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L141">			ProductSender sender = iter.next();</span>
+			try {
+<span class="nc" id="L143">				sender.sendProduct(product);</span>
+<span class="nc" id="L144">			} catch (Exception e) {</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">				if (e instanceof ProductAlreadyInStorageException) {</span>
+					// condense this message...
+<span class="nc" id="L147">					LOGGER.info(&quot;Product already in storage, id=&quot;</span>
+<span class="nc" id="L148">							+ product.getId().toString());</span>
+				} else {
+<span class="nc" id="L150">					LOGGER.log(Level.WARNING, &quot;[&quot; + sender.getName()</span>
+							+ &quot;] error sending product&quot;, e);
+<span class="nc" id="L152">					errors.put(sender, e);</span>
+				}
+<span class="nc" id="L154">			}</span>
+<span class="nc" id="L155">		}</span>
+
+<span class="nc" id="L157">		return errors;</span>
 	}
 
 	/**
 	 * @return list of product senders
 	 */
 	public List&lt;ProductSender&gt; getProductSenders() {
-<span class="fc" id="L140">		return senders;</span>
+<span class="fc" id="L164">		return senders;</span>
 	}
 
 	/**
@@ -146,8 +170,8 @@ public class ProductBuilder extends DefaultConfigurable {
 	 * @param sender
 	 */
 	public void addProductSender(final ProductSender sender) {
-<span class="fc" id="L149">		senders.add(sender);</span>
-<span class="fc" id="L150">	}</span>
+<span class="fc" id="L173">		senders.add(sender);</span>
+<span class="fc" id="L174">	}</span>
 
 	/**
 	 * Remove a previously added ProductSender.
@@ -155,73 +179,137 @@ public class ProductBuilder extends DefaultConfigurable {
 	 * @param sender
 	 */
 	public void removeProductSender(final ProductSender sender) {
-<span class="nc" id="L158">		senders.remove(sender);</span>
-<span class="nc" id="L159">	}</span>
+<span class="nc" id="L182">		senders.remove(sender);</span>
+<span class="nc" id="L183">	}</span>
 
 	public URL getTrackerURL() {
-<span class="nc" id="L162">		return trackerURL;</span>
+<span class="nc" id="L186">		return trackerURL;</span>
 	}
 
 	public void setTrackerURL(URL trackerURL) {
-<span class="nc" id="L166">		this.trackerURL = trackerURL;</span>
-<span class="nc" id="L167">	}</span>
+<span class="nc" id="L190">		this.trackerURL = trackerURL;</span>
+<span class="nc" id="L191">	}</span>
 
 	public PrivateKey getPrivateKey() {
-<span class="nc" id="L170">		return privateKey;</span>
+<span class="nc" id="L194">		return privateKey;</span>
 	}
 
 	public void setPrivateKey(PrivateKey privateKey) {
-<span class="fc" id="L174">		this.privateKey = privateKey;</span>
-<span class="fc" id="L175">	}</span>
+<span class="fc" id="L198">		this.privateKey = privateKey;</span>
+<span class="fc" id="L199">	}</span>
 
 	@Override
 	public void configure(final Config config) throws Exception {
-<span class="nc" id="L179">		Iterator&lt;String&gt; senderNames = StringUtils.split(</span>
-<span class="nc" id="L180">				config.getProperty(SENDERS_PROPERTY), &quot;,&quot;).iterator();</span>
-<span class="nc bnc" id="L181" title="All 2 branches missed.">		while (senderNames.hasNext()) {</span>
-<span class="nc" id="L182">			String name = senderNames.next();</span>
-<span class="nc" id="L183">			LOGGER.config(&quot;Loading sender &quot; + name);</span>
+<span class="nc" id="L203">		Iterator&lt;String&gt; senderNames = StringUtils.split(</span>
+<span class="nc" id="L204">				config.getProperty(SENDERS_PROPERTY), &quot;,&quot;).iterator();</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">		while (senderNames.hasNext()) {</span>
+<span class="nc" id="L206">			String name = senderNames.next();</span>
+<span class="nc" id="L207">			LOGGER.config(&quot;Loading sender &quot; + name);</span>
 
-<span class="nc" id="L185">			ProductSender sender = (ProductSender) Config.getConfig()</span>
-<span class="nc" id="L186">					.getObject(name);</span>
-<span class="nc bnc" id="L187" title="All 2 branches missed.">			if (sender == null) {</span>
-<span class="nc" id="L188">				throw new ConfigurationException(&quot;Unable to load sender '&quot;</span>
+<span class="nc" id="L209">			ProductSender sender = (ProductSender) Config.getConfig()</span>
+<span class="nc" id="L210">					.getObject(name);</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">			if (sender == null) {</span>
+<span class="nc" id="L212">				throw new ConfigurationException(&quot;Unable to load sender '&quot;</span>
 						+ name + &quot;', make sure it is properly configured.&quot;);
 			}
-<span class="nc" id="L191">			addProductSender(sender);</span>
-<span class="nc" id="L192">		}</span>
+<span class="nc" id="L215">			addProductSender(sender);</span>
+<span class="nc" id="L216">		}</span>
 
-<span class="nc" id="L194">		String url = config.getProperty(TRACKER_URL_PROPERTY);</span>
-<span class="nc bnc" id="L195" title="All 2 branches missed.">		if (url != null) {</span>
-<span class="nc" id="L196">			trackerURL = new URL(url);</span>
+<span class="nc" id="L218">		String url = config.getProperty(TRACKER_URL_PROPERTY);</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">		if (url != null) {</span>
+<span class="nc" id="L220">			trackerURL = new URL(url);</span>
 		}
-<span class="nc" id="L198">		LOGGER.config(&quot;[&quot; + getName() + &quot;] Using tracker URL '&quot;</span>
-<span class="nc" id="L199">				+ trackerURL.toString() + &quot;'&quot;);</span>
+<span class="nc" id="L222">		LOGGER.config(&quot;[&quot; + getName() + &quot;] Using tracker URL '&quot;</span>
+<span class="nc" id="L223">				+ trackerURL.toString() + &quot;'&quot;);</span>
 
-<span class="nc" id="L201">		String keyFilename = config.getProperty(PRIVATE_KEY_PROPERTY);</span>
-<span class="nc bnc" id="L202" title="All 2 branches missed.">		if (keyFilename != null) {</span>
-<span class="nc" id="L203">			LOGGER.config(&quot;[&quot; + getName() + &quot;] Loading private key file '&quot;</span>
+<span class="nc" id="L225">		String keyFilename = config.getProperty(PRIVATE_KEY_PROPERTY);</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">		if (keyFilename != null) {</span>
+<span class="nc" id="L227">			LOGGER.config(&quot;[&quot; + getName() + &quot;] Loading private key file '&quot;</span>
 					+ keyFilename + &quot;'&quot;);
-<span class="nc" id="L205">			privateKey = CryptoUtils.readOpenSSHPrivateKey(</span>
-<span class="nc" id="L206">					StreamUtils.readStream(new File(keyFilename)), null);</span>
+<span class="nc" id="L229">			privateKey = CryptoUtils.readOpenSSHPrivateKey(</span>
+<span class="nc" id="L230">					StreamUtils.readStream(new File(keyFilename)), null);</span>
 		}
-<span class="nc" id="L208">	}</span>
+
+<span class="nc" id="L233">		parallelSend = Boolean.valueOf(config.getProperty(</span>
+				PARALLEL_SEND_PROPERTY,
+				DEFAULT_PARALLEL_SEND));
+<span class="nc" id="L236">		parallelSendTimeout = Long.valueOf(config.getProperty(</span>
+				PARALLEL_SEND_TIMEOUT_PROPERTY,
+				DEFAULT_PARALLEL_SEND_TIMEOUT));
+<span class="nc" id="L239">		LOGGER.config(&quot;[&quot; + getName() + &quot;] parallel send enabled=&quot;</span>
+				+ parallelSend + &quot;, timeout=&quot; + parallelSendTimeout);
+<span class="nc" id="L241">	}</span>
 
 	@Override
 	public void shutdown() throws Exception {
-<span class="nc" id="L212">		Iterator&lt;ProductSender&gt; iter = senders.iterator();</span>
-<span class="nc bnc" id="L213" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
-<span class="nc" id="L214">			iter.next().shutdown();</span>
+<span class="nc" id="L245">		Iterator&lt;ProductSender&gt; iter = senders.iterator();</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L247">			iter.next().shutdown();</span>
 		}
-<span class="nc" id="L216">	}</span>
+<span class="nc" id="L249">	}</span>
 
 	@Override
 	public void startup() throws Exception {
-<span class="nc" id="L220">		Iterator&lt;ProductSender&gt; iter = senders.iterator();</span>
-<span class="nc bnc" id="L221" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
-<span class="nc" id="L222">			iter.next().startup();</span>
+<span class="nc" id="L253">		Iterator&lt;ProductSender&gt; iter = senders.iterator();</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L255">			iter.next().startup();</span>
 		}
-<span class="nc" id="L224">	}</span>
+<span class="nc" id="L257">	}</span>
+
+
+	/**
+	 * Send a product to all ProductSenders concurrently.
+	 *
+	 * @param senders
+	 *        the senders to receive product.
+	 * @param product
+	 *        the product to send.
+	 * @param timeoutSeconds
+	 *        number of seconds before timing out,
+	 *        interrupting any pending send.
+	 * @return exceptions that occured while sending. If map is empty, there were no
+	 *         exceptions.
+	 */
+	public static Map&lt;ProductSender, Exception&gt; parallelSendProduct(
+			final List&lt;ProductSender&gt; senders,
+			final Product product,
+			final long timeoutSeconds) {
+<span class="fc" id="L277">		final Map&lt;ProductSender, Boolean&gt; sendComplete = new HashMap&lt;ProductSender, Boolean&gt;();</span>
+<span class="fc" id="L278">		final Map&lt;ProductSender, Exception&gt; sendExceptions = new HashMap&lt;ProductSender, Exception&gt;();</span>
+
+<span class="fc" id="L280">		Iterator&lt;ProductSender&gt; iter = senders.iterator();</span>
+<span class="fc" id="L281">		List&lt;Callable&lt;Void&gt;&gt; sendTasks = new ArrayList&lt;Callable&lt;Void&gt;&gt;();</span>
+<span class="fc bfc" id="L282" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L283">			final ProductSender sender = iter.next();</span>
+<span class="fc" id="L284">			sendComplete.put(sender, false);</span>
+<span class="fc" id="L285">			sendTasks.add(() -&gt; {</span>
+				try {
+<span class="fc" id="L287">					sender.sendProduct(product);</span>
+<span class="fc" id="L288">					sendComplete.put(sender, true);</span>
+<span class="nc" id="L289">				} catch (Exception e) {</span>
+<span class="nc" id="L290">					sendExceptions.put(sender, e);</span>
+<span class="fc" id="L291">				}</span>
+<span class="fc" id="L292">				return null;</span>
+			});
+<span class="fc" id="L294">		}</span>
+		// run in parallel
+<span class="fc" id="L296">		ExecutorService sendExecutor = Executors.newFixedThreadPool(senders.size());</span>
+		try {
+<span class="fc" id="L298">			sendExecutor.invokeAll(sendTasks, timeoutSeconds, TimeUnit.SECONDS);</span>
+<span class="nc" id="L299">		} catch (Exception e) {</span>
+			// this may be Interupted, NullPointer, or RejectedExecution
+			// in any case, this part is done and move on to checking send status
+<span class="fc" id="L302">		}</span>
+<span class="fc" id="L303">		sendExecutor.shutdown();</span>
+		// check whether send completed or was interrupted
+<span class="fc bfc" id="L305" title="All 2 branches covered.">		for (ProductSender sender: sendComplete.keySet()) {</span>
+<span class="pc bpc" id="L306" title="3 of 4 branches missed.">			if (!sendComplete.get(sender) &amp;&amp; sendExceptions.get(sender) == null) {</span>
+<span class="nc" id="L307">				sendExceptions.put(sender, new InterruptedException());</span>
+			}
+<span class="fc" id="L309">		}</span>
+
+<span class="fc" id="L311">		return sendExceptions;</span>
+	}
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

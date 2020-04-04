@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GeoservePlacesService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.geoserve</a> &gt; <span class="el_source">GeoservePlacesService.java</span></div><h1>GeoservePlacesService.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.geoserve;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+import gov.usgs.util.StreamUtils;
+
+public class GeoservePlacesService implements GeoservePlaces {
+  /** Default URL for GeoServe Places service. */
+  public static final String DEFAULT_GEOSERVE_PLACES_URL = &quot;https://earthquake.usgs.gov/ws/geoserve/places.json&quot;;
+
+  /** Configured URL for GeoServe Places service. */
+  private String endpointUrl;
+
+  public GeoservePlacesService() {
+<span class="fc" id="L25">    this(DEFAULT_GEOSERVE_PLACES_URL);</span>
+<span class="fc" id="L26">  }</span>
+
+<span class="fc" id="L28">  public GeoservePlacesService(final String endpointUrl) {</span>
+<span class="fc" id="L29">    this.endpointUrl = endpointUrl;</span>
+<span class="fc" id="L30">  }</span>
+
+  /**
+   * Converts a decimal degree azimuth to a canonical compass direction
+   *
+   * @param azimuth The degrees azimuth to be converted
+   *
+   * @return {String} The canonical compass direction for the given input azimuth
+   */
+  public String azimuthToDirection(double azimuth) {
+<span class="fc" id="L40">    double fullwind = 22.5;</span>
+<span class="fc" id="L41">    String[] directions = { &quot;N&quot;, &quot;NNE&quot;, &quot;NE&quot;, &quot;ENE&quot;, &quot;E&quot;, &quot;ESE&quot;, &quot;SE&quot;, &quot;SSE&quot;, &quot;S&quot;, &quot;SSW&quot;, &quot;SW&quot;, &quot;WSW&quot;, &quot;W&quot;, &quot;WNW&quot;, &quot;NW&quot;,</span>
+        &quot;NNW&quot;, &quot;N&quot; };
+
+    // Invert azimuth for proper directivity
+    // Maybe not needed in the future.
+<span class="fc" id="L46">    azimuth += 180.0;</span>
+
+    // adjust azimuth if negative
+<span class="fc bfc" id="L49" title="All 2 branches covered.">    while (azimuth &lt; 0.0) {</span>
+<span class="fc" id="L50">      azimuth = azimuth + 360.0;</span>
+    }
+
+<span class="fc" id="L53">    return directions[(int) Math.round((azimuth % 360.0) / fullwind)];</span>
+  }
+
+  public String formatEventTitle(JsonObject feature) {
+<span class="fc" id="L57">    JsonObject properties = feature.getJsonObject(&quot;properties&quot;);</span>
+
+<span class="fc" id="L59">    String name = properties.getString(&quot;name&quot;);</span>
+<span class="fc" id="L60">    String country = properties.getString(&quot;country_code&quot;).toLowerCase();</span>
+<span class="fc" id="L61">    String admin = properties.getString(&quot;country_name&quot;);</span>
+<span class="fc" id="L62">    int distance = properties.getInt(&quot;distance&quot;);</span>
+<span class="fc" id="L63">    double azimuth = properties.getJsonNumber(&quot;azimuth&quot;).doubleValue();</span>
+<span class="fc" id="L64">    String direction = azimuthToDirection(azimuth);</span>
+
+<span class="fc bfc" id="L66" title="All 2 branches covered.">    if (&quot;us&quot;.equals(country)) {</span>
+<span class="fc" id="L67">      admin = properties.getString(&quot;admin1_name&quot;);</span>
+    }
+
+<span class="fc" id="L70">    return String.format(&quot;%d km %s of %s, %s&quot;, distance, direction, name, admin);</span>
+  }
+
+  public String getEndpointURL() {
+<span class="nc" id="L74">    return this.endpointUrl;</span>
+  }
+
+  public JsonObject getEventPlaces(BigDecimal latitude, BigDecimal longitude)
+      throws IOException, MalformedURLException {
+<span class="nc" id="L79">    final URL url = new URL(String.format(&quot;%s?type=event&amp;latitude=%s&amp;longitude=%s&quot;, this.endpointUrl,</span>
+<span class="nc" id="L80">        URLEncoder.encode(latitude.toString(), &quot;UTF-8&quot;), URLEncoder.encode(longitude.toString(), &quot;UTF-8&quot;)));</span>
+
+<span class="nc" id="L82">    try (InputStream in = StreamUtils.getURLInputStream(url, 250, 250)) {</span>
+<span class="nc" id="L83">      JsonReader reader = Json.createReader(in);</span>
+<span class="nc" id="L84">      JsonObject json = reader.readObject();</span>
+<span class="nc" id="L85">      reader.close();</span>
+<span class="nc" id="L86">      return json.getJsonObject(&quot;event&quot;);</span>
+    }
+  }
+
+  public String getEventTitle(BigDecimal latitude, BigDecimal longitude) throws IOException, MalformedURLException {
+<span class="nc" id="L91">    JsonObject places = this.getEventPlaces(latitude, longitude);</span>
+<span class="nc" id="L92">    JsonArray features = places.getJsonArray(&quot;features&quot;);</span>
+<span class="nc" id="L93">    JsonObject feature = features.get(0).asJsonObject();</span>
+
+<span class="nc" id="L95">    return this.formatEventTitle(feature);</span>
+  }
+
+  public void setEndpointURL(final String endpointUrl) {
+<span class="nc" id="L99">    this.endpointUrl = endpointUrl;</span>
+<span class="nc" id="L100">  }</span>
+
+  // TODO as needed, implement full GeoServe places API options
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

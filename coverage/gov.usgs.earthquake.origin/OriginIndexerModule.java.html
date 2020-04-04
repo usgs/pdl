@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OriginIndexerModule.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.origin</a> &gt; <span class="el_source">OriginIndexerModule.java</span></div><h1>OriginIndexerModule.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.origin;
+
+import java.math.BigDecimal;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import gov.usgs.earthquake.geoserve.GeoservePlaces;
+import gov.usgs.earthquake.geoserve.GeoservePlacesService;
+import gov.usgs.earthquake.indexer.DefaultIndexerModule;
+import gov.usgs.earthquake.indexer.IndexerModule;
+import gov.usgs.earthquake.indexer.ProductSummary;
+import gov.usgs.earthquake.product.Product;
+
+public class OriginIndexerModule extends DefaultIndexerModule {
+<span class="fc" id="L15">  private static final Logger LOGGER = Logger.getLogger(OriginIndexerModule.class.getName());</span>
+
+  private GeoservePlaces geoservePlaces;
+
+<span class="fc" id="L19">  public OriginIndexerModule() {</span>
+<span class="fc" id="L20">    this.geoservePlaces = new GeoservePlacesService();</span>
+<span class="fc" id="L21">  }</span>
+
+  /**
+   * @return The places service currently being used for title generation
+   */
+  public GeoservePlaces getPlacesService() {
+<span class="nc" id="L27">    return this.geoservePlaces;</span>
+  }
+
+  @Override
+  public ProductSummary getProductSummary(Product product) throws Exception {
+<span class="fc" id="L32">    ProductSummary summary = super.getProductSummary(product);</span>
+<span class="fc" id="L33">    BigDecimal latitude = summary.getEventLatitude();</span>
+<span class="fc" id="L34">    BigDecimal longitude = summary.getEventLongitude();</span>
+
+    // Defer to existing title property if set...
+<span class="fc" id="L37">    Map&lt;String, String&gt; summaryProperties = summary.getProperties();</span>
+<span class="fc" id="L38">    String title = summaryProperties.get(&quot;title&quot;);</span>
+
+<span class="pc bpc" id="L40" title="1 of 6 branches missed.">    if (title == null &amp;&amp; latitude != null &amp;&amp; longitude != null) {</span>
+      try {
+<span class="fc" id="L42">        title = this.geoservePlaces.getEventTitle(latitude, longitude);</span>
+<span class="fc" id="L43">        summaryProperties.put(&quot;title&quot;, title);</span>
+<span class="nc" id="L44">      } catch (Exception ex) {</span>
+<span class="nc" id="L45">        LOGGER.fine(ex.getMessage());</span>
+        // Do nothing, value-added failed. Move on.
+<span class="fc" id="L47">      }</span>
+    }
+
+<span class="fc" id="L50">    return summary;</span>
+  }
+
+  @Override
+  public int getSupportLevel(Product product) {
+<span class="fc" id="L55">    int supportLevel = IndexerModule.LEVEL_UNSUPPORTED;</span>
+<span class="fc" id="L56">    String type = getBaseProductType(product.getId().getType());</span>
+
+<span class="fc bfc" id="L58" title="All 4 branches covered.">    if (&quot;origin&quot;.equals(type) &amp;&amp; !&quot;DELETE&quot;.equalsIgnoreCase(product.getStatus())) {</span>
+<span class="fc" id="L59">      supportLevel = IndexerModule.LEVEL_SUPPORTED;</span>
+    }
+
+<span class="fc" id="L62">    return supportLevel;</span>
+  }
+
+  /**
+   * Set the geoservePlaces to be used for subsequent calls to GeoServe places
+   * endpoint.
+   *
+   * @param geoservePlaces The GeoservePlaces to use
+   */
+  public void setPlacesService(GeoservePlaces geoservePlaces) {
+<span class="fc" id="L72">    this.geoservePlaces = geoservePlaces;</span>
+<span class="fc" id="L73">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

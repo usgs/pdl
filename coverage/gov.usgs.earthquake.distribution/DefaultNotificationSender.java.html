@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultNotificationSender.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">DefaultNotificationSender.java</span></div><h1>DefaultNotificationSender.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.Config;
+
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Logger;
+
+/**
+ * The base class for all Notification senders.
+ *
+ * The DefaultNotificationSender references a general need to send notifications. It extends DefaultNotificationListener
+ * to allow forwarding of products from any subclass of DefaultNotificationReceiver. *
+ */
+<span class="fc" id="L18">public class DefaultNotificationSender extends DefaultNotificationListener {</span>
+
+<span class="fc" id="L20">  private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L21">          .getLogger(DefaultNotificationSender.class.getName());</span>
+
+  /** Property referencing the server host */
+  public static final String SERVER_HOST_PROPERTY = &quot;serverHost&quot;;
+
+  /** Property referencing the server port */
+  public static final String SERVER_PORT_PROPERTY = &quot;serverPort&quot;;
+
+  /** Property referencing product storage object to use */
+  public static final String PRODUCT_STORAGE_PROPERTY = &quot;storage&quot;;
+
+  /** Property referencing the length of time products should be held in storage*/
+  public static final String PRODUCT_STORAGE_MAX_AGE_PROPERTY = &quot;storageage&quot;;
+  public static final String DEFAULT_PRODUCT_STORAGE_MAX_AGE = &quot;604800000&quot;;
+
+  protected String serverHost;
+  protected String serverPort;
+  protected URLProductStorage productStorage;
+  protected long productStorageMaxAge;
+
+
+  /**
+   * Configures based on configuration section.
+   *
+   * @param config
+   *            The config
+   * @throws Exception
+   */
+  public void configure(Config config) throws Exception {
+    // let default notification listener configure itself
+<span class="nc" id="L51">    super.configure(config);</span>
+
+<span class="nc bnc" id="L53" title="All 2 branches missed.">    if (getNotificationIndex() == null) {</span>
+<span class="nc" id="L54">      throw new ConfigurationException(&quot;[&quot; + getName()</span>
+              + &quot;] 'index' is a required configuration property&quot;);
+    }
+
+<span class="nc" id="L58">    String productStorageName = config.getProperty(PRODUCT_STORAGE_PROPERTY);</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">    if (productStorageName == null) {</span>
+<span class="nc" id="L60">      throw new ConfigurationException(&quot;[&quot; + getName() + &quot;] '&quot; + PRODUCT_STORAGE_PROPERTY + &quot;' is a required property.&quot;);</span>
+    }
+<span class="nc" id="L62">    LOGGER.config(&quot;[&quot; + getName() + &quot;] loading product storage '&quot; + productStorageName + &quot;'.&quot;);</span>
+<span class="nc" id="L63">    this.productStorage = (URLProductStorage) Config.getConfig().getObject(productStorageName);</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">    if (productStorage == null) {</span>
+<span class="nc" id="L65">      throw new ConfigurationException(&quot;[&quot; + getName() + &quot;] product storage '&quot; + productStorageName + &quot;' improperly configured.&quot;);</span>
+    }
+
+<span class="nc" id="L68">    productStorageMaxAge = Long.parseLong(config.getProperty(PRODUCT_STORAGE_MAX_AGE_PROPERTY,DEFAULT_PRODUCT_STORAGE_MAX_AGE));</span>
+<span class="nc" id="L69">    LOGGER.config(&quot;[&quot; + getName() + &quot;] product storage max age: &quot; + productStorageMaxAge + &quot;ms&quot;);</span>
+
+<span class="nc" id="L71">    serverHost = config.getProperty(SERVER_HOST_PROPERTY);</span>
+<span class="nc" id="L72">    LOGGER.config(&quot;[&quot; + getName() + &quot;] messenger server host: &quot; + serverHost);</span>
+
+<span class="nc" id="L74">    serverPort = config.getProperty(SERVER_PORT_PROPERTY);</span>
+<span class="nc" id="L75">    LOGGER.config(&quot;[&quot; + getName() + &quot;] messenger server port: &quot; + serverPort);</span>
+<span class="nc" id="L76">  }</span>
+
+  /**
+   * Called on receipt of a new product. Stores this product and calls sendMessage()
+   * Most of this logic was lifted from the pre-08/2019 EIDSNotificationSender class.
+   *
+   * @param product
+   *            a product whose notification was accepted.
+   * @throws Exception
+   */
+  public void onProduct(final Product product) throws Exception {
+<span class="fc" id="L87">    ProductId id = product.getId();</span>
+
+    // store product
+    try {
+<span class="fc" id="L91">      productStorage.storeProduct(product);</span>
+<span class="nc" id="L92">    } catch (ProductAlreadyInStorageException e) {</span>
+      // ignore
+<span class="fc" id="L94">    }</span>
+
+    // create notification
+    // make expiration relative to now
+<span class="fc" id="L98">    Date expirationDate = new Date(new Date().getTime()</span>
+            + productStorageMaxAge);
+<span class="fc" id="L100">    URLNotification notification = new URLNotification(id, expirationDate,</span>
+<span class="fc" id="L101">            product.getTrackerURL(), productStorage.getProductURL(id));</span>
+
+    // remove any existing notifications, generally there won't be any
+<span class="fc" id="L104">    Iterator&lt;Notification&gt; existing = getNotificationIndex()</span>
+<span class="fc" id="L105">            .findNotifications(id).iterator();</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">    while (existing.hasNext()) {</span>
+<span class="fc" id="L107">      getNotificationIndex().removeNotification(existing.next());</span>
+    }
+
+    // send notification
+    try {
+<span class="fc" id="L112">      sendNotification(notification);</span>
+<span class="nc" id="L113">    } catch (Exception e) {</span>
+      // if fails, try to remove from storage
+<span class="nc" id="L115">      productStorage.removeProduct(id);</span>
+<span class="nc" id="L116">      throw e;</span>
+<span class="fc" id="L117">    }</span>
+
+    // add created notification to index. Used to track which products
+    // have been processed, and to delete after expirationDate
+    // done after send in case send fails
+<span class="fc" id="L122">    getNotificationIndex().addNotification(notification);</span>
+
+    // track that notification was sent
+<span class="fc" id="L125">    new ProductTracker(notification.getTrackerURL()).notificationSent(</span>
+<span class="fc" id="L126">            this.getName(), notification);</span>
+<span class="fc" id="L127">  }</span>
+
+  /**
+   * Called just before this listener processes a notification.
+   *
+   * @param notification
+   *            notification about to be processed.
+   * @return true to process the notification, false to skip
+   * @throws Exception
+   */
+  @Override
+  protected boolean onBeforeProcessNotification(
+          final Notification notification) throws Exception {
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">    if (!isProcessDuplicates()) {</span>
+      // only check if we care
+<span class="fc" id="L142">      List&lt;Notification&gt; notifications = getNotificationIndex()</span>
+<span class="fc" id="L143">              .findNotifications(notification.getProductId());</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">      if (notifications.size() &gt; 0) {</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">        if (productStorage.hasProduct(notification.getProductId())) {</span>
+<span class="fc" id="L146">          LOGGER.finer(&quot;[&quot; + getName()</span>
+                  + &quot;] skipping existing product &quot;
+<span class="fc" id="L148">                  + notification.getProductId().toString());</span>
+<span class="fc" id="L149">          return false;</span>
+        } else {
+<span class="fc" id="L151">          LOGGER.finer(&quot;[&quot;</span>
+<span class="fc" id="L152">                  + getName()</span>
+                  + &quot;] found notifications, but product missing from storage &quot;
+<span class="fc" id="L154">                  + notification.getProductId().toString());</span>
+        }
+      }
+    }
+
+<span class="fc" id="L159">    return true;</span>
+  }
+
+  @Override
+  protected void onAfterProcessNotification(final Notification notification) {
+    // function replaced so notifications not added to index
+    // this class responds to the index
+<span class="fc" id="L166">  }</span>
+
+  /**
+   * Called when a notification expires
+   *
+   * @param notification
+   *                The expired notification
+   * @throws Exception
+   */
+  @Override
+  protected void onExpiredNotification(final Notification notification) throws Exception{
+<span class="fc" id="L177">    List&lt;Notification&gt; notifications = getNotificationIndex()</span>
+<span class="fc" id="L178">            .findNotifications(notification.getProductId());</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">    if (notifications.size() &lt;= 1) {</span>
+      // this is called before removing notification from index.
+<span class="fc" id="L181">      productStorage.removeProduct(notification.getProductId());</span>
+<span class="fc" id="L182">      LOGGER.finer(&quot;[&quot; + getName()</span>
+              + &quot;] removed expired product from sender storage &quot;
+<span class="fc" id="L184">              + notification.getProductId().toString());</span>
+    } else {
+      // still have notifications left for product, don't remove
+    }
+<span class="fc" id="L188">  }</span>
+
+  /**
+   * Utility method to do the actual notification sending. Should be overridden by subclasses.
+   *
+   * @param notification
+   *            The notification to send
+   * @throws Exception
+   */
+  protected void sendNotification(final Notification notification) throws Exception {
+<span class="nc" id="L198">    LOGGER.info(&quot;[&quot; + getName() + &quot;] sent message &quot; + notification.toString());</span>
+<span class="nc" id="L199">  }</span>
+
+  /**
+   * Start up storage
+   *
+   * @throws Exception if something goes wrong
+   */
+  public void startup() throws Exception{
+<span class="fc" id="L207">    productStorage.startup();</span>
+<span class="fc" id="L208">    super.startup();</span>
+<span class="fc" id="L209">  }</span>
+
+  /**
+   * Shut down storage
+   *
+   * @throws Exception if something goes wrong
+   */
+  public void shutdown() throws Exception{
+<span class="fc" id="L217">    super.shutdown();</span>
+    try {
+<span class="fc" id="L219">      productStorage.shutdown();</span>
+<span class="nc" id="L220">    } catch (Exception e) {</span>
+      //do nothing
+<span class="fc" id="L222">    }</span>
+<span class="fc" id="L223">  }</span>
+
+
+  /**
+   * Getters and Setters
+   */
+
+  public String getServerHost() {
+<span class="nc" id="L231">    return serverHost;</span>
+  }
+
+  public void setServerHost(String serverHost) {
+<span class="nc" id="L235">    this.serverHost = serverHost;</span>
+<span class="nc" id="L236">  }</span>
+
+  public String getServerPort() {
+<span class="nc" id="L239">    return serverPort;</span>
+  }
+
+  public void setServerPort(String serverPort) {
+<span class="nc" id="L243">    this.serverPort = serverPort;</span>
+<span class="nc" id="L244">  }</span>
+
+  public URLProductStorage getProductStorage() {
+<span class="fc" id="L247">    return productStorage;</span>
+  }
+
+  public void setProductStorage(URLProductStorage productStorage) {
+<span class="fc" id="L251">    this.productStorage = productStorage;</span>
+<span class="fc" id="L252">  }</span>
+
+  public long getProductStorageMaxAge() {
+<span class="nc" id="L255">    return productStorageMaxAge;</span>
+  }
+
+  public void setProductStorageMaxAge(long productStorageMaxAge) {
+<span class="fc" id="L259">    this.productStorageMaxAge = productStorageMaxAge;</span>
+<span class="fc" id="L260">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

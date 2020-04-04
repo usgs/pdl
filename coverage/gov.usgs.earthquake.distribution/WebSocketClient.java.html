@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WebSocketClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">WebSocketClient.java</span></div><h1>WebSocketClient.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution;
+
+import javax.websocket.*;
+import java.net.URI;
+
+/**
+ * Manages a simple connection to a websocket. Can also be overridden for more complex behavior.
+ */
+@ClientEndpoint
+public class WebSocketClient {
+
+  private Session session;
+
+  private URI endpoint;
+  private WebSocketListener listener;
+  private int attempts;
+  private long timeoutMillis;
+  private boolean retryOnClose;
+
+  public static final int DEFAULT_ATTEMPTS = 3;
+  public static final long DEFAULT_TIMEOUT_MILLIS = 100;
+  public static final boolean DEFAULT_RETRY_ON_CLOSE = true;
+
+  /**
+   * Constructs the client. Also connects to the server.
+   *
+   * @param endpoint the URI to connect to
+   * @param listener a WebSocketListener to handle incoming messages
+   * @param attempts an integer number of times to try the connection
+   * @param timeoutMillis a long for the wait time between attempts
+   * @throws Exception on thread interrupt or connection failure
+   */
+<span class="nc" id="L33">  public WebSocketClient(URI endpoint, WebSocketListener listener, int attempts, long timeoutMillis, boolean retryOnClose) throws Exception {</span>
+<span class="nc" id="L34">    this.listener = listener;</span>
+<span class="nc" id="L35">    this.endpoint = endpoint;</span>
+<span class="nc" id="L36">    this.attempts = attempts;</span>
+<span class="nc" id="L37">    this.timeoutMillis = timeoutMillis;</span>
+<span class="nc" id="L38">    this.retryOnClose = retryOnClose;</span>
+
+<span class="nc" id="L40">    connect();</span>
+<span class="nc" id="L41">  }</span>
+
+  public WebSocketClient(URI endpoint, WebSocketListener listener) throws Exception {
+<span class="nc" id="L44">    this(endpoint, listener, DEFAULT_ATTEMPTS, DEFAULT_TIMEOUT_MILLIS, DEFAULT_RETRY_ON_CLOSE);</span>
+<span class="nc" id="L45">  }</span>
+
+  public void connect() throws Exception {
+    // try to connect to server
+<span class="nc" id="L49">    WebSocketContainer container = ContainerProvider.getWebSocketContainer();</span>
+<span class="nc" id="L50">    int failedAttempts = 0;</span>
+<span class="nc" id="L51">    Exception lastExcept = null;</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">    for (int i = 0; i &lt; attempts; i++) {</span>
+      try {
+<span class="nc" id="L54">        container.connectToServer(this, endpoint);</span>
+<span class="nc" id="L55">        break;</span>
+<span class="nc" id="L56">      } catch (Exception e) {</span>
+        // increment failed attempts, sleep
+<span class="nc" id="L58">        failedAttempts++;</span>
+<span class="nc" id="L59">        lastExcept = e;</span>
+<span class="nc" id="L60">        Thread.sleep(timeoutMillis);</span>
+      }
+    }
+
+    // throw connect exception if all attempts fail
+<span class="nc bnc" id="L65" title="All 2 branches missed.">    if (failedAttempts == attempts) {</span>
+<span class="nc" id="L66">      this.listener.onConnectFail();</span>
+<span class="nc" id="L67">      throw lastExcept;</span>
+    }
+<span class="nc" id="L69">  }</span>
+
+  @OnOpen
+  public void onOpen(Session session) {
+<span class="nc" id="L73">    this.session = session;</span>
+<span class="nc" id="L74">    this.listener.onOpen(session);</span>
+<span class="nc" id="L75">  }</span>
+
+  @OnClose
+  public void onClose(Session session, CloseReason reason) {
+<span class="nc" id="L79">    this.listener.onClose(session, reason);</span>
+<span class="nc" id="L80">    this.session = null;</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">    if (retryOnClose) {</span>
+      try {
+<span class="nc" id="L83">        this.connect();</span>
+<span class="nc" id="L84">      } catch (Exception e) {</span>
+        // failed to reconnect
+<span class="nc" id="L86">        this.listener.onReconnectFail();</span>
+<span class="nc" id="L87">      }</span>
+    }
+<span class="nc" id="L89">  }</span>
+
+  @OnMessage
+  public void onMessage(String message){
+<span class="nc" id="L93">    this.listener.onMessage(message);</span>
+<span class="nc" id="L94">  }</span>
+
+  public void shutdown() throws Exception {
+<span class="nc" id="L97">    this.retryOnClose = false;</span>
+<span class="nc" id="L98">    this.session.close();</span>
+<span class="nc" id="L99">  }</span>
+
+  public void setListener(WebSocketListener listener) {
+<span class="nc" id="L102">    this.listener = listener;</span>
+<span class="nc" id="L103">  }</span>
+
+  public boolean isConnected() {
+<span class="nc bnc" id="L106" title="All 4 branches missed.">    return this.session != null &amp;&amp; this.session.isOpen();</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

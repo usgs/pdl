@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NATSStreamingNotificationSender.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.nats</a> &gt; <span class="el_source">NATSStreamingNotificationSender.java</span></div><h1>NATSStreamingNotificationSender.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.nats;
+
+import gov.usgs.earthquake.distribution.*;
+import gov.usgs.util.Config;
+
+import javax.security.auth.login.Configuration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Sends notifications directly to NATS streaming server using a NATS client
+ */
+<span class="nc" id="L13">public class NATSStreamingNotificationSender extends DefaultNotificationSender {</span>
+
+<span class="nc" id="L15">  private static final Logger LOGGER = Logger</span>
+<span class="nc" id="L16">          .getLogger(DefaultNotificationSender.class.getName());</span>
+
+<span class="nc" id="L18">  private NATSClient client = new NATSClient();</span>
+  private String subject;
+
+  @Override
+  public void configure(Config config) throws Exception{
+<span class="nc" id="L23">    super.configure(config);</span>
+<span class="nc" id="L24">    client.configure(config);</span>
+<span class="nc" id="L25">    subject = config.getProperty(NATSClient.SUBJECT_PROPERTY);</span>
+<span class="nc bnc" id="L26" title="All 2 branches missed.">    if (subject == null) {</span>
+<span class="nc" id="L27">      throw new ConfigurationException(NATSClient.SUBJECT_PROPERTY + &quot; is a required parameter&quot;);</span>
+    }
+<span class="nc" id="L29">  }</span>
+
+  /**
+   * Publishes notification to NATS streaming server
+   *
+   * @param notification
+   *            The notification to send
+   * @throws Exception if something goes wrong with publish
+   */
+  @Override
+  public void sendNotification(final Notification notification) throws Exception {
+<span class="nc" id="L40">    String message = URLNotificationJSONConverter.toJSON((URLNotification) notification);</span>
+    try {
+<span class="nc" id="L42">      client.getConnection().publish(subject, message.getBytes());</span>
+<span class="nc" id="L43">    } catch (Exception e) {</span>
+<span class="nc" id="L44">      LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] exception publishing NATSStreaming notification:&quot;);</span>
+<span class="nc" id="L45">      throw e;</span>
+<span class="nc" id="L46">    }</span>
+<span class="nc" id="L47">  }</span>
+
+  /**
+   * Starts NATSStreaming connection and superclasses
+   *
+   * @throws Exception if there's an issue with superclasses, generating a client ID, or connecting to server
+   */
+  @Override
+  public void startup() throws Exception {
+<span class="nc" id="L56">    super.startup();</span>
+<span class="nc" id="L57">    client.startup();</span>
+<span class="nc" id="L58">  }</span>
+
+  /**
+   * Safely closes the NATSStreaming connection and superclasses
+   *
+   * @throws Exception if superclasses throw exceptions
+   */
+  @Override
+  public void shutdown() throws Exception {
+<span class="nc" id="L67">    client.shutdown();</span>
+<span class="nc" id="L68">    super.shutdown();</span>
+<span class="nc" id="L69">  }</span>
+
+  public NATSClient getClient() {
+<span class="nc" id="L72">    return client;</span>
+  }
+
+  public void setClient(NATSClient client) {
+<span class="nc" id="L76">    this.client = client;</span>
+<span class="nc" id="L77">  }</span>
+
+  public String getSubject() {
+<span class="nc" id="L80">    return subject;</span>
+  }
+
+  public void setSubject(String subject) {
+<span class="nc" id="L84">    this.subject = subject;</span>
+<span class="nc" id="L85">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

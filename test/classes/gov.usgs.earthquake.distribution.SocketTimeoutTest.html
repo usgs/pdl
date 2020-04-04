@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">5.628s</div>
+<div class="counter">5.629s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,12 +79,12 @@
 </thead>
 <tr>
 <td class="success">testNoTimeout</td>
-<td class="success">0.159s</td>
+<td class="success">0.158s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testShutdownWithTimeout</td>
-<td class="success">0.258s</td>
+<td class="success">0.260s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
@@ -102,7 +102,8 @@
 <div id="tab1" class="tab">
 <h2>Standard error</h2>
 <span class="code">
-<pre>Accepted connection from Socket[addr=/127.0.0.1,port=50141,localport=1234]
+<pre>FINER	thread=58	[null] running listener cleanup
+Accepted connection from Socket[addr=/127.0.0.1,port=49660,localport=1234]
 java.net.SocketTimeoutException: Read timed out
 	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
 	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
@@ -134,7 +135,7 @@ java.net.SocketTimeoutException: Read timed out
 	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:38)
 	at org.gradle.api.internal.tasks.testing.junit.AbstractJUnitTestClassProcessor.processTestClass(AbstractJUnitTestClassProcessor.java:62)
 	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.processTestClass(SuiteTestClassProcessor.java:51)
-	at jdk.internal.reflect.GeneratedMethodAccessor11.invoke(Unknown Source)
+	at jdk.internal.reflect.GeneratedMethodAccessor4.invoke(Unknown Source)
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
 	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
@@ -143,7 +144,7 @@ java.net.SocketTimeoutException: Read timed out
 	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:93)
 	at com.sun.proxy.$Proxy2.processTestClass(Unknown Source)
 	at org.gradle.api.internal.tasks.testing.worker.TestWorker.processTestClass(TestWorker.java:118)
-	at jdk.internal.reflect.GeneratedMethodAccessor10.invoke(Unknown Source)
+	at jdk.internal.reflect.GeneratedMethodAccessor3.invoke(Unknown Source)
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
 	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
@@ -158,7 +159,7 @@ java.net.SocketTimeoutException: Read timed out
 	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:55)
 	at java.base/java.lang.Thread.run(Thread.java:834)
 timeout worked
-Accepted connection from Socket[addr=/127.0.0.1,port=50142,localport=1234]
+Accepted connection from Socket[addr=/127.0.0.1,port=49661,localport=1234]
 sent 408332 bytes before write timeout
 java.net.SocketException: Socket closed
 	at java.base/java.net.SocketOutputStream.socketWrite(SocketOutputStream.java:113)
@@ -187,7 +188,7 @@ java.net.SocketException: Socket closed
 	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:38)
 	at org.gradle.api.internal.tasks.testing.junit.AbstractJUnitTestClassProcessor.processTestClass(AbstractJUnitTestClassProcessor.java:62)
 	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.processTestClass(SuiteTestClassProcessor.java:51)
-	at jdk.internal.reflect.GeneratedMethodAccessor11.invoke(Unknown Source)
+	at jdk.internal.reflect.GeneratedMethodAccessor4.invoke(Unknown Source)
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
 	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
@@ -196,7 +197,7 @@ java.net.SocketException: Socket closed
 	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:93)
 	at com.sun.proxy.$Proxy2.processTestClass(Unknown Source)
 	at org.gradle.api.internal.tasks.testing.worker.TestWorker.processTestClass(TestWorker.java:118)
-	at jdk.internal.reflect.GeneratedMethodAccessor10.invoke(Unknown Source)
+	at jdk.internal.reflect.GeneratedMethodAccessor3.invoke(Unknown Source)
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
 	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
@@ -210,19 +211,19 @@ java.net.SocketException: Socket closed
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
 	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:55)
 	at java.base/java.lang.Thread.run(Thread.java:834)
-Fri Nov 08 10:48:12 MST 2019
-FINER	thread=51	[null] running listener cleanup
-Fri Nov 08 10:48:13 MST 2019
-FINER	thread=51	[null] running listener cleanup
-Fri Nov 08 10:48:14 MST 2019
-FINER	thread=51	[null] running listener cleanup
-Fri Nov 08 10:48:15 MST 2019
-FINER	thread=51	[null] running listener cleanup
-Fri Nov 08 10:48:16 MST 2019
-FINER	thread=51	[null] running listener cleanup
-Accepted connection from Socket[addr=/127.0.0.1,port=50143,localport=1234]
+Sat Apr 04 12:33:07 MDT 2020
+FINER	thread=58	[null] running listener cleanup
+Sat Apr 04 12:33:08 MDT 2020
+FINER	thread=58	[null] running listener cleanup
+Sat Apr 04 12:33:09 MDT 2020
+FINER	thread=58	[null] running listener cleanup
+Sat Apr 04 12:33:10 MDT 2020
+FINER	thread=58	[null] running listener cleanup
+Sat Apr 04 12:33:11 MDT 2020
+FINER	thread=58	[null] running listener cleanup
+Accepted connection from Socket[addr=/127.0.0.1,port=49662,localport=1234]
 It worked!
-Accepted connection from Socket[addr=/127.0.0.1,port=50144,localport=1234]
+Accepted connection from Socket[addr=/127.0.0.1,port=49663,localport=1234]
 java.net.SocketTimeoutException: Read timed out
 	at java.base/java.net.SocketInputStream.socketRead0(Native Method)
 	at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
@@ -254,7 +255,7 @@ java.net.SocketTimeoutException: Read timed out
 	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:38)
 	at org.gradle.api.internal.tasks.testing.junit.AbstractJUnitTestClassProcessor.processTestClass(AbstractJUnitTestClassProcessor.java:62)
 	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.processTestClass(SuiteTestClassProcessor.java:51)
-	at jdk.internal.reflect.GeneratedMethodAccessor11.invoke(Unknown Source)
+	at jdk.internal.reflect.GeneratedMethodAccessor4.invoke(Unknown Source)
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
 	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
@@ -263,7 +264,7 @@ java.net.SocketTimeoutException: Read timed out
 	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:93)
 	at com.sun.proxy.$Proxy2.processTestClass(Unknown Source)
 	at org.gradle.api.internal.tasks.testing.worker.TestWorker.processTestClass(TestWorker.java:118)
-	at jdk.internal.reflect.GeneratedMethodAccessor10.invoke(Unknown Source)
+	at jdk.internal.reflect.GeneratedMethodAccessor3.invoke(Unknown Source)
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
 	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
@@ -289,7 +290,7 @@ timeout worked
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 5.4.1</a> at Nov 8, 2019, 10:48:28 AM</p>
+<a href="http://www.gradle.org">Gradle 5.4.1</a> at Apr 4, 2020, 12:33:23 PM</p>
 </div>
 </div>
 </body>
