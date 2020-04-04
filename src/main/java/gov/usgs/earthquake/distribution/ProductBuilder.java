@@ -273,8 +273,7 @@ public class ProductBuilder extends DefaultConfigurable {
 	public static Map<ProductSender, Exception> parallelSendProduct(
 			final List<ProductSender> senders,
 			final Product product,
-			final long timeoutSeconds
-	) throws InterruptedException {
+			final long timeoutSeconds) {
 		final Map<ProductSender, Boolean> sendComplete = new HashMap<ProductSender, Boolean>();
 		final Map<ProductSender, Exception> sendExceptions = new HashMap<ProductSender, Exception>();
 
