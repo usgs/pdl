@@ -11,11 +11,16 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.PrivateKey;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,6 +53,14 @@ public class ProductBuilder extends DefaultConfigurable {
 	/** Private key filename configuration property. */
 	public static final String PRIVATE_KEY_PROPERTY = "privateKeyFile";
 
+	/** Send in parallel. */
+	public static final String PARALLEL_SEND_PROPERTY = "parallelSend";
+	public static final String DEFAULT_PARALLEL_SEND = "true";
+
+	/** Timeout in seconds for parallel send. */
+	public static final String PARALLEL_SEND_TIMEOUT_PROPERTY = "parallelSendTimeout";
+	public static final String DEFAULT_PARALLEL_SEND_TIMEOUT = "300";
+
 	/** Default tracker url. */
 	public static final URL DEFAULT_TRACKER_URL;
 	static {
@@ -69,6 +82,12 @@ public class ProductBuilder extends DefaultConfigurable {
 
 	/** Key used to sign sent products. */
 	private PrivateKey privateKey;
+
+	/** Whether to send in parallel. */
+	protected boolean parallelSend = true;
+
+	/** How long to wait before parallel send timeout. */
+	protected long parallelSendTimeout = 300L;
 
 	public ProductBuilder() {
 		trackerURL = DEFAULT_TRACKER_URL;
@@ -110,6 +129,11 @@ public class ProductBuilder extends DefaultConfigurable {
 				this.getName(), product.getId());
 
 		// send product using all product senders.
+		if (parallelSend) {
+			return parallelSendProduct(senders, product, parallelSendTimeout);
+		}
+
+		// send sequentially if not parallel
 		Map<ProductSender, Exception> errors = new HashMap<ProductSender, Exception>();
 		Iterator<ProductSender> iter = new LinkedList<ProductSender>(senders)
 				.iterator();
@@ -205,6 +229,15 @@ public class ProductBuilder extends DefaultConfigurable {
 			privateKey = CryptoUtils.readOpenSSHPrivateKey(
 					StreamUtils.readStream(new File(keyFilename)), null);
 		}
+
+		parallelSend = Boolean.valueOf(config.getProperty(
+				PARALLEL_SEND_PROPERTY,
+				DEFAULT_PARALLEL_SEND));
+		parallelSendTimeout = Long.valueOf(config.getProperty(
+				PARALLEL_SEND_TIMEOUT_PROPERTY,
+				DEFAULT_PARALLEL_SEND_TIMEOUT));
+		LOGGER.config("[" + getName() + "] parallel send enabled="
+				+ parallelSend + ", timeout=" + parallelSendTimeout);
 	}
 
 	@Override
@@ -221,6 +254,62 @@ public class ProductBuilder extends DefaultConfigurable {
 		while (iter.hasNext()) {
 			iter.next().startup();
 		}
+	}
+
+
+	/**
+	 * Send a product to all ProductSenders concurrently.
+	 *
+	 * @param senders
+	 *        the senders to receive product.
+	 * @param product
+	 *        the product to send.
+	 * @param timeoutSeconds
+	 *        number of seconds before timing out,
+	 *        interrupting any pending send.
+	 * @return exceptions that occured while sending. If map is empty, there were no
+	 *         exceptions.
+	 */
+	public static Map<ProductSender, Exception> parallelSendProduct(
+			final List<ProductSender> senders,
+			final Product product,
+			final long timeoutSeconds
+	) throws InterruptedException {
+		final Map<ProductSender, Boolean> sendComplete = new HashMap<ProductSender, Boolean>();
+		final Map<ProductSender, Exception> sendExceptions = new HashMap<ProductSender, Exception>();
+
+		Iterator<ProductSender> iter = senders.iterator();
+		List<Callable<Void>> sendTasks = new ArrayList<Callable<Void>>();
+		while (iter.hasNext()) {
+			final ProductSender sender = iter.next();
+			sendComplete.put(sender, false);
+			sendTasks.add(() -> {
+				try {
+					sender.sendProduct(product);
+					sendComplete.put(sender, true);
+				} catch (Exception e) {
+					sendExceptions.put(sender, e);
+				}
+				return null;
+			});
+		}
+		// run in parallel
+		ExecutorService sendExecutor = Executors.newFixedThreadPool(senders.size());
+		try {
+			sendExecutor.invokeAll(sendTasks, timeoutSeconds, TimeUnit.SECONDS);
+		} catch (Exception e) {
+			// this may be Interupted, NullPointer, or RejectedExecution
+			// in any case, this part is done and move on to checking send status
+		}
+		sendExecutor.shutdown();
+		// check whether send completed or was interrupted
+		for (ProductSender sender: sendComplete.keySet()) {
+			if (!sendComplete.get(sender) && sendExceptions.get(sender) == null) {
+				sendExceptions.put(sender, new InterruptedException());
+			}
+		}
+
+		return sendExceptions;
 	}
 
 }

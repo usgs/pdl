@@ -34,11 +34,11 @@ import gov.usgs.util.StringUtils;
 
 /**
  * Read messages from files or a poll directory, and push products into PDL.
- * 
+ *
  * This is supports EIDS/QDDS style polling. The input messages are converted to
  * Quakeml using the FileToQuakemlConverter interface, then sent as Quakeml
  * based products.
- * 
+ *
  * Much of the configuration can be supplied using either a configuration file,
  * or command line arguments.
  */
@@ -589,6 +589,11 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 				createInternalProducts = true;
 			} else if (arg.equals(CREATE_SCENARIO_PRODUCTS)) {
 				createScenarioProducts = true;
+			} else if (arg.equals(CLIProductBuilder.DISABLE_PARALLEL_SEND)) {
+				parallelSend = false;
+			} else if (arg.startsWith(CLIProductBuilder.PARALLEL_SEND_TIMEOUT_ARGUMENT)) {
+				parallelSendTimeout = Long.valueOf(
+						arg.replace(CLIProductBuilder.PARALLEL_SEND_TIMEOUT_ARGUMENT, ""));
 			}
 		}
 

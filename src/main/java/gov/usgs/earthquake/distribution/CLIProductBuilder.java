@@ -26,11 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -120,9 +115,7 @@ public class CLIProductBuilder extends DefaultConfigurable {
 	public static final String BINARY_FORMAT_ARGUMENT = "--binaryFormat";
 	public static final String DISABLE_DEFLATE = "--disableDeflate";
 	public static final String DISABLE_PARALLEL_SEND = "--disableParallelSend";
-	public static final boolean DEFAULT_PARALLEL_SEND = true;
 	public static final String PARALLEL_SEND_TIMEOUT_ARGUMENT = "--parallelSendTimeout=";
-	public static final long DEFAULT_PARALLEL_SEND_TIMEOUT = 300; // 5 minutes
 
 	/** Tracker URL that is used when not overriden by an argument. */
 	private URL defaultTrackerURL;
@@ -134,8 +127,8 @@ public class CLIProductBuilder extends DefaultConfigurable {
 	private String[] args;
 
 	private Integer connectTimeout = DEFAULT_CONNECT_TIMEOUT;
-	private boolean parallelSend = DEFAULT_PARALLEL_SEND;
-	private long parallelSendTimeout = DEFAULT_PARALLEL_SEND_TIMEOUT;
+	private boolean parallelSend = Boolean.valueOf(ProductBuilder.DEFAULT_PARALLEL_SEND);
+	private long parallelSendTimeout = Long.valueOf(ProductBuilder.DEFAULT_PARALLEL_SEND_TIMEOUT);
 
 	/**
 	 * This class is not intended to be instantiated directly. f
@@ -200,6 +193,15 @@ public class CLIProductBuilder extends DefaultConfigurable {
 		if (trackerURLProperty != null) {
 			defaultTrackerURL = new URL(trackerURLProperty);
 		}
+
+		parallelSend = Boolean.valueOf(config.getProperty(
+			ProductBuilder.PARALLEL_SEND_PROPERTY,
+			ProductBuilder.DEFAULT_PARALLEL_SEND));
+		parallelSendTimeout = Long.valueOf(config.getProperty(
+				ProductBuilder.PARALLEL_SEND_TIMEOUT_PROPERTY,
+				ProductBuilder.DEFAULT_PARALLEL_SEND_TIMEOUT));
+		LOGGER.config("[" + getName() + "] parallel send enabled="
+				+ parallelSend + ", timeout=" + parallelSendTimeout);
 	}
 
 	/**
@@ -244,53 +246,6 @@ public class CLIProductBuilder extends DefaultConfigurable {
 				sender.sendProduct(product);
 			} catch (Exception e) {
 				sendExceptions.put(sender, e);
-			}
-		}
-
-		return sendExceptions;
-	}
-
-	/**
-	 * Send a product to all configured ProductSenders.
-	 *
-	 * @param product the product to send.
-	 * @return exceptions that occured while sending. If map is empty, there were no
-	 *         exceptions.
-	 */
-	public Map<ProductSender, Exception> sendProductParallel(
-			final Product product, final long timeoutSeconds
-	) throws InterruptedException {
-		final Map<ProductSender, Boolean> sendComplete = new HashMap<ProductSender, Boolean>();
-		final Map<ProductSender, Exception> sendExceptions = new HashMap<ProductSender, Exception>();
-
-		Iterator<ProductSender> iter = senders.iterator();
-		List<Callable<Void>> sendTasks = new ArrayList<Callable<Void>>();
-		while (iter.hasNext()) {
-			final ProductSender sender = iter.next();
-			sendComplete.put(sender, false);
-			sendTasks.add(() -> {
-				try {
-					sender.sendProduct(product);
-					sendComplete.put(sender, true);
-				} catch (Exception e) {
-					sendExceptions.put(sender, e);
-				}
-				return null;
-			});
-		}
-		// run in parallel
-		ExecutorService sendExecutor = Executors.newFixedThreadPool(senders.size());
-		try {
-			sendExecutor.invokeAll(sendTasks, timeoutSeconds, TimeUnit.SECONDS);
-		} catch (Exception e) {
-			// this may be Interupted, NullPointer, or RejectedExecution
-			// in any case, this part is done and move on to checking send status
-		}
-		sendExecutor.shutdown();
-		// check whether send completed or was interrupted
-		for (ProductSender sender: sendComplete.keySet()) {
-			if (!sendComplete.get(sender) && sendExceptions.get(sender) == null) {
-				sendExceptions.put(sender, new InterruptedException());
 			}
 		}
 
@@ -516,7 +471,10 @@ public class CLIProductBuilder extends DefaultConfigurable {
 
 		// send the product
 		Map<ProductSender, Exception> sendExceptions = builder.parallelSend
-				? builder.sendProductParallel(product, builder.parallelSendTimeout)
+				? ProductBuilder.parallelSendProduct(
+							builder.senders,
+							product,
+							builder.parallelSendTimeout)
 				: builder.sendProduct(product);
 
 		// handle any send exceptions
