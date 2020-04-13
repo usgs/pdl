@@ -114,6 +114,8 @@ public class CLIProductBuilder extends DefaultConfigurable {
 	public static final Integer DEFAULT_CONNECT_TIMEOUT = 15000;
 	public static final String BINARY_FORMAT_ARGUMENT = "--binaryFormat";
 	public static final String DISABLE_DEFLATE = "--disableDeflate";
+	public static final String DISABLE_PARALLEL_SEND = "--disableParallelSend";
+	public static final String PARALLEL_SEND_TIMEOUT_ARGUMENT = "--parallelSendTimeout=";
 
 	/** Tracker URL that is used when not overriden by an argument. */
 	private URL defaultTrackerURL;
@@ -125,6 +127,8 @@ public class CLIProductBuilder extends DefaultConfigurable {
 	private String[] args;
 
 	private Integer connectTimeout = DEFAULT_CONNECT_TIMEOUT;
+	private boolean parallelSend = Boolean.valueOf(ProductBuilder.DEFAULT_PARALLEL_SEND);
+	private long parallelSendTimeout = Long.valueOf(ProductBuilder.DEFAULT_PARALLEL_SEND_TIMEOUT);
 
 	/**
 	 * This class is not intended to be instantiated directly. f
@@ -189,6 +193,15 @@ public class CLIProductBuilder extends DefaultConfigurable {
 		if (trackerURLProperty != null) {
 			defaultTrackerURL = new URL(trackerURLProperty);
 		}
+
+		parallelSend = Boolean.valueOf(config.getProperty(
+				ProductBuilder.PARALLEL_SEND_PROPERTY,
+				ProductBuilder.DEFAULT_PARALLEL_SEND));
+		parallelSendTimeout = Long.valueOf(config.getProperty(
+				ProductBuilder.PARALLEL_SEND_TIMEOUT_PROPERTY,
+				ProductBuilder.DEFAULT_PARALLEL_SEND_TIMEOUT));
+		LOGGER.config("[" + getName() + "] parallel send enabled="
+				+ parallelSend + ", timeout=" + parallelSendTimeout);
 	}
 
 	/**
@@ -350,6 +363,11 @@ public class CLIProductBuilder extends DefaultConfigurable {
 				binaryFormat = true;
 			} else if (arg.equals(DISABLE_DEFLATE)) {
 				enableDeflate = false;
+			} else if (arg.equals(DISABLE_PARALLEL_SEND)) {
+				parallelSend = false;
+			} else if (arg.startsWith(PARALLEL_SEND_TIMEOUT_ARGUMENT)) {
+				parallelSendTimeout = Long.valueOf(
+						arg.replace(PARALLEL_SEND_TIMEOUT_ARGUMENT, ""));
 			} else {
 				// not a builder argument
 			}
@@ -452,8 +470,12 @@ public class CLIProductBuilder extends DefaultConfigurable {
 				SocketProductSender.class.getName(), product.getId());
 
 		// send the product
-		Map<ProductSender, Exception> sendExceptions = builder
-				.sendProduct(product);
+		Map<ProductSender, Exception> sendExceptions = builder.parallelSend
+				? ProductBuilder.parallelSendProduct(
+							builder.senders,
+							product,
+							builder.parallelSendTimeout)
+				: builder.sendProduct(product);
 
 		// handle any send exceptions
 		if (sendExceptions.size() != 0) {
@@ -569,6 +591,9 @@ public class CLIProductBuilder extends DefaultConfigurable {
 		buf.append("[--disableDeflate]       Send to hub without using deflate compression.\n");
 		buf.append("                         Only used with --servers argument\n");
 		buf.append("                         Must appear before --servers argument.\n");
+		buf.append("[--disableParallelSend]  Send to servers sequentially.\n");
+		buf.append("[--parallelSendTimeout=300]\n");
+		buf.append("                         timeout for parallel send in seconds.\n");
 		buf.append("[--servers=SERVERLIST]   server:port[,server:port]\n");
 		buf.append("                         Overrides any configured senders\n");
 		buf.append("                         Example: pdldevel.cr.usgs.gov:11235\n");

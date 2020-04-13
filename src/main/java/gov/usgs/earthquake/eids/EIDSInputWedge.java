@@ -34,11 +34,11 @@ import gov.usgs.util.StringUtils;
 
 /**
  * Read messages from files or a poll directory, and push products into PDL.
- * 
+ *
  * This is supports EIDS/QDDS style polling. The input messages are converted to
  * Quakeml using the FileToQuakemlConverter interface, then sent as Quakeml
  * based products.
- * 
+ *
  * Much of the configuration can be supplied using either a configuration file,
  * or command line arguments.
  */
@@ -589,6 +589,11 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 				createInternalProducts = true;
 			} else if (arg.equals(CREATE_SCENARIO_PRODUCTS)) {
 				createScenarioProducts = true;
+			} else if (arg.equals(CLIProductBuilder.DISABLE_PARALLEL_SEND)) {
+				parallelSend = false;
+			} else if (arg.startsWith(CLIProductBuilder.PARALLEL_SEND_TIMEOUT_ARGUMENT)) {
+				parallelSendTimeout = Long.valueOf(
+						arg.replace(CLIProductBuilder.PARALLEL_SEND_TIMEOUT_ARGUMENT, ""));
 			}
 		}
 
@@ -726,7 +731,11 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 						+ BINARY_FORMAT_ARGUMENT
 						+ "] ["
 						+ DISABLE_DEFLATE_ARGUMENT
-						+ "]");
+						+ "] ["
+						+ CLIProductBuilder.DISABLE_PARALLEL_SEND
+						+ "] ["
+						+ CLIProductBuilder.PARALLEL_SEND_TIMEOUT_ARGUMENT
+						+ "300]");
 
 		System.err.println();
 
@@ -802,6 +811,12 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 
 		System.err.println("\t" + DISABLE_DEFLATE_ARGUMENT);
 		System.err.println("\t\tdisable deflate compression when sending to hubs");
+
+		System.err.println("\t" + CLIProductBuilder.DISABLE_PARALLEL_SEND);
+		System.err.println("\t\tsend to servers sequentially");
+
+		System.err.println("\t" + CLIProductBuilder.PARALLEL_SEND_TIMEOUT_ARGUMENT);
+		System.err.println("\t\ttimeout for parallel sends in seconds");
 
 		System.exit(1);
 	}

@@ -32,7 +32,7 @@ public class GeoservePlacesService implements GeoservePlaces {
   /**
    * Converts a decimal degree azimuth to a canonical compass direction
    *
-   * @param {Number} azimuth The degrees azimuth to be converted
+   * @param azimuth The degrees azimuth to be converted
    *
    * @return {String} The canonical compass direction for the given input azimuth
    */
