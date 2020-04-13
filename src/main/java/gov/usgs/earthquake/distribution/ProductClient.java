@@ -64,7 +64,7 @@ public class ProductClient extends DefaultConfigurable implements
 		ProductClientMBean, Bootstrappable {
 
 	/** The "release" version number. */
-	public static final String RELEASE_VERSION = "Version 2.3.0 2020-04-04";
+	public static final String RELEASE_VERSION = "Version 2.3.1 2020-04-13";
 
 	/** Property name used on products for current RELEASE_VERSION. */
 	public static final String PDL_CLIENT_VERSION_PROPERTY = "pdl-client-version";
