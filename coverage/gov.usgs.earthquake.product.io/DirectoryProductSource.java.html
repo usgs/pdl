@@ -67,7 +67,7 @@ public class DirectoryProductSource implements ProductSource {
 <span class="fc" id="L67">				urlContent = contents.get(key);</span>
 <span class="fc bfc" id="L68" title="All 2 branches covered.">				if (urlContent instanceof URLContent) {</span>
 <span class="fc" id="L69">					File filePath = new File(directory, key);</span>
-<span class="fc bfc" id="L70" title="All 2 branches covered.">					if (filePath.exists()) {</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">					if (filePath.exists()) {</span>
 <span class="fc" id="L71">						FileContent fileContent = new FileContent(filePath);</span>
 <span class="fc" id="L72">						fileContent.setContentType(urlContent.getContentType());</span>
 <span class="fc" id="L73">						fileContent.setLastModified(urlContent.getLastModified());</span>
@@ -76,7 +76,7 @@ public class DirectoryProductSource implements ProductSource {
 <span class="fc" id="L76">						contents.put(key, fileContent);</span>
 <span class="fc" id="L77">					} else {</span>
 						// old way
-<span class="fc" id="L79">						contents.put(key, new FileContent((URLContent) urlContent));</span>
+<span class="nc" id="L79">						contents.put(key, new FileContent((URLContent) urlContent));</span>
 					}
 <span class="fc" id="L81">					foundURLContent = true;</span>
 				}

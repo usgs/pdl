@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">5.243s</div>
+<div class="counter">5.043s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,7 +79,7 @@
 </thead>
 <tr>
 <td class="success">testReplicationAddRemove</td>
-<td class="success">5.243s</td>
+<td class="success">5.043s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -87,30 +87,90 @@
 <div id="tab1" class="tab">
 <h2>Standard error</h2>
 <span class="code">
-<pre>Adding first product to local storage.
+<pre>CONFIG	thread=14	[null] using storage directory /Users/jmfee/Documents/git/pdl/storage_test/localStorage
+FINEST	thread=14	[null] adding listener :: gov.usgs.earthquake.distribution.ReplicationStorageListener
+CONFIG	thread=14	[null] using storage directory /Users/jmfee/Documents/git/pdl/storage_test/remoteStorage
+FINER	thread=14	[DirectoryProductSource] Product does not have any  URLContent. Scraping directory for files.
+FINE	thread=14	Digest='TPZxM3xuvM8OvZWHAWjwYOMfghw=' , 1ms
+Adding first product to local storage.
+FINEST	thread=14	[localStorage] acquiring write lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[localStorage] acquired write lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[localStorage] acquiring read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[localStorage] acquired read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[localStorage] releasing read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[localStorage] released read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINER	thread=14	[localStorage] product stored id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931, status=UPDATE
+FINEST	thread=14	[localStorage] acquiring read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[localStorage] acquired read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[localStorage] releasing read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[localStorage] released read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[localStorage] releasing write lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[localStorage] released write lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINER	thread=14	[localStorage] listener :: gov.usgs.earthquake.distribution.ReplicationStorageListener
 Adding second product to local storage.
-Apr 04, 2020 12:32:26 PM gov.usgs.earthquake.distribution.ReplicationStorageListener onProductStored
-INFO: [replicator] product stored. Replicating. (urn:usgs-product:us:dyfi:usc0001xgp:1299843514931)
-Apr 04, 2020 12:32:26 PM gov.usgs.earthquake.distribution.ReplicationStorageListener onProductStored
-INFO: [replicator] product replicated to remote. (urn:usgs-product:us:dyfi:usc0001xgp:1299843514931)
-Apr 04, 2020 12:32:26 PM gov.usgs.earthquake.distribution.ReplicationStorageListener onProductStored
-INFO: [replicator] product stored. Replicating. (urn:usgs-product:us:shakemap:abcd1234:1586025146634)
-Apr 04, 2020 12:32:26 PM gov.usgs.earthquake.distribution.ReplicationStorageListener onProductStored
-INFO: [replicator] product replicated to remote. (urn:usgs-product:us:shakemap:abcd1234:1586025146634)
-Apr 04, 2020 12:32:27 PM gov.usgs.earthquake.distribution.ReplicationStorageListener$ReplicationTask run
-INFO: [Thread-5] command &quot;rsync -a -vz --relative -e ssh -o ConnectTimeout=5 ./dyfi/usc0001xgp/us/1299843514931 127.0.0.1:/Users/jmfee/Documents/git/pdl/storage_test/remoteStorage&quot; exited with status [0]
-Apr 04, 2020 12:32:28 PM gov.usgs.earthquake.distribution.ReplicationStorageListener$ReplicationTask run
-INFO: [Thread-6] command &quot;rsync -a -vz --relative -e ssh -o ConnectTimeout=5 ./shakemap/abcd1234/us/1586025146634 127.0.0.1:/Users/jmfee/Documents/git/pdl/storage_test/remoteStorage&quot; exited with status [0]
+FINEST	thread=14	[localStorage] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINEST	thread=14	[localStorage] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINEST	thread=14	[localStorage] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINEST	thread=14	[localStorage] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINEST	thread=14	[localStorage] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+INFO	thread=516	[replicator] product stored. Replicating. (urn:usgs-product:us:dyfi:usc0001xgp:1299843514931)
+FINEST	thread=14	[localStorage] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+INFO	thread=516	[replicator] product replicated to remote. (urn:usgs-product:us:dyfi:usc0001xgp:1299843514931)
+FINER	thread=14	[localStorage] product stored id=urn:usgs-product:us:shakemap:abcd1234:1586808360546, status=UPDATE
+FINEST	thread=14	[localStorage] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINEST	thread=14	[localStorage] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINEST	thread=14	[localStorage] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINEST	thread=14	[localStorage] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINEST	thread=14	[localStorage] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINEST	thread=14	[localStorage] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINER	thread=14	[localStorage] listener :: gov.usgs.earthquake.distribution.ReplicationStorageListener
+INFO	thread=516	[replicator] product stored. Replicating. (urn:usgs-product:us:shakemap:abcd1234:1586808360546)
+INFO	thread=516	[replicator] product replicated to remote. (urn:usgs-product:us:shakemap:abcd1234:1586808360546)
+FINER	thread=51	[null] running listener cleanup
+Mon Apr 13 14:06:01 MDT 2020
+INFO	thread=518	[Thread-459] command &quot;rsync -a -vz --relative -e ssh -o ConnectTimeout=5 ./dyfi/usc0001xgp/us/1299843514931 127.0.0.1:/Users/jmfee/Documents/git/pdl/storage_test/remoteStorage&quot; exited with status [0]
+INFO	thread=518	[Thread-461] command &quot;rsync -a -vz --relative -e ssh -o ConnectTimeout=5 ./shakemap/abcd1234/us/1586808360546 127.0.0.1:/Users/jmfee/Documents/git/pdl/storage_test/remoteStorage&quot; exited with status [0]
+FINER	thread=51	[null] running listener cleanup
+Mon Apr 13 14:06:02 MDT 2020
+FINER	thread=51	[null] running listener cleanup
 Checking if remote storage has first product.
+Mon Apr 13 14:06:03 MDT 2020
+FINEST	thread=14	[remoteStorage] acquiring read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[remoteStorage] acquired read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[remoteStorage] acquiring read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[remoteStorage] acquired read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[remoteStorage] releasing read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[remoteStorage] released read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[remoteStorage] releasing read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[remoteStorage] released read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
 Checking if remote storage has second product.
+FINEST	thread=14	[remoteStorage] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINEST	thread=14	[remoteStorage] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINEST	thread=14	[remoteStorage] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINEST	thread=14	[remoteStorage] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINEST	thread=14	[remoteStorage] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINEST	thread=14	[remoteStorage] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINEST	thread=14	[remoteStorage] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
+FINEST	thread=14	[remoteStorage] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1586808360546
 Removing first product from local storage.
-Apr 04, 2020 12:32:29 PM gov.usgs.earthquake.distribution.ReplicationStorageListener onProductRemoved
-INFO: [replicator] product removed. Replicating. (urn:usgs-product:us:dyfi:usc0001xgp:1299843514931)
-Apr 04, 2020 12:32:29 PM gov.usgs.earthquake.distribution.ReplicationStorageListener onProductRemoved
-INFO: [replicator] product removal replicated. (urn:usgs-product:us:dyfi:usc0001xgp:1299843514931)
-Apr 04, 2020 12:32:29 PM gov.usgs.earthquake.distribution.ReplicationStorageListener$ReplicationTask run
-INFO: [Thread-7] command &quot;rsync -a -vz --relative -e ssh -o ConnectTimeout=5 --delete --include='dyfi**' --exclude='*' . 127.0.0.1:/Users/jmfee/Documents/git/pdl/storage_test/remoteStorage&quot; exited with status [0]
+FINEST	thread=14	[localStorage] acquiring write lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[localStorage] acquired write lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINER	thread=14	[localStorage] product removed, id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[localStorage] releasing write lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[localStorage] released write lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINER	thread=14	[localStorage] listener :: gov.usgs.earthquake.distribution.ReplicationStorageListener
+INFO	thread=516	[replicator] product removed. Replicating. (urn:usgs-product:us:dyfi:usc0001xgp:1299843514931)
+INFO	thread=516	[replicator] product removal replicated. (urn:usgs-product:us:dyfi:usc0001xgp:1299843514931)
+INFO	thread=518	[Thread-462] command &quot;rsync -a -vz --relative -e ssh -o ConnectTimeout=5 --delete --include='dyfi**' --exclude='*' . 127.0.0.1:/Users/jmfee/Documents/git/pdl/storage_test/remoteStorage&quot; exited with status [0]
+FINER	thread=51	[null] running listener cleanup
+Mon Apr 13 14:06:04 MDT 2020
+FINER	thread=51	[null] running listener cleanup
 Checking if first product was removed from remote storage.
+Mon Apr 13 14:06:05 MDT 2020
+FINEST	thread=14	[remoteStorage] acquiring read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[remoteStorage] acquired read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[remoteStorage] releasing read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
+FINEST	thread=14	[remoteStorage] released read lock for product id=urn:usgs-product:us:dyfi:usc0001xgp:1299843514931
 </pre>
 </span>
 </div>
@@ -122,7 +182,7 @@ Checking if first product was removed from remote storage.
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 5.4.1</a> at Apr 4, 2020, 12:33:23 PM</p>
+<a href="http://www.gradle.org">Gradle 5.4.1</a> at Apr 13, 2020, 2:06:28 PM</p>
 </div>
 </div>
 </body>

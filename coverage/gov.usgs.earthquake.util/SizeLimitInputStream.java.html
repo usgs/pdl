@@ -6,7 +6,7 @@ import java.io.InputStream;
 
 /**
  * Stream that only allows a certain number of bytes to be read.
- * 
+ *
  * Current implementation only tracks read bytes, and ignores any mark or reset
  * calls.
  */
@@ -19,7 +19,7 @@ public class SizeLimitInputStream extends FilterInputStream {
 
 	/**
 	 * Construct a new SizeLimitInputStream.
-	 * 
+	 *
 	 * @param in
 	 *            stream to limit.
 	 * @param limit
@@ -31,16 +31,23 @@ public class SizeLimitInputStream extends FilterInputStream {
 <span class="fc" id="L31">	}</span>
 
 	/**
+	 * Return number of bytes read.
+	 */
+	public long getRead() {
+<span class="fc" id="L37">		return this.read;</span>
+	}
+
+	/**
 	 * Read one byte.
 	 */
 	@Override
 	public int read() throws IOException {
-<span class="nc" id="L38">		int b = in.read();</span>
-<span class="nc bnc" id="L39" title="All 2 branches missed.">		if (b != -1) {</span>
-<span class="nc" id="L40">			read++;</span>
-<span class="nc" id="L41">			checkLimit();</span>
+<span class="nc" id="L45">		int b = in.read();</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">		if (b != -1) {</span>
+<span class="nc" id="L47">			read++;</span>
+<span class="nc" id="L48">			checkLimit();</span>
 		}
-<span class="nc" id="L43">		return b;</span>
+<span class="nc" id="L50">		return b;</span>
 	}
 
 	/**
@@ -48,7 +55,7 @@ public class SizeLimitInputStream extends FilterInputStream {
 	 */
 	@Override
 	public int read(byte[] b) throws IOException {
-<span class="nc" id="L51">		return read(b, 0, b.length);</span>
+<span class="nc" id="L58">		return read(b, 0, b.length);</span>
 	}
 
 	/**
@@ -56,24 +63,26 @@ public class SizeLimitInputStream extends FilterInputStream {
 	 */
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
-<span class="fc" id="L59">		int total = in.read(b, off, len);</span>
-<span class="fc" id="L60">		read += total;</span>
-<span class="fc" id="L61">		checkLimit();</span>
-<span class="fc" id="L62">		return total;</span>
+<span class="fc" id="L66">		int total = in.read(b, off, len);</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">		if (total != -1) {</span>
+<span class="fc" id="L68">			read += total;</span>
+<span class="fc" id="L69">			checkLimit();</span>
+		}
+<span class="fc" id="L71">		return total;</span>
 	}
 
 	/**
 	 * Check how many bytes have been read.
-	 * 
+	 *
 	 * @throws IOException
 	 *             if more bytes than the limit allows have been read.
 	 */
 	protected void checkLimit() throws IOException {
-<span class="fc bfc" id="L72" title="All 2 branches covered.">		if (read &gt; limit) {</span>
-<span class="fc" id="L73">			throw new IOException(&quot;Read more than size limit (&quot; + limit</span>
+<span class="fc bfc" id="L81" title="All 4 branches covered.">		if (limit &gt; 0 &amp;&amp; read &gt; limit) {</span>
+<span class="fc" id="L82">			throw new IOException(&quot;Read more than size limit (&quot; + limit</span>
 					+ &quot;) bytes&quot;);
 		}
-<span class="fc" id="L76">	}</span>
+<span class="fc" id="L85">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
