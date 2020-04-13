@@ -6,7 +6,7 @@ import java.io.InputStream;
 
 /**
  * Stream that only allows a certain number of bytes to be read.
- * 
+ *
  * Current implementation only tracks read bytes, and ignores any mark or reset
  * calls.
  */
@@ -19,7 +19,7 @@ public class SizeLimitInputStream extends FilterInputStream {
 
 	/**
 	 * Construct a new SizeLimitInputStream.
-	 * 
+	 *
 	 * @param in
 	 *            stream to limit.
 	 * @param limit
@@ -28,6 +28,13 @@ public class SizeLimitInputStream extends FilterInputStream {
 	public SizeLimitInputStream(InputStream in, final long limit) {
 		super(in);
 		this.limit = limit;
+	}
+
+	/**
+	 * Return number of bytes read.
+	 */
+	public long getRead() {
+		return this.read;
 	}
 
 	/**
@@ -57,19 +64,21 @@ public class SizeLimitInputStream extends FilterInputStream {
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
 		int total = in.read(b, off, len);
-		read += total;
-		checkLimit();
+		if (total != -1) {
+			read += total;
+			checkLimit();
+		}
 		return total;
 	}
 
 	/**
 	 * Check how many bytes have been read.
-	 * 
+	 *
 	 * @throws IOException
 	 *             if more bytes than the limit allows have been read.
 	 */
 	protected void checkLimit() throws IOException {
-		if (read > limit) {
+		if (limit > 0 && read > limit) {
 			throw new IOException("Read more than size limit (" + limit
 					+ ") bytes");
 		}
