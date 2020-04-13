@@ -317,7 +317,7 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 						final long downloadTime = endDownload.getTime() - beginDownload.getTime();
 						final long downloadSize = sizeIn.getRead();
 						final long downloadRate = Math.round(downloadSize /
-								(downloadTime == 0 ? 1.0 : downloadTime / 1000.0));
+								(Math.max(downloadTime, 1L) / 1000.0));
 
 						LOGGER.fine("[" + getName() + "] receiver retrieved product"
 								+ " id=" + id.toString()
