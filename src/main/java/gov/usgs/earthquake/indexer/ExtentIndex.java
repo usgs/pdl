@@ -19,13 +19,13 @@ public class ExtentIndex extends JDBCProductIndex {
 
   private static final Logger LOGGER = Logger.getLogger(ExtentIndex.class.getName());
   public static final String EXTENT_TABLE = "extentSummary";
-  public static final String EXTENT_INDEX_ID = "productid";
+  public static final String EXTENT_INDEX_ID = "productSummaryIndexId";
   public static final String EXTENT_START_TIME = "starttime";
   public static final String EXTENT_END_TIME = "endtime";
-  public static final String EXTENT_MAX_LAT = "maxlatitude";
-  public static final String EXTENT_MIN_LAT = "minlatitude";
-  public static final String EXTENT_MAX_LONG = "maxlongitude";
-  public static final String EXTENT_MIN_LONG = "minlongitude";
+  public static final String EXTENT_MAX_LAT = "maximum_latitude";
+  public static final String EXTENT_MIN_LAT = "minimum_latitude";
+  public static final String EXTENT_MAX_LONG = "maximum_longitude";
+  public static final String EXTENT_MIN_LONG = "minimum_longitude";
 
   public ExtentIndex() throws Exception {
     super();
