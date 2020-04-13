@@ -8,6 +8,7 @@ import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.earthquake.product.io.IOUtil;
 import gov.usgs.earthquake.product.io.ProductSource;
+import gov.usgs.earthquake.util.SizeLimitInputStream;
 import gov.usgs.util.Config;
 import gov.usgs.util.DefaultConfigurable;
 import gov.usgs.util.StreamUtils;
@@ -28,17 +29,17 @@ import java.util.logging.Level;
 
 /**
  * The core of product distribution.
- * 
+ *
  * A DefaultNotificationReceiver receives notifications and notifies listeners
  * of received notifications. NotificationListeners use the NotificationReceiver
  * to retrieve products referenced by notifications.
- * 
+ *
  * The NotificationReceiver uses a NotificationIndex to track received
  * notifications, and a ProductStorage to store retrieved products.
- * 
+ *
  * The DefaultNotificationReceiver implements the Configurable interface and
  * uses the following configuration parameters:
- * 
+ *
  * Each listener has a separate queue of notifications. Each listener is
  * allocated one thread to process notifications from this queue.
  */
@@ -117,7 +118,7 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 
 	/**
 	 * Add a new notification listener.
-	 * 
+	 *
 	 * @param listener
 	 *            the listener to add. When notifications are received, this
 	 *            listener will be notified.
@@ -129,9 +130,9 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 
 	/**
 	 * Remove an existing notification listener.
-	 * 
+	 *
 	 * Any currently queued notifications are processed before shutting down.
-	 * 
+	 *
 	 * @param listener
 	 *            the listener to remove. When notifications are receive, this
 	 *            listener will no longer be notified.
@@ -143,10 +144,10 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 
 	/**
 	 * Store a notification and notify listeners.
-	 * 
+	 *
 	 * Updates the notification index before notifying listeners of the newly
 	 * available product.
-	 * 
+	 *
 	 * @param notification
 	 *            the notification being received.
 	 * @throws Exception
@@ -180,13 +181,13 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 
 	/**
 	 * Send a notification to all registered NotificationListeners.
-	 * 
+	 *
 	 * Creates a NotificationEvent, with a reference to this object and calls
 	 * each notificationListeners onNotification method in separate threads.
-	 * 
+	 *
 	 * This method usually returns before registered NotificationListeners have
 	 * completed processing a notification.
-	 * 
+	 *
 	 * @param notification
 	 *            the notification being sent to listeners.
 	 * @throws Exception
@@ -211,7 +212,7 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 * that are found. When a notification in the index is not a
 	 * URLNotification, it represents a product in storage that will also be
 	 * removed.
-	 * 
+	 *
 	 * @throws Exception
 	 *             if productStorage or notificationIndex throw an Exception.
 	 */
@@ -243,11 +244,11 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 
 	/**
 	 * Retrieve a product by id.
-	 * 
+	 *
 	 * If this product is already in storage, load and return the product.
 	 * Otherwise, search notifications for this product, and download the
 	 * product into storage.
-	 * 
+	 *
 	 * @param id
 	 *            the product to retrieve
 	 * @return the retrieved product, or null if not available.
@@ -300,11 +301,31 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 						LOGGER.finer("[" + getName() + "] notification url "
 								+ productURL.toString());
 
+						final Date beginConnect = new Date();
 						in = StreamUtils.getURLInputStream(productURL,
 								connectTimeout, readTimeout);
-						ProductSource productSource = IOUtil.autoDetectProductSource(in);
+
+						final Date beginDownload = new Date();
+						// use size limit with negative limit to count transfer size
+						SizeLimitInputStream sizeIn = new SizeLimitInputStream(in, -1);
+						ProductSource productSource = IOUtil.autoDetectProductSource(sizeIn);
 
 						Notification storedNotification = storeProductSource(productSource);
+
+						final Date endDownload = new Date();
+						final long connectTime = beginDownload.getTime() - beginConnect.getTime();
+						final long downloadTime = endDownload.getTime() - beginDownload.getTime();
+						final long downloadSize = sizeIn.getRead();
+						final double downloadRate = downloadSize /
+								(downloadTime == 0 ? 1.0 : downloadTime / 1000.0);
+
+						LOGGER.fine("[" + getName() + "] receiver retrieved product"
+								+ " id=" + id.toString()
+								+ " (connect = " + connectTime + " ms)"
+								+ " (rate = " + downloadRate +  " bytes/s)"
+								+ " (size = " + downloadSize + " bytes)"
+								+ " (time = " + downloadTime + " ms)"
+								+ " from " + productURL.toString());
 
 						LOGGER.finest("[" + getName()
 								+ "] after store product, notification="
@@ -377,7 +398,7 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 
 	/**
 	 * Calls the current <code>ProductStorage.storeProductSource</code> method.
-	 * 
+	 *
 	 * @param source
 	 *            The <code>ProductSource</code> to store.
 	 * @return The <code>ProductId</code> of the product referenced by the given
@@ -411,10 +432,10 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 
 	/**
 	 * Send matching notifications to listener.
-	 * 
+	 *
 	 * Searches the NotificationIndex for matching notifications, and sends a
 	 * NotificationEvent for each notification found.
-	 * 
+	 *
 	 * @param listener
 	 *            the listener to receive a NotificationEvent for each found
 	 *            notification.
