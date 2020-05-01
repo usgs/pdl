@@ -3,8 +3,8 @@ CREATE TABLE extentSummary (
   productSummaryIndexId INTEGER NOT NULL,
   starttime INTEGER DEFAULT NULL,
   endtime INTEGER DEFAULT NULL,
-  minlatitude REAL DEFAULT NULL,
-  maxlatitude REAL DEFAULT NULL,
-  minlongitude REAL DEFAULT NULL,
-  maxlongitude REAL DEFAULT NULL
+  minimum_latitude REAL DEFAULT NULL,
+  maximum_latitude REAL DEFAULT NULL,
+  minimum_longitude REAL DEFAULT NULL,
+  maximum_longitude REAL DEFAULT NULL
 );
