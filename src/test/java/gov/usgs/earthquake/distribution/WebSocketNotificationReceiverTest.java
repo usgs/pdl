@@ -36,7 +36,7 @@ public class WebSocketNotificationReceiverTest {
     //generate fake (well-formatted) notification
     JsonObject json = Json.createObjectBuilder()
             .add(WebSocketNotificationReceiver.SEQUENCE_PROPERTY,"testSequence")
-            .add(WebSocketNotificationReceiver.TIMESTAMP_PROPERTY, "testTime")
+            .add(WebSocketNotificationReceiver.TIMESTAMP_PROPERTY, 0)
             .add(WebSocketNotificationReceiver.ATTRIBUTE_DATA,Json.createObjectBuilder()
                     .add("id",Json.createObjectBuilder()
                             .add("source","testSource")
