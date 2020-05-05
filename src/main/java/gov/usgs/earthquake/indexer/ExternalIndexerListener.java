@@ -15,7 +15,7 @@ import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.util.Config;
-import gov.usgs.util.StreamUtils;
+import gov.usgs.util.ProcessManager;
 import gov.usgs.util.XmlUtils;
 
 import java.io.File;
@@ -24,51 +24,47 @@ import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * ExternalIndexerListener triggers external, non-Java listener processes.
- * 
- * Provides a translation to a command-line interface
- * for the product indexer to speak with external, non-Java listeners.
- * 
+ *
+ * Provides a translation to a command-line interface for the product indexer to
+ * speak with external, non-Java listeners.
+ *
  * As a child-class of the AbstractListener, this also accepts the following
  * configration parameters:
- * 
+ *
  * <dl>
  * <dt>command</dt>
  * <dd>(Required) The command to execute. This must be an executable command and
  * may include arguments. Any product-specific arguments are appended at the end
  * of command.</dd>
- * 
+ *
  * <dt>storage</dt>
  * <dd>(Required) A directory used to store all products. Each product is
  * extracted into a separate directory within this directory and is referenced
  * by the --directory=/path/to/directory argument when command is executed.</dd>
- * 
+ *
  * <dt>processUnassociated</dt>
  * <dd>(Optional, Default = false) Whether or not to process unassociated
  * products. Valid values are "true" and "false".</dd>
- * 
+ *
  * <dt>processPreferredOnly</dt>
  * <dd>(Optional, Default = false) Whether or not to process only preferred
  * products of the type accepted by this listener. Valid values are "true" and
  * "false".</dd>
- * 
+ *
  * <dt>autoArchive</dt>
  * <dd>(Optional, Default = false) Whether or not to archive products from
  * storage when they are archived by the indexer.</dd>
- * 
+ *
  * </dl>
  */
-public class ExternalIndexerListener extends DefaultIndexerListener implements
-		IndexerListener {
+public class ExternalIndexerListener extends DefaultIndexerListener {
 
-	private static final Logger LOGGER = Logger
-			.getLogger(ExternalIndexerListener.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(ExternalIndexerListener.class.getName());
 
 	public static final String EVENT_ACTION_ARGUMENT = "--action=";
 	public static final String EVENT_IDS_ARGUMENT = "--eventids=";
@@ -108,9 +104,9 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 
 	/**
 	 * Construct a new ExternalIndexerListener object
-	 * 
-	 * The listener must be configured with a FileProductStorage and a command
-	 * to function.
+	 *
+	 * The listener must be configured with a FileProductStorage and a command to
+	 * function.
 	 */
 	public ExternalIndexerListener() {
 		super();
@@ -118,7 +114,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see gov.usgs.earthquake.indexer.IndexerListener#onIndexerEvent(gov.usgs.
 	 * earthquake.indexer.IndexerEvent)
 	 */
@@ -130,8 +126,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 			// store product first
 			Product product = storeProduct(change.getProduct());
 
-			for (Iterator<IndexerChange> changeIter = change
-					.getIndexerChanges().iterator(); changeIter.hasNext();) {
+			for (Iterator<IndexerChange> changeIter = change.getIndexerChanges().iterator(); changeIter.hasNext();) {
 				IndexerChange indexerChange = changeIter.next();
 
 				// check if we should process this change
@@ -140,16 +135,14 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 				}
 
 				// build command
-				final String indexerCommand = getProductSummaryCommand(change,
-						indexerChange);
+				final String indexerCommand = getProductSummaryCommand(change, indexerChange);
 
 				runProductCommand(indexerCommand, product);
 			}
 		}
 
 		if (autoArchive) {
-			Iterator<IndexerChange> changeIter = change.getIndexerChanges()
-					.iterator();
+			Iterator<IndexerChange> changeIter = change.getIndexerChanges().iterator();
 			ProductStorage storage = getStorage();
 			while (changeIter.hasNext()) {
 				IndexerChange nextChange = changeIter.next();
@@ -157,24 +150,17 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 					// one product being archived
 					if (change.getSummary() != null) {
 						ProductId productId = change.getSummary().getId();
-						LOGGER.log(Level.FINER,
-								"[" + getName() + "] auto archiving product "
-										+ productId.toString());
+						LOGGER.log(Level.FINER, "[" + getName() + "] auto archiving product " + productId.toString());
 						storage.removeProduct(productId);
 					}
 				} else if (nextChange.getType() == IndexerChangeType.EVENT_ARCHIVED) {
 					// all products on event being archived
 					Event changeEvent = nextChange.getOriginalEvent();
-					LOGGER.log(Level.FINER,
-							"[" + getName() + "] auto archiving event "
-									+ changeEvent.getEventId() + " products");
-					Iterator<ProductSummary> productIter = changeEvent
-							.getAllProductList().iterator();
+					LOGGER.log(Level.FINER, "[" + getName() + "] auto archiving event " + changeEvent.getEventId() + " products");
+					Iterator<ProductSummary> productIter = changeEvent.getAllProductList().iterator();
 					while (productIter.hasNext()) {
 						ProductId productId = productIter.next().getId();
-						LOGGER.log(Level.FINER,
-								"[" + getName() + "] auto archiving product "
-										+ productId.toString());
+						LOGGER.log(Level.FINER, "[" + getName() + "] auto archiving product " + productId.toString());
 						storage.removeProduct(productId);
 					}
 				}
@@ -196,8 +182,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 				getStorage().storeProduct(product);
 				listenerProduct = getStorage().getProduct(product.getId());
 			} else {
-				LOGGER.finer("[" + getName()
-						+ "] Change product is null. Probably archiving.");
+				LOGGER.finer("[" + getName() + "] Change product is null. Probably archiving.");
 			}
 		} catch (ProductAlreadyInStorageException paise) {
 			LOGGER.info("[" + getName() + "] product already in storage");
@@ -212,70 +197,42 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 	 * Run a product command.
 	 *
 	 * @param command command and arguments.
-	 * @param product product, when set and empty content (path "") is defined,
-	 *        the content is provided to the command on stdin.
+	 * @param product product, when set and empty content (path "") is defined, the
+	 *                content is provided to the command on stdin.
 	 * @throws Exception
 	 */
 	public void runProductCommand(final String command, final Product product) throws Exception {
 		// execute
 		LOGGER.info("[" + getName() + "] running command " + command);
-		final Process process = Runtime.getRuntime().exec(command);
 
+		ProcessManager process = new ProcessManager(command, this.getTimeout());
 		// Stream content over stdin if it exists
 		if (product != null) {
 			Content content = product.getContents().get("");
 			if (content != null) {
-				StreamUtils.transferStream(content.getInputStream(),
-						process.getOutputStream());
+				process.stdin = content.getInputStream();
 			}
 		}
-
-		// Close the output stream
-		StreamUtils.closeStream(process.getOutputStream());
-
-		Timer commandTimer = new Timer();
-		if (this.getTimeout() > 0) {
-			// Schedule process destruction for commandTimeout
-			// milliseconds in the future
-			commandTimer.schedule(new TimerTask() {
-				public void run() {
-					LOGGER.warning("[" + getName()
-							+ "] command timeout '" + command
-							+ "', destroying process.");
-					process.destroy();
-				}
-			}, this.getTimeout());
+		int exitValue = process.call();
+		LOGGER.info("[" + getName() + "] command '" + command + "' exited with status '" + exitValue + "'");
+		if (exitValue != 0) {
+			byte[] errorOutput = process.stderr.toByteArray();
+			LOGGER.fine("[" + getName() + "] command '" + command + "' stderr output '" + new String(errorOutput) + "'");
 		}
-
-		// Wait for process to complete
-		process.waitFor();
-		// Cancel the timer if it was not triggered
-		commandTimer.cancel();
-		LOGGER.info("[" + getName() + "] command '" + command
-				+ "' exited with status '" + process.exitValue() + "'");
-		if (process.exitValue() != 0) {
-			byte[] errorOutput = StreamUtils.readStream(process.getErrorStream());
-			LOGGER.fine("[" + getName() + "] command '" + command + "' stderr output '" +
-					new String(errorOutput) + "'");
-		}
-		StreamUtils.closeStream(process.getErrorStream());
 
 		// send heartbeat info
 		HeartbeatListener.sendHeartbeatMessage(getName(), "command", command);
-		HeartbeatListener.sendHeartbeatMessage(getName(), "exit value",
-				Integer.toString(process.exitValue()));
+		HeartbeatListener.sendHeartbeatMessage(getName(), "exit value", Integer.toString(exitValue));
 	}
 
 	/**
 	 * Get the product command and add the indexer arguments to it.
-	 * 
-	 * @param change
-	 *            The IndexerEvent received by the ExternalIndexerListener
+	 *
+	 * @param change The IndexerEvent received by the ExternalIndexerListener
 	 * @return the command to execute with its arguments as a string
 	 * @throws Exception
 	 */
-	public String getProductSummaryCommand(IndexerEvent change,
-			IndexerChange indexerChange) throws Exception {
+	public String getProductSummaryCommand(IndexerEvent change, IndexerChange indexerChange) throws Exception {
 		ProductSummary summary = change.getSummary();
 
 		Event event = indexerChange.getNewEvent();
@@ -287,9 +244,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 		String command = getProductSummaryCommand(event, summary);
 
 		// Tells external indexer what type of index event occurred.
-		command = command + " " +
-				ExternalIndexerListener.EVENT_ACTION_ARGUMENT +
-				indexerChange.getType().toString();
+		command = command + " " + ExternalIndexerListener.EVENT_ACTION_ARGUMENT + indexerChange.getType().toString();
 
 		return command;
 	}
@@ -312,32 +267,23 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 			indexerCommand.append(getProductSummaryArguments(summary));
 		}
 
-
 		Product product = null;
 		try {
 			product = getStorage().getProduct(summary.getId());
 		} catch (Exception e) {
 			// when archiving product may not exist
-			LOGGER.log(
-					Level.FINE,
-					"Exception retreiving product from storage, probably archiving",
-					e);
+			LOGGER.log(Level.FINE, "Exception retreiving product from storage, probably archiving", e);
 		}
 		if (product != null) {
 			// Can only add these arguments if there is a product
 			Content content = product.getContents().get("");
 			if (content != null) {
-				indexerCommand.append(" ").append(
-						CLIProductBuilder.CONTENT_ARGUMENT);
-				indexerCommand.append(" ")
-						.append(CLIProductBuilder.CONTENT_TYPE_ARGUMENT)
-						.append(content.getContentType());
+				indexerCommand.append(" ").append(CLIProductBuilder.CONTENT_ARGUMENT);
+				indexerCommand.append(" ").append(CLIProductBuilder.CONTENT_TYPE_ARGUMENT).append(content.getContentType());
 			}
 
 			if (product.getSignature() != null) {
-				indexerCommand
-						.append(" ")
-						.append(ExternalNotificationListener.SIGNATURE_ARGUMENT)
+				indexerCommand.append(" ").append(ExternalNotificationListener.SIGNATURE_ARGUMENT)
 						.append(product.getSignature());
 			}
 
@@ -356,14 +302,9 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 		StringBuffer buf = new StringBuffer();
 
 		EventSummary eventSummary = event.getEventSummary();
-		buf.append(" ")
-				.append(ExternalIndexerListener.PREFERRED_ID_ARGUMENT)
-				.append(eventSummary.getId());
-		buf.append(" ")
-				.append(ExternalIndexerListener.PREFERRED_EVENTSOURCE_ARGUMENT)
-				.append(eventSummary.getSource());
-		buf.append(" ")
-				.append(ExternalIndexerListener.PREFERRED_EVENTSOURCECODE_ARGUMENT)
+		buf.append(" ").append(ExternalIndexerListener.PREFERRED_ID_ARGUMENT).append(eventSummary.getId());
+		buf.append(" ").append(ExternalIndexerListener.PREFERRED_EVENTSOURCE_ARGUMENT).append(eventSummary.getSource());
+		buf.append(" ").append(ExternalIndexerListener.PREFERRED_EVENTSOURCECODE_ARGUMENT)
 				.append(eventSummary.getSourceCode());
 		Map<String, List<String>> eventids = event.getAllEventCodes(true);
 		Iterator<String> sourceIter = eventids.keySet().iterator();
@@ -380,20 +321,15 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 			}
 		}
 
-		buf.append(" ").append(PREFERRED_MAGNITUDE_ARGUMENT)
-				.append(eventSummary.getMagnitude());
-		buf.append(" ").append(PREFERRED_LATITUDE_ARGUMENT)
-				.append(eventSummary.getLatitude());
-		buf.append(" ").append(PREFERRED_LONGITUDE_ARGUMENT)
-				.append(eventSummary.getLongitude());
-		buf.append(" ").append(PREFERRED_DEPTH_ARGUMENT)
-				.append(eventSummary.getDepth());
+		buf.append(" ").append(PREFERRED_MAGNITUDE_ARGUMENT).append(eventSummary.getMagnitude());
+		buf.append(" ").append(PREFERRED_LATITUDE_ARGUMENT).append(eventSummary.getLatitude());
+		buf.append(" ").append(PREFERRED_LONGITUDE_ARGUMENT).append(eventSummary.getLongitude());
+		buf.append(" ").append(PREFERRED_DEPTH_ARGUMENT).append(eventSummary.getDepth());
 		String eventTime = null;
 		if (event.getTime() != null) {
 			eventTime = XmlUtils.formatDate(event.getTime());
 		}
-		buf.append(" ").append(PREFERRED_ORIGIN_TIME_ARGUMENT)
-				.append(eventTime);
+		buf.append(" ").append(PREFERRED_ORIGIN_TIME_ARGUMENT).append(eventTime);
 
 		return buf.toString();
 	}
@@ -410,33 +346,22 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 		File productDirectory = getStorage().getProductFile(summary.getId());
 		if (productDirectory.exists()) {
 			// Add the directory argument
-			buf.append(" ")
-					.append(CLIProductBuilder.DIRECTORY_ARGUMENT)
-					.append(productDirectory.getCanonicalPath());
+			buf.append(" ").append(CLIProductBuilder.DIRECTORY_ARGUMENT).append(productDirectory.getCanonicalPath());
 		}
 
 		// Add arguments from summary
-		buf.append(" ").append(CLIProductBuilder.TYPE_ARGUMENT)
-				.append(summary.getType());
-		buf.append(" ").append(CLIProductBuilder.CODE_ARGUMENT)
-				.append(summary.getCode());
-		buf.append(" ").append(CLIProductBuilder.SOURCE_ARGUMENT)
-				.append(summary.getSource());
-		buf.append(" ")
-				.append(CLIProductBuilder.UPDATE_TIME_ARGUMENT)
-				.append(XmlUtils.formatDate(summary.getUpdateTime()));
-		buf.append(" ").append(CLIProductBuilder.STATUS_ARGUMENT)
-				.append(summary.getStatus());
+		buf.append(" ").append(CLIProductBuilder.TYPE_ARGUMENT).append(summary.getType());
+		buf.append(" ").append(CLIProductBuilder.CODE_ARGUMENT).append(summary.getCode());
+		buf.append(" ").append(CLIProductBuilder.SOURCE_ARGUMENT).append(summary.getSource());
+		buf.append(" ").append(CLIProductBuilder.UPDATE_TIME_ARGUMENT).append(XmlUtils.formatDate(summary.getUpdateTime()));
+		buf.append(" ").append(CLIProductBuilder.STATUS_ARGUMENT).append(summary.getStatus());
 		if (summary.isDeleted()) {
-			buf.append(" ")
-					.append(CLIProductBuilder.DELETE_ARGUMENT);
+			buf.append(" ").append(CLIProductBuilder.DELETE_ARGUMENT);
 		}
 
 		// Add optional tracker URL argument
 		if (summary.getTrackerURL() != null) {
-			buf.append(" ")
-					.append(CLIProductBuilder.TRACKER_URL_ARGUMENT)
-					.append(summary.getTrackerURL());
+			buf.append(" ").append(CLIProductBuilder.TRACKER_URL_ARGUMENT).append(summary.getTrackerURL());
 		}
 
 		// Add property arguments
@@ -444,10 +369,8 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 		Iterator<String> iter = props.keySet().iterator();
 		while (iter.hasNext()) {
 			String name = iter.next();
-			buf.append(" \"")
-					.append(CLIProductBuilder.PROPERTY_ARGUMENT).append(name)
-					.append("=").append(props.get(name).replace("\"", "\\\""))
-					.append("\"");
+			buf.append(" \"").append(CLIProductBuilder.PROPERTY_ARGUMENT).append(name).append("=")
+					.append(props.get(name).replace("\"", "\\\"")).append("\"");
 		}
 
 		// Add link arguments
@@ -457,9 +380,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 			String relation = iter.next();
 			Iterator<URI> iter2 = links.get(relation).iterator();
 			while (iter2.hasNext()) {
-				buf.append(" ")
-						.append(CLIProductBuilder.LINK_ARGUMENT)
-						.append(relation).append("=")
+				buf.append(" ").append(CLIProductBuilder.LINK_ARGUMENT).append(relation).append("=")
 						.append(iter2.next().toString());
 			}
 		}
@@ -469,17 +390,15 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 
 	/**
 	 * Configure an ExternalNotificationListener using a Config object.
-	 * 
-	 * @param config
-	 *            the config containing a
+	 *
+	 * @param config the config containing a
 	 */
 	public void configure(Config config) throws Exception {
 		super.configure(config);
 
 		command = config.getProperty(COMMAND_PROPERTY);
 		if (command == null) {
-			throw new ConfigurationException("[" + getName()
-					+ "] 'command' is a required configuration property");
+			throw new ConfigurationException("[" + getName() + "] 'command' is a required configuration property");
 		}
 		LOGGER.config("[" + getName() + "] command is '" + command + "'");
 
@@ -487,29 +406,22 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 		String storageName = config.getProperty(STORAGE_NAME_PROPERTY);
 		String directoryName = config.getProperty(STORAGE_DIRECTORY_PROPERTY);
 		if (storageName == null && directoryName == null) {
-			throw new ConfigurationException("[" + getName()
-					+ "] one of 'storage' or 'storageDirectory' is required");
+			throw new ConfigurationException("[" + getName() + "] one of 'storage' or 'storageDirectory' is required");
 		}
 
 		if (storageName != null) {
-			LOGGER.config("[" + getName() + "] loading FileProductStorage '"
-					+ storageName + "'");
-			storage = (FileProductStorage) Config.getConfig().getObject(
-					storageName);
+			LOGGER.config("[" + getName() + "] loading FileProductStorage '" + storageName + "'");
+			storage = (FileProductStorage) Config.getConfig().getObject(storageName);
 			if (storage == null) {
-				throw new ConfigurationException("[" + getName()
-						+ "] unable to load FileProductStorage '" + storageName
-						+ "'");
+				throw new ConfigurationException("[" + getName() + "] unable to load FileProductStorage '" + storageName + "'");
 			}
 		} else {
-			LOGGER.config("[" + getName() + "] using storage directory '"
-					+ directoryName + "'");
+			LOGGER.config("[" + getName() + "] using storage directory '" + directoryName + "'");
 			storage = new FileProductStorage(new File(directoryName));
 			storage.setName(getName() + "-storage");
 		}
 
-		autoArchive = Boolean.valueOf(config.getProperty(AUTO_ARCHIVE_PROPERTY,
-				AUTO_ARCHIVE_DEFAULT));
+		autoArchive = Boolean.valueOf(config.getProperty(AUTO_ARCHIVE_PROPERTY, AUTO_ARCHIVE_DEFAULT));
 		LOGGER.config("[" + getName() + "] autoArchive = " + autoArchive);
 	}
 
@@ -541,8 +453,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 	}
 
 	/**
-	 * @param storage
-	 *            the storage to set
+	 * @param storage the storage to set
 	 */
 	public void setStorage(FileProductStorage storage) {
 		this.storage = storage;
@@ -556,8 +467,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 	}
 
 	/**
-	 * @param command
-	 *            the command to set
+	 * @param command the command to set
 	 */
 	public void setCommand(String command) {
 		this.command = command;
@@ -571,8 +481,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 	}
 
 	/**
-	 * @param autoArchive
-	 *            the autoArchive to set
+	 * @param autoArchive the autoArchive to set
 	 */
 	public void setAutoArchive(boolean autoArchive) {
 		this.autoArchive = autoArchive;
