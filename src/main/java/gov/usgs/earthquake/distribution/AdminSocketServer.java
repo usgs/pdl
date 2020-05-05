@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 /**
  * Telnet to this socket to get a "command prompt".
- * 
+ *
  * @author jmfee
  */
 public class AdminSocketServer extends DefaultConfigurable implements
@@ -74,7 +74,7 @@ public class AdminSocketServer extends DefaultConfigurable implements
 
 	/**
 	 * Process a line of input.
-	 * 
+	 *
 	 * @param line
 	 *            input
 	 * @param out
@@ -144,10 +144,11 @@ public class AdminSocketServer extends DefaultConfigurable implements
 			in = socket.getInputStream();
 			out = socket.getOutputStream();
 
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			String line = null;
-			while ((line = br.readLine()) != null) {
-				processLine(line, out);
+			try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
+				String line = null;
+				while ((line = br.readLine()) != null) {
+					processLine(line, out);
+				}
 			}
 		} catch (Exception ex) {
 			LOGGER.log(Level.WARNING, "[" + getName()

@@ -8,12 +8,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import gov.usgs.util.StreamUtils;
-import gov.usgs.earthquake.shakemap.GridXMLHandler;
 
 import org.junit.Before;
 
 public class GridXMLHandlerTest {
-	
+
   private GridXMLHandler module = null;
 
   @Before
