@@ -9,23 +9,22 @@ import gov.usgs.earthquake.geoserve.ANSSRegionsFactory;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.qdm.Point;
 import gov.usgs.earthquake.qdm.Regions;
+import gov.usgs.util.DefaultConfigurable;
 
 import java.math.BigDecimal;
 import java.util.logging.Logger;
 
-
 /**
- * Default implementation of the IndexerModule interface,
- * implements ANSS Authoritative Region logic.
- * 
+ * Default implementation of the IndexerModule interface, implements ANSS
+ * Authoritative Region logic.
+ *
  * Provides a basic level of support for any type of product. Creates a
  * ProductSummary using the ProductSummary(product) constructor, which copies
  * all properties, and links from the product.
  */
-public class DefaultIndexerModule implements IndexerModule {
+public class DefaultIndexerModule extends DefaultConfigurable implements IndexerModule {
 
-	private static final Logger LOGGER = Logger
-			.getLogger(DefaultIndexerModule.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(DefaultIndexerModule.class.getName());
 
 	/** Initial preferred weight. */
 	public static final long DEFAULT_PREFERRED_WEIGHT = 1;
@@ -44,25 +43,21 @@ public class DefaultIndexerModule implements IndexerModule {
 
 	/**
 	 * Create a ProductSummary from a Product.
-	 * 
+	 *
 	 * Uses the ProductSummary(Product) constructor, which copies product
-	 * information. Checks whether product is within its authoritative region,
-	 * and if so boosts preferredWeight by AUTHORITATIVE_WEIGHT.
-	 * 
-	 * @param product
-	 *            the product to summarize.
+	 * information. Checks whether product is within its authoritative region, and
+	 * if so boosts preferredWeight by AUTHORITATIVE_WEIGHT.
+	 *
+	 * @param product the product to summarize.
 	 * @return ProductSummary for Product object.
 	 */
-	public ProductSummary getProductSummary(final Product product)
-			throws Exception {
+	public ProductSummary getProductSummary(final Product product) throws Exception {
 		ProductSummary summary = new ProductSummary(product);
 
 		// allow sender to assign preferredWeight if we add them to the keychain
 		String preferredWeight = product.getProperties().get("preferredWeight");
-		if (preferredWeight != null
-				&& signatureVerifier.verifySignature(product)) {
-			LOGGER.fine("Signature verified, using sender assigned preferredWeight "
-					+ preferredWeight);
+		if (preferredWeight != null && signatureVerifier.verifySignature(product)) {
+			LOGGER.fine("Signature verified, using sender assigned preferredWeight " + preferredWeight);
 			summary.setPreferredWeight(Long.valueOf(preferredWeight));
 		} else {
 			summary.setPreferredWeight(getPreferredWeight(summary));
@@ -72,24 +67,21 @@ public class DefaultIndexerModule implements IndexerModule {
 
 	/**
 	 * Calculate the preferred weight for a product summary.
-	 * 
-	 * This method is called after creating a product summary, but before
-	 * returning the created summary. It's return value is used to assign the
-	 * product summary preferred weight.
-	 * 
-	 * Within each type of product, the summary with the largest preferred
-	 * weight is considered preferred.
-	 * 
-	 * @param summary
-	 *            the summary to calculate a preferred weight.
+	 *
+	 * This method is called after creating a product summary, but before returning
+	 * the created summary. It's return value is used to assign the product summary
+	 * preferred weight.
+	 *
+	 * Within each type of product, the summary with the largest preferred weight is
+	 * considered preferred.
+	 *
+	 * @param summary the summary to calculate a preferred weight.
 	 * @return the absolute preferred weight.
 	 */
-	protected long getPreferredWeight(final ProductSummary summary)
-			throws Exception {
+	protected long getPreferredWeight(final ProductSummary summary) throws Exception {
 		Regions regions = ANSSRegionsFactory.getFactory().getRegions();
 		if (regions == null) {
-			throw new ContinuableListenerException(
-					"Unable to load ANSS Authoritative Regions");
+			throw new ContinuableListenerException("Unable to load ANSS Authoritative Regions");
 		}
 
 		long preferredWeight = DEFAULT_PREFERRED_WEIGHT;
@@ -100,8 +92,7 @@ public class DefaultIndexerModule implements IndexerModule {
 		BigDecimal longitude = summary.getEventLongitude();
 		Point location = null;
 		if (latitude != null && longitude != null) {
-			location = new Point(longitude.doubleValue(),
-					latitude.doubleValue());
+			location = new Point(longitude.doubleValue(), latitude.doubleValue());
 		}
 
 		// authoritative check
@@ -127,8 +118,7 @@ public class DefaultIndexerModule implements IndexerModule {
 	/**
 	 * Remove "internal-" prefix and "-scenario" suffix from product type".
 	 *
-	 * @param type
-	 *        product type.
+	 * @param type product type.
 	 * @return base product type (without any known prefix or suffix).
 	 */
 	public String getBaseProductType(String type) {
@@ -145,9 +135,8 @@ public class DefaultIndexerModule implements IndexerModule {
 
 	/**
 	 * This module provides a default level of support for any type of product.
-	 * 
-	 * @param product
-	 *            the product to test.
+	 *
+	 * @param product the product to test.
 	 * @return IndexerModule.LEVEL_DEFAULT.
 	 */
 	public int getSupportLevel(final Product product) {
