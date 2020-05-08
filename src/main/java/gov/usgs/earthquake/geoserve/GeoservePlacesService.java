@@ -16,17 +16,31 @@ import gov.usgs.util.StreamUtils;
 
 public class GeoservePlacesService implements GeoservePlaces {
   /** Default URL for GeoServe Places service. */
-  public static final String DEFAULT_GEOSERVE_PLACES_URL = "https://earthquake.usgs.gov/ws/geoserve/places.json";
+  public static final String DEFAULT_ENDPOINT_URL = "https://earthquake.usgs.gov/ws/geoserve/places.json";
+  public static final int DEFAULT_CONNECT_TIMEOUT = 300; // ms
+  public static final int DEFAULT_READ_TIMEOUT = 1700; // ms
 
   /** Configured URL for GeoServe Places service. */
   private String endpointUrl;
+  private int connectTimeout;
+  private int readTimeout;
 
   public GeoservePlacesService() {
-    this(DEFAULT_GEOSERVE_PLACES_URL);
+    this(DEFAULT_ENDPOINT_URL, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);
   }
 
   public GeoservePlacesService(final String endpointUrl) {
+    this(endpointUrl, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);
+  }
+
+  public GeoservePlacesService(final int connectTimeout, final int readTimeout) {
+    this(DEFAULT_ENDPOINT_URL, connectTimeout, readTimeout);
+  }
+
+  public GeoservePlacesService(final String endpointUrl, final int connectTimeout, final int readTimeout) {
     this.endpointUrl = endpointUrl;
+    this.connectTimeout = connectTimeout;
+    this.readTimeout = readTimeout;
   }
 
   /**
@@ -70,6 +84,10 @@ public class GeoservePlacesService implements GeoservePlaces {
     return String.format("%d km %s of %s, %s", distance, direction, name, admin);
   }
 
+  public int getConnectTimeout() {
+    return this.connectTimeout;
+  }
+
   public String getEndpointURL() {
     return this.endpointUrl;
   }
@@ -79,7 +97,7 @@ public class GeoservePlacesService implements GeoservePlaces {
     final URL url = new URL(String.format("%s?type=event&latitude=%s&longitude=%s", this.endpointUrl,
         URLEncoder.encode(latitude.toString(), "UTF-8"), URLEncoder.encode(longitude.toString(), "UTF-8")));
 
-    try (InputStream in = StreamUtils.getURLInputStream(url, 250, 250)) {
+    try (InputStream in = StreamUtils.getURLInputStream(url, this.connectTimeout, this.readTimeout)) {
       JsonReader reader = Json.createReader(in);
       JsonObject json = reader.readObject();
       reader.close();
@@ -95,8 +113,20 @@ public class GeoservePlacesService implements GeoservePlaces {
     return this.formatEventTitle(feature);
   }
 
+  public int getReadTimeout() {
+    return this.readTimeout;
+  }
+
+  public void setConnectTimeout(final int connectTimeout) {
+    this.connectTimeout = connectTimeout;
+  }
+
   public void setEndpointURL(final String endpointUrl) {
     this.endpointUrl = endpointUrl;
+  }
+
+  public void setReadTimeout(final int readTimeout) {
+    this.readTimeout = readTimeout;
   }
 
   // TODO as needed, implement full GeoServe places API options
