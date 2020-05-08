@@ -62,8 +62,8 @@ public class OriginIndexerModule extends DefaultIndexerModule {
         title = this.geoservePlaces.getEventTitle(latitude, longitude);
         summaryProperties.put("title", title);
       } catch (Exception ex) {
-        // LOGGER.fine(ex.getMessage());
-        LOGGER.log(Level.FINE, ex.getMessage(), ex);
+        LOGGER
+            .fine(String.format("[%s] %s For product %s", this.getName(), ex.getMessage(), product.getId().toString()));
         // Do nothing, value-added failed. Move on.
       }
     }
