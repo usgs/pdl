@@ -63,7 +63,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
         summaryProperties.put("title", title);
       } catch (Exception ex) {
         LOGGER
-            .fine(String.format("[%s] %s For product %s", this.getName(), ex.getMessage(), product.getId().toString()));
+            .fine(String.format("[%s] %s for product %s", this.getName(), ex.getMessage(), product.getId().toString()));
         // Do nothing, value-added failed. Move on.
       }
     }
