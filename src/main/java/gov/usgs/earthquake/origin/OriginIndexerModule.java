@@ -2,7 +2,6 @@ package gov.usgs.earthquake.origin;
 
 import java.math.BigDecimal;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import gov.usgs.earthquake.geoserve.GeoservePlaces;
