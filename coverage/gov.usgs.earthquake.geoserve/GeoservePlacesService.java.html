@@ -16,18 +16,32 @@ import gov.usgs.util.StreamUtils;
 
 public class GeoservePlacesService implements GeoservePlaces {
   /** Default URL for GeoServe Places service. */
-  public static final String DEFAULT_GEOSERVE_PLACES_URL = &quot;https://earthquake.usgs.gov/ws/geoserve/places.json&quot;;
+  public static final String DEFAULT_ENDPOINT_URL = &quot;https://earthquake.usgs.gov/ws/geoserve/places.json&quot;;
+  public static final int DEFAULT_CONNECT_TIMEOUT = 300; // ms
+  public static final int DEFAULT_READ_TIMEOUT = 1700; // ms
 
   /** Configured URL for GeoServe Places service. */
   private String endpointUrl;
+  private int connectTimeout;
+  private int readTimeout;
 
   public GeoservePlacesService() {
-<span class="fc" id="L25">    this(DEFAULT_GEOSERVE_PLACES_URL);</span>
-<span class="fc" id="L26">  }</span>
-
-<span class="fc" id="L28">  public GeoservePlacesService(final String endpointUrl) {</span>
-<span class="fc" id="L29">    this.endpointUrl = endpointUrl;</span>
+<span class="fc" id="L29">    this(DEFAULT_ENDPOINT_URL, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);</span>
 <span class="fc" id="L30">  }</span>
+
+  public GeoservePlacesService(final String endpointUrl) {
+<span class="nc" id="L33">    this(endpointUrl, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);</span>
+<span class="nc" id="L34">  }</span>
+
+  public GeoservePlacesService(final int connectTimeout, final int readTimeout) {
+<span class="nc" id="L37">    this(DEFAULT_ENDPOINT_URL, connectTimeout, readTimeout);</span>
+<span class="nc" id="L38">  }</span>
+
+<span class="fc" id="L40">  public GeoservePlacesService(final String endpointUrl, final int connectTimeout, final int readTimeout) {</span>
+<span class="fc" id="L41">    this.endpointUrl = endpointUrl;</span>
+<span class="fc" id="L42">    this.connectTimeout = connectTimeout;</span>
+<span class="fc" id="L43">    this.readTimeout = readTimeout;</span>
+<span class="fc" id="L44">  }</span>
 
   /**
    * Converts a decimal degree azimuth to a canonical compass direction
@@ -37,67 +51,83 @@ public class GeoservePlacesService implements GeoservePlaces {
    * @return {String} The canonical compass direction for the given input azimuth
    */
   public String azimuthToDirection(double azimuth) {
-<span class="fc" id="L40">    double fullwind = 22.5;</span>
-<span class="fc" id="L41">    String[] directions = { &quot;N&quot;, &quot;NNE&quot;, &quot;NE&quot;, &quot;ENE&quot;, &quot;E&quot;, &quot;ESE&quot;, &quot;SE&quot;, &quot;SSE&quot;, &quot;S&quot;, &quot;SSW&quot;, &quot;SW&quot;, &quot;WSW&quot;, &quot;W&quot;, &quot;WNW&quot;, &quot;NW&quot;,</span>
+<span class="fc" id="L54">    double fullwind = 22.5;</span>
+<span class="fc" id="L55">    String[] directions = { &quot;N&quot;, &quot;NNE&quot;, &quot;NE&quot;, &quot;ENE&quot;, &quot;E&quot;, &quot;ESE&quot;, &quot;SE&quot;, &quot;SSE&quot;, &quot;S&quot;, &quot;SSW&quot;, &quot;SW&quot;, &quot;WSW&quot;, &quot;W&quot;, &quot;WNW&quot;, &quot;NW&quot;,</span>
         &quot;NNW&quot;, &quot;N&quot; };
 
     // Invert azimuth for proper directivity
     // Maybe not needed in the future.
-<span class="fc" id="L46">    azimuth += 180.0;</span>
+<span class="fc" id="L60">    azimuth += 180.0;</span>
 
     // adjust azimuth if negative
-<span class="fc bfc" id="L49" title="All 2 branches covered.">    while (azimuth &lt; 0.0) {</span>
-<span class="fc" id="L50">      azimuth = azimuth + 360.0;</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">    while (azimuth &lt; 0.0) {</span>
+<span class="fc" id="L64">      azimuth = azimuth + 360.0;</span>
     }
 
-<span class="fc" id="L53">    return directions[(int) Math.round((azimuth % 360.0) / fullwind)];</span>
+<span class="fc" id="L67">    return directions[(int) Math.round((azimuth % 360.0) / fullwind)];</span>
   }
 
   public String formatEventTitle(JsonObject feature) {
-<span class="fc" id="L57">    JsonObject properties = feature.getJsonObject(&quot;properties&quot;);</span>
+<span class="fc" id="L71">    JsonObject properties = feature.getJsonObject(&quot;properties&quot;);</span>
 
-<span class="fc" id="L59">    String name = properties.getString(&quot;name&quot;);</span>
-<span class="fc" id="L60">    String country = properties.getString(&quot;country_code&quot;).toLowerCase();</span>
-<span class="fc" id="L61">    String admin = properties.getString(&quot;country_name&quot;);</span>
-<span class="fc" id="L62">    int distance = properties.getInt(&quot;distance&quot;);</span>
-<span class="fc" id="L63">    double azimuth = properties.getJsonNumber(&quot;azimuth&quot;).doubleValue();</span>
-<span class="fc" id="L64">    String direction = azimuthToDirection(azimuth);</span>
+<span class="fc" id="L73">    String name = properties.getString(&quot;name&quot;);</span>
+<span class="fc" id="L74">    String country = properties.getString(&quot;country_code&quot;).toLowerCase();</span>
+<span class="fc" id="L75">    String admin = properties.getString(&quot;country_name&quot;);</span>
+<span class="fc" id="L76">    int distance = properties.getInt(&quot;distance&quot;);</span>
+<span class="fc" id="L77">    double azimuth = properties.getJsonNumber(&quot;azimuth&quot;).doubleValue();</span>
+<span class="fc" id="L78">    String direction = azimuthToDirection(azimuth);</span>
 
-<span class="fc bfc" id="L66" title="All 2 branches covered.">    if (&quot;us&quot;.equals(country)) {</span>
-<span class="fc" id="L67">      admin = properties.getString(&quot;admin1_name&quot;);</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">    if (&quot;us&quot;.equals(country)) {</span>
+<span class="fc" id="L81">      admin = properties.getString(&quot;admin1_name&quot;);</span>
     }
 
-<span class="fc" id="L70">    return String.format(&quot;%d km %s of %s, %s&quot;, distance, direction, name, admin);</span>
+<span class="fc" id="L84">    return String.format(&quot;%d km %s of %s, %s&quot;, distance, direction, name, admin);</span>
+  }
+
+  public int getConnectTimeout() {
+<span class="nc" id="L88">    return this.connectTimeout;</span>
   }
 
   public String getEndpointURL() {
-<span class="nc" id="L74">    return this.endpointUrl;</span>
+<span class="nc" id="L92">    return this.endpointUrl;</span>
   }
 
   public JsonObject getEventPlaces(BigDecimal latitude, BigDecimal longitude)
       throws IOException, MalformedURLException {
-<span class="nc" id="L79">    final URL url = new URL(String.format(&quot;%s?type=event&amp;latitude=%s&amp;longitude=%s&quot;, this.endpointUrl,</span>
-<span class="nc" id="L80">        URLEncoder.encode(latitude.toString(), &quot;UTF-8&quot;), URLEncoder.encode(longitude.toString(), &quot;UTF-8&quot;)));</span>
+<span class="nc" id="L97">    final URL url = new URL(String.format(&quot;%s?type=event&amp;latitude=%s&amp;longitude=%s&quot;, this.endpointUrl,</span>
+<span class="nc" id="L98">        URLEncoder.encode(latitude.toString(), &quot;UTF-8&quot;), URLEncoder.encode(longitude.toString(), &quot;UTF-8&quot;)));</span>
 
-<span class="nc" id="L82">    try (InputStream in = StreamUtils.getURLInputStream(url, 250, 250)) {</span>
-<span class="nc" id="L83">      JsonReader reader = Json.createReader(in);</span>
-<span class="nc" id="L84">      JsonObject json = reader.readObject();</span>
-<span class="nc" id="L85">      reader.close();</span>
-<span class="nc" id="L86">      return json.getJsonObject(&quot;event&quot;);</span>
+<span class="nc" id="L100">    try (InputStream in = StreamUtils.getURLInputStream(url, this.connectTimeout, this.readTimeout)) {</span>
+<span class="nc" id="L101">      JsonReader reader = Json.createReader(in);</span>
+<span class="nc" id="L102">      JsonObject json = reader.readObject();</span>
+<span class="nc" id="L103">      reader.close();</span>
+<span class="nc" id="L104">      return json.getJsonObject(&quot;event&quot;);</span>
     }
   }
 
   public String getEventTitle(BigDecimal latitude, BigDecimal longitude) throws IOException, MalformedURLException {
-<span class="nc" id="L91">    JsonObject places = this.getEventPlaces(latitude, longitude);</span>
-<span class="nc" id="L92">    JsonArray features = places.getJsonArray(&quot;features&quot;);</span>
-<span class="nc" id="L93">    JsonObject feature = features.get(0).asJsonObject();</span>
+<span class="nc" id="L109">    JsonObject places = this.getEventPlaces(latitude, longitude);</span>
+<span class="nc" id="L110">    JsonArray features = places.getJsonArray(&quot;features&quot;);</span>
+<span class="nc" id="L111">    JsonObject feature = features.get(0).asJsonObject();</span>
 
-<span class="nc" id="L95">    return this.formatEventTitle(feature);</span>
+<span class="nc" id="L113">    return this.formatEventTitle(feature);</span>
   }
 
+  public int getReadTimeout() {
+<span class="nc" id="L117">    return this.readTimeout;</span>
+  }
+
+  public void setConnectTimeout(final int connectTimeout) {
+<span class="nc" id="L121">    this.connectTimeout = connectTimeout;</span>
+<span class="nc" id="L122">  }</span>
+
   public void setEndpointURL(final String endpointUrl) {
-<span class="nc" id="L99">    this.endpointUrl = endpointUrl;</span>
-<span class="nc" id="L100">  }</span>
+<span class="nc" id="L125">    this.endpointUrl = endpointUrl;</span>
+<span class="nc" id="L126">  }</span>
+
+  public void setReadTimeout(final int readTimeout) {
+<span class="nc" id="L129">    this.readTimeout = readTimeout;</span>
+<span class="nc" id="L130">  }</span>
 
   // TODO as needed, implement full GeoServe places API options
 }

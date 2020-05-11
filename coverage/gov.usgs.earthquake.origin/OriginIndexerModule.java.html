@@ -11,55 +11,75 @@ import gov.usgs.earthquake.indexer.IndexerModule;
 import gov.usgs.earthquake.indexer.ProductSummary;
 import gov.usgs.earthquake.product.Product;
 
+import gov.usgs.util.Config;
+
+/**
+ * Class for summarizing &quot;origin&quot; type products during the indexing process.
+ * Specifically this implementation uses a GeoservePlacesService to augment the
+ * properties on the product to include a &quot;title&quot; property if one is not already
+ * present.
+ *
+ * This module may be configured with the following properties: `endpointUrl`
+ * `connectTimeout`, and `readTimeout`.
+ */
 public class OriginIndexerModule extends DefaultIndexerModule {
-<span class="fc" id="L15">  private static final Logger LOGGER = Logger.getLogger(OriginIndexerModule.class.getName());</span>
+<span class="fc" id="L26">  private static final Logger LOGGER = Logger.getLogger(OriginIndexerModule.class.getName());</span>
 
   private GeoservePlaces geoservePlaces;
 
-<span class="fc" id="L19">  public OriginIndexerModule() {</span>
-<span class="fc" id="L20">    this.geoservePlaces = new GeoservePlacesService();</span>
-<span class="fc" id="L21">  }</span>
+  public static final String ENDPOINT_URL_PROPERTY = &quot;endpointUrl&quot;;
+  public static final String CONNECT_TIMEOUT_PROPERTY = &quot;connectTimeout&quot;;
+  public static final String READ_TIMEOUT_PROPERTY = &quot;readTimeout&quot;;
+
+<span class="fc" id="L34">  public OriginIndexerModule() {</span>
+    // Do nothing, must be configured through bootstrapping before use
+<span class="fc" id="L36">  }</span>
+
+<span class="nc" id="L38">  public OriginIndexerModule(final GeoservePlacesService geoservePlaces) {</span>
+<span class="nc" id="L39">    this.setPlacesService(geoservePlaces);</span>
+<span class="nc" id="L40">  }</span>
 
   /**
    * @return The places service currently being used for title generation
    */
   public GeoservePlaces getPlacesService() {
-<span class="nc" id="L27">    return this.geoservePlaces;</span>
+<span class="nc" id="L46">    return this.geoservePlaces;</span>
   }
 
   @Override
   public ProductSummary getProductSummary(Product product) throws Exception {
-<span class="fc" id="L32">    ProductSummary summary = super.getProductSummary(product);</span>
-<span class="fc" id="L33">    BigDecimal latitude = summary.getEventLatitude();</span>
-<span class="fc" id="L34">    BigDecimal longitude = summary.getEventLongitude();</span>
+<span class="fc" id="L51">    ProductSummary summary = super.getProductSummary(product);</span>
+<span class="fc" id="L52">    BigDecimal latitude = summary.getEventLatitude();</span>
+<span class="fc" id="L53">    BigDecimal longitude = summary.getEventLongitude();</span>
 
     // Defer to existing title property if set...
-<span class="fc" id="L37">    Map&lt;String, String&gt; summaryProperties = summary.getProperties();</span>
-<span class="fc" id="L38">    String title = summaryProperties.get(&quot;title&quot;);</span>
+<span class="fc" id="L56">    Map&lt;String, String&gt; summaryProperties = summary.getProperties();</span>
+<span class="fc" id="L57">    String title = summaryProperties.get(&quot;title&quot;);</span>
 
-<span class="pc bpc" id="L40" title="1 of 6 branches missed.">    if (title == null &amp;&amp; latitude != null &amp;&amp; longitude != null) {</span>
+<span class="pc bpc" id="L59" title="1 of 6 branches missed.">    if (title == null &amp;&amp; latitude != null &amp;&amp; longitude != null) {</span>
       try {
-<span class="fc" id="L42">        title = this.geoservePlaces.getEventTitle(latitude, longitude);</span>
-<span class="fc" id="L43">        summaryProperties.put(&quot;title&quot;, title);</span>
-<span class="nc" id="L44">      } catch (Exception ex) {</span>
-<span class="nc" id="L45">        LOGGER.fine(ex.getMessage());</span>
+<span class="fc" id="L61">        title = this.geoservePlaces.getEventTitle(latitude, longitude);</span>
+<span class="fc" id="L62">        summaryProperties.put(&quot;title&quot;, title);</span>
+<span class="nc" id="L63">      } catch (Exception ex) {</span>
+<span class="nc" id="L64">        LOGGER</span>
+<span class="nc" id="L65">            .fine(String.format(&quot;[%s] %s for product %s&quot;, this.getName(), ex.getMessage(), product.getId().toString()));</span>
         // Do nothing, value-added failed. Move on.
-<span class="fc" id="L47">      }</span>
+<span class="fc" id="L67">      }</span>
     }
 
-<span class="fc" id="L50">    return summary;</span>
+<span class="fc" id="L70">    return summary;</span>
   }
 
   @Override
   public int getSupportLevel(Product product) {
-<span class="fc" id="L55">    int supportLevel = IndexerModule.LEVEL_UNSUPPORTED;</span>
-<span class="fc" id="L56">    String type = getBaseProductType(product.getId().getType());</span>
+<span class="fc" id="L75">    int supportLevel = IndexerModule.LEVEL_UNSUPPORTED;</span>
+<span class="fc" id="L76">    String type = getBaseProductType(product.getId().getType());</span>
 
-<span class="fc bfc" id="L58" title="All 4 branches covered.">    if (&quot;origin&quot;.equals(type) &amp;&amp; !&quot;DELETE&quot;.equalsIgnoreCase(product.getStatus())) {</span>
-<span class="fc" id="L59">      supportLevel = IndexerModule.LEVEL_SUPPORTED;</span>
+<span class="fc bfc" id="L78" title="All 4 branches covered.">    if (&quot;origin&quot;.equals(type) &amp;&amp; !&quot;DELETE&quot;.equalsIgnoreCase(product.getStatus())) {</span>
+<span class="fc" id="L79">      supportLevel = IndexerModule.LEVEL_SUPPORTED;</span>
     }
 
-<span class="fc" id="L62">    return supportLevel;</span>
+<span class="fc" id="L82">    return supportLevel;</span>
   }
 
   /**
@@ -69,7 +89,20 @@ public class OriginIndexerModule extends DefaultIndexerModule {
    * @param geoservePlaces The GeoservePlaces to use
    */
   public void setPlacesService(GeoservePlaces geoservePlaces) {
-<span class="fc" id="L72">    this.geoservePlaces = geoservePlaces;</span>
-<span class="fc" id="L73">  }</span>
+<span class="fc" id="L92">    this.geoservePlaces = geoservePlaces;</span>
+<span class="fc" id="L93">  }</span>
+
+  @Override
+  public void configure(Config config) throws Exception {
+<span class="nc" id="L97">    String endpointUrl = config.getProperty(ENDPOINT_URL_PROPERTY, GeoservePlacesService.DEFAULT_ENDPOINT_URL);</span>
+<span class="nc" id="L98">    int connectTimeout = Integer.parseInt(</span>
+<span class="nc" id="L99">        config.getProperty(CONNECT_TIMEOUT_PROPERTY, Integer.toString(GeoservePlacesService.DEFAULT_CONNECT_TIMEOUT)));</span>
+<span class="nc" id="L100">    int readTimeout = Integer.parseInt(</span>
+<span class="nc" id="L101">        config.getProperty(READ_TIMEOUT_PROPERTY, Integer.toString(GeoservePlacesService.DEFAULT_READ_TIMEOUT)));</span>
+
+<span class="nc" id="L103">    LOGGER.config(String.format(&quot;[%s] GeoservePlacesService(%s, %d, %d)&quot;, this.getName(), endpointUrl, connectTimeout,</span>
+<span class="nc" id="L104">        readTimeout));</span>
+<span class="nc" id="L105">    this.setPlacesService(new GeoservePlacesService(endpointUrl, connectTimeout, readTimeout));</span>
+<span class="nc" id="L106">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

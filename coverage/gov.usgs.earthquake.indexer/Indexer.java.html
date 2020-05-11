@@ -1747,11 +1747,11 @@ public class Indexer extends DefaultNotificationListener {
 <span class="fc" id="L1747">			IndexerModule module = modules.next();</span>
 <span class="pc bpc" id="L1748" title="1 of 2 branches missed.">			if (module instanceof Configurable) {</span>
 				try {
-<span class="nc" id="L1750">					((Configurable) module).shutdown();</span>
+<span class="fc" id="L1750">					((Configurable) module).shutdown();</span>
 <span class="nc" id="L1751">				} catch (Exception e) {</span>
 <span class="nc" id="L1752">					LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 							+ &quot;] exception shutting down module&quot;, e);
-<span class="nc" id="L1754">				}</span>
+<span class="fc" id="L1754">				}</span>
 			}
 <span class="fc" id="L1756">		}</span>
 		// -- Shut down our own specific processes -- //
@@ -1803,7 +1803,7 @@ public class Indexer extends DefaultNotificationListener {
 <span class="fc bfc" id="L1803" title="All 2 branches covered.">		while (modules.hasNext()) {</span>
 <span class="fc" id="L1804">			IndexerModule module = modules.next();</span>
 <span class="pc bpc" id="L1805" title="1 of 2 branches missed.">			if (module instanceof Configurable) {</span>
-<span class="nc" id="L1806">				((Configurable) module).startup();</span>
+<span class="fc" id="L1806">				((Configurable) module).startup();</span>
 			}
 <span class="fc" id="L1808">		}</span>
 
