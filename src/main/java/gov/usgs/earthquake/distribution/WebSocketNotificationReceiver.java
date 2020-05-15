@@ -9,6 +9,7 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -157,6 +158,11 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   }
 
   @Override
+  public void onOpen() {
+    LOGGER.log(Level.FINE, "[" + getName() + "] connection opened");
+  }
+
+  @Override
   public void onClose() {
     LOGGER.log(Level.WARNING, "[" + getName() + "] socket closed");
   }
@@ -183,6 +189,10 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
 
   public void setServerPath(String serverPath) {
     this.serverPath = serverPath;
+  }
+
+  public URI getURI() throws URISyntaxException {
+    return new URI(serverHost + ":" + serverPort + serverPath + sequence);
   }
 
   public JSONTrackingFile getTrackingFile() {

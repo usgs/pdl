@@ -9,5 +9,6 @@ import javax.websocket.Session;
 public interface WebSocketListener {
   public void onMessage(String message);
   public void onConnectException(Exception e) throws Exception;
+  public void onOpen();
   public void onClose();
 }
