@@ -19,7 +19,7 @@ public class WebSocketClient implements Runnable {
   private long reconnectInterval;
   private boolean stopThread;
   private boolean reconnect;
-  private Object close = new Object();
+  private final Object close = new Object();
 
   public WebSocketClient (URI endpoint, WebSocketListener listener) {
     this (endpoint, listener, true, DEFAULT_RECONNECT_INTERVAL);
@@ -43,6 +43,8 @@ public class WebSocketClient implements Runnable {
     // bring down thread
     stopThread = true;
     synchronized (close) {
+      stopThread = true;
+      close.notify();
       thread.interrupt();
     }
     thread.join();
@@ -50,6 +52,9 @@ public class WebSocketClient implements Runnable {
   }
 
   public void connect() throws Exception {
+    if (isConnected()) {
+      return;
+    }
     // try to connect to server
     WebSocketContainer container = ContainerProvider.getWebSocketContainer();
     container.connectToServer(this, endpoint);
@@ -71,11 +76,12 @@ public class WebSocketClient implements Runnable {
             // successful connection
             close.wait();
           } catch (InterruptedException ie) {
-            // gracefully close, disconnect if possible
-            stopThread = true;
-            disconnect();
+            // closing
+            throw ie;
           }
         }
+      } catch (InterruptedException ie) {
+        // do nothing; closing
       } catch (Exception e1) { //exception on connect
         // let listener handle if they want
         try {
@@ -90,11 +96,15 @@ public class WebSocketClient implements Runnable {
           try {
             Thread.sleep(reconnectInterval);
           } catch (InterruptedException ie) {
-            // gracefully close
-            stopThread = true;
+            // do nothing; closing
           }
         }
       }
+    }
+    try {
+      disconnect(); //ensure disconnected
+    } catch (Exception e) {
+      // ignore; just close
     }
   }
 
@@ -106,6 +116,7 @@ public class WebSocketClient implements Runnable {
   @OnClose
   public void onClose(Session session, CloseReason reason) {
     synchronized(close) {
+      this.session = null;
       close.notify();
     }
     listener.onClose();
