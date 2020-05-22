@@ -12,9 +12,9 @@ import gov.usgs.util.Config;
 
 /**
  * ReliableIndexerListener listens for product changes by the indexer, then handles the new products independently in a background thread.
- * 
+ *
  * This class does little more than output logs for the products it has seen; it is designed to be extended.
- * 
+ *
  * Several useful methods are availble to be overridden or otherwise used:
  * <ul>
  * <li>onBeforeProcessThreadStart</li>
@@ -22,16 +22,16 @@ import gov.usgs.util.Config;
  * <li>getNextProducts</li>
  * <li>processProducts</li>
  * </ul>
- * 
+ *
  * This class accepts an index for querying in config:
- * 
+ *
  * <dl>
  * <dt>index</dt>
  * <dd>(Required) The index to use for product querying.</dd>
  * </dl>
  */
 
-public class ReliableIndexerListener extends DefaultIndexerListener implements IndexerListener, Runnable {
+public class ReliableIndexerListener extends DefaultIndexerListener implements Runnable {
 
   protected static final Logger LOGGER = Logger
           .getLogger(ReliableIndexerListener.class.getName());
@@ -47,7 +47,7 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
 
   /**
    * Sets up an object on start
-   * 
+   *
    * @param config configuration
    *
    * @throws Exception if missing product index
@@ -68,13 +68,13 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
     }
   }
 
-  /** 
+  /**
    * Wakes thread when indexer makes changes
-   * 
+   *
    * @param delta Indexer Event - not used
    *
    * @throws Exception if something goes wrong
-   */ 
+   */
   public void onIndexerEvent(IndexerEvent delta) throws Exception {
     //Synchronized on the syncObject so we don't miss events
     synchronized (syncObject) {
@@ -149,7 +149,7 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
 
   /**
    * Starts thread
-   * 
+   *
    * Calls onBeforeProcessThreadStart() in case subclasses want to add functionality
    *
    * @throws Exception if there's a thread issue
@@ -208,7 +208,7 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
    */
   public void setLastIndexId(final long lastIndexId) {
     this.lastIndexId = lastIndexId;
-  } 
+  }
 
   /**
    * Run before thread start.
@@ -266,5 +266,5 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements I
   }
 
 
-   
+
 }

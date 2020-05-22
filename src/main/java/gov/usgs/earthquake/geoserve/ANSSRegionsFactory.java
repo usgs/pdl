@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import gov.usgs.earthquake.geoserve.GeoserveLayersService;
 import gov.usgs.earthquake.qdm.Regions;
 import gov.usgs.util.FileUtils;
 import gov.usgs.util.StreamUtils;
@@ -23,7 +22,7 @@ import gov.usgs.util.XmlUtils;
  *
  * Simplest usage:
  *     ANSSRegionsFactory.getFactory().getRegions()
- * 
+ *
  * Regions are not fetched until {@link #startup()}
  * (or {@link #fetchRegions()}) is called.
  */
@@ -73,7 +72,7 @@ public class ANSSRegionsFactory {
     }
 
     /**
-     * Get the global ANSSRegionsFactory, 
+     * Get the global ANSSRegionsFactory,
      * creating and starting if needed.
      */
     public static synchronized ANSSRegionsFactory getFactory() {

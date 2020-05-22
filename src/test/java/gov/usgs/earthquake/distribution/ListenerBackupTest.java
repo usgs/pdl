@@ -19,8 +19,6 @@ import gov.usgs.earthquake.product.io.BinaryProductHandler;
 import gov.usgs.earthquake.product.io.IOUtil;
 import gov.usgs.earthquake.product.io.ObjectProductHandler;
 import gov.usgs.earthquake.product.io.ObjectProductSource;
-import gov.usgs.earthquake.distribution.DefaultNotificationReceiver;
-import gov.usgs.earthquake.distribution.URLNotification;
 import gov.usgs.util.FileUtils;
 import gov.usgs.util.SocketAcceptor;
 import gov.usgs.util.SocketListenerInterface;
@@ -230,7 +228,7 @@ public class ListenerBackupTest {
 
 		/**
 		 * Modified so onNotification sleeps longer than the timeout.
-		 * 
+		 *
 		 * This led to a synchronization issue with ExecutorTask, and this test
 		 * hangs when ExecutorTask remains synchronized... Without
 		 * synchronzation on ExecutorTask, this works as expected.
