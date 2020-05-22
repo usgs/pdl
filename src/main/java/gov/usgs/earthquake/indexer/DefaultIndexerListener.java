@@ -13,34 +13,34 @@ import java.util.logging.Logger;
 /**
  * DefaultIndexerListener provides a starting point from which all
  * IndexerListeners may extend.
- * 
+ *
  * As a child-class of the AbstractListener, this may be configured with all of
  * the parent parameters and also accepts the following:
- * 
+ *
  * <dl>
  * <dt>command</dt>
  * <dd>(Required) The command to execute. This must be an executable command and
  * may include arguments. Any product-specific arguments are appended at the end
  * of command.</dd>
- * 
+ *
  * <dt>storage</dt>
  * <dd>(Required) A directory used to store all products. Each product is
  * extracted into a separate directory within this directory and is referenced
  * by the --directory=/path/to/directory argument when command is executed.</dd>
- * 
+ *
  * <dt>processUnassociated</dt>
  * <dd>(Optional, Default = false) Whether or not to process unassociated
  * products. Valid values are "true" and "false".</dd>
- * 
+ *
  * <dt>processPreferredOnly</dt>
  * <dd>(Optional, Default = false) Whether or not to process only preferred
  * products of the type accepted by this listener. Valid values are "true" and
  * "false".</dd>
- * 
+ *
  * <dt>ignoreArchive</dt>
  * <dd>(Optional, Default = false) Whether or not to ignore EVENT_ARCHIVED and
  * PRODUCT_ARCHIVED indexer events. Value values are "true" and "false".</dd>
- * 
+ *
  * </dl>
  */
 public class DefaultIndexerListener extends AbstractListener implements
@@ -133,10 +133,14 @@ public class DefaultIndexerListener extends AbstractListener implements
 				Iterator<Event> iter = events.iterator();
 				while (iter.hasNext()) {
 					Event event = iter.next();
-					ProductSummary preferred = event
-							.getPreferredProduct(productType);
-					if (preferred != null && preferred.getId().equals(
-							change.getSummary().getId())) {
+					ProductSummary preferred = event.getPreferredProduct(productType);
+					if (preferred == null) {
+						// when there is no preferred product of this type,
+						// all products of this type have been deleted.
+						// allow through filter
+						isPreferred = true;
+						break;
+					} else if (preferred.getId().equals(change.getSummary().getId())) {
 						// it is the most preferred product for this event
 						isPreferred = true;
 						break;
