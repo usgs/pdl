@@ -135,11 +135,15 @@ public class DefaultIndexerListener extends AbstractListener implements
 					Event event = iter.next();
 					ProductSummary preferred = event.getPreferredProduct(productType);
 					if (preferred == null) {
-						// when there is no preferred product of this type,
-						// all products of this type have been deleted.
-						// allow through filter
-						isPreferred = true;
-						break;
+						List<ProductSummary> allProducts = event.getAllProducts().get(productType);
+						if (allProducts != null && allProducts.contains(change.getSummary())) {
+							// WHEN there is no preferred product of this type,
+							// AND this product is associated to this event:
+							// THEN all products of this type have been deleted.
+							// allow through filter
+							isPreferred = true;
+							break;
+						}
 					} else if (preferred.getId().equals(change.getSummary().getId())) {
 						// it is the most preferred product for this event
 						isPreferred = true;
