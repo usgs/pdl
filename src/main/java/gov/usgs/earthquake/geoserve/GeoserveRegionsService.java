@@ -14,30 +14,30 @@ import javax.json.JsonReader;
 
 import gov.usgs.util.StreamUtils;
 
-public class GeoservePlacesService implements GeoservePlaces {
-  /** Default URL for GeoServe Places service. */
-  public static final String DEFAULT_ENDPOINT_URL = "https://earthquake.usgs.gov/ws/geoserve/places.json";
+public class GeoserveRegionsService {
+  /** Default URL for GeoServe Regions service. */
+  public static final String DEFAULT_ENDPOINT_URL = "https://earthquake.usgs.gov/ws/geoserve/regions.json";
   public static final int DEFAULT_CONNECT_TIMEOUT = 300; // ms
   public static final int DEFAULT_READ_TIMEOUT = 1700; // ms
 
-  /** Configured URL for GeoServe Places service. */
+  /** Configured URL for GeoServe Regions service. */
   private String endpointUrl;
   private int connectTimeout;
   private int readTimeout;
 
-  public GeoservePlacesService() {
+  public GeoserveRegionsService() {
     this(DEFAULT_ENDPOINT_URL, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);
   }
 
-  public GeoservePlacesService(final String endpointUrl) {
+  public GeoserveRegionsService(final String endpointUrl) {
     this(endpointUrl, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);
   }
 
-  public GeoservePlacesService(final int connectTimeout, final int readTimeout) {
+  public GeoserveRegionsService(final int connectTimeout, final int readTimeout) {
     this(DEFAULT_ENDPOINT_URL, connectTimeout, readTimeout);
   }
 
-  public GeoservePlacesService(final String endpointUrl, final int connectTimeout, final int readTimeout) {
+  public GeoserveRegionsService(final String endpointUrl, final int connectTimeout, final int readTimeout) {
     this.endpointUrl = endpointUrl;
     this.connectTimeout = connectTimeout;
     this.readTimeout = readTimeout;
@@ -51,25 +51,28 @@ public class GeoservePlacesService implements GeoservePlaces {
     return this.endpointUrl;
   }
 
-  public JsonObject getEventPlaces(BigDecimal latitude, BigDecimal longitude)
+  public JsonObject getFeRegion(BigDecimal latitude, BigDecimal longitude)
       throws IOException, MalformedURLException {
-    final URL url = new URL(String.format("%s?type=event&latitude=%s&longitude=%s", this.endpointUrl,
+    final URL url = new URL(String.format("%s?type=fe&latitude=%s&longitude=%s", this.endpointUrl,
         URLEncoder.encode(latitude.toString(), "UTF-8"), URLEncoder.encode(longitude.toString(), "UTF-8")));
 
     try (InputStream in = StreamUtils.getURLInputStream(url, this.connectTimeout, this.readTimeout)) {
       JsonReader reader = Json.createReader(in);
       JsonObject json = reader.readObject();
       reader.close();
-      return json.getJsonObject("event");
+      return json.getJsonObject("fe");
     }
   }
 
-  public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude) throws IOException, MalformedURLException {
-    JsonObject places = this.getEventPlaces(latitude, longitude);
-    JsonArray features = places.getJsonArray("features");
-    JsonObject feature = features.get(0).asJsonObject();
+  public String getFeRegionName(BigDecimal latitude, BigDecimal longitude) throws IOException, MalformedURLException {
+    JsonObject region = this.getFeRegion(latitude, longitude);
+    String feRegionName = region.getJsonArray("features")
+        .getJsonObject(0)
+        .getJsonObject("properties")
+        .getJsonString("name")
+        .getString();
 
-    return feature;
+    return feRegionName;
   }
 
   public int getReadTimeout() {

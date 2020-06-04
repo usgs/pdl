@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 
+import javax.json.JsonObject;
+
 public interface GeoservePlaces {
   /**
    * Uses the location information provided in order to generate an event title
@@ -16,7 +18,7 @@ public interface GeoservePlaces {
    *                               contacted
    * @throws MalformedURLException If the configured endpoint URL is invalid
    */
-  public String getEventTitle(BigDecimal latitude, BigDecimal longitude) throws IOException, MalformedURLException;
+  public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude) throws IOException, MalformedURLException;
 
   // TODO :: Add other methods to this interface
 }

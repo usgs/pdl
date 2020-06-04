@@ -1,11 +1,16 @@
 package gov.usgs.earthquake.origin;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.json.JsonObject;
+import javax.json.JsonNumber;
+
 import gov.usgs.earthquake.geoserve.GeoservePlaces;
 import gov.usgs.earthquake.geoserve.GeoservePlacesService;
+import gov.usgs.earthquake.geoserve.GeoserveRegionsService;
 import gov.usgs.earthquake.indexer.DefaultIndexerModule;
 import gov.usgs.earthquake.indexer.IndexerModule;
 import gov.usgs.earthquake.indexer.ProductSummary;
@@ -26,24 +31,48 @@ public class OriginIndexerModule extends DefaultIndexerModule {
   private static final Logger LOGGER = Logger.getLogger(OriginIndexerModule.class.getName());
 
   private GeoservePlaces geoservePlaces;
+  private GeoserveRegionsService geoserveRegions;
 
   public static final String ENDPOINT_URL_PROPERTY = "endpointUrl";
   public static final String CONNECT_TIMEOUT_PROPERTY = "connectTimeout";
   public static final String READ_TIMEOUT_PROPERTY = "readTimeout";
+  public static final String GEOSERVE_DISTANCE_THRESHOLD_PROPERTY = "geoserveDistanceThreshold";
+
+  public static final Double DEFAULT_GEOSERVE_DISTANCE_THRESHOLD = 300.0;
+
+  private double distanceThreshold;
 
   public OriginIndexerModule() {
     // Do nothing, must be configured through bootstrapping before use
   }
 
-  public OriginIndexerModule(final GeoservePlacesService geoservePlaces) {
+  public OriginIndexerModule(
+      final GeoservePlaces geoservePlaces,
+      final GeoserveRegionsService geoserveRegions
+  ) {
     this.setPlacesService(geoservePlaces);
+    this.setRegionsService(geoserveRegions);
   }
 
   /**
-   * @return The places service currently being used for title generation
+   * @return The places service currently being used to return nearby places
    */
   public GeoservePlaces getPlacesService() {
     return this.geoservePlaces;
+  }
+
+  /**
+   * @return The regions service currently being used to return fe regions
+   */
+  public GeoserveRegionsService getRegionsService() {
+    return this.geoserveRegions;
+  }
+
+  /**
+   * @return The distance threshold currently being used to default to FE region
+   */
+  public Double getDistanceThreshold() {
+    return this.distanceThreshold;
   }
 
   @Override
@@ -58,7 +87,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
 
     if (title == null && latitude != null && longitude != null) {
       try {
-        title = this.geoservePlaces.getEventTitle(latitude, longitude);
+        title = this.getEventTitle(latitude, longitude);
         summaryProperties.put("title", title);
       } catch (Exception ex) {
         LOGGER
@@ -92,16 +121,116 @@ public class OriginIndexerModule extends DefaultIndexerModule {
     this.geoservePlaces = geoservePlaces;
   }
 
+  /**
+   * Set the geoserveRegions to be used for subsequent calls to GeoServe regions
+   * endpoint.
+   *
+   * @param geoserveRegions The GeoserveRegions to use
+   */
+  public void setRegionsService(GeoserveRegionsService geoserveRegions) {
+    this.geoserveRegions = geoserveRegions;
+  }
+
+  /**
+   * Set the distance threshold to prefer fe region over nearst place
+   * in the event title
+   *
+   * @param threshold The distance threshold to use
+   */
+  public void setDistanceThreshold(Double threshold) {
+    this.distanceThreshold = threshold;
+  }
+
   @Override
   public void configure(Config config) throws Exception {
-    String endpointUrl = config.getProperty(ENDPOINT_URL_PROPERTY, GeoservePlacesService.DEFAULT_ENDPOINT_URL);
+    String endpointUrl = config.getProperty(
+        ENDPOINT_URL_PROPERTY,
+        GeoservePlacesService.DEFAULT_ENDPOINT_URL
+    );
     int connectTimeout = Integer.parseInt(
-        config.getProperty(CONNECT_TIMEOUT_PROPERTY, Integer.toString(GeoservePlacesService.DEFAULT_CONNECT_TIMEOUT)));
+        config.getProperty(
+            CONNECT_TIMEOUT_PROPERTY,
+            Integer.toString(GeoservePlacesService.DEFAULT_CONNECT_TIMEOUT)
+        )
+    );
     int readTimeout = Integer.parseInt(
-        config.getProperty(READ_TIMEOUT_PROPERTY, Integer.toString(GeoservePlacesService.DEFAULT_READ_TIMEOUT)));
+        config.getProperty(
+            READ_TIMEOUT_PROPERTY,
+            Integer.toString(GeoservePlacesService.DEFAULT_READ_TIMEOUT)
+        )
+    );
+    this.distanceThreshold = Double.parseDouble(
+        config.getProperty(
+            GEOSERVE_DISTANCE_THRESHOLD_PROPERTY,
+            DEFAULT_GEOSERVE_DISTANCE_THRESHOLD.toString()
+        )
+    );
 
     LOGGER.config(String.format("[%s] GeoservePlacesService(%s, %d, %d)", this.getName(), endpointUrl, connectTimeout,
         readTimeout));
     this.setPlacesService(new GeoservePlacesService(endpointUrl, connectTimeout, readTimeout));
   }
+
+  /**
+   * Get the event title based on the name and location of the nearest
+   * place, or if the nearest place is outside of the distance threshold
+   * return the fe region name
+   *
+   * @param latitude event latitude in degrees
+   * @param longitude event longitude in degrees
+   *
+   * @return {String} event name
+   */
+  public String getEventTitle(BigDecimal latitude, BigDecimal longitude) throws IOException {
+    JsonObject feature = this.geoservePlaces.getNearestPlace(latitude, longitude);
+    Double distance = feature.getJsonObject("properties").getJsonNumber("distance").doubleValue();
+
+    if (distance > this.distanceThreshold) {
+      return this.geoserveRegions.getFeRegionName(latitude, longitude);
+    }
+
+    return this.formatEventTitle(feature);
+  }
+
+  public String formatEventTitle(JsonObject feature) {
+    JsonObject properties = feature.getJsonObject("properties");
+
+    String name = properties.getString("name");
+    String country = properties.getString("country_code").toLowerCase();
+    String admin = properties.getString("country_name");
+    int distance = properties.getInt("distance");
+    double azimuth = properties.getJsonNumber("azimuth").doubleValue();
+    String direction = azimuthToDirection(azimuth);
+
+    if ("us".equals(country)) {
+      admin = properties.getString("admin1_name");
+    }
+
+    return String.format("%d km %s of %s, %s", distance, direction, name, admin);
+  }
+
+  /**
+   * Converts a decimal degree azimuth to a canonical compass direction
+   *
+   * @param azimuth The degrees azimuth to be converted
+   *
+   * @return {String} The canonical compass direction for the given input azimuth
+   */
+  public String azimuthToDirection(double azimuth) {
+    double fullwind = 22.5;
+    String[] directions = { "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW",
+        "NNW", "N" };
+
+    // Invert azimuth for proper directivity
+    // Maybe not needed in the future.
+    azimuth += 180.0;
+
+    // adjust azimuth if negative
+    while (azimuth < 0.0) {
+      azimuth = azimuth + 360.0;
+    }
+
+    return directions[(int) Math.round((azimuth % 360.0) / fullwind)];
+  }
+
 }
