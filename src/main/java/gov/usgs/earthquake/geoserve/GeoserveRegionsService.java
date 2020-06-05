@@ -38,9 +38,9 @@ public class GeoserveRegionsService {
   }
 
   public GeoserveRegionsService(final String endpointUrl, final int connectTimeout, final int readTimeout) {
-    this.endpointUrl = endpointUrl;
-    this.connectTimeout = connectTimeout;
-    this.readTimeout = readTimeout;
+    this.setEndpointURL(endpointUrl);
+    this.setConnectTimeout(connectTimeout);
+    this.setReadTimeout(readTimeout);
   }
 
   public int getConnectTimeout() {
