@@ -143,22 +143,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
 
   @Override
   public void configure(Config config) throws Exception {
-    String endpointUrl = config.getProperty(
-        ENDPOINT_URL_PROPERTY,
-        GeoservePlacesService.DEFAULT_ENDPOINT_URL
-    );
-    int connectTimeout = Integer.parseInt(
-        config.getProperty(
-            CONNECT_TIMEOUT_PROPERTY,
-            Integer.toString(GeoservePlacesService.DEFAULT_CONNECT_TIMEOUT)
-        )
-    );
-    int readTimeout = Integer.parseInt(
-        config.getProperty(
-            READ_TIMEOUT_PROPERTY,
-            Integer.toString(GeoservePlacesService.DEFAULT_READ_TIMEOUT)
-        )
-    );
+    // Distance threshold (in km)
     this.distanceThreshold = Double.parseDouble(
         config.getProperty(
             GEOSERVE_DISTANCE_THRESHOLD_PROPERTY,
@@ -166,9 +151,71 @@ public class OriginIndexerModule extends DefaultIndexerModule {
         )
     );
 
-    LOGGER.config(String.format("[%s] GeoservePlacesService(%s, %d, %d)", this.getName(), endpointUrl, connectTimeout,
-        readTimeout));
-    this.setPlacesService(new GeoservePlacesService(endpointUrl, connectTimeout, readTimeout));
+    // Geoserve Places Endpoint configuration
+    String placesEndpointUrl = config.getProperty(
+        ENDPOINT_URL_PROPERTY,
+        GeoservePlacesService.DEFAULT_ENDPOINT_URL
+    );
+    int placesEndpointConnectTimeout = Integer.parseInt(
+        config.getProperty(
+            CONNECT_TIMEOUT_PROPERTY,
+            Integer.toString(GeoservePlacesService.DEFAULT_CONNECT_TIMEOUT)
+        )
+    );
+    int placesEndpointReadTimeout = Integer.parseInt(
+        config.getProperty(
+            READ_TIMEOUT_PROPERTY,
+            Integer.toString(GeoservePlacesService.DEFAULT_READ_TIMEOUT)
+        )
+    );
+    LOGGER.config(
+        String.format("[%s] GeoservePlacesService(%s, %d, %d)",
+          this.getName(),
+          placesEndpointUrl,
+          placesEndpointReadTimeout,
+          placesEndpointReadTimeout
+        )
+    );
+    this.setPlacesService(
+        new GeoservePlacesService(
+          placesEndpointUrl,
+          placesEndpointConnectTimeout,
+          placesEndpointReadTimeout
+        )
+    );
+
+    // Geoserve Regions Endpoint configuration
+    String regionsEndpointUrl = config.getProperty(
+        ENDPOINT_URL_PROPERTY,
+        GeoserveRegionsService.DEFAULT_ENDPOINT_URL
+    );
+    int regionsEndpointConnectTimeout = Integer.parseInt(
+        config.getProperty(
+            CONNECT_TIMEOUT_PROPERTY,
+            Integer.toString(GeoserveRegionsService.DEFAULT_CONNECT_TIMEOUT)
+        )
+    );
+    int regionsEndpointReadTimeout = Integer.parseInt(
+        config.getProperty(
+            READ_TIMEOUT_PROPERTY,
+            Integer.toString(GeoserveRegionsService.DEFAULT_READ_TIMEOUT)
+        )
+    );
+    LOGGER.config(
+        String.format("[%s] GeoserveRegionsService(%s, %d, %d)",
+            this.getName(),
+            regionsEndpointUrl,
+            regionsEndpointReadTimeout,
+            regionsEndpointReadTimeout
+        )
+    );
+    this.setRegionsService(
+        new GeoserveRegionsService(
+            regionsEndpointUrl,
+            regionsEndpointConnectTimeout,
+            regionsEndpointReadTimeout
+        )
+    );
   }
 
   /**
