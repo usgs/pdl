@@ -53,8 +53,11 @@ public class GeoserveRegionsService {
 
   public JsonObject getFeRegion(BigDecimal latitude, BigDecimal longitude)
       throws IOException, MalformedURLException {
-    final URL url = new URL(String.format("%s?type=fe&latitude=%s&longitude=%s", this.endpointUrl,
-        URLEncoder.encode(latitude.toString(), "UTF-8"), URLEncoder.encode(longitude.toString(), "UTF-8")));
+    final URL url = new URL(this.endpointUrl +
+        "?type=fe" +
+        "&latitude=" + URLEncoder.encode(latitude.toString(), "UTF-8") +
+        "&longitude=" + URLEncoder.encode(longitude.toString(), "UTF-8")
+    );
 
     try (InputStream in = StreamUtils.getURLInputStream(url, this.connectTimeout, this.readTimeout)) {
       JsonReader reader = Json.createReader(in);
