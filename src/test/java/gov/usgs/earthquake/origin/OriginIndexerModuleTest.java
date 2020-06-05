@@ -30,6 +30,9 @@ public class OriginIndexerModuleTest {
     GeoservePlaces geoservePlacesService = new DummyPlacesService();
     GeoserveRegionsService GeoserveRegionsService = new DummyRegionsService();
     module = new OriginIndexerModule(geoservePlacesService, GeoserveRegionsService);
+
+    // set distance threshold
+    module.setDistanceThreshold(300);
   }
 
   @Test
@@ -133,9 +136,6 @@ public class OriginIndexerModuleTest {
     BigDecimal latitude = new BigDecimal("0.0");
     BigDecimal longitude = new BigDecimal("0.0");
     String title = "";
-
-    // set distance threshold
-    module.setDistanceThreshold(300.0);
 
     // Nearby Places Title
     this.distance = 299.0;

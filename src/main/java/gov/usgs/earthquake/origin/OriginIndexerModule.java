@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.json.JsonObject;
-import javax.json.JsonNumber;
 
 import gov.usgs.earthquake.geoserve.GeoservePlaces;
 import gov.usgs.earthquake.geoserve.GeoservePlacesService;
@@ -38,9 +37,11 @@ public class OriginIndexerModule extends DefaultIndexerModule {
   public static final String READ_TIMEOUT_PROPERTY = "readTimeout";
   public static final String GEOSERVE_DISTANCE_THRESHOLD_PROPERTY = "geoserveDistanceThreshold";
 
-  public static final Double DEFAULT_GEOSERVE_DISTANCE_THRESHOLD = 300.0;
+  // Distance threshold (in km), determines whether to use fe region
+  // or nearest place in the event title
+  public static final Integer DEFAULT_GEOSERVE_DISTANCE_THRESHOLD = 300;
 
-  private double distanceThreshold;
+  private Integer distanceThreshold;
 
   public OriginIndexerModule() {
     // Do nothing, must be configured through bootstrapping before use
@@ -71,7 +72,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
   /**
    * @return The distance threshold currently being used to default to FE region
    */
-  public Double getDistanceThreshold() {
+  public Integer getDistanceThreshold() {
     return this.distanceThreshold;
   }
 
@@ -137,14 +138,14 @@ public class OriginIndexerModule extends DefaultIndexerModule {
    *
    * @param threshold The distance threshold to use
    */
-  public void setDistanceThreshold(Double threshold) {
+  public void setDistanceThreshold(Integer threshold) {
     this.distanceThreshold = threshold;
   }
 
   @Override
   public void configure(Config config) throws Exception {
     // Distance threshold (in km)
-    this.distanceThreshold = Double.parseDouble(
+    this.distanceThreshold = Integer.valueOf(
         config.getProperty(
             GEOSERVE_DISTANCE_THRESHOLD_PROPERTY,
             DEFAULT_GEOSERVE_DISTANCE_THRESHOLD.toString()
@@ -232,6 +233,9 @@ public class OriginIndexerModule extends DefaultIndexerModule {
     JsonObject feature = this.geoservePlaces.getNearestPlace(latitude, longitude);
     Double distance = feature.getJsonObject("properties").getJsonNumber("distance").doubleValue();
 
+
+    System.out.println("-------------------\n\n\ndistance: " + distance);
+    System.out.println("\ndistanceThreshold: " + this.distanceThreshold + "\n\n\n--------------");
     if (distance > this.distanceThreshold) {
       return this.geoserveRegions.getFeRegionName(latitude, longitude);
     }
