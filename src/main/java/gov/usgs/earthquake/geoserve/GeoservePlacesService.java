@@ -69,8 +69,7 @@ public class GeoservePlacesService implements GeoservePlaces {
 
   public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude) throws IOException, MalformedURLException {
     JsonObject places = this.getEventPlaces(latitude, longitude);
-    JsonArray features = places.getJsonArray("features");
-    JsonObject feature = features.get(0).asJsonObject();
+    JsonObject feature = places.getJsonArray("features").getJsonObject(0);
 
     return feature;
   }
