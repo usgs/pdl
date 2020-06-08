@@ -165,7 +165,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
       receiveNotification(notification);
 
       //send heartbeat
-      HeartbeatListener.sendHeartbeatMessage(getName(), "nats notification timestamp", json.getJsonNumber(TIMESTAMP_PROPERTY).toString());
+      HeartbeatListener.sendHeartbeatMessage(getName(), "nats notification timestamp", json.getString(TIMESTAMP_PROPERTY));
 
       //write tracking file
       sequence = json.getJsonNumber(SEQUENCE_PROPERTY).toString();
