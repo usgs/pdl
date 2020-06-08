@@ -113,9 +113,13 @@ public class OriginIndexerModuleTest {
     String expectation = String.format("0 km S of name, country_name");
     JsonObject feature = Json.createObjectBuilder()
         .add("properties",
-            Json.createObjectBuilder().add("name", "name").add("country_code", "country_code")
-                .add("admin1_name", "admin1_name").add("country_name", "country_name").add("distance", distance)
+            Json.createObjectBuilder()
+                .add("admin1_name", "admin1_name")
                 .add("azimuth", azimuth))
+                .add("country_code", "country_code")
+                .add("country_name", "country_name")
+                .add("distance", distance)
+                .add("name", "name")
         .build();
     Assert.assertEquals(expectation, module.formatEventTitle(feature));
 
@@ -123,8 +127,13 @@ public class OriginIndexerModuleTest {
     expectation = String.format("0 km S of name, admin1_name");
     feature = Json.createObjectBuilder()
         .add("properties",
-            Json.createObjectBuilder().add("name", "name").add("country_code", "us").add("admin1_name", "admin1_name")
-                .add("country_name", "country_name").add("distance", distance).add("azimuth", azimuth))
+            Json.createObjectBuilder()
+                .add("admin1_name", "admin1_name")
+                .add("azimuth", azimuth))
+                .add("country_code", "us")
+                .add("country_name", "country_name")
+                .add("distance", distance)
+                .add("name", "name")
         .build();
     Assert.assertEquals(expectation, module.formatEventTitle(feature));
   }
@@ -164,12 +173,13 @@ public class OriginIndexerModuleTest {
     @Override
     public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude) throws IOException, MalformedURLException {
       return Json.createObjectBuilder().add("properties",
-          Json.createObjectBuilder().add("name", "name")
-            .add("country_code", "country_code")
-            .add("admin1_name", "admin1_name")
-            .add("country_name", "country_name")
-            .add("distance", distance)
-            .add("azimuth", 60.1)
+          Json.createObjectBuilder()
+              .add("admin1_name", "admin1_name")
+              .add("azimuth", 60.1)
+              .add("country_code", "country_code")
+              .add("country_name", "country_name")
+              .add("distance", distance)
+              .add("name", "name")
           ).build();
     }
   }
