@@ -8,7 +8,6 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import java.util.Date;
-import java.math.BigInteger;
 
 public class WebSocketNotificationReceiverTest {
 
