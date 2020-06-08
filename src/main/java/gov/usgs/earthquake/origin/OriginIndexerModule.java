@@ -31,9 +31,13 @@ public class OriginIndexerModule extends DefaultIndexerModule {
   private GeoservePlacesService geoservePlaces;
   private GeoserveRegionsService geoserveRegions;
 
-  public static final String ENDPOINT_URL_PROPERTY = "endpointUrl";
+
+  public static final String PLACES_ENDPOINT_URL_PROPERTY = "placesEndpointUrl";
+  public static final String REGIONS_ENDPOINT_URL_PROPERTY = "regionsEndpointUrl";
   public static final String CONNECT_TIMEOUT_PROPERTY = "connectTimeout";
   public static final String READ_TIMEOUT_PROPERTY = "readTimeout";
+
+
   public static final String GEOSERVE_DISTANCE_THRESHOLD_PROPERTY = "geoserveDistanceThreshold";
 
   // Distance threshold (in km), determines whether to use fe region
@@ -153,7 +157,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
 
     // Geoserve Places Endpoint configuration
     String placesEndpointUrl = config.getProperty(
-        ENDPOINT_URL_PROPERTY,
+        PLACES_ENDPOINT_URL_PROPERTY,
         GeoservePlacesService.DEFAULT_ENDPOINT_URL
     );
     int placesEndpointConnectTimeout = Integer.parseInt(
@@ -186,7 +190,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
 
     // Geoserve Regions Endpoint configuration
     String regionsEndpointUrl = config.getProperty(
-        ENDPOINT_URL_PROPERTY,
+        REGIONS_ENDPOINT_URL_PROPERTY,
         GeoserveRegionsService.DEFAULT_ENDPOINT_URL
     );
     int regionsEndpointConnectTimeout = Integer.parseInt(
