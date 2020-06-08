@@ -6,5 +6,5 @@ CREATE TABLE IF NOT EXISTS extentSummary (
   minimum_latitude DOUBLE DEFAULT NULL,
   maximum_latitude DOUBLE DEFAULT NULL,
   minimum_longitude DOUBLE DEFAULT NULL,
-  maximum_longitude DOUBLE DEFAULT NULL,
+  maximum_longitude DOUBLE DEFAULT NULL
 ) ENGINE = INNODB;
