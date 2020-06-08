@@ -3,6 +3,7 @@ package gov.usgs.earthquake.origin;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.json.JsonObject;
@@ -233,17 +234,18 @@ public class OriginIndexerModule extends DefaultIndexerModule {
    * @return {String} event name
    */
   public String getEventTitle(BigDecimal latitude, BigDecimal longitude) throws IOException {
-    JsonObject feature = this.geoservePlaces.getNearestPlace(latitude, longitude);
-    Double distance = feature.getJsonObject("properties").getJsonNumber("distance").doubleValue();
+    try {
+      JsonObject feature = this.geoservePlaces.getNearestPlace(latitude, longitude);
+      Double distance = feature.getJsonObject("properties").getJsonNumber("distance").doubleValue();
 
-
-    System.out.println("-------------------\n\n\ndistance: " + distance);
-    System.out.println("\ndistanceThreshold: " + this.distanceThreshold + "\n\n\n--------------");
-    if (distance > this.distanceThreshold) {
-      return this.geoserveRegions.getFeRegionName(latitude, longitude);
+      if (distance < this.distanceThreshold) {
+        return this.formatEventTitle(feature);
+      }
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "[" + this.getName() + "] failed to get nearest place from geoserve places service.");
     }
 
-    return this.formatEventTitle(feature);
+    return this.geoserveRegions.getFeRegionName(latitude, longitude);
   }
 
   public String formatEventTitle(JsonObject feature) {
