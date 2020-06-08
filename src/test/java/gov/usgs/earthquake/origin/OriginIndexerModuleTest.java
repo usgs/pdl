@@ -115,11 +115,11 @@ public class OriginIndexerModuleTest {
         .add("properties",
             Json.createObjectBuilder()
                 .add("admin1_name", "admin1_name")
-                .add("azimuth", azimuth))
+                .add("azimuth", azimuth)
                 .add("country_code", "country_code")
                 .add("country_name", "country_name")
                 .add("distance", distance)
-                .add("name", "name")
+                .add("name", "name"))
         .build();
     Assert.assertEquals(expectation, module.formatEventTitle(feature));
 
@@ -129,11 +129,11 @@ public class OriginIndexerModuleTest {
         .add("properties",
             Json.createObjectBuilder()
                 .add("admin1_name", "admin1_name")
-                .add("azimuth", azimuth))
+                .add("azimuth", azimuth)
                 .add("country_code", "us")
                 .add("country_name", "country_name")
                 .add("distance", distance)
-                .add("name", "name")
+                .add("name", "name"))
         .build();
     Assert.assertEquals(expectation, module.formatEventTitle(feature));
   }
