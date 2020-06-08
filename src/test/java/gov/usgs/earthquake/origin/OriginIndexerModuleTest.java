@@ -11,7 +11,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import gov.usgs.earthquake.geoserve.GeoservePlaces;
 import gov.usgs.earthquake.geoserve.GeoserveRegionsService;
 import gov.usgs.earthquake.geoserve.GeoservePlacesService;
 import gov.usgs.earthquake.indexer.IndexerModule;
@@ -27,9 +26,9 @@ public class OriginIndexerModuleTest {
 
   @Before
   public void setUpTestEnvironment() throws Exception {
-    GeoservePlaces geoservePlacesService = new DummyPlacesService();
-    GeoserveRegionsService GeoserveRegionsService = new DummyRegionsService();
-    module = new OriginIndexerModule(geoservePlacesService, GeoserveRegionsService);
+    GeoservePlacesService geoservePlacesService = new DummyPlacesService();
+    GeoserveRegionsService geoserveRegionsService = new DummyRegionsService();
+    module = new OriginIndexerModule(geoservePlacesService, geoserveRegionsService);
 
     // set distance threshold
     module.setDistanceThreshold(300);
@@ -69,7 +68,7 @@ public class OriginIndexerModuleTest {
 
   @Test
   public void getProductSummaryTest() throws Exception {
-    GeoservePlaces service = new DummyPlacesService();
+    GeoservePlacesService service = new DummyPlacesService();
     ProductId id = new ProductId("unit", "origin", "test");
     String defaultTitle = "event title";
     Product product = null;
@@ -161,7 +160,7 @@ public class OriginIndexerModuleTest {
     Assert.assertEquals("W", module.azimuthToDirection(-270));
   }
 
-  protected class DummyPlacesService implements GeoservePlaces {
+  protected class DummyPlacesService extends GeoservePlacesService {
     @Override
     public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude) throws IOException, MalformedURLException {
       return Json.createObjectBuilder().add("properties",

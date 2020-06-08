@@ -11,7 +11,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import gov.usgs.earthquake.geoserve.GeoservePlaces;
 import gov.usgs.earthquake.geoserve.GeoservePlacesService;
 
 public class GeoservePlacesServiceTest {

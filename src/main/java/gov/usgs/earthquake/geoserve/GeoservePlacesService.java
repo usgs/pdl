@@ -14,7 +14,7 @@ import javax.json.JsonReader;
 
 import gov.usgs.util.StreamUtils;
 
-public class GeoservePlacesService implements GeoservePlaces {
+public class GeoservePlacesService {
   /** Default URL for GeoServe Places service. */
   public static final String DEFAULT_ENDPOINT_URL = "https://earthquake.usgs.gov/ws/geoserve/places.json";
   public static final int DEFAULT_CONNECT_TIMEOUT = 300; // ms

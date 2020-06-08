@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 
 import javax.json.JsonObject;
 
-import gov.usgs.earthquake.geoserve.GeoservePlaces;
 import gov.usgs.earthquake.geoserve.GeoservePlacesService;
 import gov.usgs.earthquake.geoserve.GeoserveRegionsService;
 import gov.usgs.earthquake.indexer.DefaultIndexerModule;
@@ -29,7 +28,7 @@ import gov.usgs.util.Config;
 public class OriginIndexerModule extends DefaultIndexerModule {
   private static final Logger LOGGER = Logger.getLogger(OriginIndexerModule.class.getName());
 
-  private GeoservePlaces geoservePlaces;
+  private GeoservePlacesService geoservePlaces;
   private GeoserveRegionsService geoserveRegions;
 
   public static final String ENDPOINT_URL_PROPERTY = "endpointUrl";
@@ -48,7 +47,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
   }
 
   public OriginIndexerModule(
-      final GeoservePlaces geoservePlaces,
+      final GeoservePlacesService geoservePlaces,
       final GeoserveRegionsService geoserveRegions
   ) {
     this.setPlacesService(geoservePlaces);
@@ -58,7 +57,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
   /**
    * @return The places service currently being used to return nearby places
    */
-  public GeoservePlaces getPlacesService() {
+  public GeoservePlacesService getPlacesService() {
     return this.geoservePlaces;
   }
 
@@ -113,12 +112,12 @@ public class OriginIndexerModule extends DefaultIndexerModule {
   }
 
   /**
-   * Set the geoservePlaces to be used for subsequent calls to GeoServe places
+   * Set the GeoservePlacesService to be used for subsequent calls to GeoServe places
    * endpoint.
    *
-   * @param geoservePlaces The GeoservePlaces to use
+   * @param geoservePlaces The GeoservePlacesService to use
    */
-  public void setPlacesService(GeoservePlaces geoservePlaces) {
+  public void setPlacesService(GeoservePlacesService geoservePlaces) {
     this.geoservePlaces = geoservePlaces;
   }
 
