@@ -237,9 +237,9 @@ public class OriginIndexerModule extends DefaultIndexerModule {
   public String getEventTitle(BigDecimal latitude, BigDecimal longitude) throws IOException {
     try {
       JsonObject feature = this.geoservePlaces.getNearestPlace(latitude, longitude);
-      Double distance = feature.getJsonObject("properties").getJsonNumber("distance").doubleValue();
+      double distance = feature.getJsonObject("properties").getJsonNumber("distance").doubleValue();
 
-      if (distance <= this.distanceThreshold) {
+      if (distance <= (double) this.distanceThreshold) {
         return this.formatEventTitle(feature);
       }
     } catch (Exception e) {
