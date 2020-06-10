@@ -178,7 +178,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
         String.format("[%s] GeoservePlacesService(%s, %d, %d)",
           this.getName(),
           placesEndpointUrl,
-          placesEndpointReadTimeout,
+          placesEndpointConnectTimeout,
           placesEndpointReadTimeout
         )
     );
@@ -211,7 +211,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
         String.format("[%s] GeoserveRegionsService(%s, %d, %d)",
             this.getName(),
             regionsEndpointUrl,
-            regionsEndpointReadTimeout,
+            regionsEndpointConnectTimeout,
             regionsEndpointReadTimeout
         )
     );
