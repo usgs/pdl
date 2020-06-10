@@ -16,6 +16,7 @@ import gov.usgs.earthquake.indexer.ProductSummary;
 import gov.usgs.earthquake.product.Product;
 
 import gov.usgs.util.Config;
+import gov.usgs.util.StringUtils;
 
 /**
  * Class for summarizing "origin" type products during the indexing process.
@@ -43,9 +44,9 @@ public class OriginIndexerModule extends DefaultIndexerModule {
 
   // Distance threshold (in km), determines whether to use fe region
   // or nearest place in the event title
-  public static final Integer DEFAULT_GEOSERVE_DISTANCE_THRESHOLD = 300;
+  public static final int DEFAULT_GEOSERVE_DISTANCE_THRESHOLD = 300;
 
-  private Integer distanceThreshold;
+  private int distanceThreshold;
 
   public OriginIndexerModule() {
     // Do nothing, must be configured through bootstrapping before use
@@ -76,7 +77,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
   /**
    * @return The distance threshold currently being used to default to FE region
    */
-  public Integer getDistanceThreshold() {
+  public int getDistanceThreshold() {
     return this.distanceThreshold;
   }
 
@@ -93,7 +94,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
     if (title == null && latitude != null && longitude != null) {
       try {
         title = this.getEventTitle(latitude, longitude);
-        summaryProperties.put("title", title);
+        summaryProperties.put("title", StringUtils.encodeAsUtf8(title));
       } catch (Exception ex) {
         LOGGER
             .fine(String.format("[%s] %s for product %s", this.getName(), ex.getMessage(), product.getId().toString()));
@@ -142,17 +143,17 @@ public class OriginIndexerModule extends DefaultIndexerModule {
    *
    * @param threshold The distance threshold to use
    */
-  public void setDistanceThreshold(Integer threshold) {
+  public void setDistanceThreshold(int threshold) {
     this.distanceThreshold = threshold;
   }
 
   @Override
   public void configure(Config config) throws Exception {
     // Distance threshold (in km)
-    this.distanceThreshold = Integer.valueOf(
+    this.distanceThreshold = Integer.parseInt(
         config.getProperty(
             GEOSERVE_DISTANCE_THRESHOLD_PROPERTY,
-            DEFAULT_GEOSERVE_DISTANCE_THRESHOLD.toString()
+            Integer.toString(DEFAULT_GEOSERVE_DISTANCE_THRESHOLD)
         )
     );
 
@@ -177,7 +178,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
         String.format("[%s] GeoservePlacesService(%s, %d, %d)",
           this.getName(),
           placesEndpointUrl,
-          placesEndpointReadTimeout,
+          placesEndpointConnectTimeout,
           placesEndpointReadTimeout
         )
     );
@@ -210,7 +211,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
         String.format("[%s] GeoserveRegionsService(%s, %d, %d)",
             this.getName(),
             regionsEndpointUrl,
-            regionsEndpointReadTimeout,
+            regionsEndpointConnectTimeout,
             regionsEndpointReadTimeout
         )
     );
@@ -236,9 +237,9 @@ public class OriginIndexerModule extends DefaultIndexerModule {
   public String getEventTitle(BigDecimal latitude, BigDecimal longitude) throws IOException {
     try {
       JsonObject feature = this.geoservePlaces.getNearestPlace(latitude, longitude);
-      Double distance = feature.getJsonObject("properties").getJsonNumber("distance").doubleValue();
+      double distance = feature.getJsonObject("properties").getJsonNumber("distance").doubleValue();
 
-      if (distance < this.distanceThreshold) {
+      if (distance <= (double) this.distanceThreshold) {
         return this.formatEventTitle(feature);
       }
     } catch (Exception e) {

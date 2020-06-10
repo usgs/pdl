@@ -110,7 +110,7 @@ public class OriginIndexerModuleTest {
     double azimuth = 0.0;
 
     // OUS location
-    String expectation = String.format("0 km S of name, country_name");
+    String expectation = "0 km S of name, country_name";
     JsonObject feature = Json.createObjectBuilder()
         .add("properties",
             Json.createObjectBuilder()
@@ -124,7 +124,7 @@ public class OriginIndexerModuleTest {
     Assert.assertEquals(expectation, module.formatEventTitle(feature));
 
     // US location
-    expectation = String.format("0 km S of name, admin1_name");
+    expectation = "0 km S of name, admin1_name";
     feature = Json.createObjectBuilder()
         .add("properties",
             Json.createObjectBuilder()
