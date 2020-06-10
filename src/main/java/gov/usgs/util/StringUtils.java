@@ -6,6 +6,7 @@
  */
 package gov.usgs.util;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,9 +16,15 @@ import java.util.List;
  */
 public class StringUtils {
 
+    public static String encodeAsUtf8(final String value)
+            throws UnsupportedEncodingException {
+        byte[] utf8Bytes = value.getBytes("UTF8");
+        return new String(utf8Bytes, "UTF8");
+    }
+
     /**
      * No Exception Double parsing method.
-     * 
+     *
      * @param value
      * @return null on error, otherwise Double value.
      */
@@ -33,7 +40,7 @@ public class StringUtils {
 
     /**
      * No Exception Float parsing method.
-     * 
+     *
      * @param value
      * @return null on error, otherwise Float value.
      */
@@ -49,7 +56,7 @@ public class StringUtils {
 
     /**
      * No Exception Integer parsing method.
-     * 
+     *
      * @param value
      * @return null on error, otherwise Integer value.
      */
@@ -65,7 +72,7 @@ public class StringUtils {
 
     /**
      * No Exception Long parsing method.
-     * 
+     *
      * @param value
      * @return null on error, otherwise Integer value.
      */
@@ -82,7 +89,7 @@ public class StringUtils {
     /**
      * Join objects in a list using the specified delimiter. The objects
      * toString method is used to get a string value.
-     * 
+     *
      * @param delimiter
      *            string to insert between list items.
      * @param list
@@ -113,7 +120,7 @@ public class StringUtils {
      * Split a string into a list of strings using the specified delimiter. The
      * intrinsic String.split method is used and elements of the returned String
      * array (if any) are added to a list.
-     * 
+     *
      * @param toSplit
      *            string to split.
      * @param delimiter

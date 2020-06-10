@@ -16,6 +16,7 @@ import gov.usgs.earthquake.indexer.ProductSummary;
 import gov.usgs.earthquake.product.Product;
 
 import gov.usgs.util.Config;
+import gov.usgs.util.StringUtils;
 
 /**
  * Class for summarizing "origin" type products during the indexing process.
@@ -93,7 +94,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
     if (title == null && latitude != null && longitude != null) {
       try {
         title = this.getEventTitle(latitude, longitude);
-        summaryProperties.put("title", title);
+        summaryProperties.put("title", StringUtils.encodeAsUtf8(title));
       } catch (Exception ex) {
         LOGGER
             .fine(String.format("[%s] %s for product %s", this.getName(), ex.getMessage(), product.getId().toString()));
