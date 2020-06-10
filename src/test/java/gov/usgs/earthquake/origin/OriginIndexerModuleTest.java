@@ -18,8 +18,6 @@ import gov.usgs.earthquake.indexer.ProductSummary;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
 
-import gov.usgs.util.StringUtils;
-
 public class OriginIndexerModuleTest {
 
   private OriginIndexerModule module = null;
