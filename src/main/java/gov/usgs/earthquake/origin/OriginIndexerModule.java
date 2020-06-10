@@ -44,9 +44,9 @@ public class OriginIndexerModule extends DefaultIndexerModule {
 
   // Distance threshold (in km), determines whether to use fe region
   // or nearest place in the event title
-  public static final Integer DEFAULT_GEOSERVE_DISTANCE_THRESHOLD = 300;
+  public static final int DEFAULT_GEOSERVE_DISTANCE_THRESHOLD = 300;
 
-  private Integer distanceThreshold;
+  private int distanceThreshold;
 
   public OriginIndexerModule() {
     // Do nothing, must be configured through bootstrapping before use
@@ -77,7 +77,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
   /**
    * @return The distance threshold currently being used to default to FE region
    */
-  public Integer getDistanceThreshold() {
+  public int getDistanceThreshold() {
     return this.distanceThreshold;
   }
 
@@ -143,17 +143,17 @@ public class OriginIndexerModule extends DefaultIndexerModule {
    *
    * @param threshold The distance threshold to use
    */
-  public void setDistanceThreshold(Integer threshold) {
+  public void setDistanceThreshold(int threshold) {
     this.distanceThreshold = threshold;
   }
 
   @Override
   public void configure(Config config) throws Exception {
     // Distance threshold (in km)
-    this.distanceThreshold = Integer.valueOf(
+    this.distanceThreshold = Integer.parseInt(
         config.getProperty(
             GEOSERVE_DISTANCE_THRESHOLD_PROPERTY,
-            DEFAULT_GEOSERVE_DISTANCE_THRESHOLD.toString()
+            Integer.toString(DEFAULT_GEOSERVE_DISTANCE_THRESHOLD)
         )
     );
 
