@@ -239,7 +239,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
       JsonObject feature = this.geoservePlaces.getNearestPlace(latitude, longitude);
       Double distance = feature.getJsonObject("properties").getJsonNumber("distance").doubleValue();
 
-      if (distance < this.distanceThreshold) {
+      if (distance <= this.distanceThreshold) {
         return this.formatEventTitle(feature);
       }
     } catch (Exception e) {
