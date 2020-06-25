@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GeoserveRegionsService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.geoserve</a> &gt; <span class="el_source">GeoserveRegionsService.java</span></div><h1>GeoserveRegionsService.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.geoserve;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+import gov.usgs.util.StreamUtils;
+
+public class GeoserveRegionsService {
+  /** Default URL for GeoServe Regions service. */
+  public static final String DEFAULT_ENDPOINT_URL = &quot;https://earthquake.usgs.gov/ws/geoserve/regions.json&quot;;
+  public static final int DEFAULT_CONNECT_TIMEOUT = 300; // ms
+  public static final int DEFAULT_READ_TIMEOUT = 1700; // ms
+
+  /** Configured URL for GeoServe Regions service. */
+  private String endpointUrl;
+  private int connectTimeout;
+  private int readTimeout;
+
+  public GeoserveRegionsService() {
+<span class="fc" id="L29">    this(DEFAULT_ENDPOINT_URL, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);</span>
+<span class="fc" id="L30">  }</span>
+
+  public GeoserveRegionsService(final String endpointUrl) {
+<span class="nc" id="L33">    this(endpointUrl, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);</span>
+<span class="nc" id="L34">  }</span>
+
+  public GeoserveRegionsService(final int connectTimeout, final int readTimeout) {
+<span class="nc" id="L37">    this(DEFAULT_ENDPOINT_URL, connectTimeout, readTimeout);</span>
+<span class="nc" id="L38">  }</span>
+
+<span class="fc" id="L40">  public GeoserveRegionsService(final String endpointUrl, final int connectTimeout, final int readTimeout) {</span>
+<span class="fc" id="L41">    this.setEndpointURL(endpointUrl);</span>
+<span class="fc" id="L42">    this.setConnectTimeout(connectTimeout);</span>
+<span class="fc" id="L43">    this.setReadTimeout(readTimeout);</span>
+<span class="fc" id="L44">  }</span>
+
+  public int getConnectTimeout() {
+<span class="nc" id="L47">    return this.connectTimeout;</span>
+  }
+
+  public String getEndpointURL() {
+<span class="nc" id="L51">    return this.endpointUrl;</span>
+  }
+
+  public JsonObject getFeRegion(BigDecimal latitude, BigDecimal longitude)
+      throws IOException, MalformedURLException {
+<span class="nc" id="L56">    final URL url = new URL(this.endpointUrl +</span>
+        &quot;?type=fe&quot; +
+<span class="nc" id="L58">        &quot;&amp;latitude=&quot; + URLEncoder.encode(latitude.toString(), &quot;UTF-8&quot;) +</span>
+<span class="nc" id="L59">        &quot;&amp;longitude=&quot; + URLEncoder.encode(longitude.toString(), &quot;UTF-8&quot;)</span>
+    );
+
+<span class="nc" id="L62">    try (InputStream in = StreamUtils.getURLInputStream(url, this.connectTimeout, this.readTimeout)) {</span>
+<span class="nc" id="L63">      JsonReader reader = Json.createReader(in);</span>
+<span class="nc" id="L64">      JsonObject json = reader.readObject();</span>
+<span class="nc" id="L65">      reader.close();</span>
+<span class="nc" id="L66">      return json.getJsonObject(&quot;fe&quot;);</span>
+    }
+  }
+
+  public String getFeRegionName(BigDecimal latitude, BigDecimal longitude) throws IOException, MalformedURLException {
+<span class="fc" id="L71">    JsonObject region = this.getFeRegion(latitude, longitude);</span>
+<span class="fc" id="L72">    String feRegionName = region.getJsonArray(&quot;features&quot;)</span>
+<span class="fc" id="L73">        .getJsonObject(0)</span>
+<span class="fc" id="L74">        .getJsonObject(&quot;properties&quot;)</span>
+<span class="fc" id="L75">        .getJsonString(&quot;name&quot;)</span>
+<span class="fc" id="L76">        .getString();</span>
+
+<span class="fc" id="L78">    return feRegionName;</span>
+  }
+
+  public int getReadTimeout() {
+<span class="nc" id="L82">    return this.readTimeout;</span>
+  }
+
+  public void setConnectTimeout(final int connectTimeout) {
+<span class="fc" id="L86">    this.connectTimeout = connectTimeout;</span>
+<span class="fc" id="L87">  }</span>
+
+  public void setEndpointURL(final String endpointUrl) {
+<span class="fc" id="L90">    this.endpointUrl = endpointUrl;</span>
+<span class="fc" id="L91">  }</span>
+
+  public void setReadTimeout(final int readTimeout) {
+<span class="fc" id="L94">    this.readTimeout = readTimeout;</span>
+<span class="fc" id="L95">  }</span>
+
+  // TODO as needed, implement full GeoServe places API options
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

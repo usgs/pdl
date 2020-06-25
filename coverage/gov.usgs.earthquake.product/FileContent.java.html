@@ -72,9 +72,9 @@ public class FileContent extends AbstractContent {
 	 * @throws URISyntaxException
 	 */
 	public FileContent(final URLContent urlc) throws URISyntaxException {
-<span class="nc" id="L75">		super(urlc);</span>
-<span class="nc" id="L76">		this.content = new File(urlc.getURL().toURI());</span>
-<span class="nc" id="L77">	}</span>
+<span class="fc" id="L75">		super(urlc);</span>
+<span class="fc" id="L76">		this.content = new File(urlc.getURL().toURI());</span>
+<span class="fc" id="L77">	}</span>
 
 	/**
 	 * Convert a Content to a file backed content.
@@ -118,9 +118,9 @@ public class FileContent extends AbstractContent {
 
 		// verify file length
 <span class="fc" id="L120">		Long length = getLength();</span>
-<span class="fc bfc" id="L121" title="All 4 branches covered.">		if (length &gt; 0 &amp;&amp; !length.equals(toWrite.length())) {</span>
-<span class="fc" id="L122">			throw new IOException(&quot;Written file length (&quot;</span>
-<span class="fc" id="L123">					+ toWrite.length()</span>
+<span class="pc bpc" id="L121" title="1 of 4 branches missed.">		if (length &gt; 0 &amp;&amp; !length.equals(toWrite.length())) {</span>
+<span class="nc" id="L122">			throw new IOException(&quot;Written file length (&quot;</span>
+<span class="nc" id="L123">					+ toWrite.length()</span>
 					+ &quot;) does not match non-zero content length (&quot; + length
 					+ &quot;)&quot;);
 		}

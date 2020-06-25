@@ -368,7 +368,7 @@ public class Event implements Comparable&lt;Event&gt; {
 <span class="fc" id="L368">			String source = subEvent.getSource();</span>
 <span class="fc" id="L369">			String sourceCode = subEvent.getSourceCode();</span>
 <span class="fc" id="L370">			List&lt;String&gt; sourceEventCodes = allEventCodes.get(source);</span>
-<span class="fc bfc" id="L371" title="All 2 branches covered.">			if (sourceEventCodes == null) {</span>
+<span class="pc bpc" id="L371" title="1 of 2 branches missed.">			if (sourceEventCodes == null) {</span>
 				// create list for source
 <span class="fc" id="L373">				sourceEventCodes = new ArrayList&lt;String&gt;();</span>
 <span class="fc" id="L374">				allEventCodes.put(source, sourceEventCodes);</span>

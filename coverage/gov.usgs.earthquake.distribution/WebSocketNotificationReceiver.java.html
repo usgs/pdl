@@ -165,7 +165,7 @@ import java.util.logging.Logger;
 <span class="fc" id="L165">      receiveNotification(notification);</span>
 
       //send heartbeat
-<span class="nc" id="L168">      HeartbeatListener.sendHeartbeatMessage(getName(), &quot;nats notification timestamp&quot;, json.getJsonNumber(TIMESTAMP_PROPERTY).toString());</span>
+<span class="nc" id="L168">      HeartbeatListener.sendHeartbeatMessage(getName(), &quot;nats notification timestamp&quot;, json.getString(TIMESTAMP_PROPERTY));</span>
 
       //write tracking file
 <span class="nc" id="L171">      sequence = json.getJsonNumber(SEQUENCE_PROPERTY).toString();</span>
