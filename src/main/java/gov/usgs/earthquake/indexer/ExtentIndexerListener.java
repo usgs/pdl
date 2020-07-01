@@ -6,6 +6,9 @@ package gov.usgs.earthquake.indexer;
 import gov.usgs.util.Config;
 import gov.usgs.earthquake.distribution.ConfigurationException;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * ExtentIndexerListener is an extension of the ReliableIndexerListener. It
  * populates the ExtentSummary table with viable products.
