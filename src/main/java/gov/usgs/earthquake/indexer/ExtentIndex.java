@@ -67,12 +67,6 @@ public class ExtentIndex extends JDBCProductIndex {
    * @throws Exception if something goes wrong with the database transaction
    */
   public void addExtentSummary(ExtentSummary product) throws Exception {
-    if (!product.isValid()) {
-      LOGGER.log(Level.FINE,"[" + getName() + "] product " + product.getIndexId()
-          + " has no extent information; won't add to extent table");
-      return;
-    }
-
     //Prepare statement
     Connection connection = connect();
     String sql = "INSERT INTO " + EXTENT_TABLE +
