@@ -13,7 +13,8 @@ import java.util.logging.Logger;
 import org.sqlite.SQLiteException;
 
 /**
- * ExtentIndex is a type of JDBCProductIndex that can also send updates to the extentSummary table.
+ * ExtentIndex is a type of JDBCProductIndex that can also send updates to the
+ * extentSummary table.
  */
 public class ExtentIndex extends JDBCProductIndex {
 
@@ -40,7 +41,12 @@ public class ExtentIndex extends JDBCProductIndex {
 
     //Prepare statement
     Connection connection = connect();
-    String sql = "SELECT MAX(" + EXTENT_INDEX_ID + ") AS " + EXTENT_INDEX_ID + " FROM " + EXTENT_TABLE;
+    String sql = "SELECT MAX(" 
+                 + EXTENT_INDEX_ID 
+                 + ") AS " 
+                 + EXTENT_INDEX_ID 
+                 + " FROM " 
+                 + EXTENT_TABLE;
     try (PreparedStatement getLastIndex = connection.prepareStatement(sql)) {
       //Parse Results
       ResultSet results = getLastIndex.executeQuery();
@@ -52,7 +58,8 @@ public class ExtentIndex extends JDBCProductIndex {
       }
     } catch (SQLiteException e) {
       //Throws exception with SQL for debugging
-      throw new SQLiteException(e.getMessage() + ". SQL query was: " + sql, e.getResultCode());
+      throw new SQLiteException(e.getMessage() + ". SQL query was: " + sql, 
+                                e.getResultCode());
     }
     return lastIndex;
   }
