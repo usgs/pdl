@@ -64,12 +64,12 @@ public class ExtentIndexerListener extends ReliableIndexerListener {
 
     if (extent.isValid()) {
       LOGGER.log(Level.FINE, "[" + getName() + "] adding product "
-          + product.getId()
+          + product.getId().toString()
           + " to extent table");
       ((ExtentIndex) productIndex).addExtentSummary(extent);
     } else {
       LOGGER.log(Level.FINE, "[" + getName() + "] product "
-          + product.getId()
+          + product.getId().toString()
           + " has no extent information; won't add to extent table");
     }
 
