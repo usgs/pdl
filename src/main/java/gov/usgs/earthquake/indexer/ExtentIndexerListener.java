@@ -18,6 +18,8 @@ import gov.usgs.earthquake.distribution.ConfigurationException;
  */
 public class ExtentIndexerListener extends ReliableIndexerListener {
 
+  private static final Logger LOGGER = Logger.getLogger(ExtentIndexerListener.class.getName());
+
   /**
    * Configures listener, checking for correct type
    *
@@ -56,7 +58,17 @@ public class ExtentIndexerListener extends ReliableIndexerListener {
     super.processProduct(product);
     ExtentSummary extent = new ExtentSummary(product);
 
-    ((ExtentIndex) productIndex).addExtentSummary(extent);
+    if (extent.isValid()) {
+      LOGGER.log(Level.FINE, "[" + getName() + "] adding product "
+          + product.getIndexId()
+          + " to extent table");
+      ((ExtentIndex) productIndex).addExtentSummary(extent);
+    } else {
+      LOGGER.log(Level.FINE, "[" + getName() + "] product "
+          + product.getIndexId()
+          + " has no extent information; won't add to extent table");
+    }
+
     setLastIndexId(product.getIndexId());
   }
 
