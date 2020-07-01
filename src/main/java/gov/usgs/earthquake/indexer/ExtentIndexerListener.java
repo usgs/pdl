@@ -32,7 +32,8 @@ public class ExtentIndexerListener extends ReliableIndexerListener {
     super.configure(config);
     if (!(this.getProductIndex() instanceof ExtentIndex)) {
       throw new ConfigurationException(
-          "[" + getName() + "] index must be of type ExtentIndex. Given type " + productIndex.getClass().getName());
+          "[" + getName() + "] index must be of type ExtentIndex. Given type "
+          + productIndex.getClass().getName());
     }
   }
 

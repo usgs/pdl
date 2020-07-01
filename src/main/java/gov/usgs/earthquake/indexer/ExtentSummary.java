@@ -34,7 +34,8 @@ public class ExtentSummary {
   }
 
   /**
-   * Builds an extentSummary from product properties. If the product has none of the properties, the ExtentSummary is still built.
+   * Builds an extentSummary from product properties. If the product has none of
+   * the properties, the ExtentSummary is still built.
    * 
    * @param product the productSummary to build from
    */
@@ -64,7 +65,8 @@ public class ExtentSummary {
   }
 
   /**
-   * Returns TRUE if this extent should be put in the extentSummary table (at least one property is not null)
+   * Returns TRUE if this extent should be put in the extentSummary table (at
+   * least one property is not null)
    */
   public boolean isValid() {
     return 
