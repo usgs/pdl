@@ -17,7 +17,6 @@ import org.sqlite.SQLiteException;
  */
 public class ExtentIndex extends JDBCProductIndex {
 
-  private static final Logger LOGGER = Logger.getLogger(ExtentIndex.class.getName());
   public static final String EXTENT_TABLE = "extentSummary";
   public static final String EXTENT_INDEX_ID = "productSummaryIndexId";
   public static final String EXTENT_START_TIME = "starttime";
@@ -50,7 +49,6 @@ public class ExtentIndex extends JDBCProductIndex {
       } else {
         //No index in extentSummary table
         lastIndex = 0;
-        LOGGER.log(Level.FINEST, "[" + getName() + "] no products in extentSummary table; using index 0");
       }
     } catch (SQLiteException e) {
       //Throws exception with SQL for debugging
