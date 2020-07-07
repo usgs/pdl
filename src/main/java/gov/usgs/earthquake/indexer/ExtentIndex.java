@@ -7,8 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
-
-import org.sqlite.SQLiteException;
+import java.sql.SQLException;
 
 /**
  * ExtentIndex is a type of JDBCProductIndex that can also send updates to the
@@ -34,7 +33,7 @@ public class ExtentIndex extends JDBCProductIndex {
    * 
    * @throws Exception if something goes wrong with database transaction
    */
-  public long getLastExtentIndexId() throws Exception{
+  public long getLastExtentIndexId() throws Exception {
     long lastIndex;
 
     //Prepare statement
@@ -54,10 +53,9 @@ public class ExtentIndex extends JDBCProductIndex {
         //No index in extentSummary table
         lastIndex = 0;
       }
-    } catch (SQLiteException e) {
+    } catch (SQLException e) {
       //Throws exception with SQL for debugging
-      throw new SQLiteException(e.getMessage() + ". SQL query was: " + sql, 
-                                e.getResultCode());
+      throw new SQLException(e.getMessage() + ". SQL query was: " + sql, e);
     }
     return lastIndex;
   }
