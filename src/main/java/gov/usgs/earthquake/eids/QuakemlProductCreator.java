@@ -139,27 +139,14 @@ public class QuakemlProductCreator implements ProductCreator {
 		eventParametersCreationInfo = eventParameters.getCreationInfo();
 
 		// only process first event
-		if (eventParameters.getEvents().size() > 0) {
-			// found actual event
-			products.addAll(getEventProducts(message, eventParameters
-					.getEvents().get(0)));
-		} else {
-			// check for internal/scenario events
-			List<Object> anies = eventParameters.getAnies();
-			Iterator<Object> anyIter = anies.iterator();
-			while (anyIter.hasNext()) {
-				Object next = anyIter.next();
-				if (next instanceof InternalEvent) {
-					// found internal event
-					products.addAll(getInternalEventProducts(message,
-							(InternalEvent) next));
-					break;
-				} else if (next instanceof ScenarioEvent) {
-					// found scenario event
-					products.addAll(getScenarioEventProducts(message,
-							(ScenarioEvent) next));
-					break;
-				}
+		Event firstEvent = QuakemlUtils.getFirstEvent(eventParameters);
+		if (firstEvent != null) {
+			if (firstEvent instanceof InternalEvent) {
+				products.addAll(getInternalEventProducts(message, (InternalEvent) firstEvent));
+			} else if (firstEvent instanceof ScenarioEvent) {
+				products.addAll(getScenarioEventProducts(message, (ScenarioEvent) firstEvent));
+			} else {
+				products.addAll(getEventProducts(message, firstEvent));
 			}
 		}
 
@@ -500,8 +487,8 @@ public class QuakemlProductCreator implements ProductCreator {
 					Quakeml lightweightQuakeml = QuakemlUtils
 							.getLightweightFocalMechanism(message,
 									mech.getPublicID());
-					Event lightweightEvent = lightweightQuakeml
-							.getEventParameters().getEvents().get(0);
+					Event lightweightEvent = QuakemlUtils.getFirstEvent(
+							lightweightQuakeml.getEventParameters());
 					FocalMechanism lightweightMech = QuakemlUtils
 							.getFocalMechanism(lightweightEvent,
 									mech.getPublicID());

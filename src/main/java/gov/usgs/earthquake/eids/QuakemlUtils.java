@@ -9,11 +9,13 @@ import java.util.List;
 import org.quakeml_1_2.CreationInfo;
 import org.quakeml_1_2.Event;
 import org.quakeml_1_2.IntegerQuantity;
+import org.quakeml_1_2.InternalEvent;
 import org.quakeml_1_2.Magnitude;
 import org.quakeml_1_2.MomentTensor;
 import org.quakeml_1_2.Origin;
 import org.quakeml_1_2.Quakeml;
 import org.quakeml_1_2.RealQuantity;
+import org.quakeml_1_2.ScenarioEvent;
 import org.quakeml_1_2.TimeQuantity;
 import org.quakeml_1_2.FocalMechanism;
 import org.quakeml_1_2.EventParameters;
@@ -24,11 +26,44 @@ import org.quakeml_1_2.EventParameters;
 public class QuakemlUtils {
 
 	/**
-	 * Find the preferred Origin in an Event.
-	 * 
+	 * Find the first event in a message.
+	 *
+	 * If a quakeml event object does not exist, check for the first internal or
+	 * scenario event.
+	 *
 	 * @param event
-	 * @return Origin with publicID equal to event.getPreferredOriginID(), or
-	 *         null if not found.
+	 * @return
+	 */
+	public static Event getFirstEvent(final EventParameters eventParameters) {
+		// only process first event
+		if (eventParameters.getEvents().size() > 0) {
+			// found actual event
+			return eventParameters.getEvents().get(0);
+		} else {
+			// check for internal/scenario events
+			List<Object> anies = eventParameters.getAnies();
+			Iterator<Object> anyIter = anies.iterator();
+			while (anyIter.hasNext()) {
+				Object next = anyIter.next();
+				if (next instanceof InternalEvent) {
+					// found internal event
+					return (InternalEvent) next;
+				} else if (next instanceof ScenarioEvent) {
+					// found scenario event
+					return (ScenarioEvent) next;
+				}
+			}
+		}
+		// no event found
+		return null;
+	}
+
+	/**
+	 * Find the preferred Origin in an Event.
+	 *
+	 * @param event
+	 * @return Origin with publicID equal to event.getPreferredOriginID(), or null
+	 *         if not found.
 	 */
 	public static Origin getPreferredOrigin(final Event event) {
 		return getOrigin(event, event.getPreferredOriginID());
@@ -36,11 +71,9 @@ public class QuakemlUtils {
 
 	/**
 	 * Find a specific Origin in an Event.
-	 * 
-	 * @param event
-	 *            event to search
-	 * @param id
-	 *            publicID to find
+	 *
+	 * @param event event to search
+	 * @param id    publicID to find
 	 * @return Origin with publicID equal to id, or null if not found.
 	 */
 	public static Origin getOrigin(final Event event, final String id) {
@@ -59,11 +92,10 @@ public class QuakemlUtils {
 
 	/**
 	 * Find the preferred Magnitude in an Event.
-	 * 
-	 * @param event
-	 *            event to search
-	 * @return Magnitude with publicID equal to event.getPreferredMagnitudeID(),
-	 *         or null if not found.
+	 *
+	 * @param event event to search
+	 * @return Magnitude with publicID equal to event.getPreferredMagnitudeID(), or
+	 *         null if not found.
 	 */
 	public static Magnitude getPreferredMagnitude(final Event event) {
 		return getMagnitude(event, event.getPreferredMagnitudeID());
@@ -71,11 +103,9 @@ public class QuakemlUtils {
 
 	/**
 	 * Find a specific Magnitude in an event.
-	 * 
-	 * @param event
-	 *            event to search
-	 * @param id
-	 *            publicID to find.
+	 *
+	 * @param event event to search
+	 * @param id    publicID to find.
 	 * @return Magnitude with publicID equal to id, or null if not found.
 	 */
 	public static Magnitude getMagnitude(final Event event, final String id) {
@@ -94,18 +124,14 @@ public class QuakemlUtils {
 
 	/**
 	 * Find a specific FocalMechanism in an event.
-	 * 
-	 * @param event
-	 *            event to search
-	 * @param id
-	 *            publicID to find.
+	 *
+	 * @param event event to search
+	 * @param id    publicID to find.
 	 * @return FocalMechanism with publicID equal to id, or null if not found.
 	 */
-	public static FocalMechanism getFocalMechanism(final Event event,
-			final String id) {
+	public static FocalMechanism getFocalMechanism(final Event event, final String id) {
 		if (id != null) {
-			Iterator<FocalMechanism> iter = event.getFocalMechanisms()
-					.iterator();
+			Iterator<FocalMechanism> iter = event.getFocalMechanisms().iterator();
 			while (iter.hasNext()) {
 				FocalMechanism next = iter.next();
 				String mechId = next.getPublicID();
@@ -118,9 +144,9 @@ public class QuakemlUtils {
 	}
 
 	/**
-	 * Flatten multiple creation info objects, but using the most specific (at
-	 * end of list) value that is not null.
-	 * 
+	 * Flatten multiple creation info objects, but using the most specific (at end
+	 * of list) value that is not null.
+	 *
 	 * @param infos
 	 * @return a CreationInfo object with the most specific properties (later in
 	 *         arguments list), which may be null.
@@ -223,7 +249,7 @@ public class QuakemlUtils {
 
 	/**
 	 * Check if an event has phase data.
-	 * 
+	 *
 	 * <ul>
 	 * <li>event.getPicks()</li>
 	 * <li>event.getAmplitudes()</li>
@@ -239,9 +265,8 @@ public class QuakemlUtils {
 	 * </ul>
 	 * </li>
 	 * </ul>
-	 * 
-	 * @param event
-	 *            event to search.
+	 *
+	 * @param event event to search.
 	 * @return true if phase data found, false otherwise.
 	 */
 	public static boolean hasPhaseData(final Event event) {
@@ -280,9 +305,8 @@ public class QuakemlUtils {
 	/**
 	 * Similar to {@link #hasPhaseData(Event)}, but empties any lists that have
 	 * phase data. Also removes &lt;waveformID&gt; elements from focalMechanism.
-	 * 
-	 * @param event
-	 *            event to clear.
+	 *
+	 * @param event event to clear.
 	 */
 	public static void removePhaseData(final Event event) {
 		// event level phase data
@@ -310,8 +334,7 @@ public class QuakemlUtils {
 
 		// additionally, remove waveformIDs from focal mechanisms
 		if (event.getFocalMechanisms() != null) {
-			Iterator<FocalMechanism> iter = event.getFocalMechanisms()
-					.iterator();
+			Iterator<FocalMechanism> iter = event.getFocalMechanisms().iterator();
 			while (iter.hasNext()) {
 				FocalMechanism next = iter.next();
 				listRemoveData(next.getWaveformIDs());
@@ -320,11 +343,10 @@ public class QuakemlUtils {
 	}
 
 	/**
-	 * Extract the preferred origin and magnitude from the first event in a
-	 * quakeml message.
-	 * 
-	 * @param q
-	 *            the quakeml message with a preferred origin.
+	 * Extract the preferred origin and magnitude from the first event in a quakeml
+	 * message.
+	 *
+	 * @param q the quakeml message with a preferred origin.
 	 * @return a new Quakeml object.
 	 */
 	public static Quakeml getLightweightOrigin(final Quakeml q) {
@@ -334,7 +356,7 @@ public class QuakemlUtils {
 		EventParameters eventParameters = shallowClone(oldEventParameters);
 		quakeml.setEventParameters(eventParameters);
 
-		Event oldEvent = q.getEventParameters().getEvents().get(0);
+		Event oldEvent = getFirstEvent(q.getEventParameters());
 		Event event = shallowClone(oldEvent);
 		eventParameters.getEvents().add(event);
 
@@ -360,22 +382,19 @@ public class QuakemlUtils {
 	/**
 	 * Extract a focalMechanism, triggering origin, derived origin, and derived
 	 * magnitude from the first event in a quakeml message.
-	 * 
-	 * @param q
-	 *            the quakeml message with a focalMechanism
-	 * @param focalMechanismId
-	 *            the focalMechanism to extract.
+	 *
+	 * @param q                the quakeml message with a focalMechanism
+	 * @param focalMechanismId the focalMechanism to extract.
 	 * @return a new Quakeml object.
 	 */
-	public static Quakeml getLightweightFocalMechanism(final Quakeml q,
-			final String focalMechanismId) {
+	public static Quakeml getLightweightFocalMechanism(final Quakeml q, final String focalMechanismId) {
 		Quakeml quakeml = new Quakeml();
 
 		EventParameters oldEventParameters = q.getEventParameters();
 		EventParameters eventParameters = shallowClone(oldEventParameters);
 		quakeml.setEventParameters(eventParameters);
 
-		Event oldEvent = q.getEventParameters().getEvents().get(0);
+		Event oldEvent = getFirstEvent(q.getEventParameters());
 		Event event = shallowClone(oldEvent);
 		eventParameters.getEvents().add(event);
 
@@ -383,8 +402,7 @@ public class QuakemlUtils {
 		event.getFocalMechanisms().add(shallowClone(oldMech));
 
 		// add triggering origin
-		Origin triggeringOrigin = getOrigin(oldEvent,
-				oldMech.getTriggeringOriginID());
+		Origin triggeringOrigin = getOrigin(oldEvent, oldMech.getTriggeringOriginID());
 		if (triggeringOrigin != null) {
 			event.getOrigins().add(shallowClone(triggeringOrigin));
 		}
@@ -392,13 +410,11 @@ public class QuakemlUtils {
 		// pull in derived origin and magnitude if present
 		MomentTensor tensor = oldMech.getMomentTensor();
 		if (tensor != null) {
-			Origin derivedOrigin = getOrigin(oldEvent,
-					tensor.getDerivedOriginID());
+			Origin derivedOrigin = getOrigin(oldEvent, tensor.getDerivedOriginID());
 			if (derivedOrigin != null) {
 				event.getOrigins().add(shallowClone(derivedOrigin));
 			}
-			Magnitude momentMagnitude = getMagnitude(oldEvent,
-					tensor.getMomentMagnitudeID());
+			Magnitude momentMagnitude = getMagnitude(oldEvent, tensor.getMomentMagnitudeID());
 			if (momentMagnitude != null) {
 				event.getMagnitudes().add(shallowClone(momentMagnitude));
 			}
@@ -409,14 +425,13 @@ public class QuakemlUtils {
 
 	/**
 	 * Create a copy of an event parameters object.
-	 * 
+	 *
 	 * omits anies, events, and other attributes.
-	 * 
+	 *
 	 * @param oldEventParameters
 	 * @return a new EventParameters object.
 	 */
-	public static EventParameters shallowClone(
-			final EventParameters oldEventParameters) {
+	public static EventParameters shallowClone(final EventParameters oldEventParameters) {
 		EventParameters eventParameters = new EventParameters();
 		eventParameters.getComments().addAll(oldEventParameters.getComments());
 		eventParameters.setCreationInfo(oldEventParameters.getCreationInfo());
@@ -427,10 +442,10 @@ public class QuakemlUtils {
 
 	/**
 	 * Create a copy of an event object.
-	 * 
-	 * omits amplitudes, anies, event descriptions, mechanisms, magnitudes,
-	 * origins, other attributes, picks, preferred*ID, and station magnitudes.
-	 * 
+	 *
+	 * omits amplitudes, anies, event descriptions, mechanisms, magnitudes, origins,
+	 * other attributes, picks, preferred*ID, and station magnitudes.
+	 *
 	 * @param oldEvent
 	 * @return a new Event object.
 	 */
@@ -450,9 +465,9 @@ public class QuakemlUtils {
 
 	/**
 	 * Create a copy of an origin object.
-	 * 
+	 *
 	 * omits anies, arrivals, and other attributes.
-	 * 
+	 *
 	 * @param oldOrigin
 	 * @return a new Origin object.
 	 */
@@ -487,9 +502,9 @@ public class QuakemlUtils {
 
 	/**
 	 * Create a copy of a magnitude object.
-	 * 
+	 *
 	 * omits anies, other attributes, and station magnitude contributions.
-	 * 
+	 *
 	 * @param oldMagnitude
 	 * @return a new Magnitude object.
 	 */
@@ -497,8 +512,7 @@ public class QuakemlUtils {
 		Magnitude magnitude = new Magnitude();
 		magnitude.setAzimuthalGap(oldMagnitude.getAzimuthalGap());
 		magnitude.getComments().addAll(oldMagnitude.getComments());
-		magnitude.setCreationInfo(getCreationInfo(oldMagnitude
-				.getCreationInfo()));
+		magnitude.setCreationInfo(getCreationInfo(oldMagnitude.getCreationInfo()));
 		magnitude.setDataid(oldMagnitude.getDataid());
 		magnitude.setDatasource(oldMagnitude.getDatasource());
 		magnitude.setEvaluationMode(oldMagnitude.getEvaluationMode());
@@ -516,9 +530,9 @@ public class QuakemlUtils {
 
 	/**
 	 * Create a copy of a focal mechanism object.
-	 * 
+	 *
 	 * omits anies, other attributes.
-	 * 
+	 *
 	 * @param oldMech
 	 * @return a new FocalMechanism object.
 	 */
