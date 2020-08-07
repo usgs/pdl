@@ -27,8 +27,9 @@ public class MTIndexerModuleTest {
 
 	@After
 	public void tearDownTestEnvironment() throws Exception {
-		
+
 	}
+
 	/*
 	 * Checks for MWW and adds the appropriate bonus.
 	 */
@@ -39,14 +40,14 @@ public class MTIndexerModuleTest {
 		product.setEventSourceCode("code");
 		product.setLatitude(BigDecimal.ZERO);
 		product.setLongitude(BigDecimal.ZERO);
-		
-		Map<String,String> props = product.getProperties();
+
+		Map<String, String> props = product.getProperties();
 		props.put("beachball-type", "MWW");
-		
-		Assert.assertEquals("MWW from NEIC in NEIC authoritative region.", 216L,
+
+		Assert.assertEquals("MWW from NEIC in NEIC authoritative region.", 218L,
 				module.getProductSummary(product).getPreferredWeight());
 	}
-	
+
 	/*
 	 * Checks for MWC and addes the appropriate bonus.
 	 */
@@ -57,14 +58,14 @@ public class MTIndexerModuleTest {
 		product.setEventSourceCode("code");
 		product.setLatitude(BigDecimal.ZERO);
 		product.setLongitude(BigDecimal.ZERO);
-		
-		Map<String,String> props = product.getProperties();
+
+		Map<String, String> props = product.getProperties();
 		props.put("beachball-type", "MWC");
-		
-		Assert.assertEquals("MWC from NEIC in NEIC authoritative region.", 158L,
+
+		Assert.assertEquals("MWC from NEIC in NEIC authoritative region.", 160L,
 				module.getProductSummary(product).getPreferredWeight());
 	}
-	
+
 	/*
 	 * Checks for gcmt and addes the appropriate bonus.
 	 */
@@ -75,14 +76,14 @@ public class MTIndexerModuleTest {
 		product.setEventSourceCode("code");
 		product.setLatitude(BigDecimal.ZERO);
 		product.setLongitude(BigDecimal.ZERO);
-		
-		Map<String,String> props = product.getProperties();
+
+		Map<String, String> props = product.getProperties();
 		props.put("beachball-type", "MWC");
-		
-		Assert.assertEquals("MWC from gcmt in NEIC authoritative region.", 159L,
+
+		Assert.assertEquals("MWC from gcmt in NEIC authoritative region.", 161L,
 				module.getProductSummary(product).getPreferredWeight());
 	}
-	
+
 	/*
 	 * When type is inside range ( [5.5, 7] ) does nothing..
 	 */
@@ -93,15 +94,15 @@ public class MTIndexerModuleTest {
 		product.setEventSourceCode("code");
 		product.setLatitude(BigDecimal.ZERO);
 		product.setLongitude(BigDecimal.ZERO);
-		
-		Map<String,String> props = product.getProperties();
+
+		Map<String, String> props = product.getProperties();
 		props.put("beachball-type", "MWB");
 		props.put("derived-magnitude", "6");
-		
-		Assert.assertEquals("MWB from NEIC in NEIC authoritative region.", 157L,
+
+		Assert.assertEquals("MWB from NEIC in NEIC authoritative region.", 159L,
 				module.getProductSummary(product).getPreferredWeight());
 	}
-	
+
 	/*
 	 * When type is outside range ( [5.5, 7] ) subtract the appropriate penalty
 	 */
@@ -110,17 +111,17 @@ public class MTIndexerModuleTest {
 		product = new Product(new ProductId("us", "moment-tensor", "code"));
 		product.setEventSource("us");
 		product.setEventSourceCode("code");
-		
+
 		product.setLatitude(BigDecimal.ZERO);
 		product.setLongitude(BigDecimal.ZERO);
-		
-		Map<String,String> props = product.getProperties();
+
+		Map<String, String> props = product.getProperties();
 		props.put("beachball-type", "MWB");
 		props.put("derived-magnitude", "8");
-		
-		Assert.assertEquals("MWC from NEIC in NEIC authoritative region.", 57L,
+
+		Assert.assertEquals("MWC from NEIC in NEIC authoritative region.", 59L,
 				module.getProductSummary(product).getPreferredWeight());
-		
+
 	}
-	
+
 }

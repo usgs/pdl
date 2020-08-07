@@ -43,26 +43,26 @@ import org.junit.Test;
  * Specifically we must test the "onProduct" method and the archive/cleanup
  * thread. Within tests for the "onProduct" method we must ensure the following
  * IndexerEvents occur if/when expected:
- * 
+ *
  * IndexerEvent.EVENT_ADDED IndexerEvent.EVENT_UPDATED
  * IndexerEvent.EVENT_DELETED IndexerEvent.PRODUCT_ADDED
  * IndexerEvent.PRODUCT_UPDATED IndexerEvent.PRODUCT_DELETED
- * 
+ *
  * Within tests for the archive/cleanup thread we must ensure the following
  * IndexerEvents occur if/when expected:
- * 
+ *
  * IndexerEvent.EVENT_ARCHIVED IndexerEVENT.PRODUCT_ARCHIVED
- * 
+ *
  * For all of the test cases it is important we check products/events are
  * actually created, added, updated, deleted and archived into/out of the
  * product storage and index before considering the test a success.
- * 
+ *
  * Due to the integral part played by the Indexer class in the overall system we
  * place heavier testing requirements on this class. Specifically we require a
  * minimum of 90% branch coverage and 75% line coverage.
- * 
+ *
  * @author emartinez
- * 
+ *
  */
 public class IndexerTest extends DefaultConfigurable implements IndexerListener {
 
@@ -86,8 +86,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 	/**
 	 * Sets up the test environment. Sets flag whether the product index file
-	 * existed before the tests or not. This way we clean up after ourselves,
-	 * but we don't mess up any existing index file.
+	 * existed before the tests or not. This way we clean up after ourselves, but we
+	 * don't mess up any existing index file.
 	 */
 	@Before
 	public void setupTestEnvironment() {
@@ -97,18 +97,14 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			Config.setConfig(new Config());
 			Config config = Config.getConfig();
 			// Tell indexer which archive policy property to use
-			config.setProperty(Indexer.INDEX_ARCHIVE_POLICY_PROPERTY,
-					ARCHIVE_POLICY_PROPERTY);
+			config.setProperty(Indexer.INDEX_ARCHIVE_POLICY_PROPERTY, ARCHIVE_POLICY_PROPERTY);
 			// Keep events for 15 seconds
-			config.setSectionProperty(ARCHIVE_POLICY_PROPERTY,
-					ArchivePolicy.ARCHIVE_MIN_EVENT_AGE_PROPERTY,
+			config.setSectionProperty(ARCHIVE_POLICY_PROPERTY, ArchivePolicy.ARCHIVE_MIN_EVENT_AGE_PROPERTY,
 					String.valueOf(minEventAge));
-			config.setSectionProperty(ARCHIVE_POLICY_PROPERTY, "type",
-					ArchivePolicy.class.getName());
+			config.setSectionProperty(ARCHIVE_POLICY_PROPERTY, "type", ArchivePolicy.class.getName());
 
 			// Check for expired events every 5 seconds
-			config.setProperty(Indexer.INDEX_ARCHIVE_INTERVAL_PROPERTY,
-					String.valueOf(cleanupInterval));
+			config.setProperty(Indexer.INDEX_ARCHIVE_INTERVAL_PROPERTY, String.valueOf(cleanupInterval));
 
 			indexer.configure(config);
 			indexer.addListener(this);
@@ -122,15 +118,13 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			ExternalIndexerListener listener = new ExternalIndexerListener();
 			listener.setCommand("echo");
 			listener.setMaxTries(1);
-			listener.setStorage(new FileProductStorage(new File(
-					"_test_storage_")));
+			listener.setStorage(new FileProductStorage(new File("_test_storage_")));
 			indexer.addListener(listener);
 
 			ExternalIndexerListener listener2 = new ExternalIndexerListener();
 			listener2.setCommand("echo");
 			listener2.setMaxTries(1);
-			listener2.setStorage(new FileProductStorage(new File(
-					"_test_storage_")));
+			listener2.setStorage(new FileProductStorage(new File("_test_storage_")));
 			listener2.setProcessOnlyWhenEventChanged(true);
 			indexer.addListener(listener2);
 
@@ -146,9 +140,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 	/**
 	 * Tears down the test environment. If the index file flag indicates that we
-	 * created the index file ourselves we will delete this file at this time.
-	 * This way we clean up after ourselves, but don't mess up any existing
-	 * index file.
+	 * created the index file ourselves we will delete this file at this time. This
+	 * way we clean up after ourselves, but don't mess up any existing index file.
 	 */
 	@After
 	public void teardownTestEnvironment() {
@@ -171,14 +164,14 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Tests the indexer "getModule" method. To test this we create a product
-	 * then call the indexer getModule method and see what we get back. We
-	 * assert the module is not null and has a positive support level.
-	 * 
-	 * Additionally, create an indexer with 2 modules that support a particular
-	 * type of product. Assert that the module chosen for each type of product
-	 * is appropriate.
-	 * 
+	 * Tests the indexer "getModule" method. To test this we create a product then
+	 * call the indexer getModule method and see what we get back. We assert the
+	 * module is not null and has a positive support level.
+	 *
+	 * Additionally, create an indexer with 2 modules that support a particular type
+	 * of product. Assert that the module chosen for each type of product is
+	 * appropriate.
+	 *
 	 * @author emartinez
 	 * @throws Exception
 	 * @see gov.usgs.earthquake.indexer.Indexer#getModule(Product)
@@ -205,8 +198,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			}
 
 			@Override
-			public ProductSummary getProductSummary(Product product)
-					throws Exception {
+			public ProductSummary getProductSummary(Product product) throws Exception {
 				return null;
 			}
 		};
@@ -224,8 +216,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			}
 
 			@Override
-			public ProductSummary getProductSummary(Product product)
-					throws Exception {
+			public ProductSummary getProductSummary(Product product) throws Exception {
 				return null;
 			}
 
@@ -241,16 +232,16 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 	/**
 	 * Tests the indexer "onProduct" method when a product representing a "new"
-	 * event is given. This method creates a new indexer object and adds itself
-	 * as a listener for indexer events. It then adds a new event to the index
-	 * and waits for notification. Upon notification we assert that the "type"
-	 * of IndexerEvent we received is "EVENT_ADDED".
-	 * 
+	 * event is given. This method creates a new indexer object and adds itself as a
+	 * listener for indexer events. It then adds a new event to the index and waits
+	 * for notification. Upon notification we assert that the "type" of IndexerEvent
+	 * we received is "EVENT_ADDED".
+	 *
 	 * After inserting the first product, this test will then create a different
 	 * type of product and associate it to the event using eventSource and
 	 * eventSourceCode instead of lat, lon, and event time. Adding the second
 	 * product should give an IndexerEvent of type "EVENT_UPDATED"
-	 * 
+	 *
 	 * @author emartinez
 	 * @see gov.usgs.earthquake.indexer.Indexer#onProduct(Product)
 	 * @see gov.usgs.earthquake.indexer.IndexerEvent#EVENT_ADDED
@@ -262,9 +253,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			synchronized (syncObject) {
 				syncObject.wait();
 			}
-			Assert.assertEquals(IndexerChange.EVENT_ADDED,
-					getLatestIndexerEvent().getIndexerChanges().get(0)
-							.getType());
+			Assert.assertEquals(IndexerChange.EVENT_ADDED, getLatestIndexerEvent().getIndexerChanges().get(0).getType());
 
 			// We got the product in, it added the event, so now
 			// we need to add a different product type from the same source
@@ -274,9 +263,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			synchronized (syncObject) {
 				syncObject.wait();
 			}
-			Assert.assertEquals(IndexerChange.EVENT_UPDATED,
-					getLatestIndexerEvent().getIndexerChanges().get(0)
-							.getType());
+			Assert.assertEquals(IndexerChange.EVENT_UPDATED, getLatestIndexerEvent().getIndexerChanges().get(0).getType());
 
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
@@ -285,15 +272,15 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * Tests the indexer "onProduct" method when a product representing an
-	 * "update" to an existing event is given. This method creates a new indexer
-	 * object and adds itself as a listener for indexer events. It then adds a
-	 * product that is capable of creating an event to the index. Next this
-	 * product has its update time (version) updated to indicate the product is
-	 * now an update to what is currently in the index. This updated product is
-	 * then added to the index and we wait for notification. Upon notification
-	 * we assert that the "type" of IndexerEvent we received is "EVENT_UPDATED".
-	 * 
+	 * Tests the indexer "onProduct" method when a product representing an "update"
+	 * to an existing event is given. This method creates a new indexer object and
+	 * adds itself as a listener for indexer events. It then adds a product that is
+	 * capable of creating an event to the index. Next this product has its update
+	 * time (version) updated to indicate the product is now an update to what is
+	 * currently in the index. This updated product is then added to the index and
+	 * we wait for notification. Upon notification we assert that the "type" of
+	 * IndexerEvent we received is "EVENT_UPDATED".
+	 *
 	 * @author emartinez
 	 * @see gov.usgs.earthquake.indexer.Indexer#onProduct(Product)
 	 * @see gov.usgs.earthquake.indexer.IndexerEvent#EVENT_UPDATED
@@ -316,9 +303,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			}
 
 			// Make sure this latest indexer event is an update
-			Assert.assertEquals(IndexerChange.EVENT_UPDATED,
-					getLatestIndexerEvent().getIndexerChanges().get(0)
-							.getType());
+			Assert.assertEquals(IndexerChange.EVENT_UPDATED, getLatestIndexerEvent().getIndexerChanges().get(0).getType());
 
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
@@ -327,13 +312,12 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * Tests the indexer "onProduct" method when a product is received that does
-	 * not associate to an existing event and is not capable of creating its own
-	 * event based on its parameters. Such a product is "unassociatable". This
-	 * product is then added to an indexer and we wait notification. Upon
-	 * notification we assert that the "type" of IndexerEvent we received is
-	 * "UNASSOCIATED_PRODUCT".
-	 * 
+	 * Tests the indexer "onProduct" method when a product is received that does not
+	 * associate to an existing event and is not capable of creating its own event
+	 * based on its parameters. Such a product is "unassociatable". This product is
+	 * then added to an indexer and we wait notification. Upon notification we
+	 * assert that the "type" of IndexerEvent we received is "UNASSOCIATED_PRODUCT".
+	 *
 	 * @author emartinez
 	 * @see gov.usgs.earthquake.indexer.Indexer#onProduct(Product)
 	 * @see gov.usgs.earthquake.indexer.IndexerEvent#UNASSOCIATED_PRODUCT
@@ -345,11 +329,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			synchronized (syncObject) {
 				syncObject.wait();
 			}
-			System.err.println(getLatestIndexerEvent().getIndexerChanges()
-					.get(0).getType());
-			Assert.assertEquals(IndexerChange.PRODUCT_ADDED,
-					getLatestIndexerEvent().getIndexerChanges().get(0)
-							.getType());
+			System.err.println(getLatestIndexerEvent().getIndexerChanges().get(0).getType());
+			Assert.assertEquals(IndexerChange.PRODUCT_ADDED, getLatestIndexerEvent().getIndexerChanges().get(0).getType());
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
 			Assert.fail("Exception in onProductUnassociatedTest.");
@@ -357,9 +338,9 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * This test checks if an incoming product can successfully cause a merge of
-	 * to occur in the product index. This test checks if the location-based
-	 * merge works properly on two events.
+	 * This test checks if an incoming product can successfully cause a merge of to
+	 * occur in the product index. This test checks if the location-based merge
+	 * works properly on two events.
 	 */
 	@Test
 	public void onProductMergeTest1() {
@@ -367,8 +348,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 		try {
 			// Step1. Create a product that will add an event to the index.
-			ProductId product1Id = new ProductId("us", "testproduct",
-					"testproduct-one");
+			ProductId product1Id = new ProductId("us", "testproduct", "testproduct-one");
 
 			Product product1 = new Product(product1Id);
 			product1.setEventSource("NOTus");
@@ -389,8 +369,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			// Step2. Create a product that will add an event to the index
 			// will not by itself associate to the previous event.
 
-			ProductId product2Id = new ProductId("us", "testproduct",
-					"testproduct-two");
+			ProductId product2Id = new ProductId("us", "testproduct", "testproduct-two");
 
 			Product product2 = new Product(product2Id);
 			product2.setEventSource("us");
@@ -413,8 +392,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			// that event) but with a location near enough to event from step 1
 			// such that event 1 merges into event 2.
 
-			ProductId product3Id = new ProductId("us", "testproduct",
-					"testproduct-two");
+			ProductId product3Id = new ProductId("us", "testproduct", "testproduct-two");
 
 			Product product3 = new Product(product3Id);
 			product3.setEventSource("us");
@@ -435,34 +413,26 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 				syncObject.wait();
 			}
 
-			Vector<IndexerChange> changes = getLatestIndexerEvent()
-					.getIndexerChanges();
+			Vector<IndexerChange> changes = getLatestIndexerEvent().getIndexerChanges();
 
 			Assert.assertEquals(2, changes.size());
 
 			Event event = changes.get(1).getNewEvent();
 			List<ProductSummary> products = event.getProductList();
 
-			Assert.assertEquals("Event has three products associated to it.",
-					2, products.size());
+			Assert.assertEquals("Event has three products associated to it.", 2, products.size());
 
 			// Make sure preferred-ness is working with a merge.
 			ProductSummary ps = event.getPreferredProduct("testproduct");
-			Assert.assertEquals("Preferred product is product #3.", product3Id,
-					ps.getId());
+			Assert.assertEquals("Preferred product is product #3.", product3Id, ps.getId());
 
-			List<Event> events = indexer.getProductIndex().getEvents(
-					new ProductIndexQuery());
-			Assert.assertEquals("There is one event in the index.", 1,
-					events.size());
+			List<Event> events = indexer.getProductIndex().getEvents(new ProductIndexQuery());
+			Assert.assertEquals("There is one event in the index.", 1, events.size());
 
 			// We added three products, but one was just an update to a previous
 			// product, so there are really only two "products" in thet index.
-			Assert.assertEquals(
-					"There are two products in the index.",
-					2,
-					indexer.getProductIndex()
-							.getProducts(new ProductIndexQuery()).size());
+			Assert.assertEquals("There are two products in the index.", 2,
+					indexer.getProductIndex().getProducts(new ProductIndexQuery()).size());
 
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
@@ -471,9 +441,9 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * This test checks if an incoming product can successfully cause a merge of
-	 * to occur in the product index. This test checks if the eventid-based
-	 * merge works properly on an event and unassociated product.
+	 * This test checks if an incoming product can successfully cause a merge of to
+	 * occur in the product index. This test checks if the eventid-based merge works
+	 * properly on an event and unassociated product.
 	 */
 	@Test
 	public void onProductMergeTest2() {
@@ -529,24 +499,17 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			// changed as expected. Product from step 1 should have been
 			// associated to event from step 2.
 
-			Vector<IndexerChange> changes = this.getLatestIndexerEvent()
-					.getIndexerChanges();
+			Vector<IndexerChange> changes = this.getLatestIndexerEvent().getIndexerChanges();
 			Assert.assertNotNull("Indexer changes should not be null", changes);
-			Assert.assertEquals("Indexer changes should have length 1", 1,
-					changes.size());
+			Assert.assertEquals("Indexer changes should have length 1", 1, changes.size());
 
-			Assert.assertEquals("Latest change should be EVENT_ADDED",
-					IndexerChange.EVENT_ADDED, changes.get(0).getType());
+			Assert.assertEquals("Latest change should be EVENT_ADDED", IndexerChange.EVENT_ADDED, changes.get(0).getType());
 
 			Event event = changes.get(0).getNewEvent();
-			Assert.assertEquals("Event should have 1 products on it.", 2, event
-					.getAllProductList().size());
+			Assert.assertEquals("Event should have 1 products on it.", 2, event.getAllProductList().size());
 
-			List<ProductSummary> summaries = indexer.getProductIndex()
-					.getUnassociatedProducts(new ProductIndexQuery());
-			Assert.assertEquals(
-					"There should be no unassociated products in the index.",
-					0, summaries.size());
+			List<ProductSummary> summaries = indexer.getProductIndex().getUnassociatedProducts(new ProductIndexQuery());
+			Assert.assertEquals("There should be no unassociated products in the index.", 0, summaries.size());
 		} catch (Exception ex) {
 
 		}
@@ -627,36 +590,27 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			// (latitude, longitude, and time).
 
 			// Get all events in the index
-			List<Event> events = indexer.getProductIndex().getEvents(
-					new ProductIndexQuery());
+			List<Event> events = indexer.getProductIndex().getEvents(new ProductIndexQuery());
 
-			Assert.assertEquals("There should be two events in the index.", 2,
-					events.size());
+			Assert.assertEquals("There should be two events in the index.", 2, events.size());
 
 			Iterator<Event> eventIter = events.iterator();
 			while (eventIter.hasNext()) {
 				Event event = eventIter.next();
-				String eventId = event.getSource().toLowerCase()
-						+ event.getSourceCode().toLowerCase();
+				String eventId = event.getSource().toLowerCase() + event.getSourceCode().toLowerCase();
 
 				if ("usone".equals(eventId)) {
 					// This is the event from step 1. Should have one event.
-					Assert.assertEquals("Event should have 1 product.", 1,
-							event.getProductList().size());
+					Assert.assertEquals("Event should have 1 product.", 1, event.getProductList().size());
 				} else if ("ncuno".equals(eventId)) {
-					Assert.assertEquals("Event should have 2 products.", 2,
-							event.getProductList().size());
+					Assert.assertEquals("Event should have 2 products.", 2, event.getProductList().size());
 				} else {
 					Assert.fail("Found unexpected event [" + eventId + "]");
 				}
 
-				Assert.assertEquals(
-						"Latitude should be " + latitude.doubleValue(),
-						latitude, event.getLatitude());
+				Assert.assertEquals("Latitude should be " + latitude.doubleValue(), latitude, event.getLatitude());
 
-				Assert.assertEquals(
-						"Longitude should be " + longitude.doubleValue(),
-						longitude, event.getLongitude());
+				Assert.assertEquals("Longitude should be " + longitude.doubleValue(), longitude, event.getLongitude());
 			}
 
 		} catch (Exception ex) {
@@ -666,8 +620,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * Event splits due to new product version moving a product away from
-	 * current event location.
+	 * Event splits due to new product version moving a product away from current
+	 * event location.
 	 */
 	@Test
 	public void onProductSplitTest2() {
@@ -722,8 +676,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			}
 
 			// Save the current event id to check against later.
-			String savedEventId = indexer.getProductIndex()
-					.getEvents(new ProductIndexQuery()).get(0).getEventId();
+			String savedEventId = indexer.getProductIndex().getEvents(new ProductIndexQuery()).get(0).getEventId();
 
 			// Step 3. An updated version of the product from step 2 arrives
 			// with a
@@ -754,54 +707,37 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			// remove themselves from the event from step 1.
 
 			// There should be two events in the product index.
-			List<Event> events = indexer.getProductIndex().getEvents(
-					new ProductIndexQuery());
-			Assert.assertEquals("There should be two events in the index.", 2,
-					events.size());
+			List<Event> events = indexer.getProductIndex().getEvents(new ProductIndexQuery());
+			Assert.assertEquals("There should be two events in the index.", 2, events.size());
 
 			// The US event should be near LA, the NC event should be near SF.
 			Iterator<Event> eventIter = events.iterator();
 			while (eventIter.hasNext()) {
 				Event event = eventIter.next();
 				if ("usone".equals(event.getEventId())) {
-					Assert.assertEquals(
-							"us event should have location near Los Angeles",
-							oldLat, event.getLatitude());
-					Assert.assertEquals(
-							"us event should have a location near Los Angeles",
-							oldLng, event.getLongitude());
+					Assert.assertEquals("us event should have location near Los Angeles", oldLat, event.getLatitude());
+					Assert.assertEquals("us event should have a location near Los Angeles", oldLng, event.getLongitude());
 				} else if ("ncuno".equals(event.getEventId())) {
-					Assert.assertEquals(
-							"nc event should have location near San Francisco",
-							newLat, event.getLatitude());
-					Assert.assertEquals(
-							"nc event should have a location near San Francisco",
-							newLng, event.getLongitude());
+					Assert.assertEquals("nc event should have location near San Francisco", newLat, event.getLatitude());
+					Assert.assertEquals("nc event should have a location near San Francisco", newLng, event.getLongitude());
 				}
 			}
 
 			// We should see an EVENT_UPDATED followed by an EVENT_SPLIT
-			Vector<IndexerChange> changes = getLatestIndexerEvent()
-					.getIndexerChanges();
+			Vector<IndexerChange> changes = getLatestIndexerEvent().getIndexerChanges();
 
-			Assert.assertEquals(
-					"There should be two changes occurring in this event.", 2,
-					changes.size());
-			Assert.assertEquals("The first change should be an EVENT_UPDATED",
-					IndexerChange.EVENT_UPDATED.toString(), changes.get(0)
-							.getType().toString());
-			Assert.assertEquals("The second change should be an EVENT_SPLIT",
-					IndexerChange.EVENT_SPLIT.toString(), changes.get(1)
-							.getType().toString());
+			Assert.assertEquals("There should be two changes occurring in this event.", 2, changes.size());
+			Assert.assertEquals("The first change should be an EVENT_UPDATED", IndexerChange.EVENT_UPDATED.toString(),
+					changes.get(0).getType().toString());
+			Assert.assertEquals("The second change should be an EVENT_SPLIT", IndexerChange.EVENT_SPLIT.toString(),
+					changes.get(1).getType().toString());
 
 			// The event that was, "UPDATED" should have the same eventId as the
 			// savedEventId
-			Assert.assertEquals("Checking if the correct event was updated.",
-					savedEventId, changes.get(0).getNewEvent().getEventId());
-			Assert.assertTrue(
-					"Checking if the correct event was split.",
-					!savedEventId.equals(changes.get(1).getNewEvent()
-							.getEventId()));
+			Assert.assertEquals("Checking if the correct event was updated.", savedEventId,
+					changes.get(0).getNewEvent().getEventId());
+			Assert.assertTrue("Checking if the correct event was split.",
+					!savedEventId.equals(changes.get(1).getNewEvent().getEventId()));
 		} catch (Exception ex) {
 			ex.printStackTrace(System.err);
 			Assert.fail("Exception during onProductSplitTest2");
@@ -821,16 +757,13 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		BigDecimal glueLat = BigDecimal.valueOf(0.0);
 		BigDecimal glueLng = BigDecimal.valueOf(0.0);
 
-		ProductIndexQuery locationQuery = indexer.getAssociator()
-				.getLocationQuery(eventTime, glueLat, glueLng);
+		ProductIndexQuery locationQuery = indexer.getAssociator().getLocationQuery(eventTime, glueLat, glueLng);
 
 		BigDecimal leftLat = locationQuery.getMinEventLatitude().add(epsilon);
 		BigDecimal leftLng = locationQuery.getMinEventLongitude().add(epsilon);
 
-		BigDecimal rightLat = locationQuery.getMaxEventLatitude().subtract(
-				epsilon);
-		BigDecimal rightLng = locationQuery.getMaxEventLongitude().subtract(
-				epsilon);
+		BigDecimal rightLat = locationQuery.getMaxEventLatitude().subtract(epsilon);
+		BigDecimal rightLng = locationQuery.getMaxEventLongitude().subtract(epsilon);
 
 		BigDecimal antiGlueLat = BigDecimal.valueOf(10.0);
 		BigDecimal antiGlueLng = BigDecimal.valueOf(10.0);
@@ -911,8 +844,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			}
 
 			// Save the current event id for later checking
-			String savedEventId = indexer.getProductIndex()
-					.getEvents(new ProductIndexQuery()).get(0).getEventId();
+			String savedEventId = indexer.getProductIndex().getEvents(new ProductIndexQuery()).get(0).getEventId();
 
 			// An updated version of the product from step 1 moves the location
 			// of
@@ -923,8 +855,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			// step 3 splits into three separate events (one for products in
 			// step
 			// 1/4, one for product in step 2, and one for product in step 3.
-			ProductId antiGlueProductId = new ProductId("us", "testproduct",
-					"one");
+			ProductId antiGlueProductId = new ProductId("us", "testproduct", "one");
 			Product antiGlueProduct = new Product(antiGlueProductId);
 
 			antiGlueProduct.setEventSource("us");
@@ -945,28 +876,23 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			// There should be three changes in this IndexerEvent
 			IndexerEvent indexerEvent = getLatestIndexerEvent();
 			Vector<IndexerChange> changes = indexerEvent.getIndexerChanges();
-			Assert.assertEquals(
-					"There should be three changes in this IndexerEvent.", 3,
-					changes.size());
+			Assert.assertEquals("There should be three changes in this IndexerEvent.", 3, changes.size());
 
 			// The first change should be an EVENT_UPDATED for the savedEventId
-			Assert.assertEquals("The first change should be EVENT_UPDATED.",
-					IndexerChange.EVENT_UPDATED, changes.get(0).getType());
-			Assert.assertEquals(
-					"The first change should have the savedEventId.",
-					savedEventId, changes.get(0).getNewEvent().getEventId());
+			Assert.assertEquals("The first change should be EVENT_UPDATED.", IndexerChange.EVENT_UPDATED,
+					changes.get(0).getType());
+			Assert.assertEquals("The first change should have the savedEventId.", savedEventId,
+					changes.get(0).getNewEvent().getEventId());
 
 			// The second two changes should be EVENT_SPLIT
-			Assert.assertEquals("The second change should be an EVENT_SPLIT.",
-					IndexerChange.EVENT_SPLIT, changes.get(1).getType());
-			Assert.assertEquals("The third change should be an EVENT_SPLIT.",
-					IndexerChange.EVENT_SPLIT, changes.get(2).getType());
+			Assert.assertEquals("The second change should be an EVENT_SPLIT.", IndexerChange.EVENT_SPLIT,
+					changes.get(1).getType());
+			Assert.assertEquals("The third change should be an EVENT_SPLIT.", IndexerChange.EVENT_SPLIT,
+					changes.get(2).getType());
 
 			// There should be three events in the index.
-			List<Event> events = indexer.getProductIndex().getEvents(
-					new ProductIndexQuery());
-			Assert.assertEquals("There should be three events in the index.",
-					3, events.size());
+			List<Event> events = indexer.getProductIndex().getEvents(new ProductIndexQuery());
+			Assert.assertEquals("There should be three events in the index.", 3, events.size());
 
 		} catch (Exception ex) {
 			ex.printStackTrace(System.err);
@@ -976,9 +902,9 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 	/**
 	 * Tests the indexer's periodic cleanup functionality to check the index on
-	 * regular (configurable) intervals and remove expired (configurable) events
-	 * and products.
-	 * 
+	 * regular (configurable) intervals and remove expired (configurable) events and
+	 * products.
+	 *
 	 * @author emartinez
 	 * @see gov.usgs.earthquake.indexer.Indexer#purgeExpiredProducts()
 	 * @see gov.usgs.earthquake.indexer.Indexer#INDEX_CLEANUP_INTERVAL_PROPERTY
@@ -1039,12 +965,12 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			// Add a product that creates an event
 			Product product = createProduct();
 			indexer.onProduct(product);
-			
+
 			// ensure that the product has time to create an event
 			synchronized (syncObject) {
 				syncObject.wait();
 			}
-			
+
 			// Add a product, that associates with the event
 			Product firstProduct = createSourceProduct();
 			firstProduct.getId().setUpdateTime(new Date());
@@ -1086,8 +1012,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			Assert.assertFalse(summaries.contains(summary));
 
 			// save old archive policies
-			List<ArchivePolicy> oldArchivePolicies = new ArrayList<ArchivePolicy>(
-					indexer.getArchivePolicies());
+			List<ArchivePolicy> oldArchivePolicies = new ArrayList<ArchivePolicy>(indexer.getArchivePolicies());
 			indexer.getArchivePolicies().clear();
 
 			// set new archive policy to delete everything with
@@ -1100,7 +1025,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 			// enable archiving and wait long enough for it to run
 			indexer.setDisableArchive(false);
-			
+
 			// ensure the archive policy runs
 			synchronized (syncObject) {
 				syncObject.wait();
@@ -1122,8 +1047,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			ProductIndexQuery allProductsQuery = new ProductIndexQuery();
 			allProductsQuery.setEventSource(product.getEventSource());
 			allProductsQuery.setResultType(ProductIndexQuery.RESULT_TYPE_ALL);
-			List<ProductSummary> allSummaries = productIndex
-					.getProducts(allProductsQuery);
+			List<ProductSummary> allSummaries = productIndex.getProducts(allProductsQuery);
 
 			// Assert all products were deleted
 			Assert.assertTrue(allSummaries.size() == 0);
@@ -1139,11 +1063,11 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	 * Normally two events that are not within the association window will not
 	 * associate (~100km, 16seconds). The associate product can override this
 	 * behavior.
-	 * 
+	 *
 	 * This test creates two events that are not nearby (LA, SF) from different
 	 * sources. It then sends an associate product to force the association, and
 	 * verifies the events merge.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -1161,8 +1085,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		Date theDate = new Date();
 
 		// Step1. Create a product that will add an event to the index.
-		ProductId product1Id = new ProductId("us", "testproduct",
-				"testproduct-one");
+		ProductId product1Id = new ProductId("us", "testproduct", "testproduct-one");
 
 		Product product1 = new Product(product1Id);
 		product1.setEventSource("notus");
@@ -1183,8 +1106,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		// Step2. Create a product that will add an event to the index
 		// will not by itself associate to the previous event.
 
-		ProductId product2Id = new ProductId("us", "testproduct",
-				"testproduct-two");
+		ProductId product2Id = new ProductId("us", "testproduct", "testproduct-two");
 
 		Product product2 = new Product(product2Id);
 		product2.setEventSource("us");
@@ -1204,17 +1126,14 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 		// send associate product to force association
 
-		ProductId product3Id = new ProductId("admin",
-				Event.ASSOCIATE_PRODUCT_TYPE, product1.getEventId() + "_"
-						+ product2.getEventId());
+		ProductId product3Id = new ProductId("admin", Event.ASSOCIATE_PRODUCT_TYPE,
+				product1.getEventId() + "_" + product2.getEventId());
 
 		Product product3 = new Product(product3Id);
 		product3.setEventSource(product2.getEventSource());
 		product3.setEventSourceCode(product2.getEventSourceCode());
-		product3.getProperties().put(Event.OTHEREVENTSOURCE_PROPERTY,
-				product1.getEventSource());
-		product3.getProperties().put(Event.OTHEREVENTSOURCECODE_PROPERTY,
-				product1.getEventSourceCode());
+		product3.getProperties().put(Event.OTHEREVENTSOURCE_PROPERTY, product1.getEventSource());
+		product3.getProperties().put(Event.OTHEREVENTSOURCECODE_PROPERTY, product1.getEventSourceCode());
 		product3.setTrackerURL(new URL("http://localhost/tracker"));
 
 		indexer.onProduct(product3);
@@ -1226,24 +1145,21 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		}
 
 		// verify merge event
-		Vector<IndexerChange> changes = getLatestIndexerEvent()
-				.getIndexerChanges();
+		Vector<IndexerChange> changes = getLatestIndexerEvent().getIndexerChanges();
 
 		Assert.assertEquals(2, changes.size());
-		Assert.assertEquals("First change is EVENT_MERGED", changes.get(0)
-				.getType(), IndexerChangeType.EVENT_MERGED);
-		Assert.assertEquals("Second change is EVENT_UPDATED", changes.get(1)
-				.getType(), IndexerChangeType.EVENT_UPDATED);
+		Assert.assertEquals("First change is EVENT_MERGED", changes.get(0).getType(), IndexerChangeType.EVENT_MERGED);
+		Assert.assertEquals("Second change is EVENT_UPDATED", changes.get(1).getType(), IndexerChangeType.EVENT_UPDATED);
 	}
 
 	/**
-	 * Normally two event codes from the same event source prevents association.
-	 * The associate product can override this behavior.
-	 * 
-	 * This test creates two events that are nearby, but from the same source.
-	 * It then sends an associate product to force the association, and verifies
-	 * the events merge.
-	 * 
+	 * Normally two event codes from the same event source prevents association. The
+	 * associate product can override this behavior.
+	 *
+	 * This test creates two events that are nearby, but from the same source. It
+	 * then sends an associate product to force the association, and verifies the
+	 * events merge.
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -1261,8 +1177,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		Date theDate = new Date();
 
 		// Step1. Create a product that will add an event to the index.
-		ProductId product1Id = new ProductId("us", "testproduct",
-				"testproduct-one");
+		ProductId product1Id = new ProductId("us", "testproduct", "testproduct-one");
 
 		Product product1 = new Product(product1Id);
 		product1.setEventSource("us");
@@ -1283,8 +1198,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		// Step2. Create a product that will add an event to the index
 		// will not by itself associate to the previous event.
 
-		ProductId product2Id = new ProductId("us", "testproduct",
-				"testproduct-two");
+		ProductId product2Id = new ProductId("us", "testproduct", "testproduct-two");
 
 		Product product2 = new Product(product2Id);
 		product2.setEventSource("us");
@@ -1304,17 +1218,14 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 		// send associate product to force association
 
-		ProductId product3Id = new ProductId("admin",
-				Event.ASSOCIATE_PRODUCT_TYPE, product1.getEventId() + "_"
-						+ product2.getEventId());
+		ProductId product3Id = new ProductId("admin", Event.ASSOCIATE_PRODUCT_TYPE,
+				product1.getEventId() + "_" + product2.getEventId());
 
 		Product product3 = new Product(product3Id);
 		product3.setEventSource(product2.getEventSource());
 		product3.setEventSourceCode(product2.getEventSourceCode());
-		product3.getProperties().put(Event.OTHEREVENTSOURCE_PROPERTY,
-				product1.getEventSource());
-		product3.getProperties().put(Event.OTHEREVENTSOURCECODE_PROPERTY,
-				product1.getEventSourceCode());
+		product3.getProperties().put(Event.OTHEREVENTSOURCE_PROPERTY, product1.getEventSource());
+		product3.getProperties().put(Event.OTHEREVENTSOURCECODE_PROPERTY, product1.getEventSourceCode());
 		product3.setTrackerURL(new URL("http://localhost/tracker"));
 
 		indexer.onProduct(product3);
@@ -1326,14 +1237,11 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		}
 
 		// verify merge event
-		Vector<IndexerChange> changes = getLatestIndexerEvent()
-				.getIndexerChanges();
+		Vector<IndexerChange> changes = getLatestIndexerEvent().getIndexerChanges();
 
 		Assert.assertEquals(2, changes.size());
-		Assert.assertEquals("First change is EVENT_MERGED", changes.get(0)
-				.getType(), IndexerChangeType.EVENT_MERGED);
-		Assert.assertEquals("Second change is EVENT_UPDATED", changes.get(1)
-				.getType(), IndexerChangeType.EVENT_UPDATED);
+		Assert.assertEquals("First change is EVENT_MERGED", changes.get(0).getType(), IndexerChangeType.EVENT_MERGED);
+		Assert.assertEquals("Second change is EVENT_UPDATED", changes.get(1).getType(), IndexerChangeType.EVENT_UPDATED);
 	}
 
 	@Test
@@ -1354,8 +1262,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		Date theDate = new Date();
 
 		// Step1. Create a product that will add an event to the index.
-		ProductId product1Id = new ProductId("us", "testproduct",
-				"event1");
+		ProductId product1Id = new ProductId("us", "testproduct", "event1");
 
 		Product product1 = new Product(product1Id);
 		product1.setEventSource("us");
@@ -1376,8 +1283,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		// Step2. Create a product that will add an event to the index
 		// will not by itself associate to the previous event.
 
-		ProductId product2Id = new ProductId("us", "testproduct",
-				"event2");
+		ProductId product2Id = new ProductId("us", "testproduct", "event2");
 
 		Product product2 = new Product(product2Id);
 		product2.setEventSource("us");
@@ -1397,8 +1303,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 		// Step3. send product from separate source to keep second event "alive"
 
-		ProductId product3Id = new ProductId("notus", "testproduct",
-				"otherevent");
+		ProductId product3Id = new ProductId("notus", "testproduct", "otherevent");
 
 		Product product3 = new Product(product3Id);
 		product3.setEventSource("notus");
@@ -1416,10 +1321,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			syncObject.wait();
 		}
 
-
 		// Step4. delete product that forced event to split
-		ProductId product4Id = new ProductId("us", "testproduct",
-				"event2");
+		ProductId product4Id = new ProductId("us", "testproduct", "event2");
 
 		Product product4 = new Product(product4Id);
 		product4.setEventSource("us");
@@ -1434,14 +1337,11 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		}
 
 		// verify merge event
-		Vector<IndexerChange> changes = getLatestIndexerEvent()
-				.getIndexerChanges();
+		Vector<IndexerChange> changes = getLatestIndexerEvent().getIndexerChanges();
 
 		Assert.assertEquals(2, changes.size());
-		Assert.assertEquals("First change is EVENT_MERGED", changes.get(0)
-				.getType(), IndexerChangeType.EVENT_MERGED);
-		Assert.assertEquals("Second change is EVENT_UPDATED", changes.get(1)
-				.getType(), IndexerChangeType.EVENT_UPDATED);
+		Assert.assertEquals("First change is EVENT_MERGED", changes.get(0).getType(), IndexerChangeType.EVENT_MERGED);
+		Assert.assertEquals("Second change is EVENT_UPDATED", changes.get(1).getType(), IndexerChangeType.EVENT_UPDATED);
 	}
 
 	@Test
@@ -1456,7 +1356,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		rootLogger.setLevel(Level.FINEST);
 
 		Date eventTime = new Date();
-		BigDecimal latitude = BigDecimal.valueOf(35.0);
+		BigDecimal latitude = BigDecimal.valueOf(34.0);
 		BigDecimal longitude = BigDecimal.valueOf(-118.0);
 		URL url = new URL("http://localhost/tracker");
 
@@ -1482,13 +1382,13 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		// source and event source code are distinct. Since the locations
 		// are "nearby", this product should be associated to the event
 		// created in step 1.
-		ProductId product2Id = new ProductId("sc", "testproduct", "uno");
+		ProductId product2Id = new ProductId("ci", "testproduct", "uno");
 		Product product2 = new Product(product2Id);
 		product2.setEventTime(eventTime);
 		product2.setLatitude(latitude);
 		product2.setLongitude(longitude);
 		product2.setTrackerURL(url);
-		product2.setEventSource("sc");
+		product2.setEventSource("ci");
 		product2.setEventSourceCode("uno");
 
 		indexer.onProduct(product2);
@@ -1497,14 +1397,11 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		}
 
 		// at this point sc should be authoritative
-		Assert.assertTrue(
-				"sc authoritative before trump",
-				getLatestIndexerEvent().getEvents().get(0).getEventId()
-						.equals("scuno"));
+		Assert.assertTrue("ci authoritative before trump",
+				getLatestIndexerEvent().getEvents().get(0).getEventId().equals("ciuno"));
 
 		// send trump to make us more preferred
-		ProductId trumpId = new ProductId("admin", "trump",
-				"us-testproduct-one");
+		ProductId trumpId = new ProductId("admin", "trump", "us-testproduct-one");
 		Product trump = new Product(trumpId);
 		trump.addLink("product", new URI(product1Id.toString()));
 		trump.getProperties().put("weight", "1000");
@@ -1517,10 +1414,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			syncObject.wait();
 		}
 
-		Assert.assertTrue(
-				"us authoritative after trump",
-				getLatestIndexerEvent().getEvents().get(0).getEventId()
-						.equals("usone"));
+		Assert.assertTrue("us authoritative after trump",
+				getLatestIndexerEvent().getEvents().get(0).getEventId().equals("usone"));
 
 		// delete trump to make us less preferred
 		trump.getId().setUpdateTime(new Date());
@@ -1533,10 +1428,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			syncObject.wait();
 		}
 
-		Assert.assertTrue(
-				"sc authoritative after deleting trump",
-				getLatestIndexerEvent().getEvents().get(0).getEventId()
-						.equals("scuno"));
+		Assert.assertTrue("sc authoritative after deleting trump",
+				getLatestIndexerEvent().getEvents().get(0).getEventId().equals("ciuno"));
 	}
 
 	@Test
@@ -1573,8 +1466,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 				syncObject.wait();
 			}
 
-			Assert.assertFalse("not deleted after first product",
-					getLatestIndexerEvent().getEvents().get(0).isDeleted());
+			Assert.assertFalse("not deleted after first product", getLatestIndexerEvent().getEvents().get(0).isDeleted());
 
 			// Step 2. Same product from step 1 is deleted, and no event
 			// parameters
@@ -1591,31 +1483,29 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			}
 
 			// at this point sc should be authoritative
-			Assert.assertTrue("deleted after second product",
-					getLatestIndexerEvent().getEvents().get(0).isDeleted());
+			Assert.assertTrue("deleted after second product", getLatestIndexerEvent().getEvents().get(0).isDeleted());
 		} finally {
 
 		}
 	}
 
 	/**
-	 * This test reproduce(d/s) an exception caused by a product archive policy
-	 * bug.
-	 * 
+	 * This test reproduce(d/s) an exception caused by a product archive policy bug.
+	 *
 	 * The exception was: <code>
 	 * java.sql.SQLException: [SQLITE_CONSTRAINT]  Abort due to constraint violation (columns source, sourceCode are not unique)
 	 * </code>
-	 * 
-	 * The cause was in a patch to the Indexer.removeSummary method.
-	 * removeSummary was calling index.removeAssociation, which removes the
-	 * association of all versions of a product and event, instead of just the
-	 * association between one product and the event.
-	 * 
+	 *
+	 * The cause was in a patch to the Indexer.removeSummary method. removeSummary
+	 * was calling index.removeAssociation, which removes the association of all
+	 * versions of a product and event, instead of just the association between one
+	 * product and the event.
+	 *
 	 * Simply removing the product is enough to remove the association, so the
 	 * removeSummary method was updated to remove the summary from the index and
-	 * event object and then update the index; leaving newer/other versions of
-	 * the product intact.
-	 * 
+	 * event object and then update the index; leaving newer/other versions of the
+	 * product intact.
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -1630,21 +1520,12 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			rootLogger.addHandler(handler);
 			rootLogger.setLevel(Level.FINER);
 
-			Product product1 = ObjectProductHandler
-					.getProduct(new XmlProductSource(
-							StreamUtils
-									.getInputStream(new File(
-											"etc/test_products/nc71932931/nc_origin_nc71932931_1359717290440.xml"))));
-			Product product2 = ObjectProductHandler
-					.getProduct(new XmlProductSource(
-							StreamUtils
-									.getInputStream(new File(
-											"etc/test_products/nc71932931/nc_origin_nc71932931_1359717370445.xml"))));
-			Product product3 = ObjectProductHandler
-					.getProduct(new XmlProductSource(
-							StreamUtils
-									.getInputStream(new File(
-											"etc/test_products/nc71932931/nc_origin_nc71932931_1359740134563.xml"))));
+			Product product1 = ObjectProductHandler.getProduct(new XmlProductSource(
+					StreamUtils.getInputStream(new File("etc/test_products/nc71932931/nc_origin_nc71932931_1359717290440.xml"))));
+			Product product2 = ObjectProductHandler.getProduct(new XmlProductSource(
+					StreamUtils.getInputStream(new File("etc/test_products/nc71932931/nc_origin_nc71932931_1359717370445.xml"))));
+			Product product3 = ObjectProductHandler.getProduct(new XmlProductSource(
+					StreamUtils.getInputStream(new File("etc/test_products/nc71932931/nc_origin_nc71932931_1359740134563.xml"))));
 
 			indexer.onProduct(product1);
 			synchronized (syncObject) {
@@ -1658,8 +1539,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 			System.err.println("Enabling archive policy");
 			// save these for now
-			List<ArchivePolicy> oldArchivePolicies = new ArrayList<ArchivePolicy>(
-					indexer.getArchivePolicies());
+			List<ArchivePolicy> oldArchivePolicies = new ArrayList<ArchivePolicy>(indexer.getArchivePolicies());
 			indexer.getArchivePolicies().clear();
 			ProductArchivePolicy oldVersionsPolicy = new ProductArchivePolicy();
 			oldVersionsPolicy.setOnlySuperseded(true);
@@ -1695,12 +1575,11 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 	/**
 	 * Creates a product that can not in-and-of itself create an event. It also
-	 * lacks the basic parameters required to be able to associate to any
-	 * existing event using the default associator.
-	 * 
-	 * Namely, the generated product lacks a latitude, longitude, and event
-	 * time.
-	 * 
+	 * lacks the basic parameters required to be able to associate to any existing
+	 * event using the default associator.
+	 *
+	 * Namely, the generated product lacks a latitude, longitude, and event time.
+	 *
 	 * @return The generated product
 	 * @author emartinez
 	 * @see gov.usgs.earthquake.product.ProductTest#getProduct()
@@ -1712,13 +1591,13 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 	/**
 	 * Creates a product that can in-and-of itself create an event. It may also
-	 * associate to another product assuming its basic parameters are within
-	 * range of the default associator thresholds.
-	 * 
-	 * Namely this product sets its latitude and longitude values to 0.0 and
-	 * uses the current date/time as the event time.
-	 * 
-	 * 
+	 * associate to another product assuming its basic parameters are within range
+	 * of the default associator thresholds.
+	 *
+	 * Namely this product sets its latitude and longitude values to 0.0 and uses
+	 * the current date/time as the event time.
+	 *
+	 *
 	 * @return The generated product
 	 * @author emartinez
 	 * @see #createUnassociatableProduct()
@@ -1736,10 +1615,10 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * Create a product that can only be associated with an existing event based
-	 * on the eventSource and eventSourceCode properties. In other words, the
-	 * generated product doesn't have a lat, lon, or event time.
-	 * 
+	 * Create a product that can only be associated with an existing event based on
+	 * the eventSource and eventSourceCode properties. In other words, the generated
+	 * product doesn't have a lat, lon, or event time.
+	 *
 	 * @return The generated product
 	 * @see #createUnassociatableProduct()
 	 * @see gov.usgs.earthquake.product.ProductTest#getProduct()
@@ -1755,12 +1634,11 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * Simple setter event for the most recently received IndexerEvent. Set from
-	 * the "onIndexerEvent" method.
-	 * 
-	 * @param event
-	 *            The most recently received IndexerEvent from the
-	 *            "onIndexerEvent" method.
+	 * Simple setter event for the most recently received IndexerEvent. Set from the
+	 * "onIndexerEvent" method.
+	 *
+	 * @param event The most recently received IndexerEvent from the
+	 *              "onIndexerEvent" method.
 	 * @see #onIndexerEvent(IndexerEvent)
 	 */
 	private void setLatestIndexerEvent(IndexerEvent event) {
@@ -1768,9 +1646,9 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * Simple getter method to return the most recently received IndexerEvent
-	 * via the "onIndexerEvent" method.
-	 * 
+	 * Simple getter method to return the most recently received IndexerEvent via
+	 * the "onIndexerEvent" method.
+	 *
 	 * @return The most recently received IndexerEvent
 	 * @see #onIndexerEvent(IndexerEvent)
 	 */
@@ -1779,12 +1657,12 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * Implements the IndexerListener interface. Upon receiving notification we
-	 * wait for 50 milliseconds to ensure the syncObject has been able to go
-	 * into its "wait" mode before we notify. Next we update our notification
-	 * event with the incoming event. Finally we notify our syncObject so it can
-	 * continue with processing in the test.
-	 * 
+	 * Implements the IndexerListener interface. Upon receiving notification we wait
+	 * for 50 milliseconds to ensure the syncObject has been able to go into its
+	 * "wait" mode before we notify. Next we update our notification event with the
+	 * incoming event. Finally we notify our syncObject so it can continue with
+	 * processing in the test.
+	 *
 	 * @see gov.usgs.earthquake.indexer.IndexerListener
 	 * @see #onProductNewTest()
 	 * @see #onProductUpdatedTest()
@@ -1820,10 +1698,9 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		return 0;
 	}
 
-
 	/**
 	 * Test for indexer persistent trump product support.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -1860,8 +1737,7 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		}
 
 		Event latestEvent = getLatestIndexerEvent().getEvents().get(0);
-		List<ProductSummary> latestProducts = Event.getSortedMostPreferredFirst(
-				latestEvent.getProducts("testproduct"));
+		List<ProductSummary> latestProducts = Event.getSortedMostPreferredFirst(latestEvent.getProducts("testproduct"));
 		long originalPreferredWeight = latestProducts.get(0).getPreferredWeight();
 
 		// Step 2. Another product arrives with a similar latitude,
@@ -1886,13 +1762,10 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 		// at this point ci should be authoritative
 		latestEvent = getLatestIndexerEvent().getEvents().get(0);
-		Assert.assertTrue(
-				"ci authoritative before trump",
-				latestEvent.getEventId().equals("ciuno"));
+		Assert.assertTrue("ci authoritative before trump", latestEvent.getEventId().equals("ciuno"));
 
 		// send trump to make us more preferred
-		ProductId trumpId = new ProductId("admin", "trump-testproduct",
-				"us-testproduct-one");
+		ProductId trumpId = new ProductId("admin", "trump-testproduct", "us-testproduct-one");
 		Product trump = new Product(trumpId);
 		trump.getProperties().put("trump-source", product1Id.getSource());
 		trump.getProperties().put("trump-code", product1Id.getCode());
@@ -1906,18 +1779,11 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		}
 
 		latestEvent = getLatestIndexerEvent().getEvents().get(0);
-		latestProducts = Event.getSortedMostPreferredFirst(
-				latestEvent.getProducts("testproduct"));
-		Assert.assertTrue(
-				"us authoritative after trump",
-				latestEvent.getEventId().equals("usone"));
-		Assert.assertEquals("us is preferred after trump",
-				latestProducts.get(0).getSource(), "us");
-		Assert.assertEquals("us has trump preferred weight",
-				latestProducts.get(0).getPreferredWeight(),
+		latestProducts = Event.getSortedMostPreferredFirst(latestEvent.getProducts("testproduct"));
+		Assert.assertTrue("us authoritative after trump", latestEvent.getEventId().equals("usone"));
+		Assert.assertEquals("us is preferred after trump", latestProducts.get(0).getSource(), "us");
+		Assert.assertEquals("us has trump preferred weight", latestProducts.get(0).getPreferredWeight(),
 				Indexer.TRUMP_PREFERRED_WEIGHT);
-
-
 
 		// send update to original product (now trumped)
 		// make sure trump persists
@@ -1928,20 +1794,14 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		}
 
 		latestEvent = getLatestIndexerEvent().getEvents().get(0);
-		latestProducts = Event.getSortedMostPreferredFirst(
-				latestEvent.getProducts("testproduct"));
-		Assert.assertTrue(
-				"us authoritative after update",
-				latestEvent.getEventId().equals("usone"));
-		Assert.assertEquals("us is still preferred after update",
-				latestProducts.get(0).getSource(), "us");
-		Assert.assertEquals("us still has trump preferred weight",
-				latestProducts.get(0).getPreferredWeight(),
+		latestProducts = Event.getSortedMostPreferredFirst(latestEvent.getProducts("testproduct"));
+		Assert.assertTrue("us authoritative after update", latestEvent.getEventId().equals("usone"));
+		Assert.assertEquals("us is still preferred after update", latestProducts.get(0).getSource(), "us");
+		Assert.assertEquals("us still has trump preferred weight", latestProducts.get(0).getPreferredWeight(),
 				Indexer.TRUMP_PREFERRED_WEIGHT);
 
 		// send second trump to make sc more preferred
-		ProductId trump2Id = new ProductId("admin", "trump-testproduct",
-				"sc-testproduct-uno");
+		ProductId trump2Id = new ProductId("admin", "trump-testproduct", "sc-testproduct-uno");
 		Product trump2 = new Product(trump2Id);
 		trump2.getProperties().put("trump-source", product2Id.getSource());
 		trump2.getProperties().put("trump-code", product2Id.getCode());
@@ -1955,17 +1815,12 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		}
 
 		latestEvent = getLatestIndexerEvent().getEvents().get(0);
-		latestProducts = Event.getSortedMostPreferredFirst(
-				latestEvent.getProducts("testproduct"));
-		Assert.assertTrue("ci authoritative after second trump",
-				latestEvent.getEventId().equals("ciuno"));
-		Assert.assertEquals("ci is preferred after trump",
-				latestProducts.get(0).getSource(), "ci");
-		Assert.assertEquals("ci has trump preferred weight",
-				latestProducts.get(0).getPreferredWeight(),
+		latestProducts = Event.getSortedMostPreferredFirst(latestEvent.getProducts("testproduct"));
+		Assert.assertTrue("ci authoritative after second trump", latestEvent.getEventId().equals("ciuno"));
+		Assert.assertEquals("ci is preferred after trump", latestProducts.get(0).getSource(), "ci");
+		Assert.assertEquals("ci has trump preferred weight", latestProducts.get(0).getPreferredWeight(),
 				Indexer.TRUMP_PREFERRED_WEIGHT);
-		Assert.assertEquals("us product has original preferred weight",
-				latestProducts.get(1).getPreferredWeight(),
+		Assert.assertEquals("us product has original preferred weight", latestProducts.get(1).getPreferredWeight(),
 				originalPreferredWeight);
 
 		// delete second trump to once again make us more preferred
@@ -1977,17 +1832,12 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		}
 
 		latestEvent = getLatestIndexerEvent().getEvents().get(0);
-		latestProducts = Event.getSortedMostPreferredFirst(
-				latestEvent.getProducts("testproduct"));
-		Assert.assertTrue("us authoritative after deleting second trump",
-				latestEvent.getEventId().equals("usone"));
-		Assert.assertEquals("us is preferred after deleting second trump",
-				latestProducts.get(0).getSource(), "us");
+		latestProducts = Event.getSortedMostPreferredFirst(latestEvent.getProducts("testproduct"));
+		Assert.assertTrue("us authoritative after deleting second trump", latestEvent.getEventId().equals("usone"));
+		Assert.assertEquals("us is preferred after deleting second trump", latestProducts.get(0).getSource(), "us");
 		Assert.assertEquals("us has trump preferred weight after deleting second trump",
-				latestProducts.get(0).getPreferredWeight(),
-				Indexer.TRUMP_PREFERRED_WEIGHT);
-		Assert.assertNotSame("ci product has regular preferred weight",
-				latestProducts.get(1).getPreferredWeight(),
+				latestProducts.get(0).getPreferredWeight(), Indexer.TRUMP_PREFERRED_WEIGHT);
+		Assert.assertNotSame("ci product has regular preferred weight", latestProducts.get(1).getPreferredWeight(),
 				Indexer.TRUMP_PREFERRED_WEIGHT);
 
 		// delete trump to make us less preferred
@@ -2000,14 +1850,10 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 		}
 
 		latestEvent = getLatestIndexerEvent().getEvents().get(0);
-		latestProducts = Event.getSortedMostPreferredFirst(
-				latestEvent.getProducts("testproduct"));
-		Assert.assertTrue(
-				"ci authoritative after deleting trump",
-				latestEvent.getEventId().equals("ciuno"));
+		latestProducts = Event.getSortedMostPreferredFirst(latestEvent.getProducts("testproduct"));
+		Assert.assertTrue("ci authoritative after deleting trump", latestEvent.getEventId().equals("ciuno"));
 		Assert.assertEquals("testproduct has original preferred weight",
-				latestEvent.getProducts("testproduct").get(1).getPreferredWeight(),
-				originalPreferredWeight);
+				latestEvent.getProducts("testproduct").get(1).getPreferredWeight(), originalPreferredWeight);
 
 	}
 }

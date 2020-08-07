@@ -90,8 +90,8 @@ public class ShakeMapIndexerModuleTest {
 		Product zoom = createProduct(ZOOM_TEST_FILE);
 		ProductSummary zoomSummary = module.getProductSummary(zoom);
 
-		Assert.assertEquals("Epicenter summary weight", epicenterSummary.getPreferredWeight(), 181L);
-		Assert.assertEquals("Zoom summary weight", zoomSummary.getPreferredWeight(), 171L);
+		Assert.assertEquals("Epicenter summary weight", epicenterSummary.getPreferredWeight(), 182L);
+		Assert.assertEquals("Zoom summary weight", zoomSummary.getPreferredWeight(), 172L);
 		Assert.assertTrue("Epicenter map preferred",
 				epicenterSummary.getPreferredWeight() > zoomSummary.getPreferredWeight());
 	}
@@ -101,8 +101,7 @@ public class ShakeMapIndexerModuleTest {
 		ProductSummary atlasSummary = new ProductSummary();
 		atlasSummary.setId(new ProductId("atlas", "type", "code"));
 
-		Assert.assertEquals("Atlas summary weight", 201,
-				module.getPreferredWeight(atlasSummary));
+		Assert.assertEquals("Atlas summary weight", 201, module.getPreferredWeight(atlasSummary));
 	}
 
 	private Product createProduct(String testFile) throws Exception {
