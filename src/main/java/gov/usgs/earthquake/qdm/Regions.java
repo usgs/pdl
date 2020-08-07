@@ -36,7 +36,12 @@ public class Regions {
      * so it is always valid since it has no finite boundaries.
      */
     public boolean isValidnetID(final String netid) {
-        return this.netids.contains(netid);
+        for (String i : this.netids) {
+            if (netid.equalsIgnoreCase(i)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     //
