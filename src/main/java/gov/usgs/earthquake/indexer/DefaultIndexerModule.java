@@ -38,6 +38,12 @@ public class DefaultIndexerModule extends DefaultConfigurable implements Indexer
 	/** Weight added when product refers to an authoritative event. */
 	public static final long AUTHORITATIVE_EVENT_WEIGHT = 50;
 
+	/** Weight added when product author has an authoritative region. */
+	public static final long ANSS_CONTRIBUTOR_WEIGHT = 1;
+
+	/** Weight added when product author is NEIC. */
+	public static final long NEIC_CONTRIBUTOR_WEIGHT = 2;
+
 	/** Signature verifier, configured by indexer. */
 	private SignatureVerifier signatureVerifier = new SignatureVerifier();
 
@@ -105,6 +111,16 @@ public class DefaultIndexerModule extends DefaultConfigurable implements Indexer
 				// based on event source, which event this product is about
 				preferredWeight += AUTHORITATIVE_EVENT_WEIGHT;
 			}
+		}
+
+		// anss source check
+		if (regions.isValidnetID(source)) {
+			preferredWeight += ANSS_CONTRIBUTOR_WEIGHT;
+		}
+
+		// neic source check
+		if (regions.isDefaultNetID(source)) {
+			preferredWeight += NEIC_CONTRIBUTOR_WEIGHT;
 		}
 
 		// same source check
