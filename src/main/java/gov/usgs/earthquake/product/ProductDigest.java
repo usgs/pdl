@@ -24,11 +24,11 @@ import java.util.logging.Logger;
 
 /**
  * Used to generate product digests.
- * 
+ *
  * All product attributes and content are used when generating a digest, except
  * any existing signature, since the digest is used to generate or verify
  * signatures.
- * 
+ *
  * Calls to ProductOutput methods on this class must occur in identical order to
  * generate consistent signatures. Therefore it is almost required to use the
  * ObjectProductInput, which fulfills this requirement.
@@ -67,7 +67,7 @@ public class ProductDigest implements ProductHandler {
 
 	/**
 	 * A convenience method that generates a product digest.
-	 * 
+	 *
 	 * @param product
 	 *            the product to digest
 	 * @return the computed digest.
@@ -75,15 +75,21 @@ public class ProductDigest implements ProductHandler {
 	 *             if errors occur while digesting product.
 	 */
 	public static byte[] digestProduct(final Product product) throws Exception {
-		Date start = new Date();
-		ProductDigest productDigest = new ProductDigest();
-		// ObjectProductInput generates ProductOutput calls in a reliable order.
-		new ObjectProductSource(product).streamTo(productDigest);
-		Date end = new Date();
+		byte[] digest = null;
 
-		byte[] digest = productDigest.getDigest();
+		Date start = new Date();
+		try (
+			final ProductDigest productDigest = new ProductDigest();
+			final ObjectProductSource source = new ObjectProductSource(product);
+		) {
+			// ObjectProductSource generates ProductOutput calls in a reliable order.
+			source.streamTo(productDigest);
+			digest = productDigest.getDigest();
+		}
+		Date end = new Date();
 		LOGGER.fine("Digest='" + Base64.getEncoder().encodeToString(digest)
 				+ "' , " + (end.getTime() - start.getTime()) + "ms");
+
 		return digest;
 	}
 

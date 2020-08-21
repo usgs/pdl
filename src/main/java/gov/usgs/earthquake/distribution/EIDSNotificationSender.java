@@ -9,7 +9,6 @@ import gov.usgs.util.FileUtils;
 
 import java.io.File;
 import java.util.Date;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

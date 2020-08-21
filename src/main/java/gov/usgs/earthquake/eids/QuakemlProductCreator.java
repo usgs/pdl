@@ -956,8 +956,13 @@ public class QuakemlProductCreator implements ProductCreator {
 			Iterator<Product> iter = creator.getProducts(quakeml).iterator();
 			while (iter.hasNext()) {
 				Product next = iter.next();
-				new ObjectProductSource(next).streamTo(new XmlProductHandler(
-						new StreamUtils.UnclosableOutputStream(System.err)));
+				try (
+					final ObjectProductSource source = new ObjectProductSource(next);
+					final XmlProductHandler handler = new XmlProductHandler(
+							new StreamUtils.UnclosableOutputStream(System.err));
+				) {
+					source.streamTo(handler);
+				}
 			}
 
 			System.err.println();

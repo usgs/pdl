@@ -1,10 +1,11 @@
 package gov.usgs.earthquake.indexer;
 
 import gov.usgs.earthquake.distribution.FileProductStorage;
-import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.product.io.ObjectProductSource;
 import gov.usgs.earthquake.product.io.XmlProductHandler;
+import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
 
 import java.io.InputStream;
@@ -70,7 +71,7 @@ public class SearchXML {
 
 	/**
 	 * Parse an input stream with xml to a SearchRequest object.
-	 * 
+	 *
 	 * @param in
 	 *            the input stream containing xml.
 	 * @return the parsed SearchRequest object.
@@ -84,7 +85,7 @@ public class SearchXML {
 
 	/**
 	 * Parse an input stream with xml to a SearchResponse object.
-	 * 
+	 *
 	 * @param in
 	 *            the input stream containing xml.
 	 * @param storage
@@ -101,7 +102,7 @@ public class SearchXML {
 
 	/**
 	 * Convert a SearchRequest object to xml.
-	 * 
+	 *
 	 * @param request
 	 *            the search request object to convert.
 	 * @param out
@@ -127,7 +128,7 @@ public class SearchXML {
 
 	/**
 	 * Convert a SearchResponse object to xml.
-	 * 
+	 *
 	 * @param response
 	 *            the search response object to convert.
 	 * @param out
@@ -253,38 +254,14 @@ public class SearchXML {
 				writer.flush();
 				for (Iterator<Product> prodIter = products.iterator(); prodIter
 						.hasNext();) {
-					Product product = prodIter.next();
-					XmlProductHandler handler = new XmlProductHandler(out, false);
-					handler.onBeginProduct(product.getId(),
-							product.getStatus(), product.getTrackerURL());
-					Map<String, String> properties = product.getProperties();
-					for (Iterator<String> propIter = properties.keySet()
-							.iterator(); propIter.hasNext();) {
-						String name = propIter.next();
-						handler.onProperty(product.getId(), name,
-								properties.get(name));
+					final Product product = prodIter.next();
+					try (
+						final ObjectProductSource source = new ObjectProductSource(product);
+						final XmlProductHandler handler = new XmlProductHandler(
+								new StreamUtils.UnclosableOutputStream(out), false);
+					) {
+						source.streamTo(handler);
 					}
-					Map<String, List<URI>> links = product.getLinks();
-					for (Iterator<String> relIter = links.keySet().iterator(); relIter
-							.hasNext();) {
-						String relation = relIter.next();
-						for (Iterator<URI> uriIter = links.get(relation)
-								.iterator(); uriIter.hasNext();) {
-							URI href = uriIter.next();
-							handler.onLink(product.getId(), relation, href);
-						}
-					}
-					Map<String, Content> contents = product.getContents();
-					for (Iterator<String> pathIter = contents.keySet()
-							.iterator(); pathIter.hasNext();) {
-						String path = pathIter.next();
-						handler.onContent(product.getId(), path,
-								contents.get(path));
-					}
-					if (product.getSignature() != null)
-						handler.onSignature(product.getId(),
-								product.getSignature());
-					handler.onEndProduct(product.getId());
 				}
 			} else if (result.getType() == SearchMethod.PRODUCTS_SUMMARY) {
 				ProductsSummaryQuery psQuery = (ProductsSummaryQuery) result;

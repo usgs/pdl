@@ -23,7 +23,7 @@ public class DeflateComparison {
 
 	/**
 	 * Deflate an input stream.
-	 * 
+	 *
 	 * @param level
 	 *            deflate level.
 	 * @param in
@@ -45,7 +45,7 @@ public class DeflateComparison {
 
 	/**
 	 * Transfer an input stream.
-	 * 
+	 *
 	 * @param in
 	 *            input stream to transfer.
 	 * @return output length in bytes.
@@ -59,9 +59,9 @@ public class DeflateComparison {
 
 	/**
 	 * Test different compression levels and speeds for a file.
-	 * 
+	 *
 	 * Reads file into memory to avoid disk io overhead.
-	 * 
+	 *
 	 * @param file
 	 *            file to test.
 	 * @throws IllegalArgumentException
@@ -77,7 +77,7 @@ public class DeflateComparison {
 
 	/**
 	 * Test different compression levels and speeds for a byte array.
-	 * 
+	 *
 	 * @param content
 	 *            content to test.
 	 * @throws IllegalArgumentException
@@ -159,7 +159,7 @@ public class DeflateComparison {
 
 	/**
 	 * A main method for accessing tests using custom files.
-	 * 
+	 *
 	 * @param args
 	 *            a list of files or directorys to include in compression
 	 *            comparison.
@@ -200,8 +200,12 @@ public class DeflateComparison {
 		// convert product to byte array in binary format
 		System.err.println("Reading files into memory");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		new ObjectProductSource(product)
-				.streamTo(new BinaryProductHandler(baos));
+		try (
+			final ObjectProductSource source = new ObjectProductSource(product);
+			final BinaryProductHandler handler = new BinaryProductHandler(baos);
+		) {
+			source.streamTo(handler);
+		}
 		new DeflateComparison().testByteArray("product contents",
 				baos.toByteArray());
 	}

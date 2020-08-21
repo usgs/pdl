@@ -8,7 +8,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -90,5 +89,5 @@ public class GeoservePlacesService {
     this.readTimeout = readTimeout;
   }
 
-  // TODO as needed, implement full GeoServe places API options
+  // as needed, implement full GeoServe places API options
 }

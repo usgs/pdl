@@ -305,10 +305,14 @@ public class ConcurrentStorageTest {
 				throws Exception {
 			serverSocket = new ServerSocket(port);
 
-			// generate xml in advance
+			// generate response in advance
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			new ObjectProductSource(product).streamTo(new BinaryProductHandler(
-					baos));
+			try (
+				final ObjectProductSource source = new ObjectProductSource(product);
+				final BinaryProductHandler handler = new BinaryProductHandler(baos);
+			) {
+				source.streamTo(handler);
+			}
 			data = baos.toByteArray();
 		}
 

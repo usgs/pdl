@@ -7,6 +7,7 @@ import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.io.BinaryIO;
 import gov.usgs.earthquake.product.io.BinaryProductHandler;
 import gov.usgs.earthquake.product.io.ObjectProductSource;
+import gov.usgs.earthquake.product.io.ProductHandler;
 import gov.usgs.earthquake.product.io.XmlProductHandler;
 import gov.usgs.earthquake.util.TimeoutOutputStream;
 import gov.usgs.util.Config;
@@ -31,20 +32,20 @@ import java.util.zip.DeflaterOutputStream;
 
 /**
  * Send Products to SocketProductReceivers.
- * 
+ *
  * The SocketProductSender implements the Configurable interface and uses the
  * following configuration parameters:
- * 
+ *
  * <dl>
  * <dt>host</dt>
  * <dd>(Required) The IP address or hostname of a SocketProductReceiver.</dd>
- * 
+ *
  * <dt>port</dt>
  * <dd>(Optional, default=11235) The port on host of a SocketProductReceiver</dd>
  * </dl>
- * 
+ *
  * @author jmfee
- * 
+ *
  */
 public class SocketProductSender extends DefaultConfigurable implements
 		ProductSender {
@@ -116,7 +117,7 @@ public class SocketProductSender extends DefaultConfigurable implements
 
 	/**
 	 * Construct a new ProductSender.
-	 * 
+	 *
 	 * @param host
 	 * @param port
 	 */
@@ -147,7 +148,7 @@ public class SocketProductSender extends DefaultConfigurable implements
 
 	/**
 	 * Construct a new ProductSender using a Config object.
-	 * 
+	 *
 	 * @param config
 	 * @throws Exception
 	 */
@@ -157,17 +158,16 @@ public class SocketProductSender extends DefaultConfigurable implements
 
 	/**
 	 * Implement the ProductSender interface.
-	 * 
+	 *
 	 * Connects to host:port and sends a Deflaterped xml encoded Product. There
 	 * is no direct response over the socket at this time.
-	 * 
+	 *
 	 * Updates may be retrieved from a ProductTracker.
 	 */
 	public void sendProduct(Product product) throws Exception {
 		BinaryIO io = new BinaryIO();
 		boolean sendProduct = true;
 		String status = null;
-		ObjectProductSource productSource = null;
 		InputStream in = null;
 		OutputStream out = null;
 		try {
@@ -176,8 +176,6 @@ public class SocketProductSender extends DefaultConfigurable implements
 			socket.connect(new InetSocketAddress(host, port), connectTimeout);
 			LOGGER.info("[" + getName() + "] sending product to "
 					+ socket.toString());
-
-			productSource = new ObjectProductSource(product);
 
 			in = new BufferedInputStream(socket.getInputStream());
 			out = new BufferedOutputStream(socket.getOutputStream());
@@ -215,13 +213,14 @@ public class SocketProductSender extends DefaultConfigurable implements
 				}
 
 				// make sure product handler doesn't close stream before done
-				OutputStream productOut = new StreamUtils.UnclosableOutputStream(
-						out);
-				if (binaryFormat) {
-					productSource
-							.streamTo(new BinaryProductHandler(productOut));
-				} else {
-					productSource.streamTo(new XmlProductHandler(productOut));
+				try (
+					final ObjectProductSource source = new ObjectProductSource(product);
+					final OutputStream productOut = new StreamUtils.UnclosableOutputStream(out);
+					final ProductHandler handler = binaryFormat
+							? new BinaryProductHandler(productOut)
+							: new XmlProductHandler(productOut);
+				) {
+					source.streamTo(handler);
 				}
 
 				// deflate requires "finish"
@@ -293,7 +292,7 @@ public class SocketProductSender extends DefaultConfigurable implements
 
 	/**
 	 * Reads the host and port from config.
-	 * 
+	 *
 	 * @param config
 	 *            a Config object with host and port properties.
 	 */

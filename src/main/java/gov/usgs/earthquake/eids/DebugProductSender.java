@@ -18,8 +18,13 @@ public class DebugProductSender extends DefaultConfigurable implements ProductSe
 
 	@Override
 	public void sendProduct(Product product) throws Exception {
-		new ObjectProductSource(product).streamTo(new XmlProductHandler(
-				new StreamUtils.UnclosableOutputStream(System.err)));
+		try (
+			final ObjectProductSource source = new ObjectProductSource(product);
+			final XmlProductHandler handler = new XmlProductHandler(
+					new StreamUtils.UnclosableOutputStream(System.err));
+		) {
+			source.streamTo(handler);
+		}
 	}
 
 }

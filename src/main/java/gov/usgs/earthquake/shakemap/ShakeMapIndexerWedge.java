@@ -25,10 +25,10 @@ import gov.usgs.util.FileUtils;
 
 /**
  * Legacy interface to trigger pre-Indexer ShakeMap processing.
- * 
+ *
  * The Old ShakeMap Indexer is no longer used,
  * and this class is deprecated.
- * 
+ *
  * When a shakemap product arrives, it is only processed if one of these is
  * true:
  * <ul>
@@ -36,7 +36,7 @@ import gov.usgs.util.FileUtils;
  * <li>from preferred source (product source = eventsource)</li>
  * <li>from same source as before</li>
  * </ul>
- * 
+ *
  * When processing a shakemap:
  * <ol>
  * <li>remove previous version</li>
@@ -44,17 +44,17 @@ import gov.usgs.util.FileUtils;
  * <li>trigger legacy indexer</li>
  * <li>send tracker update</li>
  * </ol>
- * 
+ *
  * Configurable properties:
  * <dl>
  * <dt>indexerCommand</dt>
  * <dd>The shakemap indexer command to run. Defaults to
  * <code>/home/www/vhosts/earthquake/cron/shakemap_indexer.php</code> .</dd>
- * 
+ *
  * <dt>shakemapDirectory</dt>
  * <dd>The shakemap event directory. Defaults to
  * <code>/home/www/vhosts/earthquake/htdocs/earthquakes/shakemap</code> .</dd>
- * 
+ *
  * <dt>timeout</dt>
  * <dd>How long in milliseconds the indexer is allowed to run before being
  * terminated.</dd>
@@ -105,7 +105,7 @@ public class ShakeMapIndexerWedge extends DefaultNotificationListener {
 
 	/**
 	 * Create a new ShakeMapIndexerWedge.
-	 * 
+	 *
 	 * Sets up the includeTypes list to contain "shakemap".
 	 */
 	public ShakeMapIndexerWedge() {
@@ -114,7 +114,7 @@ public class ShakeMapIndexerWedge extends DefaultNotificationListener {
 
 	/**
 	 * Receive a ShakeMap from Product Distribution.
-	 * 
+	 *
 	 * @param product
 	 *            a shakemap type product.
 	 */
@@ -185,8 +185,12 @@ public class ShakeMapIndexerWedge extends DefaultNotificationListener {
 
 		if (!shakemap.isDeleted()) {
 			// write the original product, not the modified ShakeMap product.
-			new ObjectProductSource(product)
-					.streamTo(new DirectoryProductHandler(legacyDirectory));
+			try (
+				final ObjectProductSource productSource = new ObjectProductSource(product);
+				final DirectoryProductHandler handler = new DirectoryProductHandler(legacyDirectory);
+			) {
+				productSource.streamTo(handler);
+			}
 		} else {
 			// need to delete the shakemap, everywhere
 			// the indexer will handle the everywhere part...
@@ -206,9 +210,9 @@ public class ShakeMapIndexerWedge extends DefaultNotificationListener {
 
 	/**
 	 * Run the shakemap indexer.
-	 * 
+	 *
 	 * If network and code are omitted, all events are updated.
-	 * 
+	 *
 	 * @param network
 	 *            the network to update.
 	 * @param code
@@ -255,7 +259,7 @@ public class ShakeMapIndexerWedge extends DefaultNotificationListener {
 
 	/**
 	 * Get the directory for a particular shakemap.
-	 * 
+	 *
 	 * @param shakemap
 	 *            the shakemap to find a directory for.
 	 * @return the shakemap directory.
@@ -269,9 +273,9 @@ public class ShakeMapIndexerWedge extends DefaultNotificationListener {
 
 	/**
 	 * Translate from an event source to the old style shakemap source.
-	 * 
+	 *
 	 * Driven by the SOURCE_TRANSLATION_MAP.
-	 * 
+	 *
 	 * @param eventSource
 	 *            the event network.
 	 * @return the shakemap network.
