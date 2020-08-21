@@ -14,7 +14,7 @@ import java.io.OutputStream;
 
 /**
  * Store a product to a Directory.
- * 
+ *
  * Product attributes are stored to a file named "product.xml". All
  * ProductOutput methods are passed to an ObjectProductOutput object, except
  * files with non-empty paths. Files are stored in the directory, and all other
@@ -28,29 +28,49 @@ public class DirectoryProductHandler extends ObjectProductHandler {
 
 	/** Directory where product contents are stored. */
 	private File directory;
+	private boolean copyUrlContent;
 
 	/**
 	 * Construct a new DirectoryProductHandler object.
-	 * 
+	 *
 	 * @param directory
 	 *            where product contents will be stored.
 	 */
 	public DirectoryProductHandler(final File directory) {
-		this.directory = directory;
+		this(directory, true);
 	}
 
 	/**
-	 * Extract content when path isn't empty.
+	 * Construct a new DirectoryProductHandler object.
+	 *
+	 * @param directory
+	 *            where product contents will be stored.
+	 * @param copyUrlContent
+	 *            whether to copy remote content locally.
+	 */
+	public DirectoryProductHandler(final File directory, final boolean copyUrlContent) {
+		this.directory = directory;
+		this.copyUrlContent = copyUrlContent;
+	}
+
+	/**
+	 * Copy content when path isn't empty.
 	 */
 	public void onContent(ProductId id, String path, Content content)
 			throws Exception {
-		if ("".equals(path)) {
-			super.onContent(id, path, content);
-		} else {
+		if (
+			!"".equals(path)
+			&& (
+				this.copyUrlContent
+				|| (content instanceof URLContent && ((URLContent) content).isFileURL())
+			)
+		) {
 			// FileContent copy constructor extracts content
 			FileContent fc = new FileContent(content, new File(directory, path));
 			super.onContent(id, path, new URLContent(fc));
 			fc = null;
+		} else {
+			super.onContent(id, path, content);
 		}
 	}
 

@@ -5,11 +5,11 @@ package gov.usgs.earthquake.product.io;
 
 /**
  * A Source of Product events.
- * 
+ *
  * ProductSources are used to read Products from other formats like XML.
  * ProductSources send a stream of events to ProductOutputs and provide stream
  * like processing for Products.
- * 
+ *
  * ProductSources should strive to call ProductOutput methods in the following
  * order:
  * <ol>
@@ -21,11 +21,11 @@ package gov.usgs.earthquake.product.io;
  * <li>onEndProduct()
  * </ol>
  */
-public interface ProductSource {
+public interface ProductSource extends AutoCloseable {
 
 	/**
 	 * Send a product to the ProductOutput.
-	 * 
+	 *
 	 * @param out
 	 *            the output that will receive the product.
 	 */

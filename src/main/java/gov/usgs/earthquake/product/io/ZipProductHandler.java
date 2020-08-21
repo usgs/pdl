@@ -20,11 +20,11 @@ import java.util.zip.ZipEntry;
 
 /**
  * Store a product to an OutputStream using ZIP.
- * 
+ *
  * Accumulates entire product the same as ObjectProductOutput, then onEndProduct
  * outputs a zip file containing "product.xml" as the first entry and all
  * product content as other entries.
- * 
+ *
  * Because the zip file is not written until after all content has been
  * "received", all product content may result in in-memory buffering. This is
  * not the case when dealing with File-backed products. If this is a concern,
@@ -41,7 +41,7 @@ public class ZipProductHandler extends ObjectProductHandler {
 
 	/**
 	 * Construct a new ZipProductHandler object.
-	 * 
+	 *
 	 * @param out
 	 *            the output stream where zip content is written.
 	 */
@@ -76,8 +76,13 @@ public class ZipProductHandler extends ObjectProductHandler {
 			ZipEntry entry = new ZipEntry(PRODUCT_XML_ZIP_ENTRYNAME);
 			entry.setTime(product.getId().getUpdateTime().getTime());
 			zos.putNextEntry(entry);
-			new ObjectProductSource(product).streamTo(new XmlProductHandler(
-					new StreamUtils.UnclosableOutputStream(zos)));
+			try (ObjectProductSource source = new ObjectProductSource(product)) {
+				try (XmlProductHandler handler = new XmlProductHandler(
+						new StreamUtils.UnclosableOutputStream(zos))
+				) {
+					source.streamTo(handler);
+				}
+			}
 			// zos.closeEntry();
 
 			// all other content entries

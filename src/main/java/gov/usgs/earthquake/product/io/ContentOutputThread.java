@@ -5,7 +5,6 @@ import java.util.logging.Logger;
 
 import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.ProductId;
-import gov.usgs.earthquake.product.io.ProductHandler;
 
 /**
  * Deliver content in a separate thread.

@@ -16,10 +16,10 @@ import java.util.TreeSet;
 
 /**
  * Convert a java Product object into events for a ProductHandler.
- * 
+ *
  * ObjectProductSource turns a product object into a stream of events for
  * ProductOutputs.
- * 
+ *
  * ObjectProductSources are reuseable for a given product.
  */
 public class ObjectProductSource implements ProductSource {
@@ -29,7 +29,7 @@ public class ObjectProductSource implements ProductSource {
 
 	/**
 	 * Construct a new ObjectProductSource.
-	 * 
+	 *
 	 * @param product
 	 *            the product used for input.
 	 */
@@ -39,7 +39,7 @@ public class ObjectProductSource implements ProductSource {
 
 	/**
 	 * Send a product object to a ProductOutput.
-	 * 
+	 *
 	 * Calls these methods in the following order:
 	 * <ol>
 	 * <li>sendBeginProduct
@@ -49,7 +49,7 @@ public class ObjectProductSource implements ProductSource {
 	 * <li>sendSignature
 	 * <li>sendEndProducct
 	 * </ol>
-	 * 
+	 *
 	 * @param out
 	 *            the ProductOutput that will receive the Product.
 	 */
@@ -64,7 +64,7 @@ public class ObjectProductSource implements ProductSource {
 
 	/**
 	 * Call out's onBeginProduct method for this product.
-	 * 
+	 *
 	 * @param out
 	 *            the receiving ProductOutput.
 	 * @throws Exception
@@ -78,7 +78,7 @@ public class ObjectProductSource implements ProductSource {
 	/**
 	 * Call out's onProperty method for each product property. Calls in
 	 * alphabetical order by property name.
-	 * 
+	 *
 	 * @param out
 	 *            the receiving ProductOutput.
 	 * @throws Exception
@@ -99,7 +99,7 @@ public class ObjectProductSource implements ProductSource {
 	/**
 	 * Call out's onLink method for each product link. Calls in alphabetical
 	 * order by relation name, by URI.
-	 * 
+	 *
 	 * @param out
 	 * @throws Exception
 	 */
@@ -124,7 +124,7 @@ public class ObjectProductSource implements ProductSource {
 	/**
 	 * Call out's onContent method for each product content. Calls
 	 * alphabetically by content path.
-	 * 
+	 *
 	 * @param out
 	 *            the receiving ProductOutput.
 	 * @throws Exception
@@ -144,7 +144,7 @@ public class ObjectProductSource implements ProductSource {
 
 	/**
 	 * Call out's onSignature method with product signature.
-	 * 
+	 *
 	 * @param out
 	 *            the receiving ProductOutput.
 	 * @throws Exception
@@ -156,7 +156,7 @@ public class ObjectProductSource implements ProductSource {
 
 	/**
 	 * Call out's onEndProduct method for product.
-	 * 
+	 *
 	 * @param out
 	 *            the receiving ProductOutput.
 	 * @throws Exception

@@ -27,26 +27,33 @@ public class URLContent extends AbstractContent {
 
 	/**
 	 * Create a new URLContent object.
-	 * 
+	 *
 	 * @param content
 	 *            the content available at a URL.
 	 * @throws URISyntaxException
 	 */
-	public URLContent(final URL content) throws URISyntaxException {
-		this.setContentType(MIME_TYPES.getContentType(content.toURI()
-				.toString()));
-		this.content = content;
+	public URLContent(final URL url) throws URISyntaxException {
+		this.setContentType(MIME_TYPES.getContentType(url.toURI().toString()));
+		this.content = url;
 	}
 
 	/**
 	 * Create a new URLContent object from a FileContent.
-	 * 
+	 *
 	 * @param fc
 	 *            the file content.
 	 */
 	public URLContent(final FileContent fc) throws MalformedURLException {
 		super(fc);
 		this.content = fc.getFile().toURI().toURL();
+	}
+
+	/** Create a new URLContent object using existing content metadata. */
+	public URLContent(final Content content, final URL url) throws URISyntaxException {
+		this.content = url;
+		this.setContentType(content.getContentType());
+		this.setLastModified(content.getLastModified());
+		this.setLength(content.getLength());
 	}
 
 	/**
@@ -61,6 +68,10 @@ public class URLContent extends AbstractContent {
 	 */
 	public URL getURL() {
 		return content;
+	}
+
+	public boolean isFileURL() {
+		return getURL().toString().startsWith("file:");
 	}
 
 	/**

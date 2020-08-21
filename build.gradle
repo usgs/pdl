@@ -6,11 +6,11 @@
 
 plugins {
   id "java"
-  id "jacoco"                                     // code coverage
-  id "pmd"                                        // static code analysis
+  id "jacoco"                                      // code coverage
+  id "pmd"                                         // static code analysis
   id "com.gradle.build-scan" version "2.0.2"       // post build results online
-  id "org.ajoberstar.grgit" version "2.3.0"       // git repo information
-  id "org.ajoberstar.git-publish" version "1.0.1" // publish gh-pages branch
+  id "org.ajoberstar.grgit" version "2.3.0"        // git repo information
+  id "org.ajoberstar.git-publish" version "1.0.1"  // publish gh-pages branch
 }
 
 sourceCompatibility = 1.8
@@ -44,6 +44,9 @@ dependencies {
   compile "ch.ethz.ganymed:ganymed-ssh2:262"
   // nats
   implementation "io.nats:java-nats-streaming:2.1.6"
+  // aws
+  implementation platform('software.amazon.awssdk:bom:2.14.2')
+  implementation "software.amazon.awssdk:s3"
 
   compile files("lib/MessageUtils.jar")
   compile files("lib/QWFileOutClient.jar")

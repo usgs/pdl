@@ -11,7 +11,7 @@ import java.net.URL;
 
 /**
  * A Handler for Product events.
- * 
+ *
  * Outputs handle a stream of product events so products can be processed using
  * streams. They usually receive product events via a ProductInput.
  * ProductInputs should attempt to be ordered for uniform processing:
@@ -23,17 +23,17 @@ import java.net.URL;
  * <li>onSignature()
  * <li>onEndProduct()
  * </ol>
- * 
+ *
  * Typically a ProductHandler is used to output a single product, although there
  * is no explicit requirement preventing reuse.
  */
-public interface ProductHandler {
+public interface ProductHandler extends AutoCloseable {
 
 	/**
 	 * A new product is being output. The ProductHandler should expect calls to
 	 * other on-Methods until the onEndProduct method is called. No calls to
 	 * other on-Methods will occur before onBeginProduct.
-	 * 
+	 *
 	 * @param id
 	 *            which product.
 	 * @param status
@@ -46,7 +46,7 @@ public interface ProductHandler {
 
 	/**
 	 * A product property value. Products have zero or more properties.
-	 * 
+	 *
 	 * @param id
 	 *            which product.
 	 * @param name
@@ -59,7 +59,7 @@ public interface ProductHandler {
 
 	/**
 	 * A product link. Products have zero or more links.
-	 * 
+	 *
 	 * @param id
 	 *            which product.
 	 * @param relation
@@ -72,7 +72,7 @@ public interface ProductHandler {
 
 	/**
 	 * Product content. Products have one or more Contents.
-	 * 
+	 *
 	 * @param id
 	 *            which product.
 	 * @param path
@@ -86,7 +86,7 @@ public interface ProductHandler {
 	/**
 	 * Product signature. Producers may optionally sign products to confirm they
 	 * were the producer.
-	 * 
+	 *
 	 * @param id
 	 *            which product.
 	 * @param signature
@@ -100,7 +100,7 @@ public interface ProductHandler {
 	 * A product is finished being output. The ProductHandler should expect no
 	 * more calls to other on-Methods, except perhaps onBeginProduct again,
 	 * after the onEndProduct method is called.
-	 * 
+	 *
 	 * @param id
 	 *            which product.
 	 */

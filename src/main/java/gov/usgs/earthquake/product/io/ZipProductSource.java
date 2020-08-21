@@ -13,9 +13,9 @@ import java.util.zip.ZipEntry;
 
 /**
  * Load a product from an InputStream containing ZIP.
- * 
+ *
  * ZipProductSource reads an input stream containing a product zip file.
- * 
+ *
  * This zip file's first entry must be a product xml file containing all product
  * metadata and inline content.
  */
@@ -26,7 +26,7 @@ public class ZipProductSource implements ProductSource {
 
 	/**
 	 * Construct a new ZipProductSource.
-	 * 
+	 *
 	 * @param zip
 	 *            the input stream where zip content is read.
 	 */
@@ -36,44 +36,49 @@ public class ZipProductSource implements ProductSource {
 
 	/**
 	 * Parse the zip stream and send product to product output.
-	 * 
+	 *
 	 * @param out
 	 *            ProductOutput that will receive the product.
 	 */
 	public void streamTo(ProductHandler out) throws Exception {
-		ZipFile zis = null;
 
-		try {
-			zis = new ZipFile(this.zip);
-	
+		try (final ZipFile zis = new ZipFile(this.zip)) {
 			Enumeration<? extends ZipEntry> entries = zis.entries();
+
+			// read product entry
+			Product product;
 			ZipEntry entry = entries.nextElement();
-	
 			if (!entry.getName()
 					.equals(ZipProductHandler.PRODUCT_XML_ZIP_ENTRYNAME)) {
 				throw new Exception("Unexpected first entry " + entry.getName()
 						+ ", expected "
 						+ ZipProductHandler.PRODUCT_XML_ZIP_ENTRYNAME);
 			}
-	
-			Product product = ObjectProductHandler.getProduct(new XmlProductSource(
-					zis.getInputStream(entry)));
+			try (
+				final XmlProductSource source = new XmlProductSource(zis.getInputStream(entry));
+			) {
+				product = ObjectProductHandler.getProduct(source);
+			}
 			ProductId id = product.getId();
-	
+
 			// send all except signature and end product, until after all
 			// contents
-			new ObjectProductSource(product) {
-				public void sendSignature(final ProductHandler out)
-						throws Exception {
-					// do nothing
+			try (
+				final ObjectProductSource source = new ObjectProductSource(product) {
+					public void sendSignature(final ProductHandler out)
+							throws Exception {
+						// do nothing
+					}
+
+					public void sendEndProduct(final ProductHandler out)
+							throws Exception {
+						// do nothing
+					}
 				}
-	
-				public void sendEndProduct(final ProductHandler out)
-						throws Exception {
-					// do nothing
-				}
-			}.streamTo(out);
-	
+			) {
+				source.streamTo(out);
+			}
+
 			// send other contents
 			while (entries.hasMoreElements()) {
 				entry = entries.nextElement();
@@ -84,15 +89,10 @@ public class ZipProductSource implements ProductSource {
 				content.setContentType(entry.getComment());
 				out.onContent(id, entry.getName(), content);
 			}
-	
+
 			// finish sending product
 			out.onSignature(id, product.getSignature());
 			out.onEndProduct(id);
-		} finally {
-			try {
-				zis.close();
-			} catch (Exception ignore) {
-			}
 		}
 	}
 

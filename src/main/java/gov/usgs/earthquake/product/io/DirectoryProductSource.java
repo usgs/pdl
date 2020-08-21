@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 /**
  * Load a product from a Directory.
- * 
+ *
  * Usually a directory is created using DirectoryProductOutput. It should
  * contain a product xml file named "product.xml". All other files are treated
  * as attachments.
@@ -33,7 +33,7 @@ public class DirectoryProductSource implements ProductSource {
 
 	/**
 	 * Construct a new DirectoryProductSource object.
-	 * 
+	 *
 	 * @param directory
 	 *            the directory containing a product.
 	 */
@@ -44,7 +44,7 @@ public class DirectoryProductSource implements ProductSource {
 	/**
 	 * Load Product from a directory, then send product events to the
 	 * ProductOutput.
-	 * 
+	 *
 	 * @param out
 	 *            the ProductOutput that will receive the product.
 	 */
@@ -66,17 +66,21 @@ public class DirectoryProductSource implements ProductSource {
 			for (String key : contents.keySet()) {
 				urlContent = contents.get(key);
 				if (urlContent instanceof URLContent) {
-					File filePath = new File(directory, key);
-					if (filePath.exists()) {
-						FileContent fileContent = new FileContent(filePath);
-						fileContent.setContentType(urlContent.getContentType());
-						fileContent.setLastModified(urlContent.getLastModified());
-						fileContent.setLength(urlContent.getLength());
-						// go direct to file based on key
-						contents.put(key, fileContent);
-					} else {
-						// old way
-						contents.put(key, new FileContent((URLContent) urlContent));
+					if (((URLContent) urlContent).isFileURL()) {
+						// convert file urls to file content
+						// Build path to content in case embedded URL is incorrect
+						File filePath = new File(directory, key);
+						if (filePath.exists()) {
+							FileContent fileContent = new FileContent(filePath);
+							fileContent.setContentType(urlContent.getContentType());
+							fileContent.setLastModified(urlContent.getLastModified());
+							fileContent.setLength(urlContent.getLength());
+							// go direct to file based on key
+							contents.put(key, fileContent);
+						} else {
+							// old way, assumes embedded URL is correct
+							contents.put(key, new FileContent((URLContent) urlContent));
+						}
 					}
 					foundURLContent = true;
 				}
@@ -95,7 +99,9 @@ public class DirectoryProductSource implements ProductSource {
 			}
 
 			// now use ObjectProductInput to send loaded product
-			new ObjectProductSource(product).streamTo(out);
+			try (final ObjectProductSource source = new ObjectProductSource(product)) {
+				source.streamTo(out);
+			}
 		} finally {
 			StreamUtils.closeStream(in);
 		}

@@ -12,7 +12,7 @@ import java.net.URL;
 
 /**
  * Generator of binary format for product data.
- * 
+ *
  * Binary representation of data types:
  * <dl>
  * <dt>Integer</dt>
@@ -28,12 +28,12 @@ import java.net.URL;
  * <dt>URL/URI</dt>
  * <dd>String (URL.toString())</dd>
  * </dl>
- * 
- * 
+ *
+ *
  * Product is stored in this order:
- * 
+ *
  * <ol>
- * 
+ *
  * <li>Header, exactly 1
  * <ol>
  * <li>"BEGINPRODUCT" (string)</li>
@@ -42,7 +42,7 @@ import java.net.URL;
  * <li>TrackerURL (URL)</li>
  * </ol>
  * </li>
- * 
+ *
  * <li>Properties, 0 to many:
  * <ol>
  * <li>"PROPERTY" (String)</li>
@@ -50,7 +50,7 @@ import java.net.URL;
  * <li>value (String)</li>
  * </ol>
  * </li>
- * 
+ *
  * <li>Links, 0 to many:
  * <ol>
  * <li>"LINK" (String)</li>
@@ -58,7 +58,7 @@ import java.net.URL;
  * <li>href (URI)</li>
  * </ol>
  * </li>
- * 
+ *
  * <li>Contents, 0 to many:
  * <ol>
  * <li>"CONTENT" (String)</li>
@@ -69,20 +69,20 @@ import java.net.URL;
  * <li>raw bytes</li>
  * </ol>
  * </li>
- * 
+ *
  * <li>Signature, 0 or 1:
  * <ol>
  * <li>"SIGNATURE" (String)</li>
  * <li>signature (String)</li>
  * </ol>
  * </li>
- * 
+ *
  * <li>Footer, exactly 1:
  * <ol>
  * <li>"ENDPRODUCT" (String)</li>
  * </ol>
  * </li>
- * 
+ *
  * </ol>
  */
 public class BinaryProductHandler implements ProductHandler {
