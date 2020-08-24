@@ -45,7 +45,7 @@ dependencies {
   // nats
   implementation "io.nats:java-nats-streaming:2.1.6"
   // aws
-  implementation platform('software.amazon.awssdk:bom:2.14.2')
+  implementation platform("software.amazon.awssdk:bom:2.14.2")
   implementation "software.amazon.awssdk:s3"
 
   compile files("lib/MessageUtils.jar")
@@ -121,8 +121,8 @@ test.dependsOn testCleanup
 
 // create javadocs
 javadoc {
-  excludes = ['com/isti/**']
-  options.addBooleanOption('html5', true)
+  excludes = ["com/isti/**"]
+  options.addBooleanOption("html5", true)
 }
 
 // create jar file
