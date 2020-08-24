@@ -1,11 +1,13 @@
 package gov.usgs.earthquake.eidsutil;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class EIDSClientTest {
 
 	private Object syncObject = new Object();
 
+	@Ignore("requires internet connection")
 	@Test
 	public void testConnection() throws InterruptedException {
 		final EIDSClient client = new EIDSClient("prod01-pdl01.cr.usgs.gov", 39977);

@@ -1,5 +1,7 @@
 package gov.usgs.earthquake.aws;
 
+import java.util.logging.Logger;
+
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -19,6 +21,8 @@ import gov.usgs.earthquake.product.io.XmlProductSource;
  * It should contain a product xml file named "product.xml".
  */
 public class S3ProductSource implements ProductSource {
+
+  public static final Logger LOGGER = Logger.getLogger(S3ProductSource.class.getName());
 
   /** Bucket where product contents are stored. */
   private final String bucketName;
@@ -42,15 +46,16 @@ public class S3ProductSource implements ProductSource {
 	 *            the ProductOutput that will receive the product.
 	 */
 	public void streamTo(ProductHandler out) throws Exception {
-    final String s3Key = this.productPrefix + "/" + S3ProductHandler.PRODUCT_XML_FILENAME;
-
+    final String key = this.productPrefix + "/" + S3ProductHandler.PRODUCT_XML_FILENAME;
+    LOGGER.finer("reading product from key " + key);
     try (ResponseInputStream<GetObjectResponse> in =
         this.s3Client.getObject(GetObjectRequest.builder()
             .bucket(this.bucketName)
-            .key(s3Key)
+            .key(key)
             .build())) {
 			// load product from xml
-			Product product = ObjectProductHandler.getProduct(new XmlProductSource(in));
+      Product product = ObjectProductHandler.getProduct(new XmlProductSource(in));
+      LOGGER.finer("read product " + (product != null ? product.getId().toString() : null));
 			// use ObjectProductInput to send loaded product
 			try (ObjectProductSource source = new ObjectProductSource(product)) {
         source.streamTo(out);
