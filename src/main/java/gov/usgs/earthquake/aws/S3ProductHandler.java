@@ -34,10 +34,10 @@ public class S3ProductHandler extends ObjectProductHandler {
 
   public static final Logger LOGGER = Logger.getLogger(S3ProductHandler.class.getName());
 
-	/** The file where product attributes are stored. */
-	public static final String PRODUCT_XML_FILENAME = "product.xml";
+  /** The file where product attributes are stored. */
+  public static final String PRODUCT_XML_FILENAME = "product.xml";
 
-	/** Bucket where product contents are stored. */
+  /** Bucket where product contents are stored. */
   private final String bucketName;
   private final String productPath;
   private final S3Client s3Client;
@@ -86,7 +86,7 @@ public class S3ProductHandler extends ObjectProductHandler {
    * Store all except product contents to product.xml.
    */
   public void onEndProduct(final ProductId id) throws Exception {
-		super.onEndProduct(id);
+    super.onEndProduct(id);
 
     // upload content to s3
     final String key = this.productPath + "/" + PRODUCT_XML_FILENAME;
@@ -105,7 +105,7 @@ public class S3ProductHandler extends ObjectProductHandler {
     LOGGER.fine("Uploaded key " + key
         + " (time = " + (end - start) + "ms)"
         + " (size = " + productXml + " bytes)");
-	}
+  }
 
   /**
    * Format product metadata.
@@ -121,7 +121,7 @@ public class S3ProductHandler extends ObjectProductHandler {
     ) {
       source.streamTo(handler);
     }
-		return out.toByteArray();
+    return out.toByteArray();
   }
 
 }

@@ -38,14 +38,14 @@ public class S3ProductSource implements ProductSource {
     this.s3Client = s3Client;
   }
 
-	/**
-	 * Load Product from a directory, then send product events to the
-	 * ProductOutput.
-	 *
-	 * @param out
-	 *            the ProductOutput that will receive the product.
-	 */
-	public void streamTo(ProductHandler out) throws Exception {
+  /**
+   * Load Product from a directory, then send product events to the
+   * ProductOutput.
+   *
+   * @param out
+   *            the ProductOutput that will receive the product.
+   */
+  public void streamTo(ProductHandler out) throws Exception {
     final String key = this.productPrefix + "/" + S3ProductHandler.PRODUCT_XML_FILENAME;
     LOGGER.finer("reading product from key " + key);
     try (ResponseInputStream<GetObjectResponse> in =
@@ -53,15 +53,15 @@ public class S3ProductSource implements ProductSource {
             .bucket(this.bucketName)
             .key(key)
             .build())) {
-			// load product from xml
+      // load product from xml
       Product product = ObjectProductHandler.getProduct(new XmlProductSource(in));
       LOGGER.finer("read product " + (product != null ? product.getId().toString() : null));
-			// use ObjectProductInput to send loaded product
-			try (ObjectProductSource source = new ObjectProductSource(product)) {
+      // use ObjectProductInput to send loaded product
+      try (ObjectProductSource source = new ObjectProductSource(product)) {
         source.streamTo(out);
       }
-		}
-	}
+    }
+  }
 
   @Override
   public void close() {

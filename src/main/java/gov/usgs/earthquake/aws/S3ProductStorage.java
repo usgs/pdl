@@ -70,15 +70,15 @@ public class S3ProductStorage extends URLProductStorage {
     this.s3Client = null;
   }
 
-	/**
-	 * A method for subclasses to override the storage path.
-	 *
-	 * @param id
-	 *            the product id to convert.
-	 * @return the prefix used to store id.
-	 */
-	@Override
-	public String getProductPath(final ProductId id) {
+  /**
+   * A method for subclasses to override the storage path.
+   *
+   * @param id
+   *            the product id to convert.
+   * @return the prefix used to store id.
+   */
+  @Override
+  public String getProductPath(final ProductId id) {
     return this.bucketPrefix
         + "/" + id.getType()
         + "/" + id.getCode()
@@ -87,21 +87,21 @@ public class S3ProductStorage extends URLProductStorage {
   }
 
   /**
-	 * Compute the URL to a product.
-	 *
-	 * @param id
-	 *            which product.
-	 * @return the URL to a product.
-	 * @throws Exception
-	 */
+   * Compute the URL to a product.
+   *
+   * @param id
+   *            which product.
+   * @return the URL to a product.
+   * @throws Exception
+   */
   @Override
-	public URL getProductURL(final ProductId id) throws Exception {
+  public URL getProductURL(final ProductId id) throws Exception {
     final String key = getProductPath(id) + "/" + S3ProductHandler.PRODUCT_XML_FILENAME;
     LOGGER.finer("[" + getName() + "] getting url for key " + key);
     final URL url = this.s3Client.utilities().getUrl(
       GetUrlRequest.builder().bucket(this.bucketName).key(key).build());
     return url;
-	}
+  }
 
   @Override
   protected ProductHandler _getProductHandler(final ProductId id) throws Exception {

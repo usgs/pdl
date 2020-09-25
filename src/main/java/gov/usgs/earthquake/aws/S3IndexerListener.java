@@ -66,14 +66,14 @@ public class S3IndexerListener extends DefaultIndexerListener {
   }
 
 
-	/**
-	 * A method for subclasses to override the storage path.
-	 *
-	 * @param id
-	 *            the product id to convert.
-	 * @return the prefix used to store id.
-	 */
-	public String getProductPath(final ProductId id) {
+  /**
+   * A method for subclasses to override the storage path.
+   *
+   * @param id
+   *            the product id to convert.
+   * @return the prefix used to store id.
+   */
+  public String getProductPath(final ProductId id) {
     return this.bucketPrefix
         + "/" + new Date().getTime()
         + "_" + id.getType()
