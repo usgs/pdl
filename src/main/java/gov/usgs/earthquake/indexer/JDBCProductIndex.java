@@ -361,6 +361,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 					StreamUtils.transferStream(defaultIndex, indexFile);
 				}
 			}
+			indexFile = null;
 
 			// Build the JDBC url
 			url = JDBC_CONNECTION_PREFIX + index_file;

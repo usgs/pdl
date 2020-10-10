@@ -7,8 +7,6 @@ import java.util.Properties;
 import java.util.Map;
 import java.util.HashMap;
 
-import gov.usgs.util.Ini;
-
 import java.lang.ref.WeakReference;
 
 /**

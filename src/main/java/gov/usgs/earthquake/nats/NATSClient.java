@@ -6,7 +6,6 @@ import gov.usgs.util.Configurable;
 import io.nats.streaming.StreamingConnection;
 import io.nats.streaming.StreamingConnectionFactory;
 
-import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.security.MessageDigest;
