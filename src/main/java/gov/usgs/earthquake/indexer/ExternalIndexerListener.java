@@ -31,41 +31,40 @@ import java.util.logging.Logger;
 
 /**
  * ExternalIndexerListener triggers external, non-Java listener processes.
- * 
+ *
  * Provides a translation to a command-line interface
  * for the product indexer to speak with external, non-Java listeners.
- * 
+ *
  * As a child-class of the AbstractListener, this also accepts the following
  * configration parameters:
- * 
+ *
  * <dl>
  * <dt>command</dt>
  * <dd>(Required) The command to execute. This must be an executable command and
  * may include arguments. Any product-specific arguments are appended at the end
  * of command.</dd>
- * 
+ *
  * <dt>storage</dt>
  * <dd>(Required) A directory used to store all products. Each product is
  * extracted into a separate directory within this directory and is referenced
  * by the --directory=/path/to/directory argument when command is executed.</dd>
- * 
+ *
  * <dt>processUnassociated</dt>
  * <dd>(Optional, Default = false) Whether or not to process unassociated
  * products. Valid values are "true" and "false".</dd>
- * 
+ *
  * <dt>processPreferredOnly</dt>
  * <dd>(Optional, Default = false) Whether or not to process only preferred
  * products of the type accepted by this listener. Valid values are "true" and
  * "false".</dd>
- * 
+ *
  * <dt>autoArchive</dt>
  * <dd>(Optional, Default = false) Whether or not to archive products from
  * storage when they are archived by the indexer.</dd>
- * 
+ *
  * </dl>
  */
-public class ExternalIndexerListener extends DefaultIndexerListener implements
-		IndexerListener {
+public class ExternalIndexerListener extends DefaultIndexerListener {
 
 	private static final Logger LOGGER = Logger
 			.getLogger(ExternalIndexerListener.class.getName());
@@ -108,7 +107,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 
 	/**
 	 * Construct a new ExternalIndexerListener object
-	 * 
+	 *
 	 * The listener must be configured with a FileProductStorage and a command
 	 * to function.
 	 */
@@ -118,7 +117,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see gov.usgs.earthquake.indexer.IndexerListener#onIndexerEvent(gov.usgs.
 	 * earthquake.indexer.IndexerEvent)
 	 */
@@ -268,7 +267,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 
 	/**
 	 * Get the product command and add the indexer arguments to it.
-	 * 
+	 *
 	 * @param change
 	 *            The IndexerEvent received by the ExternalIndexerListener
 	 * @return the command to execute with its arguments as a string
@@ -469,7 +468,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener implements
 
 	/**
 	 * Configure an ExternalNotificationListener using a Config object.
-	 * 
+	 *
 	 * @param config
 	 *            the config containing a
 	 */

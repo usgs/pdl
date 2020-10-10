@@ -11,8 +11,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import gov.usgs.earthquake.geoserve.GeoserveRegionsService;
-
 public class GeoserveRegionsServiceTest {
 
   private GeoserveRegionsService service = null;

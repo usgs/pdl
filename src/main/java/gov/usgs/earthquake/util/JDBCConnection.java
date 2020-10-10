@@ -11,12 +11,12 @@ import java.util.logging.Logger;
 
 /**
  * Utility class for JDBC Connection.
- * 
+ *
  * Sub-classes must implement the connect method, and extend startup and
  * shutdown methods. The {@link #verifyConnection()} method tests whether the
  * connection is active, and will shutdown() and startup() to reinitialize if it
  * is not active.
- * 
+ *
  * @author jmfee
  */
 public abstract class JDBCConnection extends DefaultConfigurable {
@@ -36,9 +36,9 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 
 	/**
 	 * Connect to the database.
-	 * 
+	 *
 	 * Sub-classes determine how connection is made.
-	 * 
+	 *
 	 * @return the connection.
 	 * @throws Exception
 	 *             if unable to connect.
@@ -47,7 +47,7 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 
 	/**
 	 * Initialize the database connection.
-	 * 
+	 *
 	 * Sub-classes should call super.startup(), before preparing any statements.
 	 */
 	@Override
@@ -57,7 +57,7 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 
 	/**
 	 * Shutdown the database connection.
-	 * 
+	 *
 	 * Sub-classes should close any prepared statements (catching any
 	 * exceptions), and then call super.shutdown() to close the database
 	 * connection.
@@ -68,6 +68,7 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 			connection.close();
 		} catch (Exception e) {
 			// ignore
+			e.printStackTrace();
 		} finally {
 			connection = null;
 		}
@@ -82,11 +83,11 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 
 	/**
 	 * Check whether database connection is closed, and reconnect if needed.
-	 * 
+	 *
 	 * Executes the query "select 1" using the current database connection. If
 	 * this doesn't succeed, reinitializes the database connection by calling
 	 * shutdown() then startup().
-	 * 
+	 *
 	 * @return Valid connection object.
 	 * @throws Exception
 	 *             if unable to (re)connect.

@@ -8,7 +8,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 

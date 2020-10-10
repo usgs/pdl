@@ -1,7 +1,6 @@
 package gov.usgs.earthquake.distribution;
 
 import gov.usgs.earthquake.product.Product;
-import gov.usgs.earthquake.distribution.HeartbeatStatus;
 import gov.usgs.util.Config;
 
 import java.util.Date;
@@ -22,9 +21,9 @@ import javax.json.JsonObjectBuilder;
 /**
  * Heartbeat Listener stores heartbeat messages and writes them to a heartbeat
  * file when a product is received
- * 
+ *
  * @author tene
- * 
+ *
  */
 public class HeartbeatListener extends DefaultNotificationListener {
 
@@ -63,7 +62,7 @@ public class HeartbeatListener extends DefaultNotificationListener {
 
 	/**
 	 * Create a new HeartbeatListener.
-	 * 
+	 *
 	 * Sets up the includeTypes list to contain "heartbeat".
 	 */
 	public HeartbeatListener() throws Exception {
@@ -119,7 +118,7 @@ public class HeartbeatListener extends DefaultNotificationListener {
 
 	/**
 	 * Send heartbeat data to heartbeat listener
-	 * 
+	 *
 	 * @param component
 	 * @param key
 	 * @param value
@@ -151,7 +150,7 @@ public class HeartbeatListener extends DefaultNotificationListener {
 
 	/**
 	 * Write heartbeat data for all components to the heartbeat file
-	 * 
+	 *
 	 * @return true
 	 * @throws IOException
 	 */
