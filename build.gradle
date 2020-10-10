@@ -50,7 +50,10 @@ dependencies {
   // XMLVerifier uses this, but is excluded for now
   // compile files("lib/cap-library-r11.jar")
 
-  testCompile "junit:junit-dep:4.11"
+    testImplementation("junit:junit:4.13")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.7.0")
 }
 
 sourceSets {
@@ -88,6 +91,7 @@ test {
   filter {
     includeTestsMatching "*Test"
   }
+  useJUnitPlatform()
 }
 
 // clean up after tests
