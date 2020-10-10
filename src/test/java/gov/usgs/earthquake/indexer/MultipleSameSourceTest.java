@@ -1,13 +1,15 @@
 package gov.usgs.earthquake.indexer;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.junit.Assert;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.util.List;
 import java.util.logging.ConsoleHandler;
@@ -15,12 +17,11 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import gov.usgs.earthquake.distribution.FileProductStorage;
 import gov.usgs.earthquake.distribution.ProductTracker;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.io.ObjectProductHandler;
 import gov.usgs.earthquake.product.io.XmlProductSource;
-import gov.usgs.util.FileUtils;
+import gov.usgs.util.Config;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.logging.SimpleLogFormatter;
 
@@ -42,6 +43,9 @@ public class MultipleSameSourceTest {
 		"etc/test_products/multiple_samesource/origin_nn00488366_nn_1427492772081.xml"
 	};
 
+	@TempDir
+	public Path testDir;
+
 	private Indexer indexer;
 
 	public List<Product> getProducts() throws Exception {
@@ -53,7 +57,7 @@ public class MultipleSameSourceTest {
 		return products;
 	}
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		// turn off tracking during test
 		ProductTracker.setTrackerEnabled(false);
@@ -68,19 +72,18 @@ public class MultipleSameSourceTest {
 		rootLogger.setLevel(Level.FINEST);
 
 		indexer = new Indexer();
-
-		// empty storage
-		FileUtils.deleteTree(((FileProductStorage) indexer.getProductStorage())
-				.getBaseDirectory());
-		// empty notification index
-		new File(JDBCProductIndex.JDBC_DEFAULT_FILE).delete();
-
+		Config config = new Config();
+		// Use test data directory
+		config.setProperty(Indexer.INDEXFILE_CONFIG_PROPERTY, testDir.resolve("productIndex.db").toString());
+		config.setProperty(Indexer.STORAGE_DIRECTORY_CONFIG_PROPERTY, testDir.resolve("storage").toString());
+		indexer.configure(config);
 		indexer.startup();
 	}
 
-	@After
+	@AfterEach
 	public void teardown() throws Exception {
 		indexer.shutdown();
+		indexer = null;
 	}
 
 	@Test

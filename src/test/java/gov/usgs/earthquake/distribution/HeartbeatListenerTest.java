@@ -1,6 +1,5 @@
 package gov.usgs.earthquake.distribution;
 
-import gov.usgs.earthquake.distribution.HeartbeatListener;
 import gov.usgs.util.Config;
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,13 +9,13 @@ public class HeartbeatListenerTest {
 
 	/**
 	 * JSON Heartbeat Listener test should pass
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
 	public void testJSONHeartbeatListener() throws Exception {
 		HeartbeatListener objListener;
-		
+
 		try {
 			Config config = new Config();
 			config.setProperty("heartbeatFilename", "heartbeat.dat");
@@ -54,13 +53,13 @@ public class HeartbeatListenerTest {
 
 	/**
 	 * Write Heartbeat File test should pass
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
 	public void testWriteHeartbeat() throws Exception {
 		HeartbeatListener objListener;
-		
+
 		try {
 
 			Config config = new Config();
@@ -83,7 +82,7 @@ public class HeartbeatListenerTest {
 					"value42");
 			HeartbeatListener.sendHeartbeatMessage("TestComponent4", "key43",
 					"value43");
-			
+
 			objListener.writeHeartbeat();
 
 		} catch (Exception e) {
@@ -94,64 +93,54 @@ public class HeartbeatListenerTest {
 
 	/**
 	 * Manual clear of heartbeat data test should pass
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
 	public void testManualClearHeartbeat() throws Exception {
 		HeartbeatListener objListener;
-		
-		long delayMillSec = 1000L;
-		long delayTimeEnd = System.currentTimeMillis() + delayMillSec;
 
-		try {
-			Config config = new Config();
-			config.setProperty("heartbeatFilename", "heartbeat.dat");
-			config.setProperty("heartbeatTimeout", "100");
-			config.setProperty("cleanupInterval", "1000");
+		Config config = new Config();
+		config.setProperty("heartbeatFilename", "heartbeat.dat");
+		config.setProperty("heartbeatTimeout", "100");
+		config.setProperty("cleanupInterval", "1000");
 
-			objListener = new HeartbeatListener();
-			objListener.configure(config);
+		objListener = new HeartbeatListener();
+		objListener.configure(config);
 
-			HeartbeatListener.sendHeartbeatMessage("TestComponent3", "key31",
-					"value31");
-			HeartbeatListener.sendHeartbeatMessage("TestComponent3", "key32",
-					"value32");
-			HeartbeatListener.sendHeartbeatMessage("TestComponent3", "key33",
-					"value33");
-			HeartbeatListener.sendHeartbeatMessage("TestComponent4", "key41",
-					"value41");
-			HeartbeatListener.sendHeartbeatMessage("TestComponent4", "key42",
-					"value42");
-			HeartbeatListener.sendHeartbeatMessage("TestComponent4", "key43",
-					"value43");
+		HeartbeatListener.sendHeartbeatMessage("TestComponent3", "key31",
+				"value31");
+		HeartbeatListener.sendHeartbeatMessage("TestComponent3", "key32",
+				"value32");
+		HeartbeatListener.sendHeartbeatMessage("TestComponent3", "key33",
+				"value33");
+		HeartbeatListener.sendHeartbeatMessage("TestComponent4", "key41",
+				"value41");
+		HeartbeatListener.sendHeartbeatMessage("TestComponent4", "key42",
+				"value42");
+		HeartbeatListener.sendHeartbeatMessage("TestComponent4", "key43",
+				"value43");
 
-			// delay test 1 second to "age" storage
-			while (System.currentTimeMillis() < delayTimeEnd) {
-			}
+		// delay test 1 second to "age" storage
+		Thread.sleep(1001L);
 
-			objListener.cleanup();
-			String stringJSON = objListener.formatHeartbeatOutput();
+		objListener.cleanup();
+		String stringJSON = objListener.formatHeartbeatOutput();
 
-			Assert.assertTrue("Heartbeat data cleared", stringJSON.length() < 3);
-			System.out.println("Manual test heartbeat data cleared, JSON="
-					+ stringJSON);
-
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			Assert.fail("Should have had successful data storage and heartbeat.dat file output");
-		}
+		Assert.assertTrue("Heartbeat data cleared", stringJSON.length() < 3);
+		System.out.println("Manual test heartbeat data cleared, JSON="
+				+ stringJSON);
 	}
 
 	/**
 	 * Automatic clear of heartbeat data test should pass
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
 	public void testAutoClearHeartbeat() throws Exception {
 		HeartbeatListener objListener;
-		
+
 		long delayMillSec = 5000L;
 		long delayTimeEnd = System.currentTimeMillis() + delayMillSec;
 
