@@ -13,6 +13,7 @@ import gov.usgs.util.CryptoUtils;
 import gov.usgs.util.DefaultConfigurable;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
+import gov.usgs.util.CryptoUtils.Version;
 import gov.usgs.util.StringUtils;
 
 import java.io.File;
@@ -101,6 +102,7 @@ public class CLIProductBuilder extends DefaultConfigurable {
 
 	// private key used for signature
 	public static final String PRIVATE_KEY_ARGUMENT = "--privateKey=";
+	public static final String SIGNATURE_VERSION_ARGUMENT = "--signatureVersion=";
 
 	/** Property name used for configuring a tracker url. */
 	public static final String TRACKER_URL_CONFIG_PROPERTY = "trackerURL";
@@ -269,6 +271,7 @@ public class CLIProductBuilder extends DefaultConfigurable {
 		String contentType = null;
 		// used when signing products
 		File privateKey = null;
+		Version signatureVersion = Version.SIGNATURE_V1;
 		boolean binaryFormat = false;
 		boolean enableDeflate = true;
 
@@ -352,6 +355,9 @@ public class CLIProductBuilder extends DefaultConfigurable {
 						.put(file.getName(), new FileContent(file));
 			} else if (arg.startsWith(PRIVATE_KEY_ARGUMENT)) {
 				privateKey = new File(arg.replace(PRIVATE_KEY_ARGUMENT, ""));
+			} else if (arg.startsWith(SIGNATURE_VERSION_ARGUMENT)) {
+				signatureVersion = Version.fromString(
+						arg.replace(SIGNATURE_VERSION_ARGUMENT, ""));
 			} else if (arg.startsWith(SERVERS_ARGUMENT)) {
 				senders.clear();
 				senders.addAll(parseServers(arg.replace(SERVERS_ARGUMENT, ""),
@@ -409,8 +415,11 @@ public class CLIProductBuilder extends DefaultConfigurable {
 
 		if (privateKey != null) {
 			LOGGER.fine("Signing product");
-			product.sign(CryptoUtils.readOpenSSHPrivateKey(StreamUtils
-					.readStream(StreamUtils.getInputStream(privateKey)), null));
+			product.sign(
+					CryptoUtils.readOpenSSHPrivateKey(
+							StreamUtils.readStream(StreamUtils.getInputStream(privateKey)),
+							null),
+					signatureVersion);
 		}
 
 		return product;
@@ -579,6 +588,8 @@ public class CLIProductBuilder extends DefaultConfigurable {
 		buf.append("                         Override a configured default trackerURL\n");
 		buf.append("[--privateKey=FILE]      OpenSSH DSA private key used to sign products\n");
 		buf.append("                         A product signature may or may not be optional\n");
+		buf.append("[--signatureVersion=v1]  signature version\n");
+		buf.append("                         valid values are 'v1' or 'v2'\n");
 		buf.append("\n");
 
 		buf.append("Where product is sent\n");

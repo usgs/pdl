@@ -27,7 +27,7 @@ public class URLContent extends AbstractContent {
 
 	/**
 	 * Create a new URLContent object.
-	 * 
+	 *
 	 * @param content
 	 *            the content available at a URL.
 	 * @throws URISyntaxException
@@ -40,7 +40,7 @@ public class URLContent extends AbstractContent {
 
 	/**
 	 * Create a new URLContent object from a FileContent.
-	 * 
+	 *
 	 * @param fc
 	 *            the file content.
 	 */
