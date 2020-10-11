@@ -1,6 +1,7 @@
 package gov.usgs.util;
 
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyPair;
@@ -14,6 +15,9 @@ import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 
 import org.junit.Test;
+
+import gov.usgs.util.CryptoUtils.Version;
+
 import org.junit.Assert;
 
 public class CryptoUtilsTest {
@@ -134,17 +138,21 @@ public class CryptoUtilsTest {
 	public static final String TEST_OPENSSH_RSA_PUBLIC_KEY = "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAvKPGR9YGhEpx03BUTBAaVk3vXD3B+soh9z9ePUh0OUDuYc0g6cgFLmMv/fljysGIxiyllT7D7it69fYBUP+zeAPHf77nQMoZwu+NB8V3lpX5wREAkg/ZRuettmp7yn4VyZ2fpV3EyJkRX4DcVf+q6OErOfR2ohKb7o1gW3SVefK0j1K59jXypu8xWW2jl6qtlkSKHt6KfMh8ZgB2g4DbRkwtlFKTHU46U9N2WIWcTIe5IeZDqoAvkf+RqFHyhynIu7T/HhHciYczUTPi7Xua0VX4Uro2DQ85M7+dSXd7ZZulOky5UnJsD72azlSi9qjl/KOw0FdSqHAU+Quxyv335w== SignatureUtils-test-rsa-key\n";
 
 	@Test
-	public void generateRSAKeyPair() throws NoSuchAlgorithmException,
-			InvalidKeyException, NoSuchPaddingException,
+	public void generateRSAKeyPair() throws InvalidAlgorithmParameterException,
+			NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException,
 			IllegalArgumentException, IOException, SignatureException {
-		testKeyPair(CryptoUtils.generateRSAKeyPair(CryptoUtils.RSA_2048));
+		KeyPair keyPair = CryptoUtils.generateRSAKeyPair(CryptoUtils.RSA_2048);
+		testKeyPair(keyPair, Version.SIGNATURE_V1);
+		testKeyPair(keyPair, Version.SIGNATURE_V2);
 	}
 
 	@Test
-	public void generateDSAKeyPair() throws InvalidKeyException,
-			NoSuchAlgorithmException, NoSuchPaddingException,
+	public void generateDSAKeyPair() throws InvalidAlgorithmParameterException,
+			InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
 			IllegalArgumentException, IOException, SignatureException {
-		testKeyPair(CryptoUtils.generateDSAKeyPair(CryptoUtils.DSA_1024));
+		KeyPair keyPair = CryptoUtils.generateDSAKeyPair(CryptoUtils.DSA_1024);
+		testKeyPair(keyPair, Version.SIGNATURE_V1);
+		testKeyPair(keyPair, Version.SIGNATURE_V2);
 	}
 
 	@Test
@@ -166,36 +174,41 @@ public class CryptoUtilsTest {
 	@Test
 	public void readRSAKeyPair() throws IllegalArgumentException, IOException,
 			NoSuchAlgorithmException, InvalidKeyException,
-			NoSuchPaddingException, SignatureException {
+			NoSuchPaddingException, SignatureException, InvalidAlgorithmParameterException {
 		PublicKey publicKey = CryptoUtils.readPublicKey(TEST_RSA_PUBLIC_KEY
 				.getBytes());
 		PrivateKey privateKey = CryptoUtils.readPrivateKey(TEST_RSA_PRIVATE_KEY
 				.getBytes());
-		testKeyPair(new KeyPair(publicKey, privateKey));
+		testKeyPair(new KeyPair(publicKey, privateKey), Version.SIGNATURE_V1);
+		testKeyPair(new KeyPair(publicKey, privateKey), Version.SIGNATURE_V2);
 	}
 
 	@Test
 	public void readOpenSSHDSAKeyPair() throws IllegalArgumentException,
 			IOException, InvalidKeySpecException, NoSuchAlgorithmException,
-			InvalidKeyException, NoSuchPaddingException, SignatureException {
+			InvalidKeyException, NoSuchPaddingException, SignatureException,
+			InvalidAlgorithmParameterException {
 		PublicKey publicKey = CryptoUtils
 				.readOpenSSHPublicKey(TEST_OPENSSH_DSA_PUBLIC_KEY.getBytes());
 		PrivateKey privateKey = CryptoUtils.readOpenSSHPrivateKey(
 				TEST_OPENSSH_DSA_PRIVATE_KEY.getBytes(), null);
 
-		testKeyPair(new KeyPair(publicKey, privateKey));
+		testKeyPair(new KeyPair(publicKey, privateKey), Version.SIGNATURE_V1);
+		testKeyPair(new KeyPair(publicKey, privateKey), Version.SIGNATURE_V2);
 	}
 
 	@Test
 	public void readOpenSSHRSAKeyPair() throws IllegalArgumentException,
 			IOException, InvalidKeySpecException, NoSuchAlgorithmException,
-			InvalidKeyException, NoSuchPaddingException, SignatureException {
+			InvalidKeyException, NoSuchPaddingException, SignatureException,
+			InvalidAlgorithmParameterException {
 		PublicKey publicKey = CryptoUtils
 				.readOpenSSHPublicKey(TEST_OPENSSH_RSA_PUBLIC_KEY.getBytes());
 		PrivateKey privateKey = CryptoUtils.readOpenSSHPrivateKey(
 				TEST_OPENSSH_RSA_PRIVATE_KEY.getBytes(), null);
 
-		testKeyPair(new KeyPair(publicKey, privateKey));
+		testKeyPair(new KeyPair(publicKey, privateKey), Version.SIGNATURE_V1);
+		testKeyPair(new KeyPair(publicKey, privateKey), Version.SIGNATURE_V2);
 	}
 
 	/**
@@ -210,10 +223,12 @@ public class CryptoUtilsTest {
 	 * @throws IllegalArgumentException
 	 * @throws IOException
 	 * @throws SignatureException
+	 * @throws InvalidAlgorithmParameterException
 	 */
-	public void testKeyPair(KeyPair key) throws InvalidKeyException,
-			NoSuchAlgorithmException, NoSuchPaddingException,
-			IllegalArgumentException, IOException, SignatureException {
+	public void testKeyPair(KeyPair key, final Version version) throws
+			InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
+			IllegalArgumentException, IOException, SignatureException,
+			InvalidAlgorithmParameterException {
 		Assert.assertNotNull("Public key is null", key.getPublic());
 		Assert.assertNotNull("Private key is null", key.getPrivate());
 
@@ -223,11 +238,11 @@ public class CryptoUtilsTest {
 
 		// test signature
 		String keyAlgorithm = key.getPublic().getAlgorithm();
-		String signature = CryptoUtils.sign(key.getPrivate(), testData);
-		Assert.assertTrue(keyAlgorithm + " signature generated",
+		String signature = CryptoUtils.sign(key.getPrivate(), testData, version);
+		Assert.assertTrue(keyAlgorithm + " signature " + version + " generated",
 				signature != null);
-		Assert.assertTrue(keyAlgorithm + " signature verified", CryptoUtils
-				.verify(key.getPublic(), testData, signature));
+		Assert.assertTrue(keyAlgorithm + " signature " + version + " verified",
+				CryptoUtils.verify(key.getPublic(), testData, signature, version));
 		Assert.assertFalse(keyAlgorithm
 				+ " signature not verified after data modification",
 				CryptoUtils.verify(key.getPublic(), modifiedData, signature));

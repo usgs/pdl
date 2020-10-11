@@ -3,6 +3,7 @@
  */
 package gov.usgs.earthquake.product;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -18,7 +19,7 @@ public class InputStreamContent extends AbstractContent {
 
 	/**
 	 * Create a new InputStream content.
-	 * 
+	 *
 	 * @param content
 	 *            the content.
 	 */
@@ -28,7 +29,7 @@ public class InputStreamContent extends AbstractContent {
 
 	/**
 	 * Create an InputStreamContent from another Content.
-	 * 
+	 *
 	 * @param content
 	 *            the content to duplicate.
 	 */
@@ -42,6 +43,28 @@ public class InputStreamContent extends AbstractContent {
 	 */
 	public InputStream getInputStream() throws IOException {
 		return content;
+	}
+
+	/**
+	 * InputStream can only be read once.
+	 *
+	 * <p>If sha256 is null, read and convert to in memory stream.
+	 */
+	public String getSha256() throws Exception {
+		String sha256 = super.getSha256(false);
+		if (sha256 == null) {
+			// convert stream into byte array to read multiple times
+			final byte[] contentBytes;
+			try (final InputStream in = getInputStream()) {
+				contentBytes = StreamUtils.readStream(in);
+			}
+			// generate sha256 from byte stream
+			this.content = new ByteArrayInputStream(contentBytes);
+			sha256 = super.getSha256();
+			// set byte stream for next reader
+			this.content = new ByteArrayInputStream(contentBytes);
+		}
+		return sha256;
 	}
 
 	/**
