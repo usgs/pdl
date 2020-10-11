@@ -81,8 +81,28 @@ public class CryptoUtils {
 
 	/** Signature versions. */
 	public enum Version {
-		SIGNATURE_V1,
-		SIGNATURE_V2;
+		SIGNATURE_V1("v1"),
+		SIGNATURE_V2("v2");
+
+		private String value;
+
+		Version(final String value) {
+			this.value = value;
+		}
+
+		public String toString() {
+			return this.value;
+		}
+
+		public static Version fromString(final String value) throws IllegalArgumentException {
+			if (SIGNATURE_V1.value.equals(value)) {
+				return SIGNATURE_V1;
+			} else if (SIGNATURE_V2.value.equals(value)) {
+				return SIGNATURE_V2;
+			} else {
+				throw new IllegalArgumentException("Invalid signature version");
+			}
+		}
 	}
 
 	/** v2 Algorithm for DSA signature */

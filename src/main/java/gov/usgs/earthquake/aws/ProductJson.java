@@ -6,9 +6,9 @@ import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.earthquake.product.URLContent;
+import gov.usgs.util.CryptoUtils.Version;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
-import gov.usgs.util.CryptoUtils.Version;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -43,6 +43,7 @@ public class ProductJson {
 				.add("links", getLinksJson(product.getLinks()))
 				.add("properties", getPropertiesJson(product.getProperties()))
 				.add("signature", product.getSignature())
+				.add("signatureVersion", product.getSignatureVersion().toString())
 				.add("status", product.getStatus())
 				.add("type", "Feature")
 				.build();
@@ -55,6 +56,7 @@ public class ProductJson {
 		product.setProperties(getProperties(json.getJsonObject("properties")));
 		product.setStatus(json.getString("status"));
 		product.setSignature(json.getString("signature"));
+		product.setSignatureVersion(Version.fromString(json.getString("signatureVersion")));
 		return product;
 	}
 
@@ -80,7 +82,9 @@ public class ProductJson {
 								+ Base64.getEncoder()
 										.encodeToString(StreamUtils.readStream(content.getInputStream())));
 			} else {
-				// no url
+				// no url, will throw parse error
+				// this is used to get upload urls, and returned object includes urls...
+				jsonContent.addNull("url");
 			}
 			builder.add(jsonContent);
 		}
