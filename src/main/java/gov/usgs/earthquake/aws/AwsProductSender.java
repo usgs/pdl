@@ -5,6 +5,7 @@ import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.earthquake.product.URLContent;
+import gov.usgs.earthquake.product.io.JsonProduct;
 import gov.usgs.util.Config;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
@@ -40,7 +41,7 @@ public class AwsProductSender extends DefaultNotificationSender {
 	public void onProduct(final Product product) throws Exception {
 		final ProductId id = product.getId();
 		// convert to json
-		JsonObject json = new ProductJson().getJsonObject(product);
+		JsonObject json = new JsonProduct().getJsonObject(product);
 
 		try {
 			// get upload urls, response is product with signed content urls for upload
@@ -72,7 +73,7 @@ public class AwsProductSender extends DefaultNotificationSender {
 		if (uploadJson.getJsonObject("already_exists") != null) {
 			throw new HttpException(result, "Product already sent");
 		}
-		return new ProductJson().getProduct(uploadJson.getJsonObject("upload"));
+		return new JsonProduct().getProduct(uploadJson.getJsonObject("upload"));
 	}
 
 	protected HttpResponse postJson(final URL url, final JsonObject json) throws Exception {
@@ -99,7 +100,7 @@ public class AwsProductSender extends DefaultNotificationSender {
 		// parse response
 		final JsonObject notification = uploadJson.getJsonObject("notification");
 		final String snsMessageId = uploadJson.getString("sns_message_id");
-		final Product sent = new ProductJson().getProduct(notification.getJsonObject("product"));
+		final Product sent = new JsonProduct().getProduct(notification.getJsonObject("product"));
 		LOGGER.info(
 				"Sent product "
 						+ sent.getId().toString()

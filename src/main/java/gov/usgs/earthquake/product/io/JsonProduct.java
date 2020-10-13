@@ -1,4 +1,4 @@
-package gov.usgs.earthquake.aws;
+package gov.usgs.earthquake.product.io;
 
 import gov.usgs.earthquake.product.AbstractContent;
 import gov.usgs.earthquake.product.ByteContent;
@@ -26,7 +26,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
-public class ProductJson {
+public class JsonProduct {
 
 	public JsonObject getJsonObject(final Product product) throws Exception {
 		final ProductId id = product.getId();
