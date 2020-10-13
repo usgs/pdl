@@ -16,9 +16,10 @@ import javax.websocket.CloseReason;
 import javax.websocket.Session;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.net.URI;
+import java.net.URL;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.logging.Level;
@@ -32,30 +33,17 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   public static final Logger LOGGER = Logger
           .getLogger(AwsProductReceiver.class.getName());
 
-  public static final String SERVER_HOST_PROPERTY = "serverHost";
-  public static final String SERVER_PORT_PROPERTY = "serverPort";
-  public static final String SERVER_PATH_PROPERTY = "serverPath";
+  public static final String URL_PROPERTY = "url";
   public static final String CREATED_AFTER_PROPERTY = "createdAfter";
-
-  public static final String TIMESTAMP_PROPERTY = "timestamp";
   public static final String TRACKING_FILE_NAME_PROPERTY = "trackingFileName";
   public static final String CONNECT_ATTEMPTS_PROPERTY = "connectAttempts";
   public static final String CONNECT_TIMEOUT_PROPERTY = "connectTimeout";
-  public static final String RETRY_ON_CLOSE_PROPERTY = "retryOnClose";
 
-  public static final String DEFAULT_SERVER_HOST = "http://www.google.com";
-  public static final String DEFAULT_SERVER_PORT = "4222";
-  public static final String DEFAULT_SERVER_PATH = "/sequence/";
-  public static final String DEFAULT_TRACKING_FILE_NAME = "data/WebSocketReceiverInfo";
+  public static final String DEFAULT_TRACKING_FILE_NAME = "data/AwsReceiver.json";
   public static final String DEFAULT_CONNECT_ATTEMPTS = "5";
   public static final String DEFAULT_CONNECT_TIMEOUT = "1000";
-  public static final String DEFAULT_RETRY_ON_CLOSE = "true";
 
-  public static final String ATTRIBUTE_DATA = "data";
-
-  private String serverHost;
-  private String serverPort;
-  private String serverPath;
+  private URL url;
   private String trackingFileName;
   private int attempts;
   private long timeout;
@@ -74,16 +62,14 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   public void configure(Config config) throws Exception {
     super.configure(config);
 
-    serverHost = config.getProperty(SERVER_HOST_PROPERTY, DEFAULT_SERVER_HOST);
-    serverPort = config.getProperty(SERVER_PORT_PROPERTY, DEFAULT_SERVER_PORT);
-    serverPath = config.getProperty(SERVER_PATH_PROPERTY, DEFAULT_SERVER_PATH);
+    url = new URL(config.getProperty(URL_PROPERTY));
     attempts = Integer.parseInt(config.getProperty(CONNECT_ATTEMPTS_PROPERTY, DEFAULT_CONNECT_ATTEMPTS));
     timeout = Long.parseLong(config.getProperty(CONNECT_TIMEOUT_PROPERTY, DEFAULT_CONNECT_TIMEOUT));
     trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME);
   }
 
   @Override
-  public void onOpen(Session session) {
+  public void onOpen(Session session) throws IOException {
     LOGGER.info("[" + getName() + "] onOpen " + session.toString());
     // ignore broadcast until caught up
     processBroadcast = false;
@@ -106,7 +92,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
    * @param message
    */
   @Override
-  synchronized public void onMessage(String message) {
+  synchronized public void onMessage(String message) throws IOException {
     try (final JsonReader reader = Json.createReader(new StringReader(message))) {
       // parse message
       final JsonObject json = reader.readObject();
@@ -122,6 +108,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
           Level.WARNING,
           "[" + getName() + "] exception while processing message '" + message + "'",
           e);
+      throw new IOException(e);
     }
   }
 
@@ -170,7 +157,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     }
   }
 
-  protected void sendProductsCreatedAfter() throws Exception {
+  protected void sendProductsCreatedAfter() throws IOException {
     // set default for created after
     if (this.createdAfter == null) {
       this.createdAfter = new Timestamp(new Date().getTime() - 7 * 86400 * 1000);
@@ -212,17 +199,12 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
 
     //read sequence from tracking file if other parameters agree
     JsonObject json = readTrackingFile();
-    if (json != null &&
-            json.getString(SERVER_HOST_PROPERTY).equals(serverHost) &&
-            json.getString(SERVER_PORT_PROPERTY).equals(serverPort) &&
-            json.getString(SERVER_PATH_PROPERTY).equals(serverPath)) {
+    if (json != null && json.getString(URL_PROPERTY).equals(url.toString())) {
       createdAfter = Timestamp.valueOf(json.getString(CREATED_AFTER_PROPERTY));
     }
 
     //open websocket
-    client = new WebSocketClient(
-        new URI(serverHost + ":" + serverPort + serverPath),
-        this, attempts, timeout, true);
+    client = new WebSocketClient(url.toURI(), this, attempts, timeout, true);
   }
 
   /**
@@ -260,9 +242,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
    */
   public void writeTrackingFile() throws Exception {
     JsonObject json = Json.createObjectBuilder()
-            .add(SERVER_HOST_PROPERTY,serverHost)
-            .add(SERVER_PATH_PROPERTY,serverPath)
-            .add(SERVER_PORT_PROPERTY,serverPort)
+            .add(URL_PROPERTY, url.toString())
             .add(CREATED_AFTER_PROPERTY, createdAfter.toInstant().toString())
             .build();
 
@@ -272,28 +252,12 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
             json.toString().getBytes());
   }
 
-  public String getServerHost() {
-    return serverHost;
+  public URL getURL() {
+    return url;
   }
 
-  public void setServerHost(String serverHost) {
-    this.serverHost = serverHost;
-  }
-
-  public String getServerPort() {
-    return serverPort;
-  }
-
-  public void setServerPort(String serverPort) {
-    this.serverPort = serverPort;
-  }
-
-  public String getServerPath() {
-    return serverPath;
-  }
-
-  public void setServerPath(String serverPath) {
-    this.serverPath = serverPath;
+  public void setURL(final URL url) {
+    this.url = url;
   }
 
   public String getTrackingFileName() {
