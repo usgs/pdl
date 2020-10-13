@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Base64;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -106,6 +107,20 @@ public class StreamUtils {
 			final int connectTimeout, final int readTimeout)
 			throws IOException {
 		InputStream in = null;
+
+		// intercept data url
+		if (url.getProtocol().equals("data")) {
+			try {
+				String[] parts = url.toString().split(",");
+				byte[] data = parts[1].getBytes("UTF8");
+				if (parts[0].endsWith(";base64")) {
+					data = Base64.getDecoder().decode(data);
+				}
+				return new ByteArrayInputStream(data);
+			} catch (Exception skip) {
+				// unable to parse data url
+			}
+		}
 
 		// initialize connection
 		URLConnection conn = url.openConnection();

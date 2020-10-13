@@ -3,10 +3,13 @@
  */
 package gov.usgs.earthquake.distribution;
 
+import gov.usgs.earthquake.aws.JsonNotification;
 import gov.usgs.earthquake.distribution.roundrobinnotifier.RoundRobinListenerNotifier;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.earthquake.product.io.IOUtil;
+import gov.usgs.earthquake.product.io.JsonProduct;
+import gov.usgs.earthquake.product.io.ObjectProductSource;
 import gov.usgs.earthquake.product.io.ProductSource;
 import gov.usgs.earthquake.util.SizeLimitInputStream;
 import gov.usgs.util.Config;
@@ -25,6 +28,9 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
+
+import javax.json.Json;
+
 import java.util.logging.Level;
 
 /**
@@ -167,7 +173,10 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 			// add notification to index
 			notificationIndex.addNotification(notification);
 
-			if (notification instanceof URLNotification) {
+			if (notification instanceof JsonNotification) {
+				LOGGER.finer("[" + getName() + "] json notification " +
+						notification.getProductId());
+			} else if (notification instanceof URLNotification) {
 				LOGGER.finer("["
 						+ getName()
 						+ "] notification URL="
@@ -298,24 +307,38 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 					try {
 						URL productURL = ((URLNotification) notification)
 								.getProductURL();
-						LOGGER.finer("[" + getName() + "] notification url "
-								+ productURL.toString());
+
+						ProductSource productSource = null;
+						SizeLimitInputStream sizeIn = null;
 
 						final Date beginConnect = new Date();
-						in = StreamUtils.getURLInputStream(productURL,
-								connectTimeout, readTimeout);
+						Date beginDownload = new Date();
+						if (productURL.toString().startsWith("data:")) {
+							// JSON notification
+							LOGGER.finer("[" + getName() + "] parsing json notification "
+									+ productURL.toString());
+							product = new JsonProduct().getProduct(Json.createReader(
+									StreamUtils.getInputStream(productURL)).readObject());
+							productSource = new ObjectProductSource(product);
+						} else {
+							// URL notification
+							LOGGER.finer("[" + getName() + "] notification url "
+									+ productURL.toString());
 
-						final Date beginDownload = new Date();
-						// use size limit with negative limit to count transfer size
-						SizeLimitInputStream sizeIn = new SizeLimitInputStream(in, -1);
-						ProductSource productSource = IOUtil.autoDetectProductSource(sizeIn);
+							in = StreamUtils.getURLInputStream(productURL,
+									connectTimeout, readTimeout);
+							beginDownload = new Date();
+							// use size limit with negative limit to count transfer size
+							sizeIn = new SizeLimitInputStream(in, -1);
+							productSource = IOUtil.autoDetectProductSource(sizeIn);
+						}
 
 						Notification storedNotification = storeProductSource(productSource);
 
 						final Date endDownload = new Date();
 						final long connectTime = beginDownload.getTime() - beginConnect.getTime();
 						final long downloadTime = endDownload.getTime() - beginDownload.getTime();
-						final long downloadSize = sizeIn.getRead();
+						final long downloadSize = sizeIn != null ? sizeIn.getRead() : 0;
 						final long downloadRate = Math.round(downloadSize /
 								(Math.max(downloadTime, 1L) / 1000.0));
 
