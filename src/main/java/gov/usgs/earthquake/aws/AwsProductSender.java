@@ -14,7 +14,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.PrivateKey;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,14 +26,17 @@ import javax.json.JsonObject;
 public class AwsProductSender extends DefaultNotificationSender {
 	public static final Logger LOGGER = Logger.getLogger(AwsProductSender.class.getName());
 
+	public static final String URL_PROPERTY = "url";
+
 	protected URL hubUrl;
-	protected PrivateKey signingKey;
 
 	public AwsProductSender() {}
 
 	@Override
 	public void configure(Config config) throws Exception {
 		super.configure(config);
+
+		hubUrl = new URL(config.getProperty(URL_PROPERTY));
 	}
 
 	@Override
