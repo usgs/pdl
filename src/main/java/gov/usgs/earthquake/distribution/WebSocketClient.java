@@ -1,6 +1,8 @@
 package gov.usgs.earthquake.distribution;
 
 import javax.websocket.*;
+
+import java.io.IOException;
 import java.net.URI;
 
 /**
@@ -69,13 +71,13 @@ public class WebSocketClient {
   }
 
   @OnOpen
-  public void onOpen(Session session) {
+  public void onOpen(Session session) throws IOException {
     this.session = session;
     this.listener.onOpen(session);
   }
 
   @OnClose
-  public void onClose(Session session, CloseReason reason) {
+  public void onClose(Session session, CloseReason reason) throws IOException {
     this.listener.onClose(session, reason);
     this.session = null;
     if (retryOnClose) {
@@ -89,7 +91,7 @@ public class WebSocketClient {
   }
 
   @OnMessage
-  public void onMessage(String message){
+  public void onMessage(String message) throws IOException {
     this.listener.onMessage(message);
   }
 
@@ -102,7 +104,7 @@ public class WebSocketClient {
     this.listener = listener;
   }
 
-  public boolean isConnected() {
+  public boolean isConnected() throws IOException {
     return this.session != null && this.session.isOpen();
   }
 
