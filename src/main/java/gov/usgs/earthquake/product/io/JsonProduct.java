@@ -1,12 +1,12 @@
 package gov.usgs.earthquake.product.io;
 
 import gov.usgs.earthquake.product.AbstractContent;
-import gov.usgs.earthquake.product.ByteContent;
 import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.earthquake.product.URLContent;
 import gov.usgs.util.CryptoUtils.Version;
+import gov.usgs.util.protocolhandlers.data.Handler;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
 
@@ -27,6 +27,11 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
 public class JsonProduct {
+
+	static {
+		// make sure data protocol handler registered
+		Handler.register();
+	}
 
 	public JsonObject getJsonObject(final Product product) throws Exception {
 		final ProductId id = product.getId();
@@ -102,13 +107,7 @@ public class JsonProduct {
 			String type = object.getString("type");
 			String url = object.getString("url");
 
-			AbstractContent content;
-			if (url.startsWith("data:")) {
-				byte[] bytes = Base64.getDecoder().decode(url.replace("data:" + type + ";base64,", ""));
-				content = new ByteContent(bytes);
-			} else {
-				content = new URLContent(new URL(url));
-			}
+			AbstractContent content = new URLContent(new URL(url));
 			content.setContentType(type);
 			content.setLastModified(modified);
 			content.setLength(length);
