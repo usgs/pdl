@@ -93,5 +93,5 @@ public class GeoserveRegionsService {
     this.readTimeout = readTimeout;
   }
 
-  // TODO as needed, implement full GeoServe places API options
+  // as needed, implement full GeoServe places API options
 }
