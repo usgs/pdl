@@ -313,8 +313,8 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 
 						final Date beginConnect = new Date();
 						Date beginDownload = new Date();
-						if (productURL.toString().startsWith("data:")) {
-							// JSON notification
+						if (productURL.getProtocol().equals("data")) {
+							// JSON notification with embedded product
 							LOGGER.finer("[" + getName() + "] parsing json notification "
 									+ productURL.toString());
 							product = new JsonProduct().getProduct(Json.createReader(

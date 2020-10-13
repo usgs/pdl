@@ -108,20 +108,6 @@ public class StreamUtils {
 			throws IOException {
 		InputStream in = null;
 
-		// intercept data url
-		if (url.getProtocol().equals("data")) {
-			try {
-				String[] parts = url.toString().split(",");
-				byte[] data = parts[1].getBytes("UTF8");
-				if (parts[0].endsWith(";base64")) {
-					data = Base64.getDecoder().decode(data);
-				}
-				return new ByteArrayInputStream(data);
-			} catch (Exception skip) {
-				// unable to parse data url
-			}
-		}
-
 		// initialize connection
 		URLConnection conn = url.openConnection();
 		conn.setRequestProperty("Accept-Encoding", "gzip");
