@@ -63,11 +63,12 @@ public class ProductDigest implements ProductHandler {
 	* Construct a new ProductDigest.
 	 */
 	protected ProductDigest(final Version version) throws NoSuchAlgorithmException {
-		MessageDigest digest = MessageDigest.getInstance(
-			version == Version.SIGNATURE_V2
+		final String algorithm = version == Version.SIGNATURE_V2
 				? MESSAGE_DIGEST_V2_ALGORITHM
-				: MESSAGE_DIGEST_ALGORITHM
-		);
+				: MESSAGE_DIGEST_ALGORITHM;
+		LOGGER.fine("Using digest version " + version.toString()
+				+ ", algorithm=" + algorithm);
+		MessageDigest digest = MessageDigest.getInstance(algorithm);
 		this.digestStream = new DigestOutputStream(new NullOutputStream(), digest);
 		this.version = version;
 	}
@@ -115,7 +116,7 @@ public class ProductDigest implements ProductHandler {
 		digestStream.write(XmlUtils.formatDate(id.getUpdateTime()).getBytes(
 				CHARSET));
 		digestStream.write(status.getBytes(CHARSET));
-		if (trackerURL != null) {
+		if (this.version != Version.SIGNATURE_V2 && trackerURL != null) {
 			digestStream.write(trackerURL.toString().getBytes(CHARSET));
 		}
 	}
