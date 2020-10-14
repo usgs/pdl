@@ -19,7 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.net.URL;
+import java.net.URI;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.logging.Level;
@@ -33,7 +33,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   public static final Logger LOGGER = Logger
           .getLogger(AwsProductReceiver.class.getName());
 
-  public static final String URL_PROPERTY = "url";
+  public static final String URI_PROPERTY = "url";
   public static final String CREATED_AFTER_PROPERTY = "createdAfter";
   public static final String TRACKING_FILE_NAME_PROPERTY = "trackingFileName";
   public static final String CONNECT_ATTEMPTS_PROPERTY = "connectAttempts";
@@ -43,7 +43,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   public static final String DEFAULT_CONNECT_ATTEMPTS = "5";
   public static final String DEFAULT_CONNECT_TIMEOUT = "1000";
 
-  private URL url;
+  private URI uri;
   private String trackingFileName;
   private int attempts;
   private long timeout;
@@ -62,7 +62,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   public void configure(Config config) throws Exception {
     super.configure(config);
 
-    url = new URL(config.getProperty(URL_PROPERTY));
+    uri = new URI(config.getProperty(URI_PROPERTY));
     attempts = Integer.parseInt(config.getProperty(CONNECT_ATTEMPTS_PROPERTY, DEFAULT_CONNECT_ATTEMPTS));
     timeout = Long.parseLong(config.getProperty(CONNECT_TIMEOUT_PROPERTY, DEFAULT_CONNECT_TIMEOUT));
     trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME);
@@ -70,13 +70,14 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
 
   @Override
   public void onOpen(Session session) throws IOException {
-    LOGGER.info("[" + getName() + "] onOpen " + session.toString());
+    LOGGER.info("[" + getName() + "] onOpen connection_id=" + session.getId());
     // ignore broadcast until caught up
     processBroadcast = false;
     // save session
     this.session = session;
     // start catch up process
     try {
+      LOGGER.info("[" + getName() + "] Starting catch up");
       sendProductsCreatedAfter();
     } catch (Exception e) {
       LOGGER.log(
@@ -150,6 +151,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
         || (products.size() == 0)
     ) {
       // caught up
+      LOGGER.info("[" + getName() + "] Caught up, switching to broadcast");
       processBroadcast = true;
     } else {
       // keep catching up
@@ -199,12 +201,12 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
 
     //read sequence from tracking file if other parameters agree
     JsonObject json = readTrackingFile();
-    if (json != null && json.getString(URL_PROPERTY).equals(url.toString())) {
+    if (json != null && json.getString(URI_PROPERTY).equals(uri.toString())) {
       createdAfter = Timestamp.valueOf(json.getString(CREATED_AFTER_PROPERTY));
     }
 
     //open websocket
-    client = new WebSocketClient(url.toURI(), this, attempts, timeout, true);
+    client = new WebSocketClient(uri, this, attempts, timeout, true);
   }
 
   /**
@@ -242,7 +244,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
    */
   public void writeTrackingFile() throws Exception {
     JsonObject json = Json.createObjectBuilder()
-            .add(URL_PROPERTY, url.toString())
+            .add(URI_PROPERTY, uri.toString())
             .add(CREATED_AFTER_PROPERTY, createdAfter.toInstant().toString())
             .build();
 
@@ -252,12 +254,12 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
             json.toString().getBytes());
   }
 
-  public URL getURL() {
-    return url;
+  public URI getURI() {
+    return uri;
   }
 
-  public void setURL(final URL url) {
-    this.url = url;
+  public void setURI(final URI uri) {
+    this.uri = uri;
   }
 
   public String getTrackingFileName() {
