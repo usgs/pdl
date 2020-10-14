@@ -1,12 +1,14 @@
 package gov.usgs.earthquake.aws;
 
 import gov.usgs.earthquake.distribution.DefaultNotificationSender;
+import gov.usgs.earthquake.distribution.ProductSender;
 import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.earthquake.product.URLContent;
 import gov.usgs.earthquake.product.io.JsonProduct;
 import gov.usgs.util.Config;
+import gov.usgs.util.DefaultConfigurable;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
 import java.io.ByteArrayInputStream;
@@ -23,7 +25,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 /** Send using AWS Hub API. */
-public class AwsProductSender extends DefaultNotificationSender {
+public class AwsProductSender extends DefaultConfigurable implements ProductSender {
 	public static final Logger LOGGER = Logger.getLogger(AwsProductSender.class.getName());
 
 	public static final String URL_PROPERTY = "url";
@@ -40,12 +42,13 @@ public class AwsProductSender extends DefaultNotificationSender {
 	}
 
 	@Override
-	public void onProduct(final Product product) throws Exception {
+	public void sendProduct(final Product product) throws Exception {
 		final ProductId id = product.getId();
 		// convert to json
 		JsonObject json = new JsonProduct().getJsonObject(product);
 
 		try {
+			LOGGER.fine("Getting upload urls for " + json.toString());
 			// get upload urls, response is product with signed content urls for upload
 			Product uploadProduct = getUploadUrls(json);
 
@@ -60,9 +63,9 @@ public class AwsProductSender extends DefaultNotificationSender {
 		}
 	}
 
-	public Product getUploadUrls(final JsonObject json) throws Exception {
+	protected Product getUploadUrls(final JsonObject json) throws Exception {
 		final URL url = new URL(hubUrl, "get_upload_urls");
-		final HttpResponse result = postJson(url, json);
+		final HttpResponse result = postProductJson(url, json);
 		final int responseCode = result.connection.getResponseCode();
 		if (responseCode != 200) {
 			if (responseCode == 401) {
@@ -78,7 +81,9 @@ public class AwsProductSender extends DefaultNotificationSender {
 		return new JsonProduct().getProduct(uploadJson.getJsonObject("upload"));
 	}
 
-	protected HttpResponse postJson(final URL url, final JsonObject json) throws Exception {
+	protected HttpResponse postProductJson(final URL url, final JsonObject product) throws Exception {
+		// send as attribute, for extensibility
+		final JsonObject json = Json.createObjectBuilder().add("product", product).build();
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 		connection.setDoOutput(true);
 		connection.setRequestMethod("POST");
@@ -93,7 +98,7 @@ public class AwsProductSender extends DefaultNotificationSender {
 		// send request
 		final long start = new Date().getTime();
 		final URL url = new URL(hubUrl, "send_product");
-		final HttpResponse result = postJson(url, json);
+		final HttpResponse result = postProductJson(url, json);
 		final long elapsed = (new Date().getTime() - start);
 		if (result.connection.getResponseCode() != 200) {
 			throw new HttpException(result, "Error sending product (" + elapsed + " ms)");
@@ -116,6 +121,7 @@ public class AwsProductSender extends DefaultNotificationSender {
 
 	protected HttpResponse uploadContent(final Content content, final URL signedUrl)
 			throws Exception {
+		LOGGER.fine("Uploading content to " + signedUrl.toString());
 		final long start = new Date().getTime();
 		final HttpURLConnection connection = (HttpURLConnection) signedUrl.openConnection();
 		connection.setDoOutput(true);
