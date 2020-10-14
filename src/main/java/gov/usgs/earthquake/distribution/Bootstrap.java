@@ -36,17 +36,6 @@ import java.util.logging.XMLFormatter;
  */
 public class Bootstrap {
 
-	/**
-	 * logging is noisy without this.
-	 */
-	static {
-		Logger.getLogger("com.sun.xml.bind").setLevel(Level.INFO);
-		Logger.getLogger("com.sun.activation").setLevel(Level.INFO);
-		Logger.getLogger("javax.xml.bind").setLevel(Level.INFO);
-		Logger.getLogger("sun.awt.X11.timeoutTask.XToolkit").setLevel(Level.INFO);
-		Logger.getLogger("com.sun.xml.bind.v2.runtime.reflect.opt.OptimizedAccessorFactory").setLevel(Level.INFO);
-	}
-
 	// public static
 
 	/** Default JAR config path. */
@@ -157,11 +146,26 @@ public class Bootstrap {
 	}
 
 	public void setupLogging(final Config config) {
-		LogManager.getLogManager().reset();
+		final LogManager logManager = LogManager.getLogManager();
+		logManager.reset();
 
-		Level level = Level.parse(config.getProperty(LOGLEVEL_PROPERTY_NAME,
+		// logging is noisy without this.
+		for (final String name : new String[]{
+			"com.sun.activation",
+			"com.sun.xml.bind",
+			"javax.xml.bind",
+			"org.glassfish.grizzly",
+			"org.glassfish.tyrus",
+			"sun.awt.X11.timeoutTask.XToolkit"
+		}) {
+			final Logger logger = Logger.getLogger(name);
+			logger.setLevel(Level.INFO);
+			logManager.addLogger(logger);
+		};
+
+		final Level level = Level.parse(config.getProperty(LOGLEVEL_PROPERTY_NAME,
 				DEFAULT_LOGLEVEL));
-		String logDirectory = config.getProperty(LOGDIRECTORY_PROPERTY_NAME,
+		final String logDirectory = config.getProperty(LOGDIRECTORY_PROPERTY_NAME,
 				DEFAULT_LOGDIRECTORY);
 		LOGGER.config("Logging Level '" + level + "'");
 		LOGGER.config("Log directory '" + logDirectory + "'");
