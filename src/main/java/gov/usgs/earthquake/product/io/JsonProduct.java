@@ -34,24 +34,30 @@ public class JsonProduct {
 	}
 
 	public JsonObject getJsonObject(final Product product) throws Exception {
+		JsonObjectBuilder json = Json.createObjectBuilder();
+
+		json.add("contents", getContentsJson(product.getContents()));
+		JsonObjectBuilder geometry = getGeometryJson(product);
+		if (geometry == null) {
+			json.addNull("geometry");
+		} else {
+			json.add("geometry", geometry);
+		}
 		final ProductId id = product.getId();
-		return Json.createObjectBuilder()
-				.add("contents", getContentsJson(product.getContents()))
-				.add("geometry", getGeometryJson(product))
-				.add(
-						"id",
-						Json.createObjectBuilder()
-								.add("code", id.getCode())
-								.add("source", id.getSource())
-								.add("type", id.getType())
-								.add("updateTime", XmlUtils.formatDate(id.getUpdateTime())))
-				.add("links", getLinksJson(product.getLinks()))
-				.add("properties", getPropertiesJson(product.getProperties()))
-				.add("signature", product.getSignature())
-				.add("signatureVersion", product.getSignatureVersion().toString())
-				.add("status", product.getStatus())
-				.add("type", "Feature")
-				.build();
+		json.add(
+				"id",
+				Json.createObjectBuilder()
+						.add("code", id.getCode())
+						.add("source", id.getSource())
+						.add("type", id.getType())
+						.add("updateTime", XmlUtils.formatDate(id.getUpdateTime())));
+		json.add("links", getLinksJson(product.getLinks()));
+		json.add("properties", getPropertiesJson(product.getProperties()));
+		json.add("signature", product.getSignature());
+		json.add("signatureVersion", product.getSignatureVersion().toString());
+		json.add("status", product.getStatus());
+		json.add("type", "Feature");
+		return json.build();
 	}
 
 	public Product getProduct(final JsonObject json) throws Exception {
