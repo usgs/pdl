@@ -1,6 +1,5 @@
 package gov.usgs.earthquake.aws;
 
-import gov.usgs.earthquake.distribution.DefaultNotificationSender;
 import gov.usgs.earthquake.distribution.ProductSender;
 import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.Product;
@@ -74,11 +73,13 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 				throw new HttpException(result, "Error getting upload urls");
 			}
 		}
-		JsonObject uploadJson = result.getJsonObject();
-		if (uploadJson.getJsonObject("already_exists") != null) {
-			throw new HttpException(result, "Product already sent");
+		final JsonObject getUploadUrlsResponse = result.getJsonObject();
+		final Product product = new JsonProduct().getProduct(
+				getUploadUrlsResponse.getJsonObject("product"));
+		if (getUploadUrlsResponse.getBoolean("already_exists")) {
+			throw new ProductAlreadySentException(product);
 		}
-		return new JsonProduct().getProduct(uploadJson.getJsonObject("upload"));
+		return product;
 	}
 
 	protected HttpResponse postProductJson(final URL url, final JsonObject product) throws Exception {
@@ -103,20 +104,23 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 		if (result.connection.getResponseCode() != 200) {
 			throw new HttpException(result, "Error sending product (" + elapsed + " ms)");
 		}
-		final JsonObject uploadJson = result.getJsonObject();
+		final JsonObject sendProductResponse = result.getJsonObject();
 		// parse response
-		final JsonObject notification = uploadJson.getJsonObject("notification");
-		final String snsMessageId = uploadJson.getString("sns_message_id");
-		final Product sent = new JsonProduct().getProduct(notification.getJsonObject("product"));
+		final JsonObject notification = sendProductResponse.getJsonObject("notification");
+		final Product product = new JsonProduct().getProduct(notification.getJsonObject("product"));
+		if (sendProductResponse.getBoolean("already_exists")) {
+			throw new ProductAlreadySentException(product);
+		}
+		final String snsMessageId = sendProductResponse.getString("sns_message_id");
 		LOGGER.info(
 				"Sent product "
-						+ sent.getId().toString()
+						+ product.getId().toString()
 						+ " (time= "
 						+ elapsed
 						+ " ms) (sns id = "
 						+ snsMessageId
 						+ " )");
-		return sent;
+		return product;
 	}
 
 	protected HttpResponse uploadContent(final Content content, final URL signedUrl)
