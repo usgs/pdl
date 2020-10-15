@@ -68,6 +68,7 @@ public class JsonProduct {
 		product.setStatus(json.getString("status"));
 		product.setSignature(json.getString("signature"));
 		product.setSignatureVersion(Version.fromString(json.getString("signatureVersion")));
+		product.setTrackerURL(new URL("data:,"));
 		return product;
 	}
 
