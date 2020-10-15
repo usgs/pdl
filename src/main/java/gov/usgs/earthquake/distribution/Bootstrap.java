@@ -37,6 +37,9 @@ import java.util.logging.XMLFormatter;
 public class Bootstrap {
 
 	// public static
+	static {
+		gov.usgs.util.protocolhandlers.data.Handler.register();
+	}
 
 	/** Default JAR config path. */
 	public static final String JAR_CONFIGFILE = "etc/config/config.ini";
