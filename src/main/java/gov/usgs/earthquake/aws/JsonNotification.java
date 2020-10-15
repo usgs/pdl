@@ -2,7 +2,7 @@ package gov.usgs.earthquake.aws;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
 
@@ -25,21 +25,21 @@ public class JsonNotification extends URLNotification {
 		}
 	}
 
-	public final Timestamp created;
+	public final Instant created;
 	public final Product product;
 
 	JsonNotification(final JsonObject json) throws Exception {
 		this(
-				Timestamp.valueOf(json.getString("created")),
+				Instant.parse(json.getString("created")),
 				new JsonProduct().getProduct(
 						json.getJsonObject("product")));
 	}
 
-	JsonNotification(final Timestamp created, final Product product) throws Exception {
+	JsonNotification(final Instant created, final Product product) throws Exception {
 		super(
 				product.getId(),
 				// expiration date
-				new Date(created.getTime() + 30 * 86400),
+				new Date(created.plusSeconds(30 * 86400).toEpochMilli()),
 				// no tracker
 				EMPTY_URL,
 				// store product as data url

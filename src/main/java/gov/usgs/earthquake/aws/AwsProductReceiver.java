@@ -6,6 +6,7 @@ import gov.usgs.earthquake.distribution.WebSocketClient;
 import gov.usgs.earthquake.distribution.WebSocketListener;
 import gov.usgs.util.Config;
 import gov.usgs.util.FileUtils;
+import gov.usgs.util.StreamUtils;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -14,14 +15,12 @@ import javax.json.JsonReader;
 import javax.json.JsonValue;
 import javax.websocket.CloseReason;
 import javax.websocket.Session;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URI;
-import java.sql.Timestamp;
-import java.util.Date;
+import java.time.Instant;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,7 +53,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   private Session session;
 
   /* µs timestamp of last message that has been processed */
-  private Timestamp createdAfter = null;
+  private Instant createdAfter = null;
   private JsonNotification lastBroadcast = null;
   private boolean processBroadcast = false;
 
@@ -130,7 +129,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     this.createdAfter = notification.created;
     writeTrackingFile();
     // send heartbeat
-    HeartbeatListener.sendHeartbeatMessage(getName(), "createdAfter", createdAfter.toInstant().toString());
+    HeartbeatListener.sendHeartbeatMessage(getName(), "createdAfter", createdAfter.toString());
   }
 
   protected void onProductsCreatedAfter(final JsonObject json) throws Exception {
@@ -162,14 +161,14 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   protected void sendProductsCreatedAfter() throws IOException {
     // set default for created after
     if (this.createdAfter == null) {
-      this.createdAfter = new Timestamp(new Date().getTime() - 7 * 86400 * 1000);
+      this.createdAfter = Instant.now().minusSeconds(7 * 86400);
     }
     String request = Json.createObjectBuilder()
         .add("action", "products_created_after")
-        .add("created_after", this.createdAfter.toInstant().toString())
+        .add("created_after", this.createdAfter.toString())
         .build()
         .toString();
-    LOGGER.finer("[" + getName() + "] Sending " + request);
+    LOGGER.fine("[" + getName() + "] Sending " + request);
     // start catch up process
     this.session.getBasicRemote().sendText(request);
   }
@@ -202,7 +201,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     //read sequence from tracking file if other parameters agree
     JsonObject json = readTrackingFile();
     if (json != null && json.getString(URI_PROPERTY).equals(uri.toString())) {
-      createdAfter = Timestamp.valueOf(json.getString(CREATED_AFTER_PROPERTY));
+      createdAfter = Instant.parse(json.getString(CREATED_AFTER_PROPERTY));
     }
 
     //open websocket
@@ -230,10 +229,12 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
 
     File trackingFile = new File(trackingFileName);
     if (trackingFile.exists()) {
-      InputStream contents = new ByteArrayInputStream(FileUtils.readFile(trackingFile));
-      JsonReader jsonReader = Json.createReader(contents);
-      json = jsonReader.readObject();
-      jsonReader.close();
+      try (
+        InputStream contents = StreamUtils.getInputStream(trackingFile);
+        JsonReader jsonReader = Json.createReader(contents);
+      ) {
+        json = jsonReader.readObject();
+      }
     }
     return json;
   }
@@ -245,7 +246,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   public void writeTrackingFile() throws Exception {
     JsonObject json = Json.createObjectBuilder()
             .add(URI_PROPERTY, uri.toString())
-            .add(CREATED_AFTER_PROPERTY, createdAfter.toInstant().toString())
+            .add(CREATED_AFTER_PROPERTY, createdAfter.toString())
             .build();
 
     FileUtils.writeFileThenMove(
@@ -266,15 +267,15 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     return trackingFileName;
   }
 
-  public void setTrackingFileName(String trackingFileName) {
+  public void setTrackingFileName(final String trackingFileName) {
     this.trackingFileName = trackingFileName;
   }
 
-  public Timestamp getCreatedAfter() {
+  public Instant getCreatedAfter() {
     return createdAfter;
   }
 
-  public void setCreatedAfter(Timestamp createdAfter) {
+  public void setCreatedAfter(final Instant createdAfter) {
     this.createdAfter = createdAfter;
   }
 
@@ -282,7 +283,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     return attempts;
   }
 
-  public void setAttempts(int attempts) {
+  public void setAttempts(final int attempts) {
     this.attempts = attempts;
   }
 
@@ -290,7 +291,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     return timeout;
   }
 
-  public void setTimeout(long timeout) {
+  public void setTimeout(final long timeout) {
     this.timeout = timeout;
   }
 }
