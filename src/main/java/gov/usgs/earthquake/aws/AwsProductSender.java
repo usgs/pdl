@@ -56,6 +56,10 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 
 			// send product
 			sendProduct(json);
+		} catch (ProductAlreadySentException pase) {
+			// hub already has product
+			LOGGER.info("[" + getName() + "] hub already has product");
+			return;
 		} catch (Exception e) {
 			LOGGER.log(Level.WARNING, "Exception sending product " + id.toString(), e);
 			throw e;
@@ -111,7 +115,10 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 		if (sendProductResponse.getBoolean("already_exists")) {
 			throw new ProductAlreadySentException(product);
 		}
-		final String snsMessageId = sendProductResponse.getString("sns_message_id");
+		String snsMessageId = null;
+		if (!sendProductResponse.isNull("sns_message_id")) {
+			snsMessageId = sendProductResponse.getString("sns_message_id");
+		}
 		LOGGER.info(
 				"Sent product "
 						+ product.getId().toString()
@@ -123,9 +130,8 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 		return product;
 	}
 
-	protected HttpResponse uploadContent(final Content content, final URL signedUrl)
+	protected HttpResponse uploadContent(final String path, final Content content, final URL signedUrl)
 			throws Exception {
-		LOGGER.fine("Uploading content to " + signedUrl.toString());
 		final long start = new Date().getTime();
 		final HttpURLConnection connection = (HttpURLConnection) signedUrl.openConnection();
 		connection.setDoOutput(true);
@@ -143,19 +149,20 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 		}
 		final HttpResponse result = new HttpResponse(connection);
 		final long elapsed = (new Date().getTime() - start);
-		if (connection.getResponseCode() != 200) {
+		if (connection.getResponseCode() == 422) {
+			throw new HttpException(result,
+					"Content validation errors: " + result.getJsonObject().toString());
+		} else if (connection.getResponseCode() != 200) {
 			throw new HttpException(result, "Error uploading content (" + elapsed + " ms)");
 		}
 		LOGGER.info(
 				"["
 						+ getName()
-						+ "] uploaded (size= "
+						+ "] uploaded content " + path + " (size= "
 						+ content.getLength()
 						+ " bytes) (time= "
 						+ elapsed
-						+ " ms) (url= "
-						+ signedUrl.toString()
-						+ " )");
+						+ " ms)");
 		return result;
 	}
 
@@ -184,6 +191,7 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 								uploadResults.put(
 										path,
 										uploadContent(
+												path,
 												product.getContents().get(path),
 												((URLContent) uploadProduct.getContents().get(path)).getURL()));
 							} catch (Exception e) {
