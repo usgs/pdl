@@ -116,6 +116,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     final JsonNotification notification = new JsonNotification(
         json.getJsonObject("notification"));
     lastBroadcast = notification;
+    LOGGER.info("[" + getName() + "] onBroadcast(" + notification.getProductId() + ")");
     if (!processBroadcast) {
       return;
     }
@@ -133,10 +134,11 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   }
 
   protected void onProductsCreatedAfter(final JsonObject json) throws Exception {
-    LOGGER.finer("[" + getName() + "] Received products created after " +
-        json.getString("created_after"));
+    final String after = json.getString("created_after");
+    final JsonArray products = json.getJsonArray("products");
+    LOGGER.finer("[" + getName() + "] onProductsCreatedAfter(" + after
+        + ", " + products.size() + " products)");
     // receive products
-    JsonArray products = json.getJsonArray("products");
     for (JsonValue value : products) {
       onJsonNotification(new JsonNotification(value.asJsonObject()));
     }
