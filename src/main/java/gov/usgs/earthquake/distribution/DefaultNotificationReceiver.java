@@ -314,11 +314,11 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 						final Date beginConnect = new Date();
 						Date beginDownload = new Date();
 						if (productURL.getProtocol().equals("data")) {
-							// JSON notification with embedded product
-							LOGGER.finer("[" + getName() + "] parsing json notification "
-									+ productURL.toString());
 							product = new JsonProduct().getProduct(Json.createReader(
 									StreamUtils.getInputStream(productURL)).readObject());
+							// JSON notification with embedded product
+							LOGGER.finer("[" + getName() + "] parsed json notification for "
+									+ product.getId().toString());
 							productSource = new ObjectProductSource(product);
 						} else {
 							// URL notification
@@ -348,7 +348,10 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 								+ " (rate = " + downloadRate +  " bytes/s)"
 								+ " (size = " + downloadSize + " bytes)"
 								+ " (time = " + downloadTime + " ms)"
-								+ " from " + productURL.toString());
+								+ " from "
+								+ (productURL.getProtocol().equals("data")
+										? "data url"
+										: productURL.toString()));
 
 						LOGGER.finest("[" + getName()
 								+ "] after store product, notification="
@@ -366,7 +369,9 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 										.productDownloaded(this.getName(), id);
 								LOGGER.fine("[" + getName()
 										+ "] product downloaded from "
-										+ productURL.toString());
+										+ (productURL.getProtocol().equals("data")
+												? "data url"
+												: productURL.toString()));
 							} catch (Exception e) {
 								LOGGER.log(
 										Level.WARNING,
