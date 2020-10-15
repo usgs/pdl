@@ -13,12 +13,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.FileNameMap;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 /**
  * File input, output, content type, and delete utilities.
- * 
+ *
  * @author jmfee
- * 
+ *
  */
 public class FileUtils {
 
@@ -27,9 +29,9 @@ public class FileUtils {
 
 	/**
 	 * Get a file mime type based on its filename.
-	 * 
+	 *
 	 * Calls getContentType(file.getName()).
-	 * 
+	 *
 	 * @param file
 	 * @return String mime type.
 	 */
@@ -39,9 +41,9 @@ public class FileUtils {
 
 	/**
 	 * Get a file mime type based on its file path extension.
-	 * 
+	 *
 	 * Uses URLConnection.getFileNameMap().
-	 * 
+	 *
 	 * @param filename
 	 *            file path.
 	 * @return String mime type.
@@ -52,7 +54,7 @@ public class FileUtils {
 
 	/**
 	 * Read file contents into a byte array.
-	 * 
+	 *
 	 * @param file
 	 *            file to read.
 	 * @return byte array of file content.
@@ -65,7 +67,7 @@ public class FileUtils {
 
 	/**
 	 * Write a file's content.
-	 * 
+	 *
 	 * @param file
 	 *            file to write.
 	 * @param content
@@ -78,7 +80,7 @@ public class FileUtils {
 
 	/**
 	 * Write a file's content atomically.
-	 * 
+	 *
 	 * @param tempfile
 	 *            where file is written.
 	 * @param file
@@ -96,12 +98,12 @@ public class FileUtils {
 		if (!parent.exists()) {
 			parent.mkdirs();
 		}
-		tempfile.renameTo(file);
+		Files.move(tempfile.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE);
 	}
 
 	/**
 	 * Delete all files recursively within tree.
-	 * 
+	 *
 	 * @param path
 	 *            root of tree to delete.
 	 */
@@ -127,7 +129,7 @@ public class FileUtils {
 
 	/**
 	 * Delete path and any empty parent directories.
-	 * 
+	 *
 	 * @param path
 	 *            directory to start in.
 	 */
@@ -137,7 +139,7 @@ public class FileUtils {
 
 	/**
 	 * Delete path and any empty parent directories up to the stopAt point.
-	 * 
+	 *
 	 * @param path
 	 *            direcotry to start in
 	 * @param stopAt
@@ -160,7 +162,7 @@ public class FileUtils {
 	/**
 	 * Extracts a resource file from within the executing JAR and copies it to
 	 * the file system.
-	 * 
+	 *
 	 * @param rsFile
 	 *            Absolute file path (relative to JAR root) of the file to
 	 *            extract.
