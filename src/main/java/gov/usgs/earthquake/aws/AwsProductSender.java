@@ -1,5 +1,6 @@
 package gov.usgs.earthquake.aws;
 
+import gov.usgs.earthquake.distribution.ConfigurationException;
 import gov.usgs.earthquake.distribution.ProductSender;
 import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.Product;
@@ -7,14 +8,18 @@ import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.earthquake.product.URLContent;
 import gov.usgs.earthquake.product.io.JsonProduct;
 import gov.usgs.util.Config;
+import gov.usgs.util.CryptoUtils;
 import gov.usgs.util.DefaultConfigurable;
+import gov.usgs.util.FileUtils;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.PrivateKey;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,9 +32,16 @@ import javax.json.JsonObject;
 public class AwsProductSender extends DefaultConfigurable implements ProductSender {
 	public static final Logger LOGGER = Logger.getLogger(AwsProductSender.class.getName());
 
-	public static final String URL_PROPERTY = "url";
+	public static final String HUB_URL_PROPERTY = "url";
+	public static final String PRIVATE_KEY_PROPERTY = "privateKey";
+	public static final String SIGN_PRODUCTS_PROPERTY = "signProducts";
 
+	// url where products are sent
 	protected URL hubUrl;
+	// signing key
+	protected PrivateKey privateKey;
+	// whether to sign products
+	protected boolean signProducts = false;
 
 	public AwsProductSender() {}
 
@@ -37,12 +49,46 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 	public void configure(Config config) throws Exception {
 		super.configure(config);
 
-		hubUrl = new URL(config.getProperty(URL_PROPERTY));
+		hubUrl = new URL(config.getProperty(HUB_URL_PROPERTY));
+		LOGGER.config("[" + getName() + "] url=" + hubUrl.toString());
+
+		final String sign = config.getProperty(SIGN_PRODUCTS_PROPERTY);
+		if (sign != null) {
+			signProducts = Boolean.valueOf(sign);
+		}
+		LOGGER.config("[" + getName() + "] sign products=" + signProducts);
+
+		final String key = config.getProperty(PRIVATE_KEY_PROPERTY);
+		if (key != null) {
+			privateKey = CryptoUtils.readOpenSSHPrivateKey(
+					FileUtils.readFile(new File(key)),
+					null);
+			LOGGER.config("[" + getName() + "] private key=" + key);
+		}
+
+		if (signProducts && privateKey == null) {
+			// no key configured
+			throw new ConfigurationException("[" + getName() + "] " + SIGN_PRODUCTS_PROPERTY
+					+ " requires a private key for signing");
+		}
+
 	}
 
 	@Override
 	public void sendProduct(final Product product) throws Exception {
 		final ProductId id = product.getId();
+
+		// re-sign if configured
+		if (signProducts) {
+			if (product.getSignature() != null) {
+				// preserve original signature
+				product.getProperties().put("original-signature", product.getSignature());
+				product.getProperties().put("original-signature-version",
+						product.getSignatureVersion().toString());
+			}
+			product.sign(privateKey, CryptoUtils.Version.SIGNATURE_V2);
+		}
+
 		// convert to json
 		JsonObject json = new JsonProduct().getJsonObject(product);
 
@@ -218,6 +264,22 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 						+ elapsed
 						+ " ms)");
 		return uploadResults;
+	}
+
+	public boolean getSignProducts() {
+		return signProducts;
+	}
+
+	public void setSignProducts(final boolean sign) {
+		this.signProducts = sign;
+	}
+
+	public PrivateKey getPrivateKey() {
+		return privateKey;
+	}
+
+	public void setPrivateKey(final PrivateKey key) {
+		this.privateKey = key;
 	}
 
 	static class HttpException extends Exception {
