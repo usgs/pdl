@@ -65,9 +65,11 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 	@Override
 	public void shutdown() throws Exception {
 		try {
-			connection.close();
+			if (connection != null) {
+				connection.close();
+			}
 		} catch (Exception e) {
-			// ignore
+			// log
 			e.printStackTrace();
 		} finally {
 			connection = null;
