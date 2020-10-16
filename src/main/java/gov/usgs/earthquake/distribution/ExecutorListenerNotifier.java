@@ -52,7 +52,7 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 
 	/**
 	 * Add a new notification listener.
-	 * 
+	 *
 	 * @param listener
 	 *            the listener to add. When notifications are received, this
 	 *            listener will be notified.
@@ -62,16 +62,22 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 			throws Exception {
 		if (!notificationListeners.containsKey(listener)) {
 			// fixed thread pool allows us to inspect the queue length...
-			ExecutorService listenerExecutor = Executors.newFixedThreadPool(1);
+			int concurrentProducts = 1;
+			if (listener instanceof DefaultNotificationListener) {
+				concurrentProducts =
+						((DefaultNotificationListener) listener).getConcurrentProducts();
+			}
+			ExecutorService listenerExecutor = Executors.newFixedThreadPool(
+					concurrentProducts);
 			notificationListeners.put(listener, listenerExecutor);
 		}
 	}
 
 	/**
 	 * Remove an existing notification listener.
-	 * 
+	 *
 	 * Any currently queued notifications are processed before shutting down.
-	 * 
+	 *
 	 * @param listener
 	 *            the listener to remove. When notifications are receive, this
 	 *            listener will no longer be notified.
@@ -94,13 +100,13 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 
 	/**
 	 * Send a notification to all registered NotificationListeners.
-	 * 
+	 *
 	 * Creates a NotificationEvent, with a reference to this object and calls
 	 * each notificationListeners onNotification method in separate threads.
-	 * 
+	 *
 	 * This method usually returns before registered NotificationListeners have
 	 * completed processing a notification.
-	 * 
+	 *
 	 * @param event
 	 *            the notification being sent to listeners.
 	 * @throws Exception
@@ -251,7 +257,7 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 
 	/**
 	 * NOTE: messing with the executors map is not a good idea.
-	 * 
+	 *
 	 * @return the map of listeners and their executors.
 	 */
 	public Map<NotificationListener, ExecutorService> getExecutors() {
