@@ -73,6 +73,14 @@ public class RelayProductListener extends DefaultNotificationListener {
 		sender.configure(config);
 	}
 
+	public void setName(final String name) {
+		super.setName(name);
+		// also set sender name for logging
+		if (sender != null) {
+			sender.setName(name);
+		}
+	}
+
 	/**
 	 * Call the sender shutdown method.
 	 */
