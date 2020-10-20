@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -101,6 +102,10 @@ public class Bootstrap {
 	private static final Logger LOGGER = Logger.getLogger(Bootstrap.class
 			.getName());
 
+
+	/** List of logger objects that have level overrides configured. */
+	private final ArrayList<Logger> loggers = new ArrayList<Logger>();
+
 	// constructors
 
 	public Bootstrap() {
@@ -151,8 +156,9 @@ public class Bootstrap {
 	public void setupLogging(final Config config) {
 		final LogManager logManager = LogManager.getLogManager();
 		logManager.reset();
+		loggers.clear();
 
-		// logging is noisy without this.
+		// logging is noisy without this
 		for (final String name : new String[]{
 			"com.sun.activation",
 			"com.sun.xml.bind",
@@ -163,7 +169,8 @@ public class Bootstrap {
 		}) {
 			final Logger logger = Logger.getLogger(name);
 			logger.setLevel(Level.INFO);
-			logManager.addLogger(logger);
+			// save reference to logger since LogManager uses weakref
+			loggers.add(logger);
 		};
 
 		final Level level = Level.parse(config.getProperty(LOGLEVEL_PROPERTY_NAME,
