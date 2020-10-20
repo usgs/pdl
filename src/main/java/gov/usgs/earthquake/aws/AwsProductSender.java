@@ -88,20 +88,40 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 			}
 			product.sign(privateKey, CryptoUtils.Version.SIGNATURE_V2);
 		}
-
 		// convert to json
 		JsonObject json = new JsonProduct().getJsonObject(product);
 
+		final long start = new Date().getTime();
+		final long afterUploadContent;
 		try {
-			LOGGER.fine("Getting upload urls for " + json.toString());
-			// get upload urls, response is product with signed content urls for upload
-			Product uploadProduct = getUploadUrls(json);
-
 			// upload contents
-			uploadContents(product, uploadProduct);
+			if (
+				// has contents
+				product.getContents().size() > 0
+				// and not only inline content
+				&& !(product.getContents().size() == 1 && product.getContents().get("") != null)
+			) {
+				LOGGER.fine("Getting upload urls for " + json.toString());
+				// get upload urls, response is product with signed content urls for upload
+				Product uploadProduct = getUploadUrls(json);
+				final long afterGetUploadUrls = new Date().getTime();
+				LOGGER.fine("[" + getName() + "] get upload urls " + id.toString()
+						+ " (" + (afterGetUploadUrls - start) + " ms) ");
+
+				// upload contents
+				uploadContents(product, uploadProduct);
+				afterUploadContent = new Date().getTime();
+				LOGGER.fine("[" + getName() + "] upload contents " + id.toString()
+						+ " (" + (afterUploadContent - afterGetUploadUrls) + " ms) ");
+			} else {
+				afterUploadContent = new Date().getTime();
+			}
 
 			// send product
 			sendProduct(json);
+			final long afterSendProduct = new Date().getTime();
+			LOGGER.fine("[" + getName() + "] send product " + id.toString()
+					+ " (" + (afterSendProduct - afterUploadContent) + " ms) ");
 		} catch (ProductAlreadySentException pase) {
 			// hub already has product
 			LOGGER.info("[" + getName() + "] hub already has product");
@@ -109,6 +129,10 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 		} catch (Exception e) {
 			LOGGER.log(Level.WARNING, "Exception sending product " + id.toString(), e);
 			throw e;
+		} finally {
+			final long end = new Date().getTime();
+			LOGGER.info("[" + getName() + "] send product total " + id.toString()
+					+ " (" + (end - start) + " ms) ");
 		}
 	}
 
@@ -147,12 +171,10 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 
 	protected Product sendProduct(final JsonObject json) throws Exception {
 		// send request
-		final long start = new Date().getTime();
 		final URL url = new URL(hubUrl, "send_product");
 		final HttpResponse result = postProductJson(url, json);
-		final long elapsed = (new Date().getTime() - start);
 		if (result.connection.getResponseCode() != 200) {
-			throw new HttpException(result, "Error sending product (" + elapsed + " ms)");
+			throw new HttpException(result, "Error sending product");
 		}
 		final JsonObject sendProductResponse = result.getJsonObject();
 		// parse response
@@ -165,14 +187,8 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 		if (!sendProductResponse.isNull("sns_message_id")) {
 			snsMessageId = sendProductResponse.getString("sns_message_id");
 		}
-		LOGGER.info(
-				"Sent product "
-						+ product.getId().toString()
-						+ " (time= "
-						+ elapsed
-						+ " ms) (sns id = "
-						+ snsMessageId
-						+ " )");
+		LOGGER.fine("[" + getName() + "] sns message id "
+				+ snsMessageId + " " + product.getId().toString());
 		return product;
 	}
 
@@ -199,9 +215,10 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 			throw new HttpException(result,
 					"Content validation errors: " + result.getJsonObject().toString());
 		} else if (connection.getResponseCode() != 200) {
-			throw new HttpException(result, "Error uploading content (" + elapsed + " ms)");
+			throw new HttpException(result, "Error uploading content "
+					+ path + " (" + elapsed + " ms)");
 		}
-		LOGGER.info(
+		LOGGER.finer(
 				"["
 						+ getName()
 						+ "] uploaded content " + path + " (size= "
@@ -223,7 +240,6 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 	protected Map<String, HttpResponse> uploadContents(
 			final Product product, final Product uploadProduct) throws Exception {
 		// collect results
-		final long start = new Date().getTime();
 		final ConcurrentHashMap<String, HttpResponse> uploadResults =
 				new ConcurrentHashMap<String, HttpResponse>();
 		final ConcurrentHashMap<String, Exception> uploadExceptions =
@@ -244,7 +260,6 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 								uploadExceptions.put(path, e);
 							}
 						});
-		final long elapsed = (new Date().getTime() - start);
 		if (uploadExceptions.size() > 0) {
 			Exception e = null;
 			// log all
@@ -255,14 +270,6 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 			// throw last
 			throw e;
 		}
-		LOGGER.info(
-				"["
-						+ getName()
-						+ "] uploaded all contents for "
-						+ product.getId().toString()
-						+ " (time= "
-						+ elapsed
-						+ " ms)");
 		return uploadResults;
 	}
 
@@ -294,16 +301,17 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 
 		public String toString() {
 			int code;
+			String message;
 			try {
 				code = this.response.connection.getResponseCode();
+				message = this.response.connection.getResponseMessage();
 			} catch (Exception e) {
 				code = -1;
+				message = null;
 			}
 			return this.getMessage()
-					+ ", response code="
-					+ code
-					+ " : "
-					+ new String(this.response.response);
+					+ ", response " + code + " " + message
+					+ " : " + new String(this.response.response);
 		}
 	}
 
