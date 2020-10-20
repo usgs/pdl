@@ -9,10 +9,8 @@ import gov.usgs.util.FileUtils;
 import gov.usgs.util.StreamUtils;
 
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.json.JsonValue;
 import javax.websocket.CloseReason;
 import javax.websocket.Session;
 import java.io.File;
@@ -100,6 +98,8 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
 
       if ("broadcast".equals(action)) {
         onBroadcast(json);
+      } else if ("product".equals(action)) {
+        onProduct(json);
       } else if ("products_created_after".equals(action)) {
         onProductsCreatedAfter(json);
       }
@@ -133,15 +133,18 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     HeartbeatListener.sendHeartbeatMessage(getName(), "createdAfter", createdAfter.toString());
   }
 
+  protected void onProduct(final JsonObject json) throws Exception {
+    final JsonNotification notification = new JsonNotification(
+        json.getJsonObject("notification"));
+    LOGGER.info("[" + getName() + "] onProduct(" + notification.getProductId() + ")");
+    onJsonNotification(notification);
+  }
+
   protected void onProductsCreatedAfter(final JsonObject json) throws Exception {
     final String after = json.getString("created_after");
-    final JsonArray products = json.getJsonArray("products");
+    final int count = json.getInt("count");
     LOGGER.finer("[" + getName() + "] onProductsCreatedAfter(" + after
-        + ", " + products.size() + " products)");
-    // receive products
-    for (JsonValue value : products) {
-      onJsonNotification(new JsonNotification(value.asJsonObject()));
-    }
+        + ", " + count + " products)");
     // check whether caught up
     if (
         // if a broadcast received during catchup,
@@ -149,7 +152,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
             // and createdAfter is at or after last broadcast
             createdAfter.compareTo(lastBroadcast.created) >= 0)
         // or no additional products returned
-        || (products.size() == 0)
+        || (lastBroadcast == null && count == 0)
     ) {
       // caught up
       LOGGER.info("[" + getName() + "] Caught up, switching to broadcast");
