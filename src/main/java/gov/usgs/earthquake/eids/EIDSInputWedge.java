@@ -31,6 +31,7 @@ import gov.usgs.util.CryptoUtils;
 import gov.usgs.util.DirectoryPoller;
 import gov.usgs.util.FileUtils;
 import gov.usgs.util.StringUtils;
+import gov.usgs.util.CryptoUtils.Version;
 
 /**
  * Read messages from files or a poll directory, and push products into PDL.
@@ -465,6 +466,8 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 	public static final String PARSER_ARGUMENT = "--parser=";
 	public static final String VALIDATE_ARGUMENT = "--validate";
 	public static final String PRIVATE_KEY_ARGUMENT = "--privateKey=";
+	public static final String SIGNATURE_VERSION_ARGUMENT = "--signatureVersion=";
+
 	public static final String SERVERS_ARGUMENT = "--servers=";
 	public static final String SERVERS_DEFAULT = "prod01-pdl01.cr.usgs.gov:11235,prod02-pdl01.cr.usgs.gov:11235";
 	public static final String CONNECT_TIMEOUT_ARGUMENT = "--connectTimeout=";
@@ -572,6 +575,9 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 				setPrivateKey(CryptoUtils.readOpenSSHPrivateKey(FileUtils
 						.readFile(new File(arg
 								.replace(PRIVATE_KEY_ARGUMENT, ""))), null));
+			} else if (arg.startsWith(SIGNATURE_VERSION_ARGUMENT)) {
+				setSignatureVersion(Version.fromString(
+						arg.replace(SIGNATURE_VERSION_ARGUMENT, "")));
 			} else if (arg.startsWith(CONNECT_TIMEOUT_ARGUMENT)) {
 				connectTimeout = Integer.valueOf(arg.replace(
 						CONNECT_TIMEOUT_ARGUMENT, ""));
@@ -702,6 +708,8 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 						+ "FILE) ["
 						+ PRIVATE_KEY_ARGUMENT
 						+ "KEYFILE] ["
+						+ SIGNATURE_VERSION_ARGUMENT
+						+ "VERSION] ["
 						+ SERVERS_ARGUMENT
 						+ "SERVERS] ["
 						+ TEST_ARGUMENT
@@ -750,6 +758,8 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 
 		System.err.println("\t" + PRIVATE_KEY_ARGUMENT + "KEYFILE");
 		System.err.println("\t\topenssh private key used to sign products");
+		System.err.println("\t" + SIGNATURE_VERSION_ARGUMENT + "VERSION");
+		System.err.println("\t\t'v1' is default, 'v2' is other option.");
 
 		System.err.println("\t" + CONNECT_TIMEOUT_ARGUMENT + "TIMEOUT");
 		System.err.println("\t\tmilliseconds before timeout while connecting");
