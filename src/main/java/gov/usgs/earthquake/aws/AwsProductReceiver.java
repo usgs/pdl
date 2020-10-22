@@ -23,7 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Receives notifications from an arbitrary web socket.
+ * Receives notifications from a PDL notification web socket.
  */
 public class AwsProductReceiver extends DefaultNotificationReceiver implements WebSocketListener {
 

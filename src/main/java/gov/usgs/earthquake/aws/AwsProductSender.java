@@ -173,7 +173,10 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 		// send request
 		final URL url = new URL(hubUrl, "send_product");
 		final HttpResponse result = postProductJson(url, json);
-		if (result.connection.getResponseCode() != 200) {
+		if (result.connection.getResponseCode() == 422) {
+			throw new HttpException(result,
+					"Content validation errors: " + result.getJsonObject().toString());
+		} else if (result.connection.getResponseCode() != 200) {
 			throw new HttpException(result, "Error sending product");
 		}
 		final JsonObject sendProductResponse = result.getJsonObject();
@@ -211,10 +214,7 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 		}
 		final HttpResponse result = new HttpResponse(connection);
 		final long elapsed = (new Date().getTime() - start);
-		if (connection.getResponseCode() == 422) {
-			throw new HttpException(result,
-					"Content validation errors: " + result.getJsonObject().toString());
-		} else if (connection.getResponseCode() != 200) {
+		if (connection.getResponseCode() != 200) {
 			throw new HttpException(result, "Error uploading content "
 					+ path + " (" + elapsed + " ms)");
 		}
