@@ -14,7 +14,6 @@ import gov.usgs.util.DefaultConfigurable;
 import gov.usgs.util.FileUtils;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;

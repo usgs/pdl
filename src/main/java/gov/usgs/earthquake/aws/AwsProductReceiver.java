@@ -249,12 +249,12 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
 
   @Override
   public void onConnectFail() {
-    // do nothing
+    // client failed to connect
   }
 
   @Override
   public void onReconnectFail() {
-    // do nothing
+    // failed to reconnect after close
   }
 
   /**
