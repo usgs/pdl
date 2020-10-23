@@ -15,6 +15,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.Key;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -49,12 +50,18 @@ import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import ch.ethz.ssh2.crypto.PEMDecoder;
 
 /**
  * Encryption and signing utilities.
  */
 public class CryptoUtils {
+
+	static {
+		Security.addProvider(new BouncyCastleProvider());
+	}
 
 	/** Algorithm used by AES keys and ciphers. */
 	public static final String AES_ALGORITHM = "AES";
