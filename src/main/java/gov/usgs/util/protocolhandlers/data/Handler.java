@@ -18,7 +18,7 @@ public class Handler extends URLStreamHandler {
    * Register data protocol handler
    */
   public static void register() {
-    final String packageName = Handler.class.getPackageName().replace(".data", "");
+    final String packageName = Handler.class.getPackage().getName().replace(".data", "");
     final String protocolHandlers = System.getProperty(PROTOCOL_HANDLERS_PROPERTY);
     if (protocolHandlers == null || protocolHandlers.indexOf("gov.usgs.util.protocolhandlers") == -1) {
       System.setProperty(
