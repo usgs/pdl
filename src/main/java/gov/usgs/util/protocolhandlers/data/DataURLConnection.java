@@ -44,8 +44,8 @@ public class DataURLConnection extends URLConnection {
     return type;
   }
 
-	@Override
-	public void connect() throws IOException {
+  @Override
+  public void connect() throws IOException {
     // no connection needed
   }
 

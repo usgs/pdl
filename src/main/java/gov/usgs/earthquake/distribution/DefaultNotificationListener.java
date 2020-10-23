@@ -120,16 +120,16 @@ public class DefaultNotificationListener extends AbstractListener implements
 			if (product == null) {
 				throw new ContinuableListenerException("retrieved product null,"
 						+ " notification id=" + productId);
-			} else {
-				if (!onBeforeProcessProduct(product)) {
-					return;
-				}
-				LOGGER.finer("[" + getName() + "] processing product for id="
-						+ productId);
-				onProduct(product);
-
-				onAfterProcessNotification(notification);
 			}
+
+			if (!onBeforeProcessProduct(product)) {
+				return;
+			}
+			LOGGER.finer("[" + getName() + "] processing product for id="
+					+ productId);
+			onProduct(product);
+
+			onAfterProcessNotification(notification);
 		} finally {
 			// be sure to release lock when done/error
 			storageLocks.releaseLock(id);

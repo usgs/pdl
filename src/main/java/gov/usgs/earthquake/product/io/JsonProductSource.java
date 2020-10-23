@@ -19,40 +19,40 @@ import gov.usgs.earthquake.product.Product;
  */
 public class JsonProductSource implements ProductSource {
 
-	/** The input stream where Json is read. */
-	private InputStream in;
+  /** The input stream where Json is read. */
+  private InputStream in;
 
-	/**
-	 * Create a new JsonProductSource.
-	 *
-	 * @param in
-	 *            the input stream where Json is read.
-	 */
-	public JsonProductSource(final InputStream in) {
-		this.in = in;
-	}
+  /**
+   * Create a new JsonProductSource.
+   *
+   * @param in
+   *            the input stream where Json is read.
+   */
+  public JsonProductSource(final InputStream in) {
+    this.in = in;
+  }
 
-	/**
-	 * Begin reading the input stream, sending events to out.
-	 *
-	 * @param out
-	 *            the receiving ProductOutput.
-	 */
-	public synchronized void streamTo(ProductHandler out) throws Exception {
+  /**
+   * Begin reading the input stream, sending events to out.
+   *
+   * @param out
+   *            the receiving ProductOutput.
+   */
+  public synchronized void streamTo(ProductHandler out) throws Exception {
     final Product product;
     try (final JsonReader reader = Json.createReader(new InputStreamReader(in))) {
       product = new JsonProduct().getProduct(reader.readObject());
     }
     final ObjectProductSource source = new ObjectProductSource(product);
     source.streamTo(out);
-	}
+  }
 
-	/**
-	 * Free any resources associated with this handler.
-	 */
-	@Override
-	public void close() {
-		StreamUtils.closeStream(in);
-	}
+  /**
+   * Free any resources associated with this handler.
+   */
+  @Override
+  public void close() {
+    StreamUtils.closeStream(in);
+  }
 
 }
