@@ -24,6 +24,13 @@ import java.util.logging.Logger;
 
 /**
  * Receives notifications from a PDL notification web socket.
+ *
+ * After initial connection, ignores broadcasts until catch up process is complete.
+ *
+ * Catch up involves sending a "products_created_after" request with the latest
+ * notification "created" timestamp, and processing products until either the
+ * last product matches the last broadcast or there are no more products after
+ * the latest notification "created" timestamp.
  */
 public class AwsProductReceiver extends DefaultNotificationReceiver implements WebSocketListener {
 
@@ -65,6 +72,11 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME);
   }
 
+  /**
+   * Called when connection is first opened.
+   *
+   * Start catch up process.
+   */
   @Override
   public void onOpen(Session session) throws IOException {
     LOGGER.info("[" + getName() + "] onOpen connection_id=" + session.getId());
@@ -86,7 +98,14 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
 
   /**
    * Message handler function passed to WebSocketClient
-   * Parses the message as JSON, receives the contained URL notification, and writes the tracking file.
+   *
+   * Parses the message as JSON, and checks "action" property to route message
+   * for handling.
+   *
+   * Synchronized to process messages in order, since onProductsCreatedAfter
+   * compares state of latest product to determine whether caught up and if
+   * broadcasts should be processed.
+   *
    * @param message
    */
   @Override
@@ -112,6 +131,15 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     }
   }
 
+  /**
+   * Handle a message with "action"="broadcast".
+   *
+   * If caught up process notification as usual, otherwise save notification
+   * to help detect when caught up.
+   *
+   * @param json
+   * @throws Exception
+   */
   protected void onBroadcast(final JsonObject json) throws Exception {
     final JsonNotification notification = new JsonNotification(
         json.getJsonObject("notification"));
@@ -123,6 +151,12 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     onJsonNotification(notification);
   }
 
+  /**
+   * Process a received notification and update current "created" timestamp.
+   *
+   * @param notification
+   * @throws Exception
+   */
   protected void onJsonNotification(final JsonNotification notification) throws Exception {
     // receive and notify listeners
     receiveNotification(notification);
@@ -133,6 +167,12 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     HeartbeatListener.sendHeartbeatMessage(getName(), "createdAfter", createdAfter.toString());
   }
 
+  /**
+   * Handle a message with "action"="product", which is received during catch up.
+   *
+   * @param json
+   * @throws Exception
+   */
   protected void onProduct(final JsonObject json) throws Exception {
     final JsonNotification notification = new JsonNotification(
         json.getJsonObject("notification"));
@@ -140,6 +180,17 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     onJsonNotification(notification);
   }
 
+  /**
+   * Handle a message with "action"="products_created_after", which is received
+   * during catch up.
+   *
+   * Indicates the end of a response from a "products_created_after" request.
+   * Check whether caught up, and either switch to broadcast mode or continue
+   * catch up process.
+   *
+   * @param json
+   * @throws Exception
+   */
   protected void onProductsCreatedAfter(final JsonObject json) throws Exception {
     final String after = json.getString("created_after");
     final int count = json.getInt("count");
@@ -163,6 +214,14 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     }
   }
 
+  /**
+   * Send an "action"="products_created_after" request, which is part of the
+   * catch up process.
+   *
+   * The server will reply with zero or more "action"="product" messages, and
+   * then one "action"="products_created_after" message to indicate the request
+   * is complete.
+   */
   protected void sendProductsCreatedAfter() throws IOException {
     // set default for created after
     if (this.createdAfter == null) {
@@ -178,6 +237,10 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     this.session.getBasicRemote().sendText(request);
   }
 
+  /**
+   * Called when connection is closed, either because shutdown on this end or
+   * closed by server.
+   */
   @Override
   public void onClose(Session session, CloseReason closeReason) {
     LOGGER.info("[" + getName() + "] onClose " + closeReason.toString());
@@ -195,8 +258,9 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   }
 
   /**
-   * Reads a sequence from a tracking file if it exists. Otherwise, starting sequence is 0.
-   * Connects to web socket
+   * Reads createdAfter from a tracking file if it exists,
+   * then connects to web socket.
+   *
    * @throws Exception
    */
   @Override
@@ -225,7 +289,8 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   }
 
   /**
-   * Reads tracking file from disc
+   * Reads tracking file.
+   *
    * @return  JsonObject tracking file
    * @throws Exception
    */
@@ -245,7 +310,8 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   }
 
   /**
-   * Writes tracking file to disc, storing latest sequence
+   * Writes tracking file.
+   *
    * @throws Exception
    */
   public void writeTrackingFile() throws Exception {

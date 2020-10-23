@@ -1,14 +1,10 @@
 package gov.usgs.earthquake.aws;
 
-import gov.usgs.earthquake.product.Product;
-
+/**
+ * Exception if product has already been sent.
+ */
 public class ProductAlreadySentException extends Exception {
 
 	private static final long serialVersionUID = 1L;
 
-  public final Product product;
-
-  public ProductAlreadySentException(final Product product) {
-    this.product = product;
-  }
 }

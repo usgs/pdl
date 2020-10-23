@@ -60,6 +60,7 @@ import ch.ethz.ssh2.crypto.PEMDecoder;
 public class CryptoUtils {
 
 	static {
+		// RSASSA-PSS signature support in CryptoUtils for jdk 9,10
 		Security.addProvider(new BouncyCastleProvider());
 	}
 
