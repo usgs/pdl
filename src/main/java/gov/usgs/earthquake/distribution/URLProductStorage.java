@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 public class URLProductStorage extends FileProductStorage {
 
 	public enum Format {
-		BINARY("binary"),
+		BINARY("bin"),
 		JSON("json"),
 		XML("xml");
 
@@ -127,7 +127,10 @@ public class URLProductStorage extends FileProductStorage {
 				storageFormat = Format.XML;
 			}
 		}
-		LOGGER.config("[" + getName() + "] using " + storageFormat + " format");
+		LOGGER.config("[" + getName() + "] using format " + storageFormat);
+
+		storagePath = config.getProperty(STORAGE_PATH_PROPERTY, DEFAULT_DIRECTORY);
+		LOGGER.config("[" + getName() + "] using path " + storagePath);
 	}
 
 	/**
@@ -159,7 +162,7 @@ public class URLProductStorage extends FileProductStorage {
 		path = path.replace("{type}", id.getType());
 		path = path.replace("{code}", id.getCode());
 		path = path.replace("{updateTime}", Long.toString(id.getUpdateTime().getTime()));
-		path = path.replace("{format}", storageFormat.value);
+		path = path.replace("{format}", storageFormat.toString());
 		return path;
 	}
 
