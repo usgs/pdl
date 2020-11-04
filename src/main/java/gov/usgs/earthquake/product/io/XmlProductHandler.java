@@ -11,7 +11,7 @@ import java.util.Base64;
 
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
-
+import gov.usgs.util.CryptoUtils.Version;
 import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.URLContent;
 import gov.usgs.earthquake.product.ProductId;
@@ -49,26 +49,30 @@ public class XmlProductHandler implements ProductHandler {
 	public static final String CONTENT_ATTRIBUTE_ENCODED = "encoded";
 
 	public static final String SIGNATURE_ELEMENT = "signature";
+	public static final String SIGNATURE_ATTRIBUTE_VERSION = "version";
 
 	/** The OutputStream where xml is written. */
 	private OutputStream out;
-	
+
 	/** Controls whether the XML Declaration is output with the XML. */
 	private boolean includeDeclaration = true;
 
+	/** Signature version. */
+	private Version signatureVersion = Version.SIGNATURE_V1;
+
 	/**
 	 * Create a new XmlProductHandler object.
-	 * 
+	 *
 	 * @param out
 	 *            the OutputStream where xml will be written.
 	 */
 	public XmlProductHandler(final OutputStream out) {
 		this.out = out;
 	}
-	
+
 	/**
 	 * Create a new XmlProductHandler object.
-	 * 
+	 *
 	 * @param out
 	 *            the OutputStream where xml will be written.
 	 * @param includeDeclaration
@@ -207,6 +211,11 @@ public class XmlProductHandler implements ProductHandler {
 		out.write(buf.toString().getBytes());
 	}
 
+	public void onSignatureVersion(ProductId id, Version version) throws Exception {
+		// save for output during onSignature
+		this.signatureVersion = version;
+	}
+
 	/**
 	 * Output the signature element as xml.
 	 */
@@ -216,7 +225,10 @@ public class XmlProductHandler implements ProductHandler {
 		}
 
 		StringBuffer buf = new StringBuffer();
-		buf.append("\t<").append(SIGNATURE_ELEMENT).append(">");
+		buf.append("\t<").append(SIGNATURE_ELEMENT);
+		buf.append(" ").append(SIGNATURE_ATTRIBUTE_VERSION).append("=\"")
+				.append(signatureVersion.toString()).append("\"");
+		buf.append(">");
 		buf.append(signature);
 		buf.append("</").append(SIGNATURE_ELEMENT).append(">\n");
 

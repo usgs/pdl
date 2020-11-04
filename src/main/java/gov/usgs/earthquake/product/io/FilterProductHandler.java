@@ -5,13 +5,14 @@ package gov.usgs.earthquake.product.io;
 
 import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.util.CryptoUtils.Version;
 
 import java.net.URI;
 import java.net.URL;
 
 /**
  * Filter calls to another ProductHandler.
- * 
+ *
  * By default, calls are passed directly on to the wrapped ProductOutput.
  */
 public class FilterProductHandler implements ProductHandler {
@@ -21,7 +22,7 @@ public class FilterProductHandler implements ProductHandler {
 
 	/**
 	 * Create a new FilterProductHandler.
-	 * 
+	 *
 	 * A ProductOutput should be set using setProductOutput before any calls to
 	 * other methods.
 	 */
@@ -30,7 +31,7 @@ public class FilterProductHandler implements ProductHandler {
 
 	/**
 	 * Create a new FilterProductHandler using and existing ProductOutput.
-	 * 
+	 *
 	 * @param output
 	 *            the ProductOutput to wrap.
 	 */
@@ -40,7 +41,7 @@ public class FilterProductHandler implements ProductHandler {
 
 	/**
 	 * Set the wrapped ProductOutput.
-	 * 
+	 *
 	 * @param output
 	 *            the ProductOutput being wrapped.
 	 */
@@ -85,6 +86,11 @@ public class FilterProductHandler implements ProductHandler {
 	public void onProperty(ProductId id, String name, String value)
 			throws Exception {
 		output.onProperty(id, name, value);
+	}
+
+	@Override
+	public void onSignatureVersion(ProductId id, Version version) throws Exception {
+		output.onSignatureVersion(id, version);
 	}
 
 	/**

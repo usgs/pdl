@@ -167,8 +167,17 @@ public class ProductDigest implements ProductHandler {
 	}
 
 	/**
+	 * Don't digest signature version.
+	 */
+	@Override
+	public void onSignatureVersion(ProductId id, Version version) throws Exception {
+		// generating signature, ignore
+	}
+
+	/**
 	 * Don't digest the signature.
 	 */
+	@Override
 	public void onSignature(ProductId id, String signature) throws Exception {
 		// generating signature, ignore
 	}
