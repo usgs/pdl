@@ -3,6 +3,7 @@ package gov.usgs.earthquake.product.io;
 import gov.usgs.earthquake.product.InputStreamContent;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.util.StreamUtils;
+import gov.usgs.util.CryptoUtils.Version;
 
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -95,6 +96,9 @@ public class BinaryProductSource implements ProductSource {
 						content.close();
 					}
 
+				} else if (next.equals(BinaryProductHandler.SIGNATUREVERSION)) {
+					Version version = Version.fromString(io.readString(in));
+					out.onSignatureVersion(id, version);
 				} else if (next.equals(BinaryProductHandler.SIGNATURE)) {
 					String signature = io.readString(in);
 					out.onSignature(id, signature);

@@ -4,6 +4,7 @@ import gov.usgs.earthquake.product.ByteContent;
 import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.util.StreamUtils;
+import gov.usgs.util.CryptoUtils.Version;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -12,7 +13,7 @@ import java.net.URL;
 
 /**
  * Generator of binary format for product data.
- * 
+ *
  * Binary representation of data types:
  * <dl>
  * <dt>Integer</dt>
@@ -28,12 +29,12 @@ import java.net.URL;
  * <dt>URL/URI</dt>
  * <dd>String (URL.toString())</dd>
  * </dl>
- * 
- * 
+ *
+ *
  * Product is stored in this order:
- * 
+ *
  * <ol>
- * 
+ *
  * <li>Header, exactly 1
  * <ol>
  * <li>"BEGINPRODUCT" (string)</li>
@@ -42,7 +43,7 @@ import java.net.URL;
  * <li>TrackerURL (URL)</li>
  * </ol>
  * </li>
- * 
+ *
  * <li>Properties, 0 to many:
  * <ol>
  * <li>"PROPERTY" (String)</li>
@@ -50,7 +51,7 @@ import java.net.URL;
  * <li>value (String)</li>
  * </ol>
  * </li>
- * 
+ *
  * <li>Links, 0 to many:
  * <ol>
  * <li>"LINK" (String)</li>
@@ -58,7 +59,7 @@ import java.net.URL;
  * <li>href (URI)</li>
  * </ol>
  * </li>
- * 
+ *
  * <li>Contents, 0 to many:
  * <ol>
  * <li>"CONTENT" (String)</li>
@@ -69,20 +70,28 @@ import java.net.URL;
  * <li>raw bytes</li>
  * </ol>
  * </li>
- * 
+ *
+ * <li>Signature Version, 0 or 1.
+ * <em>Note, only sent when version != SIGNATURE_V1 for backward compatibility</em>
+ * <ol>
+ * <li>"SIGNATUREVERSION" (String)</li>
+ * <li>version (String)</li>
+ * </ol>
+ * </li>
+ *
  * <li>Signature, 0 or 1:
  * <ol>
  * <li>"SIGNATURE" (String)</li>
  * <li>signature (String)</li>
  * </ol>
  * </li>
- * 
+ *
  * <li>Footer, exactly 1:
  * <ol>
  * <li>"ENDPRODUCT" (String)</li>
  * </ol>
  * </li>
- * 
+ *
  * </ol>
  */
 public class BinaryProductHandler implements ProductHandler {
@@ -91,6 +100,7 @@ public class BinaryProductHandler implements ProductHandler {
 	public static final String PROPERTY = "PROPERTY";
 	public static final String LINK = "LINK";
 	public static final String CONTENT = "CONTENT";
+	public static final String SIGNATUREVERSION = "SIGNATUREVERSION";
 	public static final String SIGNATURE = "SIGNATURE";
 	public static final String FOOTER = "ENDPRODUCT";
 
@@ -151,6 +161,14 @@ public class BinaryProductHandler implements ProductHandler {
 			io.writeStream(content.getLength().longValue(), contentInputStream, out);
 		} finally {
 			StreamUtils.closeStream(contentInputStream);
+		}
+	}
+
+	@Override
+	public void onSignatureVersion(ProductId id, Version version) throws Exception {
+		if (version != Version.SIGNATURE_V1) {
+			io.writeString(SIGNATUREVERSION, out);
+			io.writeString(version.toString(), out);
 		}
 	}
 
