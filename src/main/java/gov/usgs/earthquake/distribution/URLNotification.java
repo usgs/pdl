@@ -17,7 +17,7 @@ public class URLNotification extends DefaultNotification {
 
 	/**
 	 * Construct a URLNotification.
-	 * 
+	 *
 	 * @param id
 	 *            which product is available.
 	 * @param expirationDate
@@ -45,8 +45,13 @@ public class URLNotification extends DefaultNotification {
 		return (that instanceof URLNotification
 				&& getExpirationDate().equals(that.getExpirationDate())
 				&& getProductId().equals(that.getProductId())
-				&& getTrackerURL().equals(that.getTrackerURL()) && getProductURL()
-				.equals(((URLNotification) that).getProductURL()));
+				&& (
+					(getTrackerURL() == null && that.getTrackerURL() == null)
+					|| getTrackerURL().equals(that.getTrackerURL()))
+				&& (
+					(getProductURL() == null
+						&& ((URLNotification) that).getProductURL() == null)
+					|| getProductURL().equals(((URLNotification) that).getProductURL())));
 	}
 
 }

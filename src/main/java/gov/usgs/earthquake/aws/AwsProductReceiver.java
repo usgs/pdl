@@ -5,17 +5,13 @@ import gov.usgs.earthquake.distribution.HeartbeatListener;
 import gov.usgs.earthquake.distribution.WebSocketClient;
 import gov.usgs.earthquake.distribution.WebSocketListener;
 import gov.usgs.util.Config;
-import gov.usgs.util.FileUtils;
-import gov.usgs.util.StreamUtils;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.websocket.CloseReason;
 import javax.websocket.Session;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URI;
 import java.time.Instant;
@@ -39,6 +35,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
 
   public static final String URI_PROPERTY = "url";
   public static final String CREATED_AFTER_PROPERTY = "createdAfter";
+  public static final String TRACKING_INDEX_PROPERTY = "trackingIndex";
   public static final String TRACKING_FILE_NAME_PROPERTY = "trackingFileName";
   public static final String CONNECT_ATTEMPTS_PROPERTY = "connectAttempts";
   public static final String CONNECT_TIMEOUT_PROPERTY = "connectTimeout";
@@ -52,6 +49,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   private int attempts;
   private long timeout;
 
+  private TrackingIndex trackingIndex;
   private WebSocketClient client;
 
   /* Websocket session */
@@ -69,7 +67,27 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     uri = new URI(config.getProperty(URI_PROPERTY));
     attempts = Integer.parseInt(config.getProperty(CONNECT_ATTEMPTS_PROPERTY, DEFAULT_CONNECT_ATTEMPTS));
     timeout = Long.parseLong(config.getProperty(CONNECT_TIMEOUT_PROPERTY, DEFAULT_CONNECT_TIMEOUT));
-    trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME);
+
+    final String trackingIndexName = config.getProperty(TRACKING_INDEX_PROPERTY);
+    if (trackingIndexName != null) {
+      try {
+        // read object from global config
+        trackingIndex = (TrackingIndex) Config.getConfig().getObject(trackingIndexName);
+      } catch (Exception e) {
+        LOGGER.log(
+            Level.WARNING,
+            "[" + getName() + "] error loading tracking index "
+                + trackingIndexName,
+            e);
+      }
+    } else {
+      trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY);
+      if (trackingFileName != null) {
+        trackingIndex = new TrackingIndex(
+            TrackingIndex.DEFAULT_DRIVER,
+            "jdbc:sqlite:" + trackingFileName);
+      }
+    }
   }
 
   /**
@@ -162,7 +180,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     receiveNotification(notification);
     // update tracking file
     this.createdAfter = notification.created;
-    writeTrackingFile();
+    writeTrackingData();
     // send heartbeat
     HeartbeatListener.sendHeartbeatMessage(getName(), "createdAfter", createdAfter.toString());
   }
@@ -266,9 +284,13 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   @Override
   public void startup() throws Exception{
     super.startup();
+    if (trackingIndex == null) {
+      trackingIndex = new TrackingIndex();
+    }
+    trackingIndex.startup();
 
     //read sequence from tracking file if other parameters agree
-    JsonObject json = readTrackingFile();
+    JsonObject json = readTrackingData();
     if (json != null && json.getString(URI_PROPERTY).equals(uri.toString())) {
       createdAfter = Instant.parse(json.getString(CREATED_AFTER_PROPERTY));
     }
@@ -294,19 +316,9 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
    * @return  JsonObject tracking file
    * @throws Exception
    */
-  public JsonObject readTrackingFile() throws Exception {
-    JsonObject json = null;
-
-    File trackingFile = new File(trackingFileName);
-    if (trackingFile.exists()) {
-      try (
-        InputStream contents = StreamUtils.getInputStream(trackingFile);
-        JsonReader jsonReader = Json.createReader(contents);
-      ) {
-        json = jsonReader.readObject();
-      }
-    }
-    return json;
+  public JsonObject readTrackingData() throws Exception {
+    // use name as key
+    return trackingIndex.getTrackingData(getName());
   }
 
   /**
@@ -314,16 +326,13 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
    *
    * @throws Exception
    */
-  public void writeTrackingFile() throws Exception {
+  public void writeTrackingData() throws Exception {
     JsonObject json = Json.createObjectBuilder()
             .add(URI_PROPERTY, uri.toString())
             .add(CREATED_AFTER_PROPERTY, createdAfter.toString())
             .build();
-
-    FileUtils.writeFileThenMove(
-            new File(trackingFileName + "_tmp"),
-            new File(trackingFileName),
-            json.toString().getBytes());
+    // use name as key
+    trackingIndex.setTrackingData(getName(), json);
   }
 
   public URI getURI() {
