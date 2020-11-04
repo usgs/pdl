@@ -151,7 +151,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
   }
 
   @Override
-  public Product getProduct(ProductId id) throws Exception {
+  public synchronized Product getProduct(ProductId id) throws Exception {
     final Connection db = getConnection();
     final String sql = "SELECT * FROM " + this.table
         + " WHERE source=? AND type=? AND code=? AND updatetime=?";
@@ -198,7 +198,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
   }
 
   @Override
-  public ProductId storeProduct(Product product) throws Exception {
+  public synchronized ProductId storeProduct(Product product) throws Exception {
     final Connection db = getConnection();
     // prepare statement
     db.setAutoCommit(false);
@@ -254,7 +254,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
   }
 
   @Override
-  public void removeProduct(ProductId id) throws Exception {
+  public synchronized void removeProduct(ProductId id) throws Exception {
     final Connection db = getConnection();
 
     // prepare statement
