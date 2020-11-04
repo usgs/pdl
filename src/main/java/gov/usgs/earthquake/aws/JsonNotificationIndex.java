@@ -404,7 +404,7 @@ public class JsonNotificationIndex
   }
 
   @Override
-  public List<Notification> findNotifications(ProductId id) throws Exception {
+  public synchronized List<Notification> findNotifications(ProductId id) throws Exception {
     final Connection db = getConnection();
     final String sql = "SELECT * FROM " + this.table
         + " WHERE source=? AND type=? AND code=? AND updatetime=?";
@@ -438,7 +438,7 @@ public class JsonNotificationIndex
   /**
    * Parse notifications from a statement ready to be executed.
    */
-  protected List<Notification> getNotifications(PreparedStatement ps)
+  protected synchronized List<Notification> getNotifications(PreparedStatement ps)
       throws Exception {
     final List<Notification> n = new ArrayList<Notification>();
     try (final ResultSet rs = ps.executeQuery()) {

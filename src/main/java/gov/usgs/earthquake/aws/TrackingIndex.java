@@ -132,7 +132,7 @@ public class TrackingIndex extends JDBCConnection {
     }
   }
 
-  public JsonObject getTrackingData(final String key) throws Exception {
+  public synchronized JsonObject getTrackingData(final String key) throws Exception {
     final Connection db = getConnection();
     JsonObject data = null;
 
@@ -163,7 +163,7 @@ public class TrackingIndex extends JDBCConnection {
     return data;
   }
 
-  public void removeTrackingData(final String key) throws Exception {
+  public synchronized void removeTrackingData(final String key) throws Exception {
     final Connection db = getConnection();
 
     final String sql = "DELETE FROM " + this.table + " WHERE key=?";
@@ -182,7 +182,7 @@ public class TrackingIndex extends JDBCConnection {
     }
   }
 
-  public void setTrackingData(final String key, final JsonObject data) throws Exception {
+  public synchronized void setTrackingData(final String key, final JsonObject data) throws Exception {
     final Connection db = getConnection();
 
     final String update = "UPDATE " + this.table + " SET data=? WHERE key=?";
