@@ -70,7 +70,7 @@ public class JsonNotificationIndex
     driver = config.getProperty("driver", DEFAULT_DRIVER);
     LOGGER.config("[" + getName() + "] driver=" + driver);
     table = config.getProperty("table", DEFAULT_TABLE);
-    LOGGER.config("[" + getName() + "] table=" + driver);
+    LOGGER.config("[" + getName() + "] table=" + table);
     url = config.getProperty("url", DEFAULT_URL);
     // do not log url, it may contain user/pass
   }

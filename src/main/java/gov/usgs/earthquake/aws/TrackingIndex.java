@@ -191,13 +191,17 @@ public class TrackingIndex extends JDBCConnection {
     try (final PreparedStatement updateStatement = db.prepareStatement(update)) {
       updateStatement.setString(1, data.toString());
       updateStatement.setString(2, key);
+      // execute update
       final int count = updateStatement.executeUpdate();
+      // check number of rows updated (whether row already exists)
       if (count == 0) {
         final String insert = "INSERT INTO " + this.table + " (data, key) VALUES (?, ?)";
         // no rows updated
         try (final PreparedStatement insertStatement = db.prepareStatement(insert)) {
           insertStatement.setString(1, data.toString());
           insertStatement.setString(2, key);
+          // execute insert
+          insertStatement.executeUpdate();
         }
       }
       db.commit();

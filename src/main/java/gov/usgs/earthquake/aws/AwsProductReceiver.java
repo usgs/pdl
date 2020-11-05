@@ -70,6 +70,8 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
 
     final String trackingIndexName = config.getProperty(TRACKING_INDEX_PROPERTY);
     if (trackingIndexName != null) {
+      LOGGER.config("[" + getName() + "] loading tracking index "
+          + trackingIndexName);
       try {
         // read object from global config
         trackingIndex = (TrackingIndex) Config.getConfig().getObject(trackingIndexName);
@@ -83,6 +85,8 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     } else {
       trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY);
       if (trackingFileName != null) {
+        LOGGER.config("[" + getName() + "] creating tracking index at"
+            + trackingFileName);
         trackingIndex = new TrackingIndex(
             TrackingIndex.DEFAULT_DRIVER,
             "jdbc:sqlite:" + trackingFileName);
