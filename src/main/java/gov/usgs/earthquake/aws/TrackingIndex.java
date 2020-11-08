@@ -118,11 +118,11 @@ public class TrackingIndex extends JDBCConnection {
           "CREATE TABLE " + this.table
           + " (id INTEGER PRIMARY KEY " + autoIncrement
           + ", created VARCHAR(255)"
-          + ", key VARCHAR(255)"
+          + ", name VARCHAR(255)"
           + ", data TEXT"
           + ")");
       statement.executeUpdate(
-          "CREATE UNIQUE INDEX key_index ON " + this.table + "(key)");
+          "CREATE UNIQUE INDEX name_index ON " + this.table + "(name)");
       db.commit();
     } catch (Exception e) {
       db.rollback();
@@ -132,14 +132,14 @@ public class TrackingIndex extends JDBCConnection {
     }
   }
 
-  public synchronized JsonObject getTrackingData(final String key) throws Exception {
+  public synchronized JsonObject getTrackingData(final String name) throws Exception {
     final Connection db = getConnection();
     JsonObject data = null;
 
-    final String sql = "SELECT * FROM " + this.table + " WHERE key=?";
+    final String sql = "SELECT * FROM " + this.table + " WHERE name=?";
     db.setAutoCommit(false);
     try (final PreparedStatement statement = db.prepareStatement(sql)) {
-      statement.setString(1, key);
+      statement.setString(1, name);
 
       // execute and parse data
       try (final ResultSet rs = statement.executeQuery()) {
@@ -163,14 +163,14 @@ public class TrackingIndex extends JDBCConnection {
     return data;
   }
 
-  public synchronized void removeTrackingData(final String key) throws Exception {
+  public synchronized void removeTrackingData(final String name) throws Exception {
     final Connection db = getConnection();
 
-    final String sql = "DELETE FROM " + this.table + " WHERE key=?";
+    final String sql = "DELETE FROM " + this.table + " WHERE name=?";
     // create schema
     db.setAutoCommit(false);
     try (final PreparedStatement statement = db.prepareStatement(sql)) {
-      statement.setString(1, key);
+      statement.setString(1, name);
 
       statement.executeUpdate();
       db.commit();
@@ -182,24 +182,24 @@ public class TrackingIndex extends JDBCConnection {
     }
   }
 
-  public synchronized void setTrackingData(final String key, final JsonObject data) throws Exception {
+  public synchronized void setTrackingData(final String name, final JsonObject data) throws Exception {
     final Connection db = getConnection();
 
-    final String update = "UPDATE " + this.table + " SET data=? WHERE key=?";
+    final String update = "UPDATE " + this.table + " SET data=? WHERE name=?";
     // usually updated, try update first
     db.setAutoCommit(false);
     try (final PreparedStatement updateStatement = db.prepareStatement(update)) {
       updateStatement.setString(1, data.toString());
-      updateStatement.setString(2, key);
+      updateStatement.setString(2, name);
       // execute update
       final int count = updateStatement.executeUpdate();
       // check number of rows updated (whether row already exists)
       if (count == 0) {
-        final String insert = "INSERT INTO " + this.table + " (data, key) VALUES (?, ?)";
+        final String insert = "INSERT INTO " + this.table + " (data, name) VALUES (?, ?)";
         // no rows updated
         try (final PreparedStatement insertStatement = db.prepareStatement(insert)) {
           insertStatement.setString(1, data.toString());
-          insertStatement.setString(2, key);
+          insertStatement.setString(2, name);
           // execute insert
           insertStatement.executeUpdate();
         }
