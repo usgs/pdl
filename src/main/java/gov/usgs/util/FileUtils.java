@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.FileNameMap;
 import java.net.URLConnection;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
@@ -98,7 +99,11 @@ public class FileUtils {
 		if (!parent.exists()) {
 			parent.mkdirs();
 		}
-		Files.move(tempfile.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE);
+		try {
+			Files.move(tempfile.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE);
+		} catch (AtomicMoveNotSupportedException amnse) {
+			Files.move(tempfile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}
 	}
 
 	/**
