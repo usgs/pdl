@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -197,9 +198,12 @@ public class JsonNotificationIndex
         statement.setString(5, id.getCode());
         statement.setLong(6, id.getUpdateTime().getTime());
         statement.setString(7, url != null ? url.toString() : "");
-        statement.setString(8, product != null
-            ? new JsonProduct().getJsonObject(product).toString()
-            : "");
+        if (product == null) {
+          statement.setNull(8, Types.VARCHAR);
+        } else {
+          statement.setString(8,
+              new JsonProduct().getJsonObject(product).toString());
+        }
         // execute
         statement.executeUpdate();
         db.commit();
@@ -238,7 +242,8 @@ public class JsonNotificationIndex
     // prepare statement
     final String sql = "DELETE FROM " + this.table
           + " WHERE created=? AND expires=? AND source=? AND type=? AND code=?"
-          + " AND updatetime=? AND url=? AND data=?";
+          + " AND updatetime=? AND url=? AND data"
+          + (product == null ? " IS NULL" : "=?");
     db.setAutoCommit(false);
     try (final PreparedStatement statement = db.prepareStatement(sql)) {
       try {
@@ -250,9 +255,10 @@ public class JsonNotificationIndex
         statement.setString(5, id.getCode());
         statement.setLong(6, id.getUpdateTime().getTime());
         statement.setString(7, url != null ? url.toString() : "");
-        statement.setString(8, product != null
-            ? new JsonProduct().getJsonObject(product).toString()
-            : "");
+        if (product != null) {
+          statement.setString(8,
+              new JsonProduct().getJsonObject(product).toString());
+        }
         // execute
         statement.executeUpdate();
         db.commit();
@@ -482,7 +488,7 @@ public class JsonNotificationIndex
     final Notification n;
     final ProductId id = new ProductId(source, type, code, new Date(updateTime));
     final Date expiresDate = Date.from(Instant.parse(expires));
-    if (!"".equals(created) && !"".equals(data)) {
+    if (!"".equals(created) && data != null) {
       Product product = new JsonProduct().getProduct(
           Json.createReader(
             new ByteArrayInputStream(data.getBytes())
