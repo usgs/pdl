@@ -85,6 +85,7 @@ public class RelayProductListener extends DefaultNotificationListener {
 	 * Call the sender shutdown method.
 	 */
 	public void shutdown() throws Exception {
+		super.shutdown();
 		sender.shutdown();
 	}
 
@@ -92,6 +93,7 @@ public class RelayProductListener extends DefaultNotificationListener {
 	 * Call the sender startup method.
 	 */
 	public void startup() throws Exception {
+		super.startup();
 		sender.startup();
 	}
 
