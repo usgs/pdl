@@ -183,13 +183,12 @@ public class CryptoUtils {
 	 *     SIGNATURE_V1 or SIGNATURE_V2
 	 * @return
 	 *     Configured Signature object
-	 * @throws InvalidAlgorithmParameterException
 	 * @throws InvalidKeyException
 	 * @throws NoSuchAlgorithmException
 	 * @throws SignatureException
 	 */
 	public static Signature getSignature(final Key key, final Version version)
-			throws InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException,
+			throws InvalidKeyException, NoSuchAlgorithmException,
 					SignatureException {
 		Signature signature = null;
 		if (version == Version.SIGNATURE_V1) {
@@ -203,13 +202,31 @@ public class CryptoUtils {
 				signature = Signature.getInstance(SIGNATURE_V2_DSA_ALGORITHM);
 			} else if (key instanceof RSAPrivateKey || key instanceof RSAPublicKey) {
 				signature = Signature.getInstance(SIGNATURE_V2_RSA_ALGORITHM);
-				signature.setParameter(
-						new PSSParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, 32, 1));
 			}
 		} else {
 			throw new IllegalArgumentException("Unexpected signature version " + version);
 		}
 		return signature;
+	}
+
+	public static void configureSignature(final Key key, final Version version,
+			final Signature signature) throws InvalidAlgorithmParameterException {
+		if (version == Version.SIGNATURE_V2
+				&& (key instanceof RSAPrivateKey || key instanceof RSAPublicKey)) {
+			int keySize;
+			if (key instanceof RSAPrivateKey) {
+				keySize = ((RSAPrivateKey)key).getModulus().bitLength();
+			} else {
+				keySize = ((RSAPublicKey)key).getModulus().bitLength();
+			}
+			// match python cryptography calculation:
+			// https://github.com/pyca/cryptography/blob/b16561670320c65a18cce41d0db0c42ab68350a9/src/cryptography/hazmat/primitives/asymmetric/padding.py#L73
+			// 32 = (sha)256 / 8
+			int maxSaltLength = ((keySize + 6) / 8) - 32 - 2;
+			signature.setParameter(
+					new PSSParameterSpec("SHA-256", "MGF1",
+							MGF1ParameterSpec.SHA256, maxSaltLength, 1));
+		}
 	}
 
 	/**
@@ -247,6 +264,7 @@ public class CryptoUtils {
 			InvalidKeyException, NoSuchAlgorithmException, SignatureException {
 		final Signature signature = getSignature(privateKey, version);
 		signature.initSign(privateKey);
+		configureSignature(privateKey, version, signature);
 		signature.update(data);
 		return Base64.getEncoder().encodeToString(signature.sign());
 	}
@@ -286,6 +304,7 @@ public class CryptoUtils {
 			NoSuchAlgorithmException, SignatureException {
 		final Signature signature = getSignature(publicKey, version);
 		signature.initVerify(publicKey);
+		configureSignature(publicKey, version, signature);
 		signature.update(data);
 		return signature.verify(Base64.getDecoder().decode(allegedSignature));
 	}
