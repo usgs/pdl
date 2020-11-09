@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 import javax.json.Json;
 
+import gov.usgs.earthquake.distribution.ProductAlreadyInStorageException;
 import gov.usgs.earthquake.distribution.ProductStorage;
 import gov.usgs.earthquake.distribution.StorageEvent;
 import gov.usgs.earthquake.distribution.StorageListener;
@@ -229,6 +230,9 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
           db.rollback();
         } catch (SQLException e2) {
           // ignore
+        }
+        if (e.toString().contains("Duplicate entry")) {
+          throw new ProductAlreadyInStorageException(e.toString());
         }
         throw e;
       }
