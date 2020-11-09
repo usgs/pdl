@@ -1,6 +1,7 @@
 package gov.usgs.earthquake.aws;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 
@@ -14,6 +15,7 @@ import gov.usgs.util.StreamUtils;
  */
 public class HttpResponse {
   public final HttpURLConnection connection;
+  public final IOException readException;
   public final byte[] response;
 
   /**
@@ -21,9 +23,15 @@ public class HttpResponse {
    */
   public HttpResponse(final HttpURLConnection connection) throws Exception {
     this.connection = connection;
+    IOException exception = null;
+    byte[] data = null;
     try (final InputStream in = connection.getInputStream()) {
-      byte[] response = StreamUtils.readStream(in);
-      this.response = response;
+      data = StreamUtils.readStream(in);
+    } catch (IOException e) {
+      exception = e;
+    } finally {
+      this.response = data;
+      this.readException = exception;
     }
   }
 
