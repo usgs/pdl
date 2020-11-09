@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import javax.json.Json;
 
@@ -203,6 +204,7 @@ public class JsonNotificationIndex
         statement.executeUpdate();
         db.commit();
       } catch (SQLException e) {
+        LOGGER.log(Level.WARNING, "Exception adding notification", e);
         try {
           // otherwise roll back
           db.rollback();
@@ -255,6 +257,7 @@ public class JsonNotificationIndex
         statement.executeUpdate();
         db.commit();
       } catch (SQLException e) {
+        LOGGER.log(Level.WARNING, "Exception removing notification", e);
         try {
           // otherwise roll back
           db.rollback();
@@ -301,6 +304,7 @@ public class JsonNotificationIndex
         // execute
         return getNotifications(statement);
       } catch (SQLException e) {
+        LOGGER.log(Level.WARNING, "Exception finding notifications", e);
         try {
           // otherwise roll back
           db.rollback();
@@ -361,6 +365,7 @@ public class JsonNotificationIndex
         // execute
         return getNotifications(statement);
       } catch (SQLException e) {
+        LOGGER.log(Level.WARNING, "Exception finding notifications", e);
         try {
           // otherwise roll back
           db.rollback();
@@ -389,6 +394,7 @@ public class JsonNotificationIndex
         // execute
         return getNotifications(statement);
       } catch (SQLException e) {
+        LOGGER.log(Level.WARNING, "Exception finding notifications", e);
         try {
           // otherwise roll back
           db.rollback();
@@ -422,6 +428,7 @@ public class JsonNotificationIndex
         // executes and commit ifsuccessful
         return getNotifications(statement);
       } catch (SQLException e) {
+        LOGGER.log(Level.WARNING, "Exception finding notifications", e);
         try {
           // otherwise roll back
           db.rollback();
