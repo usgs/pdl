@@ -29,6 +29,11 @@ public class HttpResponse {
       data = StreamUtils.readStream(in);
     } catch (IOException e) {
       exception = e;
+      try (final InputStream err = connection.getErrorStream()) {
+        data = StreamUtils.readStream(err);
+      } catch (IOException e2) {
+        // ignore
+      }
     } finally {
       this.response = data;
       this.readException = exception;
