@@ -30,21 +30,21 @@ public class ExtentIndex extends JDBCProductIndex {
 
   /**
    * Queries extentSummary table for the largest index id.
-   * 
+   *
    * @throws Exception if something goes wrong with database transaction
    */
   public long getLastExtentIndexId() throws Exception {
     long lastIndex;
 
     //Prepare statement
-    Connection connection = connect();
-    String sql = "SELECT MAX(" 
-                 + EXTENT_INDEX_ID 
-                 + ") AS " 
-                 + EXTENT_INDEX_ID 
-                 + " FROM " 
+    String sql = "SELECT MAX("
+                 + EXTENT_INDEX_ID
+                 + ") AS "
+                 + EXTENT_INDEX_ID
+                 + " FROM "
                  + EXTENT_TABLE;
-    try (PreparedStatement getLastIndex = connection.prepareStatement(sql)) {
+    final Connection db = getConnectionWithoutAutocommit();
+    try (PreparedStatement getLastIndex = db.prepareStatement(sql)) {
       //Parse Results
       ResultSet results = getLastIndex.executeQuery();
       if (results.next()) {
@@ -54,26 +54,30 @@ public class ExtentIndex extends JDBCProductIndex {
         lastIndex = 0;
       }
     } catch (SQLException e) {
+      try {
+        db.rollback();
+      } catch (Exception e2) {}
       //Throws exception with SQL for debugging
       throw new SQLException(e.getMessage() + ". SQL query was: " + sql, e);
+    } finally {
+      db.setAutoCommit(true);
     }
     return lastIndex;
   }
 
   /**
    * Inserts valid ExtentSummary products into extentSummary table
-   * 
+   *
    * @param product the product to be added
-   * 
+   *
    * @throws Exception if something goes wrong with the database transaction
    */
   public void addExtentSummary(ExtentSummary product) throws Exception {
     //Prepare statement
-    Connection connection = connect();
     String sql = "INSERT INTO " + EXTENT_TABLE +
-        "(" + 
+        "(" +
           EXTENT_INDEX_ID + "," +
-          EXTENT_START_TIME + "," + 
+          EXTENT_START_TIME + "," +
           EXTENT_END_TIME + "," +
           EXTENT_MIN_LAT + "," +
           EXTENT_MAX_LAT + "," +
@@ -81,7 +85,8 @@ public class ExtentIndex extends JDBCProductIndex {
           EXTENT_MAX_LONG +
         ") VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-    try (PreparedStatement addProduct = connection.prepareStatement(sql)) {
+    final Connection db = getConnectionWithoutAutocommit();
+    try (PreparedStatement addProduct = db.prepareStatement(sql)) {
 
       //Add values
 
@@ -120,6 +125,14 @@ public class ExtentIndex extends JDBCProductIndex {
       //Add to extentSummary table
       addProduct.executeUpdate();
       addProduct.clearParameters();
+      db.commit();
+    } catch (Exception e) {
+      try {
+        db.rollback();
+      } catch (Exception e2) {}
+      throw e;
+    } finally {
+      db.setAutoCommit(true);
     }
   }
 

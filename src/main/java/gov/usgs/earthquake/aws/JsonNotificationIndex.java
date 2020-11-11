@@ -101,10 +101,8 @@ public class JsonNotificationIndex
   }
 
   public boolean schemaExists() throws Exception {
-    final Connection db = getConnection();
-
     final String sql = "select * from " + this.table + " limit 1";
-    db.setAutoCommit(false);
+    final Connection db = getConnectionWithoutAutocommit();
     try (final PreparedStatement test = db.prepareStatement(sql)) {
       // should throw exception if table does not exist
       try (final ResultSet rs = test.executeQuery()) {
@@ -122,10 +120,8 @@ public class JsonNotificationIndex
   }
 
   public void createSchema() throws Exception {
-    final Connection db = getConnection();
-
     // create schema
-    db.setAutoCommit(false);
+    final Connection db = getConnectionWithoutAutocommit();
     try (final Statement statement = db.createStatement()) {
       String autoIncrement = "";
       String engine = "";
@@ -165,7 +161,6 @@ public class JsonNotificationIndex
   @Override
   public synchronized void addNotification(Notification notification)
       throws Exception {
-    final Connection db = getConnection();
     // all notifications
     Instant expires = notification.getExpirationDate().toInstant();
     ProductId id = notification.getProductId();
@@ -182,7 +177,7 @@ public class JsonNotificationIndex
       url = ((URLNotification) notification).getProductURL();
     }
     // prepare statement
-    db.setAutoCommit(false);
+    final Connection db = getConnectionWithoutAutocommit();
     try (
       final PreparedStatement statement = db.prepareStatement(
           "INSERT INTO " + this.table
@@ -223,7 +218,6 @@ public class JsonNotificationIndex
 
   @Override
   public synchronized void removeNotification(Notification notification) throws Exception {
-    final Connection db = getConnection();
     // all notifications
     Instant expires = notification.getExpirationDate().toInstant();
     ProductId id = notification.getProductId();
@@ -244,7 +238,7 @@ public class JsonNotificationIndex
           + " WHERE created=? AND expires=? AND source=? AND type=? AND code=?"
           + " AND updatetime=? AND url=? AND data"
           + (product == null ? " IS NULL" : "=?");
-    db.setAutoCommit(false);
+    final Connection db = getConnectionWithoutAutocommit();
     try (final PreparedStatement statement = db.prepareStatement(sql)) {
       try {
         // set parameters
@@ -278,7 +272,6 @@ public class JsonNotificationIndex
 
   @Override
   public synchronized List<Notification> findNotifications(String source, String type, String code) throws Exception {
-    final Connection db = getConnection();
     final ArrayList<Object> where = new ArrayList<Object>();
     final ArrayList<String> values = new ArrayList<String>();
     if (source != null) {
@@ -298,7 +291,7 @@ public class JsonNotificationIndex
       sql += " WHERE " + StringUtils.join(where, " AND ");
     }
     // prepare statement
-    db.setAutoCommit(false);
+    final Connection db = getConnectionWithoutAutocommit();
     try (final PreparedStatement statement = db.prepareStatement(sql)) {
       try {
 
@@ -327,7 +320,6 @@ public class JsonNotificationIndex
   @Override
   public synchronized List<Notification> findNotifications(List<String> sources, List<String> types, List<String> codes)
       throws Exception {
-    final Connection db = getConnection();
     final ArrayList<Object> where = new ArrayList<Object>();
     final ArrayList<String> values = new ArrayList<String>();
     if (sources != null && sources.size() > 0) {
@@ -359,7 +351,7 @@ public class JsonNotificationIndex
       sql += " WHERE " + StringUtils.join(where, " AND ");
     }
     // prepare statement
-    db.setAutoCommit(false);
+    final Connection db = getConnectionWithoutAutocommit();
     try (final PreparedStatement statement = db.prepareStatement(sql)) {
       try {
 
@@ -387,13 +379,11 @@ public class JsonNotificationIndex
 
   @Override
   public synchronized List<Notification> findExpiredNotifications() throws Exception {
-    final Connection db = getConnection();
     final String sql = "SELECT * FROM " + this.table + " WHERE expires <= ?";
     // prepare statement
-    db.setAutoCommit(false);
+    final Connection db = getConnectionWithoutAutocommit();
     try (final PreparedStatement statement = db.prepareStatement(sql)) {
       try {
-
         // set parameters
         statement.setString(1, Instant.now().toString());
 
@@ -417,11 +407,10 @@ public class JsonNotificationIndex
 
   @Override
   public synchronized List<Notification> findNotifications(ProductId id) throws Exception {
-    final Connection db = getConnection();
     final String sql = "SELECT * FROM " + this.table
         + " WHERE source=? AND type=? AND code=? AND updatetime=?";
     // prepare statement
-    db.setAutoCommit(false);
+    final Connection db = getConnectionWithoutAutocommit();
     try (final PreparedStatement statement = db.prepareStatement(sql)) {
       try {
 

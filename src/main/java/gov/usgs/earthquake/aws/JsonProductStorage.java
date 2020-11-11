@@ -93,10 +93,8 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
   }
 
   public boolean schemaExists() throws Exception {
-    final Connection db = getConnection();
-
     final String sql = "select * from " + this.table + " limit 1";
-    db.setAutoCommit(false);
+    final Connection db = getConnectionWithoutAutocommit();
     try (final PreparedStatement test = db.prepareStatement(sql)) {
       // should throw exception if table does not exist
       try (final ResultSet rs = test.executeQuery()) {
@@ -114,10 +112,8 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
   }
 
   public void createSchema() throws Exception {
-    final Connection db = getConnection();
-
     // create schema
-    db.setAutoCommit(false);
+    final Connection db = getConnectionWithoutAutocommit();
     try (final Statement statement = db.createStatement()) {
       String autoIncrement = "";
       String engine = "";
@@ -153,11 +149,10 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
 
   @Override
   public synchronized Product getProduct(ProductId id) throws Exception {
-    final Connection db = getConnection();
     final String sql = "SELECT * FROM " + this.table
         + " WHERE source=? AND type=? AND code=? AND updatetime=?";
     // prepare statement
-    db.setAutoCommit(false);
+    final Connection db = getConnectionWithoutAutocommit();
     try (final PreparedStatement statement = db.prepareStatement(sql)) {
       try {
 
@@ -200,9 +195,8 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
 
   @Override
   public synchronized ProductId storeProduct(Product product) throws Exception {
-    final Connection db = getConnection();
     // prepare statement
-    db.setAutoCommit(false);
+    final Connection db = getConnectionWithoutAutocommit();
     try (
       final PreparedStatement statement = db.prepareStatement(
           "INSERT INTO " + this.table
@@ -259,12 +253,10 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
 
   @Override
   public synchronized void removeProduct(ProductId id) throws Exception {
-    final Connection db = getConnection();
-
     // prepare statement
     final String sql = "DELETE FROM " + this.table
           + " WHERE source=? AND type=? AND code=? AND updatetime=?";
-    db.setAutoCommit(false);
+    final Connection db = getConnectionWithoutAutocommit();
     try (final PreparedStatement statement = db.prepareStatement(sql)) {
       try {
         // set parameters
