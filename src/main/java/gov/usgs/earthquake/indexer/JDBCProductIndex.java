@@ -529,32 +529,6 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	}
 
 	/**
-	 * Open a transaction on the database connection
-	 */
-	@Override
-	public synchronized void beginTransaction() throws Exception {
-		Connection conn = this.verifyConnection();
-		conn.setAutoCommit(false);
-	}
-
-	/**
-	 * Finalize the transaction by committing all the changes and closing the
-	 * transaction.
-	 */
-	@Override
-	public synchronized void commitTransaction() throws Exception {
-		getConnection().setAutoCommit(true);
-	}
-
-	/**
-	 * Undo all of the changes made during the current transaction
-	 */
-	@Override
-	public synchronized void rollbackTransaction() throws Exception {
-		getConnection().rollback();
-	}
-
-	/**
 	 * Return all events from the database that meet the parameters specified in
 	 * the ProductIndexQuery object.
 	 *

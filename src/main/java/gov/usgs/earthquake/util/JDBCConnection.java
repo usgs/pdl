@@ -77,6 +77,29 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 	}
 
 	/**
+	 * Open a transaction on the database connection
+	 */
+	public synchronized void beginTransaction() throws Exception {
+		Connection conn = this.verifyConnection();
+		conn.setAutoCommit(false);
+	}
+
+	/**
+	 * Finalize the transaction by committing all the changes and closing the
+	 * transaction.
+	 */
+	public synchronized void commitTransaction() throws Exception {
+		getConnection().setAutoCommit(true);
+	}
+
+	/**
+	 * Undo all of the changes made during the current transaction
+	 */
+	public synchronized void rollbackTransaction() throws Exception {
+		getConnection().rollback();
+	}
+
+	/**
 	 * @return current connection object, or null if not connected.
 	 */
 	public Connection getConnection() {

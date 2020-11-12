@@ -94,29 +94,25 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
 
   public boolean schemaExists() throws Exception {
     final String sql = "select * from " + this.table + " limit 1";
-    final Connection db = verifyConnection();
-    db.setAutoCommit(false);
-    try (final PreparedStatement test = db.prepareStatement(sql)) {
+    beginTransaction();
+    try (final PreparedStatement test = getConnection().prepareStatement(sql)) {
       // should throw exception if table does not exist
       try (final ResultSet rs = test.executeQuery()) {
         rs.next();
       }
-      db.commit();
+      commitTransaction();
       // schema exists
       return true;
     } catch (Exception e) {
-      db.rollback();
+      rollbackTransaction();
       return false;
-    } finally {
-      db.setAutoCommit(true);
     }
   }
 
   public void createSchema() throws Exception {
     // create schema
-    final Connection db = verifyConnection();
-    db.setAutoCommit(false);
-    try (final Statement statement = db.createStatement()) {
+    beginTransaction();
+    try (final Statement statement = getConnection().createStatement()) {
       String autoIncrement = "";
       String engine = "";
       if (driver.contains("mysql")) {
@@ -135,12 +131,10 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
       statement.executeUpdate(
           "CREATE UNIQUE INDEX product_index ON " + this.table
           + "(source, type, code, updatetime)");
-      db.commit();
+      commitTransaction();
     } catch (Exception e) {
-      db.rollback();
+      rollbackTransaction();
       throw e;
-    } finally {
-      db.setAutoCommit(true);
     }
   }
 
@@ -151,91 +145,81 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
 
   @Override
   public synchronized Product getProduct(ProductId id) throws Exception {
+    Product product = null;
     final String sql = "SELECT * FROM " + this.table
         + " WHERE source=? AND type=? AND code=? AND updatetime=?";
     // prepare statement
-    final Connection db = verifyConnection();
-    db.setAutoCommit(false);
-    try (final PreparedStatement statement = db.prepareStatement(sql)) {
-      try {
+    beginTransaction();
+    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
+      // set parameters
+      statement.setString(1, id.getSource());
+      statement.setString(2, id.getType());
+      statement.setString(3, id.getCode());
+      statement.setLong(4, id.getUpdateTime().getTime());
 
-        // set parameters
-        statement.setString(1, id.getSource());
-        statement.setString(2, id.getType());
-        statement.setString(3, id.getCode());
-        statement.setLong(4, id.getUpdateTime().getTime());
-
-        // execute
-        try (final ResultSet rs = statement.executeQuery()) {
-          if (rs.next()) {
-            // found product
-            final String data = rs.getString("data");
-            Product product = new JsonProduct().getProduct(
-                Json.createReader(
-                  new ByteArrayInputStream(data.getBytes())
-                ).readObject());
-            return product;
-          }
+      // execute
+      try (final ResultSet rs = statement.executeQuery()) {
+        if (rs.next()) {
+          // found product
+          final String data = rs.getString("data");
+          product = new JsonProduct().getProduct(
+              Json.createReader(
+                new ByteArrayInputStream(data.getBytes())
+              ).readObject());
         }
-      } catch (SQLException e) {
-        try {
-          // otherwise roll back
-          db.rollback();
-        } catch (SQLException e2) {
-          // ignore
-        }
-        LOGGER.log(
-            Level.INFO,
-            "[" + getName() + "] exception in getProduct("
-                + id.toString() + ")",
-            e);
       }
-    } finally {
-      db.setAutoCommit(true);
+      commitTransaction();
+    } catch (SQLException e) {
+      try {
+        // otherwise roll back
+        rollbackTransaction();
+      } catch (SQLException e2) {
+        // ignore
+      }
+      LOGGER.log(
+          Level.INFO,
+          "[" + getName() + "] exception in getProduct("
+              + id.toString() + ")",
+          e);
     }
-    return null;
+    return product;
   }
 
   @Override
   public synchronized ProductId storeProduct(Product product) throws Exception {
     // prepare statement
-    final Connection db = verifyConnection();
-    db.setAutoCommit(false);
+    beginTransaction();
     try (
-      final PreparedStatement statement = db.prepareStatement(
+      final PreparedStatement statement = getConnection().prepareStatement(
           "INSERT INTO " + this.table
           + " (source, type, code, updatetime, data)"
           + " VALUES (?, ?, ?, ?, ?)")
     ) {
+      final ProductId id = product.getId();
+      // set parameters
+      statement.setString(1, id.getSource());
+      statement.setString(2, id.getType());
+      statement.setString(3, id.getCode());
+      statement.setLong(4, id.getUpdateTime().getTime());
+      statement.setString(5,
+          product != null
+          ? new JsonProduct().getJsonObject(product).toString()
+          : "");
+      // execute
+      statement.executeUpdate();
+      commitTransaction();
+      return id;
+    } catch (SQLException e) {
       try {
-        final ProductId id = product.getId();
-        // set parameters
-        statement.setString(1, id.getSource());
-        statement.setString(2, id.getType());
-        statement.setString(3, id.getCode());
-        statement.setLong(4, id.getUpdateTime().getTime());
-        statement.setString(5,
-            product != null
-            ? new JsonProduct().getJsonObject(product).toString()
-            : "");
-        // execute
-        statement.executeUpdate();
-        db.commit();
-        return id;
-      } catch (SQLException e) {
-        try {
-          // otherwise roll back
-          db.rollback();
-        } catch (SQLException e2) {
-          // ignore
-        }
-        if (e.toString().contains("Duplicate entry")) {
-          throw new ProductAlreadyInStorageException(e.toString());
-        }
-        throw e;
+        // otherwise roll back
+        rollbackTransaction();
+      } catch (SQLException e2) {
+        // ignore
       }
-    } finally {
-      db.setAutoCommit(true);
+      if (e.toString().contains("Duplicate entry")) {
+        throw new ProductAlreadyInStorageException(e.toString());
+      }
+      throw e;
     }
   }
 
@@ -260,29 +244,24 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     // prepare statement
     final String sql = "DELETE FROM " + this.table
           + " WHERE source=? AND type=? AND code=? AND updatetime=?";
-    final Connection db = verifyConnection();
-    db.setAutoCommit(false);
-    try (final PreparedStatement statement = db.prepareStatement(sql)) {
+    beginTransaction();
+    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
+      // set parameters
+      statement.setString(1, id.getSource());
+      statement.setString(2, id.getType());
+      statement.setString(3, id.getCode());
+      statement.setLong(4, id.getUpdateTime().getTime());
+      // execute
+      statement.executeUpdate();
+      commitTransaction();
+    } catch (SQLException e) {
       try {
-        // set parameters
-        statement.setString(1, id.getSource());
-        statement.setString(2, id.getType());
-        statement.setString(3, id.getCode());
-        statement.setLong(4, id.getUpdateTime().getTime());
-        // execute
-        statement.executeUpdate();
-        db.commit();
-      } catch (SQLException e) {
-        try {
-          // otherwise roll back
-          db.rollback();
-        } catch (SQLException e2) {
-          // ignore
-        }
-        throw e;
+        // otherwise roll back
+        rollbackTransaction();
+      } catch (SQLException e2) {
+        // ignore
       }
-    } finally {
-      db.setAutoCommit(true);
+      throw e;
     }
   }
 

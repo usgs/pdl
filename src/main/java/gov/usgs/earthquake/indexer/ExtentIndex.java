@@ -43,9 +43,8 @@ public class ExtentIndex extends JDBCProductIndex {
                  + EXTENT_INDEX_ID
                  + " FROM "
                  + EXTENT_TABLE;
-    final Connection db = verifyConnection();
-    db.setAutoCommit(false);
-    try (PreparedStatement getLastIndex = db.prepareStatement(sql)) {
+    beginTransaction();
+    try (PreparedStatement getLastIndex = getConnection().prepareStatement(sql)) {
       //Parse Results
       ResultSet results = getLastIndex.executeQuery();
       if (results.next()) {
@@ -54,14 +53,13 @@ public class ExtentIndex extends JDBCProductIndex {
         //No index in extentSummary table
         lastIndex = 0;
       }
+      commitTransaction();
     } catch (SQLException e) {
       try {
-        db.rollback();
+        rollbackTransaction();
       } catch (Exception e2) {}
       //Throws exception with SQL for debugging
       throw new SQLException(e.getMessage() + ". SQL query was: " + sql, e);
-    } finally {
-      db.setAutoCommit(true);
     }
     return lastIndex;
   }
@@ -86,12 +84,9 @@ public class ExtentIndex extends JDBCProductIndex {
           EXTENT_MAX_LONG +
         ") VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-        final Connection db = verifyConnection();
-        db.setAutoCommit(false);
-        try (PreparedStatement addProduct = db.prepareStatement(sql)) {
-
+    beginTransaction();
+    try (PreparedStatement addProduct = getConnection().prepareStatement(sql)) {
       //Add values
-
       addProduct.setLong(1, product.getIndexId());
       if (product.getStartTime() != null) {
         addProduct.setLong(2, product.getStartTime().getTime());
@@ -127,14 +122,12 @@ public class ExtentIndex extends JDBCProductIndex {
       //Add to extentSummary table
       addProduct.executeUpdate();
       addProduct.clearParameters();
-      db.commit();
+      commitTransaction();
     } catch (Exception e) {
       try {
-        db.rollback();
+        rollbackTransaction();
       } catch (Exception e2) {}
       throw e;
-    } finally {
-      db.setAutoCommit(true);
     }
   }
 

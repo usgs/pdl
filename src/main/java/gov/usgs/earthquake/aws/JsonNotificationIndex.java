@@ -102,29 +102,25 @@ public class JsonNotificationIndex
 
   public boolean schemaExists() throws Exception {
     final String sql = "select * from " + this.table + " limit 1";
-    final Connection db = verifyConnection();
-    db.setAutoCommit(false);
-    try (final PreparedStatement test = db.prepareStatement(sql)) {
+    beginTransaction();
+    try (final PreparedStatement test = getConnection().prepareStatement(sql)) {
       // should throw exception if table does not exist
       try (final ResultSet rs = test.executeQuery()) {
         rs.next();
       }
-      db.commit();
+      commitTransaction();
       // schema exists
       return true;
     } catch (Exception e) {
-      db.rollback();
+      rollbackTransaction();
       return false;
-    } finally {
-      db.setAutoCommit(true);
     }
   }
 
   public void createSchema() throws Exception {
     // create schema
-    final Connection db = verifyConnection();
-    db.setAutoCommit(false);
-    try (final Statement statement = db.createStatement()) {
+    beginTransaction();
+    try (final Statement statement = getConnection().createStatement()) {
       String autoIncrement = "";
       String engine = "";
       if (driver.contains("mysql")) {
@@ -151,12 +147,10 @@ public class JsonNotificationIndex
           "CREATE INDEX code_index ON " + this.table + "(code)");
       statement.executeUpdate(
           "CREATE INDEX expires_index ON " + this.table + "(expires)");
-      db.commit();
+      commitTransaction();
     } catch (Exception e) {
-      db.rollback();
+      rollbackTransaction();
       throw e;
-    } finally {
-      db.setAutoCommit(true);
     }
   }
 
@@ -179,10 +173,9 @@ public class JsonNotificationIndex
       url = ((URLNotification) notification).getProductURL();
     }
     // prepare statement
-    final Connection db = verifyConnection();
-    db.setAutoCommit(false);
+    beginTransaction();
     try (
-      final PreparedStatement statement = db.prepareStatement(
+      final PreparedStatement statement = getConnection().prepareStatement(
           "INSERT INTO " + this.table
           + " (created, expires, source, type, code, updatetime, url, data)"
           + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
@@ -204,17 +197,15 @@ public class JsonNotificationIndex
         }
         // execute
         statement.executeUpdate();
-        db.commit();
+        commitTransaction();
       } catch (SQLException e) {
         LOGGER.log(Level.WARNING, "Exception adding notification", e);
         try {
           // otherwise roll back
-          db.rollback();
+          rollbackTransaction();
         } catch (SQLException e2) {
           // ignore
         }
-      } finally {
-        db.setAutoCommit(true);
       }
     }
   }
@@ -241,9 +232,8 @@ public class JsonNotificationIndex
           + " WHERE created=? AND expires=? AND source=? AND type=? AND code=?"
           + " AND updatetime=? AND url=? AND data"
           + (product == null ? " IS NULL" : "=?");
-    final Connection db = verifyConnection();
-    db.setAutoCommit(false);
-    try (final PreparedStatement statement = db.prepareStatement(sql)) {
+    beginTransaction();
+    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
         // set parameters
         statement.setString(1, created != null ? created.toString() : "");
@@ -259,17 +249,15 @@ public class JsonNotificationIndex
         }
         // execute
         statement.executeUpdate();
-        db.commit();
+        commitTransaction();
       } catch (SQLException e) {
         LOGGER.log(Level.WARNING, "Exception removing notification", e);
         try {
           // otherwise roll back
-          db.rollback();
+          rollbackTransaction();
         } catch (SQLException e2) {
           // ignore
         }
-      } finally {
-        db.setAutoCommit(true);
       }
     }
   }
@@ -295,9 +283,8 @@ public class JsonNotificationIndex
       sql += " WHERE " + StringUtils.join(where, " AND ");
     }
     // prepare statement
-    final Connection db = verifyConnection();
-    db.setAutoCommit(false);
-    try (final PreparedStatement statement = db.prepareStatement(sql)) {
+    beginTransaction();
+    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
 
         // set parameters
@@ -306,17 +293,17 @@ public class JsonNotificationIndex
         }
 
         // execute
-        return getNotifications(statement);
+        final List<Notification> notifications = getNotifications(statement);
+        commitTransaction();
+        return notifications;
       } catch (SQLException e) {
         LOGGER.log(Level.WARNING, "Exception finding notifications", e);
         try {
           // otherwise roll back
-          db.rollback();
+          rollbackTransaction();
         } catch (SQLException e2) {
           // ignore
         }
-      } finally {
-        db.setAutoCommit(true);
       }
     }
     return new ArrayList<Notification>();
@@ -356,28 +343,26 @@ public class JsonNotificationIndex
       sql += " WHERE " + StringUtils.join(where, " AND ");
     }
     // prepare statement
-    final Connection db = verifyConnection();
-    db.setAutoCommit(false);
-    try (final PreparedStatement statement = db.prepareStatement(sql)) {
+    beginTransaction();
+    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
-
         // set parameters
         for (int i = 0, len=values.size(); i < len; i++) {
           statement.setString(i+1, values.get(i));
         }
 
         // execute
-        return getNotifications(statement);
+        final List<Notification> notifications = getNotifications(statement);
+        commitTransaction();
+        return notifications;
       } catch (SQLException e) {
         LOGGER.log(Level.WARNING, "Exception finding notifications", e);
         try {
           // otherwise roll back
-          db.rollback();
+          rollbackTransaction();
         } catch (SQLException e2) {
           // ignore
         }
-      } finally {
-        db.setAutoCommit(true);
       }
     }
     return new ArrayList<Notification>();
@@ -387,25 +372,24 @@ public class JsonNotificationIndex
   public synchronized List<Notification> findExpiredNotifications() throws Exception {
     final String sql = "SELECT * FROM " + this.table + " WHERE expires <= ?";
     // prepare statement
-    final Connection db = verifyConnection();
-    db.setAutoCommit(false);
-    try (final PreparedStatement statement = db.prepareStatement(sql)) {
+    beginTransaction();
+    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
         // set parameters
         statement.setString(1, Instant.now().toString());
 
         // execute
-        return getNotifications(statement);
+        final List<Notification> notifications = getNotifications(statement);
+        commitTransaction();
+        return notifications;
       } catch (SQLException e) {
         LOGGER.log(Level.WARNING, "Exception finding notifications", e);
         try {
           // otherwise roll back
-          db.rollback();
+          rollbackTransaction();
         } catch (SQLException e2) {
           // ignore
         }
-      } finally {
-        db.setAutoCommit(true);
       }
     }
     return new ArrayList<Notification>();
@@ -417,11 +401,9 @@ public class JsonNotificationIndex
     final String sql = "SELECT * FROM " + this.table
         + " WHERE source=? AND type=? AND code=? AND updatetime=?";
     // prepare statement
-    final Connection db = verifyConnection();
-    db.setAutoCommit(false);
-    try (final PreparedStatement statement = db.prepareStatement(sql)) {
+    beginTransaction();
+    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
-
         // set parameters
         statement.setString(1, id.getSource());
         statement.setString(2, id.getType());
@@ -429,17 +411,17 @@ public class JsonNotificationIndex
         statement.setLong(4, id.getUpdateTime().getTime());
 
         // executes and commit ifsuccessful
-        return getNotifications(statement);
+        final List<Notification> notifications = getNotifications(statement);
+        commitTransaction();
+        return notifications;
       } catch (SQLException e) {
         LOGGER.log(Level.WARNING, "Exception finding notifications", e);
         try {
           // otherwise roll back
-          db.rollback();
+          rollbackTransaction();
         } catch (SQLException e2) {
           // ignore
         }
-      } finally {
-        db.setAutoCommit(true);
       }
     }
     return new ArrayList<Notification>();

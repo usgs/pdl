@@ -166,27 +166,23 @@ public class TrackingIndex extends JDBCConnection {
   public synchronized void removeTrackingData(final String name) throws Exception {
     final String sql = "DELETE FROM " + this.table + " WHERE name=?";
     // create schema
-    final Connection db = verifyConnection();
-    db.setAutoCommit(false);
-    try (final PreparedStatement statement = db.prepareStatement(sql)) {
+    beginTransaction();
+    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       statement.setString(1, name);
 
       statement.executeUpdate();
-      db.commit();
+      commitTransaction();
     } catch (Exception e) {
-      db.rollback();
+      rollbackTransaction();
       throw e;
-    } finally {
-      db.setAutoCommit(true);
     }
   }
 
   public synchronized void setTrackingData(final String name, final JsonObject data) throws Exception {
     final String update = "UPDATE " + this.table + " SET data=? WHERE name=?";
     // usually updated, try update first
-    final Connection db = verifyConnection();
-    db.setAutoCommit(false);
-    try (final PreparedStatement updateStatement = db.prepareStatement(update)) {
+    beginTransaction();
+    try (final PreparedStatement updateStatement = getConnection().prepareStatement(update)) {
       updateStatement.setString(1, data.toString());
       updateStatement.setString(2, name);
       // execute update
@@ -195,19 +191,17 @@ public class TrackingIndex extends JDBCConnection {
       if (count == 0) {
         final String insert = "INSERT INTO " + this.table + " (data, name) VALUES (?, ?)";
         // no rows updated
-        try (final PreparedStatement insertStatement = db.prepareStatement(insert)) {
+        try (final PreparedStatement insertStatement = getConnection().prepareStatement(insert)) {
           insertStatement.setString(1, data.toString());
           insertStatement.setString(2, name);
           // execute insert
           insertStatement.executeUpdate();
         }
       }
-      db.commit();
+      commitTransaction();
     } catch (Exception e) {
-      db.rollback();
+      rollbackTransaction();
       throw e;
-    } finally {
-      db.setAutoCommit(true);
     }
   }
 
