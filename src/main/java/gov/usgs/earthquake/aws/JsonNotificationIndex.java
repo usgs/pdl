@@ -341,6 +341,17 @@ public class JsonNotificationIndex
     String sql = "SELECT * FROM " + this.table;
     if (where.size() > 0) {
       sql += " WHERE " + StringUtils.join(where, " AND ");
+    } else {
+      // searching for all notifications
+
+      // this is typically done to requeue a notification index.
+      // run query in a way that returns list of default notifications,
+      // (by returning empty created, data, and url)
+      // since full details are not needed during requeue
+      sql = "SELECT DISTINCT"
+          + " '' as created, expires, source, type, code, updateTime"
+          + ", '' as url, null as data"
+          + " FROM " + this.table;
     }
     // prepare statement
     beginTransaction();
