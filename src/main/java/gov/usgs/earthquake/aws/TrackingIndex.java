@@ -166,7 +166,8 @@ public class TrackingIndex extends JDBCConnection {
   public synchronized void removeTrackingData(final String name) throws Exception {
     final String sql = "DELETE FROM " + this.table + " WHERE name=?";
     // create schema
-    final Connection db = getConnectionWithoutAutocommit();
+    final Connection db = verifyConnection();
+    db.setAutoCommit(false);
     try (final PreparedStatement statement = db.prepareStatement(sql)) {
       statement.setString(1, name);
 
@@ -183,7 +184,8 @@ public class TrackingIndex extends JDBCConnection {
   public synchronized void setTrackingData(final String name, final JsonObject data) throws Exception {
     final String update = "UPDATE " + this.table + " SET data=? WHERE name=?";
     // usually updated, try update first
-    final Connection db = getConnectionWithoutAutocommit();
+    final Connection db = verifyConnection();
+    db.setAutoCommit(false);
     try (final PreparedStatement updateStatement = db.prepareStatement(update)) {
       updateStatement.setString(1, data.toString());
       updateStatement.setString(2, name);

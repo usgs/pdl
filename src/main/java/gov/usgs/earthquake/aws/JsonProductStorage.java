@@ -94,7 +94,8 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
 
   public boolean schemaExists() throws Exception {
     final String sql = "select * from " + this.table + " limit 1";
-    final Connection db = getConnectionWithoutAutocommit();
+    final Connection db = verifyConnection();
+    db.setAutoCommit(false);
     try (final PreparedStatement test = db.prepareStatement(sql)) {
       // should throw exception if table does not exist
       try (final ResultSet rs = test.executeQuery()) {
@@ -113,7 +114,8 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
 
   public void createSchema() throws Exception {
     // create schema
-    final Connection db = getConnectionWithoutAutocommit();
+    final Connection db = verifyConnection();
+    db.setAutoCommit(false);
     try (final Statement statement = db.createStatement()) {
       String autoIncrement = "";
       String engine = "";
@@ -152,7 +154,8 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     final String sql = "SELECT * FROM " + this.table
         + " WHERE source=? AND type=? AND code=? AND updatetime=?";
     // prepare statement
-    final Connection db = getConnectionWithoutAutocommit();
+    final Connection db = verifyConnection();
+    db.setAutoCommit(false);
     try (final PreparedStatement statement = db.prepareStatement(sql)) {
       try {
 
@@ -196,7 +199,8 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
   @Override
   public synchronized ProductId storeProduct(Product product) throws Exception {
     // prepare statement
-    final Connection db = getConnectionWithoutAutocommit();
+    final Connection db = verifyConnection();
+    db.setAutoCommit(false);
     try (
       final PreparedStatement statement = db.prepareStatement(
           "INSERT INTO " + this.table
@@ -256,7 +260,8 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     // prepare statement
     final String sql = "DELETE FROM " + this.table
           + " WHERE source=? AND type=? AND code=? AND updatetime=?";
-    final Connection db = getConnectionWithoutAutocommit();
+    final Connection db = verifyConnection();
+    db.setAutoCommit(false);
     try (final PreparedStatement statement = db.prepareStatement(sql)) {
       try {
         // set parameters

@@ -43,7 +43,8 @@ public class ExtentIndex extends JDBCProductIndex {
                  + EXTENT_INDEX_ID
                  + " FROM "
                  + EXTENT_TABLE;
-    final Connection db = getConnectionWithoutAutocommit();
+    final Connection db = verifyConnection();
+    db.setAutoCommit(false);
     try (PreparedStatement getLastIndex = db.prepareStatement(sql)) {
       //Parse Results
       ResultSet results = getLastIndex.executeQuery();
@@ -85,8 +86,9 @@ public class ExtentIndex extends JDBCProductIndex {
           EXTENT_MAX_LONG +
         ") VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-    final Connection db = getConnectionWithoutAutocommit();
-    try (PreparedStatement addProduct = db.prepareStatement(sql)) {
+        final Connection db = verifyConnection();
+        db.setAutoCommit(false);
+        try (PreparedStatement addProduct = db.prepareStatement(sql)) {
 
       //Add values
 

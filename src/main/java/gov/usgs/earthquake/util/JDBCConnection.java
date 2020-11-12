@@ -4,7 +4,6 @@ import gov.usgs.util.DefaultConfigurable;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 
 import java.util.logging.Level;
@@ -81,27 +80,6 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 	 * @return current connection object, or null if not connected.
 	 */
 	public Connection getConnection() {
-		return this.connection;
-	}
-
-	/**
-	 * If initial setAutoCommit raises any exception,
-	 * restart and call setAutoCommit(false) again before returning.
-	 *
-	 * @return connection object.
-	 */
-	public Connection getConnectionWithoutAutocommit() throws Exception {
-		try {
-			this.connection.setAutoCommit(false);
-		} catch (Exception e) {
-			LOGGER.log(
-					Level.FINE,
-					"JDBConnection exception setting autoCommit(false), reconnecting",
-					e);
-			shutdown();
-			startup();
-			this.connection.setAutoCommit(false);
-		}
 		return this.connection;
 	}
 
