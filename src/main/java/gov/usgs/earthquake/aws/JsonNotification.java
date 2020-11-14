@@ -2,6 +2,7 @@ package gov.usgs.earthquake.aws;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
@@ -63,7 +64,7 @@ public class JsonNotification extends URLNotification {
         new URL("data:;base64," +
             new String(Base64.getEncoder().encode(
                 new JsonProduct().getJsonObject((product))
-                    .toString().getBytes("utf8")))));
+                    .toString().getBytes(StandardCharsets.UTF_8)))));
     this.created = created;
     this.product = product;
   }

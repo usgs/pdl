@@ -14,6 +14,8 @@ import gov.usgs.util.CryptoUtils.Version;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.DigestOutputStream;
 import java.security.KeyPair;
 import java.security.MessageDigest;
@@ -42,7 +44,7 @@ public class ProductDigest implements ProductHandler {
 			.getName());
 
 	/** Character set used when computing digests. */
-	public static final String CHARSET = "UTF-8";
+	public static final Charset CHARSET = StandardCharsets.UTF_8;
 
 	/** Algorithm used when generating product digest. */
 	public static final String MESSAGE_DIGEST_ALGORITHM = "SHA1";

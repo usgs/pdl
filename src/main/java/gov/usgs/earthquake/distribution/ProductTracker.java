@@ -13,7 +13,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -422,8 +422,8 @@ public class ProductTracker {
 		Iterator<String> iter = data.keySet().iterator();
 		while (iter.hasNext()) {
 			String key = iter.next();
-			buf.append(URLEncoder.encode(key, "UTF-8")).append("=")
-					.append(URLEncoder.encode(data.get(key), "UTF-8"));
+			buf.append(URLEncoder.encode(key, StandardCharsets.UTF_8)).append("=")
+					.append(URLEncoder.encode(data.get(key), StandardCharsets.UTF_8));
 			if (iter.hasNext()) {
 				buf.append("&");
 			}

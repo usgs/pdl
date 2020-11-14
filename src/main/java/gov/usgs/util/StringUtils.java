@@ -7,6 +7,7 @@
 package gov.usgs.util;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,8 +19,8 @@ public class StringUtils {
 
     public static String encodeAsUtf8(final String value)
             throws UnsupportedEncodingException {
-        byte[] utf8Bytes = value.getBytes("UTF8");
-        return new String(utf8Bytes, "UTF8");
+        byte[] utf8Bytes = value.getBytes(StandardCharsets.UTF_8);
+        return new String(utf8Bytes, StandardCharsets.UTF_8);
     }
 
     /**

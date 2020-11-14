@@ -25,7 +25,7 @@ import java.net.URL;
  * <dt>byte[]</dt>
  * <dd>Integer length, raw bytes</dd>
  * <dt>String</dt>
- * <dd>byte[] (String.getBytes("UTF8"))</dd>
+ * <dd>byte[] (String.getBytes(StandardCharsets.UTF_8))</dd>
  * <dt>URL/URI</dt>
  * <dd>String (URL.toString())</dd>
  * </dl>

@@ -30,6 +30,22 @@ import gov.usgs.util.Config;
  *
  * Note that this storage does not store Product Content, and is intended for
  * Products that use URLContent and can be serialized using JsonProduct.
+ *
+ * Only SQLITE or local development should rely on createSchema.
+ * Products (data column) have exceeded 64kb, plan accordingly.
+ *
+ * Mysql Schema Example:<br/>
+ * <pre>
+ * CREATE TABLE IF NOT EXISTS indexer_storage
+ * (id INTEGER PRIMARY KEY AUTO_INCREMENT
+ * , source VARCHAR(255)
+ * , type VARCHAR(255)
+ * , code VARCHAR(255)
+ * , updatetime BIGINT
+ * , data LONGTEXT
+ * , UNIQUE KEY product_index (source, type, code, updatetime)
+ * ) ENGINE=innodb CHARSET=utf8;
+ * </pre>
  */
 public class JsonProductStorage extends JDBCConnection implements ProductStorage {
 
@@ -165,7 +181,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
           + ")" + engine);
       statement.executeUpdate(
           "CREATE UNIQUE INDEX product_index ON " + this.table
-          + "(source, type, code, updatetime)");
+          + " (source, type, code, updatetime)");
       commitTransaction();
     } catch (Exception e) {
       rollbackTransaction();

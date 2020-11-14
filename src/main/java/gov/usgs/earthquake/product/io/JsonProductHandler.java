@@ -8,6 +8,7 @@ import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.util.StreamUtils;
 
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Store a product as Json.
@@ -35,7 +36,8 @@ public class JsonProductHandler extends ObjectProductHandler {
 
     // write json format
     Product product = getProduct();
-    byte[] json = new JsonProduct().getJsonObject(product).toString().getBytes("UTF8");
+    byte[] json = new JsonProduct().getJsonObject(product)
+        .toString().getBytes(StandardCharsets.UTF_8);
     out.write(json);
   }
 

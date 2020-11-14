@@ -17,6 +17,19 @@ import gov.usgs.util.Config;
 
 /**
  * Tracking index stores component state in a database.
+ *
+ * Only SQLITE or local development should rely on createSchema.
+ *
+ * Mysql Schema Example:<br/>
+ * <pre>
+ * CREATE TABLE IF NOT EXISTS tracking_index
+ * (id INTEGER PRIMARY KEY AUTO_INCREMENT
+ * , created VARCHAR(255)
+ * , name VARCHAR(255)
+ * , data LONGTEXT
+ * , UNIQUE KEY name_index (name)
+ * ) ENGINE=innodb CHARSET=utf8;
+ * </pre>
  */
 public class TrackingIndex extends JDBCConnection {
 
@@ -147,7 +160,7 @@ public class TrackingIndex extends JDBCConnection {
           + ", data TEXT"
           + ")");
       statement.executeUpdate(
-          "CREATE UNIQUE INDEX name_index ON " + this.table + "(name)");
+          "CREATE UNIQUE INDEX name_index ON " + this.table + " (name)");
       commitTransaction();
     } catch (Exception e) {
       rollbackTransaction();

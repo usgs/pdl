@@ -34,7 +34,27 @@ import gov.usgs.util.StringUtils;
 /**
  * Store Notifications in a database.
  *
- * Note that for non-sqlite databases, the schema should be created manually.
+ * Only SQLITE or local development should rely on createSchema.
+ * Products (data column) have exceeded 64kb, plan accordingly.
+ *
+ * Mysql Schema Example:<br/>
+ * <pre>
+ * CREATE TABLE IF NOT EXISTS indexer_receiver_index
+ * (id INTEGER PRIMARY KEY AUTO_INCREMENT
+ * , created VARCHAR(255)
+ * , expires VARCHAR(255)
+ * , source VARCHAR(255)
+ * , type VARCHAR(255)
+ * , code VARCHAR(255)
+ * , updatetime BIGINT
+ * , url TEXT
+ * , data LONGTEXT
+ * , KEY source_index (source)
+ * , KEY type_index (type)
+ * , KEY code_index (code)
+ * , KEY expires_index (expires)
+ * ) ENGINE=innodb CHARSET=utf8;
+ * </pre>
  */
 public class JsonNotificationIndex
     extends JDBCConnection
@@ -175,13 +195,13 @@ public class JsonNotificationIndex
           + ", data TEXT"
           + ")" + engine);
       statement.executeUpdate(
-          "CREATE INDEX source_index ON " + this.table + "(source)");
+          "CREATE INDEX source_index ON " + this.table + " (source)");
       statement.executeUpdate(
-          "CREATE INDEX type_index ON " + this.table + "(type)");
+          "CREATE INDEX type_index ON " + this.table + " (type)");
       statement.executeUpdate(
-          "CREATE INDEX code_index ON " + this.table + "(code)");
+          "CREATE INDEX code_index ON " + this.table + " (code)");
       statement.executeUpdate(
-          "CREATE INDEX expires_index ON " + this.table + "(expires)");
+          "CREATE INDEX expires_index ON " + this.table + " (expires)");
       commitTransaction();
     } catch (Exception e) {
       rollbackTransaction();
