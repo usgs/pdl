@@ -25,26 +25,45 @@ import gov.usgs.earthquake.product.io.ProductSource;
 import gov.usgs.earthquake.util.JDBCConnection;
 import gov.usgs.util.Config;
 
+/**
+ * Store Products in a database.
+ *
+ * Note that this storage does not store Product Content, and is intended for
+ * Products that use URLContent and can be serialized using JsonProduct.
+ */
 public class JsonProductStorage extends JDBCConnection implements ProductStorage {
 
   private static final Logger LOGGER = Logger.getLogger(
       JsonProductStorage.class.getName());
+
   public static final String DEFAULT_DRIVER = "org.sqlite.JDBC";
   public static final String DEFAULT_TABLE = "product";
-  public static final String DEFAULT_URL =
-      "jdbc:sqlite:json_product_index.db";
+  public static final String DEFAULT_URL = "jdbc:sqlite:json_product_index.db";
 
+  /** JDBC driver classname. */
   private String driver;
+  /** Database table name. */
   private String table;
+  /** JDBC database connect url. */
   private String url;
 
+  /**
+   * Create a JsonProductStorage using defaults.
+   */
   public JsonProductStorage() {
     this(DEFAULT_DRIVER, DEFAULT_URL);
   }
 
+  /**
+   * Create a JsonProductStorage with a default table.
+   */
   public JsonProductStorage(final String driver, final String url) {
     this(driver, url, DEFAULT_TABLE);
   }
+
+  /**
+   * Create a JsonProductStorage with a custom driver, url, and table.
+   */
   public JsonProductStorage(
       final String driver, final String url, final String table) {
     this.driver = driver;
@@ -69,6 +88,11 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     // do not log url, it may contain user/pass
   }
 
+  /**
+   * Connect to database.
+   *
+   * Implements abstract JDBCConnection method.
+   */
   @Override
   protected Connection connect() throws Exception {
     // load driver if needed
@@ -76,6 +100,9 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     return DriverManager.getConnection(url);
   }
 
+  /**
+   * After normal startup, check whether schema exists and attempt to create.
+   */
   @Override
   public void startup() throws Exception {
     super.startup();
@@ -86,12 +113,12 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     }
   }
 
-  @Override
-  public void shutdown() throws Exception {
-    // super closes connection
-    super.shutdown();
-  }
-
+  /**
+   * Check whether schema exists.
+   *
+   * @return
+   * @throws Exception
+   */
   public boolean schemaExists() throws Exception {
     final String sql = "select * from " + this.table + " limit 1";
     beginTransaction();
@@ -109,6 +136,14 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     }
   }
 
+  /**
+   * Attempt to create schema.
+   *
+   * Only supports sqlite or mysql.  When not using sqlite, relying on this
+   * method is only recommended for local development.
+   *
+   * @throws Exception
+   */
   public void createSchema() throws Exception {
     // create schema
     beginTransaction();
@@ -138,11 +173,21 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     }
   }
 
+  /**
+   * Check whether product found in storage.
+   */
   @Override
   public boolean hasProduct(ProductId id) throws Exception {
     return getProduct(id) != null;
   }
 
+  /**
+   * Get a product from storage.
+   *
+   * @param id
+   *     The product to get.
+   * @return product if found, otherwise null.
+   */
   @Override
   public synchronized Product getProduct(ProductId id) throws Exception {
     Product product = null;
@@ -185,6 +230,12 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     return product;
   }
 
+  /**
+   * Add product to storage.
+   *
+   * @throws ProductAlreadyInStorageException
+   *     if product already in storage.
+   */
   @Override
   public synchronized ProductId storeProduct(Product product) throws Exception {
     // prepare statement
@@ -223,6 +274,11 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     }
   }
 
+  /**
+   * Get a ProductSource for product in database.
+   *
+   * @return ObjectProductSource or null if product not found.
+   */
   @Override
   public ProductSource getProductSource(ProductId id) throws Exception {
     final Product product = getProduct(id);
@@ -232,6 +288,14 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     return new ObjectProductSource(product);
   }
 
+  /**
+   * Store a ProductSource.
+   *
+   * Uses ObjectProductHandler to read Product, then calls storeProduct.
+   *
+   * @throws ProductAlreadyInStorageException
+   *     if product already in storage.
+   */
   @Override
   public ProductId storeProductSource(ProductSource input) throws Exception {
     final ObjectProductHandler handler = new ObjectProductHandler();
@@ -239,6 +303,9 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     return storeProduct(handler.getProduct());
   }
 
+  /**
+   * Remove product from storage.
+   */
   @Override
   public synchronized void removeProduct(ProductId id) throws Exception {
     // prepare statement

@@ -15,27 +15,42 @@ import javax.json.JsonReader;
 import gov.usgs.earthquake.util.JDBCConnection;
 import gov.usgs.util.Config;
 
+/**
+ * Tracking index stores component state in a database.
+ */
 public class TrackingIndex extends JDBCConnection {
 
   private static final Logger LOGGER = Logger.getLogger(
       TrackingIndex.class.getName());
+
   public static final String DEFAULT_DRIVER = "org.sqlite.JDBC";
   public static final String DEFAULT_TABLE = "tracking";
-  public static final String DEFAULT_URL =
-      "jdbc:sqlite:json_tracking_index.db";
+  public static final String DEFAULT_URL = "jdbc:sqlite:json_tracking_index.db";
 
+  /** JDBC driver classname. */
   private String driver;
+  /** Database table name. */
   private String table;
+  /** JDBC database connect url. */
   private String url;
 
-
+  /**
+   * Construct a TrackingIndex using defaults.
+   */
   public TrackingIndex() {
     this(DEFAULT_DRIVER, DEFAULT_URL);
   }
 
+  /**
+   * Construct a TrackingIndex with the default table.
+   */
   public TrackingIndex(final String driver, final String url) {
     this(driver, url, DEFAULT_TABLE);
   }
+
+  /**
+   * Construct a TrackingIndex with custom driver, url, and table.
+   */
   public TrackingIndex(
       final String driver, final String url, final String table) {
     this.driver = driver;
@@ -60,6 +75,11 @@ public class TrackingIndex extends JDBCConnection {
     // do not log url, it may contain user/pass
   }
 
+  /**
+   * Connect to database.
+   *
+   * Implements abstract JDBCConnection method.
+   */
   @Override
   protected Connection connect() throws Exception {
     // load driver if needed
@@ -67,6 +87,9 @@ public class TrackingIndex extends JDBCConnection {
     return DriverManager.getConnection(url);
   }
 
+  /**
+   * After normal startup, check whether schema exists and attempt to create.
+   */
   @Override
   public void startup() throws Exception {
     super.startup();
@@ -77,39 +100,41 @@ public class TrackingIndex extends JDBCConnection {
     }
   }
 
-  @Override
-  public void shutdown() throws Exception {
-    // super closes connection
-    super.shutdown();
-  }
-
+  /**
+   * Check whether schema exists.
+   *
+   * @return
+   * @throws Exception
+   */
   public boolean schemaExists() throws Exception {
-    final Connection db = getConnection();
-
     final String sql = "select * from " + this.table + " limit 1";
-    db.setAutoCommit(false);
-    try (final PreparedStatement test = db.prepareStatement(sql)) {
+    beginTransaction();
+    try (final PreparedStatement test = getConnection().prepareStatement(sql)) {
       // should throw exception if table does not exist
       try (final ResultSet rs = test.executeQuery()) {
         rs.next();
       }
-      db.commit();
+      commitTransaction();
       // schema exists
       return true;
     } catch (Exception e) {
-      db.rollback();
+      rollbackTransaction();
       return false;
-    } finally {
-      db.setAutoCommit(true);
     }
   }
 
+  /**
+   * Attempt to create schema.
+   *
+   * Only supports sqlite or mysql.  When not using sqlite, relying on this
+   * method is only recommended for local development.
+   *
+   * @throws Exception
+   */
   public void createSchema() throws Exception {
-    final Connection db = getConnection();
-
     // create schema
-    db.setAutoCommit(false);
-    try (final Statement statement = db.createStatement()) {
+    beginTransaction();
+    try (final Statement statement = getConnection().createStatement()) {
       String autoIncrement = "";
       if (driver.contains("mysql")) {
         autoIncrement = "AUTO_INCREMENT";
@@ -123,22 +148,26 @@ public class TrackingIndex extends JDBCConnection {
           + ")");
       statement.executeUpdate(
           "CREATE UNIQUE INDEX name_index ON " + this.table + "(name)");
-      db.commit();
+      commitTransaction();
     } catch (Exception e) {
-      db.rollback();
+      rollbackTransaction();
       throw e;
-    } finally {
-      db.setAutoCommit(true);
     }
   }
 
+  /**
+   * Get tracking data for specified name.
+   *
+   * @param name
+   *     name of tracking data.
+   * @return null if data not found.
+   */
   public synchronized JsonObject getTrackingData(final String name) throws Exception {
-    final Connection db = getConnection();
     JsonObject data = null;
 
     final String sql = "SELECT * FROM " + this.table + " WHERE name=?";
-    db.setAutoCommit(false);
-    try (final PreparedStatement statement = db.prepareStatement(sql)) {
+    beginTransaction();
+    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       statement.setString(1, name);
 
       // execute and parse data
@@ -153,16 +182,21 @@ public class TrackingIndex extends JDBCConnection {
           }
         }
       }
-      db.commit();
+      commitTransaction();
     } catch (Exception e) {
-      db.rollback();
-    } finally {
-      db.setAutoCommit(true);
+      rollbackTransaction();
     }
 
     return data;
   }
 
+  /**
+   * Remove tracking data.
+   *
+   * @param name
+   *     name of tracking data.
+   * @throws Exception
+   */
   public synchronized void removeTrackingData(final String name) throws Exception {
     final String sql = "DELETE FROM " + this.table + " WHERE name=?";
     // create schema
@@ -178,6 +212,15 @@ public class TrackingIndex extends JDBCConnection {
     }
   }
 
+  /**
+   * Add or update tracking data.
+   *
+   * @param name
+   *     name of tracking data.
+   * @param data
+   *     data to store.
+   * @throws Exception
+   */
   public synchronized void setTrackingData(final String name, final JsonObject data) throws Exception {
     final String update = "UPDATE " + this.table + " SET data=? WHERE name=?";
     // usually updated, try update first

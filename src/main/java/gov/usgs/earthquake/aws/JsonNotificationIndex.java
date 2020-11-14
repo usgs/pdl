@@ -31,28 +31,47 @@ import gov.usgs.earthquake.util.JDBCConnection;
 import gov.usgs.util.Config;
 import gov.usgs.util.StringUtils;
 
+/**
+ * Store Notifications in a database.
+ *
+ * Note that for non-sqlite databases, the schema should be created manually.
+ */
 public class JsonNotificationIndex
     extends JDBCConnection
     implements NotificationIndex {
 
   private static final Logger LOGGER = Logger.getLogger(
       JsonNotificationIndex.class.getName());
+
   public static final String DEFAULT_DRIVER = "org.sqlite.JDBC";
   public static final String DEFAULT_TABLE = "notification";
   public static final String DEFAULT_URL =
       "jdbc:sqlite:json_notification_index.db";
 
+  /** JDBC driver classname. */
   private String driver;
+  /** Database table name. */
   private String table;
+  /** JDBC database connect url. */
   private String url;
 
+  /**
+   * Construct a JsonNotification using defaults.
+   */
   public JsonNotificationIndex() {
     this(DEFAULT_DRIVER, DEFAULT_URL);
   }
 
+  /**
+   * Construct a JsonNotificationIndex with the default table.
+   */
   public JsonNotificationIndex(final String driver, final String url) {
     this(driver, url, DEFAULT_TABLE);
   }
+
+  /**
+   * Construct a JsonNotificationIndex with custom driver, url, and table.
+   */
   public JsonNotificationIndex(
       final String driver, final String url, final String table) {
     this.driver = driver;
@@ -77,6 +96,11 @@ public class JsonNotificationIndex
     // do not log url, it may contain user/pass
   }
 
+  /**
+   * Connect to database.
+   *
+   * Implements abstract JDBCConnection method.
+   */
   @Override
   protected Connection connect() throws Exception {
     // load driver if needed
@@ -84,6 +108,9 @@ public class JsonNotificationIndex
     return DriverManager.getConnection(url);
   }
 
+  /**
+   * After normal startup, check whether schema exists and attempt to create.
+   */
   @Override
   public void startup() throws Exception {
     super.startup();
@@ -94,12 +121,12 @@ public class JsonNotificationIndex
     }
   }
 
-  @Override
-  public void shutdown() throws Exception {
-    // super closes connection
-    super.shutdown();
-  }
-
+  /**
+   * Check whether schema exists.
+   *
+   * @return
+   * @throws Exception
+   */
   public boolean schemaExists() throws Exception {
     final String sql = "select * from " + this.table + " limit 1";
     beginTransaction();
@@ -117,6 +144,14 @@ public class JsonNotificationIndex
     }
   }
 
+  /**
+   * Attempt to create schema.
+   *
+   * Only supports sqlite or mysql.  When not using sqlite, relying on this
+   * method is only recommended for local development.
+   *
+   * @throws Exception
+   */
   public void createSchema() throws Exception {
     // create schema
     beginTransaction();
@@ -154,6 +189,11 @@ public class JsonNotificationIndex
     }
   }
 
+  /**
+   * Add a notification to the index.
+   *
+   * TrackerURLs are ignored.
+   */
   @Override
   public synchronized void addNotification(Notification notification)
       throws Exception {
@@ -210,6 +250,11 @@ public class JsonNotificationIndex
     }
   }
 
+  /**
+   * Remove notification from index.
+   *
+   * Tracker URLs are ignored.
+   */
   @Override
   public synchronized void removeNotification(Notification notification) throws Exception {
     // all notifications
@@ -262,8 +307,20 @@ public class JsonNotificationIndex
     }
   }
 
+  /**
+   * Search index for notifications.
+   *
+   * @param source
+   *     source, or null for all sources.
+   * @param type
+   *     type, or null for all types.
+   * @param code
+   *     code, or null for all codes.
+   * @return list with matching notifications, empty if not found.
+   */
   @Override
-  public synchronized List<Notification> findNotifications(String source, String type, String code) throws Exception {
+  public synchronized List<Notification> findNotifications(
+      String source, String type, String code) throws Exception {
     final ArrayList<Object> where = new ArrayList<Object>();
     final ArrayList<String> values = new ArrayList<String>();
     if (source != null) {
@@ -309,8 +366,20 @@ public class JsonNotificationIndex
     return new ArrayList<Notification>();
   }
 
+  /**
+   * Search index for notifications.
+   *
+   * @param source
+   *     sources, or null for all sources.
+   * @param type
+   *     types, or null for all types.
+   * @param code
+   *     codes, or null for all codes.
+   * @return list with matching notifications, empty if not found.
+   */
   @Override
-  public synchronized List<Notification> findNotifications(List<String> sources, List<String> types, List<String> codes)
+  public synchronized List<Notification> findNotifications(
+      List<String> sources, List<String> types, List<String> codes)
       throws Exception {
     final ArrayList<Object> where = new ArrayList<Object>();
     final ArrayList<String> values = new ArrayList<String>();
@@ -379,6 +448,11 @@ public class JsonNotificationIndex
     return new ArrayList<Notification>();
   }
 
+  /**
+   * Find notifications with expires time before or equal to current time.
+   *
+   * @return list with matching notifications, empty if not found.
+   */
   @Override
   public synchronized List<Notification> findExpiredNotifications() throws Exception {
     final String sql = "SELECT * FROM " + this.table + " WHERE expires <= ?";
@@ -407,6 +481,13 @@ public class JsonNotificationIndex
 
   }
 
+  /**
+   * Search index for notifications for a specific product.
+   *
+   * @param id
+   *     the product id to search.
+   * @return list with matching notifications, empty if not found.
+   */
   @Override
   public synchronized List<Notification> findNotifications(ProductId id) throws Exception {
     final String sql = "SELECT * FROM " + this.table
@@ -461,10 +542,14 @@ public class JsonNotificationIndex
   }
 
   /**
-   * Creates and returns a <code>Notification</code> based on the provided
-   * data. If the <code>download</code> string references a valid URL, then a
-   * <code>URLNotification</code> is created, otherwise a
-   * <code>DefaultNotification</code> is created.
+   * Creates and returns a <code>Notification</code> based on the provided data.
+   *
+   * <ul>
+   * <li>Return a JSONNotification if <code>created</code> and <code>data</code>
+   * are set
+   * <li>Return a URLNotification if <code>url</code> is set
+   * <li>Otherwise, return a DefaultNotification
+   * </ul>
    */
   protected Notification parseNotification(
       final String created,
