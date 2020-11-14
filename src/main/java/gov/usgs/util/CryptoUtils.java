@@ -94,7 +94,10 @@ public class CryptoUtils {
 			return this.value;
 		}
 
-		public static Version fromString(final String value) throws IllegalArgumentException {
+		/**
+		 * @throws IllegalArgumentException if unknown version.
+		 */
+		public static Version fromString(final String value) {
 			if (SIGNATURE_V1.value.equals(value)) {
 				return SIGNATURE_V1;
 			} else if (SIGNATURE_V2.value.equals(value)) {
@@ -184,6 +187,7 @@ public class CryptoUtils {
 	 * @return
 	 *     Configured Signature object
 	 * @throws InvalidKeyException
+	 *     if key is not RSA or DSA.
 	 * @throws NoSuchAlgorithmException
 	 * @throws SignatureException
 	 */
@@ -205,6 +209,9 @@ public class CryptoUtils {
 			}
 		} else {
 			throw new IllegalArgumentException("Unexpected signature version " + version);
+		}
+		if (signature == null) {
+			throw new InvalidKeyException("Expected DSA or RSA key");
 		}
 		return signature;
 	}
