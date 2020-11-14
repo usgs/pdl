@@ -425,6 +425,14 @@ public class JsonNotificationIndexTest {
     t1.join();
     t2.join();
 
+    Assert.assertTrue(t1.defaultNotificationExists);
+    Assert.assertTrue(t1.urlNotificationExists);
+    Assert.assertNull(t1.exception);
+
+    Assert.assertTrue(t2.defaultNotificationExists);
+    Assert.assertTrue(t2.urlNotificationExists);
+    Assert.assertNull(t2.exception);
+
     Assert.assertEquals(SOME_NOTIFICATIONS.size()
         + EXPIRED_NOTIFICATIONS.size() + 4, getIndexSize());
   }
@@ -516,14 +524,19 @@ public class JsonNotificationIndexTest {
   }
 
   private class SimpleInsertThread extends Thread {
+    public boolean defaultNotificationExists = false;
+    public boolean urlNotificationExists = false;
+    public Exception exception = null;
+
     public void run() {
       try {
         index.addNotification(TEST_DEFAULT_NOTIFICATION);
-        Assert.assertTrue(exists(TEST_DEFAULT_NOTIFICATION));
+        defaultNotificationExists = exists(TEST_DEFAULT_NOTIFICATION);
         index.addNotification(TEST_URL_NOTIFICATION);
-        Assert.assertTrue(exists(TEST_URL_NOTIFICATION));
+        urlNotificationExists = exists(TEST_URL_NOTIFICATION);
       } catch (Exception e) {
         // We blew it
+        this.exception = e;
         e.printStackTrace();
       }
     }
