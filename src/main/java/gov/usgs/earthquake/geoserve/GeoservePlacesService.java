@@ -55,8 +55,8 @@ public class GeoservePlacesService {
       throws IOException, MalformedURLException {
     final URL url = new URL(this.endpointUrl +
         "?type=event" +
-        "&latitude=" + URLEncoder.encode(latitude.toString(), StandardCharsets.UTF_8) +
-        "&longitude=" + URLEncoder.encode(longitude.toString(), StandardCharsets.UTF_8)
+        "&latitude=" + URLEncoder.encode(latitude.toString(), StandardCharsets.UTF_8.toString()) +
+        "&longitude=" + URLEncoder.encode(longitude.toString(), StandardCharsets.UTF_8.toString())
     );
 
     try (InputStream in = StreamUtils.getURLInputStream(url, this.connectTimeout, this.readTimeout)) {

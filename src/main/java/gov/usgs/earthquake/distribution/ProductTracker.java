@@ -422,8 +422,9 @@ public class ProductTracker {
 		Iterator<String> iter = data.keySet().iterator();
 		while (iter.hasNext()) {
 			String key = iter.next();
-			buf.append(URLEncoder.encode(key, StandardCharsets.UTF_8)).append("=")
-					.append(URLEncoder.encode(data.get(key), StandardCharsets.UTF_8));
+			buf.append(URLEncoder.encode(key, StandardCharsets.UTF_8.toString()))
+					.append("=")
+					.append(URLEncoder.encode(data.get(key), StandardCharsets.UTF_8.toString()));
 			if (iter.hasNext()) {
 				buf.append("&");
 			}
