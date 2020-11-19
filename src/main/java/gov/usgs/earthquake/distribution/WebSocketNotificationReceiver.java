@@ -50,7 +50,6 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   private String trackingFileName;
   private int attempts;
   private long timeout;
-  private boolean retryOnClose;
 
   private WebSocketClient client;
   private String sequence = "0";
@@ -65,7 +64,6 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     serverPath = config.getProperty(SERVER_PATH_PROPERTY, DEFAULT_SERVER_PATH);
     attempts = Integer.parseInt(config.getProperty(CONNECT_ATTEMPTS_PROPERTY, DEFAULT_CONNECT_ATTEMPTS));
     timeout = Long.parseLong(config.getProperty(CONNECT_TIMEOUT_PROPERTY, DEFAULT_CONNECT_TIMEOUT));
-    retryOnClose = Boolean.parseBoolean(config.getProperty(RETRY_ON_CLOSE_PROPERTY, DEFAULT_RETRY_ON_CLOSE));
     trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME);
   }
 

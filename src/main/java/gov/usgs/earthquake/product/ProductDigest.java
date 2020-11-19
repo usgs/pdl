@@ -9,13 +9,17 @@ import gov.usgs.earthquake.util.NullOutputStream;
 import gov.usgs.util.CryptoUtils;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
+import gov.usgs.util.CryptoUtils.Version;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.DigestOutputStream;
 import java.security.KeyPair;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Iterator;
@@ -24,11 +28,11 @@ import java.util.logging.Logger;
 
 /**
  * Used to generate product digests.
- * 
+ *
  * All product attributes and content are used when generating a digest, except
  * any existing signature, since the digest is used to generate or verify
  * signatures.
- * 
+ *
  * Calls to ProductOutput methods on this class must occur in identical order to
  * generate consistent signatures. Therefore it is almost required to use the
  * ObjectProductInput, which fulfills this requirement.
@@ -40,10 +44,13 @@ public class ProductDigest implements ProductHandler {
 			.getName());
 
 	/** Character set used when computing digests. */
-	public static final String CHARSET = "UTF-8";
+	public static final Charset CHARSET = StandardCharsets.UTF_8;
 
 	/** Algorithm used when generating product digest. */
 	public static final String MESSAGE_DIGEST_ALGORITHM = "SHA1";
+
+	/** v2 digest algorithm */
+	public static final String MESSAGE_DIGEST_V2_ALGORITHM = "SHA-256";
 
 	/** The stream used to compute the product digest. */
 	private DigestOutputStream digestStream;
@@ -51,23 +58,26 @@ public class ProductDigest implements ProductHandler {
 	/** The computed digest. */
 	private byte[] digest = null;
 
-	/**
-	 * Construct a new ProductDigest.
-	 */
-	protected ProductDigest() {
-		MessageDigest digest = null;
-		try {
-			digest = MessageDigest.getInstance(MESSAGE_DIGEST_ALGORITHM);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	/** The signature version. */
+	private Version version = null;
 
-		digestStream = new DigestOutputStream(new NullOutputStream(), digest);
+	/**
+	* Construct a new ProductDigest.
+	 */
+	protected ProductDigest(final Version version) throws NoSuchAlgorithmException {
+		final String algorithm = version == Version.SIGNATURE_V2
+				? MESSAGE_DIGEST_V2_ALGORITHM
+				: MESSAGE_DIGEST_ALGORITHM;
+		LOGGER.fine("Using digest version " + version.toString()
+				+ ", algorithm=" + algorithm);
+		MessageDigest digest = MessageDigest.getInstance(algorithm);
+		this.digestStream = new DigestOutputStream(new NullOutputStream(), digest);
+		this.version = version;
 	}
 
 	/**
 	 * A convenience method that generates a product digest.
-	 * 
+	 *
 	 * @param product
 	 *            the product to digest
 	 * @return the computed digest.
@@ -75,8 +85,13 @@ public class ProductDigest implements ProductHandler {
 	 *             if errors occur while digesting product.
 	 */
 	public static byte[] digestProduct(final Product product) throws Exception {
+		return digestProduct(product, Version.SIGNATURE_V1);
+	}
+
+	public static byte[] digestProduct(final Product product, final Version version)
+			throws Exception {
 		Date start = new Date();
-		ProductDigest productDigest = new ProductDigest();
+		ProductDigest productDigest = new ProductDigest(version);
 		// ObjectProductInput generates ProductOutput calls in a reliable order.
 		new ObjectProductSource(product).streamTo(productDigest);
 		Date end = new Date();
@@ -103,7 +118,7 @@ public class ProductDigest implements ProductHandler {
 		digestStream.write(XmlUtils.formatDate(id.getUpdateTime()).getBytes(
 				CHARSET));
 		digestStream.write(status.getBytes(CHARSET));
-		if (trackerURL != null) {
+		if (this.version != Version.SIGNATURE_V2 && trackerURL != null) {
 			digestStream.write(trackerURL.toString().getBytes(CHARSET));
 		}
 	}
@@ -118,8 +133,12 @@ public class ProductDigest implements ProductHandler {
 		digestStream.write(XmlUtils.formatDate(content.getLastModified())
 				.getBytes(CHARSET));
 		digestStream.write(content.getLength().toString().getBytes(CHARSET));
-		StreamUtils.transferStream(content.getInputStream(),
-				new StreamUtils.UnclosableOutputStream(digestStream));
+		if (this.version == Version.SIGNATURE_V2) {
+			digestStream.write(content.getSha256().getBytes(CHARSET));
+		} else {
+			StreamUtils.transferStream(content.getInputStream(),
+					new StreamUtils.UnclosableOutputStream(digestStream));
+		}
 	}
 
 	/**
@@ -150,8 +169,17 @@ public class ProductDigest implements ProductHandler {
 	}
 
 	/**
+	 * Don't digest signature version.
+	 */
+	@Override
+	public void onSignatureVersion(ProductId id, Version version) throws Exception {
+		// generating signature, ignore
+	}
+
+	/**
 	 * Don't digest the signature.
 	 */
+	@Override
 	public void onSignature(ProductId id, String signature) throws Exception {
 		// generating signature, ignore
 	}

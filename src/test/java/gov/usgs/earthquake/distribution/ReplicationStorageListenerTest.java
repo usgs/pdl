@@ -9,6 +9,7 @@ import gov.usgs.util.FileUtils;
 import java.io.File;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +29,13 @@ public class ReplicationStorageListenerTest {
 
 	private FileProductStorage localStorage = null;
 	private FileProductStorage remoteStorage = null;
+
+	@Before
+	public void notOnWindows() throws Exception {
+		final String osName = System.getProperty("os.name").toLowerCase();
+		// sleep is a cmd built-in on windows, and cannnot be Runtime.exec-ed.
+		Assume.assumeTrue(!osName.contains("windows"));
+	}
 
 	@Before
 	public void before() throws Exception {

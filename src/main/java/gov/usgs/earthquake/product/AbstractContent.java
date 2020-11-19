@@ -3,7 +3,14 @@
  */
 package gov.usgs.earthquake.product;
 
+import java.io.OutputStream;
+import java.security.DigestOutputStream;
+import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.Date;
+
+import gov.usgs.earthquake.util.NullOutputStream;
+import gov.usgs.util.StreamUtils;
 
 /**
  * AbstractContent is a base class for other content classes and implements
@@ -20,9 +27,12 @@ public abstract class AbstractContent implements Content {
 	/** How much content there is. */
 	private Long length;
 
+	/** Base64 encoded hash of content */
+	String sha256;
+
 	/**
 	 * Null values are replaced with defaults.
-	 * 
+	 *
 	 * @param contentType
 	 *            defaults to "text/plain".
 	 * @param lastModified
@@ -39,7 +49,7 @@ public abstract class AbstractContent implements Content {
 
 	/**
 	 * Copy constructor from another content.
-	 * 
+	 *
 	 * @param content
 	 *            the content to copy.
 	 */
@@ -65,7 +75,7 @@ public abstract class AbstractContent implements Content {
 
 	/**
 	 * Set the content mime type.
-	 * 
+	 *
 	 * @param contentType
 	 *            the content mime type.
 	 */
@@ -86,7 +96,7 @@ public abstract class AbstractContent implements Content {
 
 	/**
 	 * Set when this content was created.
-	 * 
+	 *
 	 * @param lastModified
 	 *            when this content was created.
 	 */
@@ -112,7 +122,7 @@ public abstract class AbstractContent implements Content {
 
 	/**
 	 * Set the content length.
-	 * 
+	 *
 	 * @param length
 	 */
 	public void setLength(final Long length) {
@@ -123,4 +133,38 @@ public abstract class AbstractContent implements Content {
 		}
 	}
 
+
+	/** Get the Sha256 hash. */
+	@Override
+	public String getSha256() throws Exception {
+		return getSha256(true);
+	}
+
+	/**
+	 * Get or generate the MD5 hash of content.
+	 *
+	 * @param computeIfMissing Use getInputStream to generate hash if missing.
+	 * @throws Exception
+	 */
+	public String getSha256(final boolean computeIfMissing) throws Exception {
+		if (sha256 == null && computeIfMissing) {
+			try (final DigestOutputStream contentDigest =
+							new DigestOutputStream(new NullOutputStream(), MessageDigest.getInstance("SHA-256"));
+					final OutputStream unclosable = new StreamUtils.UnclosableOutputStream(contentDigest)) {
+				StreamUtils.transferStream(this.getInputStream(), unclosable);
+				contentDigest.flush();
+				setSha256(Base64.getEncoder().encodeToString(contentDigest.getMessageDigest().digest()));
+			}
+		}
+		return sha256;
+	}
+
+	/**
+	 * Set the sha256 hash of content.
+	 *
+	 * @param sha256
+	 */
+	public void setSha256(final String sha256) {
+		this.sha256 = sha256;
+	}
 }

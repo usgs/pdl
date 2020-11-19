@@ -330,6 +330,14 @@
 		<dd>NOTE: this property does not filter product downloads, only product processing.
 			A comma separated list of content paths to exclude.
 			Products with a content path in this list will not be processed.</dd>
+
+		<dt>concurrentProducts</dt>
+		<dd>(Optional, Default 1) how many products to process concurrently.
+
+			NOTE: This may cause products to be processed out of order.
+			External scripts will be executed concurrently, and need to be prepared
+			to handle concurrent executions.  Use with caution.
+		</dd>
 	</dl>
 
 	<h4>Listener Types</h4>
@@ -416,10 +424,18 @@
 		</dd>
 
 		<dt>gov.usgs.earthquake.distribution.RelayProductListener</dt>
-		<dd>Forward any received products to another
-			SocketProductReceiver. For configuration purposes, a
-			RelayProductListener is treated as a
-			gov.usgs.earthquake.distribution.SocketProductSender.</dd>
+		<dd>Forward any received products to another ProductSender.
+
+			<dl>
+				<dt>senderType</dt>
+				<dd>(Optional, default "socket").
+
+					When set to <code>aws</code> configure RelayProductListener
+					using <code>AwsProductSender</code>.  Otherwise (default), configure
+					using <code>SocketProductSender</code>.
+				</dd>
+			</dl>
+		</dd>
 
 		<dt>gov.usgs.earthquake.indexer.Indexer</dt>
 		<dd>
@@ -564,6 +580,32 @@
 
 	<h4>Receiver Types</h4>
 	<dl>
+
+		<dt>gov.usgs.earthquake.aws.AwsProductReceiver</dt>
+		<dd>
+			Receive products from an AWS PDL Hub.
+
+			<em>
+			NOTE: recommend using URLProductStorage configured with "json" format
+			for best performance, as only metadata is downloaded.  Resulting
+			json files contain URLs where contents can be downloaded as needed.
+			</em>
+
+			<dl>
+				<dt>url</dt>
+				<dd>Base URL for hub.</dd>
+
+				<dt>trackingFileName</dt>
+				<dd>File where current position in hub notifications is tracked.</dd>
+
+				<dt>connectAttempts</dt>
+				<dd>(Optional, default 5) Number to attempts to connect before pausing</dd>
+
+				<dt>connectTimeout</dt>
+				<dd>(Optional, default 1000ms) timeout for each connect attempt.</dd>
+			</dl>
+		</dd>
+
 		<dt>gov.usgs.earthquake.distribution.EIDSNotificationReceiver</dt>
 		<dd>
 			This is used primarily by clients to receive notifications from EIDS.
@@ -614,6 +656,29 @@
 	<p>Senders are used by Product Creators to send a product to a Hub.</p>
 
 	<dl>
+		<dt>gov.usgs.earthquake.aws.AwsProductSender</dt>
+		<dd>
+			<dt>url</dt>
+			<dd>Base URL for hub send api.</dd>
+
+			<dt>privateKey</dt>
+			<dd>(Optional) key used to sign products before they are sent.</dd>
+
+			<dt>signProducts</dt>
+			<dd>
+				(Optional, default false) whether to sign products before they are sent
+
+				<p>
+					This is mainly useful when using relay product sender,
+					to re-sign products before sending to another hub that does not trust
+					the original sender's key or uses a different signature version.
+
+					Otherwise the key and signatures can be configured directly in
+					CLIProductBuilder or EIDSInputWedge when products are created.
+				</p>
+			</dd>
+		</dd>
+
 		<dt>gov.usgs.earthquake.distribution.SocketProductSender</dt>
 		<dd>
 			<p>See <a href="sending.html#compression">Sending products</a>
@@ -736,6 +801,37 @@
 					<code>directory</code>
 					.
 					<p>To map a directory onto a url in Apache, use an Alias.</p>
+				</dd>
+
+				<dt>storageFormat</dt>
+				<dd>
+					<code>bin</code>, <code>json</code>, or <code>xml</code> (default).
+				</dd>
+
+				<dt>storagePath</dt>
+				<dd>
+					Path with placeholders that are replace for product being stored.
+
+					<p>
+						Default: <code>{source}_{type}_{code}_{updateTime}.{format}</code>.
+					</p>
+
+					<dl>
+						<dt><code>{source}</code></dt>
+						<dd>Product source</dd>
+
+						<dt><code>{type}</code></dt>
+						<dd>Product type</dd>
+
+						<dt><code>{code}</code></dt>
+						<dd>Product code</dd>
+
+						<dt><code>{updateTime}</code></dt>
+						<dd>Product update time as milliseconds</dd>
+
+						<dt><code>{format}</code></dt>
+						<dd>Format abbreviation "bin", "json", or "xml"</dd>
+					</dl>
 				</dd>
 			</dl>
 		</dd>

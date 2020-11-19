@@ -6,6 +6,7 @@ import gov.usgs.util.CryptoUtils;
 import gov.usgs.util.DefaultConfigurable;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.StringUtils;
+import gov.usgs.util.CryptoUtils.Version;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -55,6 +56,9 @@ public class ProductBuilder extends DefaultConfigurable {
 	/** Private key filename configuration property. */
 	public static final String PRIVATE_KEY_PROPERTY = "privateKeyFile";
 
+	/** Signature version property. */
+	public static final String SIGNATURE_VERSION_PROPERTY = "signatureVersion";
+
 	/** Send in parallel. */
 	public static final String PARALLEL_SEND_PROPERTY = "parallelSend";
 	public static final String DEFAULT_PARALLEL_SEND = "true";
@@ -84,6 +88,9 @@ public class ProductBuilder extends DefaultConfigurable {
 
 	/** Key used to sign sent products. */
 	private PrivateKey privateKey;
+
+	/** Signature version. */
+	private Version signatureVersion = Version.SIGNATURE_V1;
 
 	/** Whether to send in parallel. */
 	protected boolean parallelSend = true;
@@ -118,7 +125,7 @@ public class ProductBuilder extends DefaultConfigurable {
 
 		// doesn't already have a signature.
 		if (privateKey != null && product.getSignature() == null) {
-			product.sign(privateKey);
+			product.sign(privateKey, signatureVersion);
 		}
 
 		// send tracker update
@@ -191,6 +198,15 @@ public class ProductBuilder extends DefaultConfigurable {
 		this.privateKey = privateKey;
 	}
 
+
+	public Version getSignatureVersion() {
+		return signatureVersion;
+	}
+
+	public void setSignatureVersion(Version signatureVersion) {
+		this.signatureVersion = signatureVersion;
+	}
+
 	@Override
 	public void configure(final Config config) throws Exception {
 		Iterator<String> senderNames = StringUtils.split(config.getProperty(SENDERS_PROPERTY), ",").iterator();
@@ -216,6 +232,12 @@ public class ProductBuilder extends DefaultConfigurable {
 			LOGGER.config("[" + getName() + "] Loading private key file '" + keyFilename + "'");
 			privateKey = CryptoUtils.readOpenSSHPrivateKey(StreamUtils.readStream(new File(keyFilename)), null);
 		}
+
+		String version = config.getProperty(SIGNATURE_VERSION_PROPERTY);
+		if (version != null) {
+			signatureVersion = Version.fromString(version);
+		}
+		LOGGER.config("[" + getName() + "] signature version = " + signatureVersion);
 
 		parallelSend = Boolean.valueOf(config.getProperty(PARALLEL_SEND_PROPERTY, DEFAULT_PARALLEL_SEND));
 		parallelSendTimeout = Long

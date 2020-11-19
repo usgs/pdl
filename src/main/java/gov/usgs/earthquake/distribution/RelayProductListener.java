@@ -3,6 +3,7 @@
  */
 package gov.usgs.earthquake.distribution;
 
+import gov.usgs.earthquake.aws.AwsProductSender;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.util.Config;
 
@@ -19,6 +20,9 @@ public class RelayProductListener extends DefaultNotificationListener {
 	private static final Logger LOGGER = Logger
 			.getLogger(RelayProductListener.class.getName());
 
+	public static final String SENDER_TYPE_PROPERTY = "senderType";
+	public static final String SENDER_TYPE_AWS = "aws";
+
 	/** Sender used to send products. */
 	private ProductSender sender;
 
@@ -31,7 +35,7 @@ public class RelayProductListener extends DefaultNotificationListener {
 
 	/**
 	 * Construct a RelayProductListener using a custom ProductSender.
-	 * 
+	 *
 	 * @param sender
 	 *            the sender to use.
 	 */
@@ -60,14 +64,28 @@ public class RelayProductListener extends DefaultNotificationListener {
 		// read DefaultNotificationListener properties
 		super.configure(config);
 
-		sender = new SocketProductSender();
+		final String senderType = config.getProperty(SENDER_TYPE_PROPERTY);
+		if (senderType != null && SENDER_TYPE_AWS.equals(SENDER_TYPE_AWS)) {
+			sender = new AwsProductSender();
+		} else {
+			sender = new SocketProductSender();
+		}
 		sender.configure(config);
+	}
+
+	public void setName(final String name) {
+		super.setName(name);
+		// also set sender name for logging
+		if (sender != null) {
+			sender.setName(name);
+		}
 	}
 
 	/**
 	 * Call the sender shutdown method.
 	 */
 	public void shutdown() throws Exception {
+		super.shutdown();
 		sender.shutdown();
 	}
 
@@ -75,6 +93,7 @@ public class RelayProductListener extends DefaultNotificationListener {
 	 * Call the sender startup method.
 	 */
 	public void startup() throws Exception {
+		super.startup();
 		sender.startup();
 	}
 

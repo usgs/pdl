@@ -4,7 +4,6 @@
 package gov.usgs.earthquake.distribution;
 
 import gov.usgs.earthquake.product.ProductId;
-import gov.usgs.earthquake.distribution.HeartbeatListener;
 import gov.usgs.util.Config;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
@@ -14,7 +13,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,12 +25,12 @@ import java.util.logging.Logger;
 
 /**
  * Send updates and search sent updates about distribution status.
- * 
+ *
  * ProductDistribution clients to send status updates about received
  * notifications, and processed products.
- * 
+ *
  * <strong>Search Example</strong>
- * 
+ *
  * <pre>
  * ProductTracker tracker = new ProductTracker(new URL(
  * 		&quot;http://ehppdl1.cr.usgs.gov/tracker/&quot;));
@@ -43,19 +42,19 @@ import java.util.logging.Logger;
  * List&lt;ProductTrackerUpdate&gt; updates = tracker.getUpdates(source, type, code,
  * 		updateTime, className);
  * </pre>
- * 
+ *
  * <strong>Update Example</strong>
- * 
+ *
  * <pre>
  * Product product = ...;
  * ProductTracker tracker = new ProductTracker(product.getTrackerURL()).;
- * ProductTrackerUpdate update = new ProductTrackerUpdate(product.getTrackerURL(), 
- * 		product.getId(), 
- * 		"my component name", 
+ * ProductTrackerUpdate update = new ProductTrackerUpdate(product.getTrackerURL(),
+ * 		product.getId(),
+ * 		"my component name",
  * 		"my component message");
  * tracker.sendUpdate(update);
  * </pre>
- * 
+ *
  */
 public class ProductTracker {
 
@@ -68,7 +67,7 @@ public class ProductTracker {
 
 	/**
 	 * Set whether sending tracker updates is enabled from this host.
-	 * 
+	 *
 	 * @param enabled
 	 *            true to send tracker updates, false to disable.
 	 */
@@ -103,7 +102,7 @@ public class ProductTracker {
 
 	/**
 	 * Send an update to this ProductTracker.
-	 * 
+	 *
 	 * @param update
 	 *            the update to send to the tracker.
 	 * @return the update object processed by the tracker, including sequence
@@ -134,7 +133,7 @@ public class ProductTracker {
 
 	/**
 	 * Send an update to this ProductTracker.
-	 * 
+	 *
 	 * @param update
 	 *            the update to send to the tracker.
 	 * @return the raw XML returned by the tracker, or null if unable to send.
@@ -193,10 +192,10 @@ public class ProductTracker {
 
 	/**
 	 * Search for updates on this tracker.
-	 * 
+	 *
 	 * At least one field must be not null, or this method will return no
 	 * updates.
-	 * 
+	 *
 	 * @param source
 	 *            product source.
 	 * @param type
@@ -222,7 +221,7 @@ public class ProductTracker {
 
 	/**
 	 * Search for updates on this tracker, returning raw xml.
-	 * 
+	 *
 	 * @param source
 	 * @param type
 	 * @param code
@@ -266,7 +265,7 @@ public class ProductTracker {
 
 	/**
 	 * Send a custom tracker update message.
-	 * 
+	 *
 	 * @param className
 	 *            the module that is sending the message.
 	 * @param id
@@ -285,7 +284,7 @@ public class ProductTracker {
 
 	/**
 	 * Send a productCreated update.
-	 * 
+	 *
 	 * @param className
 	 *            the module that created the product.
 	 * @param id
@@ -302,7 +301,7 @@ public class ProductTracker {
 
 	/**
 	 * Send a productIndexed update.
-	 * 
+	 *
 	 * @param className
 	 *            the module that indexed the product.
 	 * @param id
@@ -319,7 +318,7 @@ public class ProductTracker {
 
 	/**
 	 * Send a notificationSent update.
-	 * 
+	 *
 	 * @param className
 	 *            the module that sent the notification.
 	 * @param notification
@@ -337,7 +336,7 @@ public class ProductTracker {
 
 	/**
 	 * Send a notificationReceived update.
-	 * 
+	 *
 	 * @param className
 	 *            the module that received the notification.
 	 * @param notification
@@ -355,7 +354,7 @@ public class ProductTracker {
 
 	/**
 	 * Send a productDownloaded update.
-	 * 
+	 *
 	 * @param className
 	 *            the module that downloaded the product.
 	 * @param id
@@ -373,7 +372,7 @@ public class ProductTracker {
 
 	/**
 	 * Send a productReceived update.
-	 * 
+	 *
 	 * @param className
 	 *            the module that received the product.
 	 * @param id
@@ -391,7 +390,7 @@ public class ProductTracker {
 
 	/**
 	 * Send an exception update.
-	 * 
+	 *
 	 * @param className
 	 *            the module that encountered an exception.
 	 * @param id
@@ -411,7 +410,7 @@ public class ProductTracker {
 
 	/**
 	 * Encode data for a HTTP Post.
-	 * 
+	 *
 	 * @param data
 	 *            a map containing name value pairs for encoding.
 	 * @return a string of encoded data.
@@ -423,8 +422,9 @@ public class ProductTracker {
 		Iterator<String> iter = data.keySet().iterator();
 		while (iter.hasNext()) {
 			String key = iter.next();
-			buf.append(URLEncoder.encode(key, "UTF-8")).append("=")
-					.append(URLEncoder.encode(data.get(key), "UTF-8"));
+			buf.append(URLEncoder.encode(key, StandardCharsets.UTF_8.toString()))
+					.append("=")
+					.append(URLEncoder.encode(data.get(key), StandardCharsets.UTF_8.toString()));
 			if (iter.hasNext()) {
 				buf.append("&");
 			}
@@ -434,7 +434,7 @@ public class ProductTracker {
 
 	/**
 	 * Execute a HTTP Post.
-	 * 
+	 *
 	 * @param url
 	 *            the target url.
 	 * @param data
@@ -469,7 +469,7 @@ public class ProductTracker {
 
 	/**
 	 * Parse xml received from a ProductTracker using a ProductTrackerParser.
-	 * 
+	 *
 	 * @param trackerURL
 	 *            the trackerURL being parsed (so updates are flagged as from
 	 *            this tracker).
@@ -497,7 +497,7 @@ public class ProductTracker {
 
 	/**
 	 * Command Line Interface to ProductTracker.
-	 * 
+	 *
 	 * @param args
 	 * @throws Exception
 	 */

@@ -530,7 +530,9 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 				.getExpirationDate().getTime());
 
 		// Read the URL value from the notification
-		String trackerUrl = notification.getTrackerURL().toString();
+		String trackerUrl = notification.getTrackerURL() != null
+				? notification.getTrackerURL().toString()
+				: "";
 
 		// Set the values we parsed above
 		_dml_addNotification.setString(1, productId.getSource());
@@ -599,7 +601,9 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 		java.sql.Date expirationDate = new java.sql.Date(notification
 				.getExpirationDate().getTime());
 		// Read the URL value from the notification
-		String trackerUrl = notification.getTrackerURL().toString();
+		String trackerUrl = notification.getTrackerURL() != null
+				? notification.getTrackerURL().toString()
+				: "";
 
 		// Set the values we parsed above
 		_dml_removeNotification.setString(1, productId.getSource());
@@ -901,11 +905,11 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 			String tracker, String download) throws Exception {
 		Notification n = null;
 		ProductId productId = new ProductId(source, type, code, update);
+		URL trackerURL = !"".equals(tracker) ? new URL(tracker) : null;
 		try {
-			n = new URLNotification(productId, expires, new URL(tracker),
-					new URL(download));
+			n = new URLNotification(productId, expires, trackerURL, new URL(download));
 		} catch (MalformedURLException mux) {
-			n = new DefaultNotification(productId, expires, new URL(tracker));
+			n = new DefaultNotification(productId, expires, trackerURL);
 		}
 		return n;
 	}

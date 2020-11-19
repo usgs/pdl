@@ -18,7 +18,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
-
+import gov.usgs.util.CryptoUtils.Version;
 import gov.usgs.earthquake.product.InputStreamContent;
 import gov.usgs.earthquake.product.URLContent;
 import gov.usgs.earthquake.product.ProductId;
@@ -52,7 +52,7 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 
 	/**
 	 * Create a new XmlProductSource.
-	 * 
+	 *
 	 * @param in
 	 *            the input stream where xml is read.
 	 */
@@ -62,7 +62,7 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 
 	/**
 	 * Create a new XmlProductSource for embedding in another default handler.
-	 * 
+	 *
 	 * @param out
 	 *            the ProductHandler to receive product events.
 	 */
@@ -72,7 +72,7 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 
 	/**
 	 * Begin reading the input stream, sending events to out.
-	 * 
+	 *
 	 * @param out
 	 *            the receiving ProductOutput.
 	 */
@@ -88,7 +88,7 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 	/**
 	 * Override DefaultHandler startElement. Adds a new element content buffer
 	 * and calls onStartElement.
-	 * 
+	 *
 	 * @param uri
 	 *            element uri.
 	 * @param localName
@@ -222,6 +222,16 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 			}
 			// SIGNATURE
 			else if (XmlProductHandler.SIGNATURE_ELEMENT.equals(localName)) {
+				String version = XmlUtils.getAttribute(attributes, uri,
+						XmlProductHandler.SIGNATURE_ATTRIBUTE_VERSION);
+				try {
+					out.onSignatureVersion(id,
+							version == null
+							? Version.SIGNATURE_V1
+							: Version.fromString(version));
+				} catch (Exception e) {
+					throw new SAXException(e);
+				}
 				signatureBuffer = new StringBuffer();
 			}
 		}
@@ -230,7 +240,7 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 	/**
 	 * Override DefaultHandler endElement. Retrieves element content buffer and
 	 * passes it to onEndElement.
-	 * 
+	 *
 	 * @param uri
 	 *            element uri.
 	 * @param localName
@@ -266,7 +276,7 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 	/**
 	 * Override DefaultHandler characters. Appends content to current element
 	 * buffer, or skips if before first element.
-	 * 
+	 *
 	 * @param ch
 	 *            content.
 	 * @param start

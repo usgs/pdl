@@ -15,14 +15,14 @@ public interface Content {
 
 	/**
 	 * The type of content.
-	 * 
+	 *
 	 * @return the mime content type for this content.
 	 */
 	public String getContentType();
 
 	/**
 	 * The content bytes as a stream.
-	 * 
+	 *
 	 * @return an InputStream from which content can be read.
 	 * @throws IOException
 	 *             if an error occurs while creating the stream.
@@ -31,17 +31,24 @@ public interface Content {
 
 	/**
 	 * When the content was modified.
-	 * 
+	 *
 	 * @return Date when the content was modified.
 	 */
 	public Date getLastModified();
 
 	/**
 	 * How much content there is.
-	 * 
+	 *
 	 * @return the actual content length, or -1 if unknown.
 	 */
 	public Long getLength();
+
+	/**
+	 * Digest of content.
+	 *
+	 * @return base64 encoded sha256 of content bytes.
+	 */
+	public String getSha256() throws Exception;
 
 	/**
 	 * Free any resources associated with this content.

@@ -632,6 +632,8 @@ public class FileProductStorage extends DefaultConfigurable implements
 		// product id is known.
 		try {
 			source.streamTo(output);
+			// close output so file(s) are written
+			output.close();
 
 			ProductId id = output.getProductId();
 			LOGGER.finer("[" + getName() + "] product stored id=" + id

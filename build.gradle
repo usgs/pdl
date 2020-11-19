@@ -35,8 +35,8 @@ dependencies {
   compile "javax.xml.bind:jaxb-api:2.3+"
   compile "org.glassfish.jaxb:jaxb-runtime:2.3+"
   // javax.websocket (for notifications)
-  compile "javax.websocket:javax.websocket-api:1.1"
-  compile "org.glassfish.tyrus.bundles:tyrus-standalone-client:1.12"
+  compile "javax.websocket:javax.websocket-all:1.1"
+  compile "org.glassfish.tyrus.bundles:tyrus-standalone-client:1.17"
   // database drivers
   compile "mysql:mysql-connector-java:5.1.47"
   compile "org.xerial:sqlite-jdbc:3.23.1"
@@ -50,7 +50,10 @@ dependencies {
   // XMLVerifier uses this, but is excluded for now
   // compile files("lib/cap-library-r11.jar")
 
-  testCompile "junit:junit-dep:4.11"
+  testImplementation("junit:junit:4.13")
+  testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+  testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.7.0")
 }
 
 sourceSets {
@@ -80,7 +83,7 @@ check.dependsOn jacocoTestReport
 pmd {
   toolVersion = "6.17.0"
   ruleSets = [
-    "pmd-ruleset.xml"
+    file("pmd-ruleset.xml")
   ]
 }
 
@@ -88,6 +91,7 @@ test {
   filter {
     includeTestsMatching "*Test"
   }
+  useJUnitPlatform()
 }
 
 // clean up after tests

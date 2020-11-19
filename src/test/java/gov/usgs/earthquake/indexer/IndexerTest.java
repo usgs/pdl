@@ -13,7 +13,6 @@ import gov.usgs.earthquake.product.io.ObjectProductHandler;
 import gov.usgs.earthquake.product.io.XmlProductSource;
 import gov.usgs.util.Config;
 import gov.usgs.util.DefaultConfigurable;
-import gov.usgs.util.FileUtils;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.logging.SimpleLogFormatter;
 
@@ -21,6 +20,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -34,9 +34,10 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import org.junit.Assert;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * IndexerTest is designed to be a unit test suite for the Indexer class.
@@ -66,6 +67,9 @@ import org.junit.Test;
  */
 public class IndexerTest extends DefaultConfigurable implements IndexerListener {
 
+	@TempDir
+	public Path testDir;
+
 	/* The indexer object used to run tests. */
 	private Indexer indexer = null;
 	/* The most recently received indexer event */
@@ -89,53 +93,50 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	 * existed before the tests or not. This way we clean up after ourselves, but we
 	 * don't mess up any existing index file.
 	 */
-	@Before
-	public void setupTestEnvironment() {
-		try {
-			Logger.getLogger("").setLevel(Level.FINE);
-			indexer = new Indexer();
-			Config.setConfig(new Config());
-			Config config = Config.getConfig();
-			// Tell indexer which archive policy property to use
-			config.setProperty(Indexer.INDEX_ARCHIVE_POLICY_PROPERTY, ARCHIVE_POLICY_PROPERTY);
-			// Keep events for 15 seconds
-			config.setSectionProperty(ARCHIVE_POLICY_PROPERTY, ArchivePolicy.ARCHIVE_MIN_EVENT_AGE_PROPERTY,
-					String.valueOf(minEventAge));
-			config.setSectionProperty(ARCHIVE_POLICY_PROPERTY, "type", ArchivePolicy.class.getName());
+	@BeforeEach
+	public void setupTestEnvironment() throws Exception {
+		Logger.getLogger("").setLevel(Level.FINE);
+		indexer = new Indexer();
+		Config.setConfig(new Config());
+		Config config = Config.getConfig();
+		// Tell indexer which archive policy property to use
+		config.setProperty(Indexer.INDEX_ARCHIVE_POLICY_PROPERTY,
+				ARCHIVE_POLICY_PROPERTY);
+		// Keep events for 15 seconds
+		config.setSectionProperty(ARCHIVE_POLICY_PROPERTY,
+				ArchivePolicy.ARCHIVE_MIN_EVENT_AGE_PROPERTY,
+				String.valueOf(minEventAge));
+		config.setSectionProperty(ARCHIVE_POLICY_PROPERTY, "type",
+				ArchivePolicy.class.getName());
 
-			// Check for expired events every 5 seconds
-			config.setProperty(Indexer.INDEX_ARCHIVE_INTERVAL_PROPERTY, String.valueOf(cleanupInterval));
+		// Check for expired events every 5 seconds
+		config.setProperty(Indexer.INDEX_ARCHIVE_INTERVAL_PROPERTY,
+				String.valueOf(cleanupInterval));
 
-			indexer.configure(config);
-			indexer.addListener(this);
+		// Use test data directory
+		config.setProperty(Indexer.INDEXFILE_CONFIG_PROPERTY, testDir.resolve("productIndex.db").toString());
+		config.setProperty(Indexer.STORAGE_DIRECTORY_CONFIG_PROPERTY, testDir.resolve("storage").toString());
 
-			// delete storage before test
-			FileUtils.deleteTree(new File("productIndex.db"));
-			FileUtils.deleteTree(new File("_test_storage_"));
+		indexer.configure(config);
+		indexer.addListener(this);
 
-			// piggyback an external indexer listener on this test in case it
-			// throws exceptions
-			ExternalIndexerListener listener = new ExternalIndexerListener();
-			listener.setCommand("echo");
-			listener.setMaxTries(1);
-			listener.setStorage(new FileProductStorage(new File("_test_storage_")));
-			indexer.addListener(listener);
+		// piggyback an external indexer listener on this test in case it
+		// throws exceptions
+		ExternalIndexerListener listener = new ExternalIndexerListener();
+		listener.setCommand("echo");
+		listener.setMaxTries(1);
+		listener.setStorage((FileProductStorage)indexer.getProductStorage());
+		indexer.addListener(listener);
 
-			ExternalIndexerListener listener2 = new ExternalIndexerListener();
-			listener2.setCommand("echo");
-			listener2.setMaxTries(1);
-			listener2.setStorage(new FileProductStorage(new File("_test_storage_")));
-			listener2.setProcessOnlyWhenEventChanged(true);
-			indexer.addListener(listener2);
+		ExternalIndexerListener listener2 = new ExternalIndexerListener();
+		listener2.setCommand("echo");
+		listener2.setMaxTries(1);
+		listener2.setStorage((FileProductStorage)indexer.getProductStorage());
+		listener2.setProcessOnlyWhenEventChanged(true);
+		indexer.addListener(listener2);
 
-			indexer.setDisableArchive(true);
-			indexer.startup();
-
-		} catch (Exception e) {
-			System.err.println("Error before IndexerTest could run tests.");
-			e.printStackTrace(System.err);
-		}
-
+		indexer.setDisableArchive(true);
+		indexer.startup();
 	}
 
 	/**
@@ -143,16 +144,13 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	 * created the index file ourselves we will delete this file at this time. This
 	 * way we clean up after ourselves, but don't mess up any existing index file.
 	 */
-	@After
-	public void teardownTestEnvironment() {
+	@AfterEach
+	public void teardownTestEnvironment() throws Exception {
 		if (indexer != null) {
 			try {
 				indexer.shutdown();
 				indexer.setDisableArchive(false);
 				indexer = null;
-
-				FileUtils.deleteTree(new File("productIndex.db"));
-				FileUtils.deleteTree(new File("_test_storage_"));
 			} catch (Exception e) {
 				System.err.println("Error in shutting down indexer.");
 			}
@@ -164,13 +162,13 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Tests the indexer "getModule" method. To test this we create a product then
-	 * call the indexer getModule method and see what we get back. We assert the
-	 * module is not null and has a positive support level.
+	 * Tests the indexer "getModule" method. To test this we create a product
+	 * then call the indexer getModule method and see what we get back. We
+	 * assert the module is not null and has a positive support level.
 	 *
-	 * Additionally, create an indexer with 2 modules that support a particular type
-	 * of product. Assert that the module chosen for each type of product is
-	 * appropriate.
+	 * Additionally, create an indexer with 2 modules that support a particular
+	 * type of product. Assert that the module chosen for each type of product
+	 * is appropriate.
 	 *
 	 * @author emartinez
 	 * @throws Exception
@@ -232,10 +230,10 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 	/**
 	 * Tests the indexer "onProduct" method when a product representing a "new"
-	 * event is given. This method creates a new indexer object and adds itself as a
-	 * listener for indexer events. It then adds a new event to the index and waits
-	 * for notification. Upon notification we assert that the "type" of IndexerEvent
-	 * we received is "EVENT_ADDED".
+	 * event is given. This method creates a new indexer object and adds itself
+	 * as a listener for indexer events. It then adds a new event to the index
+	 * and waits for notification. Upon notification we assert that the "type"
+	 * of IndexerEvent we received is "EVENT_ADDED".
 	 *
 	 * After inserting the first product, this test will then create a different
 	 * type of product and associate it to the event using eventSource and
@@ -272,14 +270,14 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * Tests the indexer "onProduct" method when a product representing an "update"
-	 * to an existing event is given. This method creates a new indexer object and
-	 * adds itself as a listener for indexer events. It then adds a product that is
-	 * capable of creating an event to the index. Next this product has its update
-	 * time (version) updated to indicate the product is now an update to what is
-	 * currently in the index. This updated product is then added to the index and
-	 * we wait for notification. Upon notification we assert that the "type" of
-	 * IndexerEvent we received is "EVENT_UPDATED".
+	 * Tests the indexer "onProduct" method when a product representing an
+	 * "update" to an existing event is given. This method creates a new indexer
+	 * object and adds itself as a listener for indexer events. It then adds a
+	 * product that is capable of creating an event to the index. Next this
+	 * product has its update time (version) updated to indicate the product is
+	 * now an update to what is currently in the index. This updated product is
+	 * then added to the index and we wait for notification. Upon notification
+	 * we assert that the "type" of IndexerEvent we received is "EVENT_UPDATED".
 	 *
 	 * @author emartinez
 	 * @see gov.usgs.earthquake.indexer.Indexer#onProduct(Product)
@@ -312,11 +310,12 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * Tests the indexer "onProduct" method when a product is received that does not
-	 * associate to an existing event and is not capable of creating its own event
-	 * based on its parameters. Such a product is "unassociatable". This product is
-	 * then added to an indexer and we wait notification. Upon notification we
-	 * assert that the "type" of IndexerEvent we received is "UNASSOCIATED_PRODUCT".
+	 * Tests the indexer "onProduct" method when a product is received that does
+	 * not associate to an existing event and is not capable of creating its own
+	 * event based on its parameters. Such a product is "unassociatable". This
+	 * product is then added to an indexer and we wait notification. Upon
+	 * notification we assert that the "type" of IndexerEvent we received is
+	 * "UNASSOCIATED_PRODUCT".
 	 *
 	 * @author emartinez
 	 * @see gov.usgs.earthquake.indexer.Indexer#onProduct(Product)
@@ -902,8 +901,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 	/**
 	 * Tests the indexer's periodic cleanup functionality to check the index on
-	 * regular (configurable) intervals and remove expired (configurable) events and
-	 * products.
+	 * regular (configurable) intervals and remove expired (configurable) events
+	 * and products.
 	 *
 	 * @author emartinez
 	 * @see gov.usgs.earthquake.indexer.Indexer#purgeExpiredProducts()
@@ -1153,12 +1152,12 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * Normally two event codes from the same event source prevents association. The
-	 * associate product can override this behavior.
+	 * Normally two event codes from the same event source prevents association.
+	 * The associate product can override this behavior.
 	 *
-	 * This test creates two events that are nearby, but from the same source. It
-	 * then sends an associate product to force the association, and verifies the
-	 * events merge.
+	 * This test creates two events that are nearby, but from the same source.
+	 * It then sends an associate product to force the association, and verifies
+	 * the events merge.
 	 *
 	 * @throws Exception
 	 */
@@ -1490,21 +1489,22 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * This test reproduce(d/s) an exception caused by a product archive policy bug.
+	 * This test reproduce(d/s) an exception caused by a product archive policy
+	 * bug.
 	 *
 	 * The exception was: <code>
 	 * java.sql.SQLException: [SQLITE_CONSTRAINT]  Abort due to constraint violation (columns source, sourceCode are not unique)
 	 * </code>
 	 *
-	 * The cause was in a patch to the Indexer.removeSummary method. removeSummary
-	 * was calling index.removeAssociation, which removes the association of all
-	 * versions of a product and event, instead of just the association between one
-	 * product and the event.
+	 * The cause was in a patch to the Indexer.removeSummary method.
+	 * removeSummary was calling index.removeAssociation, which removes the
+	 * association of all versions of a product and event, instead of just the
+	 * association between one product and the event.
 	 *
 	 * Simply removing the product is enough to remove the association, so the
 	 * removeSummary method was updated to remove the summary from the index and
-	 * event object and then update the index; leaving newer/other versions of the
-	 * product intact.
+	 * event object and then update the index; leaving newer/other versions of
+	 * the product intact.
 	 *
 	 * @throws Exception
 	 */
@@ -1575,10 +1575,11 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 	/**
 	 * Creates a product that can not in-and-of itself create an event. It also
-	 * lacks the basic parameters required to be able to associate to any existing
-	 * event using the default associator.
+	 * lacks the basic parameters required to be able to associate to any
+	 * existing event using the default associator.
 	 *
-	 * Namely, the generated product lacks a latitude, longitude, and event time.
+	 * Namely, the generated product lacks a latitude, longitude, and event
+	 * time.
 	 *
 	 * @return The generated product
 	 * @author emartinez
@@ -1591,11 +1592,11 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 
 	/**
 	 * Creates a product that can in-and-of itself create an event. It may also
-	 * associate to another product assuming its basic parameters are within range
-	 * of the default associator thresholds.
+	 * associate to another product assuming its basic parameters are within
+	 * range of the default associator thresholds.
 	 *
-	 * Namely this product sets its latitude and longitude values to 0.0 and uses
-	 * the current date/time as the event time.
+	 * Namely this product sets its latitude and longitude values to 0.0 and
+	 * uses the current date/time as the event time.
 	 *
 	 *
 	 * @return The generated product
@@ -1615,9 +1616,9 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * Create a product that can only be associated with an existing event based on
-	 * the eventSource and eventSourceCode properties. In other words, the generated
-	 * product doesn't have a lat, lon, or event time.
+	 * Create a product that can only be associated with an existing event based
+	 * on the eventSource and eventSourceCode properties. In other words, the
+	 * generated product doesn't have a lat, lon, or event time.
 	 *
 	 * @return The generated product
 	 * @see #createUnassociatableProduct()
@@ -1634,11 +1635,12 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * Simple setter event for the most recently received IndexerEvent. Set from the
-	 * "onIndexerEvent" method.
+	 * Simple setter event for the most recently received IndexerEvent. Set from
+	 * the "onIndexerEvent" method.
 	 *
-	 * @param event The most recently received IndexerEvent from the
-	 *              "onIndexerEvent" method.
+	 * @param event
+	 *            The most recently received IndexerEvent from the
+	 *            "onIndexerEvent" method.
 	 * @see #onIndexerEvent(IndexerEvent)
 	 */
 	private void setLatestIndexerEvent(IndexerEvent event) {
@@ -1646,8 +1648,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * Simple getter method to return the most recently received IndexerEvent via
-	 * the "onIndexerEvent" method.
+	 * Simple getter method to return the most recently received IndexerEvent
+	 * via the "onIndexerEvent" method.
 	 *
 	 * @return The most recently received IndexerEvent
 	 * @see #onIndexerEvent(IndexerEvent)
@@ -1657,11 +1659,11 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	}
 
 	/**
-	 * Implements the IndexerListener interface. Upon receiving notification we wait
-	 * for 50 milliseconds to ensure the syncObject has been able to go into its
-	 * "wait" mode before we notify. Next we update our notification event with the
-	 * incoming event. Finally we notify our syncObject so it can continue with
-	 * processing in the test.
+	 * Implements the IndexerListener interface. Upon receiving notification we
+	 * wait for 50 milliseconds to ensure the syncObject has been able to go
+	 * into its "wait" mode before we notify. Next we update our notification
+	 * event with the incoming event. Finally we notify our syncObject so it can
+	 * continue with processing in the test.
 	 *
 	 * @see gov.usgs.earthquake.indexer.IndexerListener
 	 * @see #onProductNewTest()

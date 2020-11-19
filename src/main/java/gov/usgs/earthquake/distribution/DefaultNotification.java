@@ -26,7 +26,7 @@ public class DefaultNotification implements Notification {
 
 	/**
 	 * Construct a DefaultNotification.
-	 * 
+	 *
 	 * @param id
 	 *            the product that is available.
 	 * @param expirationDate
@@ -61,7 +61,7 @@ public class DefaultNotification implements Notification {
 	public URL getTrackerURL() {
 		return trackerURL;
 	}
-	
+
 	/** A comparison method to see if two notifications are equal. */
 	public boolean equals(Notification that) {
 		return
@@ -69,7 +69,9 @@ public class DefaultNotification implements Notification {
 			that instanceof DefaultNotification &&
 			getExpirationDate().equals(that.getExpirationDate()) &&
 			getProductId().equals(that.getProductId()) &&
-			getTrackerURL().equals(that.getTrackerURL())
+			(
+				(getTrackerURL() == null && that.getTrackerURL() == null)
+				|| getTrackerURL().equals(that.getTrackerURL()))
 		);
 	}
 

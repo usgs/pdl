@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.InputStream;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 public class BinaryIO {
@@ -30,7 +31,7 @@ public class BinaryIO {
 
 	public void writeString(final String toWrite, final OutputStream out)
 			throws IOException {
-		writeBytes(toWrite.getBytes("UTF8"), out);
+		writeBytes(toWrite.getBytes(StandardCharsets.UTF_8), out);
 	}
 
 	public void writeDate(final Date toWrite, final OutputStream out)
@@ -82,7 +83,7 @@ public class BinaryIO {
 		}
 		byte[] buffer = new byte[length];
 		readFully(buffer, in);
-		return new String(buffer, "UTF8");
+		return new String(buffer, StandardCharsets.UTF_8);
 	}
 
 	public Date readDate(final InputStream in) throws IOException {

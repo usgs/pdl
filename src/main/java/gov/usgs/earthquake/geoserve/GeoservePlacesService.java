@@ -6,9 +6,9 @@ import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -55,8 +55,8 @@ public class GeoservePlacesService {
       throws IOException, MalformedURLException {
     final URL url = new URL(this.endpointUrl +
         "?type=event" +
-        "&latitude=" + URLEncoder.encode(latitude.toString(), "UTF-8") +
-        "&longitude=" + URLEncoder.encode(longitude.toString(), "UTF-8")
+        "&latitude=" + URLEncoder.encode(latitude.toString(), StandardCharsets.UTF_8.toString()) +
+        "&longitude=" + URLEncoder.encode(longitude.toString(), StandardCharsets.UTF_8.toString())
     );
 
     try (InputStream in = StreamUtils.getURLInputStream(url, this.connectTimeout, this.readTimeout)) {
@@ -90,5 +90,5 @@ public class GeoservePlacesService {
     this.readTimeout = readTimeout;
   }
 
-  // TODO as needed, implement full GeoServe places API options
+  // as needed, implement full GeoServe places API options
 }

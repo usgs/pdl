@@ -8,6 +8,7 @@ import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.util.Config;
+import gov.usgs.util.ObjectLock;
 import gov.usgs.util.StringUtils;
 
 import java.util.ArrayList;
@@ -22,13 +23,13 @@ import java.util.logging.Logger;
 /**
  * A base implementation of a notification listener. Implements functionality
  * that is useful for most notification listeners.
- * 
+ *
  * Sub classes should override the onProduct(Product) method to add custom
  * processing.
- * 
+ *
  * The DefaultNotificationListener extends the AbstractListener and can use any
  * of those configuration parameters.
- * 
+ *
  * @see gov.usgs.earthquake.product.AbstractListener
  */
 public class DefaultNotificationListener extends AbstractListener implements
@@ -45,6 +46,10 @@ public class DefaultNotificationListener extends AbstractListener implements
 	/** How long to wait until checking for expired notifications/products. */
 	public static final String CLEANUP_INTERVAL_PROPERTY = "cleanupInterval";
 	public static final String DEFAULT_CLEANUP_INTERVAL = "3600000";
+
+	/** How many products to process at a time. */
+	public static final String CONCURRENT_PRODUCTS_PROPERTY = "concurrentProducts";
+	public static final String DEFAULT_CONCURRENT_PRODUCTS = "1";
 
 	/** Whether or not to process products more than once. */
 	public static final String PROCESS_DUPLICATES = "processDuplicates";
@@ -63,6 +68,9 @@ public class DefaultNotificationListener extends AbstractListener implements
 	/** Timer that schedules sender cleanup task. */
 	private Timer cleanupTimer = null;
 
+	/** How many products to process at the same time. */
+	private int concurrentProducts = 1;
+
 	/** Whether or not to process products that have already been processed. */
 	private boolean processDuplicates = false;
 
@@ -73,8 +81,14 @@ public class DefaultNotificationListener extends AbstractListener implements
 	private final ArrayList<String> excludePaths = new ArrayList<String>();
 
 	/**
+	 * Locks used to keep concurrent listener from processing product
+	 * more than once at the same time.
+	 */
+	private ObjectLock<ProductId> storageLocks = new ObjectLock<ProductId>();
+
+	/**
 	 * Implement the NotificationListener interface.
-	 * 
+	 *
 	 * This method calls accept, and if accept returns true, retrieves the
 	 * product and calls onProduct.
 	 */
@@ -92,18 +106,22 @@ public class DefaultNotificationListener extends AbstractListener implements
 			return;
 		}
 
-		if (!onBeforeProcessNotification(notification)) {
-			return;
-		}
+		// only allow one thread to process a product
+		storageLocks.acquireLock(id);
+		try {
+			if (!onBeforeProcessNotification(notification)) {
+				return;
+			}
 
-		LOGGER.finer("[" + getName() + "] processing notification for id="
-				+ productId);
+			LOGGER.finer("[" + getName() + "] processing notification for id="
+					+ productId);
 
-		Product product = event.getProduct();
-		if (product == null) {
-			throw new ContinuableListenerException("retrieved product null,"
-					+ " notification id=" + productId);
-		} else {
+			Product product = event.getProduct();
+			if (product == null) {
+				throw new ContinuableListenerException("retrieved product null,"
+						+ " notification id=" + productId);
+			}
+
 			if (!onBeforeProcessProduct(product)) {
 				return;
 			}
@@ -112,12 +130,15 @@ public class DefaultNotificationListener extends AbstractListener implements
 			onProduct(product);
 
 			onAfterProcessNotification(notification);
+		} finally {
+			// be sure to release lock when done/error
+			storageLocks.releaseLock(id);
 		}
 	}
 
 	/**
 	 * Called by onNotification when a product is retrieved.
-	 * 
+	 *
 	 * @param product
 	 *            a product whose notification was accepted.
 	 * @throws Exception
@@ -144,7 +165,7 @@ public class DefaultNotificationListener extends AbstractListener implements
 
 	/**
 	 * Called just before this listener processes a notification.
-	 * 
+	 *
 	 * @param notification
 	 *            notification about to be processed.
 	 * @return true to process the notification, false to skip
@@ -170,11 +191,11 @@ public class DefaultNotificationListener extends AbstractListener implements
 	/**
 	 * Called after a product has been downloaded, but before onProduct is
 	 * called.
-	 * 
+	 *
 	 * Sometimes a listener cannot tell whether it should process a product
 	 * until its contents are available. This is where the "includePaths" and
 	 * "excludePaths" are evaluated.
-	 * 
+	 *
 	 * @param product
 	 *            product about to be processed.
 	 * @return true to process the product, false to skip
@@ -222,7 +243,7 @@ public class DefaultNotificationListener extends AbstractListener implements
 
 	/**
 	 * Called when this listener has successfully processed a notification.
-	 * 
+	 *
 	 * @param notification
 	 *            notification that was processed.
 	 * @throws Exception
@@ -236,7 +257,7 @@ public class DefaultNotificationListener extends AbstractListener implements
 
 	/**
 	 * Called when an expired notification is being removed from the index.
-	 * 
+	 *
 	 * @param notification
 	 * @throws Exception
 	 */
@@ -247,7 +268,7 @@ public class DefaultNotificationListener extends AbstractListener implements
 
 	/**
 	 * Periodic cleanup task.
-	 * 
+	 *
 	 * Called every cleanupInterval milliseconds.
 	 */
 	public void cleanup() {
@@ -341,6 +362,13 @@ public class DefaultNotificationListener extends AbstractListener implements
 
 		cleanupInterval = Long.parseLong(config.getProperty(
 				CLEANUP_INTERVAL_PROPERTY, DEFAULT_CLEANUP_INTERVAL));
+		LOGGER.config("[" + getName() + "] cleanup interval = "
+				+ processDuplicates);
+
+		concurrentProducts = Integer.parseInt(config.getProperty(
+			CONCURRENT_PRODUCTS_PROPERTY, DEFAULT_CONCURRENT_PRODUCTS));
+		LOGGER.config("[" + getName() + "] concurrent products = "
+				+ concurrentProducts);
 
 		processDuplicates = Boolean.valueOf(config.getProperty(
 				PROCESS_DUPLICATES, DEFAULT_PROCESS_DUPLICATES));
@@ -370,6 +398,14 @@ public class DefaultNotificationListener extends AbstractListener implements
 
 	public void setCleanupInterval(Long cleanupInterval) {
 		this.cleanupInterval = cleanupInterval;
+	}
+
+	public int getConcurrentProducts() {
+		return concurrentProducts;
+	}
+
+	public void setConcurrentProducts(int concurrentProducts) {
+		this.concurrentProducts = concurrentProducts;
 	}
 
 	public boolean isProcessDuplicates() {

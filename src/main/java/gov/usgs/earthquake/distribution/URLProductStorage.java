@@ -7,6 +7,8 @@ import gov.usgs.earthquake.product.ProductId;
 
 import gov.usgs.earthquake.product.io.BinaryProductHandler;
 import gov.usgs.earthquake.product.io.BinaryProductSource;
+import gov.usgs.earthquake.product.io.JsonProductHandler;
+import gov.usgs.earthquake.product.io.JsonProductSource;
 import gov.usgs.earthquake.product.io.ProductSource;
 import gov.usgs.earthquake.product.io.ProductHandler;
 import gov.usgs.earthquake.product.io.XmlProductSource;
@@ -26,6 +28,34 @@ import java.util.logging.Logger;
  */
 public class URLProductStorage extends FileProductStorage {
 
+	public enum Format {
+		BINARY("bin"),
+		JSON("json"),
+		XML("xml");
+
+		private String value;
+
+		private Format(final String value) {
+			this.value = value;
+		}
+
+		public String toString() {
+			return this.value;
+		}
+
+		public static Format fromString(final String value) {
+			if (BINARY.value.equals(value)) {
+				return BINARY;
+			} else if (JSON.value.equals(value)) {
+				return JSON;
+			} else if (XML.value.equals(value)) {
+				return XML;
+			} else {
+				throw new IllegalArgumentException("Invalid format");
+			}
+		}
+	};
+
 	private static final Logger LOGGER = Logger
 			.getLogger(URLProductStorage.class.getName());
 
@@ -35,13 +65,18 @@ public class URLProductStorage extends FileProductStorage {
 	/** The URL which corresponds to baseDirectory. */
 	private URL baseURL;
 
-	/** Property name to configure binary or xml format. */
+	public static final String STORAGE_FORMAT_PROPERTY = "storageFormat";
+
+	public static final String STORAGE_PATH_PROPERTY = "storagePath";
+	public static final String DEFAULT_STORAGE_PATH = "{source}_{type}_{code}_{updateTime}.{format}";
+
+	/** (Deprecated, use STORAGE_PATH) Property name to configure binary or xml format. */
 	public static final String BINARY_FORMAT_PROPERTY = "binaryFormat";
 	/** Default value for whether to use binary format. */
 	public static final String BINARY_FORMAT_DEFAULT = "false";
 
-	/** Whether to store in binary format (true), or xml format (false). */
-	private boolean binaryFormat = false;
+	private Format storageFormat = Format.XML;
+	private String storagePath = DEFAULT_STORAGE_PATH;
 
 	/**
 	 * Constructor for the Configurable interface.
@@ -51,7 +86,7 @@ public class URLProductStorage extends FileProductStorage {
 
 	/**
 	 * Construct a new ProductStorage object
-	 * 
+	 *
 	 * @param baseDirectory
 	 *            the storage directory where products are stored.
 	 * @param baseURL
@@ -64,7 +99,7 @@ public class URLProductStorage extends FileProductStorage {
 
 	/**
 	 * Load the baseURL from configuration.
-	 * 
+	 *
 	 * @param config
 	 *            the configuration object.
 	 */
@@ -77,19 +112,30 @@ public class URLProductStorage extends FileProductStorage {
 					+ "] 'url' is a required configuration property");
 		}
 		baseURL = new URL(urlString);
-
 		LOGGER.config("[" + getName() + "] base url is '" + baseURL.toString()
 				+ "'");
 
-		binaryFormat = Boolean.valueOf(config.getProperty(
-				BINARY_FORMAT_PROPERTY, BINARY_FORMAT_DEFAULT));
-		LOGGER.config("[" + getName() + "] using "
-				+ (binaryFormat ? "binary" : "xml") + " format");
+		String format = config.getProperty(STORAGE_FORMAT_PROPERTY);
+		if (format != null) {
+			storageFormat = Format.fromString(format);
+		} else {
+			if (Boolean.valueOf(config.getProperty(
+					BINARY_FORMAT_PROPERTY,
+					BINARY_FORMAT_DEFAULT))) {
+				storageFormat = Format.BINARY;
+			} else {
+				storageFormat = Format.XML;
+			}
+		}
+		LOGGER.config("[" + getName() + "] using format " + storageFormat);
+
+		storagePath = config.getProperty(STORAGE_PATH_PROPERTY, DEFAULT_DIRECTORY);
+		LOGGER.config("[" + getName() + "] using path " + storagePath);
 	}
 
 	/**
 	 * Compute the URL to a product.
-	 * 
+	 *
 	 * @param id
 	 *            which product.
 	 * @return the URL to a product.
@@ -101,38 +147,31 @@ public class URLProductStorage extends FileProductStorage {
 
 	/**
 	 * A method for subclasses to override the storage path.
-	 * 
+	 *
 	 * The returned path is appended to the base directory when storing and
 	 * retrieving products.
-	 * 
+	 *
 	 * @param id
 	 *            the product id to convert.
 	 * @return the directory used to store id.
 	 */
 	@Override
 	public String getProductPath(final ProductId id) {
-		StringBuffer buf = new StringBuffer();
-		buf.append(id.getSource());
-		buf.append("_");
-		buf.append(id.getType());
-		buf.append("_");
-		buf.append(id.getCode());
-		buf.append("_");
-		buf.append(id.getUpdateTime().getTime());
-		if (binaryFormat) {
-			buf.append(".bin");
-		} else {
-			buf.append(".xml");
-		}
-		return buf.toString();
+		String path = storagePath;
+		path = path.replace("{source}", id.getSource());
+		path = path.replace("{type}", id.getType());
+		path = path.replace("{code}", id.getCode());
+		path = path.replace("{updateTime}", Long.toString(id.getUpdateTime().getTime()));
+		path = path.replace("{format}", storageFormat.toString());
+		return path;
 	}
 
 	/**
 	 * A method for subclasses to override the storage format.
-	 * 
+	 *
 	 * When overriding this method, the method getProductInputForFile should
 	 * also be overridden.
-	 * 
+	 *
 	 * @param file
 	 *            a file that should be converted into a ProductOutput.
 	 * @return the ProductOutput.
@@ -140,8 +179,10 @@ public class URLProductStorage extends FileProductStorage {
 	protected ProductHandler getProductHandlerFormat(final File file)
 			throws Exception {
 		OutputStream out = StreamUtils.getOutputStream(file);
-		if (binaryFormat) {
+		if (storageFormat == Format.BINARY) {
 			return new BinaryProductHandler(out);
+		} else if (storageFormat == Format.JSON) {
+			return new JsonProductHandler(out);
 		} else {
 			return new XmlProductHandler(out);
 		}
@@ -149,10 +190,10 @@ public class URLProductStorage extends FileProductStorage {
 
 	/**
 	 * A method for subclasses to override the storage format.
-	 * 
+	 *
 	 * When overriding this method, the method getProductOutputForFile should
 	 * also be overridden.
-	 * 
+	 *
 	 * @param file
 	 *            a file that should be converted into a ProductInput.
 	 * @return the ProductInput.
@@ -160,11 +201,29 @@ public class URLProductStorage extends FileProductStorage {
 	protected ProductSource getProductSourceFormat(final File file)
 			throws Exception {
 		InputStream in = StreamUtils.getInputStream(file);
-		if (binaryFormat) {
+		if (storageFormat == Format.BINARY) {
 			return new BinaryProductSource(in);
+		} else if (storageFormat == Format.JSON) {
+			return new JsonProductSource(in);
 		} else {
 			return new XmlProductSource(in);
 		}
+	}
+
+	public Format getStorageFormat() {
+		return this.storageFormat;
+	}
+
+	public void setStorageFormat(final Format format) {
+		this.storageFormat = format;
+	}
+
+	public String getStoragePath() {
+		return this.storagePath;
+	}
+
+	public void setStoragePath(final String path) {
+		this.storagePath = path;
 	}
 
 }

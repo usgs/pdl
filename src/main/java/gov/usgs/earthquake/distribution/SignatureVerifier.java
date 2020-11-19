@@ -146,7 +146,9 @@ public class SignatureVerifier extends DefaultConfigurable {
 				LOGGER.finer("[" + getName() + "] number of candidate keys="
 						+ candidateKeys.length);
 				if (candidateKeys.length > 0) {
-					PublicKey publicKey = product.verifySignatureKey(candidateKeys);
+					PublicKey publicKey = product.verifySignatureKey(
+							candidateKeys,
+							product.getSignatureVersion());
 					if (publicKey != null) {
 						verified = true;
 						// find key that verified

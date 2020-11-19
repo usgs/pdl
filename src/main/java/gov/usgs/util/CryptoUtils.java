@@ -26,7 +26,9 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.DSAPrivateKeySpec;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.PSSParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -35,6 +37,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -76,59 +79,39 @@ public class CryptoUtils {
 	/** Number of bits for RSA 4096 bit key. */
 	public static final int RSA_4096 = 4096;
 
-	/**
-	 * Generate a signature.
-	 *
-	 * @param algorithm
-	 *            signature algorithm to use, as accepted by
-	 *            Signature.getInstance.
-	 * @param privateKey
-	 *            private key to use, should be acceptable by signature
-	 *            instance.
-	 * @param data
-	 *            data/hash to sign.
-	 * @return signature as hex encoded string.
-	 * @throws NoSuchAlgorithmException
-	 * @throws InvalidKeyException
-	 * @throws SignatureException
-	 */
-	public static String sign(final String algorithm,
-			final PrivateKey privateKey, final byte[] data)
-			throws NoSuchAlgorithmException, InvalidKeyException,
-			SignatureException {
-		Signature signature = Signature.getInstance(algorithm);
-		signature.initSign(privateKey);
-		signature.update(data);
-		return Base64.getEncoder().encodeToString(signature.sign());
+	/** Signature versions. */
+	public enum Version {
+		SIGNATURE_V1("v1"),
+		SIGNATURE_V2("v2");
+
+		private String value;
+
+		Version(final String value) {
+			this.value = value;
+		}
+
+		public String toString() {
+			return this.value;
+		}
+
+		/**
+		 * @throws IllegalArgumentException if unknown version.
+		 */
+		public static Version fromString(final String value) {
+			if (SIGNATURE_V1.value.equals(value)) {
+				return SIGNATURE_V1;
+			} else if (SIGNATURE_V2.value.equals(value)) {
+				return SIGNATURE_V2;
+			} else {
+				throw new IllegalArgumentException("Invalid signature version");
+			}
+		}
 	}
 
-	/**
-	 * Verify a signature.
-	 *
-	 * @param algorithm
-	 *            signature algorithm used to generate signature.
-	 * @param publicKey
-	 *            public key corresponding to private key that generated
-	 *            signature.
-	 * @param data
-	 *            the data/hash that was signed.
-	 * @param allegedSignature
-	 *            the signature being verified.
-	 * @return true if computed signature matches allegedSignature.
-	 * @throws NoSuchAlgorithmException
-	 * @throws InvalidKeyException
-	 * @throws SignatureException
-	 * @throws IOException
-	 */
-	public static boolean verify(final String algorithm,
-			final PublicKey publicKey, final byte[] data,
-			final String allegedSignature) throws NoSuchAlgorithmException,
-			InvalidKeyException, SignatureException, IOException {
-		Signature signature = Signature.getInstance(algorithm);
-		signature.initVerify(publicKey);
-		signature.update(data);
-		return signature.verify(Base64.getDecoder().decode(allegedSignature));
-	}
+	/** v2 Algorithm for DSA signature */
+	public static final String SIGNATURE_V2_DSA_ALGORITHM = "SHA256withDSA";
+	/** v2 Algorithm for RSA signature */
+	public static final String SIGNATURE_V2_RSA_ALGORITHM = "RSASSA-PSS";
 
 	/**
 	 * Process a data stream using a cipher.
@@ -195,19 +178,102 @@ public class CryptoUtils {
 	}
 
 	/**
+	 * Create and configure a signature object based on key type.
+	 *
+	 * @param key
+	 *     Key used to sign/verify.
+	 * @param version
+	 *     SIGNATURE_V1 or SIGNATURE_V2
+	 * @return
+	 *     Configured Signature object
+	 * @throws InvalidKeyException
+	 *     if key is not RSA or DSA.
+	 * @throws NoSuchAlgorithmException
+	 * @throws SignatureException
+	 */
+	public static Signature getSignature(final Key key, final Version version)
+			throws InvalidKeyException, NoSuchAlgorithmException,
+					SignatureException {
+		Signature signature = null;
+		if (version == Version.SIGNATURE_V1) {
+			if (key instanceof DSAPrivateKey || key instanceof DSAPublicKey) {
+				signature = Signature.getInstance(DSA_SIGNATURE_ALGORITHM);
+			} else if (key instanceof RSAPrivateKey || key instanceof RSAPublicKey) {
+				signature = Signature.getInstance(RSA_SIGNATURE_ALGORITHM);
+			}
+		} else if (version == Version.SIGNATURE_V2) {
+			if (key instanceof DSAPrivateKey || key instanceof DSAPublicKey) {
+				signature = Signature.getInstance(SIGNATURE_V2_DSA_ALGORITHM);
+			} else if (key instanceof RSAPrivateKey || key instanceof RSAPublicKey) {
+				signature = Signature.getInstance(SIGNATURE_V2_RSA_ALGORITHM);
+			}
+		} else {
+			throw new IllegalArgumentException("Unexpected signature version " + version);
+		}
+		if (signature == null) {
+			throw new InvalidKeyException("Expected DSA or RSA key");
+		}
+		return signature;
+	}
+
+	public static void configureSignature(final Key key, final Version version,
+			final Signature signature) throws InvalidAlgorithmParameterException {
+		if (version == Version.SIGNATURE_V2
+				&& (key instanceof RSAPrivateKey || key instanceof RSAPublicKey)) {
+			int keySize;
+			if (key instanceof RSAPrivateKey) {
+				keySize = ((RSAPrivateKey)key).getModulus().bitLength();
+			} else {
+				keySize = ((RSAPublicKey)key).getModulus().bitLength();
+			}
+			// match python cryptography calculation:
+			// https://github.com/pyca/cryptography/blob/b16561670320c65a18cce41d0db0c42ab68350a9/src/cryptography/hazmat/primitives/asymmetric/padding.py#L73
+			// 32 = (sha)256 / 8
+			int maxSaltLength = ((keySize + 6) / 8) - 32 - 2;
+			signature.setParameter(
+					new PSSParameterSpec("SHA-256", "MGF1",
+							MGF1ParameterSpec.SHA256, maxSaltLength, 1));
+		}
+	}
+
+	/**
 	 * A convenience method that chooses a signature algorithm based on the key
 	 * type. Works with DSA and RSA keys.
+	 * @throws InvalidAlgorithmParameterException
 	 */
 	public static String sign(final PrivateKey privateKey, final byte[] data)
-			throws InvalidKeyException, NoSuchAlgorithmException,
-			SignatureException {
-		if (privateKey instanceof DSAPrivateKey) {
-			return sign(DSA_SIGNATURE_ALGORITHM, privateKey, data);
-		} else if (privateKey instanceof RSAPrivateKey) {
-			return sign(RSA_SIGNATURE_ALGORITHM, privateKey, data);
-		} else {
-			throw new InvalidKeyException("Expected a DSA or RSA key.");
-		}
+			throws InvalidAlgorithmParameterException, InvalidKeyException,
+			NoSuchAlgorithmException, SignatureException {
+		// use v1 by default
+		return sign(privateKey, data, Version.SIGNATURE_V1);
+	}
+
+	/**
+	 * Generate a signature.
+	 *
+	 * @param algorithm
+	 *            signature algorithm to use, as accepted by
+	 *            Signature.getInstance.
+	 * @param privateKey
+	 *            private key to use, should be acceptable by signature
+	 *            instance.
+	 * @param data
+	 *            data/hash to sign.
+	 * @param version
+	 *            the signature version.
+	 * @return signature as hex encoded string.
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
+	 * @throws SignatureException
+	 */
+	public static String sign(final PrivateKey privateKey, final byte[] data,
+			final Version version) throws InvalidAlgorithmParameterException,
+			InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+		final Signature signature = getSignature(privateKey, version);
+		signature.initSign(privateKey);
+		configureSignature(privateKey, version, signature);
+		signature.update(data);
+		return Base64.getEncoder().encodeToString(signature.sign());
 	}
 
 	/**
@@ -215,17 +281,39 @@ public class CryptoUtils {
 	 * type. Works with DSA and RSA keys.
 	 */
 	public static boolean verify(final PublicKey publicKey, final byte[] data,
-			final String allegedSignature) throws InvalidKeyException,
-			NoSuchAlgorithmException, SignatureException, IOException {
-		if (publicKey instanceof DSAPublicKey) {
-			return verify(DSA_SIGNATURE_ALGORITHM, publicKey, data,
-					allegedSignature);
-		} else if (publicKey instanceof RSAPublicKey) {
-			return verify(RSA_SIGNATURE_ALGORITHM, publicKey, data,
-					allegedSignature);
-		} else {
-			throw new InvalidKeyException("Expected a DSA or RSA key.");
-		}
+			final String allegedSignature)
+			throws InvalidAlgorithmParameterException, InvalidKeyException,
+			NoSuchAlgorithmException, SignatureException {
+		return verify(publicKey, data, allegedSignature, Version.SIGNATURE_V1);
+	}
+
+	/**
+	 * Verify a signature.
+	 *
+	 * @param publicKey
+	 *            public key corresponding to private key that generated
+	 *            signature.
+	 * @param data
+	 *            the data/hash that was signed.
+	 * @param allegedSignature
+	 *            the signature being verified.
+	 * @param version
+	 *            signature version.
+	 * @return true if computed signature matches allegedSignature.
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
+	 * @throws SignatureException
+	 * @throws IOException
+	 */
+	public static boolean verify(final PublicKey publicKey, final byte[] data,
+			final String allegedSignature, final Version version)
+			throws InvalidAlgorithmParameterException, InvalidKeyException,
+			NoSuchAlgorithmException, SignatureException {
+		final Signature signature = getSignature(publicKey, version);
+		signature.initVerify(publicKey);
+		configureSignature(publicKey, version, signature);
+		signature.update(data);
+		return signature.verify(Base64.getDecoder().decode(allegedSignature));
 	}
 
 	/**

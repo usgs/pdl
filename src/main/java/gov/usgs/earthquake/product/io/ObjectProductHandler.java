@@ -7,6 +7,7 @@ import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.ByteContent;
 import gov.usgs.earthquake.product.FileContent;
 import gov.usgs.earthquake.product.URLContent;
+import gov.usgs.util.CryptoUtils.Version;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
 
@@ -18,11 +19,11 @@ import java.util.LinkedList;
 
 /**
  * Convert ProductSource events into a java Product object.
- * 
+ *
  * ObjectProductHandlers are not designed to handle multiple products
  * simultaneously and separate objects must be created for each unique product
  * id.
- * 
+ *
  * The static method ObjectProductHandler.getProduct(ProductInput) should
  * usually be used instead of constructing objects manually.
  */
@@ -144,6 +145,21 @@ public class ObjectProductHandler implements ProductHandler {
 		product.getProperties().put(name, value);
 	}
 
+	public void onSignatureVersion(final ProductId id, final Version version)
+			throws Exception {
+		if (product == null) {
+			throw new IllegalArgumentException(
+					"Called onSignature before onBeginProduct");
+		} else if (complete) {
+			throw new IllegalArgumentException(
+					"Called onSignature after onEndProduct");
+		} else if (!product.getId().equals(id)) {
+			throw new IllegalArgumentException("ProductIds do not match");
+		}
+
+		product.setSignatureVersion(version);
+	}
+
 	public void onSignature(final ProductId id, final String signature)
 			throws Exception {
 		if (product == null) {
@@ -161,7 +177,7 @@ public class ObjectProductHandler implements ProductHandler {
 
 	/**
 	 * Convenience method to get a Product object from a ProductInput.
-	 * 
+	 *
 	 * @param in
 	 *            the ProductInput to read.
 	 * @return the Product read, or null if errors occur.

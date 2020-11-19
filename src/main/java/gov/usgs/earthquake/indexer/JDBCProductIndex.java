@@ -361,6 +361,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 					StreamUtils.transferStream(defaultIndex, indexFile);
 				}
 			}
+			indexFile = null;
 
 			// Build the JDBC url
 			url = JDBC_CONNECTION_PREFIX + index_file;
@@ -525,32 +526,6 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 		// disconnect
 		super.shutdown();
-	}
-
-	/**
-	 * Open a transaction on the database connection
-	 */
-	@Override
-	public synchronized void beginTransaction() throws Exception {
-		Connection conn = this.verifyConnection();
-		conn.setAutoCommit(false);
-	}
-
-	/**
-	 * Finalize the transaction by committing all the changes and closing the
-	 * transaction.
-	 */
-	@Override
-	public synchronized void commitTransaction() throws Exception {
-		getConnection().setAutoCommit(true);
-	}
-
-	/**
-	 * Undo all of the changes made during the current transaction
-	 */
-	@Override
-	public synchronized void rollbackTransaction() throws Exception {
-		getConnection().rollback();
 	}
 
 	/**

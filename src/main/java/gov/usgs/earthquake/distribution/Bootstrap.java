@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -36,18 +37,10 @@ import java.util.logging.XMLFormatter;
  */
 public class Bootstrap {
 
-	/**
-	 * logging is noisy without this.
-	 */
-	static {
-		Logger.getLogger("com.sun.xml.bind").setLevel(Level.INFO);
-		Logger.getLogger("com.sun.activation").setLevel(Level.INFO);
-		Logger.getLogger("javax.xml.bind").setLevel(Level.INFO);
-		Logger.getLogger("sun.awt.X11.timeoutTask.XToolkit").setLevel(Level.INFO);
-		Logger.getLogger("com.sun.xml.bind.v2.runtime.reflect.opt.OptimizedAccessorFactory").setLevel(Level.INFO);
-	}
-
 	// public static
+	static {
+		gov.usgs.util.protocolhandlers.data.Handler.register();
+	}
 
 	/** Default JAR config path. */
 	public static final String JAR_CONFIGFILE = "etc/config/config.ini";
@@ -109,6 +102,10 @@ public class Bootstrap {
 	private static final Logger LOGGER = Logger.getLogger(Bootstrap.class
 			.getName());
 
+
+	/** List of logger objects that have level overrides configured. */
+	private final ArrayList<Logger> loggers = new ArrayList<Logger>();
+
 	// constructors
 
 	public Bootstrap() {
@@ -157,11 +154,28 @@ public class Bootstrap {
 	}
 
 	public void setupLogging(final Config config) {
-		LogManager.getLogManager().reset();
+		final LogManager logManager = LogManager.getLogManager();
+		logManager.reset();
+		loggers.clear();
 
-		Level level = Level.parse(config.getProperty(LOGLEVEL_PROPERTY_NAME,
+		// logging is noisy without this
+		for (final String name : new String[]{
+			"com.sun.activation",
+			"com.sun.xml.bind",
+			"javax.xml.bind",
+			"org.glassfish.grizzly",
+			"org.glassfish.tyrus",
+			"sun.awt.X11.timeoutTask.XToolkit"
+		}) {
+			final Logger logger = Logger.getLogger(name);
+			logger.setLevel(Level.INFO);
+			// save reference to logger since LogManager uses weakref
+			loggers.add(logger);
+		};
+
+		final Level level = Level.parse(config.getProperty(LOGLEVEL_PROPERTY_NAME,
 				DEFAULT_LOGLEVEL));
-		String logDirectory = config.getProperty(LOGDIRECTORY_PROPERTY_NAME,
+		final String logDirectory = config.getProperty(LOGDIRECTORY_PROPERTY_NAME,
 				DEFAULT_LOGDIRECTORY);
 		LOGGER.config("Logging Level '" + level + "'");
 		LOGGER.config("Log directory '" + logDirectory + "'");
