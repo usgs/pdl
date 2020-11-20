@@ -13,46 +13,49 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.FileNameMap;
 import java.net.URLConnection;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 /**
  * File input, output, content type, and delete utilities.
- * 
+ *
  * @author jmfee
- * 
+ *
  */
-<span class="nc" id="L23">public class FileUtils {</span>
+<span class="nc" id="L26">public class FileUtils {</span>
 
 	/** For looking up file mime types. */
-<span class="fc" id="L26">	private static final FileNameMap MIMETYPES = URLConnection.getFileNameMap();</span>
+<span class="fc" id="L29">	private static final FileNameMap MIMETYPES = URLConnection.getFileNameMap();</span>
 
 	/**
 	 * Get a file mime type based on its filename.
-	 * 
+	 *
 	 * Calls getContentType(file.getName()).
-	 * 
+	 *
 	 * @param file
 	 * @return String mime type.
 	 */
 	public static String getContentType(final File file) {
-<span class="nc" id="L37">		return getContentType(file.getName());</span>
+<span class="nc" id="L40">		return getContentType(file.getName());</span>
 	}
 
 	/**
 	 * Get a file mime type based on its file path extension.
-	 * 
+	 *
 	 * Uses URLConnection.getFileNameMap().
-	 * 
+	 *
 	 * @param filename
 	 *            file path.
 	 * @return String mime type.
 	 */
 	public static String getContentType(final String filename) {
-<span class="nc" id="L50">		return MIMETYPES.getContentTypeFor(filename);</span>
+<span class="nc" id="L53">		return MIMETYPES.getContentTypeFor(filename);</span>
 	}
 
 	/**
 	 * Read file contents into a byte array.
-	 * 
+	 *
 	 * @param file
 	 *            file to read.
 	 * @return byte array of file content.
@@ -60,12 +63,12 @@ import java.net.URLConnection;
 	 *             if an error occurs while reading.
 	 */
 	public static byte[] readFile(final File file) throws IOException {
-<span class="fc" id="L63">		return StreamUtils.readStream(file);</span>
+<span class="fc" id="L66">		return StreamUtils.readStream(file);</span>
 	}
 
 	/**
 	 * Write a file's content.
-	 * 
+	 *
 	 * @param file
 	 *            file to write.
 	 * @param content
@@ -73,12 +76,12 @@ import java.net.URLConnection;
 	 */
 	public static void writeFile(final File file, final byte[] content)
 			throws IOException {
-<span class="fc" id="L76">		StreamUtils.transferStream(content, file);</span>
-<span class="fc" id="L77">	}</span>
+<span class="fc" id="L79">		StreamUtils.transferStream(content, file);</span>
+<span class="fc" id="L80">	}</span>
 
 	/**
 	 * Write a file's content atomically.
-	 * 
+	 *
 	 * @param tempfile
 	 *            where file is written.
 	 * @param file
@@ -90,77 +93,81 @@ import java.net.URLConnection;
 	 */
 	public static void writeFileThenMove(final File tempfile, final File file,
 			final byte[] content) throws IOException {
-<span class="fc" id="L93">		writeFile(tempfile, content);</span>
+<span class="fc" id="L96">		writeFile(tempfile, content);</span>
 
-<span class="fc" id="L95">		File parent = file.getAbsoluteFile().getParentFile();</span>
-<span class="fc bfc" id="L96" title="All 2 branches covered.">		if (!parent.exists()) {</span>
-<span class="fc" id="L97">			parent.mkdirs();</span>
+<span class="fc" id="L98">		File parent = file.getAbsoluteFile().getParentFile();</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">		if (!parent.exists()) {</span>
+<span class="fc" id="L100">			parent.mkdirs();</span>
 		}
-<span class="fc" id="L99">		tempfile.renameTo(file);</span>
-<span class="fc" id="L100">	}</span>
+		try {
+<span class="fc" id="L103">			Files.move(tempfile.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE);</span>
+<span class="nc" id="L104">		} catch (AtomicMoveNotSupportedException amnse) {</span>
+<span class="nc" id="L105">			Files.move(tempfile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);</span>
+<span class="fc" id="L106">		}</span>
+<span class="fc" id="L107">	}</span>
 
 	/**
 	 * Delete all files recursively within tree.
-	 * 
+	 *
 	 * @param path
 	 *            root of tree to delete.
 	 */
 	public static void deleteTree(final File path) {
-<span class="fc bfc" id="L109" title="All 2 branches covered.">		if (path.exists()) {</span>
-<span class="fc bfc" id="L110" title="All 2 branches covered.">			if (path.isDirectory()) {</span>
-<span class="fc" id="L111">				File[] files = path.listFiles();</span>
-<span class="fc bfc" id="L112" title="All 2 branches covered.">				for (int i = 0; i &lt; files.length; i++) {</span>
-<span class="fc bfc" id="L113" title="All 2 branches covered.">					if (files[i].isDirectory()) {</span>
-<span class="fc" id="L114">						deleteTree(files[i]);</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">		if (path.exists()) {</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">			if (path.isDirectory()) {</span>
+<span class="fc" id="L118">				File[] files = path.listFiles();</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">				for (int i = 0; i &lt; files.length; i++) {</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">					if (files[i].isDirectory()) {</span>
+<span class="fc" id="L121">						deleteTree(files[i]);</span>
 					} else {
-<span class="fc" id="L116">						files[i].delete();</span>
+<span class="fc" id="L123">						files[i].delete();</span>
 					}
 				}
-<span class="fc" id="L119">				files = null;</span>
-<span class="fc" id="L120">			} else {</span>
-<span class="fc" id="L121">				path.delete();</span>
+<span class="fc" id="L126">				files = null;</span>
+<span class="fc" id="L127">			} else {</span>
+<span class="fc" id="L128">				path.delete();</span>
 			}
 		}
 
-<span class="fc" id="L125">		deleteEmptyParents(path);</span>
-<span class="fc" id="L126">	}</span>
+<span class="fc" id="L132">		deleteEmptyParents(path);</span>
+<span class="fc" id="L133">	}</span>
 
 	/**
 	 * Delete path and any empty parent directories.
-	 * 
+	 *
 	 * @param path
 	 *            directory to start in.
 	 */
 	public static void deleteEmptyParents(final File path) {
-<span class="fc" id="L135">		deleteEmptyParents(path, null);</span>
-<span class="fc" id="L136">	}</span>
+<span class="fc" id="L142">		deleteEmptyParents(path, null);</span>
+<span class="fc" id="L143">	}</span>
 
 	/**
 	 * Delete path and any empty parent directories up to the stopAt point.
-	 * 
+	 *
 	 * @param path
 	 *            direcotry to start in
 	 * @param stopAt
 	 *            directory to stop at
 	 */
 	public static void deleteEmptyParents(final File path, final File stopAt) {
-<span class="fc" id="L147">		File parent = path;</span>
+<span class="fc" id="L154">		File parent = path;</span>
 		// Loop while parent is not null and we are not yet at the stopAt point
-<span class="fc bfc" id="L149" title="All 4 branches covered.">		while (parent != null &amp;&amp; !parent.equals(stopAt)) {</span>
+<span class="fc bfc" id="L156" title="All 4 branches covered.">		while (parent != null &amp;&amp; !parent.equals(stopAt)) {</span>
 			try {
-<span class="fc" id="L151">				parent.delete();</span>
-<span class="fc" id="L152">				parent = parent.getParentFile();</span>
-<span class="nc" id="L153">			} catch (Exception e) {</span>
-<span class="nc" id="L154">				e.printStackTrace();</span>
-<span class="nc" id="L155">				break;</span>
-<span class="fc" id="L156">			}</span>
+<span class="fc" id="L158">				parent.delete();</span>
+<span class="fc" id="L159">				parent = parent.getParentFile();</span>
+<span class="nc" id="L160">			} catch (Exception e) {</span>
+<span class="nc" id="L161">				e.printStackTrace();</span>
+<span class="nc" id="L162">				break;</span>
+<span class="fc" id="L163">			}</span>
 		}
-<span class="fc" id="L158">	}</span>
+<span class="fc" id="L165">	}</span>
 
 	/**
 	 * Extracts a resource file from within the executing JAR and copies it to
 	 * the file system.
-	 * 
+	 *
 	 * @param rsFile
 	 *            Absolute file path (relative to JAR root) of the file to
 	 *            extract.
@@ -170,37 +177,37 @@ import java.net.URLConnection;
 	 *            this value are relative to the CWD.
 	 */
 	public static void extractResourceFile(String rsFile, String fsFile) {
-<span class="nc" id="L173">		InputStream is = FileUtils.class.getResourceAsStream(rsFile);</span>
+<span class="nc" id="L180">		InputStream is = FileUtils.class.getResourceAsStream(rsFile);</span>
 		try {
-<span class="nc" id="L175">			FileOutputStream os = new FileOutputStream(fsFile);</span>
+<span class="nc" id="L182">			FileOutputStream os = new FileOutputStream(fsFile);</span>
 			try {
-<span class="nc" id="L177">				byte[] buf = new byte[1024];</span>
+<span class="nc" id="L184">				byte[] buf = new byte[1024];</span>
 				while (true) {
-<span class="nc" id="L179">					int len = is.read(buf);</span>
-<span class="nc bnc" id="L180" title="All 2 branches missed.">					if (len &lt; 0) {</span>
-<span class="nc" id="L181">						break;</span>
+<span class="nc" id="L186">					int len = is.read(buf);</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">					if (len &lt; 0) {</span>
+<span class="nc" id="L188">						break;</span>
 					}
-<span class="nc" id="L183">					os.write(buf, 0, len);</span>
-<span class="nc" id="L184">				} // END: while</span>
+<span class="nc" id="L190">					os.write(buf, 0, len);</span>
+<span class="nc" id="L191">				} // END: while</span>
 
 				// Do we have a logger yet?
 				// System.err.println(&quot;Copied &quot; + rsFile + &quot; from jar file to &quot; +
 				// fsFile+&quot; in the file system.  (&quot;+totalCopied+&quot; bytes).&quot;);
 			} finally {
-<span class="nc" id="L190">				StreamUtils.closeStream(os);</span>
+<span class="nc" id="L197">				StreamUtils.closeStream(os);</span>
 			}
-<span class="nc" id="L192">		} catch (FileNotFoundException fnf) {</span>
+<span class="nc" id="L199">		} catch (FileNotFoundException fnf) {</span>
 			// Logger?
-<span class="nc" id="L194">			System.err.println(fnf.getMessage() + &quot; -- 1&quot;);</span>
-<span class="nc" id="L195">		} catch (IOException iox) {</span>
+<span class="nc" id="L201">			System.err.println(fnf.getMessage() + &quot; -- 1&quot;);</span>
+<span class="nc" id="L202">		} catch (IOException iox) {</span>
 			// Logger?
-<span class="nc" id="L197">			System.err.println(iox.getMessage() + &quot; -- 2&quot;);</span>
-<span class="nc" id="L198">		} catch (NullPointerException npx) {</span>
+<span class="nc" id="L204">			System.err.println(iox.getMessage() + &quot; -- 2&quot;);</span>
+<span class="nc" id="L205">		} catch (NullPointerException npx) {</span>
 			// A dummy catch
 		} finally {
-<span class="nc" id="L201">			StreamUtils.closeStream(is);</span>
+<span class="nc" id="L208">			StreamUtils.closeStream(is);</span>
 		}
-<span class="nc" id="L203">	}</span>
+<span class="nc" id="L210">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

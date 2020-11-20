@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonProduct.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.product.io</a> &gt; <span class="el_source">JsonProduct.java</span></div><h1>JsonProduct.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.product.io;
+
+import gov.usgs.earthquake.product.AbstractContent;
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.product.URLContent;
+import gov.usgs.util.CryptoUtils.Version;
+import gov.usgs.util.protocolhandlers.data.Handler;
+import gov.usgs.util.StreamUtils;
+import gov.usgs.util.XmlUtils;
+
+import java.math.BigDecimal;
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
+
+<span class="fc" id="L29">public class JsonProduct {</span>
+
+  static {
+    // make sure data protocol handler registered
+<span class="fc" id="L33">    Handler.register();</span>
+<span class="fc" id="L34">  }</span>
+
+  /**
+   * Convert product object to json.
+   *
+   * @param product
+   * @return
+   * @throws Exception
+   */
+  public JsonObject getJsonObject(final Product product) throws Exception {
+<span class="nc" id="L44">    JsonObjectBuilder json = Json.createObjectBuilder();</span>
+
+<span class="nc" id="L46">    json.add(&quot;contents&quot;, getContentsJson(product.getContents()));</span>
+<span class="nc" id="L47">    JsonObjectBuilder geometry = getGeometryJson(product);</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">    if (geometry == null) {</span>
+<span class="nc" id="L49">      json.addNull(&quot;geometry&quot;);</span>
+    } else {
+<span class="nc" id="L51">      json.add(&quot;geometry&quot;, geometry);</span>
+    }
+<span class="nc" id="L53">    final ProductId id = product.getId();</span>
+<span class="nc" id="L54">    json.add(&quot;id&quot;, getIdJson(id));</span>
+<span class="nc" id="L55">    json.add(&quot;links&quot;, getLinksJson(product.getLinks()));</span>
+<span class="nc" id="L56">    json.add(&quot;properties&quot;, getPropertiesJson(product.getProperties()));</span>
+<span class="nc" id="L57">    json.add(&quot;signature&quot;, product.getSignature());</span>
+<span class="nc" id="L58">    json.add(&quot;signatureVersion&quot;, product.getSignatureVersion().toString());</span>
+<span class="nc" id="L59">    json.add(&quot;status&quot;, product.getStatus());</span>
+<span class="nc" id="L60">    json.add(&quot;type&quot;, &quot;Feature&quot;);</span>
+<span class="nc" id="L61">    return json.build();</span>
+  }
+
+  /**
+   * Convert json object to product.
+   */
+  public Product getProduct(final JsonObject json) throws Exception {
+<span class="fc" id="L68">    Product product = new Product(getId(json.getJsonObject(&quot;id&quot;)));</span>
+<span class="fc" id="L69">    product.setContents(getContents(json.getJsonArray(&quot;contents&quot;)));</span>
+<span class="fc" id="L70">    product.setLinks(getLinks(json.getJsonArray(&quot;links&quot;)));</span>
+<span class="fc" id="L71">    product.setProperties(getProperties(json.getJsonObject(&quot;properties&quot;)));</span>
+<span class="fc" id="L72">    product.setStatus(json.getString(&quot;status&quot;));</span>
+<span class="fc" id="L73">    product.setSignature(json.getString(&quot;signature&quot;));</span>
+<span class="fc" id="L74">    product.setSignatureVersion(Version.fromString(json.getString(&quot;signatureVersion&quot;)));</span>
+<span class="fc" id="L75">    product.setTrackerURL(new URL(&quot;data:,&quot;));</span>
+<span class="fc" id="L76">    return product;</span>
+  }
+
+  /**
+   * Convert contents map to json.
+   *
+   * @param contents
+   * @return
+   * @throws Exception
+   */
+  public JsonArrayBuilder getContentsJson(final Map&lt;String, Content&gt; contents) throws Exception {
+<span class="nc" id="L87">    final JsonArrayBuilder builder = Json.createArrayBuilder();</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">    for (final String path : contents.keySet()) {</span>
+<span class="nc" id="L89">      final Content content = contents.get(path);</span>
+      final JsonObjectBuilder jsonContent =
+<span class="nc" id="L91">          Json.createObjectBuilder()</span>
+<span class="nc" id="L92">              .add(&quot;length&quot;, content.getLength())</span>
+<span class="nc" id="L93">              .add(&quot;modified&quot;, XmlUtils.formatDate(content.getLastModified()))</span>
+<span class="nc" id="L94">              .add(&quot;path&quot;, path)</span>
+<span class="nc" id="L95">              .add(&quot;sha256&quot;, content.getSha256())</span>
+<span class="nc" id="L96">              .add(&quot;type&quot;, content.getContentType());</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">      if (content instanceof URLContent) {</span>
+<span class="nc" id="L98">        jsonContent.add(&quot;url&quot;, ((URLContent) content).getURL().toString());</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">      } else if (&quot;&quot;.equals(path)) {</span>
+<span class="nc" id="L100">        jsonContent.add(</span>
+            &quot;url&quot;,
+            &quot;data:&quot;
+<span class="nc" id="L103">                + content.getContentType()</span>
+                + &quot;;base64,&quot;
+<span class="nc" id="L105">                + Base64.getEncoder()</span>
+<span class="nc" id="L106">                    .encodeToString(StreamUtils.readStream(content.getInputStream())));</span>
+      } else {
+        // no url, will throw parse error
+        // this is used to get upload urls, and returned object includes urls...
+<span class="nc" id="L110">        jsonContent.addNull(&quot;url&quot;);</span>
+      }
+<span class="nc" id="L112">      builder.add(jsonContent);</span>
+<span class="nc" id="L113">    }</span>
+<span class="nc" id="L114">    return builder;</span>
+  }
+
+  /**
+   * Convert contents json to map.
+   *
+   * @param json
+   * @return
+   * @throws Exception
+   */
+  public Map&lt;String, Content&gt; getContents(final JsonArray json) throws Exception {
+<span class="fc" id="L125">    Map&lt;String, Content&gt; contents = new HashMap&lt;String, Content&gt;();</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">    for (JsonValue value : json) {</span>
+<span class="fc" id="L127">      JsonObject object = value.asJsonObject();</span>
+<span class="fc" id="L128">      Long length = object.getJsonNumber(&quot;length&quot;).longValue();</span>
+<span class="fc" id="L129">      Date modified = XmlUtils.getDate(object.getString(&quot;modified&quot;));</span>
+<span class="fc" id="L130">      String path = object.getString(&quot;path&quot;);</span>
+<span class="fc" id="L131">      String sha256 = object.getString(&quot;sha256&quot;);</span>
+<span class="fc" id="L132">      String type = object.getString(&quot;type&quot;);</span>
+<span class="fc" id="L133">      String url = object.getString(&quot;url&quot;);</span>
+
+<span class="fc" id="L135">      AbstractContent content = new URLContent(new URL(url));</span>
+<span class="fc" id="L136">      content.setContentType(type);</span>
+<span class="fc" id="L137">      content.setLastModified(modified);</span>
+<span class="fc" id="L138">      content.setLength(length);</span>
+<span class="fc" id="L139">      content.setSha256(sha256);</span>
+<span class="fc" id="L140">      contents.put(path, content);</span>
+<span class="fc" id="L141">    }</span>
+<span class="fc" id="L142">    return contents;</span>
+  }
+
+  /**
+   * Create json geometry from product properties.
+   *
+   * @param product
+   * @return
+   * @throws Exception
+   */
+  public JsonObjectBuilder getGeometryJson(final Product product) throws Exception {
+<span class="nc" id="L153">    final BigDecimal latitude = product.getLatitude();</span>
+<span class="nc" id="L154">    final BigDecimal longitude = product.getLongitude();</span>
+<span class="nc" id="L155">    final BigDecimal depth = product.getDepth();</span>
+<span class="nc bnc" id="L156" title="All 4 branches missed.">    if (latitude != null || longitude != null) {</span>
+<span class="nc" id="L157">      return Json.createObjectBuilder()</span>
+<span class="nc" id="L158">          .add(&quot;type&quot;, &quot;Point&quot;)</span>
+<span class="nc" id="L159">          .add(&quot;coordinates&quot;, Json.createArrayBuilder().add(longitude).add(latitude).add(depth));</span>
+    }
+<span class="nc" id="L161">    return null;</span>
+  }
+
+  /**
+   * Convert json id to ProductId object.
+   *
+   * @param json
+   * @return
+   * @throws Exception
+   */
+  public ProductId getId(final JsonObject json) throws Exception {
+<span class="fc" id="L172">    final String code = json.getString(&quot;code&quot;);</span>
+<span class="fc" id="L173">    final String source = json.getString(&quot;source&quot;);</span>
+<span class="fc" id="L174">    final String type = json.getString(&quot;type&quot;);</span>
+<span class="fc" id="L175">    final Date updateTime = XmlUtils.getDate(json.getString(&quot;updateTime&quot;));</span>
+<span class="fc" id="L176">    return new ProductId(source, type, code, updateTime);</span>
+  }
+
+  /**
+   * Convert ProductId to json object.
+   * @param id
+   * @return
+   * @throws Exception
+   */
+  public JsonObjectBuilder getIdJson(final ProductId id) throws Exception {
+<span class="nc" id="L186">    return Json.createObjectBuilder()</span>
+<span class="nc" id="L187">        .add(&quot;code&quot;, id.getCode())</span>
+<span class="nc" id="L188">        .add(&quot;source&quot;, id.getSource())</span>
+<span class="nc" id="L189">        .add(&quot;type&quot;, id.getType())</span>
+<span class="nc" id="L190">        .add(&quot;updateTime&quot;, XmlUtils.formatDate(id.getUpdateTime()));</span>
+  }
+
+  /**
+   * Convert json links to map.
+   * @param json
+   * @return
+   * @throws Exception
+   */
+  public Map&lt;String, List&lt;URI&gt;&gt; getLinks(final JsonArray json) throws Exception {
+<span class="fc" id="L200">    final Map&lt;String, List&lt;URI&gt;&gt; links = new HashMap&lt;String, List&lt;URI&gt;&gt;();</span>
+<span class="pc bpc" id="L201" title="1 of 2 branches missed.">    for (final JsonValue value : json) {</span>
+<span class="nc" id="L202">      final JsonObject link = value.asJsonObject();</span>
+<span class="nc" id="L203">      final String relation = link.getString(&quot;relation&quot;);</span>
+<span class="nc" id="L204">      final URI uri = new URI(link.getString(&quot;uri&quot;));</span>
+<span class="nc" id="L205">      List&lt;URI&gt; relationLinks = links.get(relation);</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">      if (relationLinks == null) {</span>
+<span class="nc" id="L207">        relationLinks = new ArrayList&lt;URI&gt;();</span>
+<span class="nc" id="L208">        links.put(relation, relationLinks);</span>
+      }
+<span class="nc" id="L210">      relationLinks.add(uri);</span>
+<span class="nc" id="L211">    }</span>
+<span class="fc" id="L212">    return links;</span>
+  }
+
+  /**
+   * Convert links map to json.
+   *
+   * @param links
+   * @return
+   * @throws Exception
+   */
+  public JsonArrayBuilder getLinksJson(final Map&lt;String, List&lt;URI&gt;&gt; links) throws Exception {
+<span class="nc" id="L223">    final JsonArrayBuilder builder = Json.createArrayBuilder();</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">    for (final String relation : links.keySet()) {</span>
+<span class="nc" id="L225">      final List&lt;URI&gt; relationLinks = links.get(relation);</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">      for (final URI uri : relationLinks) {</span>
+<span class="nc" id="L227">        builder.add(</span>
+<span class="nc" id="L228">            Json.createObjectBuilder().add(&quot;relation&quot;, relation).add(&quot;uri&quot;, uri.toString()));</span>
+<span class="nc" id="L229">      }</span>
+<span class="nc" id="L230">    }</span>
+<span class="nc" id="L231">    return builder;</span>
+  }
+
+  /**
+   * Convert properties json to map.
+   * @param json
+   * @return
+   * @throws Exception
+   */
+  public Map&lt;String, String&gt; getProperties(final JsonObject json) throws Exception {
+<span class="fc" id="L241">    final Map&lt;String, String&gt; properties = new HashMap&lt;String, String&gt;();</span>
+<span class="fc bfc" id="L242" title="All 2 branches covered.">    for (final String name : json.keySet()) {</span>
+<span class="fc" id="L243">      properties.put(name, json.getString(name));</span>
+<span class="fc" id="L244">    }</span>
+<span class="fc" id="L245">    return properties;</span>
+  }
+
+  /**
+   * Convert properties map to json.
+   *
+   * @param properties
+   * @return
+   * @throws Exception
+   */
+  public JsonObjectBuilder getPropertiesJson(final Map&lt;String, String&gt; properties)
+      throws Exception {
+<span class="nc" id="L257">    final JsonObjectBuilder builder = Json.createObjectBuilder();</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">    for (final String name : properties.keySet()) {</span>
+<span class="nc" id="L259">      builder.add(name, properties.get(name));</span>
+<span class="nc" id="L260">    }</span>
+<span class="nc" id="L261">    return builder;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

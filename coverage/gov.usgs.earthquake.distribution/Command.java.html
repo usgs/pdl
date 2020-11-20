@@ -15,84 +15,84 @@ import java.util.TimerTask;
 
 public class Command {
 
-<span class="fc" id="L18">	private String[] commandArray = null;</span>
-<span class="fc" id="L19">	private String[] envp = null;</span>
-<span class="fc" id="L20">	private File dir = null;</span>
+<span class="nc" id="L18">	private String[] commandArray = null;</span>
+<span class="nc" id="L19">	private String[] envp = null;</span>
+<span class="nc" id="L20">	private File dir = null;</span>
 
-<span class="fc" id="L22">	private InputStream stdin = null;</span>
-<span class="fc" id="L23">	private ByteArrayOutputStream stdout = new ByteArrayOutputStream();</span>
-<span class="fc" id="L24">	private ByteArrayOutputStream stderr = new ByteArrayOutputStream();</span>
+<span class="nc" id="L22">	private InputStream stdin = null;</span>
+<span class="nc" id="L23">	private ByteArrayOutputStream stdout = new ByteArrayOutputStream();</span>
+<span class="nc" id="L24">	private ByteArrayOutputStream stderr = new ByteArrayOutputStream();</span>
 
-<span class="fc" id="L26">	private long timeout = 0;</span>
-<span class="fc" id="L27">	private int exitCode = -1;</span>
+<span class="nc" id="L26">	private long timeout = 0;</span>
+<span class="nc" id="L27">	private int exitCode = -1;</span>
 
-<span class="fc" id="L29">	public Command() {</span>
-<span class="fc" id="L30">	}</span>
+<span class="nc" id="L29">	public Command() {</span>
+<span class="nc" id="L30">	}</span>
 
 	public void execute() throws CommandTimeout, IOException,
 			InterruptedException {
-<span class="fc" id="L34">		StreamTransferThread outputTransfer = null;</span>
-<span class="fc" id="L35">		StreamTransferThread errorTransfer = null;</span>
+<span class="nc" id="L34">		StreamTransferThread outputTransfer = null;</span>
+<span class="nc" id="L35">		StreamTransferThread errorTransfer = null;</span>
 
 		try {
-<span class="fc" id="L38">			final Process process = Runtime.getRuntime().exec(commandArray,</span>
+<span class="nc" id="L38">			final Process process = Runtime.getRuntime().exec(commandArray,</span>
 					envp, dir);
 
-<span class="fc" id="L41">			Timer timer = new Timer();</span>
-<span class="pc bpc" id="L42" title="1 of 2 branches missed.">			if (timeout &gt; 0) {</span>
-<span class="fc" id="L43">				timer.schedule(new TimerTask() {</span>
+<span class="nc" id="L41">			Timer timer = new Timer();</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">			if (timeout &gt; 0) {</span>
+<span class="nc" id="L43">				timer.schedule(new TimerTask() {</span>
 					public void run() {
-<span class="fc" id="L45">						process.destroy();</span>
-<span class="fc" id="L46">					}</span>
+<span class="nc" id="L45">						process.destroy();</span>
+<span class="nc" id="L46">					}</span>
 				}, timeout);
 			}
 
-<span class="fc" id="L50">			OutputStream processStdin = process.getOutputStream();</span>
-<span class="pc bpc" id="L51" title="1 of 2 branches missed.">			if (stdin != null) {</span>
+<span class="nc" id="L50">			OutputStream processStdin = process.getOutputStream();</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">			if (stdin != null) {</span>
 <span class="nc" id="L52">				StreamUtils.transferStream(stdin, processStdin);</span>
 			}
-<span class="fc" id="L54">			StreamUtils.closeStream(processStdin);</span>
+<span class="nc" id="L54">			StreamUtils.closeStream(processStdin);</span>
 
-<span class="fc" id="L56">			outputTransfer = new StreamTransferThread(process.getInputStream(),</span>
+<span class="nc" id="L56">			outputTransfer = new StreamTransferThread(process.getInputStream(),</span>
 					stdout);
-<span class="fc" id="L58">			outputTransfer.start();</span>
-<span class="fc" id="L59">			errorTransfer = new StreamTransferThread(process.getErrorStream(),</span>
+<span class="nc" id="L58">			outputTransfer.start();</span>
+<span class="nc" id="L59">			errorTransfer = new StreamTransferThread(process.getErrorStream(),</span>
 					stderr);
-<span class="fc" id="L61">			errorTransfer.start();</span>
+<span class="nc" id="L61">			errorTransfer.start();</span>
 
 			// now wait for process to complete
-<span class="fc" id="L64">			exitCode = process.waitFor();</span>
-<span class="fc bfc" id="L65" title="All 2 branches covered.">			if (exitCode == 143) {</span>
-<span class="fc" id="L66">				throw new CommandTimeout();</span>
+<span class="nc" id="L64">			exitCode = process.waitFor();</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">			if (exitCode == 143) {</span>
+<span class="nc" id="L66">				throw new CommandTimeout();</span>
 			}
 
 			// cancel destruction of process, if it hasn't already run
-<span class="fc" id="L70">			timer.cancel();</span>
+<span class="nc" id="L70">			timer.cancel();</span>
 		} finally {
 			try {
-<span class="fc" id="L73">				outputTransfer.interrupt();</span>
-<span class="fc" id="L74">				outputTransfer.join();</span>
+<span class="nc" id="L73">				outputTransfer.interrupt();</span>
+<span class="nc" id="L74">				outputTransfer.join();</span>
 <span class="nc" id="L75">			} catch (Exception e) {</span>
-<span class="fc" id="L76">			}</span>
+<span class="nc" id="L76">			}</span>
 			try {
-<span class="fc" id="L78">				errorTransfer.interrupt();</span>
-<span class="fc" id="L79">				errorTransfer.join();</span>
+<span class="nc" id="L78">				errorTransfer.interrupt();</span>
+<span class="nc" id="L79">				errorTransfer.join();</span>
 <span class="nc" id="L80">			} catch (Exception e) {</span>
-<span class="fc" id="L81">			}</span>
+<span class="nc" id="L81">			}</span>
 		}
-<span class="fc" id="L83">	}</span>
+<span class="nc" id="L83">	}</span>
 
 	public String[] getCommand() {
 <span class="nc" id="L86">		return commandArray;</span>
 	}
 
 	public void setCommand(final String command) {
-<span class="fc" id="L90">		setCommand(splitCommand(command));</span>
-<span class="fc" id="L91">	}</span>
+<span class="nc" id="L90">		setCommand(splitCommand(command));</span>
+<span class="nc" id="L91">	}</span>
 
 	public void setCommand(final String[] commandArray) {
-<span class="fc" id="L94">		this.commandArray = commandArray;</span>
-<span class="fc" id="L95">	}</span>
+<span class="nc" id="L94">		this.commandArray = commandArray;</span>
+<span class="nc" id="L95">	}</span>
 
 	public String[] getEnvp() {
 <span class="nc" id="L98">		return envp;</span>
@@ -115,8 +115,8 @@ public class Command {
 	}
 
 	public void setTimeout(final long timeout) {
-<span class="fc" id="L118">		this.timeout = timeout;</span>
-<span class="fc" id="L119">	}</span>
+<span class="nc" id="L118">		this.timeout = timeout;</span>
+<span class="nc" id="L119">	}</span>
 
 	public int getExitCode() {
 <span class="nc" id="L122">		return exitCode;</span>
@@ -127,11 +127,11 @@ public class Command {
 <span class="nc" id="L127">	}</span>
 
 	public byte[] getStdout() {
-<span class="fc" id="L130">		return stdout.toByteArray();</span>
+<span class="nc" id="L130">		return stdout.toByteArray();</span>
 	}
 
 	public byte[] getStderr() {
-<span class="fc" id="L134">		return stderr.toByteArray();</span>
+<span class="nc" id="L134">		return stderr.toByteArray();</span>
 	}
 
 	/**
@@ -148,22 +148,22 @@ public class Command {
 	 *         Runtime.exec(String[]).
 	 */
 	protected static String[] splitCommand(final String command) {
-<span class="fc" id="L151">		List&lt;String&gt; arguments = new LinkedList&lt;String&gt;();</span>
-<span class="fc" id="L152">		String currentArgument = null;</span>
+<span class="nc" id="L151">		List&lt;String&gt; arguments = new LinkedList&lt;String&gt;();</span>
+<span class="nc" id="L152">		String currentArgument = null;</span>
 
 		// use a tokenizer because that's how Runtime.exec does it currently...
-<span class="fc" id="L155">		StringTokenizer tokens = new StringTokenizer(command);</span>
-<span class="fc bfc" id="L156" title="All 2 branches covered.">		while (tokens.hasMoreTokens()) {</span>
-<span class="fc" id="L157">			String token = tokens.nextToken();</span>
+<span class="nc" id="L155">		StringTokenizer tokens = new StringTokenizer(command);</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">		while (tokens.hasMoreTokens()) {</span>
+<span class="nc" id="L157">			String token = tokens.nextToken();</span>
 
-<span class="fc bfc" id="L159" title="All 2 branches covered.">			if (currentArgument == null) {</span>
-<span class="fc" id="L160">				currentArgument = token;</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">			if (currentArgument == null) {</span>
+<span class="nc" id="L160">				currentArgument = token;</span>
 			} else {
 				// continuing previous argument, that was split on whitespace
-<span class="fc" id="L163">				currentArgument = currentArgument + &quot; &quot; + token;</span>
+<span class="nc" id="L163">				currentArgument = currentArgument + &quot; &quot; + token;</span>
 			}
 
-<span class="pc bpc" id="L166" title="1 of 2 branches missed.">			if (currentArgument.startsWith(&quot;\&quot;&quot;)) {</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">			if (currentArgument.startsWith(&quot;\&quot;&quot;)) {</span>
 				// double quoted argument
 <span class="nc bnc" id="L168" title="All 2 branches missed.">				if (currentArgument.endsWith(&quot;\&quot;&quot;)) {</span>
 					// that has balanced quotes
@@ -174,32 +174,32 @@ public class Command {
 					// unbalanced quotes, keep going
 					continue;
 				}
-<span class="fc bfc" id="L177" title="All 2 branches covered.">			} else if (currentArgument.startsWith(&quot;'&quot;)) {</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">			} else if (currentArgument.startsWith(&quot;'&quot;)) {</span>
 				// single quoted argument
-<span class="fc bfc" id="L179" title="All 2 branches covered.">				if (currentArgument.endsWith(&quot;'&quot;)) {</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">				if (currentArgument.endsWith(&quot;'&quot;)) {</span>
 					// that has balanced quotes
 					// remove quotes and add argument
-<span class="fc" id="L182">					currentArgument = currentArgument.substring(1,</span>
-<span class="fc" id="L183">							currentArgument.length() - 1);</span>
+<span class="nc" id="L182">					currentArgument = currentArgument.substring(1,</span>
+<span class="nc" id="L183">							currentArgument.length() - 1);</span>
 				} else {
 					// unbalanced quotes, keep going
 					continue;
 				}
 			}
 
-<span class="fc" id="L190">			arguments.add(currentArgument);</span>
-<span class="fc" id="L191">			currentArgument = null;</span>
-<span class="fc" id="L192">		}</span>
+<span class="nc" id="L190">			arguments.add(currentArgument);</span>
+<span class="nc" id="L191">			currentArgument = null;</span>
+<span class="nc" id="L192">		}</span>
 
-<span class="pc bpc" id="L194" title="1 of 2 branches missed.">		if (currentArgument != null) {</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">		if (currentArgument != null) {</span>
 			// weird, but add argument anyways
 <span class="nc" id="L196">			arguments.add(currentArgument);</span>
 		}
 
-<span class="fc" id="L199">		return arguments.toArray(new String[] {});</span>
+<span class="nc" id="L199">		return arguments.toArray(new String[] {});</span>
 	}
 
-<span class="fc" id="L202">	public static class CommandTimeout extends Exception {</span>
+<span class="nc" id="L202">	public static class CommandTimeout extends Exception {</span>
 
 		private static final long serialVersionUID = 1L;
 
@@ -209,18 +209,18 @@ public class Command {
 		private InputStream in;
 		private OutputStream out;
 
-<span class="fc" id="L212">		public StreamTransferThread(final InputStream in, final OutputStream out) {</span>
-<span class="fc" id="L213">			this.in = in;</span>
-<span class="fc" id="L214">			this.out = out;</span>
-<span class="fc" id="L215">		}</span>
+<span class="nc" id="L212">		public StreamTransferThread(final InputStream in, final OutputStream out) {</span>
+<span class="nc" id="L213">			this.in = in;</span>
+<span class="nc" id="L214">			this.out = out;</span>
+<span class="nc" id="L215">		}</span>
 
 		@Override
 		public void run() {
 			try {
-<span class="fc" id="L220">				StreamUtils.transferStream(in, out);</span>
+<span class="nc" id="L220">				StreamUtils.transferStream(in, out);</span>
 <span class="nc" id="L221">			} catch (Exception e) {</span>
-<span class="fc" id="L222">			}</span>
-<span class="fc" id="L223">		}</span>
+<span class="nc" id="L222">			}</span>
+<span class="nc" id="L223">		}</span>
 	}
 
 }

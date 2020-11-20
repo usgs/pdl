@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AwsProductSender.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.aws</a> &gt; <span class="el_source">AwsProductSender.java</span></div><h1>AwsProductSender.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.aws;
+
+import gov.usgs.earthquake.distribution.ConfigurationException;
+import gov.usgs.earthquake.distribution.InvalidSignatureException;
+import gov.usgs.earthquake.distribution.ProductSender;
+import gov.usgs.earthquake.product.Content;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.product.URLContent;
+import gov.usgs.earthquake.product.io.JsonProduct;
+import gov.usgs.util.Config;
+import gov.usgs.util.CryptoUtils;
+import gov.usgs.util.DefaultConfigurable;
+import gov.usgs.util.FileUtils;
+import gov.usgs.util.StreamUtils;
+import gov.usgs.util.XmlUtils;
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.PrivateKey;
+import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonObject;
+
+/** Send using AWS Hub API. */
+public class AwsProductSender extends DefaultConfigurable implements ProductSender {
+
+<span class="nc" id="L34">  public static final Logger LOGGER = Logger.getLogger(AwsProductSender.class.getName());</span>
+
+  /** Base URL for Hub API. */
+  public static final String HUB_URL_PROPERTY = &quot;url&quot;;
+  /** Private Key to sign products, if signProducts is true. */
+  public static final String PRIVATE_KEY_PROPERTY = &quot;privateKey&quot;;
+  /** Whether to sign products using private key. */
+  public static final String SIGN_PRODUCTS_PROPERTY = &quot;signProducts&quot;;
+
+  // url where products are sent
+  protected URL hubUrl;
+  // signing key
+  protected PrivateKey privateKey;
+  // whether to sign products
+<span class="nc" id="L48">  protected boolean signProducts = false;</span>
+
+<span class="nc" id="L50">  public AwsProductSender() {}</span>
+
+  @Override
+  public void configure(Config config) throws Exception {
+<span class="nc" id="L54">    super.configure(config);</span>
+
+<span class="nc" id="L56">    hubUrl = new URL(config.getProperty(HUB_URL_PROPERTY));</span>
+<span class="nc" id="L57">    LOGGER.config(&quot;[&quot; + getName() + &quot;] url=&quot; + hubUrl.toString());</span>
+
+<span class="nc" id="L59">    final String sign = config.getProperty(SIGN_PRODUCTS_PROPERTY);</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">    if (sign != null) {</span>
+<span class="nc" id="L61">      signProducts = Boolean.valueOf(sign);</span>
+    }
+<span class="nc" id="L63">    LOGGER.config(&quot;[&quot; + getName() + &quot;] sign products=&quot; + signProducts);</span>
+
+<span class="nc" id="L65">    final String key = config.getProperty(PRIVATE_KEY_PROPERTY);</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">    if (key != null) {</span>
+<span class="nc" id="L67">      privateKey = CryptoUtils.readOpenSSHPrivateKey(</span>
+<span class="nc" id="L68">          FileUtils.readFile(new File(key)),</span>
+          null);
+<span class="nc" id="L70">      LOGGER.config(&quot;[&quot; + getName() + &quot;] private key=&quot; + key);</span>
+    }
+
+<span class="nc bnc" id="L73" title="All 4 branches missed.">    if (signProducts &amp;&amp; privateKey == null) {</span>
+      // no key configured
+<span class="nc" id="L75">      throw new ConfigurationException(&quot;[&quot; + getName() + &quot;] &quot; + SIGN_PRODUCTS_PROPERTY</span>
+          + &quot; requires a private key for signing&quot;);
+    }
+
+<span class="nc" id="L79">  }</span>
+
+  /**
+   * Send a product to the hub.
+   */
+  @Override
+  public void sendProduct(final Product product) throws Exception {
+<span class="nc" id="L86">    final ProductId id = product.getId();</span>
+
+    // re-sign if configured
+<span class="nc bnc" id="L89" title="All 2 branches missed.">    if (signProducts) {</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">      if (product.getSignature() != null) {</span>
+        // preserve original signature
+<span class="nc" id="L92">        product.getProperties().put(&quot;original-signature&quot;, product.getSignature());</span>
+<span class="nc" id="L93">        product.getProperties().put(&quot;original-signature-version&quot;,</span>
+<span class="nc" id="L94">            product.getSignatureVersion().toString());</span>
+      }
+<span class="nc" id="L96">      product.sign(privateKey, CryptoUtils.Version.SIGNATURE_V2);</span>
+    }
+    // convert to json
+<span class="nc" id="L99">    JsonObject json = new JsonProduct().getJsonObject(product);</span>
+
+<span class="nc" id="L101">    final long start = new Date().getTime();</span>
+    final long afterUploadContent;
+    try {
+      // upload contents
+<span class="nc" id="L105">      if (</span>
+        // has contents
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        product.getContents().size() &gt; 0</span>
+        // and not only inline content
+<span class="nc bnc" id="L109" title="All 4 branches missed.">        &amp;&amp; !(product.getContents().size() == 1 &amp;&amp; product.getContents().get(&quot;&quot;) != null)</span>
+      ) {
+<span class="nc" id="L111">        LOGGER.fine(&quot;Getting upload urls for &quot; + json.toString());</span>
+        // get upload urls, response is product with signed content urls for upload
+<span class="nc" id="L113">        Product uploadProduct = getUploadUrls(json);</span>
+<span class="nc" id="L114">        final long afterGetUploadUrls = new Date().getTime();</span>
+<span class="nc" id="L115">        LOGGER.fine(&quot;[&quot; + getName() + &quot;] get upload urls &quot; + id.toString()</span>
+            + &quot; (&quot; + (afterGetUploadUrls - start) + &quot; ms) &quot;);
+
+        // upload contents
+<span class="nc" id="L119">        uploadContents(product, uploadProduct);</span>
+<span class="nc" id="L120">        afterUploadContent = new Date().getTime();</span>
+<span class="nc" id="L121">        LOGGER.fine(&quot;[&quot; + getName() + &quot;] upload contents &quot; + id.toString()</span>
+            + &quot; (&quot; + (afterUploadContent - afterGetUploadUrls) + &quot; ms) &quot;);
+<span class="nc" id="L123">      } else {</span>
+<span class="nc" id="L124">        afterUploadContent = new Date().getTime();</span>
+      }
+
+      // send product
+<span class="nc" id="L128">      sendProduct(json);</span>
+<span class="nc" id="L129">      final long afterSendProduct = new Date().getTime();</span>
+<span class="nc" id="L130">      LOGGER.fine(&quot;[&quot; + getName() + &quot;] send product &quot; + id.toString()</span>
+          + &quot; (&quot; + (afterSendProduct - afterUploadContent) + &quot; ms) &quot;);
+<span class="nc" id="L132">    } catch (ProductAlreadySentException pase) {</span>
+      // hub already has product
+<span class="nc" id="L134">      LOGGER.info(&quot;[&quot; + getName() + &quot;] hub already has product&quot;);</span>
+<span class="nc" id="L135">    } catch (Exception e) {</span>
+<span class="nc" id="L136">      LOGGER.log(Level.WARNING, &quot;Exception sending product &quot; + id.toString(), e);</span>
+<span class="nc" id="L137">      throw e;</span>
+    } finally {
+<span class="nc" id="L139">      final long end = new Date().getTime();</span>
+<span class="nc" id="L140">      LOGGER.info(&quot;[&quot; + getName() + &quot;] send product total &quot; + id.toString()</span>
+          + &quot; (&quot; + (end - start) + &quot; ms) &quot;);
+    }
+<span class="nc" id="L143">  }</span>
+
+  /**
+   * Get content upload urls.
+   *
+   * @param json product in json format.
+   * @return product with content urls set to upload URLs.
+   * @throws Exception
+   */
+  protected Product getUploadUrls(final JsonObject json) throws Exception {
+<span class="nc" id="L153">    final URL url = new URL(hubUrl, &quot;get_upload_urls&quot;);</span>
+<span class="nc" id="L154">    final HttpResponse result = postProductJson(url, json);</span>
+<span class="nc" id="L155">    final int responseCode = result.connection.getResponseCode();</span>
+
+    // check for errors
+<span class="nc bnc" id="L158" title="All 2 branches missed.">    if (responseCode == 401) {</span>
+<span class="nc" id="L159">      throw new InvalidSignatureException(&quot;Invalid product signature&quot;);</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">    } else if (responseCode == 409) {</span>
+<span class="nc" id="L161">      throw new ProductAlreadySentException();</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">    } else if (responseCode != 200) {</span>
+<span class="nc" id="L163">      throw new HttpException(result, &quot;Error getting upload urls&quot;);</span>
+    }
+
+    // successful response is json object with &quot;products&quot; property
+    // that is product with upload urls for contents.
+<span class="nc" id="L168">    final JsonObject getUploadUrlsResponse = result.getJsonObject();</span>
+<span class="nc" id="L169">    final Product product = new JsonProduct().getProduct(</span>
+<span class="nc" id="L170">        getUploadUrlsResponse.getJsonObject(&quot;product&quot;));</span>
+<span class="nc" id="L171">    return product;</span>
+  }
+
+  /**
+   * Post product json to a hub url.
+   *
+   * This is a HTTP POST method,
+   * with a JSON content body with a &quot;product&quot; property with the product.
+   *
+   * @param url
+   * @param product
+   * @return
+   * @throws Exception
+   */
+  protected HttpResponse postProductJson(final URL url, final JsonObject product) throws Exception {
+    // send as attribute, for extensibility
+<span class="nc" id="L187">    final JsonObject json = Json.createObjectBuilder().add(&quot;product&quot;, product).build();</span>
+<span class="nc" id="L188">    HttpURLConnection connection = (HttpURLConnection) url.openConnection();</span>
+<span class="nc" id="L189">    connection.setDoOutput(true);</span>
+<span class="nc" id="L190">    connection.setRequestMethod(&quot;POST&quot;);</span>
+<span class="nc" id="L191">    connection.setRequestProperty(&quot;Content-Type&quot;, &quot;application/json&quot;);</span>
+<span class="nc" id="L192">    try (final OutputStream out = connection.getOutputStream()) {</span>
+<span class="nc" id="L193">      out.write(json.toString().getBytes());</span>
+    }
+<span class="nc" id="L195">    return new HttpResponse(connection);</span>
+  }
+
+  /**
+   * Send product after content has been uploaded.
+   *
+   * @param json product in json format.
+   * @return product with content urls pointing to hub.
+   * @throws Exception
+   */
+  protected Product sendProduct(final JsonObject json) throws Exception {
+    // send request
+<span class="nc" id="L207">    final URL url = new URL(hubUrl, &quot;send_product&quot;);</span>
+<span class="nc" id="L208">    final HttpResponse result = postProductJson(url, json);</span>
+<span class="nc" id="L209">    int responseCode = result.connection.getResponseCode();</span>
+
+    // check for errors
+<span class="nc bnc" id="L212" title="All 2 branches missed.">    if (responseCode == 401) {</span>
+<span class="nc" id="L213">      throw new InvalidSignatureException(&quot;Invalid product signature&quot;);</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">    } else if (responseCode == 409) {</span>
+<span class="nc" id="L215">      throw new ProductAlreadySentException();</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">    } else if (responseCode == 422) {</span>
+<span class="nc" id="L217">      throw new HttpException(result,</span>
+<span class="nc" id="L218">          &quot;Content validation errors: &quot; + result.getJsonObject().toString());</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">    } else if (result.connection.getResponseCode() != 200) {</span>
+<span class="nc" id="L220">      throw new HttpException(result, &quot;Error sending product&quot;);</span>
+    }
+
+    // successful response is json object with &quot;notification&quot; property
+    // that has &quot;created&quot; and &quot;product&quot; properties with hub urls for contents.
+<span class="nc" id="L225">    final JsonObject sendProductResponse = result.getJsonObject();</span>
+<span class="nc" id="L226">    final JsonObject notification = sendProductResponse.getJsonObject(&quot;notification&quot;);</span>
+<span class="nc" id="L227">    final Product product = new JsonProduct().getProduct(notification.getJsonObject(&quot;product&quot;));</span>
+    // json response also has &quot;notification_id&quot; property of broadcast that was sent.
+<span class="nc" id="L229">    String notificationId = null;</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">    if (!sendProductResponse.isNull(&quot;notification_id&quot;)) {</span>
+<span class="nc" id="L231">      notificationId = sendProductResponse.getString(&quot;notification_id&quot;);</span>
+    }
+<span class="nc" id="L233">    LOGGER.fine(&quot;[&quot; + getName() + &quot;] notification id &quot;</span>
+<span class="nc" id="L234">        + notificationId + &quot; &quot; + product.getId().toString());</span>
+<span class="nc" id="L235">    return product;</span>
+  }
+
+  /**
+   * Upload content to a signed url.
+   *
+   * @param path content path.
+   * @param content content to upload.
+   * @param signedUrl url where content should be uploaded.
+   * @return
+   * @throws Exception
+   */
+  protected HttpResponse uploadContent(final String path, final Content content, final URL signedUrl)
+      throws Exception {
+<span class="nc" id="L249">    final long start = new Date().getTime();</span>
+<span class="nc" id="L250">    final HttpURLConnection connection = (HttpURLConnection) signedUrl.openConnection();</span>
+<span class="nc" id="L251">    connection.setDoOutput(true);</span>
+    // these values are part of signed url and are required
+<span class="nc" id="L253">    connection.setRequestMethod(&quot;PUT&quot;);</span>
+<span class="nc" id="L254">    connection.addRequestProperty(&quot;Content-Length&quot;, content.getLength().toString());</span>
+<span class="nc" id="L255">    connection.addRequestProperty(&quot;Content-Type&quot;, content.getContentType());</span>
+<span class="nc" id="L256">    connection.addRequestProperty(</span>
+<span class="nc" id="L257">        &quot;x-amz-meta-modified&quot;, XmlUtils.formatDate(content.getLastModified()));</span>
+<span class="nc" id="L258">    connection.addRequestProperty(&quot;x-amz-meta-sha256&quot;, content.getSha256());</span>
+
+    // send content
+<span class="nc" id="L261">    try (final InputStream in = content.getInputStream();</span>
+<span class="nc" id="L262">        final OutputStream out = connection.getOutputStream()) {</span>
+<span class="nc" id="L263">      StreamUtils.transferStream(in, out);</span>
+    }
+<span class="nc" id="L265">    final HttpResponse result = new HttpResponse(connection);</span>
+<span class="nc" id="L266">    final long elapsed = (new Date().getTime() - start);</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">    if (connection.getResponseCode() != 200) {</span>
+<span class="nc" id="L268">      throw new HttpException(result, &quot;Error uploading content &quot;</span>
+          + path + &quot; (&quot; + elapsed + &quot; ms)&quot;);
+    }
+<span class="nc" id="L271">    LOGGER.finer(</span>
+        &quot;[&quot;
+<span class="nc" id="L273">            + getName()</span>
+            + &quot;] uploaded content &quot; + path + &quot; (size= &quot;
+<span class="nc" id="L275">            + content.getLength()</span>
+            + &quot; bytes) (time= &quot;
+            + elapsed
+            + &quot; ms)&quot;);
+<span class="nc" id="L279">    return result;</span>
+  }
+
+  /**
+   * Upload product contents.
+   *
+   * Runs uploads in parallel using a parallel stream.
+   *
+   * This can be called within a custom ForkJoinPool to use a non-default pool,
+   * the default pool is shared by the process and based on number of available
+   * cores.
+   *
+   * @param product product to upload.
+   * @param uploadProduct product with signed upload urls.
+   * @return upload results
+   * @throws Exception if any upload errors occur
+   */
+  protected Map&lt;String, HttpResponse&gt; uploadContents(
+      final Product product, final Product uploadProduct) throws Exception {
+    // collect results
+<span class="nc" id="L299">    final ConcurrentHashMap&lt;String, HttpResponse&gt; uploadResults =</span>
+        new ConcurrentHashMap&lt;String, HttpResponse&gt;();
+<span class="nc" id="L301">    final ConcurrentHashMap&lt;String, Exception&gt; uploadExceptions =</span>
+        new ConcurrentHashMap&lt;String, Exception&gt;();
+    // upload contents in parallel
+<span class="nc" id="L304">    uploadProduct.getContents().keySet().parallelStream()</span>
+<span class="nc bnc" id="L305" title="All 2 branches missed.">        .filter(path -&gt; !&quot;&quot;.equals(path))</span>
+<span class="nc" id="L306">        .forEach(</span>
+            path -&gt; {
+              try {
+<span class="nc" id="L309">                uploadResults.put(</span>
+                    path,
+<span class="nc" id="L311">                    uploadContent(</span>
+                        path,
+<span class="nc" id="L313">                        product.getContents().get(path),</span>
+<span class="nc" id="L314">                        ((URLContent) uploadProduct.getContents().get(path)).getURL()));</span>
+<span class="nc" id="L315">              } catch (Exception e) {</span>
+<span class="nc" id="L316">                uploadExceptions.put(path, e);</span>
+<span class="nc" id="L317">              }</span>
+<span class="nc" id="L318">            });</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">    if (uploadExceptions.size() &gt; 0) {</span>
+<span class="nc" id="L320">      Exception e = null;</span>
+      // log all
+<span class="nc bnc" id="L322" title="All 2 branches missed.">      for (final String path : uploadExceptions.keySet()) {</span>
+<span class="nc" id="L323">        e = uploadExceptions.get(path);</span>
+<span class="nc" id="L324">        LOGGER.log(Level.WARNING, &quot;Exception uploading content &quot; + path, e);</span>
+<span class="nc" id="L325">      }</span>
+      // throw last
+<span class="nc" id="L327">      throw e;</span>
+    }
+<span class="nc" id="L329">    return uploadResults;</span>
+  }
+
+  public boolean getSignProducts() {
+<span class="nc" id="L333">    return signProducts;</span>
+  }
+
+  public void setSignProducts(final boolean sign) {
+<span class="nc" id="L337">    this.signProducts = sign;</span>
+<span class="nc" id="L338">  }</span>
+
+  public PrivateKey getPrivateKey() {
+<span class="nc" id="L341">    return privateKey;</span>
+  }
+
+  public void setPrivateKey(final PrivateKey key) {
+<span class="nc" id="L345">    this.privateKey = key;</span>
+<span class="nc" id="L346">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

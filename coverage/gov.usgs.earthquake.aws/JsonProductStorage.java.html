@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonProductStorage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.aws</a> &gt; <span class="el_source">JsonProductStorage.java</span></div><h1>JsonProductStorage.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.aws;
+
+import java.io.ByteArrayInputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.json.Json;
+
+import gov.usgs.earthquake.distribution.ProductAlreadyInStorageException;
+import gov.usgs.earthquake.distribution.ProductStorage;
+import gov.usgs.earthquake.distribution.StorageEvent;
+import gov.usgs.earthquake.distribution.StorageListener;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.product.io.JsonProduct;
+import gov.usgs.earthquake.product.io.ObjectProductHandler;
+import gov.usgs.earthquake.product.io.ObjectProductSource;
+import gov.usgs.earthquake.product.io.ProductSource;
+import gov.usgs.earthquake.util.JDBCConnection;
+import gov.usgs.util.Config;
+
+/**
+ * Store Products in a database.
+ *
+ * Note that this storage does not store Product Content, and is intended for
+ * Products that use URLContent and can be serialized using JsonProduct.
+ *
+ * Only SQLITE or local development should rely on createSchema.
+ * Products (data column) have exceeded 64kb, plan accordingly.
+ *
+ * Mysql Schema Example:&lt;br&gt;
+ * &lt;pre&gt;
+ * CREATE TABLE IF NOT EXISTS indexer_storage
+ * (id INTEGER PRIMARY KEY AUTO_INCREMENT
+ * , source VARCHAR(255)
+ * , type VARCHAR(255)
+ * , code VARCHAR(255)
+ * , updatetime BIGINT
+ * , data LONGTEXT
+ * , UNIQUE KEY product_index (source, type, code, updatetime)
+ * ) ENGINE=innodb CHARSET=utf8;
+ * &lt;/pre&gt;
+ */
+public class JsonProductStorage extends JDBCConnection implements ProductStorage {
+
+<span class="nc" id="L52">  private static final Logger LOGGER = Logger.getLogger(</span>
+<span class="nc" id="L53">      JsonProductStorage.class.getName());</span>
+
+  public static final String DEFAULT_DRIVER = &quot;org.sqlite.JDBC&quot;;
+  public static final String DEFAULT_TABLE = &quot;product&quot;;
+  public static final String DEFAULT_URL = &quot;jdbc:sqlite:json_product_index.db&quot;;
+
+  /** JDBC driver classname. */
+  private String driver;
+  /** Database table name. */
+  private String table;
+  /** JDBC database connect url. */
+  private String url;
+
+  /**
+   * Create a JsonProductStorage using defaults.
+   */
+  public JsonProductStorage() {
+<span class="nc" id="L70">    this(DEFAULT_DRIVER, DEFAULT_URL);</span>
+<span class="nc" id="L71">  }</span>
+
+  /**
+   * Create a JsonProductStorage with a default table.
+   */
+  public JsonProductStorage(final String driver, final String url) {
+<span class="nc" id="L77">    this(driver, url, DEFAULT_TABLE);</span>
+<span class="nc" id="L78">  }</span>
+
+  /**
+   * Create a JsonProductStorage with a custom driver, url, and table.
+   */
+  public JsonProductStorage(
+<span class="nc" id="L84">      final String driver, final String url, final String table) {</span>
+<span class="nc" id="L85">    this.driver = driver;</span>
+<span class="nc" id="L86">    this.table = table;</span>
+<span class="nc" id="L87">    this.url = url;</span>
+<span class="nc" id="L88">  }</span>
+
+<span class="nc" id="L90">  public String getDriver() { return this.driver; }</span>
+<span class="nc" id="L91">  public String getTable() { return this.table; }</span>
+<span class="nc" id="L92">  public String getUrl() { return this.url; }</span>
+<span class="nc" id="L93">  public void setDriver(final String driver) { this.driver = driver; }</span>
+<span class="nc" id="L94">  public void setTable(final String table) { this.table = table; }</span>
+<span class="nc" id="L95">  public void setUrl(final String url) { this.url = url; }</span>
+
+  @Override
+  public void configure(final Config config) throws Exception {
+<span class="nc" id="L99">    driver = config.getProperty(&quot;driver&quot;, DEFAULT_DRIVER);</span>
+<span class="nc" id="L100">    LOGGER.config(&quot;[&quot; + getName() + &quot;] driver=&quot; + driver);</span>
+<span class="nc" id="L101">    table = config.getProperty(&quot;table&quot;, DEFAULT_TABLE);</span>
+<span class="nc" id="L102">    LOGGER.config(&quot;[&quot; + getName() + &quot;] table=&quot; + table);</span>
+<span class="nc" id="L103">    url = config.getProperty(&quot;url&quot;, DEFAULT_URL);</span>
+    // do not log url, it may contain user/pass
+<span class="nc" id="L105">  }</span>
+
+  /**
+   * Connect to database.
+   *
+   * Implements abstract JDBCConnection method.
+   */
+  @Override
+  protected Connection connect() throws Exception {
+    // load driver if needed
+<span class="nc" id="L115">    Class.forName(driver);</span>
+<span class="nc" id="L116">    return DriverManager.getConnection(url);</span>
+  }
+
+  /**
+   * After normal startup, check whether schema exists and attempt to create.
+   */
+  @Override
+  public void startup() throws Exception {
+<span class="nc" id="L124">    super.startup();</span>
+    // make sure schema exists
+<span class="nc bnc" id="L126" title="All 2 branches missed.">    if (!schemaExists()) {</span>
+<span class="nc" id="L127">      LOGGER.warning(&quot;[&quot; + getName() + &quot;] schema not found, creating&quot;);</span>
+<span class="nc" id="L128">      createSchema();</span>
+    }
+<span class="nc" id="L130">  }</span>
+
+  /**
+   * Check whether schema exists.
+   *
+   * @return
+   * @throws Exception
+   */
+  public boolean schemaExists() throws Exception {
+<span class="nc" id="L139">    final String sql = &quot;select * from &quot; + this.table + &quot; limit 1&quot;;</span>
+<span class="nc" id="L140">    beginTransaction();</span>
+<span class="nc" id="L141">    try (final PreparedStatement test = getConnection().prepareStatement(sql)) {</span>
+      // should throw exception if table does not exist
+<span class="nc" id="L143">      try (final ResultSet rs = test.executeQuery()) {</span>
+<span class="nc" id="L144">        rs.next();</span>
+      }
+<span class="nc" id="L146">      commitTransaction();</span>
+      // schema exists
+<span class="nc" id="L148">      return true;</span>
+<span class="nc" id="L149">    } catch (Exception e) {</span>
+<span class="nc" id="L150">      rollbackTransaction();</span>
+<span class="nc" id="L151">      return false;</span>
+    }
+  }
+
+  /**
+   * Attempt to create schema.
+   *
+   * Only supports sqlite or mysql.  When not using sqlite, relying on this
+   * method is only recommended for local development.
+   *
+   * @throws Exception
+   */
+  public void createSchema() throws Exception {
+    // create schema
+<span class="nc" id="L165">    beginTransaction();</span>
+<span class="nc" id="L166">    try (final Statement statement = getConnection().createStatement()) {</span>
+<span class="nc" id="L167">      String autoIncrement = &quot;&quot;;</span>
+<span class="nc" id="L168">      String engine = &quot;&quot;;</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">      if (driver.contains(&quot;mysql&quot;)) {</span>
+<span class="nc" id="L170">        autoIncrement = &quot; AUTO_INCREMENT&quot;;</span>
+<span class="nc" id="L171">        engine = &quot; ENGINE=innodb CHARSET=utf8&quot;;</span>
+      }
+<span class="nc" id="L173">      statement.executeUpdate(</span>
+          &quot;CREATE TABLE &quot; + this.table
+          + &quot; (id INTEGER PRIMARY KEY&quot; + autoIncrement
+          + &quot;, source VARCHAR(255)&quot;
+          + &quot;, type VARCHAR(255)&quot;
+          + &quot;, code VARCHAR(255)&quot;
+          + &quot;, updatetime BIGINT&quot;
+          + &quot;, data TEXT&quot;
+          + &quot;)&quot; + engine);
+<span class="nc" id="L182">      statement.executeUpdate(</span>
+          &quot;CREATE UNIQUE INDEX product_index ON &quot; + this.table
+          + &quot; (source, type, code, updatetime)&quot;);
+<span class="nc" id="L185">      commitTransaction();</span>
+<span class="nc" id="L186">    } catch (Exception e) {</span>
+<span class="nc" id="L187">      rollbackTransaction();</span>
+<span class="nc" id="L188">      throw e;</span>
+<span class="nc" id="L189">    }</span>
+<span class="nc" id="L190">  }</span>
+
+  /**
+   * Check whether product found in storage.
+   */
+  @Override
+  public boolean hasProduct(ProductId id) throws Exception {
+<span class="nc bnc" id="L197" title="All 2 branches missed.">    return getProduct(id) != null;</span>
+  }
+
+  /**
+   * Get a product from storage.
+   *
+   * @param id
+   *     The product to get.
+   * @return product if found, otherwise null.
+   */
+  @Override
+  public synchronized Product getProduct(ProductId id) throws Exception {
+<span class="nc" id="L209">    Product product = null;</span>
+<span class="nc" id="L210">    final String sql = &quot;SELECT * FROM &quot; + this.table</span>
+        + &quot; WHERE source=? AND type=? AND code=? AND updatetime=?&quot;;
+    // prepare statement
+<span class="nc" id="L213">    beginTransaction();</span>
+<span class="nc" id="L214">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
+      // set parameters
+<span class="nc" id="L216">      statement.setString(1, id.getSource());</span>
+<span class="nc" id="L217">      statement.setString(2, id.getType());</span>
+<span class="nc" id="L218">      statement.setString(3, id.getCode());</span>
+<span class="nc" id="L219">      statement.setLong(4, id.getUpdateTime().getTime());</span>
+
+      // execute
+<span class="nc" id="L222">      try (final ResultSet rs = statement.executeQuery()) {</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">        if (rs.next()) {</span>
+          // found product
+<span class="nc" id="L225">          final String data = rs.getString(&quot;data&quot;);</span>
+<span class="nc" id="L226">          product = new JsonProduct().getProduct(</span>
+<span class="nc" id="L227">              Json.createReader(</span>
+<span class="nc" id="L228">                new ByteArrayInputStream(data.getBytes())</span>
+<span class="nc" id="L229">              ).readObject());</span>
+        }
+      }
+<span class="nc" id="L232">      commitTransaction();</span>
+<span class="nc" id="L233">    } catch (SQLException e) {</span>
+      try {
+        // otherwise roll back
+<span class="nc" id="L236">        rollbackTransaction();</span>
+<span class="nc" id="L237">      } catch (SQLException e2) {</span>
+        // ignore
+<span class="nc" id="L239">      }</span>
+<span class="nc" id="L240">      LOGGER.log(</span>
+          Level.INFO,
+<span class="nc" id="L242">          &quot;[&quot; + getName() + &quot;] exception in getProduct(&quot;</span>
+<span class="nc" id="L243">              + id.toString() + &quot;)&quot;,</span>
+          e);
+<span class="nc" id="L245">    }</span>
+<span class="nc" id="L246">    return product;</span>
+  }
+
+  /**
+   * Add product to storage.
+   *
+   * @throws ProductAlreadyInStorageException
+   *     if product already in storage.
+   */
+  @Override
+  public synchronized ProductId storeProduct(Product product) throws Exception {
+    // prepare statement
+<span class="nc" id="L258">    beginTransaction();</span>
+    try (
+<span class="nc" id="L260">      final PreparedStatement statement = getConnection().prepareStatement(</span>
+          &quot;INSERT INTO &quot; + this.table
+          + &quot; (source, type, code, updatetime, data)&quot;
+          + &quot; VALUES (?, ?, ?, ?, ?)&quot;)
+    ) {
+<span class="nc" id="L265">      final ProductId id = product.getId();</span>
+      // set parameters
+<span class="nc" id="L267">      statement.setString(1, id.getSource());</span>
+<span class="nc" id="L268">      statement.setString(2, id.getType());</span>
+<span class="nc" id="L269">      statement.setString(3, id.getCode());</span>
+<span class="nc" id="L270">      statement.setLong(4, id.getUpdateTime().getTime());</span>
+<span class="nc" id="L271">      statement.setString(5,</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">          product != null</span>
+<span class="nc" id="L273">          ? new JsonProduct().getJsonObject(product).toString()</span>
+<span class="nc" id="L274">          : &quot;&quot;);</span>
+      // execute
+<span class="nc" id="L276">      statement.executeUpdate();</span>
+<span class="nc" id="L277">      commitTransaction();</span>
+<span class="nc" id="L278">      return id;</span>
+<span class="nc" id="L279">    } catch (SQLException e) {</span>
+      try {
+        // otherwise roll back
+<span class="nc" id="L282">        rollbackTransaction();</span>
+<span class="nc" id="L283">      } catch (SQLException e2) {</span>
+        // ignore
+<span class="nc" id="L285">      }</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">      if (e.toString().contains(&quot;Duplicate entry&quot;)) {</span>
+<span class="nc" id="L287">        throw new ProductAlreadyInStorageException(e.toString());</span>
+      }
+<span class="nc" id="L289">      throw e;</span>
+    }
+  }
+
+  /**
+   * Get a ProductSource for product in database.
+   *
+   * @return ObjectProductSource or null if product not found.
+   */
+  @Override
+  public ProductSource getProductSource(ProductId id) throws Exception {
+<span class="nc" id="L300">    final Product product = getProduct(id);</span>
+<span class="nc bnc" id="L301" title="All 2 branches missed.">    if (product == null) {</span>
+<span class="nc" id="L302">      return null;</span>
+    }
+<span class="nc" id="L304">    return new ObjectProductSource(product);</span>
+  }
+
+  /**
+   * Store a ProductSource.
+   *
+   * Uses ObjectProductHandler to read Product, then calls storeProduct.
+   *
+   * @throws ProductAlreadyInStorageException
+   *     if product already in storage.
+   */
+  @Override
+  public ProductId storeProductSource(ProductSource input) throws Exception {
+<span class="nc" id="L317">    final ObjectProductHandler handler = new ObjectProductHandler();</span>
+<span class="nc" id="L318">    input.streamTo(handler);</span>
+<span class="nc" id="L319">    return storeProduct(handler.getProduct());</span>
+  }
+
+  /**
+   * Remove product from storage.
+   */
+  @Override
+  public synchronized void removeProduct(ProductId id) throws Exception {
+    // prepare statement
+<span class="nc" id="L328">    final String sql = &quot;DELETE FROM &quot; + this.table</span>
+          + &quot; WHERE source=? AND type=? AND code=? AND updatetime=?&quot;;
+<span class="nc" id="L330">    beginTransaction();</span>
+<span class="nc" id="L331">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
+      // set parameters
+<span class="nc" id="L333">      statement.setString(1, id.getSource());</span>
+<span class="nc" id="L334">      statement.setString(2, id.getType());</span>
+<span class="nc" id="L335">      statement.setString(3, id.getCode());</span>
+<span class="nc" id="L336">      statement.setLong(4, id.getUpdateTime().getTime());</span>
+      // execute
+<span class="nc" id="L338">      statement.executeUpdate();</span>
+<span class="nc" id="L339">      commitTransaction();</span>
+<span class="nc" id="L340">    } catch (SQLException e) {</span>
+      try {
+        // otherwise roll back
+<span class="nc" id="L343">        rollbackTransaction();</span>
+<span class="nc" id="L344">      } catch (SQLException e2) {</span>
+        // ignore
+<span class="nc" id="L346">      }</span>
+<span class="nc" id="L347">      throw e;</span>
+<span class="nc" id="L348">    }</span>
+<span class="nc" id="L349">  }</span>
+
+  @Override
+  public void notifyListeners(StorageEvent event) {
+    // listeners not supported
+<span class="nc" id="L354">  }</span>
+
+  @Override
+  public void addStorageListener(StorageListener listener) {
+    // listeners not supported
+<span class="nc" id="L359">  }</span>
+
+  @Override
+  public void removeStorageListener(StorageListener listener) {
+    // listeners not supported
+<span class="nc" id="L364">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

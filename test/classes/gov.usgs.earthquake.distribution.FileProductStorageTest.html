@@ -3,14 +3,14 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="x-ua-compatible" content="IE=edge"/>
-<title>Test results - Class gov.usgs.earthquake.distribution.FileProductStorageTest</title>
+<title>Test results - FileProductStorageTest</title>
 <link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
 <link href="../css/style.css" rel="stylesheet" type="text/css"/>
 <script src="../js/report.js" type="text/javascript"></script>
 </head>
 <body>
 <div id="content">
-<h1>Class gov.usgs.earthquake.distribution.FileProductStorageTest</h1>
+<h1>FileProductStorageTest</h1>
 <div class="breadcrumbs">
 <a href="../index.html">all</a> &gt; 
 <a href="../packages/gov.usgs.earthquake.distribution.html">gov.usgs.earthquake.distribution</a> &gt; FileProductStorageTest</div>
@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.079s</div>
+<div class="counter">0.405s</div>
 <p>duration</p>
 </div>
 </td>
@@ -82,37 +82,37 @@
 </thead>
 <tr>
 <td class="success">addDuplicateProduct</td>
-<td class="success">0.008s</td>
+<td class="success">0.026s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">configureStore</td>
-<td class="success">0.009s</td>
+<td class="success">0.032s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">legacyStorageTest</td>
-<td class="success">0.014s</td>
+<td class="success">0.059s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">notifyListeners</td>
-<td class="success">0.001s</td>
+<td class="success">0.005s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">removeProduct</td>
-<td class="success">0.011s</td>
+<td class="success">0.044s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">storeProduct</td>
-<td class="success">0.022s</td>
+<td class="success">0.110s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">verifyProductSignature</td>
-<td class="success">0.014s</td>
+<td class="success">0.129s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -121,7 +121,7 @@
 <h2>Standard output</h2>
 <span class="code">
 <pre>; test
-directory=/Users/jmfee/test/storage
+directory=C:\Users\jmfee\test\storage
 type=gov.usgs.earthquake.distribution.FileProductStorage
 </pre>
 </span>
@@ -129,275 +129,285 @@ type=gov.usgs.earthquake.distribution.FileProductStorage
 <div id="tab2" class="tab">
 <h2>Standard error</h2>
 <span class="code">
-<pre>FINE	thread=14	Digest='/UfVH58auHLAxfwCb73qTDbDyww=' , 1ms
-FINE	thread=14	Digest='PTq62QLdDRBV+XaK+WH8JfAgSNo=' , 2ms
-FINEST	thread=14	[legacy] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINER	thread=14	[legacy] product stored id=urn:usgs-product:us:shakemap:abcd1234:1593124071572, status=UPDATE
-FINEST	thread=14	[legacy] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[primary] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[primary] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[primary] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[primary] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[primary] acquiring write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[primary] acquired write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[primary] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[primary] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[legacy] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[legacy] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[legacy] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[legacy] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[primary] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[primary] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINER	thread=14	[primary] product stored id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574, status=UPDATE
-FINEST	thread=14	[primary] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[primary] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[primary] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[primary] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[primary] releasing write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[primary] released write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[legacy] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[legacy] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[legacy] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[legacy] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071574
-FINEST	thread=14	[primary] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[primary] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINER	thread=14	[legacy] product removed, id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[primary] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[primary] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINEST	thread=14	[legacy] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071572
-FINE	thread=14	Digest='JRqbCs68b4AvbLDMrEY2ZLOUP+0=' , 1ms
-CONFIG	thread=14	[null] using storage directory /Users/jmfee/test/storage
-FINEST	thread=14	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071586
-FINEST	thread=14	[null] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071586
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071586
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071586
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071586
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071586
-FINER	thread=14	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1593124071586, status=UPDATE
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071586
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071586
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071586
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071586
-FINEST	thread=14	[null] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071586
-FINEST	thread=14	[null] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071586
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071586
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071586
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071586
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071586
-FINE	thread=14	Digest='bpRkuPLuJBGO8rcuDkInZL37Tq8=' , 2ms
-FINE	thread=14	Digest='bpRkuPLuJBGO8rcuDkInZL37Tq8=' , 1ms
-INFO	thread=14	Signature=MCwCFFHJdpsfRVVP7TRr+JsTUZd70G4aAhQown8RVm0ZiXA22fEVche/fbJs8w==
-FINEST	thread=14	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071595
-FINEST	thread=14	[null] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071595
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071595
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071595
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071595
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071595
-FINER	thread=14	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1593124071595, status=UPDATE
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071595
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071595
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071595
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071595
-FINER	thread=14	[null] number of candidate keys=1
-FINE	thread=14	Digest='bpRkuPLuJBGO8rcuDkInZL37Tq8=' , 1ms
-FINE	thread=14	[null] signature verified=true (key=testKey), id=urn:usgs-product:us:shakemap:abcd1234:1593124071595
-FINEST	thread=14	[null] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071595
-FINEST	thread=14	[null] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071595
-FINEST	thread=14	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINEST	thread=14	[null] acquired write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINER	thread=14	[null] product stored id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597, status=UPDATE
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINER	thread=14	[null] number of candidate keys=1
-FINE	thread=14	[null] signature verified=false, id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-WARNING	thread=14	[null] bad signature for id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597, removing incomplete product
-FINEST	thread=14	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINEST	thread=14	[null] acquired write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINER	thread=14	[null] product removed, id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINEST	thread=14	[null] releasing write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINEST	thread=14	[null] released write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINEST	thread=14	[null] releasing write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINEST	thread=14	[null] released write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071597
-FINE	thread=14	Digest='84wuEmQNHm2zBnOuUF46L5r/YLk=' , 1ms
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINER	thread=14	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1593124071610, status=UPDATE
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071610
-FINE	thread=14	Digest='3Du06Sj7MEkt9AhQ3GASkzbeoko=' , 1ms
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINER	thread=14	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1593124071632, status=UPDATE
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquired write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINER	thread=14	[null] product stored id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633, status=UPDATE
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] releasing write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] released write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINER	thread=14	[null] product removed, id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquired write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINER	thread=14	[null] product removed, id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] releasing write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] released write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071632
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1593124071633
-FINE	thread=14	Digest='3K4qeCfEg8q+mokvDjg0182gOvk=' , 2ms
-FINEST	thread=14	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINER	thread=14	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1593124071643, status=UPDATE
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
-FINEST	thread=14	[null] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124071643
+<pre>FINE	thread=15	Using digest version v1, algorithm=SHA1
+FINE	thread=15	Digest='Z144xQPH9KvWeMAxM8n6iCbP5EQ=' , 2ms
+FINE	thread=15	Using digest version v1, algorithm=SHA1
+FINE	thread=15	Digest='UxWGlAZ/PlnoQBdItOqOB4zf6Ns=' , 2ms
+FINEST	thread=15	[legacy] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINER	thread=15	[legacy] product stored id=urn:usgs-product:us:shakemap:abcd1234:1605897260944, status=UPDATE
+FINEST	thread=15	[legacy] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[primary] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[primary] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[primary] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[primary] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[primary] acquiring write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[primary] acquired write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[primary] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[primary] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[legacy] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[legacy] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[legacy] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[legacy] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[primary] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[primary] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINER	thread=15	[primary] product stored id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947, status=UPDATE
+FINEST	thread=15	[primary] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[primary] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[primary] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[primary] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[primary] releasing write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[primary] released write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[legacy] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[legacy] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[legacy] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[legacy] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897260947
+FINEST	thread=15	[primary] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[primary] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINER	thread=15	[legacy] product removed, id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[primary] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[primary] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+FINEST	thread=15	[legacy] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897260944
+Fri Nov 20 11:34:21 MST 2020
+FINE	thread=15	Using digest version v1, algorithm=SHA1
+FINE	thread=15	Digest='x8vRPPU1HFaF3rRYG9zba9+VHeo=' , 2ms
+CONFIG	thread=15	[null] using storage directory C:\Users\jmfee\test\storage
+FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261004
+FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261004
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261004
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261004
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261004
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261004
+FINER	thread=15	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1605897261004, status=UPDATE
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261004
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261004
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261004
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261004
+FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261004
+FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261004
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261004
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261004
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261004
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261004
+FINE	thread=15	Using digest version v1, algorithm=SHA1
+FINE	thread=15	Digest='AJUIO9okrHXFhWqCH5jXpeA/daE=' , 1ms
+FINE	thread=15	Using digest version v1, algorithm=SHA1
+FINE	thread=15	Digest='AJUIO9okrHXFhWqCH5jXpeA/daE=' , 1ms
+INFO	thread=15	Signature=MC0CFBzuWVIZ3A5gYMjmAaqOxIRK/sJsAhUAkWca++IHb0DU0j8bQJThnqd70Ww=
+FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261036
+FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261036
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261036
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261036
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261036
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261036
+FINER	thread=15	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1605897261036, status=UPDATE
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261036
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261036
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261036
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261036
+FINER	thread=15	[null] number of candidate keys=1
+FINE	thread=15	Using digest version v1, algorithm=SHA1
+FINE	thread=15	Digest='AJUIO9okrHXFhWqCH5jXpeA/daE=' , 88ms
+FINE	thread=15	[null] signature verified=true (key=testKey), id=urn:usgs-product:us:shakemap:abcd1234:1605897261036
+FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261036
+FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261036
+FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINER	thread=15	[null] product stored id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038, status=UPDATE
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINER	thread=15	[null] number of candidate keys=1
+FINE	thread=15	[null] signature verified=false, id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+WARNING	thread=15	[null] bad signature for id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038, removing incomplete product
+FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINER	thread=15	[null] product removed, id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261038
+FINE	thread=15	Using digest version v1, algorithm=SHA1
+FINE	thread=15	Digest='cRNeGA+++COjoxuVxcfaVRAd6aY=' , 2ms
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINER	thread=15	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1605897261165, status=UPDATE
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261165
+FINE	thread=15	Using digest version v1, algorithm=SHA1
+FINE	thread=15	Digest='+JUxk/0bYGvtRlV6pVOvzWjY2ts=' , 1ms
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINER	thread=15	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1605897261275, status=UPDATE
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINER	thread=15	[null] product stored id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277, status=UPDATE
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINER	thread=15	[null] product removed, id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINER	thread=15	[null] product removed, id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261275
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap2:efgh5678:1605897261277
+FINE	thread=15	Using digest version v1, algorithm=SHA1
+FINE	thread=15	Digest='l7EToMuVFARYYrW8whLYzR51amE=' , 2ms
+FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINER	thread=15	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1605897261319, status=UPDATE
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
+FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897261319
 </pre>
 </span>
 </div>
@@ -409,7 +419,7 @@ FINEST	thread=14	[null] released write lock for product id=urn:usgs-product:us:s
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 5.4.1</a> at Jun 25, 2020, 4:28:09 PM</p>
+<a href="http://www.gradle.org">Gradle 5.4.1</a> at Nov 20, 2020, 11:35:41 AM</p>
 </div>
 </div>
 </body>

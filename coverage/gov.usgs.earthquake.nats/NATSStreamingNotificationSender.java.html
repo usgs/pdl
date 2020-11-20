@@ -3,30 +3,29 @@
 import gov.usgs.earthquake.distribution.*;
 import gov.usgs.util.Config;
 
-import javax.security.auth.login.Configuration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Sends notifications directly to NATS streaming server using a NATS client
  */
-<span class="nc" id="L13">public class NATSStreamingNotificationSender extends DefaultNotificationSender {</span>
+<span class="nc" id="L12">public class NATSStreamingNotificationSender extends DefaultNotificationSender {</span>
 
-<span class="nc" id="L15">  private static final Logger LOGGER = Logger</span>
-<span class="nc" id="L16">          .getLogger(DefaultNotificationSender.class.getName());</span>
+<span class="nc" id="L14">  private static final Logger LOGGER = Logger</span>
+<span class="nc" id="L15">          .getLogger(DefaultNotificationSender.class.getName());</span>
 
-<span class="nc" id="L18">  private NATSClient client = new NATSClient();</span>
+<span class="nc" id="L17">  private NATSClient client = new NATSClient();</span>
   private String subject;
 
   @Override
   public void configure(Config config) throws Exception{
-<span class="nc" id="L23">    super.configure(config);</span>
-<span class="nc" id="L24">    client.configure(config);</span>
-<span class="nc" id="L25">    subject = config.getProperty(NATSClient.SUBJECT_PROPERTY);</span>
-<span class="nc bnc" id="L26" title="All 2 branches missed.">    if (subject == null) {</span>
-<span class="nc" id="L27">      throw new ConfigurationException(NATSClient.SUBJECT_PROPERTY + &quot; is a required parameter&quot;);</span>
+<span class="nc" id="L22">    super.configure(config);</span>
+<span class="nc" id="L23">    client.configure(config);</span>
+<span class="nc" id="L24">    subject = config.getProperty(NATSClient.SUBJECT_PROPERTY);</span>
+<span class="nc bnc" id="L25" title="All 2 branches missed.">    if (subject == null) {</span>
+<span class="nc" id="L26">      throw new ConfigurationException(NATSClient.SUBJECT_PROPERTY + &quot; is a required parameter&quot;);</span>
     }
-<span class="nc" id="L29">  }</span>
+<span class="nc" id="L28">  }</span>
 
   /**
    * Publishes notification to NATS streaming server
@@ -37,14 +36,14 @@ import java.util.logging.Logger;
    */
   @Override
   public void sendNotification(final Notification notification) throws Exception {
-<span class="nc" id="L40">    String message = URLNotificationJSONConverter.toJSON((URLNotification) notification);</span>
+<span class="nc" id="L39">    String message = URLNotificationJSONConverter.toJSON((URLNotification) notification);</span>
     try {
-<span class="nc" id="L42">      client.getConnection().publish(subject, message.getBytes());</span>
-<span class="nc" id="L43">    } catch (Exception e) {</span>
-<span class="nc" id="L44">      LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] exception publishing NATSStreaming notification:&quot;);</span>
-<span class="nc" id="L45">      throw e;</span>
-<span class="nc" id="L46">    }</span>
-<span class="nc" id="L47">  }</span>
+<span class="nc" id="L41">      client.getConnection().publish(subject, message.getBytes());</span>
+<span class="nc" id="L42">    } catch (Exception e) {</span>
+<span class="nc" id="L43">      LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] exception publishing NATSStreaming notification:&quot;);</span>
+<span class="nc" id="L44">      throw e;</span>
+<span class="nc" id="L45">    }</span>
+<span class="nc" id="L46">  }</span>
 
   /**
    * Starts NATSStreaming connection and superclasses
@@ -53,9 +52,9 @@ import java.util.logging.Logger;
    */
   @Override
   public void startup() throws Exception {
-<span class="nc" id="L56">    super.startup();</span>
-<span class="nc" id="L57">    client.startup();</span>
-<span class="nc" id="L58">  }</span>
+<span class="nc" id="L55">    super.startup();</span>
+<span class="nc" id="L56">    client.startup();</span>
+<span class="nc" id="L57">  }</span>
 
   /**
    * Safely closes the NATSStreaming connection and superclasses
@@ -64,24 +63,24 @@ import java.util.logging.Logger;
    */
   @Override
   public void shutdown() throws Exception {
-<span class="nc" id="L67">    client.shutdown();</span>
-<span class="nc" id="L68">    super.shutdown();</span>
-<span class="nc" id="L69">  }</span>
+<span class="nc" id="L66">    client.shutdown();</span>
+<span class="nc" id="L67">    super.shutdown();</span>
+<span class="nc" id="L68">  }</span>
 
   public NATSClient getClient() {
-<span class="nc" id="L72">    return client;</span>
+<span class="nc" id="L71">    return client;</span>
   }
 
   public void setClient(NATSClient client) {
-<span class="nc" id="L76">    this.client = client;</span>
-<span class="nc" id="L77">  }</span>
+<span class="nc" id="L75">    this.client = client;</span>
+<span class="nc" id="L76">  }</span>
 
   public String getSubject() {
-<span class="nc" id="L80">    return subject;</span>
+<span class="nc" id="L79">    return subject;</span>
   }
 
   public void setSubject(String subject) {
-<span class="nc" id="L84">    this.subject = subject;</span>
-<span class="nc" id="L85">  }</span>
+<span class="nc" id="L83">    this.subject = subject;</span>
+<span class="nc" id="L84">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

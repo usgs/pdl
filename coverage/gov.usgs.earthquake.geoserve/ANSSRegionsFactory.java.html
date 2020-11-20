@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import gov.usgs.earthquake.geoserve.GeoserveLayersService;
 import gov.usgs.earthquake.qdm.Regions;
 import gov.usgs.util.FileUtils;
 import gov.usgs.util.StreamUtils;
@@ -23,14 +22,14 @@ import gov.usgs.util.XmlUtils;
  *
  * Simplest usage:
  *     ANSSRegionsFactory.getFactory().getRegions()
- * 
+ *
  * Regions are not fetched until {@link #startup()}
  * (or {@link #fetchRegions()}) is called.
  */
 public class ANSSRegionsFactory {
 
     // logging object
-<span class="fc" id="L33">    public static final Logger LOGGER = Logger.getLogger(ANSSRegionsFactory.class.getName());</span>
+<span class="fc" id="L32">    public static final Logger LOGGER = Logger.getLogger(ANSSRegionsFactory.class.getName());</span>
 
     // milliseconds per day
     public static final long MILLISECONDS_PER_DAY = 86400000L;
@@ -46,7 +45,7 @@ public class ANSSRegionsFactory {
     private GeoserveLayersService geoserveLayersService;
 
     // path to local regions file
-<span class="fc" id="L49">    private File localRegions = new File(DEFAULT_REGIONS_JSON);</span>
+<span class="fc" id="L48">    private File localRegions = new File(DEFAULT_REGIONS_JSON);</span>
 
     // the current regions object
     private Regions regions;
@@ -55,39 +54,39 @@ public class ANSSRegionsFactory {
     private Thread shutdownHook;
 
     // timer used to auto fetch region updates
-<span class="fc" id="L58">    private Timer updateTimer = new Timer();</span>
+<span class="fc" id="L57">    private Timer updateTimer = new Timer();</span>
 
 
     /**
      * Use default GeoserveLayersService.
      */
     public ANSSRegionsFactory () {
-<span class="fc" id="L65">        this(new GeoserveLayersService());</span>
-<span class="fc" id="L66">    }</span>
+<span class="fc" id="L64">        this(new GeoserveLayersService());</span>
+<span class="fc" id="L65">    }</span>
 
     /**
      * Use custom GeoserveLayersService.
      */
-<span class="fc" id="L71">    public ANSSRegionsFactory (final GeoserveLayersService geoserveLayersService) {</span>
-<span class="fc" id="L72">        this.geoserveLayersService = geoserveLayersService;</span>
-<span class="fc" id="L73">    }</span>
+<span class="fc" id="L70">    public ANSSRegionsFactory (final GeoserveLayersService geoserveLayersService) {</span>
+<span class="fc" id="L71">        this.geoserveLayersService = geoserveLayersService;</span>
+<span class="fc" id="L72">    }</span>
 
     /**
-     * Get the global ANSSRegionsFactory, 
+     * Get the global ANSSRegionsFactory,
      * creating and starting if needed.
      */
     public static synchronized ANSSRegionsFactory getFactory() {
-<span class="fc" id="L80">        return getFactory(true);</span>
+<span class="fc" id="L79">        return getFactory(true);</span>
     }
 
     public static synchronized ANSSRegionsFactory getFactory(final boolean startup) {
-<span class="fc bfc" id="L84" title="All 2 branches covered.">        if (SINGLETON == null) {</span>
-<span class="fc" id="L85">            SINGLETON = new ANSSRegionsFactory();</span>
-<span class="pc bpc" id="L86" title="1 of 2 branches missed.">            if (startup) {</span>
-<span class="fc" id="L87">                SINGLETON.startup();</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (SINGLETON == null) {</span>
+<span class="fc" id="L84">            SINGLETON = new ANSSRegionsFactory();</span>
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">            if (startup) {</span>
+<span class="fc" id="L86">                SINGLETON.startup();</span>
             }
         }
-<span class="fc" id="L90">        return SINGLETON;</span>
+<span class="fc" id="L89">        return SINGLETON;</span>
     }
 
     /**
@@ -95,11 +94,11 @@ public class ANSSRegionsFactory {
      * shutting down any existing factory if needed.
      */
     public static synchronized void setFactory(final ANSSRegionsFactory factory) {
-<span class="nc bnc" id="L98" title="All 2 branches missed.">        if (SINGLETON != null) {</span>
-<span class="nc" id="L99">            SINGLETON.shutdown();</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (SINGLETON != null) {</span>
+<span class="nc" id="L98">            SINGLETON.shutdown();</span>
         }
-<span class="nc" id="L101">        SINGLETON = factory;</span>
-<span class="nc" id="L102">    }</span>
+<span class="nc" id="L100">        SINGLETON = factory;</span>
+<span class="nc" id="L101">    }</span>
 
     /**
      * Download regions from geoserve.
@@ -110,37 +109,37 @@ public class ANSSRegionsFactory {
     public void fetchRegions () {
         try {
             // try loading from geoserve
-<span class="fc" id="L113">            this.regions = loadFromGeoserve();</span>
-<span class="fc" id="L114">        } catch (Exception e) {</span>
-<span class="fc" id="L115">            LOGGER.log(Level.WARNING,</span>
+<span class="fc" id="L112">            this.regions = loadFromGeoserve();</span>
+<span class="fc" id="L113">        } catch (Exception e) {</span>
+<span class="fc" id="L114">            LOGGER.log(Level.WARNING,</span>
                     &quot;Error fetching ANSS Regions from geoserve&quot;,
                     e);
             try {
-<span class="pc bpc" id="L119" title="1 of 2 branches missed.">                if (this.regions == null) {</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">                if (this.regions == null) {</span>
                     // fall back to local cache
-<span class="fc" id="L121">                    this.regions = loadFromFile();</span>
+<span class="fc" id="L120">                    this.regions = loadFromFile();</span>
                 }
-<span class="fc" id="L123">            } catch (Exception e2) {</span>
-<span class="fc" id="L124">                LOGGER.log(Level.WARNING,</span>
+<span class="fc" id="L122">            } catch (Exception e2) {</span>
+<span class="fc" id="L123">                LOGGER.log(Level.WARNING,</span>
                         &quot;Error fetching ANSS Regions from local file&quot;,
                         e);
-<span class="fc" id="L127">            }</span>
-<span class="fc" id="L128">        }</span>
-<span class="fc" id="L129">    }</span>
+<span class="fc" id="L126">            }</span>
+<span class="fc" id="L127">        }</span>
+<span class="fc" id="L128">    }</span>
 
     /**
      * Read regions from local regions file.
      */
     protected Regions loadFromFile() throws IOException {
-<span class="fc" id="L135">        try (InputStream in = StreamUtils.getInputStream(this.localRegions)) {</span>
-<span class="fc" id="L136">            JsonObject json = Json.createReader(in).readObject();</span>
-<span class="fc" id="L137">            Regions regions = new RegionsJSON().parseRegions(json);</span>
+<span class="fc" id="L134">        try (InputStream in = StreamUtils.getInputStream(this.localRegions)) {</span>
+<span class="fc" id="L135">            JsonObject json = Json.createReader(in).readObject();</span>
+<span class="fc" id="L136">            Regions regions = new RegionsJSON().parseRegions(json);</span>
             // regions loaded
-<span class="fc" id="L139">            LOGGER.fine(&quot;Loaded ANSS Authoritative Regions from &quot;</span>
+<span class="fc" id="L138">            LOGGER.fine(&quot;Loaded ANSS Authoritative Regions from &quot;</span>
                     + this.localRegions
-<span class="fc" id="L141">                    + &quot;, last modified=&quot; + XmlUtils.formatDate(</span>
-<span class="fc" id="L142">                            new Date(this.localRegions.lastModified())));</span>
-<span class="fc" id="L143">            return regions;</span>
+<span class="fc" id="L140">                    + &quot;, last modified=&quot; + XmlUtils.formatDate(</span>
+<span class="fc" id="L141">                            new Date(this.localRegions.lastModified())));</span>
+<span class="fc" id="L142">            return regions;</span>
         }
     }
 
@@ -148,17 +147,17 @@ public class ANSSRegionsFactory {
      * Read regions from geoserve service.
      */
     protected Regions loadFromGeoserve() throws IOException {
-<span class="fc" id="L151">        LOGGER.fine(&quot;Fetching ANSS Authoritative Regions from Geoserve&quot;);</span>
-<span class="fc" id="L152">        JsonObject json = this.geoserveLayersService.getLayer(&quot;anss&quot;);</span>
-<span class="fc" id="L153">        Regions regions = new RegionsJSON().parseRegions(json);</span>
-<span class="fc" id="L154">        LOGGER.finer(&quot;Loaded ANSS Authoritative Regions from Geoserve&quot;);</span>
+<span class="fc" id="L150">        LOGGER.fine(&quot;Fetching ANSS Authoritative Regions from Geoserve&quot;);</span>
+<span class="fc" id="L151">        JsonObject json = this.geoserveLayersService.getLayer(&quot;anss&quot;);</span>
+<span class="fc" id="L152">        Regions regions = new RegionsJSON().parseRegions(json);</span>
+<span class="fc" id="L153">        LOGGER.finer(&quot;Loaded ANSS Authoritative Regions from Geoserve&quot;);</span>
         try {
-<span class="fc" id="L156">            saveToFile(this.localRegions, json);</span>
-<span class="nc" id="L157">        } catch (IOException e) {</span>
+<span class="fc" id="L155">            saveToFile(this.localRegions, json);</span>
+<span class="nc" id="L156">        } catch (IOException e) {</span>
             // log for now, since saving is value added
-<span class="nc" id="L159">            LOGGER.log(Level.INFO, &quot;Error saving local regions&quot;, e);</span>
-<span class="fc" id="L160">        }</span>
-<span class="fc" id="L161">        return regions;</span>
+<span class="nc" id="L158">            LOGGER.log(Level.INFO, &quot;Error saving local regions&quot;, e);</span>
+<span class="fc" id="L159">        }</span>
+<span class="fc" id="L160">        return regions;</span>
     }
 
     /**
@@ -167,36 +166,36 @@ public class ANSSRegionsFactory {
      * @param json json response to store locally.
      */
     protected void saveToFile(final File regionsFile, final JsonObject json) throws IOException {
-<span class="fc" id="L170">        LOGGER.fine(&quot;Storing ANSS Authoritative Regions to &quot; + regionsFile);</span>
+<span class="fc" id="L169">        LOGGER.fine(&quot;Storing ANSS Authoritative Regions to &quot; + regionsFile);</span>
         // save regions if needed later
-<span class="fc" id="L172">        FileUtils.writeFileThenMove(</span>
-<span class="fc" id="L173">                new File(regionsFile.toString() + &quot;.temp&quot;),</span>
+<span class="fc" id="L171">        FileUtils.writeFileThenMove(</span>
+<span class="fc" id="L172">                new File(regionsFile.toString() + &quot;.temp&quot;),</span>
                 regionsFile,
-<span class="fc" id="L175">                json.toString().getBytes());</span>
-<span class="fc" id="L176">        LOGGER.finer(&quot;Stored ANSS Regions to &quot; + regionsFile);</span>
-<span class="fc" id="L177">    }</span>
+<span class="fc" id="L174">                json.toString().getBytes());</span>
+<span class="fc" id="L175">        LOGGER.finer(&quot;Stored ANSS Regions to &quot; + regionsFile);</span>
+<span class="fc" id="L176">    }</span>
 
     /**
      * Start updating regions.
      */
     public void startup() {
-<span class="fc bfc" id="L183" title="All 2 branches covered.">        if (this.shutdownHook != null) {</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">        if (this.shutdownHook != null) {</span>
             // already started
-<span class="fc" id="L185">            return;</span>
+<span class="fc" id="L184">            return;</span>
         }
 
         // do initial fetch
-<span class="fc" id="L189">        fetchRegions();</span>
+<span class="fc" id="L188">        fetchRegions();</span>
 
         // schedule periodic fetch
-<span class="fc" id="L192">        long now = new Date().getTime();</span>
-<span class="fc" id="L193">        long nextMidnight = MILLISECONDS_PER_DAY - (now % MILLISECONDS_PER_DAY);</span>
-<span class="fc" id="L194">        updateTimer.scheduleAtFixedRate(</span>
-<span class="fc" id="L195">                new TimerTask() {</span>
+<span class="fc" id="L191">        long now = new Date().getTime();</span>
+<span class="fc" id="L192">        long nextMidnight = MILLISECONDS_PER_DAY - (now % MILLISECONDS_PER_DAY);</span>
+<span class="fc" id="L193">        updateTimer.scheduleAtFixedRate(</span>
+<span class="fc" id="L194">                new TimerTask() {</span>
                     @Override
                     public void run() {
-<span class="nc" id="L198">                        fetchRegions();</span>
-<span class="nc" id="L199">                    }</span>
+<span class="nc" id="L197">                        fetchRegions();</span>
+<span class="nc" id="L198">                    }</span>
                 },
                 // firstt time at midnight
                 nextMidnight,
@@ -204,63 +203,63 @@ public class ANSSRegionsFactory {
                 MILLISECONDS_PER_DAY);
 
         // register shutdown hook
-<span class="fc" id="L207">        this.shutdownHook = new Thread(() -&gt; {</span>
+<span class="fc" id="L206">        this.shutdownHook = new Thread(() -&gt; {</span>
             // stop periodic fetch
-<span class="fc" id="L209">            this.updateTimer.cancel();</span>
-<span class="fc" id="L210">        });</span>
-<span class="fc" id="L211">        Runtime.getRuntime().addShutdownHook(this.shutdownHook);</span>
-<span class="fc" id="L212">    }</span>
+<span class="fc" id="L208">            this.updateTimer.cancel();</span>
+<span class="fc" id="L209">        });</span>
+<span class="fc" id="L210">        Runtime.getRuntime().addShutdownHook(this.shutdownHook);</span>
+<span class="fc" id="L211">    }</span>
 
     /**
      * Stop updating regions.
      */
     public void shutdown() {
-<span class="pc bpc" id="L218" title="1 of 2 branches missed.">        if (this.shutdownHook == null) {</span>
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">        if (this.shutdownHook == null) {</span>
             // not started or already stopped
-<span class="nc" id="L220">            return;</span>
+<span class="nc" id="L219">            return;</span>
         }
 
         // stop periodic fetch
-<span class="fc" id="L224">        this.updateTimer.cancel();</span>
+<span class="fc" id="L223">        this.updateTimer.cancel();</span>
 
         // remove shutdown hook
-<span class="fc" id="L227">        Runtime.getRuntime().removeShutdownHook(this.shutdownHook);</span>
-<span class="fc" id="L228">        this.shutdownHook = null;</span>
-<span class="fc" id="L229">    }</span>
+<span class="fc" id="L226">        Runtime.getRuntime().removeShutdownHook(this.shutdownHook);</span>
+<span class="fc" id="L227">        this.shutdownHook = null;</span>
+<span class="fc" id="L228">    }</span>
 
     /**
      * Get the service.
      */
     public GeoserveLayersService getGeoserveLayersService() {
-<span class="nc" id="L235">        return this.geoserveLayersService;</span>
+<span class="nc" id="L234">        return this.geoserveLayersService;</span>
     }
 
     /**
      * Set the service.
      */
     public void setGeoserveLayersService(final GeoserveLayersService service) {
-<span class="nc" id="L242">        this.geoserveLayersService = service;</span>
-<span class="nc" id="L243">    }</span>
+<span class="nc" id="L241">        this.geoserveLayersService = service;</span>
+<span class="nc" id="L242">    }</span>
 
     /**
      * Get the local regions file.
      */
     public File getLocalRegions() {
-<span class="nc" id="L249">        return this.localRegions;</span>
+<span class="nc" id="L248">        return this.localRegions;</span>
     }
 
     /**
      * Set the local regions file.
      */
     public void setLocalRegions(final File localRegions) {
-<span class="fc" id="L256">        this.localRegions = localRegions;</span>
-<span class="fc" id="L257">    }</span>
+<span class="fc" id="L255">        this.localRegions = localRegions;</span>
+<span class="fc" id="L256">    }</span>
 
     /**
      * Get the most recently fetched Regions.
      */
     public Regions getRegions () {
-<span class="fc" id="L263">        return this.regions;</span>
+<span class="fc" id="L262">        return this.regions;</span>
     }
 
 }

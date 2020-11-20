@@ -11,7 +11,7 @@ import java.util.Base64;
 
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
-
+import gov.usgs.util.CryptoUtils.Version;
 import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.URLContent;
 import gov.usgs.earthquake.product.ProductId;
@@ -49,61 +49,65 @@ public class XmlProductHandler implements ProductHandler {
 	public static final String CONTENT_ATTRIBUTE_ENCODED = &quot;encoded&quot;;
 
 	public static final String SIGNATURE_ELEMENT = &quot;signature&quot;;
+	public static final String SIGNATURE_ATTRIBUTE_VERSION = &quot;version&quot;;
 
 	/** The OutputStream where xml is written. */
 	private OutputStream out;
-	
+
 	/** Controls whether the XML Declaration is output with the XML. */
-<span class="fc" id="L57">	private boolean includeDeclaration = true;</span>
+<span class="fc" id="L58">	private boolean includeDeclaration = true;</span>
+
+	/** Signature version. */
+<span class="fc" id="L61">	private Version signatureVersion = Version.SIGNATURE_V1;</span>
 
 	/**
 	 * Create a new XmlProductHandler object.
-	 * 
+	 *
 	 * @param out
 	 *            the OutputStream where xml will be written.
 	 */
-<span class="fc" id="L65">	public XmlProductHandler(final OutputStream out) {</span>
-<span class="fc" id="L66">		this.out = out;</span>
-<span class="fc" id="L67">	}</span>
-	
+<span class="fc" id="L69">	public XmlProductHandler(final OutputStream out) {</span>
+<span class="fc" id="L70">		this.out = out;</span>
+<span class="fc" id="L71">	}</span>
+
 	/**
 	 * Create a new XmlProductHandler object.
-	 * 
+	 *
 	 * @param out
 	 *            the OutputStream where xml will be written.
 	 * @param includeDeclaration
 	 * 			  whether to include the XML declaration with output
 	 */
-<span class="fc" id="L77">	public XmlProductHandler(final OutputStream out, boolean includeDeclaration) {</span>
-<span class="fc" id="L78">		this.out = out;</span>
-<span class="fc" id="L79">		this.includeDeclaration = includeDeclaration;</span>
-<span class="fc" id="L80">	}</span>
+<span class="fc" id="L81">	public XmlProductHandler(final OutputStream out, boolean includeDeclaration) {</span>
+<span class="fc" id="L82">		this.out = out;</span>
+<span class="fc" id="L83">		this.includeDeclaration = includeDeclaration;</span>
+<span class="fc" id="L84">	}</span>
 
 	/**
 	 * Output the product root element.
 	 */
 	public void onBeginProduct(ProductId id, String status, URL trackerURL)
 			throws Exception {
-<span class="fc" id="L87">		StringBuffer buf = new StringBuffer();</span>
-<span class="fc bfc" id="L88" title="All 2 branches covered.">		if (includeDeclaration) {</span>
-<span class="fc" id="L89">			buf.append(XML_DECLARATION);</span>
+<span class="fc" id="L91">		StringBuffer buf = new StringBuffer();</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">		if (includeDeclaration) {</span>
+<span class="fc" id="L93">			buf.append(XML_DECLARATION);</span>
 		}
-<span class="fc" id="L91">		buf.append(&quot;&lt;&quot;).append(PRODUCT_ELEMENT);</span>
-<span class="fc" id="L92">		buf.append(&quot; xmlns=\&quot;&quot;).append(PRODUCT_XML_NAMESPACE).append(&quot;\&quot;&quot;);</span>
-<span class="fc" id="L93">		buf.append(&quot; &quot;).append(PRODUCT_ATTRIBUTE_ID).append(&quot;=\&quot;&quot;)</span>
-<span class="fc" id="L94">				.append(XmlUtils.escape(id.toString())).append(&quot;\&quot;&quot;);</span>
-<span class="fc" id="L95">		buf.append(&quot; &quot;).append(PRODUCT_ATTRIBUTE_UPDATED).append(&quot;=\&quot;&quot;)</span>
-<span class="fc" id="L96">				.append(XmlUtils.formatDate(id.getUpdateTime())).append(&quot;\&quot;&quot;);</span>
-<span class="fc" id="L97">		buf.append(&quot; &quot;).append(PRODUCT_ATTRIBUTE_STATUS).append(&quot;=\&quot;&quot;)</span>
-<span class="fc" id="L98">				.append(XmlUtils.escape(status)).append(&quot;\&quot;&quot;);</span>
-<span class="fc bfc" id="L99" title="All 2 branches covered.">		if (trackerURL != null) {</span>
-<span class="fc" id="L100">			buf.append(&quot; &quot;).append(PRODUCT_ATTRIBUTE_TRACKER_URL).append(&quot;=\&quot;&quot;)</span>
-<span class="fc" id="L101">					.append(trackerURL.toExternalForm()).append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L95">		buf.append(&quot;&lt;&quot;).append(PRODUCT_ELEMENT);</span>
+<span class="fc" id="L96">		buf.append(&quot; xmlns=\&quot;&quot;).append(PRODUCT_XML_NAMESPACE).append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L97">		buf.append(&quot; &quot;).append(PRODUCT_ATTRIBUTE_ID).append(&quot;=\&quot;&quot;)</span>
+<span class="fc" id="L98">				.append(XmlUtils.escape(id.toString())).append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L99">		buf.append(&quot; &quot;).append(PRODUCT_ATTRIBUTE_UPDATED).append(&quot;=\&quot;&quot;)</span>
+<span class="fc" id="L100">				.append(XmlUtils.formatDate(id.getUpdateTime())).append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L101">		buf.append(&quot; &quot;).append(PRODUCT_ATTRIBUTE_STATUS).append(&quot;=\&quot;&quot;)</span>
+<span class="fc" id="L102">				.append(XmlUtils.escape(status)).append(&quot;\&quot;&quot;);</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">		if (trackerURL != null) {</span>
+<span class="fc" id="L104">			buf.append(&quot; &quot;).append(PRODUCT_ATTRIBUTE_TRACKER_URL).append(&quot;=\&quot;&quot;)</span>
+<span class="fc" id="L105">					.append(trackerURL.toExternalForm()).append(&quot;\&quot;&quot;);</span>
 		}
-<span class="fc" id="L103">		buf.append(&quot;&gt;\n&quot;);</span>
+<span class="fc" id="L107">		buf.append(&quot;&gt;\n&quot;);</span>
 
-<span class="fc" id="L105">		out.write(buf.toString().getBytes());</span>
-<span class="fc" id="L106">	}</span>
+<span class="fc" id="L109">		out.write(buf.toString().getBytes());</span>
+<span class="fc" id="L110">	}</span>
 
 	/**
 	 * Output a content object as xml.
@@ -111,125 +115,133 @@ public class XmlProductHandler implements ProductHandler {
 	public void onContent(ProductId id, String path, Content content)
 			throws Exception {
 		// open element
-<span class="fc" id="L114">		StringBuffer buf = new StringBuffer();</span>
-<span class="fc" id="L115">		buf.append(&quot;\t&lt;&quot;).append(CONTENT_ELEMENT);</span>
-<span class="fc" id="L116">		buf.append(&quot; &quot;).append(CONTENT_ATTRIBUTE_PATH).append(&quot;=\&quot;&quot;)</span>
-<span class="fc" id="L117">				.append(XmlUtils.escape(path)).append(&quot;\&quot;&quot;);</span>
-<span class="fc" id="L118">		buf.append(&quot; &quot;).append(CONTENT_ATTRIBUTE_TYPE).append(&quot;=\&quot;&quot;)</span>
-<span class="fc" id="L119">				.append(XmlUtils.escape(content.getContentType())).append(&quot;\&quot;&quot;);</span>
-<span class="fc" id="L120">		buf.append(&quot; &quot;).append(CONTENT_ATTRIBUTE_LENGTH).append(&quot;=\&quot;&quot;)</span>
-<span class="fc" id="L121">				.append(content.getLength()).append(&quot;\&quot;&quot;);</span>
-<span class="fc" id="L122">		buf.append(&quot; &quot;).append(CONTENT_ATTRIBUTE_MODIFIED).append(&quot;=\&quot;&quot;)</span>
-<span class="fc" id="L123">				.append(XmlUtils.formatDate(content.getLastModified()))</span>
-<span class="fc" id="L124">				.append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L118">		StringBuffer buf = new StringBuffer();</span>
+<span class="fc" id="L119">		buf.append(&quot;\t&lt;&quot;).append(CONTENT_ELEMENT);</span>
+<span class="fc" id="L120">		buf.append(&quot; &quot;).append(CONTENT_ATTRIBUTE_PATH).append(&quot;=\&quot;&quot;)</span>
+<span class="fc" id="L121">				.append(XmlUtils.escape(path)).append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L122">		buf.append(&quot; &quot;).append(CONTENT_ATTRIBUTE_TYPE).append(&quot;=\&quot;&quot;)</span>
+<span class="fc" id="L123">				.append(XmlUtils.escape(content.getContentType())).append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L124">		buf.append(&quot; &quot;).append(CONTENT_ATTRIBUTE_LENGTH).append(&quot;=\&quot;&quot;)</span>
+<span class="fc" id="L125">				.append(content.getLength()).append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L126">		buf.append(&quot; &quot;).append(CONTENT_ATTRIBUTE_MODIFIED).append(&quot;=\&quot;&quot;)</span>
+<span class="fc" id="L127">				.append(XmlUtils.formatDate(content.getLastModified()))</span>
+<span class="fc" id="L128">				.append(&quot;\&quot;&quot;);</span>
 
-<span class="fc bfc" id="L126" title="All 2 branches covered.">		if (content instanceof URLContent) {</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">		if (content instanceof URLContent) {</span>
 			// URL CONTENT
-<span class="fc" id="L128">			buf.append(&quot; &quot;).append(CONTENT_ATTRIBUTE_HREF).append(&quot;=\&quot;&quot;)</span>
-<span class="fc" id="L129">					.append(((URLContent) content).getURL().toString())</span>
-<span class="fc" id="L130">					.append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L132">			buf.append(&quot; &quot;).append(CONTENT_ATTRIBUTE_HREF).append(&quot;=\&quot;&quot;)</span>
+<span class="fc" id="L133">					.append(((URLContent) content).getURL().toString())</span>
+<span class="fc" id="L134">					.append(&quot;\&quot;&quot;);</span>
 
 			// close element early, url is alternative to embedded content
-<span class="fc" id="L133">			buf.append(&quot;/&gt;&quot;);</span>
-<span class="fc" id="L134">			out.write(buf.toString().getBytes());</span>
-<span class="fc" id="L135">			return;</span>
+<span class="fc" id="L137">			buf.append(&quot;/&gt;&quot;);</span>
+<span class="fc" id="L138">			out.write(buf.toString().getBytes());</span>
+<span class="fc" id="L139">			return;</span>
 		}
 
 		else {
 			// EMBEDDED CONTENT
-<span class="fc" id="L140">			buf.append(&quot; &quot;).append(CONTENT_ATTRIBUTE_ENCODED)</span>
-<span class="fc" id="L141">					.append(&quot;=\&quot;true\&quot;&quot;);</span>
+<span class="fc" id="L144">			buf.append(&quot; &quot;).append(CONTENT_ATTRIBUTE_ENCODED)</span>
+<span class="fc" id="L145">					.append(&quot;=\&quot;true\&quot;&quot;);</span>
 
-<span class="fc" id="L143">			buf.append(&quot;&gt;&quot;);</span>
-<span class="fc" id="L144">			out.write(buf.toString().getBytes());</span>
+<span class="fc" id="L147">			buf.append(&quot;&gt;&quot;);</span>
+<span class="fc" id="L148">			out.write(buf.toString().getBytes());</span>
 
-<span class="fc" id="L146">			InputStream in = null;</span>
-<span class="fc" id="L147">			OutputStream base64out = null;</span>
+<span class="fc" id="L150">			InputStream in = null;</span>
+<span class="fc" id="L151">			OutputStream base64out = null;</span>
 			try {
-<span class="fc" id="L149">				in = content.getInputStream();</span>
-<span class="fc" id="L150">				base64out = Base64.getEncoder().wrap(</span>
+<span class="fc" id="L153">				in = content.getInputStream();</span>
+<span class="fc" id="L154">				base64out = Base64.getEncoder().wrap(</span>
 						new StreamUtils.UnclosableOutputStream(out));
 				// write element content
-<span class="fc" id="L153">				StreamUtils.transferStream(in, base64out);</span>
+<span class="fc" id="L157">				StreamUtils.transferStream(in, base64out);</span>
 			} finally {
-<span class="fc" id="L155">				StreamUtils.closeStream(in);</span>
-<span class="fc" id="L156">				StreamUtils.closeStream(base64out);</span>
+<span class="fc" id="L159">				StreamUtils.closeStream(in);</span>
+<span class="fc" id="L160">				StreamUtils.closeStream(base64out);</span>
 			}
 
 			// close element
-<span class="fc" id="L160">			buf = new StringBuffer();</span>
-<span class="fc" id="L161">			buf.append(&quot;&lt;/&quot;).append(CONTENT_ELEMENT).append(&quot;&gt;\n&quot;);</span>
-<span class="fc" id="L162">			out.write(buf.toString().getBytes());</span>
+<span class="fc" id="L164">			buf = new StringBuffer();</span>
+<span class="fc" id="L165">			buf.append(&quot;&lt;/&quot;).append(CONTENT_ELEMENT).append(&quot;&gt;\n&quot;);</span>
+<span class="fc" id="L166">			out.write(buf.toString().getBytes());</span>
 		}
-<span class="fc" id="L164">	}</span>
+<span class="fc" id="L168">	}</span>
 
 	/**
 	 * Output the closing product element.
 	 */
 	public void onEndProduct(ProductId id) throws Exception {
-<span class="fc" id="L170">		StringBuffer buf = new StringBuffer();</span>
-<span class="fc" id="L171">		buf.append(&quot;&lt;/&quot;).append(PRODUCT_ELEMENT).append(&quot;&gt;\n&quot;);</span>
+<span class="fc" id="L174">		StringBuffer buf = new StringBuffer();</span>
+<span class="fc" id="L175">		buf.append(&quot;&lt;/&quot;).append(PRODUCT_ELEMENT).append(&quot;&gt;\n&quot;);</span>
 
-<span class="fc" id="L173">		out.write(buf.toString().getBytes());</span>
-<span class="fc" id="L174">		out.flush();</span>
-<span class="fc" id="L175">		out.close();</span>
-<span class="fc" id="L176">	}</span>
+<span class="fc" id="L177">		out.write(buf.toString().getBytes());</span>
+<span class="fc" id="L178">		out.flush();</span>
+<span class="fc" id="L179">		out.close();</span>
+<span class="fc" id="L180">	}</span>
 
 	/**
 	 * Output a link element as xml.
 	 */
 	public void onLink(ProductId id, String relation, URI href)
 			throws Exception {
-<span class="fc" id="L183">		StringBuffer buf = new StringBuffer();</span>
-<span class="fc" id="L184">		buf.append(&quot;\t&lt;&quot;).append(LINK_ELEMENT);</span>
-<span class="fc" id="L185">		buf.append(&quot; &quot;).append(LINK_ATTRIBUTE_RELATION).append(&quot;=\&quot;&quot;)</span>
-<span class="fc" id="L186">				.append(XmlUtils.escape(relation)).append(&quot;\&quot;&quot;);</span>
-<span class="fc" id="L187">		buf.append(&quot; &quot;).append(LINK_ATTRIBUTE_HREF).append(&quot;=\&quot;&quot;)</span>
-<span class="fc" id="L188">				.append(XmlUtils.escape(href.toString())).append(&quot;\&quot;&quot;);</span>
-<span class="fc" id="L189">		buf.append(&quot;/&gt;\n&quot;);</span>
+<span class="fc" id="L187">		StringBuffer buf = new StringBuffer();</span>
+<span class="fc" id="L188">		buf.append(&quot;\t&lt;&quot;).append(LINK_ELEMENT);</span>
+<span class="fc" id="L189">		buf.append(&quot; &quot;).append(LINK_ATTRIBUTE_RELATION).append(&quot;=\&quot;&quot;)</span>
+<span class="fc" id="L190">				.append(XmlUtils.escape(relation)).append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L191">		buf.append(&quot; &quot;).append(LINK_ATTRIBUTE_HREF).append(&quot;=\&quot;&quot;)</span>
+<span class="fc" id="L192">				.append(XmlUtils.escape(href.toString())).append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L193">		buf.append(&quot;/&gt;\n&quot;);</span>
 
-<span class="fc" id="L191">		out.write(buf.toString().getBytes());</span>
-<span class="fc" id="L192">	}</span>
+<span class="fc" id="L195">		out.write(buf.toString().getBytes());</span>
+<span class="fc" id="L196">	}</span>
 
 	/**
 	 * Output the property element as xml.
 	 */
 	public void onProperty(ProductId id, String name, String value)
 			throws Exception {
-<span class="fc" id="L199">		StringBuffer buf = new StringBuffer();</span>
-<span class="fc" id="L200">		buf.append(&quot;\t&lt;&quot;).append(PROPERTY_ELEMENT);</span>
-<span class="fc" id="L201">		buf.append(&quot; &quot;).append(PROPERTY_ATTRIBUTE_NAME).append(&quot;=\&quot;&quot;)</span>
-<span class="fc" id="L202">				.append(XmlUtils.escape(name)).append(&quot;\&quot;&quot;);</span>
-<span class="fc" id="L203">		buf.append(&quot; &quot;).append(PROPERTY_ATTRIBUTE_VALUE).append(&quot;=\&quot;&quot;)</span>
-<span class="fc" id="L204">				.append(XmlUtils.escape(value)).append(&quot;\&quot;&quot;);</span>
-<span class="fc" id="L205">		buf.append(&quot;/&gt;\n&quot;);</span>
+<span class="fc" id="L203">		StringBuffer buf = new StringBuffer();</span>
+<span class="fc" id="L204">		buf.append(&quot;\t&lt;&quot;).append(PROPERTY_ELEMENT);</span>
+<span class="fc" id="L205">		buf.append(&quot; &quot;).append(PROPERTY_ATTRIBUTE_NAME).append(&quot;=\&quot;&quot;)</span>
+<span class="fc" id="L206">				.append(XmlUtils.escape(name)).append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L207">		buf.append(&quot; &quot;).append(PROPERTY_ATTRIBUTE_VALUE).append(&quot;=\&quot;&quot;)</span>
+<span class="fc" id="L208">				.append(XmlUtils.escape(value)).append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L209">		buf.append(&quot;/&gt;\n&quot;);</span>
 
-<span class="fc" id="L207">		out.write(buf.toString().getBytes());</span>
-<span class="fc" id="L208">	}</span>
+<span class="fc" id="L211">		out.write(buf.toString().getBytes());</span>
+<span class="fc" id="L212">	}</span>
+
+	public void onSignatureVersion(ProductId id, Version version) throws Exception {
+		// save for output during onSignature
+<span class="fc" id="L216">		this.signatureVersion = version;</span>
+<span class="fc" id="L217">	}</span>
 
 	/**
 	 * Output the signature element as xml.
 	 */
 	public void onSignature(ProductId id, String signature) throws Exception {
-<span class="fc bfc" id="L214" title="All 2 branches covered.">		if (signature == null) {</span>
-<span class="fc" id="L215">			return;</span>
+<span class="fc bfc" id="L223" title="All 2 branches covered.">		if (signature == null) {</span>
+<span class="fc" id="L224">			return;</span>
 		}
 
-<span class="fc" id="L218">		StringBuffer buf = new StringBuffer();</span>
-<span class="fc" id="L219">		buf.append(&quot;\t&lt;&quot;).append(SIGNATURE_ELEMENT).append(&quot;&gt;&quot;);</span>
-<span class="fc" id="L220">		buf.append(signature);</span>
-<span class="fc" id="L221">		buf.append(&quot;&lt;/&quot;).append(SIGNATURE_ELEMENT).append(&quot;&gt;\n&quot;);</span>
+<span class="fc" id="L227">		StringBuffer buf = new StringBuffer();</span>
+<span class="fc" id="L228">		buf.append(&quot;\t&lt;&quot;).append(SIGNATURE_ELEMENT);</span>
+<span class="fc" id="L229">		buf.append(&quot; &quot;).append(SIGNATURE_ATTRIBUTE_VERSION).append(&quot;=\&quot;&quot;)</span>
+<span class="fc" id="L230">				.append(signatureVersion.toString()).append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L231">		buf.append(&quot;&gt;&quot;);</span>
+<span class="fc" id="L232">		buf.append(signature);</span>
+<span class="fc" id="L233">		buf.append(&quot;&lt;/&quot;).append(SIGNATURE_ELEMENT).append(&quot;&gt;\n&quot;);</span>
 
-<span class="fc" id="L223">		out.write(buf.toString().getBytes());</span>
-<span class="fc" id="L224">	}</span>
+<span class="fc" id="L235">		out.write(buf.toString().getBytes());</span>
+<span class="fc" id="L236">	}</span>
 
 	/**
 	 * Free any resources associated with this handler.
 	 */
 	@Override
 	public void close() {
-<span class="fc" id="L231">		StreamUtils.closeStream(out);</span>
-<span class="fc" id="L232">	}</span>
+<span class="fc" id="L243">		StreamUtils.closeStream(out);</span>
+<span class="fc" id="L244">	}</span>
 
 
 }

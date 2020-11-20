@@ -26,9 +26,9 @@ import java.util.TimerTask;
 public class TimeoutProcessBuilder {
 
 	/** The wrapped process builder. */
-<span class="pc" id="L29">	private ProcessBuilder builder = null;</span>
+<span class="nc" id="L29">	private ProcessBuilder builder = null;</span>
 	/** The timeout for this process. */
-<span class="pc" id="L31">	private long timeout = -1;</span>
+<span class="nc" id="L31">	private long timeout = -1;</span>
 
 	/**
 	 * Create a new TimeoutProcessBuilder with a timeout and an array of
@@ -54,11 +54,11 @@ public class TimeoutProcessBuilder {
 	 * @param command
 	 *            list of strings that represent command.
 	 */
-<span class="fc" id="L57">	public TimeoutProcessBuilder(long timeout, List&lt;String&gt; command) {</span>
-<span class="fc" id="L58">		builder = new ProcessBuilder(command);</span>
-<span class="fc" id="L59">		this.timeout = timeout;</span>
+<span class="nc" id="L57">	public TimeoutProcessBuilder(long timeout, List&lt;String&gt; command) {</span>
+<span class="nc" id="L58">		builder = new ProcessBuilder(command);</span>
+<span class="nc" id="L59">		this.timeout = timeout;</span>
 
-<span class="fc" id="L61">	}</span>
+<span class="nc" id="L61">	}</span>
 
 	/**
 	 * This signature is preserved, but calls the alternate constructor with
@@ -88,8 +88,8 @@ public class TimeoutProcessBuilder {
 	}
 
 	public TimeoutProcessBuilder directory(File directory) {
-<span class="fc" id="L91">		builder.directory(directory);</span>
-<span class="fc" id="L92">		return this;</span>
+<span class="nc" id="L91">		builder.directory(directory);</span>
+<span class="nc" id="L92">		return this;</span>
 	}
 
 	public Map&lt;String, String&gt; environment() {
@@ -106,9 +106,9 @@ public class TimeoutProcessBuilder {
 	}
 
 	public TimeoutProcess start() throws IOException {
-<span class="fc" id="L109">		final TimeoutProcess process = new TimeoutProcess(builder.start());</span>
+<span class="nc" id="L109">		final TimeoutProcess process = new TimeoutProcess(builder.start());</span>
 
-<span class="pc bpc" id="L111" title="1 of 2 branches missed.">		if (timeout &gt; 0) {</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">		if (timeout &gt; 0) {</span>
 			// set up the timeout for this process
 <span class="nc" id="L113">			final Timer timer = new Timer();</span>
 <span class="nc" id="L114">			timer.schedule(new TimerTask() {</span>
@@ -121,7 +121,7 @@ public class TimeoutProcessBuilder {
 <span class="nc" id="L121">			process.setTimer(timer);</span>
 		}
 
-<span class="fc" id="L124">		return process;</span>
+<span class="nc" id="L124">		return process;</span>
 	}
 
 	public long getTimeout() {

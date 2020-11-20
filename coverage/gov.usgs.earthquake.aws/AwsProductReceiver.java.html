@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AwsProductReceiver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.aws</a> &gt; <span class="el_source">AwsProductReceiver.java</span></div><h1>AwsProductReceiver.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.aws;
+
+import gov.usgs.earthquake.distribution.DefaultNotificationReceiver;
+import gov.usgs.earthquake.distribution.HeartbeatListener;
+import gov.usgs.earthquake.distribution.WebSocketClient;
+import gov.usgs.earthquake.distribution.WebSocketListener;
+import gov.usgs.util.Config;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.websocket.CloseReason;
+import javax.websocket.Session;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URI;
+import java.time.Instant;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Receives notifications from a PDL notification web socket.
+ *
+ * After initial connection, ignores broadcasts until catch up process is complete.
+ *
+ * Catch up involves sending a &quot;products_created_after&quot; request with the latest
+ * notification &quot;created&quot; timestamp, and processing products until either the
+ * last product matches the last broadcast or there are no more products after
+ * the latest notification &quot;created&quot; timestamp.
+ */
+<span class="nc" id="L31">public class AwsProductReceiver extends DefaultNotificationReceiver implements WebSocketListener {</span>
+
+<span class="nc" id="L33">  public static final Logger LOGGER = Logger</span>
+<span class="nc" id="L34">          .getLogger(AwsProductReceiver.class.getName());</span>
+
+  public static final String URI_PROPERTY = &quot;url&quot;;
+  public static final String CREATED_AFTER_PROPERTY = &quot;createdAfter&quot;;
+  public static final String TRACKING_INDEX_PROPERTY = &quot;trackingIndex&quot;;
+  public static final String TRACKING_FILE_NAME_PROPERTY = &quot;trackingFileName&quot;;
+  public static final String CONNECT_ATTEMPTS_PROPERTY = &quot;connectAttempts&quot;;
+  public static final String CONNECT_TIMEOUT_PROPERTY = &quot;connectTimeout&quot;;
+
+  public static final String DEFAULT_TRACKING_FILE_NAME = &quot;data/AwsReceiver.json&quot;;
+  public static final String DEFAULT_CONNECT_ATTEMPTS = &quot;5&quot;;
+  public static final String DEFAULT_CONNECT_TIMEOUT = &quot;1000&quot;;
+
+  private URI uri;
+  private String trackingFileName;
+  private int attempts;
+  private long timeout;
+
+  private TrackingIndex trackingIndex;
+  private WebSocketClient client;
+
+  /* Websocket session */
+  private Session session;
+
+  /* Âµs timestamp of last message that has been processed */
+<span class="nc" id="L59">  private Instant createdAfter = null;</span>
+<span class="nc" id="L60">  private JsonNotification lastBroadcast = null;</span>
+<span class="nc" id="L61">  private boolean processBroadcast = false;</span>
+
+  @Override
+  public void configure(Config config) throws Exception {
+<span class="nc" id="L65">    super.configure(config);</span>
+
+<span class="nc" id="L67">    uri = new URI(config.getProperty(URI_PROPERTY));</span>
+<span class="nc" id="L68">    attempts = Integer.parseInt(config.getProperty(CONNECT_ATTEMPTS_PROPERTY, DEFAULT_CONNECT_ATTEMPTS));</span>
+<span class="nc" id="L69">    timeout = Long.parseLong(config.getProperty(CONNECT_TIMEOUT_PROPERTY, DEFAULT_CONNECT_TIMEOUT));</span>
+
+<span class="nc" id="L71">    final String trackingIndexName = config.getProperty(TRACKING_INDEX_PROPERTY);</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">    if (trackingIndexName != null) {</span>
+<span class="nc" id="L73">      LOGGER.config(&quot;[&quot; + getName() + &quot;] loading tracking index &quot;</span>
+          + trackingIndexName);
+      try {
+        // read object from global config
+<span class="nc" id="L77">        trackingIndex = (TrackingIndex) Config.getConfig().getObject(trackingIndexName);</span>
+<span class="nc" id="L78">      } catch (Exception e) {</span>
+<span class="nc" id="L79">        LOGGER.log(</span>
+            Level.WARNING,
+<span class="nc" id="L81">            &quot;[&quot; + getName() + &quot;] error loading tracking index &quot;</span>
+                + trackingIndexName,
+            e);
+<span class="nc" id="L84">      }</span>
+    } else {
+<span class="nc" id="L86">      trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY);</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">      if (trackingFileName != null) {</span>
+<span class="nc" id="L88">        LOGGER.config(&quot;[&quot; + getName() + &quot;] creating tracking index at&quot;</span>
+            + trackingFileName);
+<span class="nc" id="L90">        trackingIndex = new TrackingIndex(</span>
+            TrackingIndex.DEFAULT_DRIVER,
+            &quot;jdbc:sqlite:&quot; + trackingFileName);
+      }
+    }
+<span class="nc" id="L95">  }</span>
+
+  /**
+   * Called when connection is first opened.
+   *
+   * Start catch up process.
+   */
+  @Override
+  public void onOpen(Session session) throws IOException {
+<span class="nc" id="L104">    LOGGER.info(&quot;[&quot; + getName() + &quot;] onOpen connection_id=&quot; + session.getId());</span>
+    // ignore broadcast until caught up
+<span class="nc" id="L106">    processBroadcast = false;</span>
+    // save session
+<span class="nc" id="L108">    this.session = session;</span>
+    // start catch up process
+    try {
+<span class="nc" id="L111">      LOGGER.info(&quot;[&quot; + getName() + &quot;] Starting catch up&quot;);</span>
+<span class="nc" id="L112">      sendProductsCreatedAfter();</span>
+<span class="nc" id="L113">    } catch (Exception e) {</span>
+<span class="nc" id="L114">      LOGGER.log(</span>
+          Level.WARNING,
+<span class="nc" id="L116">          &quot;[&quot; + getName() + &quot;] exception while starting catch up&quot;,</span>
+          e);
+<span class="nc" id="L118">    }</span>
+<span class="nc" id="L119">  }</span>
+
+  /**
+   * Message handler function passed to WebSocketClient
+   *
+   * Parses the message as JSON, and checks &quot;action&quot; property to route message
+   * for handling.
+   *
+   * Synchronized to process messages in order, since onProductsCreatedAfter
+   * compares state of latest product to determine whether caught up and if
+   * broadcasts should be processed.
+   *
+   * @param message
+   */
+  @Override
+  synchronized public void onMessage(String message) throws IOException {
+<span class="nc" id="L135">    try (final JsonReader reader = Json.createReader(new StringReader(message))) {</span>
+      // parse message
+<span class="nc" id="L137">      final JsonObject json = reader.readObject();</span>
+<span class="nc" id="L138">      final String action = json.getString(&quot;action&quot;);</span>
+
+<span class="nc bnc" id="L140" title="All 2 branches missed.">      if (&quot;broadcast&quot;.equals(action)) {</span>
+<span class="nc" id="L141">        onBroadcast(json);</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">      } else if (&quot;product&quot;.equals(action)) {</span>
+<span class="nc" id="L143">        onProduct(json);</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">      } else if (&quot;products_created_after&quot;.equals(action)) {</span>
+<span class="nc" id="L145">        onProductsCreatedAfter(json);</span>
+      }
+<span class="nc" id="L147">    } catch (Exception e) {</span>
+<span class="nc" id="L148">      LOGGER.log(</span>
+          Level.WARNING,
+<span class="nc" id="L150">          &quot;[&quot; + getName() + &quot;] exception while processing message '&quot; + message + &quot;'&quot;,</span>
+          e);
+<span class="nc" id="L152">      throw new IOException(e);</span>
+<span class="nc" id="L153">    }</span>
+<span class="nc" id="L154">  }</span>
+
+  /**
+   * Handle a message with &quot;action&quot;=&quot;broadcast&quot;.
+   *
+   * If caught up process notification as usual, otherwise save notification
+   * to help detect when caught up.
+   *
+   * @param json
+   * @throws Exception
+   */
+  protected void onBroadcast(final JsonObject json) throws Exception {
+<span class="nc" id="L166">    final JsonNotification notification = new JsonNotification(</span>
+<span class="nc" id="L167">        json.getJsonObject(&quot;notification&quot;));</span>
+<span class="nc" id="L168">    lastBroadcast = notification;</span>
+<span class="nc" id="L169">    LOGGER.info(&quot;[&quot; + getName() + &quot;] onBroadcast(&quot; + notification.getProductId() + &quot;)&quot;);</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">    if (!processBroadcast) {</span>
+<span class="nc" id="L171">      return;</span>
+    }
+<span class="nc" id="L173">    onJsonNotification(notification);</span>
+<span class="nc" id="L174">  }</span>
+
+  /**
+   * Process a received notification and update current &quot;created&quot; timestamp.
+   *
+   * @param notification
+   * @throws Exception
+   */
+  protected void onJsonNotification(final JsonNotification notification) throws Exception {
+    // receive and notify listeners
+<span class="nc" id="L184">    receiveNotification(notification);</span>
+    // update tracking file
+<span class="nc" id="L186">    this.createdAfter = notification.created;</span>
+<span class="nc" id="L187">    writeTrackingData();</span>
+    // send heartbeat
+<span class="nc" id="L189">    HeartbeatListener.sendHeartbeatMessage(getName(), &quot;createdAfter&quot;, createdAfter.toString());</span>
+<span class="nc" id="L190">  }</span>
+
+  /**
+   * Handle a message with &quot;action&quot;=&quot;product&quot;, which is received during catch up.
+   *
+   * @param json
+   * @throws Exception
+   */
+  protected void onProduct(final JsonObject json) throws Exception {
+<span class="nc" id="L199">    final JsonNotification notification = new JsonNotification(</span>
+<span class="nc" id="L200">        json.getJsonObject(&quot;notification&quot;));</span>
+<span class="nc" id="L201">    LOGGER.info(&quot;[&quot; + getName() + &quot;] onProduct(&quot; + notification.getProductId() + &quot;)&quot;);</span>
+<span class="nc" id="L202">    onJsonNotification(notification);</span>
+<span class="nc" id="L203">  }</span>
+
+  /**
+   * Handle a message with &quot;action&quot;=&quot;products_created_after&quot;, which is received
+   * during catch up.
+   *
+   * Indicates the end of a response from a &quot;products_created_after&quot; request.
+   * Check whether caught up, and either switch to broadcast mode or continue
+   * catch up process.
+   *
+   * @param json
+   * @throws Exception
+   */
+  protected void onProductsCreatedAfter(final JsonObject json) throws Exception {
+<span class="nc" id="L217">    final String after = json.getString(&quot;created_after&quot;);</span>
+<span class="nc" id="L218">    final int count = json.getInt(&quot;count&quot;);</span>
+<span class="nc" id="L219">    LOGGER.finer(&quot;[&quot; + getName() + &quot;] onProductsCreatedAfter(&quot; + after</span>
+        + &quot;, &quot; + count + &quot; products)&quot;);
+    // check whether caught up
+<span class="nc bnc" id="L222" title="All 2 branches missed.">    if (</span>
+        // if a broadcast received during catchup,
+        (lastBroadcast != null &amp;&amp;
+            // and createdAfter is at or after last broadcast
+<span class="nc bnc" id="L226" title="All 6 branches missed.">            createdAfter.compareTo(lastBroadcast.created) &gt;= 0)</span>
+        // or no additional products returned
+        || (lastBroadcast == null &amp;&amp; count == 0)
+    ) {
+      // caught up
+<span class="nc" id="L231">      LOGGER.info(&quot;[&quot; + getName() + &quot;] Caught up, switching to broadcast&quot;);</span>
+<span class="nc" id="L232">      processBroadcast = true;</span>
+    } else {
+      // keep catching up
+<span class="nc" id="L235">      sendProductsCreatedAfter();</span>
+    }
+<span class="nc" id="L237">  }</span>
+
+  /**
+   * Send an &quot;action&quot;=&quot;products_created_after&quot; request, which is part of the
+   * catch up process.
+   *
+   * The server will reply with zero or more &quot;action&quot;=&quot;product&quot; messages, and
+   * then one &quot;action&quot;=&quot;products_created_after&quot; message to indicate the request
+   * is complete.
+   */
+  protected void sendProductsCreatedAfter() throws IOException {
+    // set default for created after
+<span class="nc bnc" id="L249" title="All 2 branches missed.">    if (this.createdAfter == null) {</span>
+<span class="nc" id="L250">      this.createdAfter = Instant.now().minusSeconds(7 * 86400);</span>
+    }
+<span class="nc" id="L252">    String request = Json.createObjectBuilder()</span>
+<span class="nc" id="L253">        .add(&quot;action&quot;, &quot;products_created_after&quot;)</span>
+<span class="nc" id="L254">        .add(&quot;created_after&quot;, this.createdAfter.toString())</span>
+<span class="nc" id="L255">        .build()</span>
+<span class="nc" id="L256">        .toString();</span>
+<span class="nc" id="L257">    LOGGER.fine(&quot;[&quot; + getName() + &quot;] Sending &quot; + request);</span>
+    // start catch up process
+<span class="nc" id="L259">    this.session.getBasicRemote().sendText(request);</span>
+<span class="nc" id="L260">  }</span>
+
+  /**
+   * Called when connection is closed, either because shutdown on this end or
+   * closed by server.
+   */
+  @Override
+  public void onClose(Session session, CloseReason closeReason) {
+<span class="nc" id="L268">    LOGGER.info(&quot;[&quot; + getName() + &quot;] onClose &quot; + closeReason.toString());</span>
+<span class="nc" id="L269">    this.session = null;</span>
+<span class="nc" id="L270">  }</span>
+
+  @Override
+  public void onConnectFail() {
+    // client failed to connect
+<span class="nc" id="L275">  }</span>
+
+  @Override
+  public void onReconnectFail() {
+    // failed to reconnect after close
+<span class="nc" id="L280">  }</span>
+
+  /**
+   * Reads createdAfter from a tracking file if it exists,
+   * then connects to web socket.
+   *
+   * @throws Exception
+   */
+  @Override
+  public void startup() throws Exception{
+<span class="nc" id="L290">    super.startup();</span>
+<span class="nc bnc" id="L291" title="All 2 branches missed.">    if (trackingIndex == null) {</span>
+<span class="nc" id="L292">      trackingIndex = new TrackingIndex();</span>
+    }
+<span class="nc" id="L294">    trackingIndex.startup();</span>
+
+    //read sequence from tracking file if other parameters agree
+<span class="nc" id="L297">    JsonObject json = readTrackingData();</span>
+<span class="nc bnc" id="L298" title="All 4 branches missed.">    if (json != null &amp;&amp; json.getString(URI_PROPERTY).equals(uri.toString())) {</span>
+<span class="nc" id="L299">      createdAfter = Instant.parse(json.getString(CREATED_AFTER_PROPERTY));</span>
+    }
+
+    //open websocket
+<span class="nc" id="L303">    client = new WebSocketClient(uri, this, attempts, timeout, true);</span>
+<span class="nc" id="L304">  }</span>
+
+  /**
+   * Closes web socket
+   * @throws Exception
+   */
+  @Override
+  public void shutdown() throws Exception{
+    //close socket
+<span class="nc" id="L313">    client.shutdown();</span>
+<span class="nc" id="L314">    super.shutdown();</span>
+<span class="nc" id="L315">  }</span>
+
+  /**
+   * Reads tracking file.
+   *
+   * @return  JsonObject tracking file
+   * @throws Exception
+   */
+  public JsonObject readTrackingData() throws Exception {
+    // use name as key
+<span class="nc" id="L325">    return trackingIndex.getTrackingData(getName());</span>
+  }
+
+  /**
+   * Writes tracking file.
+   *
+   * @throws Exception
+   */
+  public void writeTrackingData() throws Exception {
+<span class="nc" id="L334">    JsonObject json = Json.createObjectBuilder()</span>
+<span class="nc" id="L335">            .add(URI_PROPERTY, uri.toString())</span>
+<span class="nc" id="L336">            .add(CREATED_AFTER_PROPERTY, createdAfter.toString())</span>
+<span class="nc" id="L337">            .build();</span>
+    // use name as key
+<span class="nc" id="L339">    trackingIndex.setTrackingData(getName(), json);</span>
+<span class="nc" id="L340">  }</span>
+
+  public URI getURI() {
+<span class="nc" id="L343">    return uri;</span>
+  }
+
+  public void setURI(final URI uri) {
+<span class="nc" id="L347">    this.uri = uri;</span>
+<span class="nc" id="L348">  }</span>
+
+  public String getTrackingFileName() {
+<span class="nc" id="L351">    return trackingFileName;</span>
+  }
+
+  public void setTrackingFileName(final String trackingFileName) {
+<span class="nc" id="L355">    this.trackingFileName = trackingFileName;</span>
+<span class="nc" id="L356">  }</span>
+
+  public Instant getCreatedAfter() {
+<span class="nc" id="L359">    return createdAfter;</span>
+  }
+
+  public void setCreatedAfter(final Instant createdAfter) {
+<span class="nc" id="L363">    this.createdAfter = createdAfter;</span>
+<span class="nc" id="L364">  }</span>
+
+  public int getAttempts() {
+<span class="nc" id="L367">    return attempts;</span>
+  }
+
+  public void setAttempts(final int attempts) {
+<span class="nc" id="L371">    this.attempts = attempts;</span>
+<span class="nc" id="L372">  }</span>
+
+  public long getTimeout() {
+<span class="nc" id="L375">    return timeout;</span>
+  }
+
+  public void setTimeout(final long timeout) {
+<span class="nc" id="L379">    this.timeout = timeout;</span>
+<span class="nc" id="L380">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

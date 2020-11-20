@@ -3,14 +3,14 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="x-ua-compatible" content="IE=edge"/>
-<title>Test results - Class gov.usgs.earthquake.distribution.SocketProductReceiverTest</title>
+<title>Test results - SocketProductReceiverTest</title>
 <link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
 <link href="../css/style.css" rel="stylesheet" type="text/css"/>
 <script src="../js/report.js" type="text/javascript"></script>
 </head>
 <body>
 <div id="content">
-<h1>Class gov.usgs.earthquake.distribution.SocketProductReceiverTest</h1>
+<h1>SocketProductReceiverTest</h1>
 <div class="breadcrumbs">
 <a href="../index.html">all</a> &gt; 
 <a href="../packages/gov.usgs.earthquake.distribution.html">gov.usgs.earthquake.distribution</a> &gt; SocketProductReceiverTest</div>
@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.386s</div>
+<div class="counter">1.728s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,27 +79,27 @@
 </thead>
 <tr>
 <td class="success">testReceiveBinaryNoDeflate</td>
-<td class="success">0.112s</td>
+<td class="success">0.642s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testReceiveBinaryWithDeflate</td>
-<td class="success">0.042s</td>
+<td class="success">0.153s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testReceiveExistingProduct</td>
-<td class="success">0.012s</td>
+<td class="success">0.030s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testReceiveXmlNoDeflate</td>
-<td class="success">0.156s</td>
+<td class="success">0.720s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testReceiveXmlWithDeflate</td>
-<td class="success">0.064s</td>
+<td class="success">0.183s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -107,115 +107,33 @@
 <div id="tab1" class="tab">
 <h2>Standard error</h2>
 <span class="code">
-<pre>FINE	thread=14	Digest='nzbO2c0VW2wi4Ukx4CmMqrEnCdA=' , 3ms
-CONFIG	thread=14	[null] loading notification index 'myindex'
-CONFIG	thread=14	Notification index database is '/tmp/socketproductreceivertestdb'
-CONFIG	thread=14	[null] loading product storage 'mystorage'
-CONFIG	thread=14	[null] using storage directory /Users/jmfee/Documents/git/pdl/storage
-CONFIG	thread=14	[null] storage max age 50000 ms
-CONFIG	thread=14	[null] receiver cleanup interval 900000 ms
-CONFIG	thread=14	[null] receiver connect timeout 15000 ms
-CONFIG	thread=14	[null] receiver read timeout 15000 ms
-CONFIG	thread=14	[null]  port is '1984'
-CONFIG	thread=14	[null]  number of threads is '10'
-CONFIG	thread=14	[null] size limite is '-1'
-FINE	thread=66	[null] running receiver cleanup
+<pre>There are 1 active/queued socket connections
+Fri Nov 20 11:35:03 MST 2020
+INFO	thread=463	[null] accepted connection Socket[addr=/127.0.0.1,port=62948,localport=1984]
+INFO	thread=463	[null] received product 'urn:usgs-product:us:shakemap:abcd1234:1605897303172'
+ from Socket[addr=/127.0.0.1,port=62948,localport=1984]
+INFO	thread=463	[null] closed connection Socket[addr=/127.0.0.1,port=62948,localport=1984]
 There are 1 active/queued socket connections
-INFO	thread=69	[null] accepted connection Socket[addr=/127.0.0.1,port=56697,localport=1984]
-FINE	thread=69	[null] not using PDL protocol Socket[addr=/127.0.0.1,port=56697,localport=1984]
-FINER	thread=69	[mystorage] product stored id=urn:usgs-product:us:shakemap:abcd1234:1593124051266, status=UPDATE
-FINE	thread=69	Product Received source=us, type=shakemap, code=abcd1234, updateTime=Thu Jun 25 16:27:31 MDT 2020
-FINE	thread=69	[null] listener (null) has 0 queued notifications
-INFO	thread=69	[null] received product 'urn:usgs-product:us:shakemap:abcd1234:1593124051266'
- from Socket[addr=/127.0.0.1,port=56697,localport=1984]
-INFO	thread=69	[null] closed connection Socket[addr=/127.0.0.1,port=56697,localport=1984]
-FINE	thread=14	Digest='7+CcDq+/hwUtA/w64dHLuHuV8g0=' , 2ms
-CONFIG	thread=14	[null] loading notification index 'myindex'
-CONFIG	thread=14	Notification index database is '/tmp/socketproductreceivertestdb'
-CONFIG	thread=14	[null] loading product storage 'mystorage'
-CONFIG	thread=14	[null] using storage directory /Users/jmfee/Documents/git/pdl/storage
-CONFIG	thread=14	[null] storage max age 50000 ms
-CONFIG	thread=14	[null] receiver cleanup interval 900000 ms
-CONFIG	thread=14	[null] receiver connect timeout 15000 ms
-CONFIG	thread=14	[null] receiver read timeout 15000 ms
-CONFIG	thread=14	[null]  port is '1984'
-CONFIG	thread=14	[null]  number of threads is '10'
-CONFIG	thread=14	[null] size limite is '-1'
-FINE	thread=78	[null] running receiver cleanup
+INFO	thread=475	[null] accepted connection Socket[addr=/127.0.0.1,port=62949,localport=1984]
+INFO	thread=475	[null] received product 'urn:usgs-product:us:shakemap:abcd1234:1605897303355'
+ from Socket[addr=/127.0.0.1,port=62949,localport=1984]
+INFO	thread=475	[null] closed connection Socket[addr=/127.0.0.1,port=62949,localport=1984]
 There are 1 active/queued socket connections
-INFO	thread=81	[null] accepted connection Socket[addr=/127.0.0.1,port=56698,localport=1984]
-FINE	thread=81	[null] not using PDL protocol Socket[addr=/127.0.0.1,port=56698,localport=1984]
-FINER	thread=81	[mystorage] product stored id=urn:usgs-product:us:shakemap:abcd1234:1593124051334, status=UPDATE
-FINE	thread=81	Product Received source=us, type=shakemap, code=abcd1234, updateTime=Thu Jun 25 16:27:31 MDT 2020
-FINE	thread=81	[null] listener (null) has 0 queued notifications
-INFO	thread=81	[null] received product 'urn:usgs-product:us:shakemap:abcd1234:1593124051334'
- from Socket[addr=/127.0.0.1,port=56698,localport=1984]
-INFO	thread=81	[null] closed connection Socket[addr=/127.0.0.1,port=56698,localport=1984]
-FINE	thread=14	Digest='fus2LM+glb5P3K896BNilhf3ts8=' , 2ms
-CONFIG	thread=14	[null] loading notification index 'myindex'
-CONFIG	thread=14	Notification index database is '/tmp/socketproductreceivertestdb'
-CONFIG	thread=14	[null] loading product storage 'mystorage'
-CONFIG	thread=14	[null] using storage directory /Users/jmfee/Documents/git/pdl/storage
-CONFIG	thread=14	[null] storage max age 50000 ms
-CONFIG	thread=14	[null] receiver cleanup interval 900000 ms
-CONFIG	thread=14	[null] receiver connect timeout 15000 ms
-CONFIG	thread=14	[null] receiver read timeout 15000 ms
-CONFIG	thread=14	[null]  port is '1984'
-CONFIG	thread=14	[null]  number of threads is '10'
-CONFIG	thread=14	[null] size limite is '-1'
-FINE	thread=90	[null] running receiver cleanup
+Fri Nov 20 11:35:04 MST 2020
+INFO	thread=487	[null] accepted connection Socket[addr=/127.0.0.1,port=62950,localport=1984]
+INFO	thread=487	[null] received product 'urn:usgs-product:us:shakemap:abcd1234:1605897304074'
+ from Socket[addr=/127.0.0.1,port=62950,localport=1984]
+INFO	thread=487	[null] closed connection Socket[addr=/127.0.0.1,port=62950,localport=1984]
+INFO	thread=15	[null] sending product to Socket[addr=localhost/127.0.0.1,port=1984,localport=62951]
 There are 1 active/queued socket connections
-INFO	thread=93	[null] accepted connection Socket[addr=/127.0.0.1,port=56699,localport=1984]
-FINE	thread=93	[null] not using PDL protocol Socket[addr=/127.0.0.1,port=56699,localport=1984]
-FINER	thread=93	[mystorage] product stored id=urn:usgs-product:us:shakemap:abcd1234:1593124051493, status=UPDATE
-FINE	thread=93	Product Received source=us, type=shakemap, code=abcd1234, updateTime=Thu Jun 25 16:27:31 MDT 2020
-FINE	thread=93	[null] listener (null) has 0 queued notifications
-INFO	thread=93	[null] received product 'urn:usgs-product:us:shakemap:abcd1234:1593124051493'
- from Socket[addr=/127.0.0.1,port=56699,localport=1984]
-INFO	thread=93	[null] closed connection Socket[addr=/127.0.0.1,port=56699,localport=1984]
-FINE	thread=14	Digest='ypRlbGIVQOL9SgbEZc/6X2bbkjw=' , 2ms
-CONFIG	thread=14	[null] loading notification index 'myindex'
-CONFIG	thread=14	Notification index database is '/tmp/socketproductreceivertestdb'
-CONFIG	thread=14	[null] loading product storage 'mystorage'
-CONFIG	thread=14	[null] using storage directory /Users/jmfee/Documents/git/pdl/storage
-CONFIG	thread=14	[null] storage max age 50000 ms
-CONFIG	thread=14	[null] receiver cleanup interval 900000 ms
-CONFIG	thread=14	[null] receiver connect timeout 15000 ms
-CONFIG	thread=14	[null] receiver read timeout 15000 ms
-CONFIG	thread=14	[null]  port is '1984'
-CONFIG	thread=14	[null]  number of threads is '10'
-CONFIG	thread=14	[null] size limite is '-1'
-FINE	thread=102	[null] running receiver cleanup
-FINER	thread=14	[mystorage] product stored id=urn:usgs-product:us:shakemap:abcd1234:1593124051538, status=UPDATE
-INFO	thread=14	[null] sending product to Socket[addr=localhost/127.0.0.1,port=1984,localport=56700]
-FINE	thread=14	[null] using protocol version v0.1
+INFO	thread=500	[null] accepted connection Socket[addr=/127.0.0.1,port=62951,localport=1984]
+INFO	thread=15	[null] send complete Socket[addr=localhost/127.0.0.1,port=1984,localport=62951] response=&quot;Already have product&quot;
+INFO	thread=500	[null] closed connection Socket[addr=/127.0.0.1,port=62951,localport=1984]
 There are 1 active/queued socket connections
-INFO	thread=106	[null] accepted connection Socket[addr=/127.0.0.1,port=56700,localport=1984]
-FINE	thread=106	[null] protocol version 'v0.1' Socket[addr=/127.0.0.1,port=56700,localport=1984]
-INFO	thread=14	[null] send complete Socket[addr=localhost/127.0.0.1,port=1984,localport=56700] response=&quot;Already have product&quot;
-INFO	thread=106	[null] closed connection Socket[addr=/127.0.0.1,port=56700,localport=1984]
-FINE	thread=14	Digest='Y37PhCDWu1CjkPDSa+xPl73S9Sw=' , 2ms
-CONFIG	thread=14	[null] loading notification index 'myindex'
-CONFIG	thread=14	Notification index database is '/tmp/socketproductreceivertestdb'
-CONFIG	thread=14	[null] loading product storage 'mystorage'
-CONFIG	thread=14	[null] using storage directory /Users/jmfee/Documents/git/pdl/storage
-CONFIG	thread=14	[null] storage max age 50000 ms
-CONFIG	thread=14	[null] receiver cleanup interval 900000 ms
-CONFIG	thread=14	[null] receiver connect timeout 15000 ms
-CONFIG	thread=14	[null] receiver read timeout 15000 ms
-CONFIG	thread=14	[null]  port is '1984'
-CONFIG	thread=14	[null]  number of threads is '10'
-CONFIG	thread=14	[null] size limite is '-1'
-FINE	thread=107	[null] running receiver cleanup
-There are 1 active/queued socket connections
-INFO	thread=110	[null] accepted connection Socket[addr=/127.0.0.1,port=56701,localport=1984]
-FINE	thread=110	[null] not using PDL protocol Socket[addr=/127.0.0.1,port=56701,localport=1984]
-FINER	thread=110	[mystorage] product stored id=urn:usgs-product:us:shakemap:abcd1234:1593124051553, status=UPDATE
-FINE	thread=110	Product Received source=us, type=shakemap, code=abcd1234, updateTime=Thu Jun 25 16:27:31 MDT 2020
-FINE	thread=110	[null] listener (null) has 0 queued notifications
-INFO	thread=110	[null] received product 'urn:usgs-product:us:shakemap:abcd1234:1593124051553'
- from Socket[addr=/127.0.0.1,port=56701,localport=1984]
-INFO	thread=110	[null] closed connection Socket[addr=/127.0.0.1,port=56701,localport=1984]
+INFO	thread=504	[null] accepted connection Socket[addr=/127.0.0.1,port=62952,localport=1984]
+INFO	thread=504	[null] received product 'urn:usgs-product:us:shakemap:abcd1234:1605897304257'
+ from Socket[addr=/127.0.0.1,port=62952,localport=1984]
+INFO	thread=504	[null] closed connection Socket[addr=/127.0.0.1,port=62952,localport=1984]
 </pre>
 </span>
 </div>
@@ -227,7 +145,7 @@ INFO	thread=110	[null] closed connection Socket[addr=/127.0.0.1,port=56701,local
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 5.4.1</a> at Jun 25, 2020, 4:28:09 PM</p>
+<a href="http://www.gradle.org">Gradle 5.4.1</a> at Nov 20, 2020, 11:35:41 AM</p>
 </div>
 </div>
 </body>

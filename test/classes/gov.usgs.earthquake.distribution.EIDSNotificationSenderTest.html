@@ -3,14 +3,14 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="x-ua-compatible" content="IE=edge"/>
-<title>Test results - Class gov.usgs.earthquake.distribution.EIDSNotificationSenderTest</title>
+<title>Test results - EIDSNotificationSenderTest</title>
 <link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
 <link href="../css/style.css" rel="stylesheet" type="text/css"/>
 <script src="../js/report.js" type="text/javascript"></script>
 </head>
 <body>
 <div id="content">
-<h1>Class gov.usgs.earthquake.distribution.EIDSNotificationSenderTest</h1>
+<h1>EIDSNotificationSenderTest</h1>
 <div class="breadcrumbs">
 <a href="../index.html">all</a> &gt; 
 <a href="../packages/gov.usgs.earthquake.distribution.html">gov.usgs.earthquake.distribution</a> &gt; EIDSNotificationSenderTest</div>
@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.053s</div>
+<div class="counter">0.272s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,7 +79,7 @@
 </thead>
 <tr>
 <td class="success">testDuplicateHandling</td>
-<td class="success">0.053s</td>
+<td class="success">0.272s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -89,32 +89,33 @@
 <span class="code">
 <pre>
 ###
-Thu Jun 25 16:27:51 MDT 2020
-FINER	thread=560	[sender] running listener cleanup
-INFO	thread=14	[receiver] requeueing notification index 'null'
-INFO	thread=14	Done finding existing notifications
-INFO	thread=14	All notifications queued
-FINE	thread=14	Digest='zJEfwsCDW67Q5PNPSXkmC7YKi8M=' , 1ms
-FINER	thread=14	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1593124071662, status=UPDATE
-FINE	thread=14	Notification Received source=us, type=shakemap, code=abcd1234, updateTime=Thu Jun 25 16:27:51 MDT 2020
-FINE	thread=14	[receiver] listener (sender) has 0 queued notifications
-FINER	thread=566	[sender] processing notification for id=urn:usgs-product:us:shakemap:abcd1234:1593124071662
-FINER	thread=566	[sender] processing product for id=urn:usgs-product:us:shakemap:abcd1234:1593124071662
-FINER	thread=566	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1593124071662, status=UPDATE
-INFO	thread=566	[sender] sent notification to EIDS via testSenderPolldir/out_1593124071686.xml
-FINE	thread=566	Notification Sent source=us, type=shakemap, code=abcd1234, updateTime=Thu Jun 25 16:27:51 MDT 2020
-FINE	thread=14	Notification Received source=us, type=shakemap, code=abcd1234, updateTime=Thu Jun 25 16:27:51 MDT 2020
-FINE	thread=14	[receiver] listener (sender) has 1 queued notifications
-FINER	thread=566	[sender] skipping existing product urn:usgs-product:us:shakemap:abcd1234:1593124071662
-FINER	thread=14	[null] product removed, id=urn:usgs-product:us:shakemap:abcd1234:1593124071662
-FINE	thread=14	Notification Received source=us, type=shakemap, code=abcd1234, updateTime=Thu Jun 25 16:27:51 MDT 2020
-FINE	thread=14	[receiver] listener (sender) has 1 queued notifications
-FINER	thread=566	[sender] found notifications, but product missing from storage urn:usgs-product:us:shakemap:abcd1234:1593124071662
-FINER	thread=566	[sender] processing notification for id=urn:usgs-product:us:shakemap:abcd1234:1593124071662
-FINER	thread=566	[sender] processing product for id=urn:usgs-product:us:shakemap:abcd1234:1593124071662
-FINER	thread=566	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1593124071662, status=UPDATE
-INFO	thread=566	[sender] sent notification to EIDS via testSenderPolldir/out_1593124071706.xml
-FINE	thread=566	Notification Sent source=us, type=shakemap, code=abcd1234, updateTime=Thu Jun 25 16:27:51 MDT 2020
+Fri Nov 20 11:34:20 MST 2020
+FINER	thread=263	[sender] running listener cleanup
+INFO	thread=15	[receiver] requeueing notification index 'null'
+INFO	thread=15	Done finding existing notifications
+INFO	thread=15	All notifications queued
+FINE	thread=15	Using digest version v1, algorithm=SHA1
+FINE	thread=15	Digest='nhG7TPlfil5pdiKY95XSn6KaeBk=' , 3ms
+FINER	thread=15	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1605897260153, status=UPDATE
+FINE	thread=15	Notification Received source=us, type=shakemap, code=abcd1234, updateTime=Fri Nov 20 11:34:20 MST 2020
+FINE	thread=15	[receiver] listener (sender) has 0 queued notifications
+FINER	thread=269	[sender] processing notification for id=urn:usgs-product:us:shakemap:abcd1234:1605897260153
+FINER	thread=269	[sender] processing product for id=urn:usgs-product:us:shakemap:abcd1234:1605897260153
+FINER	thread=269	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1605897260153, status=UPDATE
+INFO	thread=269	[sender] sent notification to EIDS via testSenderPolldir\out_1605897260325.xml
+FINE	thread=269	Notification Sent source=us, type=shakemap, code=abcd1234, updateTime=Fri Nov 20 11:34:20 MST 2020
+FINE	thread=15	Notification Received source=us, type=shakemap, code=abcd1234, updateTime=Fri Nov 20 11:34:20 MST 2020
+FINE	thread=15	[receiver] listener (sender) has 1 queued notifications
+FINER	thread=269	[sender] skipping existing product urn:usgs-product:us:shakemap:abcd1234:1605897260153
+FINER	thread=15	[null] product removed, id=urn:usgs-product:us:shakemap:abcd1234:1605897260153
+FINE	thread=15	Notification Received source=us, type=shakemap, code=abcd1234, updateTime=Fri Nov 20 11:34:20 MST 2020
+FINE	thread=15	[receiver] listener (sender) has 1 queued notifications
+FINER	thread=269	[sender] found notifications, but product missing from storage urn:usgs-product:us:shakemap:abcd1234:1605897260153
+FINER	thread=269	[sender] processing notification for id=urn:usgs-product:us:shakemap:abcd1234:1605897260153
+FINER	thread=269	[sender] processing product for id=urn:usgs-product:us:shakemap:abcd1234:1605897260153
+FINER	thread=269	[null] product stored id=urn:usgs-product:us:shakemap:abcd1234:1605897260153, status=UPDATE
+INFO	thread=269	[sender] sent notification to EIDS via testSenderPolldir\out_1605897260387.xml
+FINE	thread=269	Notification Sent source=us, type=shakemap, code=abcd1234, updateTime=Fri Nov 20 11:34:20 MST 2020
 </pre>
 </span>
 </div>
@@ -126,7 +127,7 @@ FINE	thread=566	Notification Sent source=us, type=shakemap, code=abcd1234, updat
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 5.4.1</a> at Jun 25, 2020, 4:28:09 PM</p>
+<a href="http://www.gradle.org">Gradle 5.4.1</a> at Nov 20, 2020, 11:35:41 AM</p>
 </div>
 </div>
 </body>

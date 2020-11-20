@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataURLConnection.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util.protocolhandlers.data</a> &gt; <span class="el_source">DataURLConnection.java</span></div><h1>DataURLConnection.java</h1><pre class="source lang-java linenums">package gov.usgs.util.protocolhandlers.data;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Base64;
+
+/**
+ * URLConnection for data protocol URLs.
+ */
+public class DataURLConnection extends URLConnection {
+
+  private byte[] data;
+  private String type;
+
+  public DataURLConnection(final URL url) throws Exception {
+<span class="fc" id="L19">    super(url);</span>
+
+    // &quot;data:[&lt;mediatype&gt;][;base64],&lt;data&gt;&quot;
+    // path is everything after &quot;data:&quot;
+<span class="fc" id="L23">    final String path = url.getPath();</span>
+<span class="fc" id="L24">    final int base64 = path.indexOf(&quot;;base64&quot;);</span>
+<span class="fc" id="L25">    final int comma = path.indexOf(&quot;,&quot;);</span>
+
+<span class="fc bfc" id="L27" title="All 2 branches covered.">    type = path.substring(0, base64 &gt;= 0 ? base64 : comma);</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">    if (&quot;&quot;.equals(type)) {</span>
+<span class="fc" id="L29">      type = null;</span>
+    }
+<span class="fc" id="L31">    data = path.substring(comma + 1).getBytes(&quot;UTF8&quot;);</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">    if (base64 &gt;= 0) {</span>
+<span class="fc" id="L33">      data = Base64.getDecoder().decode(data);</span>
+    }
+<span class="fc" id="L35">  }</span>
+
+  @Override
+  public int getContentLength() {
+<span class="fc" id="L39">    return data.length;</span>
+  }
+
+  @Override
+  public String getContentType() {
+<span class="fc" id="L44">    return type;</span>
+  }
+
+  @Override
+  public void connect() throws IOException {
+    // no connection needed
+<span class="fc" id="L50">  }</span>
+
+  @Override
+  public InputStream getInputStream() throws IOException {
+<span class="fc" id="L54">    return new ByteArrayInputStream(data);</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

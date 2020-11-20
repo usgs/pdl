@@ -36,7 +36,12 @@ public class Regions {
      * so it is always valid since it has no finite boundaries.
      */
     public boolean isValidnetID(final String netid) {
-<span class="nc" id="L39">        return this.netids.contains(netid);</span>
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        for (String i : this.netids) {</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">            if (netid.equalsIgnoreCase(i)) {</span>
+<span class="fc" id="L41">                return true;</span>
+            }
+<span class="fc" id="L43">        }</span>
+<span class="fc" id="L44">        return false;</span>
     }
 
     //
@@ -50,7 +55,7 @@ public class Regions {
      * @return true if default network.
      */
     public boolean isDefaultNetID(final String netid) {
-<span class="fc" id="L53">        return this.defaultNetid.equalsIgnoreCase(netid);</span>
+<span class="fc" id="L58">        return this.defaultNetid.equalsIgnoreCase(netid);</span>
     }
 
     /**
@@ -60,7 +65,7 @@ public class Regions {
      * @return true if default network.
      */
     public boolean isDefaultNetID(final EQEvent eq) {
-<span class="nc" id="L63">        return this.isDefaultNetID(eq.getNetID());</span>
+<span class="nc" id="L68">        return this.isDefaultNetID(eq.getNetID());</span>
     }
 
     //
@@ -76,29 +81,29 @@ public class Regions {
      * @return true if event is authoritative
      */
     public boolean isAuthor(final String netid, final Point p) {
-<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (this.isDefaultNetID(netid)) {</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">        if (this.isDefaultNetID(netid)) {</span>
             // if any non-default regions match, default is not authoritative
-<span class="fc bfc" id="L81" title="All 2 branches covered.">            for (Region region : this.regions) {</span>
-<span class="pc bpc" id="L82" title="1 of 2 branches missed.">                if (region.netid.equalsIgnoreCase(netid)) {</span>
-<span class="nc" id="L83">                    continue;</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">            for (Region region : this.regions) {</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">                if (region.netid.equalsIgnoreCase(netid)) {</span>
+<span class="nc" id="L88">                    continue;</span>
                 }
-<span class="fc bfc" id="L85" title="All 2 branches covered.">                if (region.inpoly(p)) {</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">                if (region.inpoly(p)) {</span>
                     // another region is authoritative
-<span class="fc" id="L87">                    return false;</span>
+<span class="fc" id="L92">                    return false;</span>
                 }
-<span class="fc" id="L89">            }</span>
+<span class="fc" id="L94">            }</span>
             // no other regions authoritative
-<span class="fc" id="L91">            return true;</span>
+<span class="fc" id="L96">            return true;</span>
         } else {
             // if any network regions match, network is authoritative
-<span class="fc bfc" id="L94" title="All 2 branches covered.">            for (Region region : regions) {</span>
-<span class="fc bfc" id="L95" title="All 4 branches covered.">                if (region.netid.equalsIgnoreCase(netid) &amp;&amp; region.inpoly(p)) {</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">            for (Region region : regions) {</span>
+<span class="fc bfc" id="L100" title="All 4 branches covered.">                if (region.netid.equalsIgnoreCase(netid) &amp;&amp; region.inpoly(p)) {</span>
                     // network is authoritative
-<span class="fc" id="L97">                    return true;</span>
+<span class="fc" id="L102">                    return true;</span>
                 }
-<span class="fc" id="L99">            }</span>
+<span class="fc" id="L104">            }</span>
             // network is not authoritative
-<span class="fc" id="L101">            return false;</span>
+<span class="fc" id="L106">            return false;</span>
         }
     }
 
@@ -109,7 +114,7 @@ public class Regions {
      * @return true if event is authoritative
      */
     public boolean isAuthor(final EQEvent eq) {
-<span class="nc" id="L112">        return this.isAuthor(eq.getNetID(), eq.getPoint());</span>
+<span class="nc" id="L117">        return this.isAuthor(eq.getNetID(), eq.getPoint());</span>
     }
 
 }

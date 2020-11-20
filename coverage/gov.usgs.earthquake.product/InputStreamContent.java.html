@@ -3,6 +3,7 @@
  */
 package gov.usgs.earthquake.product;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -18,38 +19,60 @@ public class InputStreamContent extends AbstractContent {
 
 	/**
 	 * Create a new InputStream content.
-	 * 
+	 *
 	 * @param content
 	 *            the content.
 	 */
-<span class="fc" id="L25">	public InputStreamContent(final InputStream content) {</span>
-<span class="fc" id="L26">		this.content = content;</span>
-<span class="fc" id="L27">	}</span>
+<span class="fc" id="L26">	public InputStreamContent(final InputStream content) {</span>
+<span class="fc" id="L27">		this.content = content;</span>
+<span class="fc" id="L28">	}</span>
 
 	/**
 	 * Create an InputStreamContent from another Content.
-	 * 
+	 *
 	 * @param content
 	 *            the content to duplicate.
 	 */
 	public InputStreamContent(final Content content) throws IOException {
-<span class="fc" id="L36">		super(content);</span>
-<span class="fc" id="L37">		this.content = content.getInputStream();</span>
-<span class="fc" id="L38">	}</span>
+<span class="fc" id="L37">		super(content);</span>
+<span class="fc" id="L38">		this.content = content.getInputStream();</span>
+<span class="fc" id="L39">	}</span>
 
 	/**
 	 * @return InputStream to content.
 	 */
 	public InputStream getInputStream() throws IOException {
-<span class="fc" id="L44">		return content;</span>
+<span class="fc" id="L45">		return content;</span>
+	}
+
+	/**
+	 * InputStream can only be read once.
+	 *
+	 * &lt;p&gt;If sha256 is null, read and convert to in memory stream.
+	 */
+	public String getSha256() throws Exception {
+<span class="nc" id="L54">		String sha256 = super.getSha256(false);</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">		if (sha256 == null) {</span>
+			// convert stream into byte array to read multiple times
+			final byte[] contentBytes;
+<span class="nc" id="L58">			try (final InputStream in = getInputStream()) {</span>
+<span class="nc" id="L59">				contentBytes = StreamUtils.readStream(in);</span>
+			}
+			// generate sha256 from byte stream
+<span class="nc" id="L62">			this.content = new ByteArrayInputStream(contentBytes);</span>
+<span class="nc" id="L63">			sha256 = super.getSha256();</span>
+			// set byte stream for next reader
+<span class="nc" id="L65">			this.content = new ByteArrayInputStream(contentBytes);</span>
+		}
+<span class="nc" id="L67">		return sha256;</span>
 	}
 
 	/**
 	 * Free any resources associated with this content.
 	 */
 	public void close() {
-<span class="fc" id="L51">		StreamUtils.closeStream(content);</span>
-<span class="fc" id="L52">		content = null;</span>
-<span class="fc" id="L53">	}</span>
+<span class="fc" id="L74">		StreamUtils.closeStream(content);</span>
+<span class="fc" id="L75">		content = null;</span>
+<span class="fc" id="L76">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

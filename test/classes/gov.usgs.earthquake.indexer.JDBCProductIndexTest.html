@@ -3,14 +3,14 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="x-ua-compatible" content="IE=edge"/>
-<title>Test results - Class gov.usgs.earthquake.indexer.JDBCProductIndexTest</title>
+<title>Test results - JDBCProductIndexTest</title>
 <link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
 <link href="../css/style.css" rel="stylesheet" type="text/css"/>
 <script src="../js/report.js" type="text/javascript"></script>
 </head>
 <body>
 <div id="content">
-<h1>Class gov.usgs.earthquake.indexer.JDBCProductIndexTest</h1>
+<h1>JDBCProductIndexTest</h1>
 <div class="breadcrumbs">
 <a href="../index.html">all</a> &gt; 
 <a href="../packages/gov.usgs.earthquake.indexer.html">gov.usgs.earthquake.indexer</a> &gt; JDBCProductIndexTest</div>
@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.044s</div>
+<div class="counter">0.440s</div>
 <p>duration</p>
 </div>
 </td>
@@ -63,9 +63,6 @@
 <li>
 <a href="#tab0">Tests</a>
 </li>
-<li>
-<a href="#tab1">Standard error</a>
-</li>
 </ul>
 <div id="tab0" class="tab">
 <h2>Tests</h2>
@@ -79,105 +76,40 @@
 </thead>
 <tr>
 <td class="success">addAssociationTest</td>
-<td class="success">0.006s</td>
+<td class="success">0.056s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">addEventTest</td>
-<td class="success">0.002s</td>
+<td class="success">0.017s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">addNormailizedSummaryTest</td>
-<td class="success">0.008s</td>
+<td class="success">0.067s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">addSummaryTest</td>
-<td class="success">0.006s</td>
+<td class="success">0.071s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">getEventsTest</td>
-<td class="success">0.001s</td>
-<td class="success">passed</td>
-</tr>
-<tr>
-<td class="success">getProductsTest</td>
 <td class="success">0.016s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
+<td class="success">getProductsTest</td>
+<td class="success">0.176s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
 <td class="success">getUnassociatedProductTest</td>
-<td class="success">0.005s</td>
+<td class="success">0.037s</td>
 <td class="success">passed</td>
 </tr>
 </table>
-</div>
-<div id="tab1" class="tab">
-<h2>Standard error</h2>
-<span class="code">
-<pre>FINE	thread=14	Digest='DIhE0ORAwtTfxPPZNOxonbWghp8=' , 1ms
-FINEST	thread=14	[null] Added property testprop:testvalue for product 4
-FINEST	thread=14	[null] Added link testrelation:http://google.com/ for product 4
-FINEST	thread=14	[null] Added productSummary urn:usgs-product:us:shakemap:abcd1234:1593124079923, indexid=4 to product index
-FINEST	thread=14	[null] running query 
-SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND NOT EXISTS (SELECT id FROM productSummary ps WHERE ps.type=p.type AND ps.source=p.source AND ps.code=p.code AND ps.updateTime &gt; p.updateTime AND ps.status &lt;&gt; 'DELETE')
-FINEST	thread=14	[null] query complete
-FINEST	thread=14	[null] Added property testprop2:testvalue2 for product 5
-FINEST	thread=14	[null] Added property eventtime:2020-06-25T22:27:59.928Z for product 5
-FINEST	thread=14	[null] Added property latitude:0 for product 5
-FINEST	thread=14	[null] Added property longitude:0 for product 5
-FINEST	thread=14	[null] Added link testrelation2:http://google.com/ for product 5
-FINEST	thread=14	[null] Added productSummary urn:usgs-product:us:shakemap2:efgh5678:1593124079928, indexid=5 to product index
-FINEST	thread=14	[null] Added property testprop2:testvalue2 for product 6
-FINEST	thread=14	[null] Added property eventtime:2020-06-25T22:27:59.932Z for product 6
-FINEST	thread=14	[null] Added property latitude:0 for product 6
-FINEST	thread=14	[null] Added property longitude:0 for product 6
-FINEST	thread=14	[null] Added link testrelation2:http://google.com/ for product 6
-FINEST	thread=14	[null] Added productSummary urn:usgs-product:us:shakemap2:efgh5678:1593124079932, indexid=6 to product index
-FINEST	thread=14	[null] running query 
-SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND NOT EXISTS (SELECT id FROM productSummary ps WHERE ps.type=p.type AND ps.source=p.source AND ps.code=p.code AND ps.updateTime &gt; p.updateTime AND ps.status &lt;&gt; 'DELETE')
-FINEST	thread=14	[null] query complete
-FINEST	thread=14	[null] running query 
-SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND EXISTS (SELECT id FROM productSummary ps WHERE ps.type=p.type AND ps.source=p.source AND ps.code=p.code AND ps.updateTime &gt; p.updateTime AND ps.status &lt;&gt; 'DELETE')
-FINEST	thread=14	[null] query complete
-FINEST	thread=14	[null] running query 
-SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL
-FINEST	thread=14	[null] query complete
-FINE	thread=14	Digest='KqVNe9UDaWAjJW96ONW68GaVMBM=' , 1ms
-FINEST	thread=14	[null] Added property testprop:testvalue for product 7
-FINEST	thread=14	[null] Added property latitude:0 for product 7
-FINEST	thread=14	[null] Added property longitude:0 for product 7
-FINEST	thread=14	[null] Added link testrelation:http://google.com/ for product 7
-FINEST	thread=14	[null] Added productSummary urn:usgs-product:us:shakemap:abcd1234:1593124079939, indexid=7 to product index
-FINEST	thread=14	Added event id=3
-FINEST	thread=14	[null] Added event to Product Index
-FINE	thread=14	Digest='hycH2tWQQrtiBI1rCh41KwRF9dk=' , 1ms
-FINEST	thread=14	[null] Added property eventtime:2020-06-25T22:27:59.948Z for product 8
-FINEST	thread=14	[null] Added property testprop:testvalue for product 8
-FINEST	thread=14	[null] Added property longitude:190.0 for product 8
-FINEST	thread=14	[null] Added property latitude:0 for product 8
-FINEST	thread=14	[null] Added link testrelation:http://google.com/ for product 8
-FINEST	thread=14	[null] Added productSummary urn:usgs-product:us:shakemap:abcd1234:1593124079947, indexid=8 to product index
-FINEST	thread=14	[null] running query 
-SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND p.id = (SELECT id FROM productSummary ps WHERE ps.source='us' AND ps.type='shakemap' AND ps.code='abcd1234' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='us' AND type='shakemap' AND code='abcd1234' AND status='UPDATE' AND ((p.eventLongitude &gt; -160.000000 AND p.eventLongitude &lt;= 180) OR (p.eventLongitude &lt; -165.000000 AND p.eventLongitude &gt; -180))
-FINEST	thread=14	[null] query complete
-FINEST	thread=14	Added event id=4
-FINEST	thread=14	[null] Added event to Product Index
-FINE	thread=14	Digest='7wXwynAvzVoduoiSc2BB5NqWSMI=' , 1ms
-FINEST	thread=14	[null] Added property testprop:testvalue for product 9
-FINEST	thread=14	[null] Added link testrelation:http://google.com/ for product 9
-FINEST	thread=14	[null] Added productSummary urn:usgs-product:us:shakemap:abcd1234:1593124079957, indexid=9 to product index
-FINE	thread=14	Digest='6a75dqPkKFr8RNLSLKH6F36Lu00=' , 1ms
-FINEST	thread=14	Added event id=5
-FINEST	thread=14	[null] Added event to Product Index
-FINEST	thread=14	[null] Added property testprop:testvalue for product 10
-FINEST	thread=14	[null] Added link testrelation:http://google.com/ for product 10
-FINEST	thread=14	[null] Added productSummary urn:usgs-product:us:shakemap:abcd1234:1593124079962, indexid=10 to product index
-FINER	thread=14	[null] Added associations event id=5, productSummary source=us, type=shakemap, code=abcd1234 (id=10)
-</pre>
-</span>
 </div>
 </div>
 <div id="footer">
@@ -187,7 +119,7 @@ FINER	thread=14	[null] Added associations event id=5, productSummary source=us, 
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 5.4.1</a> at Jun 25, 2020, 4:28:09 PM</p>
+<a href="http://www.gradle.org">Gradle 5.4.1</a> at Nov 20, 2020, 11:35:41 AM</p>
 </div>
 </div>
 </body>

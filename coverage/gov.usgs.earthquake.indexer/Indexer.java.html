@@ -1557,11 +1557,11 @@ public class Indexer extends DefaultNotificationListener {
 						+ &quot;' is not properly configured&quot;);
 			}
 <span class="pc bpc" id="L1559" title="1 of 2 branches missed.">		} else if (storageDirectory != null) {</span>
-<span class="nc" id="L1560">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using storage directory '&quot;</span>
+<span class="fc" id="L1560">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using storage directory '&quot;</span>
 					+ storageDirectory + &quot;'&quot;);
-<span class="nc" id="L1562">			productStorage = new FileProductStorage(new File(storageDirectory));</span>
+<span class="fc" id="L1562">			productStorage = new FileProductStorage(new File(storageDirectory));</span>
 		} else {
-<span class="fc" id="L1564">			productStorage.configure(config);</span>
+<span class="nc" id="L1564">			productStorage.configure(config);</span>
 		}
 
 <span class="fc" id="L1567">		String indexName = config.getProperty(INDEX_CONFIG_PROPERTY);</span>
@@ -1577,17 +1577,17 @@ public class Indexer extends DefaultNotificationListener {
 						+ &quot;' is not properly configured&quot;);
 			}
 <span class="pc bpc" id="L1579" title="1 of 2 branches missed.">		} else if (indexFileName != null) {</span>
-<span class="nc" id="L1580">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using sqlite product index '&quot;</span>
+<span class="fc" id="L1580">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using sqlite product index '&quot;</span>
 					+ indexFileName + &quot;'&quot;);
-<span class="nc" id="L1582">			productIndex = new JDBCProductIndex(indexFileName);</span>
+<span class="fc" id="L1582">			productIndex = new JDBCProductIndex(indexFileName);</span>
 		} else {
-<span class="fc" id="L1584">			productIndex.configure(config);</span>
+<span class="nc" id="L1584">			productIndex.configure(config);</span>
 		}
 
 		// How often to check for expired products
 <span class="fc" id="L1588">		String archivePolicy = config</span>
 <span class="fc" id="L1589">				.getProperty(INDEX_ARCHIVE_POLICY_PROPERTY);</span>
-<span class="pc bpc" id="L1590" title="1 of 2 branches missed.">		if (archivePolicy != null) {</span>
+<span class="fc bfc" id="L1590" title="All 2 branches covered.">		if (archivePolicy != null) {</span>
 <span class="fc" id="L1591">			Iterator&lt;String&gt; iter = StringUtils.split(archivePolicy, &quot;,&quot;)</span>
 <span class="fc" id="L1592">					.iterator();</span>
 <span class="fc bfc" id="L1593" title="All 2 branches covered.">			while (iter.hasNext()) {</span>
@@ -1615,11 +1615,11 @@ public class Indexer extends DefaultNotificationListener {
 
 		// How often should the archive policies be run
 <span class="fc" id="L1617">		String buffer = config.getProperty(INDEX_ARCHIVE_INTERVAL_PROPERTY);</span>
-<span class="pc bpc" id="L1618" title="1 of 2 branches missed.">		if (buffer != null) {</span>
+<span class="fc bfc" id="L1618" title="All 2 branches covered.">		if (buffer != null) {</span>
 <span class="fc" id="L1619">			archiveInterval = Long.parseLong(buffer);</span>
 		} else {
 			// Use default age
-<span class="nc" id="L1622">			archiveInterval = INDEX_ARCHIVE_INTERVAL_DEFAULT;</span>
+<span class="fc" id="L1622">			archiveInterval = INDEX_ARCHIVE_INTERVAL_DEFAULT;</span>
 		}
 <span class="fc" id="L1624">		LOGGER.config(&quot;[&quot; + getName() + &quot;] archive interval is '&quot;</span>
 				+ archiveInterval + &quot;'&quot;);

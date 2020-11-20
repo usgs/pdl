@@ -17,7 +17,7 @@ public class URLNotification extends DefaultNotification {
 
 	/**
 	 * Construct a URLNotification.
-	 * 
+	 *
 	 * @param id
 	 *            which product is available.
 	 * @param expirationDate
@@ -45,8 +45,13 @@ public class URLNotification extends DefaultNotification {
 <span class="fc bfc" id="L45" title="All 2 branches covered.">		return (that instanceof URLNotification</span>
 <span class="fc bfc" id="L46" title="All 2 branches covered.">				&amp;&amp; getExpirationDate().equals(that.getExpirationDate())</span>
 <span class="pc bpc" id="L47" title="1 of 2 branches missed.">				&amp;&amp; getProductId().equals(that.getProductId())</span>
-<span class="pc bpc" id="L48" title="1 of 2 branches missed.">				&amp;&amp; getTrackerURL().equals(that.getTrackerURL()) &amp;&amp; getProductURL()</span>
-<span class="pc bpc" id="L49" title="1 of 2 branches missed.">				.equals(((URLNotification) that).getProductURL()));</span>
+				&amp;&amp; (
+<span class="pc bpc" id="L49" title="1 of 4 branches missed.">					(getTrackerURL() == null &amp;&amp; that.getTrackerURL() == null)</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">					|| getTrackerURL().equals(that.getTrackerURL()))</span>
+				&amp;&amp; (
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">					(getProductURL() == null</span>
+<span class="pc bnc" id="L53" title="All 2 branches missed.">						&amp;&amp; ((URLNotification) that).getProductURL() == null)</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">					|| getProductURL().equals(((URLNotification) that).getProductURL())));</span>
 	}
 
 }

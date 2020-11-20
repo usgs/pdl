@@ -27,10 +27,10 @@ public class TimeoutProcess {
 	private Process process;
 
 	/** Whether this process timed out. */
-<span class="fc" id="L30">	private boolean timeoutElapsed = false;</span>
+<span class="nc" id="L30">	private boolean timeoutElapsed = false;</span>
 
 	/** Timer object that will destroy this process. */
-<span class="fc" id="L33">	private Timer timer = null;</span>
+<span class="nc" id="L33">	private Timer timer = null;</span>
 
 	/** Standard error output. */
 	private byte[] errorOutput;
@@ -41,9 +41,9 @@ public class TimeoutProcess {
 	 * @param process
 	 *            the wrapped process.
 	 */
-<span class="fc" id="L44">	protected TimeoutProcess(Process process) {</span>
-<span class="fc" id="L45">		this.process = process;</span>
-<span class="fc" id="L46">	}</span>
+<span class="nc" id="L44">	protected TimeoutProcess(Process process) {</span>
+<span class="nc" id="L45">		this.process = process;</span>
+<span class="nc" id="L46">	}</span>
 
 	public void destroy() {
 <span class="nc" id="L49">		process.destroy();</span>
@@ -58,15 +58,15 @@ public class TimeoutProcess {
 	}
 
 	public InputStream getErrorStream() {
-<span class="fc" id="L61">		return process.getErrorStream();</span>
+<span class="nc" id="L61">		return process.getErrorStream();</span>
 	}
 
 	public InputStream getInputStream() {
-<span class="fc" id="L65">		return process.getInputStream();</span>
+<span class="nc" id="L65">		return process.getInputStream();</span>
 	}
 
 	public OutputStream getOutputStream() {
-<span class="fc" id="L69">		return process.getOutputStream();</span>
+<span class="nc" id="L69">		return process.getOutputStream();</span>
 	}
 
 	/**
@@ -79,27 +79,27 @@ public class TimeoutProcess {
 	 *             if the process timed out before exiting.
 	 */
 	public int waitFor() throws InterruptedException, IOException, ProcessTimeoutException {
-<span class="fc" id="L82">		int status = process.waitFor();</span>
+<span class="nc" id="L82">		int status = process.waitFor();</span>
 
-<span class="pc bpc" id="L84" title="1 of 2 branches missed.">		if (timeoutElapsed()) {</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">		if (timeoutElapsed()) {</span>
 <span class="nc" id="L85">			throw new ProcessTimeoutException(&quot;The process has timed out.&quot;);</span>
 		}
 
-<span class="pc bpc" id="L88" title="1 of 2 branches missed.">		if (timer != null) {</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">		if (timer != null) {</span>
 			// the timer hasn't destroyed this process already, cancel it.
 <span class="nc" id="L90">			timer.cancel();</span>
 		}
 
 		try {
-<span class="fc" id="L94">			errorOutput = StreamUtils.readStream(getErrorStream());</span>
+<span class="nc" id="L94">			errorOutput = StreamUtils.readStream(getErrorStream());</span>
 		} finally {
 			// close streams
-<span class="fc" id="L97">			StreamUtils.closeStream(getErrorStream());</span>
-<span class="fc" id="L98">			StreamUtils.closeStream(getInputStream());</span>
-<span class="fc" id="L99">			StreamUtils.closeStream(getOutputStream());</span>
+<span class="nc" id="L97">			StreamUtils.closeStream(getErrorStream());</span>
+<span class="nc" id="L98">			StreamUtils.closeStream(getInputStream());</span>
+<span class="nc" id="L99">			StreamUtils.closeStream(getOutputStream());</span>
 		}
 
-<span class="fc" id="L102">		return status;</span>
+<span class="nc" id="L102">		return status;</span>
 	}
 
 	protected void setTimeoutElapsed(boolean timeoutElapsed) {
@@ -107,7 +107,7 @@ public class TimeoutProcess {
 <span class="nc" id="L107">	}</span>
 
 	protected boolean timeoutElapsed() {
-<span class="fc" id="L110">		return timeoutElapsed;</span>
+<span class="nc" id="L110">		return timeoutElapsed;</span>
 	}
 
 	protected void setTimer(final Timer timer) {

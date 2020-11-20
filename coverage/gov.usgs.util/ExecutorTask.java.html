@@ -189,17 +189,17 @@ public final class ExecutorTask&lt;T&gt; implements Future&lt;T&gt;, Runnable {
 			// computed without exceptions, done
 <span class="fc" id="L190">			done();</span>
 			// }
-<span class="fc" id="L192">		} catch (Exception e) {</span>
-<span class="fc" id="L193">			LOGGER.log(Level.INFO, &quot;Exception executing task&quot;, e);</span>
+<span class="nc" id="L192">		} catch (Exception e) {</span>
+<span class="nc" id="L193">			LOGGER.log(Level.INFO, &quot;Exception executing task&quot;, e);</span>
 			// synchronized (this) {
 			// signal that we are not running
-<span class="fc" id="L196">			runThread = null;</span>
+<span class="nc" id="L196">			runThread = null;</span>
 
 			// track this exception
-<span class="fc" id="L199">			exceptions.add(e);</span>
+<span class="nc" id="L199">			exceptions.add(e);</span>
 
 			// try to resubmit
-<span class="pc bpc" id="L202" title="2 of 4 branches missed.">			if (!cancelled &amp;&amp; numTries &lt; maxTries) {</span>
+<span class="nc bnc" id="L202" title="All 4 branches missed.">			if (!cancelled &amp;&amp; numTries &lt; maxTries) {</span>
 <span class="nc" id="L203">				LOGGER.info(&quot;Resubmitting task to executor &quot; + numTries + &quot;/&quot;</span>
 						+ maxTries + &quot; attempts&quot;);
 <span class="nc" id="L205">				SubmitTaskToExecutor retryTask = new SubmitTaskToExecutor(this);</span>
@@ -210,7 +210,7 @@ public final class ExecutorTask&lt;T&gt; implements Future&lt;T&gt;, Runnable {
 				}
 <span class="nc" id="L211">			} else {</span>
 				// cancelled or out of tries, done
-<span class="fc" id="L213">				done();</span>
+<span class="nc" id="L213">				done();</span>
 			}
 			// }
 		} finally {

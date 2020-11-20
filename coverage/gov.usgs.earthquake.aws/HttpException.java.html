@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HttpException.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.aws</a> &gt; <span class="el_source">HttpException.java</span></div><h1>HttpException.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.aws;
+
+/**
+ * Utility exception class if there are errors while processing an HttpResponse.
+ *
+ * Formats as string with response code, response message, and response body.
+ */
+class HttpException extends Exception {
+  private static final long serialVersionUID = 1L;
+
+  public final HttpResponse response;
+
+  public HttpException(final HttpResponse response, final String cause) {
+<span class="nc" id="L14">    super(cause);</span>
+<span class="nc" id="L15">    this.response = response;</span>
+<span class="nc" id="L16">  }</span>
+
+  public String toString() {
+    int code;
+    String message;
+    try {
+<span class="nc" id="L22">      code = this.response.connection.getResponseCode();</span>
+<span class="nc" id="L23">      message = this.response.connection.getResponseMessage();</span>
+<span class="nc" id="L24">    } catch (Exception e) {</span>
+<span class="nc" id="L25">      code = -1;</span>
+<span class="nc" id="L26">      message = null;</span>
+<span class="nc" id="L27">    }</span>
+<span class="nc" id="L28">    return this.getMessage()</span>
+        + &quot;, response &quot; + code + &quot; &quot; + message
+        + &quot; : &quot; + new String(this.response.response);
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TrackingIndex.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.aws</a> &gt; <span class="el_source">TrackingIndex.java</span></div><h1>TrackingIndex.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.aws;
+
+import java.io.ByteArrayInputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.logging.Logger;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+import gov.usgs.earthquake.util.JDBCConnection;
+import gov.usgs.util.Config;
+
+/**
+ * Tracking index stores component state in a database.
+ *
+ * Only SQLITE or local development should rely on createSchema.
+ *
+ * Mysql Schema Example:&lt;br&gt;
+ * &lt;pre&gt;
+ * CREATE TABLE IF NOT EXISTS tracking_index
+ * (id INTEGER PRIMARY KEY AUTO_INCREMENT
+ * , created VARCHAR(255)
+ * , name VARCHAR(255)
+ * , data LONGTEXT
+ * , UNIQUE KEY name_index (name)
+ * ) ENGINE=innodb CHARSET=utf8;
+ * &lt;/pre&gt;
+ */
+public class TrackingIndex extends JDBCConnection {
+
+<span class="nc" id="L36">  private static final Logger LOGGER = Logger.getLogger(</span>
+<span class="nc" id="L37">      TrackingIndex.class.getName());</span>
+
+  public static final String DEFAULT_DRIVER = &quot;org.sqlite.JDBC&quot;;
+  public static final String DEFAULT_TABLE = &quot;tracking&quot;;
+  public static final String DEFAULT_URL = &quot;jdbc:sqlite:json_tracking_index.db&quot;;
+
+  /** JDBC driver classname. */
+  private String driver;
+  /** Database table name. */
+  private String table;
+  /** JDBC database connect url. */
+  private String url;
+
+  /**
+   * Construct a TrackingIndex using defaults.
+   */
+  public TrackingIndex() {
+<span class="nc" id="L54">    this(DEFAULT_DRIVER, DEFAULT_URL);</span>
+<span class="nc" id="L55">  }</span>
+
+  /**
+   * Construct a TrackingIndex with the default table.
+   */
+  public TrackingIndex(final String driver, final String url) {
+<span class="nc" id="L61">    this(driver, url, DEFAULT_TABLE);</span>
+<span class="nc" id="L62">  }</span>
+
+  /**
+   * Construct a TrackingIndex with custom driver, url, and table.
+   */
+  public TrackingIndex(
+<span class="nc" id="L68">      final String driver, final String url, final String table) {</span>
+<span class="nc" id="L69">    this.driver = driver;</span>
+<span class="nc" id="L70">    this.table = table;</span>
+<span class="nc" id="L71">    this.url = url;</span>
+<span class="nc" id="L72">  }</span>
+
+<span class="nc" id="L74">  public String getDriver() { return this.driver; }</span>
+<span class="nc" id="L75">  public String getTable() { return this.table; }</span>
+<span class="nc" id="L76">  public String getUrl() { return this.url; }</span>
+<span class="nc" id="L77">  public void setDriver(final String driver) { this.driver = driver; }</span>
+<span class="nc" id="L78">  public void setTable(final String table) { this.table = table; }</span>
+<span class="nc" id="L79">  public void setUrl(final String url) { this.url = url; }</span>
+
+  @Override
+  public void configure(final Config config) throws Exception {
+<span class="nc" id="L83">    driver = config.getProperty(&quot;driver&quot;, DEFAULT_DRIVER);</span>
+<span class="nc" id="L84">    LOGGER.config(&quot;[&quot; + getName() + &quot;] driver=&quot; + driver);</span>
+<span class="nc" id="L85">    table = config.getProperty(&quot;table&quot;, DEFAULT_TABLE);</span>
+<span class="nc" id="L86">    LOGGER.config(&quot;[&quot; + getName() + &quot;] table=&quot; + table);</span>
+<span class="nc" id="L87">    url = config.getProperty(&quot;url&quot;, DEFAULT_URL);</span>
+    // do not log url, it may contain user/pass
+<span class="nc" id="L89">  }</span>
+
+  /**
+   * Connect to database.
+   *
+   * Implements abstract JDBCConnection method.
+   */
+  @Override
+  protected Connection connect() throws Exception {
+    // load driver if needed
+<span class="nc" id="L99">    Class.forName(driver);</span>
+<span class="nc" id="L100">    return DriverManager.getConnection(url);</span>
+  }
+
+  /**
+   * After normal startup, check whether schema exists and attempt to create.
+   */
+  @Override
+  public void startup() throws Exception {
+<span class="nc" id="L108">    super.startup();</span>
+    // make sure schema exists
+<span class="nc bnc" id="L110" title="All 2 branches missed.">    if (!schemaExists()) {</span>
+<span class="nc" id="L111">      LOGGER.warning(&quot;[&quot; + getName() + &quot;] schema not found, creating&quot;);</span>
+<span class="nc" id="L112">      createSchema();</span>
+    }
+<span class="nc" id="L114">  }</span>
+
+  /**
+   * Check whether schema exists.
+   *
+   * @return
+   * @throws Exception
+   */
+  public boolean schemaExists() throws Exception {
+<span class="nc" id="L123">    final String sql = &quot;select * from &quot; + this.table + &quot; limit 1&quot;;</span>
+<span class="nc" id="L124">    beginTransaction();</span>
+<span class="nc" id="L125">    try (final PreparedStatement test = getConnection().prepareStatement(sql)) {</span>
+      // should throw exception if table does not exist
+<span class="nc" id="L127">      try (final ResultSet rs = test.executeQuery()) {</span>
+<span class="nc" id="L128">        rs.next();</span>
+      }
+<span class="nc" id="L130">      commitTransaction();</span>
+      // schema exists
+<span class="nc" id="L132">      return true;</span>
+<span class="nc" id="L133">    } catch (Exception e) {</span>
+<span class="nc" id="L134">      rollbackTransaction();</span>
+<span class="nc" id="L135">      return false;</span>
+    }
+  }
+
+  /**
+   * Attempt to create schema.
+   *
+   * Only supports sqlite or mysql.  When not using sqlite, relying on this
+   * method is only recommended for local development.
+   *
+   * @throws Exception
+   */
+  public void createSchema() throws Exception {
+    // create schema
+<span class="nc" id="L149">    beginTransaction();</span>
+<span class="nc" id="L150">    try (final Statement statement = getConnection().createStatement()) {</span>
+<span class="nc" id="L151">      String autoIncrement = &quot;&quot;;</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">      if (driver.contains(&quot;mysql&quot;)) {</span>
+<span class="nc" id="L153">        autoIncrement = &quot;AUTO_INCREMENT&quot;;</span>
+      }
+<span class="nc" id="L155">      statement.executeUpdate(</span>
+          &quot;CREATE TABLE &quot; + this.table
+          + &quot; (id INTEGER PRIMARY KEY &quot; + autoIncrement
+          + &quot;, created VARCHAR(255)&quot;
+          + &quot;, name VARCHAR(255)&quot;
+          + &quot;, data TEXT&quot;
+          + &quot;)&quot;);
+<span class="nc" id="L162">      statement.executeUpdate(</span>
+          &quot;CREATE UNIQUE INDEX name_index ON &quot; + this.table + &quot; (name)&quot;);
+<span class="nc" id="L164">      commitTransaction();</span>
+<span class="nc" id="L165">    } catch (Exception e) {</span>
+<span class="nc" id="L166">      rollbackTransaction();</span>
+<span class="nc" id="L167">      throw e;</span>
+<span class="nc" id="L168">    }</span>
+<span class="nc" id="L169">  }</span>
+
+  /**
+   * Get tracking data for specified name.
+   *
+   * @param name
+   *     name of tracking data.
+   * @return null if data not found.
+   */
+  public synchronized JsonObject getTrackingData(final String name) throws Exception {
+<span class="nc" id="L179">    JsonObject data = null;</span>
+
+<span class="nc" id="L181">    final String sql = &quot;SELECT * FROM &quot; + this.table + &quot; WHERE name=?&quot;;</span>
+<span class="nc" id="L182">    beginTransaction();</span>
+<span class="nc" id="L183">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
+<span class="nc" id="L184">      statement.setString(1, name);</span>
+
+      // execute and parse data
+<span class="nc" id="L187">      try (final ResultSet rs = statement.executeQuery()) {</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">        while (rs.next()) {</span>
+<span class="nc" id="L189">          final String json = rs.getString(&quot;data&quot;);</span>
+          try (
+<span class="nc" id="L191">            final JsonReader jsonReader = Json.createReader(</span>
+<span class="nc" id="L192">                new ByteArrayInputStream(json.getBytes()))</span>
+          ) {
+<span class="nc" id="L194">            data = jsonReader.readObject();</span>
+          }
+<span class="nc" id="L196">        }</span>
+      }
+<span class="nc" id="L198">      commitTransaction();</span>
+<span class="nc" id="L199">    } catch (Exception e) {</span>
+<span class="nc" id="L200">      rollbackTransaction();</span>
+<span class="nc" id="L201">    }</span>
+
+<span class="nc" id="L203">    return data;</span>
+  }
+
+  /**
+   * Remove tracking data.
+   *
+   * @param name
+   *     name of tracking data.
+   * @throws Exception
+   */
+  public synchronized void removeTrackingData(final String name) throws Exception {
+<span class="nc" id="L214">    final String sql = &quot;DELETE FROM &quot; + this.table + &quot; WHERE name=?&quot;;</span>
+    // create schema
+<span class="nc" id="L216">    beginTransaction();</span>
+<span class="nc" id="L217">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
+<span class="nc" id="L218">      statement.setString(1, name);</span>
+
+<span class="nc" id="L220">      statement.executeUpdate();</span>
+<span class="nc" id="L221">      commitTransaction();</span>
+<span class="nc" id="L222">    } catch (Exception e) {</span>
+<span class="nc" id="L223">      rollbackTransaction();</span>
+<span class="nc" id="L224">      throw e;</span>
+<span class="nc" id="L225">    }</span>
+<span class="nc" id="L226">  }</span>
+
+  /**
+   * Add or update tracking data.
+   *
+   * @param name
+   *     name of tracking data.
+   * @param data
+   *     data to store.
+   * @throws Exception
+   */
+  public synchronized void setTrackingData(final String name, final JsonObject data) throws Exception {
+<span class="nc" id="L238">    final String update = &quot;UPDATE &quot; + this.table + &quot; SET data=? WHERE name=?&quot;;</span>
+    // usually updated, try update first
+<span class="nc" id="L240">    beginTransaction();</span>
+<span class="nc" id="L241">    try (final PreparedStatement updateStatement = getConnection().prepareStatement(update)) {</span>
+<span class="nc" id="L242">      updateStatement.setString(1, data.toString());</span>
+<span class="nc" id="L243">      updateStatement.setString(2, name);</span>
+      // execute update
+<span class="nc" id="L245">      final int count = updateStatement.executeUpdate();</span>
+      // check number of rows updated (whether row already exists)
+<span class="nc bnc" id="L247" title="All 2 branches missed.">      if (count == 0) {</span>
+<span class="nc" id="L248">        final String insert = &quot;INSERT INTO &quot; + this.table + &quot; (data, name) VALUES (?, ?)&quot;;</span>
+        // no rows updated
+<span class="nc" id="L250">        try (final PreparedStatement insertStatement = getConnection().prepareStatement(insert)) {</span>
+<span class="nc" id="L251">          insertStatement.setString(1, data.toString());</span>
+<span class="nc" id="L252">          insertStatement.setString(2, name);</span>
+          // execute insert
+<span class="nc" id="L254">          insertStatement.executeUpdate();</span>
+        }
+      }
+<span class="nc" id="L257">      commitTransaction();</span>
+<span class="nc" id="L258">    } catch (Exception e) {</span>
+<span class="nc" id="L259">      rollbackTransaction();</span>
+<span class="nc" id="L260">      throw e;</span>
+<span class="nc" id="L261">    }</span>
+<span class="nc" id="L262">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -3,6 +3,7 @@
  */
 package gov.usgs.earthquake.distribution;
 
+import gov.usgs.earthquake.aws.AwsProductSender;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.util.Config;
 
@@ -16,8 +17,11 @@ import java.util.logging.Logger;
 public class RelayProductListener extends DefaultNotificationListener {
 
 	/** Logging object. */
-<span class="nc" id="L19">	private static final Logger LOGGER = Logger</span>
-<span class="nc" id="L20">			.getLogger(RelayProductListener.class.getName());</span>
+<span class="nc" id="L20">	private static final Logger LOGGER = Logger</span>
+<span class="nc" id="L21">			.getLogger(RelayProductListener.class.getName());</span>
+
+	public static final String SENDER_TYPE_PROPERTY = &quot;senderType&quot;;
+	public static final String SENDER_TYPE_AWS = &quot;aws&quot;;
 
 	/** Sender used to send products. */
 	private ProductSender sender;
@@ -26,57 +30,72 @@ public class RelayProductListener extends DefaultNotificationListener {
 	 * Empty constructor for configurable, will configure as a
 	 * SocketProductSender.
 	 */
-<span class="nc" id="L29">	public RelayProductListener() {</span>
-<span class="nc" id="L30">	}</span>
+<span class="nc" id="L33">	public RelayProductListener() {</span>
+<span class="nc" id="L34">	}</span>
 
 	/**
 	 * Construct a RelayProductListener using a custom ProductSender.
-	 * 
+	 *
 	 * @param sender
 	 *            the sender to use.
 	 */
-<span class="nc" id="L38">	public RelayProductListener(final ProductSender sender) {</span>
-<span class="nc" id="L39">		this.sender = sender;</span>
-<span class="nc" id="L40">	}</span>
+<span class="nc" id="L42">	public RelayProductListener(final ProductSender sender) {</span>
+<span class="nc" id="L43">		this.sender = sender;</span>
+<span class="nc" id="L44">	}</span>
 
 	/**
 	 * Send a product.
 	 */
 	public void onProduct(final Product product) {
-<span class="nc" id="L46">		LOGGER.info(&quot;Relaying product &quot; + product.getId().toString() + &quot; &quot;</span>
-<span class="nc" id="L47">				+ product.getId().getUpdateTime());</span>
+<span class="nc" id="L50">		LOGGER.info(&quot;Relaying product &quot; + product.getId().toString() + &quot; &quot;</span>
+<span class="nc" id="L51">				+ product.getId().getUpdateTime());</span>
 
 		try {
-<span class="nc" id="L50">			sender.sendProduct(product);</span>
-<span class="nc" id="L51">		} catch (Exception e) {</span>
-<span class="nc" id="L52">			LOGGER.log(Level.WARNING, &quot;Error relaying product&quot;, e);</span>
-<span class="nc" id="L53">		}</span>
-<span class="nc" id="L54">	}</span>
+<span class="nc" id="L54">			sender.sendProduct(product);</span>
+<span class="nc" id="L55">		} catch (Exception e) {</span>
+<span class="nc" id="L56">			LOGGER.log(Level.WARNING, &quot;Error relaying product&quot;, e);</span>
+<span class="nc" id="L57">		}</span>
+<span class="nc" id="L58">	}</span>
 
 	/**
 	 * Creates a SocketProductSender and uses its configure method.
 	 */
 	public void configure(Config config) throws Exception {
 		// read DefaultNotificationListener properties
-<span class="nc" id="L61">		super.configure(config);</span>
+<span class="nc" id="L65">		super.configure(config);</span>
 
-<span class="nc" id="L63">		sender = new SocketProductSender();</span>
-<span class="nc" id="L64">		sender.configure(config);</span>
-<span class="nc" id="L65">	}</span>
+<span class="nc" id="L67">		final String senderType = config.getProperty(SENDER_TYPE_PROPERTY);</span>
+<span class="nc bnc" id="L68" title="All 4 branches missed.">		if (senderType != null &amp;&amp; SENDER_TYPE_AWS.equals(SENDER_TYPE_AWS)) {</span>
+<span class="nc" id="L69">			sender = new AwsProductSender();</span>
+		} else {
+<span class="nc" id="L71">			sender = new SocketProductSender();</span>
+		}
+<span class="nc" id="L73">		sender.configure(config);</span>
+<span class="nc" id="L74">	}</span>
+
+	public void setName(final String name) {
+<span class="nc" id="L77">		super.setName(name);</span>
+		// also set sender name for logging
+<span class="nc bnc" id="L79" title="All 2 branches missed.">		if (sender != null) {</span>
+<span class="nc" id="L80">			sender.setName(name);</span>
+		}
+<span class="nc" id="L82">	}</span>
 
 	/**
 	 * Call the sender shutdown method.
 	 */
 	public void shutdown() throws Exception {
-<span class="nc" id="L71">		sender.shutdown();</span>
-<span class="nc" id="L72">	}</span>
+<span class="nc" id="L88">		super.shutdown();</span>
+<span class="nc" id="L89">		sender.shutdown();</span>
+<span class="nc" id="L90">	}</span>
 
 	/**
 	 * Call the sender startup method.
 	 */
 	public void startup() throws Exception {
-<span class="nc" id="L78">		sender.startup();</span>
-<span class="nc" id="L79">	}</span>
+<span class="nc" id="L96">		super.startup();</span>
+<span class="nc" id="L97">		sender.startup();</span>
+<span class="nc" id="L98">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

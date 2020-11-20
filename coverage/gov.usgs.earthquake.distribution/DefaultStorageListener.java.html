@@ -36,17 +36,17 @@ import java.util.logging.Logger;
 	 */
 	@Override
 	public void onStorageEvent(StorageEvent event) {
-<span class="fc" id="L39">		StorageEvent.StorageEventType type = event.getType();</span>
+<span class="nc" id="L39">		StorageEvent.StorageEventType type = event.getType();</span>
 		try {
-<span class="fc bfc" id="L41" title="All 2 branches covered.">			if (type == StorageEvent.PRODUCT_STORED) {</span>
-<span class="fc" id="L42">				onProductStored(event);</span>
-<span class="pc bpc" id="L43" title="1 of 2 branches missed.">			} else if (type == StorageEvent.PRODUCT_REMOVED) {</span>
-<span class="fc" id="L44">				onProductRemoved(event);</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">			if (type == StorageEvent.PRODUCT_STORED) {</span>
+<span class="nc" id="L42">				onProductStored(event);</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">			} else if (type == StorageEvent.PRODUCT_REMOVED) {</span>
+<span class="nc" id="L44">				onProductRemoved(event);</span>
 			}
 <span class="nc" id="L46">		} catch (Exception e) {</span>
 <span class="nc" id="L47">			LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] exception processing storage event&quot;, e);</span>
-<span class="fc" id="L48">		}</span>
-<span class="fc" id="L49">	}</span>
+<span class="nc" id="L48">		}</span>
+<span class="nc" id="L49">	}</span>
 
 	/**
 	 * Dispatched method called when the type of event is

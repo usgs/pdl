@@ -6,9 +6,9 @@ import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -55,8 +55,8 @@ public class GeoserveRegionsService {
       throws IOException, MalformedURLException {
 <span class="nc" id="L56">    final URL url = new URL(this.endpointUrl +</span>
         &quot;?type=fe&quot; +
-<span class="nc" id="L58">        &quot;&amp;latitude=&quot; + URLEncoder.encode(latitude.toString(), &quot;UTF-8&quot;) +</span>
-<span class="nc" id="L59">        &quot;&amp;longitude=&quot; + URLEncoder.encode(longitude.toString(), &quot;UTF-8&quot;)</span>
+<span class="nc" id="L58">        &quot;&amp;latitude=&quot; + URLEncoder.encode(latitude.toString(), StandardCharsets.UTF_8.toString()) +</span>
+<span class="nc" id="L59">        &quot;&amp;longitude=&quot; + URLEncoder.encode(longitude.toString(), StandardCharsets.UTF_8.toString())</span>
     );
 
 <span class="nc" id="L62">    try (InputStream in = StreamUtils.getURLInputStream(url, this.connectTimeout, this.readTimeout)) {</span>
@@ -94,6 +94,6 @@ public class GeoserveRegionsService {
 <span class="fc" id="L94">    this.readTimeout = readTimeout;</span>
 <span class="fc" id="L95">  }</span>
 
-  // TODO as needed, implement full GeoServe places API options
+  // as needed, implement full GeoServe places API options
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -3,14 +3,14 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="x-ua-compatible" content="IE=edge"/>
-<title>Test results - Class gov.usgs.earthquake.distribution.HeartbeatListenerTest</title>
+<title>Test results - HeartbeatListenerTest</title>
 <link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
 <link href="../css/style.css" rel="stylesheet" type="text/css"/>
 <script src="../js/report.js" type="text/javascript"></script>
 </head>
 <body>
 <div id="content">
-<h1>Class gov.usgs.earthquake.distribution.HeartbeatListenerTest</h1>
+<h1>HeartbeatListenerTest</h1>
 <div class="breadcrumbs">
 <a href="../index.html">all</a> &gt; 
 <a href="../packages/gov.usgs.earthquake.distribution.html">gov.usgs.earthquake.distribution</a> &gt; HeartbeatListenerTest</div>
@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">6.025s</div>
+<div class="counter">6.014s</div>
 <p>duration</p>
 </div>
 </td>
@@ -66,6 +66,9 @@
 <li>
 <a href="#tab1">Standard output</a>
 </li>
+<li>
+<a href="#tab2">Standard error</a>
+</li>
 </ul>
 <div id="tab0" class="tab">
 <h2>Tests</h2>
@@ -79,17 +82,17 @@
 </thead>
 <tr>
 <td class="success">testAutoClearHeartbeat</td>
-<td class="success">5.017s</td>
+<td class="success">5.005s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testJSONHeartbeatListener</td>
-<td class="success">0.003s</td>
+<td class="success">0.001s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testManualClearHeartbeat</td>
-<td class="success">0.999s</td>
+<td class="success">1.002s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
@@ -103,8 +106,72 @@
 <h2>Standard output</h2>
 <span class="code">
 <pre>Test scheduled heartbeat data clearing, JSON={}
-Test sendHeartbeatMessage and JSON={&quot;TestComponent1&quot;:{&quot;key13&quot;:{&quot;message&quot;:&quot;value13&quot;,&quot;date&quot;:&quot;1593124050025&quot;},&quot;key12&quot;:{&quot;message&quot;:&quot;value12&quot;,&quot;date&quot;:&quot;1593124050025&quot;},&quot;key11&quot;:{&quot;message&quot;:&quot;value11&quot;,&quot;date&quot;:&quot;1593124050025&quot;}},&quot;TestComponent2&quot;:{&quot;key23&quot;:{&quot;message&quot;:&quot;value23&quot;,&quot;date&quot;:&quot;1593124050025&quot;},&quot;key22&quot;:{&quot;message&quot;:&quot;value22&quot;,&quot;date&quot;:&quot;1593124050025&quot;},&quot;key21&quot;:{&quot;message&quot;:&quot;value21&quot;,&quot;date&quot;:&quot;1593124050025&quot;}}}
+Test sendHeartbeatMessage and JSON={&quot;TestComponent1&quot;:{&quot;key13&quot;:{&quot;message&quot;:&quot;value13&quot;,&quot;date&quot;:&quot;1605897266352&quot;},&quot;key12&quot;:{&quot;message&quot;:&quot;value12&quot;,&quot;date&quot;:&quot;1605897266352&quot;},&quot;key11&quot;:{&quot;message&quot;:&quot;value11&quot;,&quot;date&quot;:&quot;1605897266352&quot;}},&quot;TestComponent2&quot;:{&quot;key23&quot;:{&quot;message&quot;:&quot;value23&quot;,&quot;date&quot;:&quot;1605897266352&quot;},&quot;key22&quot;:{&quot;message&quot;:&quot;value22&quot;,&quot;date&quot;:&quot;1605897266352&quot;},&quot;key21&quot;:{&quot;message&quot;:&quot;value21&quot;,&quot;date&quot;:&quot;1605897266352&quot;}}}
 Manual test heartbeat data cleared, JSON={}
+</pre>
+</span>
+</div>
+<div id="tab2" class="tab">
+<h2>Standard error</h2>
+<span class="code">
+<pre>CONFIG	thread=15	[null] maxTries = 1
+CONFIG	thread=15	[null] maxTries = 1
+CONFIG	thread=15	[null] timeout = 0ms
+CONFIG	thread=15	[null] retry delay = 300000ms
+CONFIG	thread=15	[null] cleanup interval = false
+CONFIG	thread=15	[null] concurrent products = 1
+CONFIG	thread=15	[null] process duplicates = false
+CONFIG	thread=15	[null] include paths = []
+CONFIG	thread=15	[null] exclude paths = []
+CONFIG	thread=15	[null] heartbeat file = C:\Users\jmfee\Documents\git\pdl\heartbeat.dat
+CONFIG	thread=15	[null] heartbeat timeout = 100ms
+FINER	thread=291	[null] running listener cleanup
+Fri Nov 20 11:34:22 MST 2020
+FINER	thread=291	[null] running listener cleanup
+Fri Nov 20 11:34:23 MST 2020
+FINER	thread=291	[null] running listener cleanup
+Fri Nov 20 11:34:24 MST 2020
+FINER	thread=291	[null] running listener cleanup
+Fri Nov 20 11:34:25 MST 2020
+FINER	thread=291	[null] running listener cleanup
+Fri Nov 20 11:34:26 MST 2020
+FINER	thread=291	[null] running listener cleanup
+CONFIG	thread=15	[null] maxTries = 1
+CONFIG	thread=15	[null] maxTries = 1
+CONFIG	thread=15	[null] timeout = 0ms
+CONFIG	thread=15	[null] retry delay = 300000ms
+CONFIG	thread=15	[null] cleanup interval = false
+CONFIG	thread=15	[null] concurrent products = 1
+CONFIG	thread=15	[null] process duplicates = false
+CONFIG	thread=15	[null] include paths = []
+CONFIG	thread=15	[null] exclude paths = []
+CONFIG	thread=15	[null] heartbeat file = C:\Users\jmfee\Documents\git\pdl\heartbeat.dat
+CONFIG	thread=15	[null] heartbeat timeout = 1800000ms
+CONFIG	thread=15	[null] maxTries = 1
+CONFIG	thread=15	[null] maxTries = 1
+CONFIG	thread=15	[null] timeout = 0ms
+CONFIG	thread=15	[null] retry delay = 300000ms
+CONFIG	thread=15	[null] cleanup interval = false
+CONFIG	thread=15	[null] concurrent products = 1
+CONFIG	thread=15	[null] process duplicates = false
+CONFIG	thread=15	[null] include paths = []
+CONFIG	thread=15	[null] exclude paths = []
+CONFIG	thread=15	[null] heartbeat file = C:\Users\jmfee\Documents\git\pdl\heartbeat.dat
+CONFIG	thread=15	[null] heartbeat timeout = 100ms
+Fri Nov 20 11:34:27 MST 2020
+FINER	thread=291	[null] running listener cleanup
+FINER	thread=15	[null] running listener cleanup
+CONFIG	thread=15	[null] maxTries = 1
+CONFIG	thread=15	[null] maxTries = 1
+CONFIG	thread=15	[null] timeout = 0ms
+CONFIG	thread=15	[null] retry delay = 300000ms
+CONFIG	thread=15	[null] cleanup interval = false
+CONFIG	thread=15	[null] concurrent products = 1
+CONFIG	thread=15	[null] process duplicates = false
+CONFIG	thread=15	[null] include paths = []
+CONFIG	thread=15	[null] exclude paths = []
+CONFIG	thread=15	[null] heartbeat file = C:\Users\jmfee\Documents\git\pdl\heartbeat.dat
+CONFIG	thread=15	[null] heartbeat timeout = 1800000ms
 </pre>
 </span>
 </div>
@@ -116,7 +183,7 @@ Manual test heartbeat data cleared, JSON={}
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 5.4.1</a> at Jun 25, 2020, 4:28:09 PM</p>
+<a href="http://www.gradle.org">Gradle 5.4.1</a> at Nov 20, 2020, 11:35:41 AM</p>
 </div>
 </div>
 </body>

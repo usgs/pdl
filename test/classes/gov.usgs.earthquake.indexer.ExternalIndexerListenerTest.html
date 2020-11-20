@@ -3,14 +3,14 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="x-ua-compatible" content="IE=edge"/>
-<title>Test results - Class gov.usgs.earthquake.indexer.ExternalIndexerListenerTest</title>
+<title>Test results - ExternalIndexerListenerTest</title>
 <link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
 <link href="../css/style.css" rel="stylesheet" type="text/css"/>
 <script src="../js/report.js" type="text/javascript"></script>
 </head>
 <body>
 <div id="content">
-<h1>Class gov.usgs.earthquake.indexer.ExternalIndexerListenerTest</h1>
+<h1>ExternalIndexerListenerTest</h1>
 <div class="breadcrumbs">
 <a href="../index.html">all</a> &gt; 
 <a href="../packages/gov.usgs.earthquake.indexer.html">gov.usgs.earthquake.indexer</a> &gt; ExternalIndexerListenerTest</div>
@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.051s</div>
+<div class="counter">0.149s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,12 +79,12 @@
 </thead>
 <tr>
 <td class="success">testAccept</td>
-<td class="success">0.037s</td>
+<td class="success">0.045s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testArchivingProduct</td>
-<td class="success">0.014s</td>
+<td class="success">0.104s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -94,24 +94,25 @@
 <span class="code">
 <pre>
 ###
-Thu Jun 25 16:27:59 MDT 2020
-FINER	thread=14	[null] product type 'shakemap' excluded
-FINE	thread=14	[null] product is not preferred in any event
+Fri Nov 20 11:35:18 MST 2020
+FINER	thread=15	[null] product type 'shakemap' excluded
+FINE	thread=15	[null] product is not preferred in any event
 
 ###
-Thu Jun 25 16:27:59 MDT 2020
-FINE	thread=14	Digest='1Qcr/5liJeuUL4WeRzn1DyHItlw=' , 2ms
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124079737
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124079737
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124079737
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124079737
-FINER	thread=14	[null] Change product is null. Probably archiving.
-FINEST	thread=14	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124079737
-FINEST	thread=14	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124079737
-FINEST	thread=14	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124079737
-FINEST	thread=14	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1593124079737
-INFO	thread=14	[null] running command echo --type=shakemap --code=abcd1234 --source=us --updateTime=2020-06-25T22:27:59.737Z --status=UPDATE --trackerURL=http://localhost/tracker &quot;--property-testprop=testvalue&quot; --link-testrelation=http://google.com/ --action=PRODUCT_ARCHIVED
-INFO	thread=14	[null] command 'echo --type=shakemap --code=abcd1234 --source=us --updateTime=2020-06-25T22:27:59.737Z --status=UPDATE --trackerURL=http://localhost/tracker &quot;--property-testprop=testvalue&quot; --link-testrelation=http://google.com/ --action=PRODUCT_ARCHIVED' exited with status '0'
+Fri Nov 20 11:35:18 MST 2020
+FINE	thread=15	Using digest version v1, algorithm=SHA1
+FINE	thread=15	Digest='+Oi70tJV/IiWpNXJXa0QL4zlwFg=' , 1ms
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897318615
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897318615
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897318615
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897318615
+FINER	thread=15	[null] Change product is null. Probably archiving.
+FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897318615
+FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897318615
+FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897318615
+FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:shakemap:abcd1234:1605897318615
+INFO	thread=15	[null] running command echo --type=shakemap --code=abcd1234 --source=us --updateTime=2020-11-20T18:35:18.615Z --status=UPDATE --trackerURL=http://localhost/tracker &quot;--property-testprop=testvalue&quot; --link-testrelation=http://google.com/ --action=PRODUCT_ARCHIVED
+INFO	thread=15	[null] command 'echo --type=shakemap --code=abcd1234 --source=us --updateTime=2020-11-20T18:35:18.615Z --status=UPDATE --trackerURL=http://localhost/tracker &quot;--property-testprop=testvalue&quot; --link-testrelation=http://google.com/ --action=PRODUCT_ARCHIVED' exited with status '0'
 </pre>
 </span>
 </div>
@@ -123,7 +124,7 @@ INFO	thread=14	[null] command 'echo --type=shakemap --code=abcd1234 --source=us 
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 5.4.1</a> at Jun 25, 2020, 4:28:09 PM</p>
+<a href="http://www.gradle.org">Gradle 5.4.1</a> at Nov 20, 2020, 11:35:41 AM</p>
 </div>
 </div>
 </body>

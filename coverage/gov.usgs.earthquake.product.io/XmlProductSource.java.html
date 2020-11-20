@@ -18,7 +18,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
-
+import gov.usgs.util.CryptoUtils.Version;
 import gov.usgs.earthquake.product.InputStreamContent;
 import gov.usgs.earthquake.product.URLContent;
 import gov.usgs.earthquake.product.ProductId;
@@ -52,7 +52,7 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 
 	/**
 	 * Create a new XmlProductSource.
-	 * 
+	 *
 	 * @param in
 	 *            the input stream where xml is read.
 	 */
@@ -62,7 +62,7 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 
 	/**
 	 * Create a new XmlProductSource for embedding in another default handler.
-	 * 
+	 *
 	 * @param out
 	 *            the ProductHandler to receive product events.
 	 */
@@ -72,7 +72,7 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 
 	/**
 	 * Begin reading the input stream, sending events to out.
-	 * 
+	 *
 	 * @param out
 	 *            the receiving ProductOutput.
 	 */
@@ -88,7 +88,7 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 	/**
 	 * Override DefaultHandler startElement. Adds a new element content buffer
 	 * and calls onStartElement.
-	 * 
+	 *
 	 * @param uri
 	 *            element uri.
 	 * @param localName
@@ -222,15 +222,25 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 			}
 			// SIGNATURE
 <span class="pc bpc" id="L224" title="1 of 2 branches missed.">			else if (XmlProductHandler.SIGNATURE_ELEMENT.equals(localName)) {</span>
-<span class="fc" id="L225">				signatureBuffer = new StringBuffer();</span>
+<span class="fc" id="L225">				String version = XmlUtils.getAttribute(attributes, uri,</span>
+						XmlProductHandler.SIGNATURE_ATTRIBUTE_VERSION);
+				try {
+<span class="fc" id="L228">					out.onSignatureVersion(id,</span>
+<span class="fc bfc" id="L229" title="All 2 branches covered.">							version == null</span>
+<span class="fc" id="L230">							? Version.SIGNATURE_V1</span>
+<span class="fc" id="L231">							: Version.fromString(version));</span>
+<span class="nc" id="L232">				} catch (Exception e) {</span>
+<span class="nc" id="L233">					throw new SAXException(e);</span>
+<span class="fc" id="L234">				}</span>
+<span class="fc" id="L235">				signatureBuffer = new StringBuffer();</span>
 			}
 		}
-<span class="fc" id="L228">	}</span>
+<span class="fc" id="L238">	}</span>
 
 	/**
 	 * Override DefaultHandler endElement. Retrieves element content buffer and
 	 * passes it to onEndElement.
-	 * 
+	 *
 	 * @param uri
 	 *            element uri.
 	 * @param localName
@@ -242,31 +252,31 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 	 */
 	public synchronized void endElement(final String uri,
 			final String localName, final String qName) throws SAXException {
-<span class="pc bpc" id="L245" title="1 of 2 branches missed.">		if (XmlProductHandler.PRODUCT_XML_NAMESPACE.equals(uri)) {</span>
+<span class="pc bpc" id="L255" title="1 of 2 branches missed.">		if (XmlProductHandler.PRODUCT_XML_NAMESPACE.equals(uri)) {</span>
 			try {
-<span class="fc bfc" id="L247" title="All 2 branches covered.">				if (XmlProductHandler.CONTENT_ELEMENT.equals(localName)) {</span>
+<span class="fc bfc" id="L257" title="All 2 branches covered.">				if (XmlProductHandler.CONTENT_ELEMENT.equals(localName)) {</span>
 					// done reading content content, close piped stream to
 					// signal EOF.
-<span class="fc" id="L250">					closeContent();</span>
-<span class="fc" id="L251">				} else if (XmlProductHandler.SIGNATURE_ELEMENT</span>
-<span class="fc bfc" id="L252" title="All 2 branches covered.">						.equals(localName)) {</span>
-<span class="fc" id="L253">					String signature = signatureBuffer.toString();</span>
-<span class="fc" id="L254">					signatureBuffer = null;</span>
-<span class="fc" id="L255">					out.onSignature(id, signature);</span>
-<span class="fc bfc" id="L256" title="All 2 branches covered.">				} else if (XmlProductHandler.PRODUCT_ELEMENT.equals(localName)) {</span>
-<span class="fc" id="L257">					out.onEndProduct(id);</span>
+<span class="fc" id="L260">					closeContent();</span>
+<span class="fc" id="L261">				} else if (XmlProductHandler.SIGNATURE_ELEMENT</span>
+<span class="fc bfc" id="L262" title="All 2 branches covered.">						.equals(localName)) {</span>
+<span class="fc" id="L263">					String signature = signatureBuffer.toString();</span>
+<span class="fc" id="L264">					signatureBuffer = null;</span>
+<span class="fc" id="L265">					out.onSignature(id, signature);</span>
+<span class="fc bfc" id="L266" title="All 2 branches covered.">				} else if (XmlProductHandler.PRODUCT_ELEMENT.equals(localName)) {</span>
+<span class="fc" id="L267">					out.onEndProduct(id);</span>
 				}
-<span class="nc" id="L259">			} catch (Exception e) {</span>
-<span class="nc" id="L260">				closeContent();</span>
-<span class="nc" id="L261">				throw new SAXException(e);</span>
-<span class="fc" id="L262">			}</span>
+<span class="nc" id="L269">			} catch (Exception e) {</span>
+<span class="nc" id="L270">				closeContent();</span>
+<span class="nc" id="L271">				throw new SAXException(e);</span>
+<span class="fc" id="L272">			}</span>
 		}
-<span class="fc" id="L264">	}</span>
+<span class="fc" id="L274">	}</span>
 
 	/**
 	 * Override DefaultHandler characters. Appends content to current element
 	 * buffer, or skips if before first element.
-	 * 
+	 *
 	 * @param ch
 	 *            content.
 	 * @param start
@@ -278,29 +288,29 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 	 */
 	public synchronized void characters(final char[] ch, final int start,
 			final int length) throws SAXException {
-<span class="fc" id="L281">		String chars = new String(ch, start, length);</span>
-<span class="fc bfc" id="L282" title="All 2 branches covered.">		if (contentOutputStream != null) {</span>
+<span class="fc" id="L291">		String chars = new String(ch, start, length);</span>
+<span class="fc bfc" id="L292" title="All 2 branches covered.">		if (contentOutputStream != null) {</span>
 			try {
-<span class="fc" id="L284">				contentOutputStream.write(chars.getBytes());</span>
-<span class="nc" id="L285">			} catch (Exception e) {</span>
+<span class="fc" id="L294">				contentOutputStream.write(chars.getBytes());</span>
+<span class="nc" id="L295">			} catch (Exception e) {</span>
 				// close the piped stream if there was an exception
-<span class="nc" id="L287">				closeContent();</span>
-<span class="nc" id="L288">				throw new SAXException(e);</span>
-<span class="fc" id="L289">			}</span>
-<span class="fc bfc" id="L290" title="All 2 branches covered.">		} else if (signatureBuffer != null) {</span>
-<span class="fc" id="L291">			signatureBuffer.append(chars);</span>
+<span class="nc" id="L297">				closeContent();</span>
+<span class="nc" id="L298">				throw new SAXException(e);</span>
+<span class="fc" id="L299">			}</span>
+<span class="fc bfc" id="L300" title="All 2 branches covered.">		} else if (signatureBuffer != null) {</span>
+<span class="fc" id="L301">			signatureBuffer.append(chars);</span>
 		} else {
 			// ignore, only interested in content or signature
 		}
-<span class="fc" id="L295">	}</span>
+<span class="fc" id="L305">	}</span>
 
 	protected synchronized ProductHandler getHandler() {
-<span class="nc" id="L298">		return out;</span>
+<span class="nc" id="L308">		return out;</span>
 	}
 
 	protected synchronized void setHandler(ProductHandler out) {
-<span class="fc" id="L302">		this.out = out;</span>
-<span class="fc" id="L303">	}</span>
+<span class="fc" id="L312">		this.out = out;</span>
+<span class="fc" id="L313">	}</span>
 
 
 	/**
@@ -308,13 +318,13 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 	 */
 	@Override
 	public void close() {
-<span class="fc" id="L311">		closeContent();</span>
+<span class="fc" id="L321">		closeContent();</span>
 
-<span class="fc" id="L313">		StreamUtils.closeStream(in);</span>
-<span class="fc bfc" id="L314" title="All 2 branches covered.">		if (out != null) {</span>
-<span class="fc" id="L315">			out.close();</span>
+<span class="fc" id="L323">		StreamUtils.closeStream(in);</span>
+<span class="fc bfc" id="L324" title="All 2 branches covered.">		if (out != null) {</span>
+<span class="fc" id="L325">			out.close();</span>
 		}
-<span class="fc" id="L317">	}</span>
+<span class="fc" id="L327">	}</span>
 
 	/**
 	 * Set up a piped output stream used during parsing.
@@ -331,37 +341,37 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 	@SuppressWarnings(&quot;resource&quot;)
 	public InputStream openContentStream(boolean encoded) throws IOException {
 		// EMBEDDED CONTENT
-<span class="fc" id="L334">		contentOutputStream = new PipedOutputStream();</span>
-<span class="fc" id="L335">		InputStream contentInputStream = new PipedInputStream(</span>
+<span class="fc" id="L344">		contentOutputStream = new PipedOutputStream();</span>
+<span class="fc" id="L345">		InputStream contentInputStream = new PipedInputStream(</span>
 				contentOutputStream);
 
 		// decode base 64 encoded content
-<span class="pc bpc" id="L339" title="1 of 2 branches missed.">		if (encoded) {</span>
+<span class="pc bpc" id="L349" title="1 of 2 branches missed.">		if (encoded) {</span>
 			// this stream is closed by closeContent()
 			// either in this thread if everything succeeds,
 			// or by the objects using the ProductSource.
-<span class="fc" id="L343">			contentInputStream = Base64.getDecoder()</span>
-<span class="fc" id="L344">					.wrap(contentInputStream);</span>
+<span class="fc" id="L353">			contentInputStream = Base64.getDecoder()</span>
+<span class="fc" id="L354">					.wrap(contentInputStream);</span>
 		}
 
-<span class="fc" id="L347">		return contentInputStream;</span>
+<span class="fc" id="L357">		return contentInputStream;</span>
 	}
 
 	public void closeContent() {
-<span class="fc" id="L351">		StreamUtils.closeStream(contentOutputStream);</span>
-<span class="fc" id="L352">		contentOutputStream = null;</span>
-<span class="fc bfc" id="L353" title="All 2 branches covered.">		if (contentOutputThread != null) {</span>
+<span class="fc" id="L361">		StreamUtils.closeStream(contentOutputStream);</span>
+<span class="fc" id="L362">		contentOutputStream = null;</span>
+<span class="fc bfc" id="L363" title="All 2 branches covered.">		if (contentOutputThread != null) {</span>
 			try {
-<span class="fc" id="L355">				contentOutputThread.join();</span>
-<span class="nc" id="L356">			} catch (Exception e) {</span>
+<span class="fc" id="L365">				contentOutputThread.join();</span>
+<span class="nc" id="L366">			} catch (Exception e) {</span>
 				// ignore
-<span class="fc" id="L358">			}</span>
+<span class="fc" id="L368">			}</span>
 		}
-<span class="fc" id="L360">		contentOutputThread = null;</span>
-<span class="fc bfc" id="L361" title="All 2 branches covered.">		if (content != null) {</span>
-<span class="fc" id="L362">			content.close();</span>
+<span class="fc" id="L370">		contentOutputThread = null;</span>
+<span class="fc bfc" id="L371" title="All 2 branches covered.">		if (content != null) {</span>
+<span class="fc" id="L372">			content.close();</span>
 		}
-<span class="fc" id="L364">	}</span>
+<span class="fc" id="L374">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -220,19 +220,19 @@ public class FileProductStorage extends DefaultConfigurable implements
 	@Override
 	public synchronized void notifyListeners(final StorageEvent event) {
 <span class="fc" id="L222">		Iterator&lt;StorageListener&gt; listenerIter = listeners.keySet().iterator();</span>
-<span class="fc bfc" id="L223" title="All 2 branches covered.">		while (listenerIter.hasNext()) {</span>
-<span class="fc" id="L224">			final StorageListener listener = listenerIter.next();</span>
-<span class="fc" id="L225">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] listener :: &quot;</span>
-<span class="fc" id="L226">					+ listener.getClass().getCanonicalName());</span>
-<span class="fc" id="L227">			final ExecutorService service = listeners.get(listener);</span>
+<span class="pc bpc" id="L223" title="1 of 2 branches missed.">		while (listenerIter.hasNext()) {</span>
+<span class="nc" id="L224">			final StorageListener listener = listenerIter.next();</span>
+<span class="nc" id="L225">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] listener :: &quot;</span>
+<span class="nc" id="L226">					+ listener.getClass().getCanonicalName());</span>
+<span class="nc" id="L227">			final ExecutorService service = listeners.get(listener);</span>
 
-<span class="fc" id="L229">			service.submit(new Runnable() {</span>
+<span class="nc" id="L229">			service.submit(new Runnable() {</span>
 
 				public void run() {
-<span class="fc" id="L232">					listener.onStorageEvent(event);</span>
-<span class="fc" id="L233">				}</span>
+<span class="nc" id="L232">					listener.onStorageEvent(event);</span>
+<span class="nc" id="L233">				}</span>
 			});
-<span class="fc" id="L235">		}</span>
+<span class="nc" id="L235">		}</span>
 <span class="fc" id="L236">	}</span>
 
 	@Override
@@ -632,39 +632,41 @@ public class FileProductStorage extends DefaultConfigurable implements
 		// product id is known.
 		try {
 <span class="fc" id="L634">			source.streamTo(output);</span>
+			// close output so file(s) are written
+<span class="fc" id="L636">			output.close();</span>
 
-<span class="fc" id="L636">			ProductId id = output.getProductId();</span>
-<span class="fc" id="L637">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] product stored id=&quot; + id</span>
-<span class="fc" id="L638">					+ &quot;, status=&quot; + output.getStatus());</span>
+<span class="fc" id="L638">			ProductId id = output.getProductId();</span>
+<span class="fc" id="L639">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] product stored id=&quot; + id</span>
+<span class="fc" id="L640">					+ &quot;, status=&quot; + output.getStatus());</span>
 
-<span class="fc" id="L640">			verifier.verifySignature(getProduct(id));</span>
+<span class="fc" id="L642">			verifier.verifySignature(getProduct(id));</span>
 
-<span class="fc" id="L642">		} catch (Exception e) {</span>
-<span class="fc bfc" id="L643" title="All 2 branches covered.">			if (!(e instanceof ProductAlreadyInStorageException)</span>
-<span class="pc bpc" id="L644" title="1 of 2 branches missed.">					&amp;&amp; !(e.getCause() instanceof ProductAlreadyInStorageException)) {</span>
-<span class="fc bfc" id="L645" title="All 2 branches covered.">				if (e instanceof InvalidSignatureException) {</span>
+<span class="fc" id="L644">		} catch (Exception e) {</span>
+<span class="fc bfc" id="L645" title="All 2 branches covered.">			if (!(e instanceof ProductAlreadyInStorageException)</span>
+<span class="pc bpc" id="L646" title="1 of 2 branches missed.">					&amp;&amp; !(e.getCause() instanceof ProductAlreadyInStorageException)) {</span>
+<span class="pc bpc" id="L647" title="1 of 2 branches missed.">				if (e instanceof InvalidSignatureException) {</span>
 					// suppress stack trace for invalid signature
-<span class="fc" id="L647">					LOGGER.warning(e.getMessage()</span>
+<span class="fc" id="L649">					LOGGER.warning(e.getMessage()</span>
 							+ &quot;, removing incomplete product&quot;);
 				} else {
-<span class="fc" id="L650">					LOGGER.log(</span>
+<span class="nc" id="L652">					LOGGER.log(</span>
 							Level.WARNING,
 							&quot;[&quot;
-<span class="fc" id="L653">									+ getName()</span>
+<span class="nc" id="L655">									+ getName()</span>
 									+ &quot;] exception while storing product, removing incomplete product&quot;,
 							e);
 				}
 				try {
 					// remove incompletely stored product.
-<span class="fc" id="L659">					removeProduct(output.getProductId());</span>
-<span class="nc" id="L660">				} catch (Exception e2) {</span>
+<span class="fc" id="L661">					removeProduct(output.getProductId());</span>
+<span class="nc" id="L662">				} catch (Exception e2) {</span>
 					// ignore
-<span class="nc" id="L662">					LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+<span class="nc" id="L664">					LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 							+ &quot;] exception while removing incomplete product&quot;,
 							e2);
-<span class="fc" id="L665">				}</span>
+<span class="fc" id="L667">				}</span>
 			}
-<span class="fc" id="L667">			throw e;</span>
+<span class="fc" id="L669">			throw e;</span>
 		} finally {
 			// DO RELEASE THE WRITE LOCK HERE
 
@@ -677,33 +679,33 @@ public class FileProductStorage extends DefaultConfigurable implements
 			// However, not releasing the lock here leads to other problems when
 			// hubs are receiving products via multiple receivers.
 
-<span class="fc" id="L680">			ProductId id = output.getProductId();</span>
+<span class="fc" id="L682">			ProductId id = output.getProductId();</span>
 
-<span class="pc bpc" id="L682" title="1 of 2 branches missed.">			if (id != null) {</span>
+<span class="pc bpc" id="L684" title="1 of 2 branches missed.">			if (id != null) {</span>
 				// release the write lock
-<span class="fc" id="L684">				LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L686">				LOGGER.finest(&quot;[&quot; + getName()</span>
 						+ &quot;] releasing write lock for product id=&quot;
-<span class="fc" id="L686">						+ id.toString());</span>
-<span class="fc" id="L687">				storageLocks.releaseWriteLock(id);</span>
-<span class="fc" id="L688">				LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L688">						+ id.toString());</span>
+<span class="fc" id="L689">				storageLocks.releaseWriteLock(id);</span>
+<span class="fc" id="L690">				LOGGER.finest(&quot;[&quot; + getName()</span>
 						+ &quot;] released write lock for product id=&quot;
-<span class="fc" id="L690">						+ id.toString());</span>
+<span class="fc" id="L692">						+ id.toString());</span>
 			}
 
 			// close underlying handler
-<span class="fc" id="L694">			output.close();</span>
-<span class="fc" id="L695">			output.setProductOutput(null);</span>
+<span class="fc" id="L696">			output.close();</span>
+<span class="fc" id="L697">			output.setProductOutput(null);</span>
 
-<span class="fc" id="L697">			source.close();</span>
+<span class="fc" id="L699">			source.close();</span>
 		}
 
-<span class="fc" id="L700">		ProductId id = output.getProductId();</span>
+<span class="fc" id="L702">		ProductId id = output.getProductId();</span>
 		// Notify our storage listeners
-<span class="fc" id="L702">		StorageEvent event = new StorageEvent(this, id,</span>
+<span class="fc" id="L704">		StorageEvent event = new StorageEvent(this, id,</span>
 				StorageEvent.PRODUCT_STORED);
-<span class="fc" id="L704">		notifyListeners(event);</span>
+<span class="fc" id="L706">		notifyListeners(event);</span>
 
-<span class="fc" id="L706">		return id;</span>
+<span class="fc" id="L708">		return id;</span>
 	}
 
 	/**
@@ -723,21 +725,21 @@ public class FileProductStorage extends DefaultConfigurable implements
 		/**
 		 * Construct a new StorageProductOutput.
 		 */
-<span class="fc" id="L726">		public StorageProductOutput() {</span>
-<span class="fc" id="L727">		}</span>
+<span class="fc" id="L728">		public StorageProductOutput() {</span>
+<span class="fc" id="L729">		}</span>
 
 		/**
 		 * @return the product id that was stored.
 		 */
 		public ProductId getProductId() {
-<span class="fc" id="L733">			return id;</span>
+<span class="fc" id="L735">			return id;</span>
 		}
 
 		/**
 		 * @return the product status that was stored.
 		 */
 		public String getStatus() {
-<span class="fc" id="L740">			return status;</span>
+<span class="fc" id="L742">			return status;</span>
 		}
 
 		/**
@@ -746,32 +748,32 @@ public class FileProductStorage extends DefaultConfigurable implements
 		public void onBeginProduct(ProductId id, String status, URL trackerURL)
 				throws Exception {
 			// save the product id for later
-<span class="fc" id="L749">			this.id = id;</span>
-<span class="fc" id="L750">			this.status = status;</span>
+<span class="fc" id="L751">			this.id = id;</span>
+<span class="fc" id="L752">			this.status = status;</span>
 
 			// acquire write lock for product
-<span class="fc" id="L753">			LOGGER.finest(&quot;[&quot; + getName()</span>
-<span class="fc" id="L754">					+ &quot;] acquiring write lock for product id=&quot; + id.toString());</span>
-<span class="fc" id="L755">			storageLocks.acquireWriteLock(id);</span>
+<span class="fc" id="L755">			LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L756">					+ &quot;] acquiring write lock for product id=&quot; + id.toString());</span>
+<span class="fc" id="L757">			storageLocks.acquireWriteLock(id);</span>
 			// keep track that we have write lock
-<span class="fc" id="L757">			LOGGER.finest(&quot;[&quot; + getName()</span>
-<span class="fc" id="L758">					+ &quot;] acquired write lock for product id=&quot; + id.toString());</span>
-<span class="fc bfc" id="L759" title="All 2 branches covered.">			if (hasProduct(id)) {</span>
-<span class="fc" id="L760">				throw new ProductAlreadyInStorageException(&quot;[&quot; + getName()</span>
+<span class="fc" id="L759">			LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L760">					+ &quot;] acquired write lock for product id=&quot; + id.toString());</span>
+<span class="fc bfc" id="L761" title="All 2 branches covered.">			if (hasProduct(id)) {</span>
+<span class="fc" id="L762">				throw new ProductAlreadyInStorageException(&quot;[&quot; + getName()</span>
 						+ &quot;] product already in storage&quot;);
 			}
 
 			// set the wrapped product output
-<span class="fc" id="L765">			setProductOutput(getProductHandlerFormat(getProductFile(id)));</span>
+<span class="fc" id="L767">			setProductOutput(getProductHandlerFormat(getProductFile(id)));</span>
 			// call the directory product output onBeginProduct method to start
 			// writing the product
-<span class="fc" id="L768">			super.onBeginProduct(id, status, trackerURL);</span>
-<span class="fc" id="L769">		}</span>
+<span class="fc" id="L770">			super.onBeginProduct(id, status, trackerURL);</span>
+<span class="fc" id="L771">		}</span>
 
 		public void onEndProduct(ProductId id) throws Exception {
 			// call the directory product output onEndProduct method to finish
 			// writing the product
-<span class="fc" id="L774">			super.onEndProduct(id);</span>
+<span class="fc" id="L776">			super.onEndProduct(id);</span>
 
 			// DONT RELEASE THE LOCK HERE, this causes bigger problems on
 			// hubs...
@@ -784,7 +786,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 			// this.haveWriteLock = false;
 			// LOGGER.finest(&quot;Released write lock for product id=&quot; +
 			// id.toString());
-<span class="fc" id="L787">		}</span>
+<span class="fc" id="L789">		}</span>
 	}
 
 	/**
@@ -793,47 +795,47 @@ public class FileProductStorage extends DefaultConfigurable implements
 	public void shutdown() throws Exception {
 		// Remove all our listeners. Doing this will also shut down the
 		// ExecutorServices
-<span class="fc" id="L796">		Iterator&lt;StorageListener&gt; listenerIter = listeners.keySet().iterator();</span>
-<span class="fc bfc" id="L797" title="All 2 branches covered.">		while (listenerIter.hasNext()) {</span>
-<span class="fc" id="L798">			removeStorageListener(listenerIter.next());</span>
+<span class="fc" id="L798">		Iterator&lt;StorageListener&gt; listenerIter = listeners.keySet().iterator();</span>
+<span class="fc bfc" id="L799" title="All 2 branches covered.">		while (listenerIter.hasNext()) {</span>
+<span class="fc" id="L800">			removeStorageListener(listenerIter.next());</span>
 			// Maybe we should call &quot;listener.shutdown()&quot; here as well?
 		}
 
 		// shutdown any legacy storages
-<span class="fc" id="L803">		Iterator&lt;ProductStorage&gt; legacyIter = legacyStorages.iterator();</span>
-<span class="pc bpc" id="L804" title="1 of 2 branches missed.">		while (legacyIter.hasNext()) {</span>
-<span class="nc" id="L805">			ProductStorage next = legacyIter.next();</span>
+<span class="fc" id="L805">		Iterator&lt;ProductStorage&gt; legacyIter = legacyStorages.iterator();</span>
+<span class="pc bpc" id="L806" title="1 of 2 branches missed.">		while (legacyIter.hasNext()) {</span>
+<span class="nc" id="L807">			ProductStorage next = legacyIter.next();</span>
 			try {
-<span class="nc" id="L807">				next.shutdown();</span>
-<span class="nc" id="L808">			} catch (Exception e) {</span>
-<span class="nc" id="L809">				LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
+<span class="nc" id="L809">				next.shutdown();</span>
+<span class="nc" id="L810">			} catch (Exception e) {</span>
+<span class="nc" id="L811">				LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
 						+ &quot;] legacy storage shutdown exception &quot;, e);
-<span class="nc" id="L811">			}</span>
-<span class="nc" id="L812">		}</span>
-<span class="fc" id="L813">	}</span>
+<span class="nc" id="L813">			}</span>
+<span class="nc" id="L814">		}</span>
+<span class="fc" id="L815">	}</span>
 
 	/**
 	 * Called after client configuration to begin processing.
 	 */
 	public void startup() throws Exception {
 		// startup any legacy storages
-<span class="fc" id="L820">		Iterator&lt;ProductStorage&gt; legacyIter = legacyStorages.iterator();</span>
-<span class="pc bpc" id="L821" title="1 of 2 branches missed.">		while (legacyIter.hasNext()) {</span>
-<span class="nc" id="L822">			ProductStorage next = legacyIter.next();</span>
+<span class="fc" id="L822">		Iterator&lt;ProductStorage&gt; legacyIter = legacyStorages.iterator();</span>
+<span class="pc bpc" id="L823" title="1 of 2 branches missed.">		while (legacyIter.hasNext()) {</span>
+<span class="nc" id="L824">			ProductStorage next = legacyIter.next();</span>
 			try {
-<span class="nc" id="L824">				next.startup();</span>
-<span class="nc" id="L825">			} catch (Exception e) {</span>
-<span class="nc" id="L826">				LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
+<span class="nc" id="L826">				next.startup();</span>
+<span class="nc" id="L827">			} catch (Exception e) {</span>
+<span class="nc" id="L828">				LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
 						+ &quot;] legacy storage startup exception &quot;, e);
-<span class="nc" id="L828">			}</span>
-<span class="nc" id="L829">		}</span>
-<span class="fc" id="L830">	}</span>
+<span class="nc" id="L830">			}</span>
+<span class="nc" id="L831">		}</span>
+<span class="fc" id="L832">	}</span>
 
 	/**
 	 * @return the baseDirectory
 	 */
 	public File getBaseDirectory() {
-<span class="fc" id="L836">		return baseDirectory;</span>
+<span class="fc" id="L838">		return baseDirectory;</span>
 	}
 
 	/**
@@ -841,14 +843,14 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 *            the baseDirectory to set
 	 */
 	public void setBaseDirectory(File baseDirectory) {
-<span class="nc" id="L844">		this.baseDirectory = baseDirectory;</span>
-<span class="nc" id="L845">	}</span>
+<span class="nc" id="L846">		this.baseDirectory = baseDirectory;</span>
+<span class="nc" id="L847">	}</span>
 
 	/**
 	 * @return the rejectInvalidSignatures
 	 */
 	public boolean isRejectInvalidSignatures() {
-<span class="nc" id="L851">		return verifier.isRejectInvalidSignatures();</span>
+<span class="nc" id="L853">		return verifier.isRejectInvalidSignatures();</span>
 	}
 
 	/**
@@ -856,14 +858,14 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 *            the rejectInvalidSignatures to set
 	 */
 	public void setRejectInvalidSignatures(boolean rejectInvalidSignatures) {
-<span class="fc" id="L859">		verifier.setRejectInvalidSignatures(rejectInvalidSignatures);</span>
-<span class="fc" id="L860">	}</span>
+<span class="fc" id="L861">		verifier.setRejectInvalidSignatures(rejectInvalidSignatures);</span>
+<span class="fc" id="L862">	}</span>
 
 	/**
 	 * @return the testSignatures
 	 */
 	public boolean isTestSignatures() {
-<span class="nc" id="L866">		return verifier.isTestSignatures();</span>
+<span class="nc" id="L868">		return verifier.isTestSignatures();</span>
 	}
 
 	/**
@@ -871,14 +873,14 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 *            the testSignatures to set
 	 */
 	public void setTestSignatures(boolean testSignatures) {
-<span class="fc" id="L874">		verifier.setTestSignatures(testSignatures);</span>
-<span class="fc" id="L875">	}</span>
+<span class="fc" id="L876">		verifier.setTestSignatures(testSignatures);</span>
+<span class="fc" id="L877">	}</span>
 
 	/**
 	 * @return the keychain
 	 */
 	public ProductKeyChain getKeychain() {
-<span class="nc" id="L881">		return verifier.getKeychain();</span>
+<span class="nc" id="L883">		return verifier.getKeychain();</span>
 	}
 
 	/**
@@ -886,14 +888,14 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 *            the keychain to set
 	 */
 	public void setKeychain(ProductKeyChain keychain) {
-<span class="fc" id="L889">		verifier.setKeychain(keychain);</span>
-<span class="fc" id="L890">	}</span>
+<span class="fc" id="L891">		verifier.setKeychain(keychain);</span>
+<span class="fc" id="L892">	}</span>
 
 	/**
 	 * @return the legacyStorages.
 	 */
 	public List&lt;ProductStorage&gt; getLegacyStorages() {
-<span class="fc" id="L896">		return legacyStorages;</span>
+<span class="fc" id="L898">		return legacyStorages;</span>
 	}
 
 }

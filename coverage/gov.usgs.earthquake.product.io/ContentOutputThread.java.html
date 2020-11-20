@@ -5,15 +5,14 @@ import java.util.logging.Logger;
 
 import gov.usgs.earthquake.product.Content;
 import gov.usgs.earthquake.product.ProductId;
-import gov.usgs.earthquake.product.io.ProductHandler;
 
 /**
  * Deliver content in a separate thread.
  */
 public class ContentOutputThread extends Thread {
 
-<span class="fc" id="L15">	private static final Logger LOGGER = Logger</span>
-<span class="fc" id="L16">			.getLogger(ContentOutputThread.class.getName());</span>
+<span class="fc" id="L14">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L15">			.getLogger(ContentOutputThread.class.getName());</span>
 
 	private final ProductHandler handler;
 	private final ProductId id;
@@ -21,24 +20,24 @@ public class ContentOutputThread extends Thread {
 	private final Content content;
 
 	public ContentOutputThread(final ProductHandler handler,
-<span class="fc" id="L24">			final ProductId id, final String path, final Content content) {</span>
-<span class="fc" id="L25">		this.handler = handler;</span>
-<span class="fc" id="L26">		this.id = id;</span>
-<span class="fc" id="L27">		this.path = path;</span>
-<span class="fc" id="L28">		this.content = content;</span>
-<span class="fc" id="L29">	}</span>
+<span class="fc" id="L23">			final ProductId id, final String path, final Content content) {</span>
+<span class="fc" id="L24">		this.handler = handler;</span>
+<span class="fc" id="L25">		this.id = id;</span>
+<span class="fc" id="L26">		this.path = path;</span>
+<span class="fc" id="L27">		this.content = content;</span>
+<span class="fc" id="L28">	}</span>
 
 	@Override
 	public void run() {
 		try {
-<span class="fc" id="L34">			handler.onContent(id, path, content);</span>
-<span class="fc" id="L35">		} catch (Exception e) {</span>
-<span class="fc" id="L36">			LOGGER.log(Level.WARNING, &quot;Exception delivering content '&quot; + path</span>
+<span class="fc" id="L33">			handler.onContent(id, path, content);</span>
+<span class="fc" id="L34">		} catch (Exception e) {</span>
+<span class="fc" id="L35">			LOGGER.log(Level.WARNING, &quot;Exception delivering content '&quot; + path</span>
 					+ &quot;'&quot;, e);
 		} finally {
-<span class="fc" id="L39">			content.close();</span>
+<span class="fc" id="L38">			content.close();</span>
 		}
-<span class="fc" id="L41">	}</span>
+<span class="fc" id="L40">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

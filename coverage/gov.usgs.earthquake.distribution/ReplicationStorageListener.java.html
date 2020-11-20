@@ -173,46 +173,46 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 
 	@Override
 	public void onProductStored(StorageEvent event) throws Exception {
-<span class="pc bpc" id="L176" title="1 of 2 branches missed.">		if (!(event.getProductStorage() instanceof FileProductStorage)) {</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">		if (!(event.getProductStorage() instanceof FileProductStorage)) {</span>
 <span class="nc" id="L177">			return; // Can't replicate a non-file product storage</span>
 		}
-<span class="fc" id="L179">		LOGGER.info(&quot;[&quot; + getName() + &quot;] product stored. Replicating. (&quot;</span>
-<span class="fc" id="L180">				+ event.getProductId().toString() + &quot;)&quot;);</span>
-<span class="fc" id="L181">		syncProductContents((FileProductStorage) event.getProductStorage(),</span>
-<span class="fc" id="L182">				event.getProductId(), false);</span>
-<span class="fc" id="L183">		LOGGER.info(&quot;[&quot; + getName() + &quot;] product replicated to remote. (&quot;</span>
-<span class="fc" id="L184">				+ event.getProductId().toString() + &quot;)&quot;);</span>
-<span class="fc" id="L185">	}</span>
+<span class="nc" id="L179">		LOGGER.info(&quot;[&quot; + getName() + &quot;] product stored. Replicating. (&quot;</span>
+<span class="nc" id="L180">				+ event.getProductId().toString() + &quot;)&quot;);</span>
+<span class="nc" id="L181">		syncProductContents((FileProductStorage) event.getProductStorage(),</span>
+<span class="nc" id="L182">				event.getProductId(), false);</span>
+<span class="nc" id="L183">		LOGGER.info(&quot;[&quot; + getName() + &quot;] product replicated to remote. (&quot;</span>
+<span class="nc" id="L184">				+ event.getProductId().toString() + &quot;)&quot;);</span>
+<span class="nc" id="L185">	}</span>
 
 	@Override
 	public void onProductRemoved(StorageEvent event) throws Exception {
-<span class="pc bpc" id="L189" title="1 of 2 branches missed.">		if (!(event.getProductStorage() instanceof FileProductStorage)) {</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">		if (!(event.getProductStorage() instanceof FileProductStorage)) {</span>
 <span class="nc" id="L190">			return; // Can't replicate a non-file product storage</span>
 		}
 
-<span class="fc" id="L193">		LOGGER.info(&quot;[&quot; + getName() + &quot;] product removed. Replicating. (&quot;</span>
-<span class="fc" id="L194">				+ event.getProductId().toString() + &quot;)&quot;);</span>
-<span class="fc" id="L195">		syncProductContents((FileProductStorage) event.getProductStorage(),</span>
-<span class="fc" id="L196">				event.getProductId(), true);</span>
-<span class="fc" id="L197">		LOGGER.info(&quot;[&quot; + getName() + &quot;] product removal replicated. (&quot;</span>
-<span class="fc" id="L198">				+ event.getProductId().toString() + &quot;)&quot;);</span>
-<span class="fc" id="L199">	}</span>
+<span class="nc" id="L193">		LOGGER.info(&quot;[&quot; + getName() + &quot;] product removed. Replicating. (&quot;</span>
+<span class="nc" id="L194">				+ event.getProductId().toString() + &quot;)&quot;);</span>
+<span class="nc" id="L195">		syncProductContents((FileProductStorage) event.getProductStorage(),</span>
+<span class="nc" id="L196">				event.getProductId(), true);</span>
+<span class="nc" id="L197">		LOGGER.info(&quot;[&quot; + getName() + &quot;] product removal replicated. (&quot;</span>
+<span class="nc" id="L198">				+ event.getProductId().toString() + &quot;)&quot;);</span>
+<span class="nc" id="L199">	}</span>
 
 	protected void syncProductContents(FileProductStorage storage,
 			ProductId id, boolean deleting) throws IOException {
 
-<span class="fc" id="L204">		final File baseDir = storage.getBaseDirectory();</span>
-<span class="fc" id="L205">		final String path = storage.getProductPath(id);</span>
+<span class="nc" id="L204">		final File baseDir = storage.getBaseDirectory();</span>
+<span class="nc" id="L205">		final String path = storage.getProductPath(id);</span>
 
-<span class="fc" id="L207">		Iterator&lt;String&gt; replHostsIter = replHosts.keySet().iterator();</span>
-<span class="fc bfc" id="L208" title="All 2 branches covered.">		while (replHostsIter.hasNext()) {</span>
-<span class="fc" id="L209">			final String replHost = replHostsIter.next();</span>
-<span class="fc" id="L210">			final ExecutorService service = replHosts.get(replHost);</span>
-<span class="fc" id="L211">			service.submit(new ReplicationTask(createReplicationCommand(</span>
+<span class="nc" id="L207">		Iterator&lt;String&gt; replHostsIter = replHosts.keySet().iterator();</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">		while (replHostsIter.hasNext()) {</span>
+<span class="nc" id="L209">			final String replHost = replHostsIter.next();</span>
+<span class="nc" id="L210">			final ExecutorService service = replHosts.get(replHost);</span>
+<span class="nc" id="L211">			service.submit(new ReplicationTask(createReplicationCommand(</span>
 					baseDir, path, replHost, deleting), baseDir, replMaxTries,
 					replTimeout, service));
-<span class="fc" id="L214">		}</span>
-<span class="fc" id="L215">	}</span>
+<span class="nc" id="L214">		}</span>
+<span class="nc" id="L215">	}</span>
 
 	/**
 	 * Create the replication command.
@@ -235,91 +235,91 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 			final String path, final String host, final boolean deleting) throws IOException {
 
 		// Make sure we are replicating a directory that actually exists
-<span class="fc" id="L238">		File source = new File(baseDir, path);</span>
+<span class="nc" id="L238">		File source = new File(baseDir, path);</span>
 
-<span class="fc bfc" id="L240" title="All 4 branches covered.">		while (!source.exists() &amp;&amp; !source.getParentFile().equals(baseDir)) {</span>
-<span class="fc" id="L241">			source = source.getParentFile();</span>
+<span class="nc bnc" id="L240" title="All 4 branches missed.">		while (!source.exists() &amp;&amp; !source.getParentFile().equals(baseDir)) {</span>
+<span class="nc" id="L241">			source = source.getParentFile();</span>
 		}
 
 		// StringBuffer command = new StringBuffer(replCmd);
-<span class="fc" id="L245">		List&lt;String&gt; command = new ArrayList&lt;String&gt;();</span>
-<span class="fc" id="L246">		command.add(replCmd);</span>
+<span class="nc" id="L245">		List&lt;String&gt; command = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L246">		command.add(replCmd);</span>
 
-<span class="pc bpc" id="L248" title="1 of 2 branches missed.">		if (archiveFlag) {</span>
-<span class="fc" id="L249">			command.add(&quot;-a&quot;);</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">		if (archiveFlag) {</span>
+<span class="nc" id="L249">			command.add(&quot;-a&quot;);</span>
 		}
 
-<span class="fc" id="L252">		command.add(&quot;-vz&quot;);</span>
-<span class="fc" id="L253">		command.add(&quot;--relative&quot;);</span>
-<span class="fc" id="L254">		command.add(&quot;-e&quot;);</span>
-<span class="fc" id="L255">		command.add(&quot;ssh -o ConnectTimeout=5&quot;);</span>
+<span class="nc" id="L252">		command.add(&quot;-vz&quot;);</span>
+<span class="nc" id="L253">		command.add(&quot;--relative&quot;);</span>
+<span class="nc" id="L254">		command.add(&quot;-e&quot;);</span>
+<span class="nc" id="L255">		command.add(&quot;ssh -o ConnectTimeout=5&quot;);</span>
 
-<span class="fc bfc" id="L257" title="All 2 branches covered.">		if (deleting) {</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">		if (deleting) {</span>
 			// To do a delete we must sync the parent directory and then
 			// explicitly include the original target directory and exclude
 			// everything else.
-<span class="fc" id="L261">			command.add(&quot;--delete&quot;);</span>
-<span class="fc" id="L262">			command.add(&quot;--include='&quot; + source.getName() + &quot;**'&quot;);</span>
-<span class="fc" id="L263">			command.add(&quot;--exclude='*'&quot;);</span>
-<span class="fc" id="L264">			source = source.getParentFile();</span>
+<span class="nc" id="L261">			command.add(&quot;--delete&quot;);</span>
+<span class="nc" id="L262">			command.add(&quot;--include='&quot; + source.getName() + &quot;**'&quot;);</span>
+<span class="nc" id="L263">			command.add(&quot;--exclude='*'&quot;);</span>
+<span class="nc" id="L264">			source = source.getParentFile();</span>
 		} else {
 
 		}
 
-<span class="fc" id="L269">		command.add(&quot;.&quot;</span>
-<span class="fc" id="L270">				+ source.getCanonicalPath().replace(baseDir.getCanonicalPath(),</span>
+<span class="nc" id="L269">		command.add(&quot;.&quot;</span>
+<span class="nc" id="L270">				+ source.getCanonicalPath().replace(baseDir.getCanonicalPath(),</span>
 						&quot;&quot;));
 
-<span class="fc" id="L273">		command.add(host);</span>
+<span class="nc" id="L273">		command.add(host);</span>
 
-<span class="fc" id="L275">		return command;</span>
+<span class="nc" id="L275">		return command;</span>
 	}
 
 	protected class ReplicationTask extends Thread {
 
 		// Command to execute
-<span class="fc" id="L281">		private List&lt;String&gt; command = null;</span>
+<span class="nc" id="L281">		private List&lt;String&gt; command = null;</span>
 		// String representation of command
-<span class="fc" id="L283">		private String cmdStr = null;</span>
+<span class="nc" id="L283">		private String cmdStr = null;</span>
 		// Working directory from where to execute the command
-<span class="fc" id="L285">		private File cwd = null;</span>
+<span class="nc" id="L285">		private File cwd = null;</span>
 		// Number of times to try replication
-<span class="fc" id="L287">		private int numTries = 1;</span>
+<span class="nc" id="L287">		private int numTries = 1;</span>
 		// How long to let the command try for
-<span class="fc" id="L289">		private long timeout = 1000L;</span>
+<span class="nc" id="L289">		private long timeout = 1000L;</span>
 		// Executor service to repeat this task if appropriate
-<span class="fc" id="L291">		private ExecutorService service = null;</span>
+<span class="nc" id="L291">		private ExecutorService service = null;</span>
 
 		public ReplicationTask(final List&lt;String&gt; command, final File cwd,
 				final int numTries, final long timeout,
-<span class="fc" id="L295">				final ExecutorService service) {</span>
-<span class="fc" id="L296">			this.command = command;</span>
-<span class="fc" id="L297">			this.cwd = cwd;</span>
-<span class="fc" id="L298">			this.timeout = timeout;</span>
-<span class="fc" id="L299">			this.numTries = numTries;</span>
-<span class="fc" id="L300">			this.service = service;</span>
+<span class="nc" id="L295">				final ExecutorService service) {</span>
+<span class="nc" id="L296">			this.command = command;</span>
+<span class="nc" id="L297">			this.cwd = cwd;</span>
+<span class="nc" id="L298">			this.timeout = timeout;</span>
+<span class="nc" id="L299">			this.numTries = numTries;</span>
+<span class="nc" id="L300">			this.service = service;</span>
 
 			// Command string for easier viewing
-<span class="fc" id="L303">			StringBuffer buf = new StringBuffer();</span>
-<span class="fc" id="L304">			Iterator&lt;String&gt; iter = command.iterator();</span>
-<span class="fc bfc" id="L305" title="All 2 branches covered.">			while (iter.hasNext()) {</span>
-<span class="fc" id="L306">				buf.append(iter.next()).append(&quot; &quot;);</span>
+<span class="nc" id="L303">			StringBuffer buf = new StringBuffer();</span>
+<span class="nc" id="L304">			Iterator&lt;String&gt; iter = command.iterator();</span>
+<span class="nc bnc" id="L305" title="All 2 branches missed.">			while (iter.hasNext()) {</span>
+<span class="nc" id="L306">				buf.append(iter.next()).append(&quot; &quot;);</span>
 			}
-<span class="fc" id="L308">			this.cmdStr = buf.toString().trim();</span>
+<span class="nc" id="L308">			this.cmdStr = buf.toString().trim();</span>
 
-<span class="fc" id="L310">		}</span>
+<span class="nc" id="L310">		}</span>
 
 		public void run() {
 			try {
-<span class="fc" id="L314">				TimeoutProcessBuilder builder = new TimeoutProcessBuilder(</span>
+<span class="nc" id="L314">				TimeoutProcessBuilder builder = new TimeoutProcessBuilder(</span>
 						timeout, command);
-<span class="fc" id="L316">				builder.directory(cwd);</span>
-<span class="fc" id="L317">				TimeoutProcess process = builder.start();</span>
-<span class="fc" id="L318">				int exitStatus = process.waitFor();</span>
+<span class="nc" id="L316">				builder.directory(cwd);</span>
+<span class="nc" id="L317">				TimeoutProcess process = builder.start();</span>
+<span class="nc" id="L318">				int exitStatus = process.waitFor();</span>
 
-<span class="fc" id="L320">				LOGGER.info(&quot;[&quot; + getName() + &quot;] command \&quot;&quot; + cmdStr</span>
+<span class="nc" id="L320">				LOGGER.info(&quot;[&quot; + getName() + &quot;] command \&quot;&quot; + cmdStr</span>
 						+ &quot;\&quot; exited with status [&quot; + exitStatus + &quot;]&quot;);
-<span class="pc bpc" id="L322" title="1 of 2 branches missed.">				if (exitStatus != 0) {</span>
+<span class="nc bnc" id="L322" title="All 2 branches missed.">				if (exitStatus != 0) {</span>
 <span class="nc" id="L323">					LOGGER.info(&quot;[&quot; + getName() + &quot;] command \&quot;&quot; + cmdStr</span>
 <span class="nc" id="L324">							+ &quot;\&quot; error output: &quot; + new String(process.errorOutput()));</span>
 				}
@@ -341,8 +341,8 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 <span class="nc" id="L341">				LOGGER.log(Level.WARNING, iox.getMessage(), iox);</span>
 <span class="nc" id="L342">			} catch (InterruptedException iex) {</span>
 <span class="nc" id="L343">				LOGGER.warning(iex.getMessage());</span>
-<span class="pc" id="L344">			}</span>
-<span class="fc" id="L345">		}</span>
+<span class="nc" id="L344">			}</span>
+<span class="nc" id="L345">		}</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

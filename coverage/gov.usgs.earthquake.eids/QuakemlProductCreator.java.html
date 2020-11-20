@@ -139,44 +139,31 @@ public class QuakemlProductCreator implements ProductCreator {
 <span class="fc" id="L139">		eventParametersCreationInfo = eventParameters.getCreationInfo();</span>
 
 		// only process first event
-<span class="pc bpc" id="L142" title="1 of 2 branches missed.">		if (eventParameters.getEvents().size() &gt; 0) {</span>
-			// found actual event
-<span class="fc" id="L144">			products.addAll(getEventProducts(message, eventParameters</span>
-<span class="fc" id="L145">					.getEvents().get(0)));</span>
-		} else {
-			// check for internal/scenario events
-<span class="nc" id="L148">			List&lt;Object&gt; anies = eventParameters.getAnies();</span>
-<span class="nc" id="L149">			Iterator&lt;Object&gt; anyIter = anies.iterator();</span>
-<span class="nc bnc" id="L150" title="All 2 branches missed.">			while (anyIter.hasNext()) {</span>
-<span class="nc" id="L151">				Object next = anyIter.next();</span>
-<span class="nc bnc" id="L152" title="All 2 branches missed.">				if (next instanceof InternalEvent) {</span>
-					// found internal event
-<span class="nc" id="L154">					products.addAll(getInternalEventProducts(message,</span>
-							(InternalEvent) next));
-<span class="nc" id="L156">					break;</span>
-<span class="nc bnc" id="L157" title="All 2 branches missed.">				} else if (next instanceof ScenarioEvent) {</span>
-					// found scenario event
-<span class="nc" id="L159">					products.addAll(getScenarioEventProducts(message,</span>
-							(ScenarioEvent) next));
-<span class="nc" id="L161">					break;</span>
-				}
-<span class="nc" id="L163">			}</span>
+<span class="fc" id="L142">		Event firstEvent = QuakemlUtils.getFirstEvent(eventParameters);</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">		if (firstEvent != null) {</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">			if (firstEvent instanceof InternalEvent) {</span>
+<span class="nc" id="L145">				products.addAll(getInternalEventProducts(message, (InternalEvent) firstEvent));</span>
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">			} else if (firstEvent instanceof ScenarioEvent) {</span>
+<span class="nc" id="L147">				products.addAll(getScenarioEventProducts(message, (ScenarioEvent) firstEvent));</span>
+			} else {
+<span class="fc" id="L149">				products.addAll(getEventProducts(message, firstEvent));</span>
+			}
 		}
 
 		// add property to all products to indicate they all come from the same
 		// eventParameters &quot;envelope&quot;
-<span class="fc" id="L168">		String eventParametersPublicID = eventParameters.getPublicID();</span>
-<span class="fc" id="L169">		Iterator&lt;Product&gt; productIter = products.iterator();</span>
-<span class="fc bfc" id="L170" title="All 2 branches covered.">		while (productIter.hasNext()) {</span>
-<span class="fc" id="L171">			Product next = productIter.next();</span>
-<span class="fc" id="L172">			setProperty(next.getProperties(), &quot;eventParametersPublicID&quot;,</span>
+<span class="fc" id="L155">		String eventParametersPublicID = eventParameters.getPublicID();</span>
+<span class="fc" id="L156">		Iterator&lt;Product&gt; productIter = products.iterator();</span>
+<span class="fc bfc" id="L157" title="All 2 branches covered.">		while (productIter.hasNext()) {</span>
+<span class="fc" id="L158">			Product next = productIter.next();</span>
+<span class="fc" id="L159">			setProperty(next.getProperties(), &quot;eventParametersPublicID&quot;,</span>
 					eventParametersPublicID);
-<span class="fc" id="L174">		}</span>
+<span class="fc" id="L161">		}</span>
 
-<span class="fc" id="L176">		eventParametersCreationInfo = null;</span>
-<span class="fc" id="L177">		quakemlXML = null;</span>
+<span class="fc" id="L163">		eventParametersCreationInfo = null;</span>
+<span class="fc" id="L164">		quakemlXML = null;</span>
 
-<span class="fc" id="L179">		return products;</span>
+<span class="fc" id="L166">		return products;</span>
 	}
 
 	/**
@@ -194,13 +181,13 @@ public class QuakemlProductCreator implements ProductCreator {
 	 */
 	public List&lt;Product&gt; getInternalEventProducts(final Quakeml message,
 			final InternalEvent event) throws Exception {
-<span class="nc" id="L197">		List&lt;Product&gt; products = getEventProducts(message, event);</span>
-<span class="nc" id="L198">		Iterator&lt;Product&gt; iter = products.iterator();</span>
-<span class="nc bnc" id="L199" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
-<span class="nc" id="L200">			ProductId nextId = iter.next().getId();</span>
-<span class="nc" id="L201">			nextId.setType(&quot;internal-&quot; + nextId.getType());</span>
-<span class="nc" id="L202">		}</span>
-<span class="nc" id="L203">		return products;</span>
+<span class="nc" id="L184">		List&lt;Product&gt; products = getEventProducts(message, event);</span>
+<span class="nc" id="L185">		Iterator&lt;Product&gt; iter = products.iterator();</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L187">			ProductId nextId = iter.next().getId();</span>
+<span class="nc" id="L188">			nextId.setType(&quot;internal-&quot; + nextId.getType());</span>
+<span class="nc" id="L189">		}</span>
+<span class="nc" id="L190">		return products;</span>
 	}
 
 	/**
@@ -218,13 +205,13 @@ public class QuakemlProductCreator implements ProductCreator {
 	 */
 	public List&lt;Product&gt; getScenarioEventProducts(final Quakeml message,
 			final ScenarioEvent event) throws Exception {
-<span class="nc" id="L221">		List&lt;Product&gt; products = getEventProducts(message, event);</span>
-<span class="nc" id="L222">		Iterator&lt;Product&gt; iter = products.iterator();</span>
-<span class="nc bnc" id="L223" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
-<span class="nc" id="L224">			ProductId nextId = iter.next().getId();</span>
-<span class="nc" id="L225">			nextId.setType(nextId.getType() + &quot;-scenario&quot;);</span>
-<span class="nc" id="L226">		}</span>
-<span class="nc" id="L227">		return products;</span>
+<span class="nc" id="L208">		List&lt;Product&gt; products = getEventProducts(message, event);</span>
+<span class="nc" id="L209">		Iterator&lt;Product&gt; iter = products.iterator();</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L211">			ProductId nextId = iter.next().getId();</span>
+<span class="nc" id="L212">			nextId.setType(nextId.getType() + &quot;-scenario&quot;);</span>
+<span class="nc" id="L213">		}</span>
+<span class="nc" id="L214">		return products;</span>
 	}
 
 	/**
@@ -239,663 +226,663 @@ public class QuakemlProductCreator implements ProductCreator {
 	 */
 	public List&lt;Product&gt; getEventProducts(final Quakeml message, Event event)
 			throws Exception {
-<span class="fc" id="L242">		List&lt;Product&gt; products = new ArrayList&lt;Product&gt;();</span>
+<span class="fc" id="L229">		List&lt;Product&gt; products = new ArrayList&lt;Product&gt;();</span>
 
 		// read catalog attributes for product source and code, and event source
 		// and code
-<span class="fc" id="L246">		productSource = event.getDatasource();</span>
-<span class="fc" id="L247">		productCode = event.getDataid();</span>
-<span class="fc" id="L248">		eventSource = event.getEventsource();</span>
-<span class="fc" id="L249">		eventCode = event.getEventid();</span>
+<span class="fc" id="L233">		productSource = event.getDatasource();</span>
+<span class="fc" id="L234">		productCode = event.getDataid();</span>
+<span class="fc" id="L235">		eventSource = event.getEventsource();</span>
+<span class="fc" id="L236">		eventCode = event.getEventid();</span>
 
-<span class="pc bpc" id="L251" title="2 of 6 branches missed.">		if (productSource == null || eventSource == null || eventCode == null) {</span>
-<span class="fc" id="L252">			LOGGER.warning(&quot;Missing catalog attributes from event element, skipping&quot;);</span>
+<span class="pc bpc" id="L238" title="2 of 6 branches missed.">		if (productSource == null || eventSource == null || eventCode == null) {</span>
+<span class="fc" id="L239">			LOGGER.warning(&quot;Missing catalog attributes from event element, skipping&quot;);</span>
 			// not anss information, don't convert to products
-<span class="fc" id="L254">			return products;</span>
-<span class="fc bfc" id="L255" title="All 2 branches covered.">		} else if (productCode == null) {</span>
-<span class="fc" id="L256">			productCode = eventSource + eventCode;</span>
+<span class="fc" id="L241">			return products;</span>
+<span class="fc bfc" id="L242" title="All 2 branches covered.">		} else if (productCode == null) {</span>
+<span class="fc" id="L243">			productCode = eventSource + eventCode;</span>
 		}
-<span class="fc" id="L258">		productSource = productSource.toLowerCase();</span>
+<span class="fc" id="L245">		productSource = productSource.toLowerCase();</span>
 
 		// product update time
-<span class="fc" id="L261">		updateTime = null;</span>
-<span class="fc bfc" id="L262" title="All 2 branches covered.">		if (eventParametersCreationInfo != null) {</span>
-<span class="fc" id="L263">			updateTime = eventParametersCreationInfo.getCreationTime();</span>
+<span class="fc" id="L248">		updateTime = null;</span>
+<span class="fc bfc" id="L249" title="All 2 branches covered.">		if (eventParametersCreationInfo != null) {</span>
+<span class="fc" id="L250">			updateTime = eventParametersCreationInfo.getCreationTime();</span>
 		} else {
-<span class="fc" id="L265">			LOGGER.warning(&quot;Missing eventParameters creationTime, using now for update time&quot;);</span>
-<span class="fc" id="L266">			updateTime = new Date();</span>
+<span class="fc" id="L252">			LOGGER.warning(&quot;Missing eventParameters creationTime, using now for update time&quot;);</span>
+<span class="fc" id="L253">			updateTime = new Date();</span>
 		}
 
-<span class="fc" id="L269">		ByteContent quakemlContent = new ByteContent(quakemlXML.getBytes());</span>
-<span class="fc" id="L270">		quakemlContent.setContentType(XML_CONTENT_TYPE);</span>
-<span class="fc" id="L271">		quakemlContent.setLastModified(updateTime);</span>
+<span class="fc" id="L256">		ByteContent quakemlContent = new ByteContent(quakemlXML.getBytes());</span>
+<span class="fc" id="L257">		quakemlContent.setContentType(XML_CONTENT_TYPE);</span>
+<span class="fc" id="L258">		quakemlContent.setLastModified(updateTime);</span>
 
-<span class="fc" id="L273">		boolean hasPhaseData = QuakemlUtils.hasPhaseData(event);</span>
+<span class="fc" id="L260">		boolean hasPhaseData = QuakemlUtils.hasPhaseData(event);</span>
 
 		// create this object, may go unused
-<span class="fc" id="L276">		Product originProduct = new Product(new ProductId(productSource,</span>
-<span class="fc bfc" id="L277" title="All 2 branches covered.">				(hasPhaseData ? &quot;phase-data&quot; : &quot;origin&quot;), productCode,</span>
+<span class="fc" id="L263">		Product originProduct = new Product(new ProductId(productSource,</span>
+<span class="fc bfc" id="L264" title="All 2 branches covered.">				(hasPhaseData ? &quot;phase-data&quot; : &quot;origin&quot;), productCode,</span>
 				updateTime));
-<span class="fc" id="L279">		originProduct.setEventId(eventSource, eventCode);</span>
-<span class="fc bfc" id="L280" title="All 2 branches covered.">		if (event.getCreationInfo() != null) {</span>
-<span class="fc" id="L281">			originProduct.setVersion(event.getCreationInfo().getVersion());</span>
+<span class="fc" id="L266">		originProduct.setEventId(eventSource, eventCode);</span>
+<span class="fc bfc" id="L267" title="All 2 branches covered.">		if (event.getCreationInfo() != null) {</span>
+<span class="fc" id="L268">			originProduct.setVersion(event.getCreationInfo().getVersion());</span>
 		}
-<span class="fc" id="L283">		originProduct.getContents().put(QUAKEML_CONTENT_PATH, quakemlContent);</span>
-<span class="fc" id="L284">		originProduct.getContents().put(CONTENTS_XML_PATH, getContentsXML());</span>
+<span class="fc" id="L270">		originProduct.getContents().put(QUAKEML_CONTENT_PATH, quakemlContent);</span>
+<span class="fc" id="L271">		originProduct.getContents().put(CONTENTS_XML_PATH, getContentsXML());</span>
 
 		// track which event this product is from
-<span class="fc" id="L287">		setProperty(originProduct.getProperties(), &quot;quakeml-publicid&quot;,</span>
-<span class="fc" id="L288">				event.getPublicID());</span>
+<span class="fc" id="L274">		setProperty(originProduct.getProperties(), &quot;quakeml-publicid&quot;,</span>
+<span class="fc" id="L275">				event.getPublicID());</span>
 
 		// delete origin product
-<span class="fc bfc" id="L291" title="All 2 branches covered.">		if (event.getType() == EventType.NOT_EXISTING) {</span>
-<span class="fc" id="L292">			originProduct.setStatus(Product.STATUS_DELETE);</span>
-<span class="fc" id="L293">			products.add(originProduct);</span>
+<span class="fc bfc" id="L278" title="All 2 branches covered.">		if (event.getType() == EventType.NOT_EXISTING) {</span>
+<span class="fc" id="L279">			originProduct.setStatus(Product.STATUS_DELETE);</span>
+<span class="fc" id="L280">			products.add(originProduct);</span>
 
-<span class="fc" id="L295">			Product phaseDelete = new Product(originProduct);</span>
-<span class="fc" id="L296">			phaseDelete.getId().setType(&quot;phase-data&quot;);</span>
-<span class="fc" id="L297">			products.add(phaseDelete);</span>
+<span class="fc" id="L282">			Product phaseDelete = new Product(originProduct);</span>
+<span class="fc" id="L283">			phaseDelete.getId().setType(&quot;phase-data&quot;);</span>
+<span class="fc" id="L284">			products.add(phaseDelete);</span>
 
 			// don't need to delete other stuff
 			// when origins for event are deleted, event is deleted
-<span class="fc" id="L301">			return products;</span>
+<span class="fc" id="L288">			return products;</span>
 		}
 
-<span class="fc" id="L304">		Origin origin = QuakemlUtils.getPreferredOrigin(event);</span>
-<span class="fc bfc" id="L305" title="All 2 branches covered.">		if (origin != null) {</span>
+<span class="fc" id="L291">		Origin origin = QuakemlUtils.getPreferredOrigin(event);</span>
+<span class="fc bfc" id="L292" title="All 2 branches covered.">		if (origin != null) {</span>
 			// track which origin this product is from
-<span class="fc" id="L307">			setProperty(originProduct.getProperties(), &quot;quakeml-origin-publicid&quot;,</span>
-<span class="fc" id="L308">					origin.getPublicID());</span>
+<span class="fc" id="L294">			setProperty(originProduct.getProperties(), &quot;quakeml-origin-publicid&quot;,</span>
+<span class="fc" id="L295">					origin.getPublicID());</span>
 
 			// update origin product
-<span class="fc" id="L311">			Map&lt;String, String&gt; properties = originProduct.getProperties();</span>
+<span class="fc" id="L298">			Map&lt;String, String&gt; properties = originProduct.getProperties();</span>
 
-<span class="fc" id="L313">			TimeQuantity eventTime = origin.getTime();</span>
-<span class="pc bpc" id="L314" title="1 of 2 branches missed.">			if (eventTime != null) {</span>
-<span class="fc" id="L315">				originProduct.setEventTime(eventTime.getValue());</span>
-<span class="fc" id="L316">				setProperty(properties, &quot;eventtime-error&quot;,</span>
-<span class="fc" id="L317">						eventTime.getUncertainty());</span>
+<span class="fc" id="L300">			TimeQuantity eventTime = origin.getTime();</span>
+<span class="pc bpc" id="L301" title="1 of 2 branches missed.">			if (eventTime != null) {</span>
+<span class="fc" id="L302">				originProduct.setEventTime(eventTime.getValue());</span>
+<span class="fc" id="L303">				setProperty(properties, &quot;eventtime-error&quot;,</span>
+<span class="fc" id="L304">						eventTime.getUncertainty());</span>
 			}
-<span class="fc" id="L319">			RealQuantity eventLatitude = origin.getLatitude();</span>
-<span class="pc bpc" id="L320" title="1 of 2 branches missed.">			if (eventLatitude != null) {</span>
-<span class="fc" id="L321">				originProduct.setLatitude(eventLatitude.getValue());</span>
-<span class="fc" id="L322">				setProperty(properties, &quot;latitude-error&quot;,</span>
-<span class="fc" id="L323">						eventLatitude.getUncertainty());</span>
+<span class="fc" id="L306">			RealQuantity eventLatitude = origin.getLatitude();</span>
+<span class="pc bpc" id="L307" title="1 of 2 branches missed.">			if (eventLatitude != null) {</span>
+<span class="fc" id="L308">				originProduct.setLatitude(eventLatitude.getValue());</span>
+<span class="fc" id="L309">				setProperty(properties, &quot;latitude-error&quot;,</span>
+<span class="fc" id="L310">						eventLatitude.getUncertainty());</span>
 			}
-<span class="fc" id="L325">			RealQuantity eventLongitude = origin.getLongitude();</span>
-<span class="pc bpc" id="L326" title="1 of 2 branches missed.">			if (eventLongitude != null) {</span>
-<span class="fc" id="L327">				originProduct.setLongitude(eventLongitude.getValue());</span>
-<span class="fc" id="L328">				setProperty(properties, &quot;longitude-error&quot;,</span>
-<span class="fc" id="L329">						eventLongitude.getUncertainty());</span>
+<span class="fc" id="L312">			RealQuantity eventLongitude = origin.getLongitude();</span>
+<span class="pc bpc" id="L313" title="1 of 2 branches missed.">			if (eventLongitude != null) {</span>
+<span class="fc" id="L314">				originProduct.setLongitude(eventLongitude.getValue());</span>
+<span class="fc" id="L315">				setProperty(properties, &quot;longitude-error&quot;,</span>
+<span class="fc" id="L316">						eventLongitude.getUncertainty());</span>
 			}
-<span class="fc" id="L331">			RealQuantity depth = origin.getDepth();</span>
-<span class="pc bpc" id="L332" title="1 of 2 branches missed.">			if (depth != null) {</span>
-<span class="fc" id="L333">				originProduct.setDepth(depth.getValue().divide(</span>
+<span class="fc" id="L318">			RealQuantity depth = origin.getDepth();</span>
+<span class="pc bpc" id="L319" title="1 of 2 branches missed.">			if (depth != null) {</span>
+<span class="fc" id="L320">				originProduct.setDepth(depth.getValue().divide(</span>
 						METERS_PER_KILOMETER));
-<span class="fc bfc" id="L335" title="All 2 branches covered.">				if (depth.getUncertainty() != null) {</span>
-<span class="fc" id="L336">					setProperty(properties, &quot;vertical-error&quot;, depth</span>
-<span class="fc" id="L337">							.getUncertainty().divide(METERS_PER_KILOMETER));</span>
+<span class="fc bfc" id="L322" title="All 2 branches covered.">				if (depth.getUncertainty() != null) {</span>
+<span class="fc" id="L323">					setProperty(properties, &quot;vertical-error&quot;, depth</span>
+<span class="fc" id="L324">							.getUncertainty().divide(METERS_PER_KILOMETER));</span>
 				}
-<span class="fc bfc" id="L339" title="All 2 branches covered.">				if (origin.getDepthType() != null) {</span>
-<span class="fc" id="L340">					setProperty(properties, &quot;depth-type&quot;, origin.getDepthType()</span>
-<span class="fc" id="L341">							.value());</span>
+<span class="fc bfc" id="L326" title="All 2 branches covered.">				if (origin.getDepthType() != null) {</span>
+<span class="fc" id="L327">					setProperty(properties, &quot;depth-type&quot;, origin.getDepthType()</span>
+<span class="fc" id="L328">							.value());</span>
 				}
 			}
 
 			// read horizontal error
-<span class="fc" id="L346">			OriginUncertainty originUncertainty = origin.getOriginUncertainty();</span>
-<span class="fc bfc" id="L347" title="All 2 branches covered.">			if (originUncertainty != null) {</span>
-<span class="fc bfc" id="L348" title="All 2 branches covered.">				if (originUncertainty.getHorizontalUncertainty() != null) {</span>
-<span class="fc" id="L349">					setProperty(properties, &quot;horizontal-error&quot;,</span>
-<span class="fc" id="L350">							originUncertainty.getHorizontalUncertainty()</span>
-<span class="fc" id="L351">									.divide(METERS_PER_KILOMETER));</span>
-<span class="fc bfc" id="L352" title="All 2 branches covered.">				} else if (originUncertainty.getPreferredDescription() == OriginUncertaintyDescription.HORIZONTAL_UNCERTAINTY) {</span>
-<span class="fc" id="L353">					throw new IllegalArgumentException(</span>
+<span class="fc" id="L333">			OriginUncertainty originUncertainty = origin.getOriginUncertainty();</span>
+<span class="fc bfc" id="L334" title="All 2 branches covered.">			if (originUncertainty != null) {</span>
+<span class="fc bfc" id="L335" title="All 2 branches covered.">				if (originUncertainty.getHorizontalUncertainty() != null) {</span>
+<span class="fc" id="L336">					setProperty(properties, &quot;horizontal-error&quot;,</span>
+<span class="fc" id="L337">							originUncertainty.getHorizontalUncertainty()</span>
+<span class="fc" id="L338">									.divide(METERS_PER_KILOMETER));</span>
+<span class="fc bfc" id="L339" title="All 2 branches covered.">				} else if (originUncertainty.getPreferredDescription() == OriginUncertaintyDescription.HORIZONTAL_UNCERTAINTY) {</span>
+<span class="fc" id="L340">					throw new IllegalArgumentException(</span>
 							&quot;Missing horizontal uncertainty value&quot;);
 				}
 
-<span class="fc" id="L357">				ConfidenceEllipsoid ellipse = originUncertainty.getConfidenceEllipsoid();</span>
-<span class="fc bfc" id="L358" title="All 2 branches covered.">				if (ellipse != null) {</span>
-<span class="fc" id="L359">					setProperty(properties, &quot;error-ellipse-azimuth&quot;,</span>
-<span class="fc" id="L360">							ellipse.getMajorAxisAzimuth());</span>
-<span class="fc" id="L361">					setProperty(properties, &quot;error-ellipse-plunge&quot;,</span>
-<span class="fc" id="L362">							ellipse.getMajorAxisPlunge());</span>
-<span class="fc" id="L363">					setProperty(properties, &quot;error-ellipse-rotation&quot;,</span>
-<span class="fc" id="L364">							ellipse.getMajorAxisRotation());</span>
-<span class="fc" id="L365">					setProperty(properties, &quot;error-ellipse-major&quot;,</span>
-<span class="fc" id="L366">							ellipse.getSemiMajorAxisLength());</span>
-<span class="fc" id="L367">					setProperty(properties, &quot;error-ellipse-minor&quot;,</span>
-<span class="fc" id="L368">							ellipse.getSemiMinorAxisLength());</span>
-<span class="fc" id="L369">					setProperty(properties, &quot;error-ellipse-intermediate&quot;,</span>
-<span class="fc" id="L370">							ellipse.getSemiIntermediateAxisLength());</span>
+<span class="fc" id="L344">				ConfidenceEllipsoid ellipse = originUncertainty.getConfidenceEllipsoid();</span>
+<span class="fc bfc" id="L345" title="All 2 branches covered.">				if (ellipse != null) {</span>
+<span class="fc" id="L346">					setProperty(properties, &quot;error-ellipse-azimuth&quot;,</span>
+<span class="fc" id="L347">							ellipse.getMajorAxisAzimuth());</span>
+<span class="fc" id="L348">					setProperty(properties, &quot;error-ellipse-plunge&quot;,</span>
+<span class="fc" id="L349">							ellipse.getMajorAxisPlunge());</span>
+<span class="fc" id="L350">					setProperty(properties, &quot;error-ellipse-rotation&quot;,</span>
+<span class="fc" id="L351">							ellipse.getMajorAxisRotation());</span>
+<span class="fc" id="L352">					setProperty(properties, &quot;error-ellipse-major&quot;,</span>
+<span class="fc" id="L353">							ellipse.getSemiMajorAxisLength());</span>
+<span class="fc" id="L354">					setProperty(properties, &quot;error-ellipse-minor&quot;,</span>
+<span class="fc" id="L355">							ellipse.getSemiMinorAxisLength());</span>
+<span class="fc" id="L356">					setProperty(properties, &quot;error-ellipse-intermediate&quot;,</span>
+<span class="fc" id="L357">							ellipse.getSemiIntermediateAxisLength());</span>
 				}
 			}
 
-<span class="fc" id="L374">			EventType eventType = event.getType();</span>
-<span class="fc" id="L375">			properties.put(&quot;event-type&quot;,</span>
-<span class="fc bfc" id="L376" title="All 2 branches covered.">					((eventType == null) ? EventType.EARTHQUAKE : eventType)</span>
-<span class="fc" id="L377">							.value());</span>
+<span class="fc" id="L361">			EventType eventType = event.getType();</span>
+<span class="fc" id="L362">			properties.put(&quot;event-type&quot;,</span>
+<span class="fc bfc" id="L363" title="All 2 branches covered.">					((eventType == null) ? EventType.EARTHQUAKE : eventType)</span>
+<span class="fc" id="L364">							.value());</span>
 
-<span class="fc" id="L379">			CreationInfo originCreationInfo = origin.getCreationInfo();</span>
-<span class="pc bpc" id="L380" title="1 of 2 branches missed.">			if (originCreationInfo != null) {</span>
-<span class="nc" id="L381">				setProperty(properties, &quot;origin-source&quot;,</span>
-<span class="nc" id="L382">						originCreationInfo.getAgencyID());</span>
+<span class="fc" id="L366">			CreationInfo originCreationInfo = origin.getCreationInfo();</span>
+<span class="pc bpc" id="L367" title="1 of 2 branches missed.">			if (originCreationInfo != null) {</span>
+<span class="nc" id="L368">				setProperty(properties, &quot;origin-source&quot;,</span>
+<span class="nc" id="L369">						originCreationInfo.getAgencyID());</span>
 			}
 
-<span class="fc" id="L385">			OriginQuality originQuality = origin.getQuality();</span>
-<span class="pc bpc" id="L386" title="1 of 2 branches missed.">			if (originQuality != null) {</span>
-<span class="fc" id="L387">				setProperty(properties, &quot;azimuthal-gap&quot;,</span>
-<span class="fc" id="L388">						originQuality.getAzimuthalGap());</span>
-<span class="fc" id="L389">				setProperty(properties, &quot;num-phases-used&quot;,</span>
-<span class="fc" id="L390">						originQuality.getUsedPhaseCount());</span>
-<span class="fc" id="L391">				setProperty(properties, &quot;num-stations-used&quot;,</span>
-<span class="fc" id="L392">						originQuality.getUsedStationCount());</span>
-<span class="fc" id="L393">				setProperty(properties, &quot;minimum-distance&quot;,</span>
-<span class="fc" id="L394">						originQuality.getMinimumDistance());</span>
-<span class="fc" id="L395">				setProperty(properties, &quot;standard-error&quot;,</span>
-<span class="fc" id="L396">						originQuality.getStandardError());</span>
+<span class="fc" id="L372">			OriginQuality originQuality = origin.getQuality();</span>
+<span class="pc bpc" id="L373" title="1 of 2 branches missed.">			if (originQuality != null) {</span>
+<span class="fc" id="L374">				setProperty(properties, &quot;azimuthal-gap&quot;,</span>
+<span class="fc" id="L375">						originQuality.getAzimuthalGap());</span>
+<span class="fc" id="L376">				setProperty(properties, &quot;num-phases-used&quot;,</span>
+<span class="fc" id="L377">						originQuality.getUsedPhaseCount());</span>
+<span class="fc" id="L378">				setProperty(properties, &quot;num-stations-used&quot;,</span>
+<span class="fc" id="L379">						originQuality.getUsedStationCount());</span>
+<span class="fc" id="L380">				setProperty(properties, &quot;minimum-distance&quot;,</span>
+<span class="fc" id="L381">						originQuality.getMinimumDistance());</span>
+<span class="fc" id="L382">				setProperty(properties, &quot;standard-error&quot;,</span>
+<span class="fc" id="L383">						originQuality.getStandardError());</span>
 			}
 
-<span class="fc bfc" id="L399" title="All 2 branches covered.">			if (origin.getEvaluationMode() == EvaluationMode.MANUAL) {</span>
-<span class="fc" id="L400">				properties.put(&quot;review-status&quot;, &quot;reviewed&quot;);</span>
+<span class="fc bfc" id="L386" title="All 2 branches covered.">			if (origin.getEvaluationMode() == EvaluationMode.MANUAL) {</span>
+<span class="fc" id="L387">				properties.put(&quot;review-status&quot;, &quot;reviewed&quot;);</span>
 			} else {
-<span class="fc" id="L402">				properties.put(&quot;review-status&quot;, &quot;automatic&quot;);</span>
+<span class="fc" id="L389">				properties.put(&quot;review-status&quot;, &quot;automatic&quot;);</span>
 			}
 
-<span class="pc bpc" id="L405" title="1 of 2 branches missed.">			if (origin.getEvaluationStatus() != null) {</span>
-<span class="nc" id="L406">				properties.put(&quot;evaluation-status&quot;, origin</span>
-<span class="nc" id="L407">						.getEvaluationStatus().value());</span>
+<span class="pc bpc" id="L392" title="1 of 2 branches missed.">			if (origin.getEvaluationStatus() != null) {</span>
+<span class="nc" id="L393">				properties.put(&quot;evaluation-status&quot;, origin</span>
+<span class="nc" id="L394">						.getEvaluationStatus().value());</span>
 			} else {
-<span class="fc" id="L409">				properties.put(&quot;evaluation-status&quot;,</span>
-<span class="fc" id="L410">						EvaluationStatus.PRELIMINARY.value());</span>
+<span class="fc" id="L396">				properties.put(&quot;evaluation-status&quot;,</span>
+<span class="fc" id="L397">						EvaluationStatus.PRELIMINARY.value());</span>
 			}
 
 			// add magnitude properties
-<span class="fc" id="L414">			Magnitude magnitude = QuakemlUtils.getPreferredMagnitude(event);</span>
-<span class="fc bfc" id="L415" title="All 2 branches covered.">			if (magnitude != null) {</span>
+<span class="fc" id="L401">			Magnitude magnitude = QuakemlUtils.getPreferredMagnitude(event);</span>
+<span class="fc bfc" id="L402" title="All 2 branches covered.">			if (magnitude != null) {</span>
 				// track which origin this product is from
-<span class="fc" id="L417">				setProperty(originProduct.getProperties(), &quot;quakeml-magnitude-publicid&quot;,</span>
-<span class="fc" id="L418">						magnitude.getPublicID());</span>
+<span class="fc" id="L404">				setProperty(originProduct.getProperties(), &quot;quakeml-magnitude-publicid&quot;,</span>
+<span class="fc" id="L405">						magnitude.getPublicID());</span>
 
-<span class="fc" id="L420">				CreationInfo magnitudeCreationInfo = magnitude</span>
-<span class="fc" id="L421">						.getCreationInfo();</span>
-<span class="fc bfc" id="L422" title="All 2 branches covered.">				if (magnitudeCreationInfo != null) {</span>
-<span class="fc" id="L423">					setProperty(properties, &quot;magnitude-source&quot;,</span>
-<span class="fc" id="L424">							magnitudeCreationInfo.getAgencyID());</span>
+<span class="fc" id="L407">				CreationInfo magnitudeCreationInfo = magnitude</span>
+<span class="fc" id="L408">						.getCreationInfo();</span>
+<span class="fc bfc" id="L409" title="All 2 branches covered.">				if (magnitudeCreationInfo != null) {</span>
+<span class="fc" id="L410">					setProperty(properties, &quot;magnitude-source&quot;,</span>
+<span class="fc" id="L411">							magnitudeCreationInfo.getAgencyID());</span>
 				}
 
-<span class="fc" id="L427">				originProduct.setMagnitude(QuakemlUtils.getValue(magnitude</span>
-<span class="fc" id="L428">						.getMag()));</span>
+<span class="fc" id="L414">				originProduct.setMagnitude(QuakemlUtils.getValue(magnitude</span>
+<span class="fc" id="L415">						.getMag()));</span>
 
-<span class="fc" id="L430">				setProperty(properties, &quot;magnitude-type&quot;,</span>
-<span class="fc" id="L431">						QuakemlUtils.getMagnitudeType(magnitude.getType()));</span>
-<span class="fc" id="L432">				setProperty(properties, &quot;magnitude-azimuthal-gap&quot;,</span>
-<span class="fc" id="L433">						magnitude.getAzimuthalGap());</span>
+<span class="fc" id="L417">				setProperty(properties, &quot;magnitude-type&quot;,</span>
+<span class="fc" id="L418">						QuakemlUtils.getMagnitudeType(magnitude.getType()));</span>
+<span class="fc" id="L419">				setProperty(properties, &quot;magnitude-azimuthal-gap&quot;,</span>
+<span class="fc" id="L420">						magnitude.getAzimuthalGap());</span>
 				try {
-<span class="fc" id="L435">					setProperty(properties, &quot;magnitude-error&quot;, magnitude</span>
-<span class="fc" id="L436">							.getMag().getUncertainty());</span>
-<span class="nc" id="L437">				} catch (Exception e) {</span>
+<span class="fc" id="L422">					setProperty(properties, &quot;magnitude-error&quot;, magnitude</span>
+<span class="fc" id="L423">							.getMag().getUncertainty());</span>
+<span class="nc" id="L424">				} catch (Exception e) {</span>
 					// no magnitude uncertainty
-<span class="fc" id="L439">				}</span>
-<span class="fc" id="L440">				setProperty(properties, &quot;magnitude-num-stations-used&quot;,</span>
-<span class="fc" id="L441">						magnitude.getStationCount());</span>
+<span class="fc" id="L426">				}</span>
+<span class="fc" id="L427">				setProperty(properties, &quot;magnitude-num-stations-used&quot;,</span>
+<span class="fc" id="L428">						magnitude.getStationCount());</span>
 			} else {
 				// a location without a magnitude
 			}
 
-<span class="fc" id="L446">			products.add(originProduct);</span>
-<span class="fc" id="L447">		} else {</span>
+<span class="fc" id="L433">			products.add(originProduct);</span>
+<span class="fc" id="L434">		} else {</span>
 			// no preferred origin found
 			// signal origin product hasn't been created
-<span class="fc" id="L450">			originProduct = null;</span>
+<span class="fc" id="L437">			originProduct = null;</span>
 		}
 
 		// look for event description products
-<span class="fc" id="L454">		Iterator&lt;EventDescription&gt; iter = event.getDescriptions().iterator();</span>
-<span class="fc bfc" id="L455" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
-<span class="fc" id="L456">			EventDescription next = iter.next();</span>
-<span class="fc" id="L457">			EventDescriptionType type = next.getType();</span>
+<span class="fc" id="L441">		Iterator&lt;EventDescription&gt; iter = event.getDescriptions().iterator();</span>
+<span class="fc bfc" id="L442" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L443">			EventDescription next = iter.next();</span>
+<span class="fc" id="L444">			EventDescriptionType type = next.getType();</span>
 
-<span class="pc bpc" id="L459" title="1 of 2 branches missed.">			if (type == EventDescriptionType.EARTHQUAKE_NAME) {</span>
-<span class="nc bnc" id="L460" title="All 2 branches missed.">				if (originProduct != null) {</span>
+<span class="pc bpc" id="L446" title="1 of 2 branches missed.">			if (type == EventDescriptionType.EARTHQUAKE_NAME) {</span>
+<span class="nc bnc" id="L447" title="All 2 branches missed.">				if (originProduct != null) {</span>
 					// Region name overrides should be sent
 					// from the admin pages, or attached to an origin. That way
 					// only a preferred origin, or a manually sent region,
 					// can alter the displayed region name
-<span class="nc" id="L465">					setProperty(originProduct.getProperties(), &quot;title&quot;, next</span>
-<span class="nc" id="L466">							.getText().trim());</span>
+<span class="nc" id="L452">					setProperty(originProduct.getProperties(), &quot;title&quot;, next</span>
+<span class="nc" id="L453">							.getText().trim());</span>
 				}
-<span class="pc bpc" id="L468" title="1 of 2 branches missed.">			} else if (type == EventDescriptionType.TECTONIC_SUMMARY) {</span>
-<span class="nc" id="L469">				Product product = new Product(new ProductId(productSource,</span>
+<span class="pc bpc" id="L455" title="1 of 2 branches missed.">			} else if (type == EventDescriptionType.TECTONIC_SUMMARY) {</span>
+<span class="nc" id="L456">				Product product = new Product(new ProductId(productSource,</span>
 						&quot;tectonic-summary&quot;, productCode, updateTime));
-<span class="nc" id="L471">				product.setEventId(eventSource, eventCode);</span>
-<span class="nc" id="L472">				ByteContent content = new ByteContent(next.getText().getBytes());</span>
-<span class="nc" id="L473">				content.setLastModified(updateTime);</span>
-<span class="nc" id="L474">				product.getContents().put(&quot;tectonic-summary.inc.html&quot;, content);</span>
+<span class="nc" id="L458">				product.setEventId(eventSource, eventCode);</span>
+<span class="nc" id="L459">				ByteContent content = new ByteContent(next.getText().getBytes());</span>
+<span class="nc" id="L460">				content.setLastModified(updateTime);</span>
+<span class="nc" id="L461">				product.getContents().put(&quot;tectonic-summary.inc.html&quot;, content);</span>
 
-<span class="nc" id="L476">				products.add(product);</span>
-<span class="pc bfc" id="L477" title="All 2 branches covered.">			} else if (type == EventDescriptionType.FELT_REPORT) {</span>
-<span class="fc" id="L478">				Product product = new Product(new ProductId(productSource,</span>
+<span class="nc" id="L463">				products.add(product);</span>
+<span class="pc bfc" id="L464" title="All 2 branches covered.">			} else if (type == EventDescriptionType.FELT_REPORT) {</span>
+<span class="fc" id="L465">				Product product = new Product(new ProductId(productSource,</span>
 						&quot;impact-text&quot;, productCode, updateTime));
-<span class="fc" id="L480">				product.setEventId(eventSource, eventCode);</span>
-<span class="fc" id="L481">				ByteContent content = new ByteContent(next.getText().getBytes());</span>
-<span class="fc" id="L482">				content.setLastModified(updateTime);</span>
-<span class="fc" id="L483">				product.getContents().put(&quot;&quot;, content);</span>
+<span class="fc" id="L467">				product.setEventId(eventSource, eventCode);</span>
+<span class="fc" id="L468">				ByteContent content = new ByteContent(next.getText().getBytes());</span>
+<span class="fc" id="L469">				content.setLastModified(updateTime);</span>
+<span class="fc" id="L470">				product.getContents().put(&quot;&quot;, content);</span>
 
-<span class="fc" id="L485">				products.add(product);</span>
+<span class="fc" id="L472">				products.add(product);</span>
 			}
-<span class="fc" id="L487">		}</span>
+<span class="fc" id="L474">		}</span>
 
-<span class="pc bpc" id="L489" title="1 of 6 branches missed.">		if (sendMechanismWhenPhasesExist || originProduct == null</span>
+<span class="pc bpc" id="L476" title="1 of 6 branches missed.">		if (sendMechanismWhenPhasesExist || originProduct == null</span>
 				|| !hasPhaseData) {
-<span class="fc" id="L491">			Iterator&lt;FocalMechanism&gt; focalMechanisms = event</span>
-<span class="fc" id="L492">					.getFocalMechanisms().iterator();</span>
-<span class="fc bfc" id="L493" title="All 2 branches covered.">			while (focalMechanisms.hasNext()) {</span>
-<span class="fc" id="L494">				FocalMechanism mech = focalMechanisms.next();</span>
-<span class="fc" id="L495">				Product mechProduct = null;</span>
+<span class="fc" id="L478">			Iterator&lt;FocalMechanism&gt; focalMechanisms = event</span>
+<span class="fc" id="L479">					.getFocalMechanisms().iterator();</span>
+<span class="fc bfc" id="L480" title="All 2 branches covered.">			while (focalMechanisms.hasNext()) {</span>
+<span class="fc" id="L481">				FocalMechanism mech = focalMechanisms.next();</span>
+<span class="fc" id="L482">				Product mechProduct = null;</span>
 
-<span class="pc bpc" id="L497" title="3 of 4 branches missed.">				if (hasPhaseData &amp;&amp; originProduct != null) {</span>
+<span class="pc bpc" id="L484" title="3 of 4 branches missed.">				if (hasPhaseData &amp;&amp; originProduct != null) {</span>
 					// when a phase data product was created, send lightweight
 					// focal mechanism
-<span class="nc" id="L500">					Quakeml lightweightQuakeml = QuakemlUtils</span>
-<span class="nc" id="L501">							.getLightweightFocalMechanism(message,</span>
-<span class="nc" id="L502">									mech.getPublicID());</span>
-<span class="nc" id="L503">					Event lightweightEvent = lightweightQuakeml</span>
-<span class="nc" id="L504">							.getEventParameters().getEvents().get(0);</span>
-<span class="nc" id="L505">					FocalMechanism lightweightMech = QuakemlUtils</span>
-<span class="nc" id="L506">							.getFocalMechanism(lightweightEvent,</span>
-<span class="nc" id="L507">									mech.getPublicID());</span>
+<span class="nc" id="L487">					Quakeml lightweightQuakeml = QuakemlUtils</span>
+<span class="nc" id="L488">							.getLightweightFocalMechanism(message,</span>
+<span class="nc" id="L489">									mech.getPublicID());</span>
+<span class="nc" id="L490">					Event lightweightEvent = QuakemlUtils.getFirstEvent(</span>
+<span class="nc" id="L491">							lightweightQuakeml.getEventParameters());</span>
+<span class="nc" id="L492">					FocalMechanism lightweightMech = QuakemlUtils</span>
+<span class="nc" id="L493">							.getFocalMechanism(lightweightEvent,</span>
+<span class="nc" id="L494">									mech.getPublicID());</span>
 
-<span class="nc" id="L509">					mechProduct = getFocalMechanismProduct(lightweightQuakeml,</span>
+<span class="nc" id="L496">					mechProduct = getFocalMechanismProduct(lightweightQuakeml,</span>
 							lightweightEvent, lightweightMech,
-<span class="nc" id="L511">							convertQuakemlToString(lightweightQuakeml));</span>
-<span class="nc" id="L512">				} else {</span>
+<span class="nc" id="L498">							convertQuakemlToString(lightweightQuakeml));</span>
+<span class="nc" id="L499">				} else {</span>
 					// otherwise, fall back to original
-<span class="fc" id="L514">					mechProduct = getFocalMechanismProduct(message, event,</span>
+<span class="fc" id="L501">					mechProduct = getFocalMechanismProduct(message, event,</span>
 							mech, quakemlXML);
 				}
 
-<span class="pc bpc" id="L518" title="1 of 2 branches missed.">				if (mechProduct != null) {</span>
-<span class="fc" id="L519">					products.add(mechProduct);</span>
+<span class="pc bpc" id="L505" title="1 of 2 branches missed.">				if (mechProduct != null) {</span>
+<span class="fc" id="L506">					products.add(mechProduct);</span>
 				}
-<span class="fc" id="L521">			}</span>
+<span class="fc" id="L508">			}</span>
 		}
 
 		// send lightweight origin product
-<span class="pc bpc" id="L525" title="2 of 6 branches missed.">		if (sendOriginWhenPhasesExist &amp;&amp; hasPhaseData &amp;&amp; originProduct != null) {</span>
+<span class="pc bpc" id="L512" title="2 of 6 branches missed.">		if (sendOriginWhenPhasesExist &amp;&amp; hasPhaseData &amp;&amp; originProduct != null) {</span>
 			// create lightweight origin product
-<span class="fc" id="L527">			Product lightweightOrigin = new Product(originProduct);</span>
-<span class="fc" id="L528">			lightweightOrigin.getId().setType(&quot;origin&quot;);</span>
+<span class="fc" id="L514">			Product lightweightOrigin = new Product(originProduct);</span>
+<span class="fc" id="L515">			lightweightOrigin.getId().setType(&quot;origin&quot;);</span>
 
-<span class="fc" id="L530">			Quakeml lightweightQuakeml = QuakemlUtils</span>
-<span class="fc" id="L531">					.getLightweightOrigin(message);</span>
+<span class="fc" id="L517">			Quakeml lightweightQuakeml = QuakemlUtils</span>
+<span class="fc" id="L518">					.getLightweightOrigin(message);</span>
 
 			// serialize xml without phase data
-<span class="fc" id="L534">			ByteContent lightweightContent = new ByteContent(convertQuakemlToString(lightweightQuakeml).getBytes());</span>
-<span class="fc" id="L535">			lightweightContent.setContentType(XML_CONTENT_TYPE);</span>
-<span class="fc" id="L536">			lightweightContent.setLastModified(updateTime);</span>
-<span class="fc" id="L537">			lightweightOrigin.getContents().put(QUAKEML_CONTENT_PATH,</span>
+<span class="fc" id="L521">			ByteContent lightweightContent = new ByteContent(convertQuakemlToString(lightweightQuakeml).getBytes());</span>
+<span class="fc" id="L522">			lightweightContent.setContentType(XML_CONTENT_TYPE);</span>
+<span class="fc" id="L523">			lightweightContent.setLastModified(updateTime);</span>
+<span class="fc" id="L524">			lightweightOrigin.getContents().put(QUAKEML_CONTENT_PATH,</span>
 					lightweightContent);
 
 			// insert at front of list
-<span class="fc" id="L541">			products.add(0, lightweightOrigin);</span>
+<span class="fc" id="L528">			products.add(0, lightweightOrigin);</span>
 		}
 
-<span class="fc" id="L544">		return products;</span>
+<span class="fc" id="L531">		return products;</span>
 	}
 
 	protected Product getFocalMechanismProduct(final Quakeml quakeml,
 			final Event event, final FocalMechanism mech,
 			final String quakemlContent) {
-<span class="fc" id="L550">		MomentTensor momentTensor = mech.getMomentTensor();</span>
+<span class="fc" id="L537">		MomentTensor momentTensor = mech.getMomentTensor();</span>
 
 		// determine product id
-<span class="fc" id="L553">		String mechSource = mech.getDatasource();</span>
-<span class="fc" id="L554">		String mechCode = mech.getDataid();</span>
-<span class="fc" id="L555">		String mechType = mech.getDatatype();</span>
-<span class="pc bpc" id="L556" title="1 of 2 branches missed.">		if (mechType == null) {</span>
+<span class="fc" id="L540">		String mechSource = mech.getDatasource();</span>
+<span class="fc" id="L541">		String mechCode = mech.getDataid();</span>
+<span class="fc" id="L542">		String mechType = mech.getDatatype();</span>
+<span class="pc bpc" id="L543" title="1 of 2 branches missed.">		if (mechType == null) {</span>
 			// automatically determine mechanism type based on available data
-<span class="fc" id="L558">			mechType = &quot;focal-mechanism&quot;;</span>
-<span class="pc bpc" id="L559" title="1 of 4 branches missed.">			if (momentTensor != null &amp;&amp; momentTensor.getTensor() != null) {</span>
-<span class="fc" id="L560">				mechType = &quot;moment-tensor&quot;;</span>
-<span class="pc bpc" id="L561" title="3 of 4 branches missed.">				if (mechCode == null &amp;&amp; momentTensor.getMethodID() != null) {</span>
-<span class="nc" id="L562">					mechCode = productCode + &quot;_&quot; + momentTensor.getMethodID();</span>
+<span class="fc" id="L545">			mechType = &quot;focal-mechanism&quot;;</span>
+<span class="pc bpc" id="L546" title="1 of 4 branches missed.">			if (momentTensor != null &amp;&amp; momentTensor.getTensor() != null) {</span>
+<span class="fc" id="L547">				mechType = &quot;moment-tensor&quot;;</span>
+<span class="pc bpc" id="L548" title="3 of 4 branches missed.">				if (mechCode == null &amp;&amp; momentTensor.getMethodID() != null) {</span>
+<span class="nc" id="L549">					mechCode = productCode + &quot;_&quot; + momentTensor.getMethodID();</span>
 				}
 			}
 		}
-<span class="pc bpc" id="L566" title="1 of 2 branches missed.">		if (mechSource == null) {</span>
-<span class="nc" id="L567">			mechSource = productSource;</span>
+<span class="pc bpc" id="L553" title="1 of 2 branches missed.">		if (mechSource == null) {</span>
+<span class="nc" id="L554">			mechSource = productSource;</span>
 		}
-<span class="pc bpc" id="L569" title="1 of 2 branches missed.">		if (mechCode == null) {</span>
-<span class="nc" id="L570">			mechCode = productCode;</span>
+<span class="pc bpc" id="L556" title="1 of 2 branches missed.">		if (mechCode == null) {</span>
+<span class="nc" id="L557">			mechCode = productCode;</span>
 		}
-<span class="fc" id="L572">		Product product = new Product(new ProductId(mechSource, mechType,</span>
+<span class="fc" id="L559">		Product product = new Product(new ProductId(mechSource, mechType,</span>
 				mechCode, updateTime));
-<span class="pc bpc" id="L574" title="1 of 2 branches missed.">		if (mech.getEvaluationStatus() == EvaluationStatus.REJECTED) {</span>
+<span class="pc bpc" id="L561" title="1 of 2 branches missed.">		if (mech.getEvaluationStatus() == EvaluationStatus.REJECTED) {</span>
 			// this is a delete
-<span class="nc" id="L576">			product.setStatus(Product.STATUS_DELETE);</span>
+<span class="nc" id="L563">			product.setStatus(Product.STATUS_DELETE);</span>
 		}
 
 		// product is being contributed to containing event
-<span class="fc" id="L580">		product.setEventId(eventSource, eventCode);</span>
+<span class="fc" id="L567">		product.setEventId(eventSource, eventCode);</span>
 
-<span class="fc" id="L582">		ByteContent tensorContent = new ByteContent(quakemlContent.getBytes());</span>
-<span class="fc" id="L583">		tensorContent.setContentType(XML_CONTENT_TYPE);</span>
-<span class="fc" id="L584">		tensorContent.setLastModified(updateTime);</span>
-<span class="fc" id="L585">		product.getContents().put(QUAKEML_CONTENT_PATH, tensorContent);</span>
-<span class="fc" id="L586">		product.getContents().put(CONTENTS_XML_PATH, getContentsXML());</span>
+<span class="fc" id="L569">		ByteContent tensorContent = new ByteContent(quakemlContent.getBytes());</span>
+<span class="fc" id="L570">		tensorContent.setContentType(XML_CONTENT_TYPE);</span>
+<span class="fc" id="L571">		tensorContent.setLastModified(updateTime);</span>
+<span class="fc" id="L572">		product.getContents().put(QUAKEML_CONTENT_PATH, tensorContent);</span>
+<span class="fc" id="L573">		product.getContents().put(CONTENTS_XML_PATH, getContentsXML());</span>
 
-<span class="fc" id="L588">		Map&lt;String, String&gt; properties = product.getProperties();</span>
+<span class="fc" id="L575">		Map&lt;String, String&gt; properties = product.getProperties();</span>
 
 		// track which mechanism is used in this product, for later
 		// extraction
-<span class="fc" id="L592">		setProperty(properties, &quot;quakeml-publicid&quot;, mech.getPublicID());</span>
+<span class="fc" id="L579">		setProperty(properties, &quot;quakeml-publicid&quot;, mech.getPublicID());</span>
 		// also track original event if set, in case this is a recontributed
 		// product
-<span class="fc" id="L595">		setProperty(properties, &quot;original-eventsource&quot;, mech.getEventsource());</span>
-<span class="fc" id="L596">		setProperty(properties, &quot;original-eventsourcecode&quot;, mech.getEventid());</span>
+<span class="fc" id="L582">		setProperty(properties, &quot;original-eventsource&quot;, mech.getEventsource());</span>
+<span class="fc" id="L583">		setProperty(properties, &quot;original-eventsourcecode&quot;, mech.getEventid());</span>
 
-<span class="pc bpc" id="L598" title="1 of 2 branches missed.">		if (mech.getEvaluationMode() == EvaluationMode.MANUAL) {</span>
-<span class="nc" id="L599">			properties.put(&quot;review-status&quot;, &quot;reviewed&quot;);</span>
+<span class="pc bpc" id="L585" title="1 of 2 branches missed.">		if (mech.getEvaluationMode() == EvaluationMode.MANUAL) {</span>
+<span class="nc" id="L586">			properties.put(&quot;review-status&quot;, &quot;reviewed&quot;);</span>
 		} else {
-<span class="fc" id="L601">			properties.put(&quot;review-status&quot;, &quot;automatic&quot;);</span>
+<span class="fc" id="L588">			properties.put(&quot;review-status&quot;, &quot;automatic&quot;);</span>
 		}
 
-<span class="fc bfc" id="L604" title="All 2 branches covered.">		if (mech.getEvaluationStatus() != null) {</span>
-<span class="fc" id="L605">			properties.put(&quot;evaluation-status&quot;, mech.getEvaluationStatus()</span>
-<span class="fc" id="L606">					.value());</span>
+<span class="fc bfc" id="L591" title="All 2 branches covered.">		if (mech.getEvaluationStatus() != null) {</span>
+<span class="fc" id="L592">			properties.put(&quot;evaluation-status&quot;, mech.getEvaluationStatus()</span>
+<span class="fc" id="L593">					.value());</span>
 		} else {
-<span class="fc" id="L608">			properties.put(&quot;evaluation-status&quot;, EvaluationStatus.PRELIMINARY</span>
-<span class="fc" id="L609">					.value());</span>
+<span class="fc" id="L595">			properties.put(&quot;evaluation-status&quot;, EvaluationStatus.PRELIMINARY</span>
+<span class="fc" id="L596">					.value());</span>
 		}
 
-<span class="fc" id="L612">		CreationInfo focalMechanismCreationInfo = mech.getCreationInfo();</span>
-<span class="pc bpc" id="L613" title="1 of 2 branches missed.">		if (focalMechanismCreationInfo != null) {</span>
-<span class="fc" id="L614">			product.setVersion(focalMechanismCreationInfo.getVersion());</span>
-<span class="fc" id="L615">			setProperty(properties, &quot;beachball-source&quot;,</span>
-<span class="fc" id="L616">					focalMechanismCreationInfo.getAgencyID());</span>
+<span class="fc" id="L599">		CreationInfo focalMechanismCreationInfo = mech.getCreationInfo();</span>
+<span class="pc bpc" id="L600" title="1 of 2 branches missed.">		if (focalMechanismCreationInfo != null) {</span>
+<span class="fc" id="L601">			product.setVersion(focalMechanismCreationInfo.getVersion());</span>
+<span class="fc" id="L602">			setProperty(properties, &quot;beachball-source&quot;,</span>
+<span class="fc" id="L603">					focalMechanismCreationInfo.getAgencyID());</span>
 		}
 
-<span class="fc" id="L619">		NodalPlanes planes = mech.getNodalPlanes();</span>
-<span class="fc bfc" id="L620" title="All 2 branches covered.">		if (planes != null) {</span>
-<span class="fc" id="L621">			NodalPlane plane1 = planes.getNodalPlane1();</span>
-<span class="fc" id="L622">			setProperty(properties, &quot;nodal-plane-1-strike&quot;, plane1.getStrike());</span>
-<span class="fc" id="L623">			setProperty(properties, &quot;nodal-plane-1-dip&quot;, plane1.getDip());</span>
-<span class="fc" id="L624">			setProperty(properties, &quot;nodal-plane-1-rake&quot;, plane1.getRake());</span>
+<span class="fc" id="L606">		NodalPlanes planes = mech.getNodalPlanes();</span>
+<span class="fc bfc" id="L607" title="All 2 branches covered.">		if (planes != null) {</span>
+<span class="fc" id="L608">			NodalPlane plane1 = planes.getNodalPlane1();</span>
+<span class="fc" id="L609">			setProperty(properties, &quot;nodal-plane-1-strike&quot;, plane1.getStrike());</span>
+<span class="fc" id="L610">			setProperty(properties, &quot;nodal-plane-1-dip&quot;, plane1.getDip());</span>
+<span class="fc" id="L611">			setProperty(properties, &quot;nodal-plane-1-rake&quot;, plane1.getRake());</span>
 
-<span class="fc" id="L626">			NodalPlane plane2 = planes.getNodalPlane2();</span>
-<span class="fc" id="L627">			setProperty(properties, &quot;nodal-plane-2-strike&quot;, plane2.getStrike());</span>
-<span class="fc" id="L628">			setProperty(properties, &quot;nodal-plane-2-dip&quot;, plane2.getDip());</span>
-<span class="fc" id="L629">			setProperty(properties, &quot;nodal-plane-2-rake&quot;, plane2.getRake());</span>
+<span class="fc" id="L613">			NodalPlane plane2 = planes.getNodalPlane2();</span>
+<span class="fc" id="L614">			setProperty(properties, &quot;nodal-plane-2-strike&quot;, plane2.getStrike());</span>
+<span class="fc" id="L615">			setProperty(properties, &quot;nodal-plane-2-dip&quot;, plane2.getDip());</span>
+<span class="fc" id="L616">			setProperty(properties, &quot;nodal-plane-2-rake&quot;, plane2.getRake());</span>
 		}
 
 		// add properties for principal axes
-<span class="fc" id="L633">		PrincipalAxes axes = mech.getPrincipalAxes();</span>
-<span class="fc bfc" id="L634" title="All 2 branches covered.">		if (axes != null) {</span>
-<span class="fc" id="L635">			Axis tAxis = axes.getTAxis();</span>
-<span class="pc bpc" id="L636" title="1 of 2 branches missed.">			if (tAxis != null) {</span>
-<span class="fc" id="L637">				setProperty(properties, &quot;t-axis-azimuth&quot;, tAxis.getAzimuth());</span>
-<span class="fc" id="L638">				setProperty(properties, &quot;t-axis-plunge&quot;, tAxis.getPlunge());</span>
-<span class="fc" id="L639">				setProperty(properties, &quot;t-axis-length&quot;, tAxis.getLength(), true);</span>
+<span class="fc" id="L620">		PrincipalAxes axes = mech.getPrincipalAxes();</span>
+<span class="fc bfc" id="L621" title="All 2 branches covered.">		if (axes != null) {</span>
+<span class="fc" id="L622">			Axis tAxis = axes.getTAxis();</span>
+<span class="pc bpc" id="L623" title="1 of 2 branches missed.">			if (tAxis != null) {</span>
+<span class="fc" id="L624">				setProperty(properties, &quot;t-axis-azimuth&quot;, tAxis.getAzimuth());</span>
+<span class="fc" id="L625">				setProperty(properties, &quot;t-axis-plunge&quot;, tAxis.getPlunge());</span>
+<span class="fc" id="L626">				setProperty(properties, &quot;t-axis-length&quot;, tAxis.getLength(), true);</span>
 			}
-<span class="fc" id="L641">			Axis nAxis = axes.getNAxis();</span>
-<span class="pc bpc" id="L642" title="1 of 2 branches missed.">			if (nAxis != null) {</span>
-<span class="fc" id="L643">				setProperty(properties, &quot;n-axis-azimuth&quot;, nAxis.getAzimuth());</span>
-<span class="fc" id="L644">				setProperty(properties, &quot;n-axis-plunge&quot;, nAxis.getPlunge());</span>
-<span class="fc" id="L645">				setProperty(properties, &quot;n-axis-length&quot;, nAxis.getLength(), true);</span>
+<span class="fc" id="L628">			Axis nAxis = axes.getNAxis();</span>
+<span class="pc bpc" id="L629" title="1 of 2 branches missed.">			if (nAxis != null) {</span>
+<span class="fc" id="L630">				setProperty(properties, &quot;n-axis-azimuth&quot;, nAxis.getAzimuth());</span>
+<span class="fc" id="L631">				setProperty(properties, &quot;n-axis-plunge&quot;, nAxis.getPlunge());</span>
+<span class="fc" id="L632">				setProperty(properties, &quot;n-axis-length&quot;, nAxis.getLength(), true);</span>
 			}
-<span class="fc" id="L647">			Axis pAxis = axes.getPAxis();</span>
-<span class="pc bpc" id="L648" title="1 of 2 branches missed.">			if (pAxis != null) {</span>
-<span class="fc" id="L649">				setProperty(properties, &quot;p-axis-azimuth&quot;, pAxis.getAzimuth());</span>
-<span class="fc" id="L650">				setProperty(properties, &quot;p-axis-plunge&quot;, pAxis.getPlunge());</span>
-<span class="fc" id="L651">				setProperty(properties, &quot;p-axis-length&quot;, pAxis.getLength(), true);</span>
+<span class="fc" id="L634">			Axis pAxis = axes.getPAxis();</span>
+<span class="pc bpc" id="L635" title="1 of 2 branches missed.">			if (pAxis != null) {</span>
+<span class="fc" id="L636">				setProperty(properties, &quot;p-axis-azimuth&quot;, pAxis.getAzimuth());</span>
+<span class="fc" id="L637">				setProperty(properties, &quot;p-axis-plunge&quot;, pAxis.getPlunge());</span>
+<span class="fc" id="L638">				setProperty(properties, &quot;p-axis-length&quot;, pAxis.getLength(), true);</span>
 			}
 		}
 
-<span class="fc" id="L655">		setProperty(properties, &quot;num-stations-used&quot;,</span>
-<span class="fc" id="L656">				mech.getStationPolarityCount());</span>
+<span class="fc" id="L642">		setProperty(properties, &quot;num-stations-used&quot;,</span>
+<span class="fc" id="L643">				mech.getStationPolarityCount());</span>
 
 		// try to read triggering origin attributes for association
-<span class="fc" id="L659">		Origin triggeringOrigin = QuakemlUtils.getOrigin(event,</span>
-<span class="fc" id="L660">				mech.getTriggeringOriginID());</span>
-<span class="pc bpc" id="L661" title="1 of 2 branches missed.">		if (triggeringOrigin != null) {</span>
+<span class="fc" id="L646">		Origin triggeringOrigin = QuakemlUtils.getOrigin(event,</span>
+<span class="fc" id="L647">				mech.getTriggeringOriginID());</span>
+<span class="pc bpc" id="L648" title="1 of 2 branches missed.">		if (triggeringOrigin != null) {</span>
 			// set properties for association purposes.
-<span class="fc" id="L663">			product.setLatitude(triggeringOrigin.getLatitude().getValue());</span>
-<span class="fc" id="L664">			product.setLongitude(triggeringOrigin.getLongitude().getValue());</span>
-<span class="fc" id="L665">			product.setEventTime(triggeringOrigin.getTime().getValue());</span>
+<span class="fc" id="L650">			product.setLatitude(triggeringOrigin.getLatitude().getValue());</span>
+<span class="fc" id="L651">			product.setLongitude(triggeringOrigin.getLongitude().getValue());</span>
+<span class="fc" id="L652">			product.setEventTime(triggeringOrigin.getTime().getValue());</span>
 			// add triggering depth if present
-<span class="pc bpc" id="L667" title="1 of 2 branches missed.">			if (triggeringOrigin.getDepth() != null) {</span>
-<span class="fc" id="L668">				product.setDepth(triggeringOrigin.getDepth().getValue()</span>
-<span class="fc" id="L669">						.divide(METERS_PER_KILOMETER));</span>
+<span class="pc bpc" id="L654" title="1 of 2 branches missed.">			if (triggeringOrigin.getDepth() != null) {</span>
+<span class="fc" id="L655">				product.setDepth(triggeringOrigin.getDepth().getValue()</span>
+<span class="fc" id="L656">						.divide(METERS_PER_KILOMETER));</span>
 			}
 		}
 
-<span class="fc" id="L673">		Tensor tensor = null;</span>
-<span class="fc bfc" id="L674" title="All 2 branches covered.">		if (momentTensor != null) {</span>
-<span class="fc" id="L675">			setProperty(properties, &quot;percent-double-couple&quot;,</span>
-<span class="fc" id="L676">					momentTensor.getDoubleCouple());</span>
-<span class="fc" id="L677">			setProperty(properties, &quot;scalar-moment&quot;,</span>
-<span class="fc" id="L678">					momentTensor.getScalarMoment(), true);</span>
-<span class="fc" id="L679">			setProperty(properties, &quot;beachball-type&quot;,</span>
-<span class="fc" id="L680">					momentTensor.getMethodID());</span>
-<span class="pc bpc" id="L681" title="1 of 2 branches missed.">			if (momentTensor.getInversionType() != null) {</span>
-<span class="fc" id="L682">				setProperty(properties, &quot;inversion-type&quot;,</span>
-<span class="fc" id="L683">						momentTensor.getInversionType().value());</span>
+<span class="fc" id="L660">		Tensor tensor = null;</span>
+<span class="fc bfc" id="L661" title="All 2 branches covered.">		if (momentTensor != null) {</span>
+<span class="fc" id="L662">			setProperty(properties, &quot;percent-double-couple&quot;,</span>
+<span class="fc" id="L663">					momentTensor.getDoubleCouple());</span>
+<span class="fc" id="L664">			setProperty(properties, &quot;scalar-moment&quot;,</span>
+<span class="fc" id="L665">					momentTensor.getScalarMoment(), true);</span>
+<span class="fc" id="L666">			setProperty(properties, &quot;beachball-type&quot;,</span>
+<span class="fc" id="L667">					momentTensor.getMethodID());</span>
+<span class="pc bpc" id="L668" title="1 of 2 branches missed.">			if (momentTensor.getInversionType() != null) {</span>
+<span class="fc" id="L669">				setProperty(properties, &quot;inversion-type&quot;,</span>
+<span class="fc" id="L670">						momentTensor.getInversionType().value());</span>
 			}
 
-<span class="fc" id="L686">			tensor = momentTensor.getTensor();</span>
-<span class="pc bpc" id="L687" title="1 of 2 branches missed.">			if (tensor != null) {</span>
-<span class="fc" id="L688">				setProperty(properties, &quot;tensor-mpp&quot;, tensor.getMpp(), true);</span>
-<span class="fc" id="L689">				setProperty(properties, &quot;tensor-mrp&quot;, tensor.getMrp(), true);</span>
-<span class="fc" id="L690">				setProperty(properties, &quot;tensor-mrr&quot;, tensor.getMrr(), true);</span>
-<span class="fc" id="L691">				setProperty(properties, &quot;tensor-mrt&quot;, tensor.getMrt(), true);</span>
-<span class="fc" id="L692">				setProperty(properties, &quot;tensor-mtp&quot;, tensor.getMtp(), true);</span>
-<span class="fc" id="L693">				setProperty(properties, &quot;tensor-mtt&quot;, tensor.getMtt(), true);</span>
+<span class="fc" id="L673">			tensor = momentTensor.getTensor();</span>
+<span class="pc bpc" id="L674" title="1 of 2 branches missed.">			if (tensor != null) {</span>
+<span class="fc" id="L675">				setProperty(properties, &quot;tensor-mpp&quot;, tensor.getMpp(), true);</span>
+<span class="fc" id="L676">				setProperty(properties, &quot;tensor-mrp&quot;, tensor.getMrp(), true);</span>
+<span class="fc" id="L677">				setProperty(properties, &quot;tensor-mrr&quot;, tensor.getMrr(), true);</span>
+<span class="fc" id="L678">				setProperty(properties, &quot;tensor-mrt&quot;, tensor.getMrt(), true);</span>
+<span class="fc" id="L679">				setProperty(properties, &quot;tensor-mtp&quot;, tensor.getMtp(), true);</span>
+<span class="fc" id="L680">				setProperty(properties, &quot;tensor-mtt&quot;, tensor.getMtt(), true);</span>
 			}
 
-<span class="fc" id="L696">			SourceTimeFunction sourceTimeFunction = momentTensor</span>
-<span class="fc" id="L697">					.getSourceTimeFunction();</span>
-<span class="pc bpc" id="L698" title="1 of 2 branches missed.">			if (sourceTimeFunction != null) {</span>
-<span class="nc" id="L699">				SourceTimeFunctionType sourceTimeFunctionType = sourceTimeFunction</span>
-<span class="nc" id="L700">						.getType();</span>
-<span class="nc bnc" id="L701" title="All 2 branches missed.">				if (sourceTimeFunctionType != null) {</span>
-<span class="nc" id="L702">					setProperty(properties, &quot;sourcetime-type&quot;,</span>
-<span class="nc" id="L703">							sourceTimeFunctionType.value());</span>
+<span class="fc" id="L683">			SourceTimeFunction sourceTimeFunction = momentTensor</span>
+<span class="fc" id="L684">					.getSourceTimeFunction();</span>
+<span class="pc bpc" id="L685" title="1 of 2 branches missed.">			if (sourceTimeFunction != null) {</span>
+<span class="nc" id="L686">				SourceTimeFunctionType sourceTimeFunctionType = sourceTimeFunction</span>
+<span class="nc" id="L687">						.getType();</span>
+<span class="nc bnc" id="L688" title="All 2 branches missed.">				if (sourceTimeFunctionType != null) {</span>
+<span class="nc" id="L689">					setProperty(properties, &quot;sourcetime-type&quot;,</span>
+<span class="nc" id="L690">							sourceTimeFunctionType.value());</span>
 				}
-<span class="nc" id="L705">				setProperty(properties, &quot;sourcetime-duration&quot;,</span>
-<span class="nc" id="L706">						sourceTimeFunction.getDuration());</span>
-<span class="nc" id="L707">				setProperty(properties, &quot;sourcetime-risetime&quot;,</span>
-<span class="nc" id="L708">						sourceTimeFunction.getRiseTime());</span>
-<span class="nc" id="L709">				setProperty(properties, &quot;sourcetime-decaytime&quot;,</span>
-<span class="nc" id="L710">						sourceTimeFunction.getDecayTime());</span>
+<span class="nc" id="L692">				setProperty(properties, &quot;sourcetime-duration&quot;,</span>
+<span class="nc" id="L693">						sourceTimeFunction.getDuration());</span>
+<span class="nc" id="L694">				setProperty(properties, &quot;sourcetime-risetime&quot;,</span>
+<span class="nc" id="L695">						sourceTimeFunction.getRiseTime());</span>
+<span class="nc" id="L696">				setProperty(properties, &quot;sourcetime-decaytime&quot;,</span>
+<span class="nc" id="L697">						sourceTimeFunction.getDecayTime());</span>
 			}
 
-<span class="fc" id="L713">			Origin derivedOrigin = QuakemlUtils.getOrigin(event,</span>
-<span class="fc" id="L714">					momentTensor.getDerivedOriginID());</span>
+<span class="fc" id="L700">			Origin derivedOrigin = QuakemlUtils.getOrigin(event,</span>
+<span class="fc" id="L701">					momentTensor.getDerivedOriginID());</span>
 
-<span class="pc bpc" id="L716" title="1 of 2 branches missed.">			if (derivedOrigin != null) {</span>
-<span class="fc" id="L717">				setProperty(properties, &quot;derived-latitude&quot;,</span>
-<span class="fc" id="L718">						derivedOrigin.getLatitude());</span>
-<span class="fc" id="L719">				setProperty(properties, &quot;derived-longitude&quot;,</span>
-<span class="fc" id="L720">						derivedOrigin.getLongitude());</span>
-<span class="fc" id="L721">				RealQuantity depth = derivedOrigin.getDepth();</span>
-<span class="pc bpc" id="L722" title="1 of 2 branches missed.">				if (depth != null) {</span>
-<span class="fc" id="L723">					setProperty(properties, &quot;derived-depth&quot;, depth.getValue()</span>
-<span class="fc" id="L724">							.divide(METERS_PER_KILOMETER));</span>
+<span class="pc bpc" id="L703" title="1 of 2 branches missed.">			if (derivedOrigin != null) {</span>
+<span class="fc" id="L704">				setProperty(properties, &quot;derived-latitude&quot;,</span>
+<span class="fc" id="L705">						derivedOrigin.getLatitude());</span>
+<span class="fc" id="L706">				setProperty(properties, &quot;derived-longitude&quot;,</span>
+<span class="fc" id="L707">						derivedOrigin.getLongitude());</span>
+<span class="fc" id="L708">				RealQuantity depth = derivedOrigin.getDepth();</span>
+<span class="pc bpc" id="L709" title="1 of 2 branches missed.">				if (depth != null) {</span>
+<span class="fc" id="L710">					setProperty(properties, &quot;derived-depth&quot;, depth.getValue()</span>
+<span class="fc" id="L711">							.divide(METERS_PER_KILOMETER));</span>
 				}
-<span class="fc" id="L726">				setProperty(properties, &quot;derived-eventtime&quot;,</span>
-<span class="fc" id="L727">						derivedOrigin.getTime());</span>
+<span class="fc" id="L713">				setProperty(properties, &quot;derived-eventtime&quot;,</span>
+<span class="fc" id="L714">						derivedOrigin.getTime());</span>
 			}
 
-<span class="fc" id="L730">			Magnitude derivedMagnitude = QuakemlUtils.getMagnitude(event,</span>
-<span class="fc" id="L731">					momentTensor.getMomentMagnitudeID());</span>
-<span class="pc bpc" id="L732" title="1 of 2 branches missed.">			if (derivedMagnitude != null) {</span>
-<span class="fc" id="L733">				String derivedMagnitudeType = derivedMagnitude.getType();</span>
-<span class="fc" id="L734">				setProperty(properties, &quot;derived-magnitude-type&quot;,</span>
+<span class="fc" id="L717">			Magnitude derivedMagnitude = QuakemlUtils.getMagnitude(event,</span>
+<span class="fc" id="L718">					momentTensor.getMomentMagnitudeID());</span>
+<span class="pc bpc" id="L719" title="1 of 2 branches missed.">			if (derivedMagnitude != null) {</span>
+<span class="fc" id="L720">				String derivedMagnitudeType = derivedMagnitude.getType();</span>
+<span class="fc" id="L721">				setProperty(properties, &quot;derived-magnitude-type&quot;,</span>
 						derivedMagnitudeType);
-<span class="fc" id="L736">				setProperty(properties, &quot;derived-magnitude&quot;,</span>
-<span class="fc" id="L737">						derivedMagnitude.getMag());</span>
+<span class="fc" id="L723">				setProperty(properties, &quot;derived-magnitude&quot;,</span>
+<span class="fc" id="L724">						derivedMagnitude.getMag());</span>
 
-<span class="pc bpc" id="L739" title="1 of 2 branches missed.">				if (derivedMagnitudeType.equalsIgnoreCase(&quot;Mwd&quot;)) {</span>
-<span class="nc" id="L740">					product.getId().setType(&quot;broadband-depth&quot;);</span>
+<span class="pc bpc" id="L726" title="1 of 2 branches missed.">				if (derivedMagnitudeType.equalsIgnoreCase(&quot;Mwd&quot;)) {</span>
+<span class="nc" id="L727">					product.getId().setType(&quot;broadband-depth&quot;);</span>
 				}
 			}
 		}
 
-<span class="pc bpc" id="L745" title="1 of 2 branches missed.">		if (!Product.STATUS_DELETE.equals(product.getStatus())) {</span>
+<span class="pc bpc" id="L732" title="1 of 2 branches missed.">		if (!Product.STATUS_DELETE.equals(product.getStatus())) {</span>
 			// if not deleting, do some validation
-<span class="fc" id="L747">			String type = product.getId().getType();</span>
-<span class="pc bpc" id="L748" title="1 of 4 branches missed.">			if (&quot;focal-mechanism&quot;.equals(type) &amp;&amp; planes == null) {</span>
-<span class="nc" id="L749">				LOGGER.warning(&quot;Focal mechanism missing nodal planes&quot;);</span>
-<span class="nc" id="L750">				return null;</span>
-<span class="pc bpc" id="L751" title="1 of 4 branches missed.">			} else if (&quot;moment-tensor&quot;.equals(type) &amp;&amp; tensor == null) {</span>
-<span class="nc" id="L752">				LOGGER.warning(&quot;Moment tensor missing tensor parameters&quot;);</span>
-<span class="nc" id="L753">				return null;</span>
+<span class="fc" id="L734">			String type = product.getId().getType();</span>
+<span class="pc bpc" id="L735" title="1 of 4 branches missed.">			if (&quot;focal-mechanism&quot;.equals(type) &amp;&amp; planes == null) {</span>
+<span class="nc" id="L736">				LOGGER.warning(&quot;Focal mechanism missing nodal planes&quot;);</span>
+<span class="nc" id="L737">				return null;</span>
+<span class="pc bpc" id="L738" title="1 of 4 branches missed.">			} else if (&quot;moment-tensor&quot;.equals(type) &amp;&amp; tensor == null) {</span>
+<span class="nc" id="L739">				LOGGER.warning(&quot;Moment tensor missing tensor parameters&quot;);</span>
+<span class="nc" id="L740">				return null;</span>
 			}
 		}
 
-<span class="fc" id="L757">		return product;</span>
+<span class="fc" id="L744">		return product;</span>
 	}
 
 	public void setProperty(final Map&lt;String, String&gt; properties,
 			final String name, final RealQuantity value) {
-<span class="fc" id="L762">		setProperty(properties, name, value, false);</span>
-<span class="fc" id="L763">	}</span>
+<span class="fc" id="L749">		setProperty(properties, name, value, false);</span>
+<span class="fc" id="L750">	}</span>
 
 	public void setProperty(final Map&lt;String, String&gt; properties,
 			final String name, final RealQuantity value,
 			final boolean allowExponential) {
-<span class="pc bpc" id="L768" title="1 of 2 branches missed.">		if (value == null) {</span>
-<span class="nc" id="L769">			return;</span>
+<span class="pc bpc" id="L755" title="1 of 2 branches missed.">		if (value == null) {</span>
+<span class="nc" id="L756">			return;</span>
 		}
 
-<span class="fc" id="L772">		setProperty(properties, name, value.getValue(), allowExponential);</span>
-<span class="fc" id="L773">	}</span>
+<span class="fc" id="L759">		setProperty(properties, name, value.getValue(), allowExponential);</span>
+<span class="fc" id="L760">	}</span>
 
 	public void setProperty(final Map&lt;String, String&gt; properties,
 			final String name, final String value) {
-<span class="pc bpc" id="L777" title="1 of 2 branches missed.">		if (value == null) {</span>
-<span class="nc" id="L778">			return;</span>
+<span class="pc bpc" id="L764" title="1 of 2 branches missed.">		if (value == null) {</span>
+<span class="nc" id="L765">			return;</span>
 		}
 
-<span class="fc" id="L781">		properties.put(name, value);</span>
-<span class="fc" id="L782">	}</span>
+<span class="fc" id="L768">		properties.put(name, value);</span>
+<span class="fc" id="L769">	}</span>
 
 	public void setProperty(final Map&lt;String, String&gt; properties,
 			final String name, final TimeQuantity value) {
-<span class="pc bpc" id="L786" title="1 of 2 branches missed.">		if (value == null) {</span>
-<span class="nc" id="L787">			return;</span>
+<span class="pc bpc" id="L773" title="1 of 2 branches missed.">		if (value == null) {</span>
+<span class="nc" id="L774">			return;</span>
 		}
 
-<span class="fc" id="L790">		properties.put(name, XmlUtils.formatDate(value.getValue()));</span>
-<span class="fc" id="L791">	}</span>
+<span class="fc" id="L777">		properties.put(name, XmlUtils.formatDate(value.getValue()));</span>
+<span class="fc" id="L778">	}</span>
 
 	public void setProperty(final Map&lt;String, String&gt; properties,
 			final String name, final BigDecimal value) {
-<span class="fc" id="L795">		setProperty(properties, name, value, false);</span>
-<span class="fc" id="L796">	}</span>
+<span class="fc" id="L782">		setProperty(properties, name, value, false);</span>
+<span class="fc" id="L783">	}</span>
 
 	public void setProperty(final Map&lt;String, String&gt; properties,
 			final String name, final BigDecimal value,
 			final boolean allowExponential) {
-<span class="fc bfc" id="L801" title="All 2 branches covered.">		if (value == null) {</span>
-<span class="fc" id="L802">			return;</span>
+<span class="fc bfc" id="L788" title="All 2 branches covered.">		if (value == null) {</span>
+<span class="fc" id="L789">			return;</span>
 		}
 
-<span class="fc bfc" id="L805" title="All 2 branches covered.">		properties.put(name, allowExponential ? value.toString()</span>
-<span class="fc" id="L806">				: value.toPlainString());</span>
-<span class="fc" id="L807">	}</span>
+<span class="fc bfc" id="L792" title="All 2 branches covered.">		properties.put(name, allowExponential ? value.toString()</span>
+<span class="fc" id="L793">				: value.toPlainString());</span>
+<span class="fc" id="L794">	}</span>
 
 	public void setProperty(final Map&lt;String, String&gt; properties,
 			final String name, final BigInteger value) {
-<span class="fc bfc" id="L811" title="All 2 branches covered.">		if (value == null) {</span>
-<span class="fc" id="L812">			return;</span>
+<span class="fc bfc" id="L798" title="All 2 branches covered.">		if (value == null) {</span>
+<span class="fc" id="L799">			return;</span>
 		}
 
-<span class="fc" id="L815">		properties.put(name, value.toString());</span>
-<span class="fc" id="L816">	}</span>
+<span class="fc" id="L802">		properties.put(name, value.toString());</span>
+<span class="fc" id="L803">	}</span>
 
 	public void setProperty(final Map&lt;String, String&gt; properties,
 			final String name, final Integer value) {
-<span class="fc bfc" id="L820" title="All 2 branches covered.">		if (value == null) {</span>
-<span class="fc" id="L821">			return;</span>
+<span class="fc bfc" id="L807" title="All 2 branches covered.">		if (value == null) {</span>
+<span class="fc" id="L808">			return;</span>
 		}
 
-<span class="fc" id="L824">		properties.put(name, value.toString());</span>
-<span class="fc" id="L825">	}</span>
+<span class="fc" id="L811">		properties.put(name, value.toString());</span>
+<span class="fc" id="L812">	}</span>
 
 	public void setConverter(FileToQuakemlConverter converter) {
-<span class="nc" id="L828">		this.converter = converter;</span>
-<span class="nc" id="L829">	}</span>
+<span class="nc" id="L815">		this.converter = converter;</span>
+<span class="nc" id="L816">	}</span>
 
 	public FileToQuakemlConverter getConverter() {
-<span class="nc" id="L832">		return converter;</span>
+<span class="nc" id="L819">		return converter;</span>
 	}
 
 	@Override
 	public boolean isValidate() {
-<span class="fc" id="L837">		return validate;</span>
+<span class="fc" id="L824">		return validate;</span>
 	}
 
 	@Override
 	public void setValidate(boolean validate) {
-<span class="nc" id="L842">		this.validate = validate;</span>
-<span class="nc" id="L843">	}</span>
+<span class="nc" id="L829">		this.validate = validate;</span>
+<span class="nc" id="L830">	}</span>
 
 	/**
 	 * Implement the ProductCreator interface.
 	 */
 	@Override
 	public List&lt;Product&gt; getProducts(File file) throws Exception {
-<span class="nc bnc" id="L850" title="All 2 branches missed.">		if (this.converter == null) {</span>
+<span class="nc bnc" id="L837" title="All 2 branches missed.">		if (this.converter == null) {</span>
 			// preserve quakeml input
-<span class="nc" id="L852">			String contents = new String(StreamUtils.readStream(file));</span>
-<span class="nc" id="L853">			return this.getQuakemlProducts(contents);</span>
+<span class="nc" id="L839">			String contents = new String(StreamUtils.readStream(file));</span>
+<span class="nc" id="L840">			return this.getQuakemlProducts(contents);</span>
 		} else {
-<span class="nc" id="L855">			Quakeml quakeml = this.converter.parseFile(file);</span>
-<span class="nc" id="L856">			return this.getQuakemlProducts(quakeml);</span>
+<span class="nc" id="L842">			Quakeml quakeml = this.converter.parseFile(file);</span>
+<span class="nc" id="L843">			return this.getQuakemlProducts(quakeml);</span>
 		}
 	}
 
 	protected Content getContentsXML() {
-<span class="fc" id="L861">		StringBuffer buf = new StringBuffer();</span>
-<span class="fc" id="L862">		buf.append(&quot;&lt;?xml version=\&quot;1.0\&quot;?&gt;\n&quot;);</span>
-<span class="fc" id="L863">		buf.append(&quot;&lt;contents xmlns=\&quot;http://earthquake.usgs.gov/earthquakes/event/contents\&quot;&gt;\n&quot;);</span>
-<span class="fc" id="L864">		buf.append(&quot;&lt;file title=\&quot;Earthquake XML (Quakeml)\&quot;&gt;\n&quot;);</span>
-<span class="fc" id="L865">		buf.append(&quot;&lt;format type=\&quot;xml\&quot; href=\&quot;&quot;).append(QUAKEML_CONTENT_PATH)</span>
-<span class="fc" id="L866">				.append(&quot;\&quot;/&gt;\n&quot;);</span>
-<span class="fc" id="L867">		buf.append(&quot;&lt;/file&gt;\n&quot;);</span>
-<span class="fc" id="L868">		buf.append(&quot;&lt;/contents&gt;\n&quot;);</span>
+<span class="fc" id="L848">		StringBuffer buf = new StringBuffer();</span>
+<span class="fc" id="L849">		buf.append(&quot;&lt;?xml version=\&quot;1.0\&quot;?&gt;\n&quot;);</span>
+<span class="fc" id="L850">		buf.append(&quot;&lt;contents xmlns=\&quot;http://earthquake.usgs.gov/earthquakes/event/contents\&quot;&gt;\n&quot;);</span>
+<span class="fc" id="L851">		buf.append(&quot;&lt;file title=\&quot;Earthquake XML (Quakeml)\&quot;&gt;\n&quot;);</span>
+<span class="fc" id="L852">		buf.append(&quot;&lt;format type=\&quot;xml\&quot; href=\&quot;&quot;).append(QUAKEML_CONTENT_PATH)</span>
+<span class="fc" id="L853">				.append(&quot;\&quot;/&gt;\n&quot;);</span>
+<span class="fc" id="L854">		buf.append(&quot;&lt;/file&gt;\n&quot;);</span>
+<span class="fc" id="L855">		buf.append(&quot;&lt;/contents&gt;\n&quot;);</span>
 
-<span class="fc" id="L870">		ByteContent content = new ByteContent(buf.toString().getBytes());</span>
-<span class="fc" id="L871">		content.setContentType(&quot;application/xml&quot;);</span>
+<span class="fc" id="L857">		ByteContent content = new ByteContent(buf.toString().getBytes());</span>
+<span class="fc" id="L858">		content.setContentType(&quot;application/xml&quot;);</span>
 
-<span class="fc" id="L873">		return content;</span>
+<span class="fc" id="L860">		return content;</span>
 	}
 
 	public boolean isSendOriginWhenPhasesExist() {
-<span class="fc" id="L877">		return sendOriginWhenPhasesExist;</span>
+<span class="fc" id="L864">		return sendOriginWhenPhasesExist;</span>
 	}
 
 	public void setSendOriginWhenPhasesExist(boolean sendOriginWhenPhasesExist) {
-<span class="fc" id="L881">		this.sendOriginWhenPhasesExist = sendOriginWhenPhasesExist;</span>
-<span class="fc" id="L882">	}</span>
+<span class="fc" id="L868">		this.sendOriginWhenPhasesExist = sendOriginWhenPhasesExist;</span>
+<span class="fc" id="L869">	}</span>
 
 	public void setSendMechanismWhenPhasesExist(
 			boolean sendMechanismWhenPhasesExist) {
-<span class="nc" id="L886">		this.sendMechanismWhenPhasesExist = sendMechanismWhenPhasesExist;</span>
-<span class="nc" id="L887">	}</span>
+<span class="nc" id="L873">		this.sendMechanismWhenPhasesExist = sendMechanismWhenPhasesExist;</span>
+<span class="nc" id="L874">	}</span>
 
 	public boolean isSendMechanismWhenPhasesExist() {
-<span class="fc" id="L890">		return sendMechanismWhenPhasesExist;</span>
+<span class="fc" id="L877">		return sendMechanismWhenPhasesExist;</span>
 	}
 
 	public void setPadForBase64Bug(boolean padForBase64Bug) {
-<span class="nc" id="L894">		this.padForBase64Bug = padForBase64Bug;</span>
-<span class="nc" id="L895">	}</span>
+<span class="nc" id="L881">		this.padForBase64Bug = padForBase64Bug;</span>
+<span class="nc" id="L882">	}</span>
 
 	public boolean isPadForBase64Bug() {
-<span class="nc" id="L898">		return padForBase64Bug;</span>
+<span class="nc" id="L885">		return padForBase64Bug;</span>
 	}
 
 	/**
@@ -908,7 +895,7 @@ public class QuakemlProductCreator implements ProductCreator {
 	 * @throws Exception if quakeml doesn't validate
 	 */
 	private String convertQuakemlToString(Quakeml message) throws Exception{
-<span class="fc" id="L911">		return fixRawQuakeml(formatConverter.getString(message,validate));</span>
+<span class="fc" id="L898">		return fixRawQuakeml(formatConverter.getString(message,validate));</span>
 	}
 
 	/**
@@ -919,10 +906,10 @@ public class QuakemlProductCreator implements ProductCreator {
 	 * @return the fixed string
 	 */
 	public String fixRawQuakeml(String rawMessage) {
-<span class="pc bpc" id="L922" title="3 of 4 branches missed.">		if (padForBase64Bug &amp;&amp; rawMessage.getBytes().length % 4096 == 1) {</span>
-<span class="nc" id="L923">			rawMessage += ' ';</span>
+<span class="pc bpc" id="L909" title="3 of 4 branches missed.">		if (padForBase64Bug &amp;&amp; rawMessage.getBytes().length % 4096 == 1) {</span>
+<span class="nc" id="L910">			rawMessage += ' ';</span>
 		}
-<span class="fc" id="L925">		return rawMessage;</span>
+<span class="fc" id="L912">		return rawMessage;</span>
 	}
 
 	/**
@@ -933,36 +920,36 @@ public class QuakemlProductCreator implements ProductCreator {
 	 * @throws Exception
 	 */
 	public static void main(final String[] args) throws Exception {
-<span class="nc" id="L936">		QuakemlProductCreator creator = new QuakemlProductCreator();</span>
-<span class="nc" id="L937">		creator.setSendOriginWhenPhasesExist(true);</span>
-<span class="nc" id="L938">		creator.setSendMechanismWhenPhasesExist(true);</span>
+<span class="nc" id="L923">		QuakemlProductCreator creator = new QuakemlProductCreator();</span>
+<span class="nc" id="L924">		creator.setSendOriginWhenPhasesExist(true);</span>
+<span class="nc" id="L925">		creator.setSendMechanismWhenPhasesExist(true);</span>
 
-<span class="nc bnc" id="L940" title="All 2 branches missed.">		if (args.length == 0) {</span>
-<span class="nc" id="L941">			System.err</span>
-<span class="nc" id="L942">					.println(&quot;Quakeml to product converter utility.  &quot;</span>
+<span class="nc bnc" id="L927" title="All 2 branches missed.">		if (args.length == 0) {</span>
+<span class="nc" id="L928">			System.err</span>
+<span class="nc" id="L929">					.println(&quot;Quakeml to product converter utility.  &quot;</span>
 							+ &quot;For visually inspecting products that would be created from quakeml files.&quot;);
-<span class="nc" id="L944">			System.err.println();</span>
-<span class="nc" id="L945">			System.err.println(&quot;Usage: QuakemlProductCreator FILE [ FILE ]&quot;);</span>
-<span class="nc" id="L946">			System.err</span>
-<span class="nc" id="L947">					.println(&quot;\tFILE - a quakeml file to convert to products, repeat as needed&quot;);</span>
-<span class="nc" id="L948">			System.exit(1);</span>
+<span class="nc" id="L931">			System.err.println();</span>
+<span class="nc" id="L932">			System.err.println(&quot;Usage: QuakemlProductCreator FILE [ FILE ]&quot;);</span>
+<span class="nc" id="L933">			System.err</span>
+<span class="nc" id="L934">					.println(&quot;\tFILE - a quakeml file to convert to products, repeat as needed&quot;);</span>
+<span class="nc" id="L935">			System.exit(1);</span>
 		}
 
-<span class="nc bnc" id="L951" title="All 2 branches missed.">		for (String arg : args) {</span>
-<span class="nc" id="L952">			File quakeml = new File(arg);</span>
-<span class="nc" id="L953">			System.err.println(&quot;reading quakeml from &quot;</span>
-<span class="nc" id="L954">					+ quakeml.getCanonicalPath());</span>
+<span class="nc bnc" id="L938" title="All 2 branches missed.">		for (String arg : args) {</span>
+<span class="nc" id="L939">			File quakeml = new File(arg);</span>
+<span class="nc" id="L940">			System.err.println(&quot;reading quakeml from &quot;</span>
+<span class="nc" id="L941">					+ quakeml.getCanonicalPath());</span>
 
-<span class="nc" id="L956">			Iterator&lt;Product&gt; iter = creator.getProducts(quakeml).iterator();</span>
-<span class="nc bnc" id="L957" title="All 2 branches missed.">			while (iter.hasNext()) {</span>
-<span class="nc" id="L958">				Product next = iter.next();</span>
-<span class="nc" id="L959">				new ObjectProductSource(next).streamTo(new XmlProductHandler(</span>
+<span class="nc" id="L943">			Iterator&lt;Product&gt; iter = creator.getProducts(quakeml).iterator();</span>
+<span class="nc bnc" id="L944" title="All 2 branches missed.">			while (iter.hasNext()) {</span>
+<span class="nc" id="L945">				Product next = iter.next();</span>
+<span class="nc" id="L946">				new ObjectProductSource(next).streamTo(new XmlProductHandler(</span>
 						new StreamUtils.UnclosableOutputStream(System.err)));
-<span class="nc" id="L961">			}</span>
+<span class="nc" id="L948">			}</span>
 
-<span class="nc" id="L963">			System.err.println();</span>
+<span class="nc" id="L950">			System.err.println();</span>
 		}
-<span class="nc" id="L965">	}</span>
+<span class="nc" id="L952">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

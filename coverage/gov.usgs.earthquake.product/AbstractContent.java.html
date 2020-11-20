@@ -3,7 +3,14 @@
  */
 package gov.usgs.earthquake.product;
 
+import java.io.OutputStream;
+import java.security.DigestOutputStream;
+import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.Date;
+
+import gov.usgs.earthquake.util.NullOutputStream;
+import gov.usgs.util.StreamUtils;
 
 /**
  * AbstractContent is a base class for other content classes and implements
@@ -20,9 +27,12 @@ public abstract class AbstractContent implements Content {
 	/** How much content there is. */
 	private Long length;
 
+	/** Base64 encoded hash of content */
+	String sha256;
+
 	/**
 	 * Null values are replaced with defaults.
-	 * 
+	 *
 	 * @param contentType
 	 *            defaults to &quot;text/plain&quot;.
 	 * @param lastModified
@@ -31,97 +41,131 @@ public abstract class AbstractContent implements Content {
 	 *            defaults to -1L.
 	 */
 	public AbstractContent(final String contentType, final Date lastModified,
-<span class="fc" id="L34">			final Long length) {</span>
-<span class="fc" id="L35">		setContentType(contentType);</span>
-<span class="fc" id="L36">		setLastModified(lastModified);</span>
-<span class="fc" id="L37">		setLength(length);</span>
-<span class="fc" id="L38">	}</span>
+<span class="fc" id="L44">			final Long length) {</span>
+<span class="fc" id="L45">		setContentType(contentType);</span>
+<span class="fc" id="L46">		setLastModified(lastModified);</span>
+<span class="fc" id="L47">		setLength(length);</span>
+<span class="fc" id="L48">	}</span>
 
 	/**
 	 * Copy constructor from another content.
-	 * 
+	 *
 	 * @param content
 	 *            the content to copy.
 	 */
 	public AbstractContent(final Content content) {
-<span class="fc" id="L47">		this(content.getContentType(), content.getLastModified(), content</span>
-<span class="fc" id="L48">				.getLength());</span>
-<span class="fc" id="L49">	}</span>
+<span class="fc" id="L57">		this(content.getContentType(), content.getLastModified(), content</span>
+<span class="fc" id="L58">				.getLength());</span>
+<span class="fc" id="L59">	}</span>
 
 	/**
 	 * Default Constructor which requires no arguments. Default values are used
 	 * for all fields.
 	 */
 	public AbstractContent() {
-<span class="fc" id="L56">		this(null, null, null);</span>
-<span class="fc" id="L57">	}</span>
+<span class="fc" id="L66">		this(null, null, null);</span>
+<span class="fc" id="L67">	}</span>
 
 	/**
 	 * @return the content mime type.
 	 */
 	public String getContentType() {
-<span class="fc" id="L63">		return contentType;</span>
+<span class="fc" id="L73">		return contentType;</span>
 	}
 
 	/**
 	 * Set the content mime type.
-	 * 
+	 *
 	 * @param contentType
 	 *            the content mime type.
 	 */
 	public void setContentType(final String contentType) {
-<span class="fc bfc" id="L73" title="All 2 branches covered.">		if (contentType == null) {</span>
-<span class="fc" id="L74">			this.contentType = &quot;text/plain&quot;;</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">		if (contentType == null) {</span>
+<span class="fc" id="L84">			this.contentType = &quot;text/plain&quot;;</span>
 		} else {
-<span class="fc" id="L76">			this.contentType = contentType;</span>
+<span class="fc" id="L86">			this.contentType = contentType;</span>
 		}
-<span class="fc" id="L78">	}</span>
+<span class="fc" id="L88">	}</span>
 
 	/**
 	 * @return the content creation date.
 	 */
 	public Date getLastModified() {
-<span class="fc" id="L84">		return lastModified;</span>
+<span class="fc" id="L94">		return lastModified;</span>
 	}
 
 	/**
 	 * Set when this content was created.
-	 * 
+	 *
 	 * @param lastModified
 	 *            when this content was created.
 	 */
 	public void setLastModified(final Date lastModified) {
-<span class="fc bfc" id="L94" title="All 2 branches covered.">		if (lastModified == null) {</span>
-<span class="fc" id="L95">			this.lastModified = new Date();</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">		if (lastModified == null) {</span>
+<span class="fc" id="L105">			this.lastModified = new Date();</span>
 		} else {
-<span class="fc" id="L97">			this.lastModified = new Date(lastModified.getTime());</span>
+<span class="fc" id="L107">			this.lastModified = new Date(lastModified.getTime());</span>
 		}
 
 		// Round to nearest second. Some file systems do not preserve
 		// milliseconds.
-<span class="fc" id="L102">		this.lastModified</span>
-<span class="fc" id="L103">				.setTime((this.lastModified.getTime() / 1000L) * 1000L);</span>
-<span class="fc" id="L104">	}</span>
+<span class="fc" id="L112">		this.lastModified</span>
+<span class="fc" id="L113">				.setTime((this.lastModified.getTime() / 1000L) * 1000L);</span>
+<span class="fc" id="L114">	}</span>
 
 	/**
 	 * @return the content length, or -1 if unknown.
 	 */
 	public Long getLength() {
-<span class="fc" id="L110">		return length;</span>
+<span class="fc" id="L120">		return length;</span>
 	}
 
 	/**
 	 * Set the content length.
-	 * 
+	 *
 	 * @param length
 	 */
 	public void setLength(final Long length) {
-<span class="fc bfc" id="L119" title="All 2 branches covered.">		if (length == null) {</span>
-<span class="fc" id="L120">			this.length = -1L;</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">		if (length == null) {</span>
+<span class="fc" id="L130">			this.length = -1L;</span>
 		} else {
-<span class="fc" id="L122">			this.length = length;</span>
+<span class="fc" id="L132">			this.length = length;</span>
 		}
-<span class="fc" id="L124">	}</span>
+<span class="fc" id="L134">	}</span>
 
+
+	/** Get the Sha256 hash. */
+	@Override
+	public String getSha256() throws Exception {
+<span class="nc" id="L140">		return getSha256(true);</span>
+	}
+
+	/**
+	 * Get or generate the MD5 hash of content.
+	 *
+	 * @param computeIfMissing Use getInputStream to generate hash if missing.
+	 * @throws Exception
+	 */
+	public String getSha256(final boolean computeIfMissing) throws Exception {
+<span class="nc bnc" id="L150" title="All 4 branches missed.">		if (sha256 == null &amp;&amp; computeIfMissing) {</span>
+<span class="nc" id="L151">			try (final DigestOutputStream contentDigest =</span>
+<span class="nc" id="L152">							new DigestOutputStream(new NullOutputStream(), MessageDigest.getInstance(&quot;SHA-256&quot;));</span>
+<span class="nc" id="L153">					final OutputStream unclosable = new StreamUtils.UnclosableOutputStream(contentDigest)) {</span>
+<span class="nc" id="L154">				StreamUtils.transferStream(this.getInputStream(), unclosable);</span>
+<span class="nc" id="L155">				contentDigest.flush();</span>
+<span class="nc" id="L156">				setSha256(Base64.getEncoder().encodeToString(contentDigest.getMessageDigest().digest()));</span>
+			}
+		}
+<span class="nc" id="L159">		return sha256;</span>
+	}
+
+	/**
+	 * Set the sha256 hash of content.
+	 *
+	 * @param sha256
+	 */
+	public void setSha256(final String sha256) {
+<span class="fc" id="L168">		this.sha256 = sha256;</span>
+<span class="fc" id="L169">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

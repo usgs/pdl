@@ -146,40 +146,42 @@ import gov.usgs.util.StreamUtils;
 <span class="fc" id="L146">				LOGGER.finer(&quot;[&quot; + getName() + &quot;] number of candidate keys=&quot;</span>
 						+ candidateKeys.length);
 <span class="pc bpc" id="L148" title="1 of 2 branches missed.">				if (candidateKeys.length &gt; 0) {</span>
-<span class="fc" id="L149">					PublicKey publicKey = product.verifySignatureKey(candidateKeys);</span>
-<span class="fc bfc" id="L150" title="All 2 branches covered.">					if (publicKey != null) {</span>
-<span class="fc" id="L151">						verified = true;</span>
+<span class="fc" id="L149">					PublicKey publicKey = product.verifySignatureKey(</span>
+							candidateKeys,
+<span class="fc" id="L151">							product.getSignatureVersion());</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">					if (publicKey != null) {</span>
+<span class="fc" id="L153">						verified = true;</span>
 						// find key that verified
-<span class="fc" id="L153">						Optional&lt;ProductKey&gt; verifiedKey = keychain.getKeychain()</span>
-<span class="fc" id="L154">								.stream().filter(key -&gt; {</span>
-<span class="fc" id="L155">									return publicKey.equals(key.getKey());</span>
-<span class="fc" id="L156">								}).findAny();</span>
-<span class="pc bpc" id="L157" title="1 of 2 branches missed.">						if (verifiedKey.isPresent()) {</span>
-<span class="fc" id="L158">							verifiedKeyName = verifiedKey.get().getName();</span>
+<span class="fc" id="L155">						Optional&lt;ProductKey&gt; verifiedKey = keychain.getKeychain()</span>
+<span class="fc" id="L156">								.stream().filter(key -&gt; {</span>
+<span class="fc" id="L157">									return publicKey.equals(key.getKey());</span>
+<span class="fc" id="L158">								}).findAny();</span>
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">						if (verifiedKey.isPresent()) {</span>
+<span class="fc" id="L160">							verifiedKeyName = verifiedKey.get().getName();</span>
 						}
 					}
-<span class="fc" id="L161">				}</span>
+<span class="fc" id="L163">				}</span>
 			} else {
-<span class="nc" id="L163">				LOGGER.warning(&quot;[&quot; + getName() + &quot;] missing Signature Keychain&quot;);</span>
+<span class="nc" id="L165">				LOGGER.warning(&quot;[&quot; + getName() + &quot;] missing Signature Keychain&quot;);</span>
 			}
 
-<span class="fc" id="L166">			LOGGER.fine(&quot;[&quot; + getName() + &quot;] signature verified=&quot; + verified</span>
-<span class="fc bfc" id="L167" title="All 2 branches covered.">					+ (verified ? &quot; (key=&quot; + verifiedKeyName + &quot;)&quot; : &quot;&quot;)</span>
-<span class="fc" id="L168">					+ &quot;, id=&quot; + product.getId());</span>
+<span class="fc" id="L168">			LOGGER.fine(&quot;[&quot; + getName() + &quot;] signature verified=&quot; + verified</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">					+ (verified ? &quot; (key=&quot; + verifiedKeyName + &quot;)&quot; : &quot;&quot;)</span>
+<span class="fc" id="L170">					+ &quot;, id=&quot; + product.getId());</span>
 
-<span class="pc bpc" id="L170" title="3 of 4 branches missed.">			if (allowUnknownSigner &amp;&amp; candidateKeys.length == 0) {</span>
-<span class="nc" id="L171">					LOGGER.finer(&quot;[&quot; + getName()</span>
+<span class="pc bpc" id="L172" title="3 of 4 branches missed.">			if (allowUnknownSigner &amp;&amp; candidateKeys.length == 0) {</span>
+<span class="nc" id="L173">					LOGGER.finer(&quot;[&quot; + getName()</span>
 							+ &quot;] unknown signer, allowed by configuration&quot;);
-<span class="nc" id="L173">					return false;</span>
+<span class="nc" id="L175">					return false;</span>
 			}
 
-<span class="pc bpc" id="L176" title="1 of 4 branches missed.">			if (!verified &amp;&amp; rejectInvalidSignatures) {</span>
-<span class="fc" id="L177">				throw new InvalidSignatureException(&quot;[&quot; + getName()</span>
+<span class="pc bpc" id="L178" title="1 of 4 branches missed.">			if (!verified &amp;&amp; rejectInvalidSignatures) {</span>
+<span class="fc" id="L179">				throw new InvalidSignatureException(&quot;[&quot; + getName()</span>
 						+ &quot;] bad signature for id=&quot; + id);
 			}
 		}
 
-<span class="fc" id="L182">		return verified;</span>
+<span class="fc" id="L184">		return verified;</span>
 	}
 
 }

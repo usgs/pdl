@@ -272,8 +272,8 @@ import java.util.logging.Logger;
 		// ---------------------------------------------------------//
 
 		// check disassociation first
-<span class="fc bfc" id="L275" title="All 2 branches covered.">		if (event1.hasDisassociateProduct(event2)</span>
-<span class="pc bpc" id="L276" title="1 of 2 branches missed.">				|| event2.hasDisassociateProduct(event1)) {</span>
+<span class="pc bpc" id="L275" title="1 of 2 branches missed.">		if (event1.hasDisassociateProduct(event2)</span>
+<span class="fc bfc" id="L276" title="All 2 branches covered.">				|| event2.hasDisassociateProduct(event1)) {</span>
 			// explicitly disassociated
 <span class="fc" id="L278">			return false;</span>
 		}
@@ -508,9 +508,9 @@ import java.util.logging.Logger;
 <span class="fc" id="L508">			return false;</span>
 		}
 <span class="pc bpc" id="L510" title="1 of 2 branches missed.">		if (query.getMaxEventLatitude() != null</span>
-<span class="pc bpc" id="L511" title="1 of 2 branches missed.">				&amp;&amp; query.getMaxEventLatitude().compareTo(latitude) &lt; 0) {</span>
+<span class="fc bfc" id="L511" title="All 2 branches covered.">				&amp;&amp; query.getMaxEventLatitude().compareTo(latitude) &lt; 0) {</span>
 			// latitude too large
-<span class="nc" id="L513">			return false;</span>
+<span class="fc" id="L513">			return false;</span>
 		}
 
 <span class="pc bpc" id="L516" title="1 of 2 branches missed.">		if (query.getMinEventLongitude() != null</span>

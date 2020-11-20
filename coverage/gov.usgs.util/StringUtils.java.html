@@ -7,6 +7,7 @@
 package gov.usgs.util;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,12 +15,12 @@ import java.util.List;
 /**
  * String parsing and utility functions.
  */
-<span class="nc" id="L17">public class StringUtils {</span>
+<span class="nc" id="L18">public class StringUtils {</span>
 
     public static String encodeAsUtf8(final String value)
             throws UnsupportedEncodingException {
-<span class="fc" id="L21">        byte[] utf8Bytes = value.getBytes(&quot;UTF8&quot;);</span>
-<span class="fc" id="L22">        return new String(utf8Bytes, &quot;UTF8&quot;);</span>
+<span class="fc" id="L22">        byte[] utf8Bytes = value.getBytes(StandardCharsets.UTF_8);</span>
+<span class="fc" id="L23">        return new String(utf8Bytes, StandardCharsets.UTF_8);</span>
     }
 
     /**
@@ -31,11 +32,11 @@ import java.util.List;
     public static Double getDouble(final String value) {
         Double d;
         try {
-<span class="nc" id="L34">            d = Double.valueOf(value);</span>
-<span class="nc" id="L35">        } catch (Exception e) {</span>
-<span class="nc" id="L36">            d = null;</span>
-<span class="nc" id="L37">        }</span>
-<span class="nc" id="L38">        return d;</span>
+<span class="nc" id="L35">            d = Double.valueOf(value);</span>
+<span class="nc" id="L36">        } catch (Exception e) {</span>
+<span class="nc" id="L37">            d = null;</span>
+<span class="nc" id="L38">        }</span>
+<span class="nc" id="L39">        return d;</span>
     }
 
     /**
@@ -47,11 +48,11 @@ import java.util.List;
     public static Float getFloat(final String value) {
         Float f;
         try {
-<span class="nc" id="L50">            f = Float.valueOf(value);</span>
-<span class="nc" id="L51">        } catch (Exception e) {</span>
-<span class="nc" id="L52">            f = null;</span>
-<span class="nc" id="L53">        }</span>
-<span class="nc" id="L54">        return f;</span>
+<span class="nc" id="L51">            f = Float.valueOf(value);</span>
+<span class="nc" id="L52">        } catch (Exception e) {</span>
+<span class="nc" id="L53">            f = null;</span>
+<span class="nc" id="L54">        }</span>
+<span class="nc" id="L55">        return f;</span>
     }
 
     /**
@@ -63,11 +64,11 @@ import java.util.List;
     public static Integer getInteger(final String value) {
         Integer i;
         try {
-<span class="nc" id="L66">            i = Integer.valueOf(value);</span>
-<span class="nc" id="L67">        } catch (Exception e) {</span>
-<span class="nc" id="L68">            i = null;</span>
-<span class="nc" id="L69">        }</span>
-<span class="nc" id="L70">        return i;</span>
+<span class="nc" id="L67">            i = Integer.valueOf(value);</span>
+<span class="nc" id="L68">        } catch (Exception e) {</span>
+<span class="nc" id="L69">            i = null;</span>
+<span class="nc" id="L70">        }</span>
+<span class="nc" id="L71">        return i;</span>
     }
 
     /**
@@ -79,11 +80,11 @@ import java.util.List;
     public static Long getLong(final String value) {
         Long l;
         try {
-<span class="nc" id="L82">            l = Long.valueOf(value);</span>
-<span class="nc" id="L83">        } catch (Exception e) {</span>
-<span class="nc" id="L84">            l = null;</span>
-<span class="nc" id="L85">        }</span>
-<span class="nc" id="L86">        return l;</span>
+<span class="nc" id="L83">            l = Long.valueOf(value);</span>
+<span class="nc" id="L84">        } catch (Exception e) {</span>
+<span class="nc" id="L85">            l = null;</span>
+<span class="nc" id="L86">        }</span>
+<span class="nc" id="L87">        return l;</span>
     }
 
     /**
@@ -97,23 +98,23 @@ import java.util.List;
      * @return string containing delimiter delimited list items.
      */
     public static String join(final List&lt;Object&gt; list, final String delimiter) {
-<span class="pc bpc" id="L100" title="2 of 4 branches missed.">        if (list == null || list.size() == 0) {</span>
-<span class="nc" id="L101">            return &quot;&quot;;</span>
+<span class="pc bpc" id="L101" title="2 of 4 branches missed.">        if (list == null || list.size() == 0) {</span>
+<span class="nc" id="L102">            return &quot;&quot;;</span>
         }
 
-<span class="fc" id="L104">        StringBuffer buf = new StringBuffer();</span>
-<span class="fc" id="L105">        Iterator&lt;Object&gt; iter = list.iterator();</span>
+<span class="fc" id="L105">        StringBuffer buf = new StringBuffer();</span>
+<span class="fc" id="L106">        Iterator&lt;Object&gt; iter = list.iterator();</span>
         // add first element to buffer
-<span class="pc bpc" id="L107" title="1 of 2 branches missed.">        if (iter.hasNext()) {</span>
-<span class="fc" id="L108">            buf.append(iter.next().toString());</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">        if (iter.hasNext()) {</span>
+<span class="fc" id="L109">            buf.append(iter.next().toString());</span>
         }
         // add delimiter before other elements
-<span class="fc bfc" id="L111" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
-<span class="fc" id="L112">            buf.append(delimiter);</span>
-<span class="fc" id="L113">            buf.append(iter.next().toString());</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
+<span class="fc" id="L113">            buf.append(delimiter);</span>
+<span class="fc" id="L114">            buf.append(iter.next().toString());</span>
         }
 
-<span class="fc" id="L116">        return buf.toString();</span>
+<span class="fc" id="L117">        return buf.toString();</span>
     }
 
     /**
@@ -129,17 +130,17 @@ import java.util.List;
      */
     public static List&lt;String&gt; split(final String toSplit,
             final String delimiter) {
-<span class="fc" id="L132">        List&lt;String&gt; list = new LinkedList&lt;String&gt;();</span>
-<span class="fc bfc" id="L133" title="All 2 branches covered.">        if (toSplit != null) {</span>
-<span class="fc" id="L134">            String[] array = toSplit.split(delimiter);</span>
-<span class="fc bfc" id="L135" title="All 2 branches covered.">            for (String value : array) {</span>
-<span class="fc" id="L136">                value = value.trim();</span>
-<span class="pc bpc" id="L137" title="1 of 2 branches missed.">                if (!&quot;&quot;.equals(value)) {</span>
-<span class="fc" id="L138">                    list.add(value);</span>
+<span class="fc" id="L133">        List&lt;String&gt; list = new LinkedList&lt;String&gt;();</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">        if (toSplit != null) {</span>
+<span class="fc" id="L135">            String[] array = toSplit.split(delimiter);</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">            for (String value : array) {</span>
+<span class="fc" id="L137">                value = value.trim();</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">                if (!&quot;&quot;.equals(value)) {</span>
+<span class="fc" id="L139">                    list.add(value);</span>
                 }
             }
         }
-<span class="fc" id="L142">        return list;</span>
+<span class="fc" id="L143">        return list;</span>
     }
 
 }

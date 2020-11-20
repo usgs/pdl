@@ -148,9 +148,9 @@ import java.util.zip.GZIPInputStream;
 <span class="fc" id="L148">			File file = (File) obj;</span>
 			// create parent directory first, if needed
 <span class="fc" id="L150">			File parent = file.getAbsoluteFile().getParentFile();</span>
-<span class="fc bfc" id="L151" title="All 4 branches covered.">			if (!parent.exists() &amp;&amp; !parent.mkdirs()) {</span>
-<span class="fc" id="L152">				throw new IOException(&quot;Unable to create directory &quot;</span>
-<span class="fc" id="L153">						+ parent.getAbsolutePath());</span>
+<span class="pc bpc" id="L151" title="1 of 4 branches missed.">			if (!parent.exists() &amp;&amp; !parent.mkdirs()) {</span>
+<span class="nc" id="L152">				throw new IOException(&quot;Unable to create directory &quot;</span>
+<span class="nc" id="L153">						+ parent.getAbsolutePath());</span>
 			}
 <span class="pc bpc" id="L155" title="1 of 2 branches missed.">			if (!parent.canWrite()) {</span>
 <span class="nc" id="L156">				throw new IOException(</span>

@@ -12,9 +12,9 @@ import gov.usgs.util.Config;
 
 /**
  * ReliableIndexerListener listens for product changes by the indexer, then handles the new products independently in a background thread.
- * 
+ *
  * This class does little more than output logs for the products it has seen; it is designed to be extended.
- * 
+ *
  * Several useful methods are availble to be overridden or otherwise used:
  * &lt;ul&gt;
  * &lt;li&gt;onBeforeProcessThreadStart&lt;/li&gt;
@@ -22,16 +22,16 @@ import gov.usgs.util.Config;
  * &lt;li&gt;getNextProducts&lt;/li&gt;
  * &lt;li&gt;processProducts&lt;/li&gt;
  * &lt;/ul&gt;
- * 
+ *
  * This class accepts an index for querying in config:
- * 
+ *
  * &lt;dl&gt;
  * &lt;dt&gt;index&lt;/dt&gt;
  * &lt;dd&gt;(Required) The index to use for product querying.&lt;/dd&gt;
  * &lt;/dl&gt;
  */
 
-<span class="fc" id="L34">public class ReliableIndexerListener extends DefaultIndexerListener implements IndexerListener, Runnable {</span>
+<span class="fc" id="L34">public class ReliableIndexerListener extends DefaultIndexerListener implements Runnable {</span>
 
 <span class="fc" id="L36">  protected static final Logger LOGGER = Logger</span>
 <span class="fc" id="L37">          .getLogger(ReliableIndexerListener.class.getName());</span>
@@ -47,7 +47,7 @@ import gov.usgs.util.Config;
 
   /**
    * Sets up an object on start
-   * 
+   *
    * @param config configuration
    *
    * @throws Exception if missing product index
@@ -68,13 +68,13 @@ import gov.usgs.util.Config;
     }
 <span class="nc" id="L69">  }</span>
 
-  /** 
+  /**
    * Wakes thread when indexer makes changes
-   * 
+   *
    * @param delta Indexer Event - not used
    *
    * @throws Exception if something goes wrong
-   */ 
+   */
   public void onIndexerEvent(IndexerEvent delta) throws Exception {
     //Synchronized on the syncObject so we don't miss events
 <span class="fc" id="L80">    synchronized (syncObject) {</span>
@@ -149,7 +149,7 @@ import gov.usgs.util.Config;
 
   /**
    * Starts thread
-   * 
+   *
    * Calls onBeforeProcessThreadStart() in case subclasses want to add functionality
    *
    * @throws Exception if there's a thread issue
@@ -208,7 +208,7 @@ import gov.usgs.util.Config;
    */
   public void setLastIndexId(final long lastIndexId) {
 <span class="fc" id="L210">    this.lastIndexId = lastIndexId;</span>
-<span class="fc" id="L211">  } </span>
+<span class="fc" id="L211">  }</span>
 
   /**
    * Run before thread start.
@@ -266,6 +266,6 @@ import gov.usgs.util.Config;
 <span class="fc" id="L266">  }</span>
 
 
-   
+
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
