@@ -31,7 +31,7 @@ public class QuakemlUtils {
 	 * If a quakeml event object does not exist, check for the first internal or
 	 * scenario event.
 	 *
-	 * @param event
+	 * @param eventParameters
 	 * @return
 	 */
 	public static Event getFirstEvent(final EventParameters eventParameters) {

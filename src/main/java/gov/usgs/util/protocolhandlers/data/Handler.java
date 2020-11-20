@@ -8,7 +8,7 @@ import java.net.URLStreamHandler;
 /**
  * Data URLs handler.
  *
- * "data:[<mediatype>][;base64],<data>"
+ * "data:[&lt;mediatype&gt;][;base64],&lt;data&gt;"
  */
 public class Handler extends URLStreamHandler {
 

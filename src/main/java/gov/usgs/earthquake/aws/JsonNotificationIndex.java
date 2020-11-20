@@ -37,7 +37,7 @@ import gov.usgs.util.StringUtils;
  * Only SQLITE or local development should rely on createSchema.
  * Products (data column) have exceeded 64kb, plan accordingly.
  *
- * Mysql Schema Example:<br/>
+ * Mysql Schema Example:<br>
  * <pre>
  * CREATE TABLE IF NOT EXISTS indexer_receiver_index
  * (id INTEGER PRIMARY KEY AUTO_INCREMENT
@@ -389,11 +389,11 @@ public class JsonNotificationIndex
   /**
    * Search index for notifications.
    *
-   * @param source
+   * @param sources
    *     sources, or null for all sources.
-   * @param type
+   * @param types
    *     types, or null for all types.
-   * @param code
+   * @param codes
    *     codes, or null for all codes.
    * @return list with matching notifications, empty if not found.
    */

@@ -34,7 +34,7 @@ import gov.usgs.util.Config;
  * Only SQLITE or local development should rely on createSchema.
  * Products (data column) have exceeded 64kb, plan accordingly.
  *
- * Mysql Schema Example:<br/>
+ * Mysql Schema Example:<br>
  * <pre>
  * CREATE TABLE IF NOT EXISTS indexer_storage
  * (id INTEGER PRIMARY KEY AUTO_INCREMENT

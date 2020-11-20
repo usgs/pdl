@@ -20,7 +20,7 @@ import gov.usgs.util.Config;
  *
  * Only SQLITE or local development should rely on createSchema.
  *
- * Mysql Schema Example:<br/>
+ * Mysql Schema Example:<br>
  * <pre>
  * CREATE TABLE IF NOT EXISTS tracking_index
  * (id INTEGER PRIMARY KEY AUTO_INCREMENT
