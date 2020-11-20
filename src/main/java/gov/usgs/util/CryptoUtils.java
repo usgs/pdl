@@ -251,9 +251,6 @@ public class CryptoUtils {
 	/**
 	 * Generate a signature.
 	 *
-	 * @param algorithm
-	 *            signature algorithm to use, as accepted by
-	 *            Signature.getInstance.
 	 * @param privateKey
 	 *            private key to use, should be acceptable by signature
 	 *            instance.
@@ -303,7 +300,6 @@ public class CryptoUtils {
 	 * @throws NoSuchAlgorithmException
 	 * @throws InvalidKeyException
 	 * @throws SignatureException
-	 * @throws IOException
 	 */
 	public static boolean verify(final PublicKey publicKey, final byte[] data,
 			final String allegedSignature, final Version version)
