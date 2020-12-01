@@ -47,6 +47,12 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
   // whether to sign products
   protected boolean signProducts = false;
 
+  // 5s seems excessive, but be cautious for now
+  protected int connectTimeout = 5000;
+  // this corresponds to server-side timeout
+  // read timeout applies once getInputStream().read() is called
+  protected int readTimeout = 30000;
+
   public AwsProductSender() {}
 
   @Override
@@ -186,6 +192,8 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
     // send as attribute, for extensibility
     final JsonObject json = Json.createObjectBuilder().add("product", product).build();
     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    connection.setConnectTimeout(connectTimeout);
+    connection.setReadTimeout(readTimeout);
     connection.setDoOutput(true);
     connection.setRequestMethod("POST");
     connection.setRequestProperty("Content-Type", "application/json");
@@ -249,6 +257,8 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
     final long start = new Date().getTime();
     final HttpURLConnection connection = (HttpURLConnection) signedUrl.openConnection();
     connection.setDoOutput(true);
+    connection.setConnectTimeout(connectTimeout);
+    connection.setReadTimeout(readTimeout);
     // these values are part of signed url and are required
     connection.setRequestMethod("PUT");
     connection.addRequestProperty("Content-Length", content.getLength().toString());

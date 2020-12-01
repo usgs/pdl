@@ -31,7 +31,7 @@ public class StreamUtils {
 	public static final int DEFAULT_BUFFER_SIZE = 4096;
 
 	/** Default connect timeout for url connections. */
-	public static final int DEFAULT_URL_CONNECT_TIMEOUT = 15000;
+	public static final int DEFAULT_URL_CONNECT_TIMEOUT = 5000;
 
 	/** Default read timeout for url connections. */
 	public static final int DEFAULT_URL_READ_TIMEOUT = 15000;
