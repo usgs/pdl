@@ -187,7 +187,7 @@ public class ExecutorTask<T> implements Future<T>, Runnable {
 			runThread = null;
 
 			// computed without exceptions, done
-			done();
+			setDone();
 			// }
 		} catch (Exception e) {
 			LOGGER.log(Level.INFO, "Exception executing task", e);
@@ -210,7 +210,7 @@ public class ExecutorTask<T> implements Future<T>, Runnable {
 				}
 			} else {
 				// cancelled or out of tries, done
-				done();
+				setDone();
 			}
 			// }
 		} finally {
@@ -223,7 +223,7 @@ public class ExecutorTask<T> implements Future<T>, Runnable {
 	 * Called when task is completed, either successfully, or unsuccessfully and
 	 * has no more tries
 	 */
-	protected void done() {
+	protected void setDone() {
 		// done running, either successfully or because out of tries
 		done = true;
 		// notify anyone waiting for task to complete
@@ -247,7 +247,7 @@ public class ExecutorTask<T> implements Future<T>, Runnable {
 
 		// thread may still be running, if it doesn't handle interrupts well,
 		// but Future interface says we are done
-		done();
+		setDone();
 
 		return cancelled;
 	}

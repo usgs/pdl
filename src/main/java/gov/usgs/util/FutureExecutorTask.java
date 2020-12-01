@@ -130,7 +130,7 @@ public class FutureExecutorTask<T> extends ExecutorTask<T> {
       runThread = null;
 
       // computed without exceptions, done
-      done();
+      setDone();
     } catch (Exception e) {
       if (e instanceof ExecutionException) {
         // unpack cause
@@ -158,7 +158,7 @@ public class FutureExecutorTask<T> extends ExecutorTask<T> {
         }
       } else {
         // cancelled or out of tries, done
-        done();
+        setDone();
       }
     }
   }
