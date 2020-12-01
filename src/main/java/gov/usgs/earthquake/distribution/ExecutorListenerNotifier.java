@@ -1,5 +1,6 @@
 package gov.usgs.earthquake.distribution;
 
+import gov.usgs.earthquake.aws.JsonNotificationIndex;
 import gov.usgs.earthquake.product.AbstractListener;
 import gov.usgs.util.DefaultConfigurable;
 import gov.usgs.util.ExecutorTask;
@@ -16,6 +17,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ExecutorListenerNotifier extends DefaultConfigurable implements
@@ -204,9 +206,31 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 		LOGGER.info("[" + receiver.getName()
 				+ "] requeueing notification index '" + index.getName() + "'");
 		// find all existing notifications
-		Iterator<Notification> allNotifications = index.findNotifications(
-				(List<String>) null, (List<String>) null, (List<String>) null)
-				.iterator();
+		Iterator<Notification> allNotifications = null;
+
+		// for json index, push intersection into database if only one listener
+		if (index instanceof JsonNotificationIndex && gracefulListeners.size() == 1) {
+			NotificationIndex listenerIndex =
+					((DefaultNotificationListener) gracefulListeners.get(0))
+					.getNotificationIndex();
+			if (listenerIndex instanceof JsonNotificationIndex) {
+				// get intersection
+				try {
+					allNotifications =
+							((JsonNotificationIndex) index).getMissingNotifications(
+									((JsonNotificationIndex) listenerIndex).getTable()).iterator();
+				} catch (Exception e) {
+					LOGGER.log(Level.INFO, "Exception loading intersection, continuing", e);
+				}
+			}
+		}
+
+		if (allNotifications == null) {
+			// fallback to previous behavior
+			allNotifications = index.findNotifications(
+					(List<String>) null, (List<String>) null, (List<String>) null)
+					.iterator();
+		}
 		LOGGER.info("Done finding existing notifications");
 
 		// queue them for processing in case they were previous missed

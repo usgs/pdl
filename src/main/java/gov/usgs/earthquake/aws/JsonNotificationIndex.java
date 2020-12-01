@@ -540,6 +540,58 @@ public class JsonNotificationIndex
   }
 
   /**
+   * This method is used to find notifications present in this index
+   * but not present in another JsonNotificationIndex table in the same
+   * database.
+   *
+   * This is used to optimize the queuing process at startup and returns
+   * DefaultNotifications.  The receiver process will look up the actual
+   * notification object during processing.
+   *
+   * @param otherTable
+   *     name of table in same database.
+   * @return
+   *     list of notifications found in this indexes table, but not found in the
+   *     other table.
+   * @throws Exception
+   */
+  public synchronized List<Notification> getMissingNotifications(
+      final String otherTable) throws Exception {
+    // this is used to requeue a notification index.
+    // run query in a way that returns list of default notifications,
+    // (by returning empty created, data, and url)
+    // since full details are not needed during requeue
+    final String sql = "SELECT DISTINCT"
+        + " '' as created, t.expires, t.source, t.type, t.code, t.updateTime"
+        + ", '' as url, null as data"
+        + " FROM " + this.table + " t"
+        + " WHERE NOT EXISTS ("
+          + "SELECT * FROM " + otherTable
+            + " WHERE source=t.source AND type=t.type"
+            + " AND code=t.code AND updatetime=t.updateTime"
+        + ")";
+    // prepare statement
+    beginTransaction();
+    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
+      try {
+        // execute and commit if successful
+        final List<Notification> notifications = getNotifications(statement);
+        commitTransaction();
+        return notifications;
+      } catch (SQLException e) {
+        LOGGER.log(Level.WARNING, "Exception finding notifications", e);
+        try {
+          // otherwise roll back
+          rollbackTransaction();
+        } catch (SQLException e2) {
+          // ignore
+        }
+      }
+    }
+    return new ArrayList<Notification>();
+  }
+
+  /**
    * Parse notifications from a statement ready to be executed.
    */
   protected synchronized List<Notification> getNotifications(PreparedStatement ps)
