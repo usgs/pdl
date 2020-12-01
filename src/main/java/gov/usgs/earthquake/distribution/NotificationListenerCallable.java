@@ -34,7 +34,6 @@ public class NotificationListenerCallable implements Callable<Void> {
 			listener.onNotification(event);
 			return null;
 		} catch (Exception e) {
-			e.printStackTrace();
 			LOGGER.log(Level.WARNING, "["
 					+ event.getNotificationReceiver().getName()
 					+ "] listener (" + listener.getName()

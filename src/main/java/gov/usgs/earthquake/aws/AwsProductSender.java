@@ -122,7 +122,25 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
             + " (" + (afterGetUploadUrls - start) + " ms) ");
 
         // upload contents
-        uploadContents(product, uploadProduct);
+        try {
+          uploadContents(product, uploadProduct);
+        } catch (HttpException e) {
+          HttpURLConnection connection = e.response.connection;
+          // check for S3 "503 Slow Down" error
+          if (
+            503 == connection.getResponseCode()
+            && "Slow Down".equals(connection.getResponseMessage())
+          ) {
+            LOGGER.fine("[" + getName() + "] 503 slow down exception, trying again");
+            // try again after random back off (1-5 s)
+            Thread.sleep(1000 + Math.round(4000 * Math.random()));
+            uploadContents(product, uploadProduct);
+          } else {
+            // otherwise propagate exception as usual
+            throw e;
+          }
+        }
+
         afterUploadContent = new Date().getTime();
         LOGGER.fine("[" + getName() + "] upload contents " + id.toString()
             + " (" + (afterUploadContent - afterGetUploadUrls) + " ms) ");
@@ -316,12 +334,18 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
         .forEach(
             path -> {
               try {
+                Content uploadContent = uploadProduct.getContents().get(path);
+                if (!(uploadContent instanceof URLContent)) {
+                  throw new IllegalStateException(
+                      "Expected URLContent for " + product.getId().toString()
+                      + " path '" + path + "' but got " + uploadContent);
+                }
                 uploadResults.put(
                     path,
                     uploadContent(
                         path,
                         product.getContents().get(path),
-                        ((URLContent) uploadProduct.getContents().get(path)).getURL()));
+                        ((URLContent) uploadContent).getURL()));
               } catch (Exception e) {
                 uploadExceptions.put(path, e);
               }
