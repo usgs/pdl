@@ -3,6 +3,7 @@ package gov.usgs.util;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -99,6 +100,7 @@ public class FutureExecutorTask<T> extends ExecutorTask<T> {
    */
   @Override
   public void run() {
+    Future<T> future = null;
     try {
       if (done || cancelled || numTries >= maxTries) {
         // already done, cancelled, or out of attempts
@@ -112,7 +114,7 @@ public class FutureExecutorTask<T> extends ExecutorTask<T> {
       runThread = Thread.currentThread();
 
       // use future to manage timeout
-      Future<T> future = backgroundService.submit(this.callable);
+      future = backgroundService.submit(this.callable);
       try {
         if (timeout > 0) {
           result = future.get(timeout, TimeUnit.MILLISECONDS);
@@ -130,6 +132,13 @@ public class FutureExecutorTask<T> extends ExecutorTask<T> {
       // computed without exceptions, done
       done();
     } catch (Exception e) {
+      if (e instanceof ExecutionException) {
+        // unpack cause
+        Throwable cause = e.getCause();
+        if (cause != null && cause instanceof Exception) {
+          e = (Exception) e.getCause();
+        }
+      }
       LOGGER.log(Level.INFO, "Exception executing task", e);
       // signal that we are not running
       runThread = null;
