@@ -15,7 +15,7 @@ import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.earthquake.util.CompareUtil;
 import gov.usgs.util.Config;
 import gov.usgs.util.Configurable;
-import gov.usgs.util.ExecutorTask;
+import gov.usgs.util.FutureExecutorTask;
 import gov.usgs.util.StringUtils;
 
 import java.io.File;
@@ -140,6 +140,12 @@ public class Indexer extends DefaultNotificationListener {
 
 	/** Task for archive policy thread. */
 	private TimerTask archiveTask = null;
+
+	/**
+	 * Service used by FutureExecutorTask for execution.
+	 * See distribution.FutureListenerNotifier for more details.
+	 */
+  private ExecutorService backgroundService;
 
 	/** Whether to (false) or not (true) to run archive policies. */
 	private boolean disableArchive = false;
@@ -325,6 +331,9 @@ public class Indexer extends DefaultNotificationListener {
 			// Shutdown executor thread
 			listenerExecutor.shutdown();
 		}
+
+		backgroundService.shutdown();
+		backgroundService = null;
 	}
 
 	/**
@@ -382,8 +391,8 @@ public class Indexer extends DefaultNotificationListener {
 		while (it.hasNext()) {
 			final IndexerListener listener = it.next();
 			ExecutorService listenerExecutor = listeners.get(listener);
-			ExecutorTask<Void> listenerTask = new ExecutorTask<Void>(
-					listenerExecutor, listener.getMaxTries(),
+			FutureExecutorTask<Void> listenerTask = new FutureExecutorTask<Void>(
+					backgroundService, listenerExecutor, listener.getMaxTries(),
 					listener.getTimeout(), new IndexerListenerCallable(listener,
 							event));
 			listenerExecutor.submit(listenerTask);
@@ -1783,6 +1792,8 @@ public class Indexer extends DefaultNotificationListener {
 		super.startup();
 
 		// -- Start up our own specific processes -- //
+
+		backgroundService = Executors.newCachedThreadPool();
 
 		// -- Start dependent processes -- //
 		// ExecutorServices tied to known listeners.

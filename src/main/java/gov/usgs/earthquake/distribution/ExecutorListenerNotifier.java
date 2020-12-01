@@ -32,19 +32,19 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	 * Notification listeners registered to receive notifications, and an
 	 * ExecutorService that delivers Notifications to each in a separate thread.
 	 */
-	private Map<NotificationListener, ExecutorService> notificationListeners = new HashMap<NotificationListener, ExecutorService>();
+	protected Map<NotificationListener, ExecutorService> notificationListeners = new HashMap<NotificationListener, ExecutorService>();
 
 	/**
 	 * Make sure listener will accept notification before queueing it for
 	 * processing.
 	 */
-	private boolean acceptBeforeQueuing = true;
+	protected boolean acceptBeforeQueuing = true;
 
 	/**
 	 * Timer used to retry tasks when they fail and listeners have configured
 	 * retryDelay.
 	 */
-	private Timer retryTimer = new Timer();
+	protected Timer retryTimer = new Timer();
 
 	public ExecutorListenerNotifier(final DefaultNotificationReceiver receiver) {
 		this.receiver = receiver;

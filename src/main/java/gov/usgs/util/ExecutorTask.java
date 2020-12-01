@@ -1,6 +1,6 @@
 /*
  * ExecutorTask
- * 
+ *
  * $Id$
  * $URL$
  */
@@ -21,13 +21,13 @@ import java.util.logging.Logger;
 
 /**
  * A wrapper for Runnable or Callable objects for use with an ExecutorService.
- * 
+ *
  * Can be used to schedule interrupt based timeouts, multiple attempts, and
  * Future style exception tracking for Runnable or Callable objects.
- * 
+ *
  * @param <T> return type for callable.
  */
-public final class ExecutorTask<T> implements Future<T>, Runnable {
+public class ExecutorTask<T> implements Future<T>, Runnable {
 
 	/** Logging object. */
 	private static final Logger LOGGER = Logger.getLogger(ExecutorTask.class
@@ -43,49 +43,49 @@ public final class ExecutorTask<T> implements Future<T>, Runnable {
 	public static final long DEFAULT_TIMEOUT = 0L;
 
 	/** ExecutorService used to execute this task. */
-	private ExecutorService service;
+	protected ExecutorService service;
 
 	/** The callable to be called. */
-	private Callable<T> callable;
+	protected Callable<T> callable;
 
 	/** Timeout for task. */
-	private long timeout = DEFAULT_TIMEOUT;
+	protected long timeout = DEFAULT_TIMEOUT;
 
 	/** Number of tries to execute this task. */
-	private int maxTries = DEFAULT_NUM_TRIES;
+	protected int maxTries = DEFAULT_NUM_TRIES;
 
 	/** Number of milliseconds to wait before trying again. */
-	private long retryDelay = DEFAULT_RETRY_DELAY;
+	protected long retryDelay = DEFAULT_RETRY_DELAY;
 
 	/** Timer used to schedule retries, when they have a non-zero delay. */
-	private Timer retryTimer;
+	protected Timer retryTimer;
 
 	/** The future from the executor service. */
-	private T result;
+	protected T result;
 
 	/** List of exceptions thrown, up to maxTries in length. */
 	ArrayList<Exception> exceptions;
 
 	/** Whether this task is complete. */
-	private Boolean done = false;
+	protected Boolean done = false;
 
 	/** Whether this task has been canceled. */
-	private Boolean cancelled = false;
+	protected Boolean cancelled = false;
 
 	/** Number of tries used. */
-	private int numTries = 0;
+	protected int numTries = 0;
 
 	/** The thread where this is running, used to interrupt. */
-	private Thread runThread = null;
+	protected Thread runThread = null;
 
 	/** Name for this task. */
-	private String name = null;
+	protected String name = null;
 
-	private final Object syncObject = new Object();
+	protected final Object syncObject = new Object();
 
 	/**
 	 * Construct a new ExecutorTask
-	 * 
+	 *
 	 * @param service
 	 *            ExecutorService that this task will be submitted to.
 	 * @param maxTries
@@ -106,7 +106,7 @@ public final class ExecutorTask<T> implements Future<T>, Runnable {
 
 	/**
 	 * Wraps a runnable and result using the CallableRunnable class.
-	 * 
+	 *
 	 * @see java.util.concurrent.Executors#callable(Runnable, Object)
 	 */
 	public ExecutorTask(ExecutorService service, int maxTries, long timeout,
@@ -116,7 +116,7 @@ public final class ExecutorTask<T> implements Future<T>, Runnable {
 
 	/**
 	 * Construct a new ExecutorTask
-	 * 
+	 *
 	 * @param service
 	 *            ExecutorService that this task will be submitted to.
 	 * @param maxTries
@@ -223,7 +223,7 @@ public final class ExecutorTask<T> implements Future<T>, Runnable {
 	 * Called when task is completed, either successfully, or unsuccessfully and
 	 * has no more tries
 	 */
-	private void done() {
+	protected void done() {
 		// done running, either successfully or because out of tries
 		done = true;
 		// notify anyone waiting for task to complete
@@ -308,7 +308,7 @@ public final class ExecutorTask<T> implements Future<T>, Runnable {
 
 	/**
 	 * Number of tries used.
-	 * 
+	 *
 	 * @return actual number of attempts.
 	 */
 	public int getNumTries() {
@@ -317,7 +317,7 @@ public final class ExecutorTask<T> implements Future<T>, Runnable {
 
 	/**
 	 * Maximum number of tries before giving up.
-	 * 
+	 *
 	 * @return maximum number of attempts.
 	 */
 	public int getMaxTries() {
@@ -326,7 +326,7 @@ public final class ExecutorTask<T> implements Future<T>, Runnable {
 
 	/**
 	 * Any exceptions thrown, during any execution attempt.
-	 * 
+	 *
 	 * @return array of thrown exceptions. should contain no more than numTries
 	 *         exceptions.
 	 */
@@ -336,7 +336,7 @@ public final class ExecutorTask<T> implements Future<T>, Runnable {
 
 	/**
 	 * The callable object that is/was called.
-	 * 
+	 *
 	 * @return The callable object for this task. If this task was created using
 	 *         a runnable, this was created using Executors.callable(Runnable).
 	 */
@@ -384,7 +384,7 @@ public final class ExecutorTask<T> implements Future<T>, Runnable {
 
 	/**
 	 * Submit an ExecutorTask to an ExecutorService.
-	 * 
+	 *
 	 * Used to defer resubmission of a task after it fails, but scheduling its
 	 * resubmission using a timer.
 	 */
@@ -395,7 +395,7 @@ public final class ExecutorTask<T> implements Future<T>, Runnable {
 
 		/**
 		 * Construct a new SubmitTaskToExecutor instance.
-		 * 
+		 *
 		 * @param task
 		 *            the task to resubmit.
 		 */

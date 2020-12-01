@@ -232,8 +232,9 @@ public class ExternalIndexerListener extends DefaultIndexerListener {
 		// Close the output stream
 		StreamUtils.closeStream(process.getOutputStream());
 
-		Timer commandTimer = new Timer();
+		final Timer commandTimer;
 		if (this.getTimeout() > 0) {
+			 commandTimer = new Timer();
 			// Schedule process destruction for commandTimeout
 			// milliseconds in the future
 			commandTimer.schedule(new TimerTask() {
@@ -244,12 +245,19 @@ public class ExternalIndexerListener extends DefaultIndexerListener {
 					process.destroy();
 				}
 			}, this.getTimeout());
+		} else {
+			commandTimer = null;
 		}
 
-		// Wait for process to complete
-		process.waitFor();
-		// Cancel the timer if it was not triggered
-		commandTimer.cancel();
+		try {
+			// Wait for process to complete
+			process.waitFor();
+		} finally {
+			if (commandTimer != null) {
+				// Cancel the timer if it was not triggered
+				commandTimer.cancel();
+			}
+		}
 		LOGGER.info("[" + getName() + "] command '" + command
 				+ "' exited with status '" + process.exitValue() + "'");
 		if (process.exitValue() != 0) {

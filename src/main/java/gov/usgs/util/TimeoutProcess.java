@@ -1,6 +1,6 @@
 /*
  * TimeoutProcess
- * 
+ *
  * $Id$
  * $URL$
  */
@@ -13,10 +13,10 @@ import java.util.Timer;
 
 /**
  * TimeoutProcess wraps a Process object.
- * 
+ *
  * It is most commonly used with TimeoutProcessBuilder, which configures the
  * process timeout (and sets the timed out state once the timeout is reached).
- * 
+ *
  * @see java.lang.Process
  * @see TimeoutProcessBuilder
  * @see ProcessTimeoutException
@@ -37,7 +37,7 @@ public class TimeoutProcess {
 
 	/**
 	 * Construct a new TimeoutProcess.
-	 * 
+	 *
 	 * @param process
 	 *            the wrapped process.
 	 */
@@ -72,22 +72,25 @@ public class TimeoutProcess {
 	/**
 	 * Wait for the process to complete, either normally or because its timeout
 	 * was reached.
-	 * 
+	 *
 	 * @return exitStatus.
 	 * @throws InterruptedException
 	 * @throws ProcessTimeoutException
 	 *             if the process timed out before exiting.
 	 */
 	public int waitFor() throws InterruptedException, IOException, ProcessTimeoutException {
-		int status = process.waitFor();
+		int status = -1;
+		try {
+			status = process.waitFor();
 
-		if (timeoutElapsed()) {
-			throw new ProcessTimeoutException("The process has timed out.");
-		}
-
-		if (timer != null) {
-			// the timer hasn't destroyed this process already, cancel it.
-			timer.cancel();
+			if (timeoutElapsed()) {
+				throw new ProcessTimeoutException("The process has timed out.");
+			}
+		} finally {
+			if (timer != null) {
+				// the timer hasn't destroyed this process already, cancel it.
+				timer.cancel();
+			}
 		}
 
 		try {
