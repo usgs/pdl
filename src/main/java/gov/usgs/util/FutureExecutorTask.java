@@ -119,8 +119,8 @@ public class FutureExecutorTask<T> extends ExecutorTask<T> {
         } else {
           result = future.get();
         }
-      } catch (InterruptedException e) {
-        // interrupt the future too
+      } finally {
+        // cancel whether successful (noop) or exception (interrupt callable)
         future.cancel(true);
       }
 
