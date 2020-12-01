@@ -48,6 +48,8 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   private String trackingFileName;
   private int attempts;
   private long timeout;
+  // default expiration for notifications
+  private long expirationAge = 7 * 86400 * 1000;
 
   private TrackingIndex trackingIndex;
   private WebSocketClient client;
