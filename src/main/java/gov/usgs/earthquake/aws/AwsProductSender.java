@@ -116,7 +116,24 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
       ) {
         LOGGER.fine("Getting upload urls for " + json.toString());
         // get upload urls, response is product with signed content urls for upload
-        Product uploadProduct = getUploadUrls(json);
+        Product uploadProduct;
+        try {
+          uploadProduct = getUploadUrls(json);
+        } catch (HttpException e) {
+          HttpURLConnection connection = e.response.connection;
+          // check for server error
+          if (connection.getResponseCode() >= 500) {
+            LOGGER.log(Level.FINE,
+                "[" + getName() + "] get upload urls exception, trying again", e);
+            // try again after random back off (1-5 s)
+            Thread.sleep(1000 + Math.round(4000 * Math.random()));
+            uploadProduct = getUploadUrls(json);
+          } else {
+            // otherwise propagate exception as usual
+            throw e;
+          }
+        }
+
         final long afterGetUploadUrls = new Date().getTime();
         LOGGER.fine("[" + getName() + "] get upload urls " + id.toString()
             + " (" + (afterGetUploadUrls - start) + " ms) ");
@@ -148,8 +165,24 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
         afterUploadContent = new Date().getTime();
       }
 
-      // send product
-      sendProduct(json);
+      try {
+        // send product
+        sendProduct(json);
+      } catch (HttpException e) {
+        HttpURLConnection connection = e.response.connection;
+        // check for server error
+        if (connection.getResponseCode() >= 500) {
+          LOGGER.log(Level.FINE,
+              "[" + getName() + "] send product exception, trying again", e);
+          // try again after random back off (1-5 s)
+          Thread.sleep(1000 + Math.round(4000 * Math.random()));
+          sendProduct(json);
+        } else {
+          // otherwise propagate exception as usual
+          throw e;
+        }
+      }
+
       final long afterSendProduct = new Date().getTime();
       LOGGER.fine("[" + getName() + "] send product " + id.toString()
           + " (" + (afterSendProduct - afterUploadContent) + " ms) ");
