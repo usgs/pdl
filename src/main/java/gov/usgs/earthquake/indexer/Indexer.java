@@ -276,7 +276,7 @@ public class Indexer extends DefaultNotificationListener {
 	 *            the product to summarize.
 	 * @return module best suited to summarize product.
 	 */
-	protected synchronized IndexerModule getModule(final Product product) {
+	protected IndexerModule getModule(final Product product) {
 		// mit is the module fetched off the iterator
 		// m is the module to return
 		IndexerModule mit = null, m = null;
@@ -479,7 +479,7 @@ public class Indexer extends DefaultNotificationListener {
 	 *             if an exception occurs.
 	 */
 	@Override
-	public synchronized void onProduct(final Product product) throws Exception {
+	public void onProduct(final Product product) throws Exception {
 		onProduct(product, false);
 	}
 
@@ -494,8 +494,7 @@ public class Indexer extends DefaultNotificationListener {
 	 *            (true), or skip (false).
 	 * @throws Exception
 	 */
-	public synchronized void onProduct(final Product product,
-			final boolean force) throws Exception {
+	public void onProduct(final Product product, final boolean force) throws Exception {
 		ProductId id = product.getId();
 
 		// The notification to be sent when we are finished with this product
@@ -548,6 +547,22 @@ public class Indexer extends DefaultNotificationListener {
 		// -- Step 3: Add product summary to the product index
 		// -------------------------------------------------------------------//
 
+		try {
+			productSummary = indexProduct(productSummary, notification);
+		} finally {
+			final Date endIndex = new Date();
+			LOGGER.fine("[" + getName() + "] indexer processed product id="
+					+ id.toString() + " in " +
+					(endIndex.getTime() - beginStore.getTime()) + " ms");
+		}
+	}
+
+	/**
+	 * Add product summary to product index.
+	 */
+	protected synchronized ProductSummary indexProduct(
+			ProductSummary productSummary,
+			IndexerEvent notification) throws Exception {
 		LOGGER.finest("[" + getName() + "] beginning index transaction");
 		// Start the product index transaction, only proceed if able
 		productIndex.beginTransaction();
@@ -725,28 +740,24 @@ public class Indexer extends DefaultNotificationListener {
 
 			// send heartbeat info
 			HeartbeatListener.sendHeartbeatMessage(getName(),
-					"indexed product", id.toString());
+					"indexed product", productSummary.getId().toString());
+
+			// return summary after added to index
+			return productSummary;
 		} catch (Exception e) {
-			LOGGER.log(Level.FINE, "[" + getName()
-					+ "] rolling back transaction", e);
+			LOGGER.log(Level.FINE, "[" + getName() + "] rolling back transaction", e);
 			// just rollback since it wasn't successful
 			productIndex.rollbackTransaction();
 
 			// send heartbeat info
 			HeartbeatListener.sendHeartbeatMessage(getName(),
-					"index exception", id.toString());
+					"index exception", productSummary.getId().toString());
 			// send heartbeat info
 			HeartbeatListener.sendHeartbeatMessage(getName(),
 					"index exception class", e.getClass().getName());
 
 			throw e;
-		} finally {
-			final Date endIndex = new Date();
-			LOGGER.fine("[" + getName() + "] indexer processed product id="
-					+ id.toString() + " in " +
-					(endIndex.getTime() - beginStore.getTime()) + " ms");
 		}
-
 	}
 
 	/**
