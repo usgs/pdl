@@ -404,6 +404,21 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	@Override
 	public synchronized List<ProductSummary> getProducts(ProductIndexQuery query)
 			throws Exception {
+		// load full product summaries by default
+		return getProducts(query, true);
+	}
+
+	/**
+	 * Load product summaries.
+	 *
+	 * @param query
+	 *     product query
+	 * @param loadDetails
+	 *     whether to call {@link #loadProductSummaries(List)},
+	 *     which loads links and properties with additional queries.
+	 */
+	public synchronized List<ProductSummary> getProducts(ProductIndexQuery query, final boolean loadDetails)
+			throws Exception {
 		final List<String> clauseList = buildProductClauses(query);
 		final String sql = buildProductQuery(clauseList);
 
@@ -418,8 +433,10 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			}
 		}
 
-		// load properties and links
-		loadProductSummaries(products);
+		if (loadDetails) {
+			// load properties and links
+			loadProductSummaries(products);
+		}
 
 		return products;
 	}

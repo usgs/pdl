@@ -7,6 +7,7 @@ import gov.usgs.earthquake.distribution.ConfigurationException;
 import gov.usgs.earthquake.distribution.DefaultNotificationListener;
 import gov.usgs.earthquake.distribution.FileProductStorage;
 import gov.usgs.earthquake.distribution.HeartbeatListener;
+import gov.usgs.earthquake.distribution.Notification;
 import gov.usgs.earthquake.distribution.ProductAlreadyInStorageException;
 import gov.usgs.earthquake.distribution.ProductStorage;
 import gov.usgs.earthquake.geoserve.ANSSRegionsFactory;
@@ -419,8 +420,15 @@ public class Indexer extends DefaultNotificationListener {
 			alreadyProcessedQuery.setMinProductUpdateTime(id.getUpdateTime());
 			alreadyProcessedQuery.setMaxProductUpdateTime(id.getUpdateTime());
 
-			List<ProductSummary> existingSummary = productIndex
-					.getProducts(alreadyProcessedQuery);
+			final List<ProductSummary> existingSummary;
+			if (productIndex instanceof JDBCProductIndex) {
+				// only checking if exists, use one query instead of multiple.
+				existingSummary = ((JDBCProductIndex) productIndex)
+						.getProducts(alreadyProcessedQuery, false);
+			} else {
+				existingSummary = productIndex.getProducts(alreadyProcessedQuery);
+			}
+
 			if (existingSummary.size() > 0 &&
 					existingSummary.get(0).getId().equals(id)) {
 				// it is in the product index
@@ -464,6 +472,20 @@ public class Indexer extends DefaultNotificationListener {
 	}
 
 	/**
+	 * Check whether to skip products that have already been indexed.
+	 */
+	@Override
+	protected boolean onBeforeProcessNotification(Notification notification) throws Exception {
+		// try to short-circuit duplicates
+		if (!isProcessDuplicates() && hasProductBeenIndexed(notification.getProductId())) {
+			LOGGER.fine("[" + getName() + " notification already indexed, skipping");
+			return false;
+		}
+		// otherwise, use default behavior
+		return super.onBeforeProcessNotification(notification);
+	}
+
+	/**
 	 * This method receives a product from Product Distribution and adds it to
 	 * the index.
 	 *
@@ -496,10 +518,6 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	public void onProduct(final Product product, final boolean force) throws Exception {
 		ProductId id = product.getId();
-
-		// The notification to be sent when we are finished with this product
-		IndexerEvent notification = new IndexerEvent(this);
-		notification.setIndex(getProductIndex());
 
 		// -------------------------------------------------------------------//
 		// -- Step 1: Store product
@@ -541,14 +559,13 @@ public class Indexer extends DefaultNotificationListener {
 
 		// Use this module to summarize the product
 		ProductSummary productSummary = module.getProductSummary(product);
-		notification.setSummary(productSummary);
 
 		// -------------------------------------------------------------------//
 		// -- Step 3: Add product summary to the product index
 		// -------------------------------------------------------------------//
 
 		try {
-			productSummary = indexProduct(productSummary, notification);
+			productSummary = indexProduct(productSummary);
 		} finally {
 			final Date endIndex = new Date();
 			LOGGER.fine("[" + getName() + "] indexer processed product id="
@@ -561,9 +578,14 @@ public class Indexer extends DefaultNotificationListener {
 	 * Add product summary to product index.
 	 */
 	protected synchronized ProductSummary indexProduct(
-			ProductSummary productSummary,
-			IndexerEvent notification) throws Exception {
+			ProductSummary productSummary) throws Exception {
 		LOGGER.finest("[" + getName() + "] beginning index transaction");
+
+		// The notification to be sent when we are finished with this product
+		IndexerEvent notification = new IndexerEvent(this);
+		notification.setIndex(getProductIndex());
+		notification.setSummary(productSummary);
+
 		// Start the product index transaction, only proceed if able
 		productIndex.beginTransaction();
 
@@ -571,10 +593,10 @@ public class Indexer extends DefaultNotificationListener {
 			LOGGER.finer("[" + getName() + "] finding previous version");
 			// Check index for previous version of this product
 			ProductSummary prevSummary = getPrevProductVersion(productSummary);
-			boolean redundantProduct = isRedundantProduct(prevSummary, productSummary);
 
 			LOGGER.finer("[" + getName() + "] finding previous event");
 			Event prevEvent = null;
+			boolean redundantProduct = isRedundantProduct(prevSummary, productSummary);
 			if (!redundantProduct) {
 				// Skip association queries and use existing product association
 				// performed in next branch (should be associated already if
