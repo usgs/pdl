@@ -54,10 +54,18 @@ public class JsonNotification extends URLNotification {
    * Create a JsonNotification from an existing Product.
    */
   JsonNotification(final Instant created, final Product product) throws Exception {
+    this(created, product, new Date(Instant.now().plusSeconds(7 * 86400).toEpochMilli()));
+  }
+
+  /**
+   * Create a JsonNotification with an expiration date.
+   */
+  JsonNotification(final Instant created, final Product product, final Date expiration)
+      throws Exception {
     super(
         product.getId(),
         // expiration date
-        new Date(created.plusSeconds(30 * 86400).toEpochMilli()),
+        expiration,
         // no tracker
         EMPTY_URL,
         // store product as data url
@@ -68,4 +76,5 @@ public class JsonNotification extends URLNotification {
     this.created = created;
     this.product = product;
   }
+
 }

@@ -7,6 +7,7 @@ import gov.usgs.earthquake.distribution.ConfigurationException;
 import gov.usgs.earthquake.distribution.DefaultNotificationListener;
 import gov.usgs.earthquake.distribution.FileProductStorage;
 import gov.usgs.earthquake.distribution.HeartbeatListener;
+import gov.usgs.earthquake.distribution.Notification;
 import gov.usgs.earthquake.distribution.ProductAlreadyInStorageException;
 import gov.usgs.earthquake.distribution.ProductStorage;
 import gov.usgs.earthquake.geoserve.ANSSRegionsFactory;
@@ -15,7 +16,7 @@ import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.earthquake.util.CompareUtil;
 import gov.usgs.util.Config;
 import gov.usgs.util.Configurable;
-import gov.usgs.util.ExecutorTask;
+import gov.usgs.util.FutureExecutorTask;
 import gov.usgs.util.StringUtils;
 
 import java.io.File;
@@ -140,6 +141,15 @@ public class Indexer extends DefaultNotificationListener {
 
 	/** Task for archive policy thread. */
 	private TimerTask archiveTask = null;
+
+	/** Synchronization object for indexing. */
+	private final Object indexProductSync = new Object();
+
+	/**
+	 * Service used by FutureExecutorTask for execution.
+	 * See distribution.FutureListenerNotifier for more details.
+	 */
+  private ExecutorService backgroundService;
 
 	/** Whether to (false) or not (true) to run archive policies. */
 	private boolean disableArchive = false;
@@ -270,7 +280,7 @@ public class Indexer extends DefaultNotificationListener {
 	 *            the product to summarize.
 	 * @return module best suited to summarize product.
 	 */
-	protected synchronized IndexerModule getModule(final Product product) {
+	protected IndexerModule getModule(final Product product) {
 		// mit is the module fetched off the iterator
 		// m is the module to return
 		IndexerModule mit = null, m = null;
@@ -325,6 +335,9 @@ public class Indexer extends DefaultNotificationListener {
 			// Shutdown executor thread
 			listenerExecutor.shutdown();
 		}
+
+		backgroundService.shutdown();
+		backgroundService = null;
 	}
 
 	/**
@@ -382,8 +395,8 @@ public class Indexer extends DefaultNotificationListener {
 		while (it.hasNext()) {
 			final IndexerListener listener = it.next();
 			ExecutorService listenerExecutor = listeners.get(listener);
-			ExecutorTask<Void> listenerTask = new ExecutorTask<Void>(
-					listenerExecutor, listener.getMaxTries(),
+			FutureExecutorTask<Void> listenerTask = new FutureExecutorTask<Void>(
+					backgroundService, listenerExecutor, listener.getMaxTries(),
 					listener.getTimeout(), new IndexerListenerCallable(listener,
 							event));
 			listenerExecutor.submit(listenerTask);
@@ -410,8 +423,15 @@ public class Indexer extends DefaultNotificationListener {
 			alreadyProcessedQuery.setMinProductUpdateTime(id.getUpdateTime());
 			alreadyProcessedQuery.setMaxProductUpdateTime(id.getUpdateTime());
 
-			List<ProductSummary> existingSummary = productIndex
-					.getProducts(alreadyProcessedQuery);
+			final List<ProductSummary> existingSummary;
+			if (productIndex instanceof JDBCProductIndex) {
+				// only checking if exists, use one query instead of multiple.
+				existingSummary = ((JDBCProductIndex) productIndex)
+						.getProducts(alreadyProcessedQuery, false);
+			} else {
+				existingSummary = productIndex.getProducts(alreadyProcessedQuery);
+			}
+
 			if (existingSummary.size() > 0 &&
 					existingSummary.get(0).getId().equals(id)) {
 				// it is in the product index
@@ -455,6 +475,22 @@ public class Indexer extends DefaultNotificationListener {
 	}
 
 	/**
+	 * Check whether to skip products that have already been indexed.
+	 */
+	@Override
+	protected boolean onBeforeProcessNotification(Notification notification) throws Exception {
+		// try to short-circuit duplicates
+		if (!isProcessDuplicates() && hasProductBeenIndexed(notification.getProductId())) {
+			LOGGER.finer(
+					"[" + getName() + "] notification already indexed, skipping "
+					+ notification.getProductId().toString());
+			return false;
+		}
+		// otherwise, use default behavior
+		return super.onBeforeProcessNotification(notification);
+	}
+
+	/**
 	 * This method receives a product from Product Distribution and adds it to
 	 * the index.
 	 *
@@ -470,7 +506,7 @@ public class Indexer extends DefaultNotificationListener {
 	 *             if an exception occurs.
 	 */
 	@Override
-	public synchronized void onProduct(final Product product) throws Exception {
+	public void onProduct(final Product product) throws Exception {
 		onProduct(product, false);
 	}
 
@@ -485,18 +521,13 @@ public class Indexer extends DefaultNotificationListener {
 	 *            (true), or skip (false).
 	 * @throws Exception
 	 */
-	public synchronized void onProduct(final Product product,
-			final boolean force) throws Exception {
+	public void onProduct(final Product product, final boolean force) throws Exception {
 		ProductId id = product.getId();
-
-		// The notification to be sent when we are finished with this product
-		IndexerEvent notification = new IndexerEvent(this);
-		notification.setIndex(getProductIndex());
 
 		// -------------------------------------------------------------------//
 		// -- Step 1: Store product
 		// -------------------------------------------------------------------//
-		final Date beginStore = new Date();
+		final long beginStore = new Date().getTime();
 		try {
 			LOGGER.finest("[" + getName() + "] storing product id="
 					+ id.toString());
@@ -517,10 +548,10 @@ public class Indexer extends DefaultNotificationListener {
 				return;
 			}
 		}
-		final Date endStore = new Date();
+		final long endStore = new Date().getTime();
 		LOGGER.fine("[" + getName() + "] indexer downloaded product id="
 				+ id.toString() + " in " +
-				(endStore.getTime() - beginStore.getTime()) + " ms");
+				(endStore - beginStore) + " ms");
 
 		// -------------------------------------------------------------------//
 		// -- Step 2: Use product module to summarize product
@@ -533,13 +564,41 @@ public class Indexer extends DefaultNotificationListener {
 
 		// Use this module to summarize the product
 		ProductSummary productSummary = module.getProductSummary(product);
-		notification.setSummary(productSummary);
 
 		// -------------------------------------------------------------------//
 		// -- Step 3: Add product summary to the product index
 		// -------------------------------------------------------------------//
 
+
+		// measure time waiting to enter synchronized block
+		final long beforeEnterSync = new Date().getTime();
+		synchronized (indexProductSync) {
+			final long afterEnterSync = new Date().getTime();
+
+			try {
+				productSummary = indexProduct(productSummary);
+			} finally {
+				final long endIndex = new Date().getTime();
+				LOGGER.fine("[" + getName() + "] indexer processed product id="
+						+ id.toString() + " in " +
+						(endIndex - beginStore) + " ms"
+						+ " (" + (afterEnterSync - beforeEnterSync) + " ms sync delay)");
+			}
+		}
+	}
+
+	/**
+	 * Add product summary to product index.
+	 */
+	protected synchronized ProductSummary indexProduct(
+			ProductSummary productSummary) throws Exception {
 		LOGGER.finest("[" + getName() + "] beginning index transaction");
+
+		// The notification to be sent when we are finished with this product
+		IndexerEvent notification = new IndexerEvent(this);
+		notification.setIndex(getProductIndex());
+		notification.setSummary(productSummary);
+
 		// Start the product index transaction, only proceed if able
 		productIndex.beginTransaction();
 
@@ -547,10 +606,10 @@ public class Indexer extends DefaultNotificationListener {
 			LOGGER.finer("[" + getName() + "] finding previous version");
 			// Check index for previous version of this product
 			ProductSummary prevSummary = getPrevProductVersion(productSummary);
-			boolean redundantProduct = isRedundantProduct(prevSummary, productSummary);
 
 			LOGGER.finer("[" + getName() + "] finding previous event");
 			Event prevEvent = null;
+			boolean redundantProduct = isRedundantProduct(prevSummary, productSummary);
 			if (!redundantProduct) {
 				// Skip association queries and use existing product association
 				// performed in next branch (should be associated already if
@@ -716,28 +775,24 @@ public class Indexer extends DefaultNotificationListener {
 
 			// send heartbeat info
 			HeartbeatListener.sendHeartbeatMessage(getName(),
-					"indexed product", id.toString());
+					"indexed product", productSummary.getId().toString());
+
+			// return summary after added to index
+			return productSummary;
 		} catch (Exception e) {
-			LOGGER.log(Level.FINE, "[" + getName()
-					+ "] rolling back transaction", e);
+			LOGGER.log(Level.FINE, "[" + getName() + "] rolling back transaction", e);
 			// just rollback since it wasn't successful
 			productIndex.rollbackTransaction();
 
 			// send heartbeat info
 			HeartbeatListener.sendHeartbeatMessage(getName(),
-					"index exception", id.toString());
+					"index exception", productSummary.getId().toString());
 			// send heartbeat info
 			HeartbeatListener.sendHeartbeatMessage(getName(),
 					"index exception class", e.getClass().getName());
 
 			throw e;
-		} finally {
-			final Date endIndex = new Date();
-			LOGGER.fine("[" + getName() + "] indexer processed product id="
-					+ id.toString() + " in " +
-					(endIndex.getTime() - beginStore.getTime()) + " ms");
 		}
-
 	}
 
 	/**
@@ -1783,6 +1838,8 @@ public class Indexer extends DefaultNotificationListener {
 		super.startup();
 
 		// -- Start up our own specific processes -- //
+
+		backgroundService = Executors.newCachedThreadPool();
 
 		// -- Start dependent processes -- //
 		// ExecutorServices tied to known listeners.

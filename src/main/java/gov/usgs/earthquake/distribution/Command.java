@@ -38,36 +38,43 @@ public class Command {
 			final Process process = Runtime.getRuntime().exec(commandArray,
 					envp, dir);
 
-			Timer timer = new Timer();
+			final Timer timer;
 			if (timeout > 0) {
+				timer = new Timer();
 				timer.schedule(new TimerTask() {
 					public void run() {
 						process.destroy();
 					}
 				}, timeout);
+			} else {
+				timer = null;
 			}
 
-			OutputStream processStdin = process.getOutputStream();
-			if (stdin != null) {
-				StreamUtils.transferStream(stdin, processStdin);
+			try {
+				OutputStream processStdin = process.getOutputStream();
+				if (stdin != null) {
+					StreamUtils.transferStream(stdin, processStdin);
+				}
+				StreamUtils.closeStream(processStdin);
+
+				outputTransfer = new StreamTransferThread(process.getInputStream(),
+						stdout);
+				outputTransfer.start();
+				errorTransfer = new StreamTransferThread(process.getErrorStream(),
+						stderr);
+				errorTransfer.start();
+
+				// now wait for process to complete
+				exitCode = process.waitFor();
+				if (exitCode == 143) {
+					throw new CommandTimeout();
+				}
+			} finally {
+				// cancel destruction of process, if it hasn't already run
+				if (timer != null) {
+					timer.cancel();
+				}
 			}
-			StreamUtils.closeStream(processStdin);
-
-			outputTransfer = new StreamTransferThread(process.getInputStream(),
-					stdout);
-			outputTransfer.start();
-			errorTransfer = new StreamTransferThread(process.getErrorStream(),
-					stderr);
-			errorTransfer.start();
-
-			// now wait for process to complete
-			exitCode = process.waitFor();
-			if (exitCode == 143) {
-				throw new CommandTimeout();
-			}
-
-			// cancel destruction of process, if it hasn't already run
-			timer.cancel();
 		} finally {
 			try {
 				outputTransfer.interrupt();
@@ -136,12 +143,12 @@ public class Command {
 
 	/**
 	 * Split a command string into a command array.
-	 * 
+	 *
 	 * This version uses a StringTokenizer to split arguments. Quoted arguments
 	 * are supported (single or double), with quotes removed before passing to
 	 * runtime. Double quoting arguments will preserve quotes when passing to
 	 * runtime.
-	 * 
+	 *
 	 * @param command
 	 *            command to run.
 	 * @return Array of arguments suitable for passing to

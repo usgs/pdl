@@ -10,8 +10,8 @@ class HttpException extends Exception {
 
   public final HttpResponse response;
 
-  public HttpException(final HttpResponse response, final String cause) {
-    super(cause);
+  public HttpException(final HttpResponse response, final String message) {
+    super(message);
     this.response = response;
   }
 

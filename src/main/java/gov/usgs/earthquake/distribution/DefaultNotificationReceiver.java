@@ -93,6 +93,7 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 
 	public static final String LISTENER_NOTIFIER_PROPERTY = "listenerNotifier";
 	public static final String EXECUTOR_LISTENER_NOTIFIER = "executor";
+	public static final String FUTURE_LISTENER_NOTIFIER = "future";
 	public static final String ROUNDROBIN_LISTENER_NOTIFIER = "roundrobin";
 
 	/** The notification index where received notifications are stored. */
@@ -119,7 +120,7 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	private ObjectLock<ProductId> retrieveLocks = new ObjectLock<ProductId>();
 
 	public DefaultNotificationReceiver() {
-		notifier = new ExecutorListenerNotifier(this);
+		notifier = new FutureListenerNotifier(this);
 	}
 
 	/**
@@ -565,6 +566,8 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 				notifier = new ExecutorListenerNotifier(this);
 				LOGGER.config("[" + getName()
 						+ "] using executor listener notifier");
+			} else if (notifierType.equals(FUTURE_LISTENER_NOTIFIER)) {
+				notifier = new FutureListenerNotifier(this);
 			} else if (notifierType.equals(ROUNDROBIN_LISTENER_NOTIFIER)) {
 				notifier = new RoundRobinListenerNotifier(this);
 				LOGGER.config("[" + getName()

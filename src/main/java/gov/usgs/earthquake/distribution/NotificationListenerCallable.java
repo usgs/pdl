@@ -17,7 +17,7 @@ public class NotificationListenerCallable implements Callable<Void> {
 
 	/**
 	 * Create an ExecutorListenerNotifierCallable.
-	 * 
+	 *
 	 * @param listener
 	 *            the listener to notify
 	 * @param event
