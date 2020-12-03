@@ -35,13 +35,13 @@ public class Event implements Comparable&lt;Event&gt; {
 	public static final String OTHEREVENTSOURCECODE_PROPERTY = &quot;othereventsourcecode&quot;;
 
 	/** An ID used by the ProductIndex. */
-<span class="fc" id="L38">	private Long indexId = null;</span>
+<span class="pc" id="L38">	private Long indexId = null;</span>
 
 	/** Products nearby in space and time. Keyed by type. */
-<span class="fc" id="L41">	private Map&lt;String, List&lt;ProductSummary&gt;&gt; products = new HashMap&lt;String, List&lt;ProductSummary&gt;&gt;();</span>
+<span class="pc" id="L41">	private Map&lt;String, List&lt;ProductSummary&gt;&gt; products = new HashMap&lt;String, List&lt;ProductSummary&gt;&gt;();</span>
 
 	/** Cached summary. */
-<span class="fc" id="L44">	private EventSummary eventSummary = null;</span>
+<span class="pc" id="L44">	private EventSummary eventSummary = null;</span>
 
 	/**
 	 * Default constructor.
@@ -57,9 +57,9 @@ public class Event implements Comparable&lt;Event&gt; {
 	 * @param indexId
 	 *            the indexId to set.
 	 */
-<span class="fc" id="L60">	public Event(final Long indexId) {</span>
-<span class="fc" id="L61">		this.setIndexId(indexId);</span>
-<span class="fc" id="L62">	}</span>
+<span class="nc" id="L60">	public Event(final Long indexId) {</span>
+<span class="nc" id="L61">		this.setIndexId(indexId);</span>
+<span class="nc" id="L62">	}</span>
 
 	/**
 	 * Construct and event with an indexId and a list of products.

@@ -16,14 +16,14 @@ import java.util.TimerTask;
 
 /**
  * Monitor a directory for files, notifying FileListenerInterfaces.
- * 
+ *
  * Implementers of the FileListenerInterface should process files before
  * returning, because these files may move or disappear.
  */
 public class DirectoryPoller {
 
 	/** Timer schedules polling frequency. */
-<span class="nc" id="L26">	private Timer timer = new Timer();</span>
+	private Timer timer;
 
 	/** Directory to watch. */
 	private final File pollDirectory;
@@ -36,7 +36,7 @@ public class DirectoryPoller {
 
 	/**
 	 * Create a DirectoryPoller.
-	 * 
+	 *
 	 * @param pollDirectory
 	 *            directory that is polled for new files.
 	 * @param storageDirectory
@@ -73,11 +73,11 @@ public class DirectoryPoller {
 
 	/**
 	 * Start polling in a background thread.
-	 * 
+	 *
 	 * Any previously scheduled polling is stopped before starting at this
 	 * frequency. This schedules using fixed-delay (time between complete polls)
 	 * as opposed to fixed-rate (how often to start polling).
-	 * 
+	 *
 	 * @param frequencyInMilliseconds
 	 *            how often to poll.
 	 */
@@ -104,9 +104,9 @@ public class DirectoryPoller {
 	/**
 	 * The Polling Task. Notifies all listeners then either deletes or moves the
 	 * file to storage.
-	 * 
+	 *
 	 * @author jmfee
-	 * 
+	 *
 	 */
 <span class="nc" id="L111">	protected class PollTask extends TimerTask {</span>
 		public void run() {
@@ -123,7 +123,7 @@ public class DirectoryPoller {
 
 	/**
 	 * Notify all listeners that files exist and need to be processed.
-	 * 
+	 *
 	 * @param file
 	 */
 	public void notifyListeners(final File file) {
@@ -142,7 +142,7 @@ public class DirectoryPoller {
 	 * Move a file from polldir to storage directory. Attempts to move file into
 	 * storage directory. The file is not moved if no storage directory was
 	 * specified, or if the file no longer exists.
-	 * 
+	 *
 	 * @param file
 	 *            file to move.
 	 */

@@ -7,6 +7,7 @@ import gov.usgs.earthquake.distribution.ConfigurationException;
 import gov.usgs.earthquake.distribution.DefaultNotificationListener;
 import gov.usgs.earthquake.distribution.FileProductStorage;
 import gov.usgs.earthquake.distribution.HeartbeatListener;
+import gov.usgs.earthquake.distribution.Notification;
 import gov.usgs.earthquake.distribution.ProductAlreadyInStorageException;
 import gov.usgs.earthquake.distribution.ProductStorage;
 import gov.usgs.earthquake.geoserve.ANSSRegionsFactory;
@@ -15,7 +16,7 @@ import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.earthquake.util.CompareUtil;
 import gov.usgs.util.Config;
 import gov.usgs.util.Configurable;
-import gov.usgs.util.ExecutorTask;
+import gov.usgs.util.FutureExecutorTask;
 import gov.usgs.util.StringUtils;
 
 import java.io.File;
@@ -61,8 +62,8 @@ import java.util.logging.Logger;
 public class Indexer extends DefaultNotificationListener {
 
 	/** Logging Utility **/
-<span class="fc" id="L64">	private static final Logger LOGGER = Logger.getLogger(Indexer.class</span>
-<span class="fc" id="L65">			.getName());</span>
+<span class="fc" id="L65">	private static final Logger LOGGER = Logger.getLogger(Indexer.class</span>
+<span class="fc" id="L66">			.getName());</span>
 
 	/** Preferred weight for persistent trump. */
 	public static final long TRUMP_PREFERRED_WEIGHT = 100000000;
@@ -118,7 +119,7 @@ public class Indexer extends DefaultNotificationListener {
 	private Associator associator;
 
 	/** Whether to use (false) all products or (true) current products. */
-<span class="fc" id="L121">	private boolean associateUsingCurrentProducts = true;</span>
+<span class="fc" id="L122">	private boolean associateUsingCurrentProducts = true;</span>
 
 	/** Where product contents are stored. */
 	private ProductStorage productStorage;
@@ -127,22 +128,31 @@ public class Indexer extends DefaultNotificationListener {
 	private ProductIndex productIndex;
 
 	/** Modules provide product specific functionality. */
-<span class="fc" id="L130">	private List&lt;IndexerModule&gt; modules = new LinkedList&lt;IndexerModule&gt;();</span>
+<span class="fc" id="L131">	private List&lt;IndexerModule&gt; modules = new LinkedList&lt;IndexerModule&gt;();</span>
 
 	/** Listeners listen for changes to the event index. */
-<span class="fc" id="L133">	private Map&lt;IndexerListener, ExecutorService&gt; listeners = new HashMap&lt;IndexerListener, ExecutorService&gt;();</span>
+<span class="fc" id="L134">	private Map&lt;IndexerListener, ExecutorService&gt; listeners = new HashMap&lt;IndexerListener, ExecutorService&gt;();</span>
 
 	/** Local file where regions are stored. */
-<span class="fc" id="L136">	private File localRegionsFile = new File(DEFAULT_LOCAL_REGIONS);</span>
+<span class="fc" id="L137">	private File localRegionsFile = new File(DEFAULT_LOCAL_REGIONS);</span>
 
 	/** Timer for archive policy thread. */
-<span class="fc" id="L139">	private Timer archiveTimer = null;</span>
+<span class="fc" id="L140">	private Timer archiveTimer = null;</span>
 
 	/** Task for archive policy thread. */
-<span class="fc" id="L142">	private TimerTask archiveTask = null;</span>
+<span class="fc" id="L143">	private TimerTask archiveTask = null;</span>
+
+	/** Synchronization object for indexing. */
+<span class="fc" id="L146">	private final Object indexProductSync = new Object();</span>
+
+	/**
+	 * Service used by FutureExecutorTask for execution.
+	 * See distribution.FutureListenerNotifier for more details.
+	 */
+  private ExecutorService backgroundService;
 
 	/** Whether to (false) or not (true) to run archive policies. */
-<span class="fc" id="L145">	private boolean disableArchive = false;</span>
+<span class="fc" id="L155">	private boolean disableArchive = false;</span>
 
 	// -- Configurable property names -- //
 	public static final String INDEX_ARCHIVE_INTERVAL_PROPERTY = &quot;archiveInterval&quot;;
@@ -152,13 +162,13 @@ public class Indexer extends DefaultNotificationListener {
 	private static final long INDEX_ARCHIVE_INTERVAL_DEFAULT = 300000L;
 
 	// -- Configured member variables. Values set in configure() method. -- //
-<span class="fc" id="L155">	private long archiveInterval = 0;</span>
+<span class="fc" id="L165">	private long archiveInterval = 0;</span>
 
-<span class="fc" id="L157">	private List&lt;ArchivePolicy&gt; archivePolicies = null;</span>
+<span class="fc" id="L167">	private List&lt;ArchivePolicy&gt; archivePolicies = null;</span>
 
-<span class="fc" id="L159">	private SearchServerSocket searchSocket = null;</span>
+<span class="fc" id="L169">	private SearchServerSocket searchSocket = null;</span>
 
-<span class="fc" id="L161">	private DefaultIndexerModule defaultModule = new DefaultIndexerModule();</span>
+<span class="fc" id="L171">	private DefaultIndexerModule defaultModule = new DefaultIndexerModule();</span>
 
 	/**
 	 * Default no-arg constructor. This gets called from the Configurable API.
@@ -167,14 +177,14 @@ public class Indexer extends DefaultNotificationListener {
 	 * @throws Exception
 	 *             If the JDBCProductIndex throws an exception.
 	 */
-<span class="fc" id="L170">	public Indexer() throws Exception {</span>
-<span class="fc" id="L171">		addModule(defaultModule);</span>
+<span class="fc" id="L180">	public Indexer() throws Exception {</span>
+<span class="fc" id="L181">		addModule(defaultModule);</span>
 
-<span class="fc" id="L173">		associator = new DefaultAssociator();</span>
-<span class="fc" id="L174">		productStorage = new FileProductStorage();</span>
-<span class="fc" id="L175">		productIndex = new JDBCProductIndex();</span>
-<span class="fc" id="L176">		archivePolicies = new LinkedList&lt;ArchivePolicy&gt;();</span>
-<span class="fc" id="L177">	}</span>
+<span class="fc" id="L183">		associator = new DefaultAssociator();</span>
+<span class="fc" id="L184">		productStorage = new FileProductStorage();</span>
+<span class="fc" id="L185">		productIndex = new JDBCProductIndex();</span>
+<span class="fc" id="L186">		archivePolicies = new LinkedList&lt;ArchivePolicy&gt;();</span>
+<span class="fc" id="L187">	}</span>
 
 	/**
 	 * Returns the current associator used to associate products to one-another
@@ -183,7 +193,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * @return The current Associator.
 	 */
 	public Associator getAssociator() {
-<span class="fc" id="L186">		return associator;</span>
+<span class="fc" id="L196">		return associator;</span>
 	}
 
 	/**
@@ -194,8 +204,8 @@ public class Indexer extends DefaultNotificationListener {
 	 *            The associator to use from this point forward.
 	 */
 	public void setAssociator(Associator associator) {
-<span class="nc" id="L197">		this.associator = associator;</span>
-<span class="nc" id="L198">	}</span>
+<span class="nc" id="L207">		this.associator = associator;</span>
+<span class="nc" id="L208">	}</span>
 
 	/**
 	 * Returns the product storage component that is used to store products as
@@ -204,7 +214,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * @return The current product storage component.
 	 */
 	public ProductStorage getProductStorage() {
-<span class="fc" id="L207">		return productStorage;</span>
+<span class="fc" id="L217">		return productStorage;</span>
 	}
 
 	/**
@@ -215,8 +225,8 @@ public class Indexer extends DefaultNotificationListener {
 	 *            The product storage component to use from this point forward.
 	 */
 	public void setProductStorage(ProductStorage productStorage) {
-<span class="fc" id="L218">		this.productStorage = productStorage;</span>
-<span class="fc" id="L219">	}</span>
+<span class="fc" id="L228">		this.productStorage = productStorage;</span>
+<span class="fc" id="L229">	}</span>
 
 	/**
 	 * Returns the product index component used to index product information as
@@ -225,7 +235,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * @return The current product index component.
 	 */
 	public ProductIndex getProductIndex() {
-<span class="fc" id="L228">		return productIndex;</span>
+<span class="fc" id="L238">		return productIndex;</span>
 	}
 
 	/**
@@ -236,8 +246,8 @@ public class Indexer extends DefaultNotificationListener {
 	 *            The product index component to use from this point forward.
 	 */
 	public void setProductIndex(ProductIndex productIndex) {
-<span class="fc" id="L239">		this.productIndex = productIndex;</span>
-<span class="fc" id="L240">	}</span>
+<span class="fc" id="L249">		this.productIndex = productIndex;</span>
+<span class="fc" id="L250">	}</span>
 
 	/**
 	 * Adds the give indexer module to the current list of modules used by the
@@ -247,8 +257,8 @@ public class Indexer extends DefaultNotificationListener {
 	 *            The IndexerModule to add to our list.
 	 */
 	public void addModule(final IndexerModule toAdd) {
-<span class="fc" id="L250">		modules.add(toAdd);</span>
-<span class="fc" id="L251">	}</span>
+<span class="fc" id="L260">		modules.add(toAdd);</span>
+<span class="fc" id="L261">	}</span>
 
 	/**
 	 * Removes the first occurrence of the given indexer module from the current
@@ -259,8 +269,8 @@ public class Indexer extends DefaultNotificationListener {
 	 * @see java.util.LinkedList#remove(Object)
 	 */
 	public void removeModule(final IndexerModule toRemove) {
-<span class="nc" id="L262">		modules.remove(toRemove);</span>
-<span class="nc" id="L263">	}</span>
+<span class="nc" id="L272">		modules.remove(toRemove);</span>
+<span class="nc" id="L273">	}</span>
 
 	/**
 	 * This method checks each module's support level for the given product,
@@ -270,27 +280,27 @@ public class Indexer extends DefaultNotificationListener {
 	 *            the product to summarize.
 	 * @return module best suited to summarize product.
 	 */
-	protected synchronized IndexerModule getModule(final Product product) {
+	protected IndexerModule getModule(final Product product) {
 		// mit is the module fetched off the iterator
 		// m is the module to return
-<span class="fc" id="L276">		IndexerModule mit = null, m = null;</span>
-<span class="fc" id="L277">		Iterator&lt;IndexerModule&gt; it = modules.iterator();</span>
+<span class="fc" id="L286">		IndexerModule mit = null, m = null;</span>
+<span class="fc" id="L287">		Iterator&lt;IndexerModule&gt; it = modules.iterator();</span>
 
 		// If there are no known modules, then null. Oops. :)
-<span class="pc bpc" id="L280" title="1 of 2 branches missed.">		if (it.hasNext()) {</span>
+<span class="pc bpc" id="L290" title="1 of 2 branches missed.">		if (it.hasNext()) {</span>
 			// Use first module so long as it exists
-<span class="fc" id="L282">			m = it.next();</span>
+<span class="fc" id="L292">			m = it.next();</span>
 
 			// Check remaining modules if any offer greater support
-<span class="fc bfc" id="L285" title="All 2 branches covered.">			while (it.hasNext()) {</span>
-<span class="fc" id="L286">				mit = it.next();</span>
+<span class="fc bfc" id="L295" title="All 2 branches covered.">			while (it.hasNext()) {</span>
+<span class="fc" id="L296">				mit = it.next();</span>
 				// We use strictly greater than (no equals)
-<span class="fc bfc" id="L288" title="All 2 branches covered.">				if (mit.getSupportLevel(product) &gt; m.getSupportLevel(product)) {</span>
-<span class="fc" id="L289">					m = mit;</span>
+<span class="fc bfc" id="L298" title="All 2 branches covered.">				if (mit.getSupportLevel(product) &gt; m.getSupportLevel(product)) {</span>
+<span class="fc" id="L299">					m = mit;</span>
 				}
 			}
 		}
-<span class="fc" id="L293">		return m;</span>
+<span class="fc" id="L303">		return m;</span>
 	}
 
 	/**
@@ -302,12 +312,12 @@ public class Indexer extends DefaultNotificationListener {
 	 *            The IndexerListener to add
 	 */
 	public void addListener(final IndexerListener toAdd) {
-<span class="pc bpc" id="L305" title="1 of 2 branches missed.">		if (!listeners.containsKey(toAdd)) {</span>
+<span class="pc bpc" id="L315" title="1 of 2 branches missed.">		if (!listeners.containsKey(toAdd)) {</span>
 			ExecutorService listenerExecutor = Executors
-<span class="fc" id="L307">					.newSingleThreadExecutor();</span>
-<span class="fc" id="L308">			listeners.put(toAdd, listenerExecutor);</span>
+<span class="fc" id="L317">					.newSingleThreadExecutor();</span>
+<span class="fc" id="L318">			listeners.put(toAdd, listenerExecutor);</span>
 		}
-<span class="fc" id="L310">	}</span>
+<span class="fc" id="L320">	}</span>
 
 	/**
 	 * Removes a listener from this indexer.Listeners are notified when an event
@@ -319,13 +329,16 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	public void removeListener(final IndexerListener toRemove) {
 		// Remove listener from map
-<span class="nc" id="L322">		ExecutorService listenerExecutor = listeners.remove(toRemove);</span>
+<span class="nc" id="L332">		ExecutorService listenerExecutor = listeners.remove(toRemove);</span>
 
-<span class="nc bnc" id="L324" title="All 2 branches missed.">		if (listenerExecutor != null) {</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">		if (listenerExecutor != null) {</span>
 			// Shutdown executor thread
-<span class="nc" id="L326">			listenerExecutor.shutdown();</span>
+<span class="nc" id="L336">			listenerExecutor.shutdown();</span>
 		}
-<span class="nc" id="L328">	}</span>
+
+<span class="nc" id="L339">		backgroundService.shutdown();</span>
+<span class="nc" id="L340">		backgroundService = null;</span>
+<span class="nc" id="L341">	}</span>
 
 	/**
 	 * Send an indexer event to all registered IndexerListeners.
@@ -342,53 +355,53 @@ public class Indexer extends DefaultNotificationListener {
 	 *            event that occurred.
 	 */
 	protected synchronized void notifyListeners(final IndexerEvent event) {
-<span class="fc" id="L345">		StringBuffer buf = new StringBuffer();</span>
-<span class="fc" id="L346">		Iterator&lt;IndexerChange&gt; changes = event.getIndexerChanges().iterator();</span>
-<span class="fc bfc" id="L347" title="All 2 branches covered.">		while (changes.hasNext()) {</span>
-<span class="fc" id="L348">			IndexerChange change = changes.next();</span>
-<span class="fc" id="L349">			buf.append(&quot;\n&quot;).append(change.getType().toString()).append(&quot; &quot;);</span>
-<span class="fc bfc" id="L350" title="All 2 branches covered.">			if (change.getOriginalEvent() == null) {</span>
-<span class="fc" id="L351">				buf.append(&quot;null&quot;);</span>
+<span class="fc" id="L358">		StringBuffer buf = new StringBuffer();</span>
+<span class="fc" id="L359">		Iterator&lt;IndexerChange&gt; changes = event.getIndexerChanges().iterator();</span>
+<span class="fc bfc" id="L360" title="All 2 branches covered.">		while (changes.hasNext()) {</span>
+<span class="fc" id="L361">			IndexerChange change = changes.next();</span>
+<span class="fc" id="L362">			buf.append(&quot;\n&quot;).append(change.getType().toString()).append(&quot; &quot;);</span>
+<span class="fc bfc" id="L363" title="All 2 branches covered.">			if (change.getOriginalEvent() == null) {</span>
+<span class="fc" id="L364">				buf.append(&quot;null&quot;);</span>
 			} else {
-<span class="fc" id="L353">				buf.append(change.getOriginalEvent().getEventId());</span>
+<span class="fc" id="L366">				buf.append(change.getOriginalEvent().getEventId());</span>
 			}
-<span class="fc" id="L355">			buf.append(&quot; =&gt; &quot;);</span>
-<span class="fc bfc" id="L356" title="All 2 branches covered.">			if (change.getNewEvent() == null) {</span>
-<span class="fc" id="L357">				buf.append(&quot;null&quot;);</span>
+<span class="fc" id="L368">			buf.append(&quot; =&gt; &quot;);</span>
+<span class="fc bfc" id="L369" title="All 2 branches covered.">			if (change.getNewEvent() == null) {</span>
+<span class="fc" id="L370">				buf.append(&quot;null&quot;);</span>
 			} else {
-<span class="fc" id="L359">				buf.append(change.getNewEvent().getEventId());</span>
+<span class="fc" id="L372">				buf.append(change.getNewEvent().getEventId());</span>
 			}
-<span class="fc" id="L361">		}</span>
+<span class="fc" id="L374">		}</span>
 
 		// Can't rely on event.getSummary because that might be null
-<span class="fc" id="L364">		ProductSummary theSummary = event.getSummary();</span>
-<span class="pc bpc" id="L365" title="1 of 4 branches missed.">		if (theSummary == null &amp;&amp; event.getEvents().size() &gt; 0) {</span>
-<span class="nc" id="L366">			theSummary = event.getEvents().get(0).getEventIdProduct();</span>
+<span class="fc" id="L377">		ProductSummary theSummary = event.getSummary();</span>
+<span class="pc bpc" id="L378" title="1 of 4 branches missed.">		if (theSummary == null &amp;&amp; event.getEvents().size() &gt; 0) {</span>
+<span class="nc" id="L379">			theSummary = event.getEvents().get(0).getEventIdProduct();</span>
 		}
 
-<span class="fc bfc" id="L369" title="All 2 branches covered.">		if (theSummary != null) {</span>
-<span class="fc" id="L370">			LOGGER.log(Level.INFO, &quot;[&quot; + getName() + &quot;] indexed product id=&quot;</span>
-<span class="fc" id="L371">					+ theSummary.getId().toString()</span>
-<span class="fc" id="L372">					+ &quot;, status=&quot; + theSummary.getStatus()</span>
-<span class="fc" id="L373">					+ buf.toString());</span>
+<span class="fc bfc" id="L382" title="All 2 branches covered.">		if (theSummary != null) {</span>
+<span class="fc" id="L383">			LOGGER.log(Level.INFO, &quot;[&quot; + getName() + &quot;] indexed product id=&quot;</span>
+<span class="fc" id="L384">					+ theSummary.getId().toString()</span>
+<span class="fc" id="L385">					+ &quot;, status=&quot; + theSummary.getStatus()</span>
+<span class="fc" id="L386">					+ buf.toString());</span>
 		} else {
-<span class="fc" id="L375">			LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
+<span class="fc" id="L388">			LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
 					+ &quot;] event summary was null. This probably &quot;
 					+ &quot;means the archive policy is notifying of an archived &quot;
 					+ &quot;event.&quot;);
 		}
 
-<span class="fc" id="L381">		Iterator&lt;IndexerListener&gt; it = listeners.keySet().iterator();</span>
-<span class="fc bfc" id="L382" title="All 2 branches covered.">		while (it.hasNext()) {</span>
-<span class="fc" id="L383">			final IndexerListener listener = it.next();</span>
-<span class="fc" id="L384">			ExecutorService listenerExecutor = listeners.get(listener);</span>
-<span class="fc" id="L385">			ExecutorTask&lt;Void&gt; listenerTask = new ExecutorTask&lt;Void&gt;(</span>
-<span class="fc" id="L386">					listenerExecutor, listener.getMaxTries(),</span>
-<span class="fc" id="L387">					listener.getTimeout(), new IndexerListenerCallable(listener,</span>
+<span class="fc" id="L394">		Iterator&lt;IndexerListener&gt; it = listeners.keySet().iterator();</span>
+<span class="fc bfc" id="L395" title="All 2 branches covered.">		while (it.hasNext()) {</span>
+<span class="fc" id="L396">			final IndexerListener listener = it.next();</span>
+<span class="fc" id="L397">			ExecutorService listenerExecutor = listeners.get(listener);</span>
+<span class="fc" id="L398">			FutureExecutorTask&lt;Void&gt; listenerTask = new FutureExecutorTask&lt;Void&gt;(</span>
+<span class="fc" id="L399">					backgroundService, listenerExecutor, listener.getMaxTries(),</span>
+<span class="fc" id="L400">					listener.getTimeout(), new IndexerListenerCallable(listener,</span>
 							event));
-<span class="fc" id="L389">			listenerExecutor.submit(listenerTask);</span>
-<span class="fc" id="L390">		}</span>
-<span class="fc" id="L391">	}</span>
+<span class="fc" id="L402">			listenerExecutor.submit(listenerTask);</span>
+<span class="fc" id="L403">		}</span>
+<span class="fc" id="L404">	}</span>
 
 	/**
 	 * Check whether this product is in the index.
@@ -398,32 +411,39 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	protected boolean hasProductBeenIndexed(final ProductId id) {
 		try {
-<span class="nc" id="L401">			ProductIndexQuery alreadyProcessedQuery = new ProductIndexQuery();</span>
-<span class="nc" id="L402">			alreadyProcessedQuery</span>
-<span class="nc" id="L403">					.setResultType(ProductIndexQuery.RESULT_TYPE_ALL);</span>
+<span class="nc" id="L414">			ProductIndexQuery alreadyProcessedQuery = new ProductIndexQuery();</span>
+<span class="nc" id="L415">			alreadyProcessedQuery</span>
+<span class="nc" id="L416">					.setResultType(ProductIndexQuery.RESULT_TYPE_ALL);</span>
 
 			// alreadyProcessedQuery.getProductIds().add(id);
 			// use existing indexes
-<span class="nc" id="L407">			alreadyProcessedQuery.setProductSource(id.getSource());</span>
-<span class="nc" id="L408">			alreadyProcessedQuery.setProductType(id.getType());</span>
-<span class="nc" id="L409">			alreadyProcessedQuery.setProductCode(id.getCode());</span>
-<span class="nc" id="L410">			alreadyProcessedQuery.setMinProductUpdateTime(id.getUpdateTime());</span>
-<span class="nc" id="L411">			alreadyProcessedQuery.setMaxProductUpdateTime(id.getUpdateTime());</span>
+<span class="nc" id="L420">			alreadyProcessedQuery.setProductSource(id.getSource());</span>
+<span class="nc" id="L421">			alreadyProcessedQuery.setProductType(id.getType());</span>
+<span class="nc" id="L422">			alreadyProcessedQuery.setProductCode(id.getCode());</span>
+<span class="nc" id="L423">			alreadyProcessedQuery.setMinProductUpdateTime(id.getUpdateTime());</span>
+<span class="nc" id="L424">			alreadyProcessedQuery.setMaxProductUpdateTime(id.getUpdateTime());</span>
 
-<span class="nc" id="L413">			List&lt;ProductSummary&gt; existingSummary = productIndex</span>
-<span class="nc" id="L414">					.getProducts(alreadyProcessedQuery);</span>
-<span class="nc bnc" id="L415" title="All 2 branches missed.">			if (existingSummary.size() &gt; 0 &amp;&amp;</span>
-<span class="nc bnc" id="L416" title="All 2 branches missed.">					existingSummary.get(0).getId().equals(id)) {</span>
-				// it is in the product index
-<span class="nc" id="L418">				return true;</span>
+			final List&lt;ProductSummary&gt; existingSummary;
+<span class="nc bnc" id="L427" title="All 2 branches missed.">			if (productIndex instanceof JDBCProductIndex) {</span>
+				// only checking if exists, use one query instead of multiple.
+<span class="nc" id="L429">				existingSummary = ((JDBCProductIndex) productIndex)</span>
+<span class="nc" id="L430">						.getProducts(alreadyProcessedQuery, false);</span>
+			} else {
+<span class="nc" id="L432">				existingSummary = productIndex.getProducts(alreadyProcessedQuery);</span>
 			}
-<span class="nc" id="L420">		} catch (Exception wtf) {</span>
-<span class="nc" id="L421">			LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+
+<span class="nc bnc" id="L435" title="All 2 branches missed.">			if (existingSummary.size() &gt; 0 &amp;&amp;</span>
+<span class="nc bnc" id="L436" title="All 2 branches missed.">					existingSummary.get(0).getId().equals(id)) {</span>
+				// it is in the product index
+<span class="nc" id="L438">				return true;</span>
+			}
+<span class="nc" id="L440">		} catch (Exception wtf) {</span>
+<span class="nc" id="L441">			LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 					+ &quot;] exception checking if product already indexed&quot;, wtf);
-<span class="nc" id="L423">		}</span>
+<span class="nc" id="L443">		}</span>
 
 		// default is it hasn't been processed
-<span class="nc" id="L426">		return false;</span>
+<span class="nc" id="L446">		return false;</span>
 	}
 
 	/**
@@ -437,21 +457,37 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	@Override
 	public boolean accept(final ProductId id) {
-<span class="nc" id="L440">		final boolean superAccept = super.accept(id);</span>
+<span class="nc" id="L460">		final boolean superAccept = super.accept(id);</span>
 
-<span class="nc bnc" id="L442" title="All 4 branches missed.">		if (!superAccept &amp;&amp; isIncludeActuals()) {</span>
+<span class="nc bnc" id="L462" title="All 4 branches missed.">		if (!superAccept &amp;&amp; isIncludeActuals()) {</span>
 			// automatically accept products that affect association
 			// (if processing non-scenario products)
-<span class="nc" id="L445">			final String type = id.getType();</span>
-<span class="nc bnc" id="L446" title="All 2 branches missed.">			if (Event.ORIGIN_PRODUCT_TYPE.equals(type) ||</span>
-<span class="nc bnc" id="L447" title="All 2 branches missed.">					Event.ASSOCIATE_PRODUCT_TYPE.equals(type) ||</span>
-<span class="nc bnc" id="L448" title="All 2 branches missed.">					Event.DISASSOCIATE_PRODUCT_TYPE.equals(type)</span>
-<span class="nc bnc" id="L449" title="All 2 branches missed.">					|| type.startsWith(TRUMP_PRODUCT_TYPE)) {</span>
-<span class="nc" id="L450">				return true;</span>
+<span class="nc" id="L465">			final String type = id.getType();</span>
+<span class="nc bnc" id="L466" title="All 2 branches missed.">			if (Event.ORIGIN_PRODUCT_TYPE.equals(type) ||</span>
+<span class="nc bnc" id="L467" title="All 2 branches missed.">					Event.ASSOCIATE_PRODUCT_TYPE.equals(type) ||</span>
+<span class="nc bnc" id="L468" title="All 2 branches missed.">					Event.DISASSOCIATE_PRODUCT_TYPE.equals(type)</span>
+<span class="nc bnc" id="L469" title="All 2 branches missed.">					|| type.startsWith(TRUMP_PRODUCT_TYPE)) {</span>
+<span class="nc" id="L470">				return true;</span>
 			}
 		}
 
-<span class="nc" id="L454">		return superAccept;</span>
+<span class="nc" id="L474">		return superAccept;</span>
+	}
+
+	/**
+	 * Check whether to skip products that have already been indexed.
+	 */
+	@Override
+	protected boolean onBeforeProcessNotification(Notification notification) throws Exception {
+		// try to short-circuit duplicates
+<span class="nc bnc" id="L483" title="All 4 branches missed.">		if (!isProcessDuplicates() &amp;&amp; hasProductBeenIndexed(notification.getProductId())) {</span>
+<span class="nc" id="L484">			LOGGER.finer(</span>
+<span class="nc" id="L485">					&quot;[&quot; + getName() + &quot;] notification already indexed, skipping &quot;</span>
+<span class="nc" id="L486">					+ notification.getProductId().toString());</span>
+<span class="nc" id="L487">			return false;</span>
+		}
+		// otherwise, use default behavior
+<span class="nc" id="L490">		return super.onBeforeProcessNotification(notification);</span>
 	}
 
 	/**
@@ -470,9 +506,9 @@ public class Indexer extends DefaultNotificationListener {
 	 *             if an exception occurs.
 	 */
 	@Override
-	public synchronized void onProduct(final Product product) throws Exception {
-<span class="fc" id="L474">		onProduct(product, false);</span>
-<span class="fc" id="L475">	}</span>
+	public void onProduct(final Product product) throws Exception {
+<span class="fc" id="L510">		onProduct(product, false);</span>
+<span class="fc" id="L511">	}</span>
 
 	/**
 	 * Receive a product and add it to the index. Optionally, reprocessing a
@@ -485,165 +521,188 @@ public class Indexer extends DefaultNotificationListener {
 	 *            (true), or skip (false).
 	 * @throws Exception
 	 */
-	public synchronized void onProduct(final Product product,
-			final boolean force) throws Exception {
-<span class="fc" id="L490">		ProductId id = product.getId();</span>
-
-		// The notification to be sent when we are finished with this product
-<span class="fc" id="L493">		IndexerEvent notification = new IndexerEvent(this);</span>
-<span class="fc" id="L494">		notification.setIndex(getProductIndex());</span>
+	public void onProduct(final Product product, final boolean force) throws Exception {
+<span class="fc" id="L525">		ProductId id = product.getId();</span>
 
 		// -------------------------------------------------------------------//
 		// -- Step 1: Store product
 		// -------------------------------------------------------------------//
-<span class="fc" id="L499">		final Date beginStore = new Date();</span>
+<span class="fc" id="L530">		final long beginStore = new Date().getTime();</span>
 		try {
-<span class="fc" id="L501">			LOGGER.finest(&quot;[&quot; + getName() + &quot;] storing product id=&quot;</span>
-<span class="fc" id="L502">					+ id.toString());</span>
-<span class="fc" id="L503">			productStorage.storeProduct(product);</span>
-<span class="fc" id="L504">			LOGGER.finest(&quot;[&quot; + getName() + &quot;] stored product id=&quot;</span>
-<span class="fc" id="L505">					+ id.toString());</span>
-<span class="nc" id="L506">		} catch (ProductAlreadyInStorageException paise) {</span>
-<span class="nc" id="L507">			LOGGER.finer(&quot;[&quot;</span>
-<span class="nc" id="L508">					+ getName()</span>
+<span class="fc" id="L532">			LOGGER.finest(&quot;[&quot; + getName() + &quot;] storing product id=&quot;</span>
+<span class="fc" id="L533">					+ id.toString());</span>
+<span class="fc" id="L534">			productStorage.storeProduct(product);</span>
+<span class="fc" id="L535">			LOGGER.finest(&quot;[&quot; + getName() + &quot;] stored product id=&quot;</span>
+<span class="fc" id="L536">					+ id.toString());</span>
+<span class="nc" id="L537">		} catch (ProductAlreadyInStorageException paise) {</span>
+<span class="nc" id="L538">			LOGGER.finer(&quot;[&quot;</span>
+<span class="nc" id="L539">					+ getName()</span>
 					+ &quot;] product already in indexer storage, checking if indexed&quot;);
-<span class="nc bnc" id="L510" title="All 2 branches missed.">			if (force) {</span>
-<span class="nc" id="L511">				LOGGER.finer(&quot;[&quot; + getName()</span>
+<span class="nc bnc" id="L541" title="All 2 branches missed.">			if (force) {</span>
+<span class="nc" id="L542">				LOGGER.finer(&quot;[&quot; + getName()</span>
 						+ &quot;] force=true skipping check, (re)process product&quot;);
-<span class="nc bnc" id="L513" title="All 2 branches missed.">			} else if (hasProductBeenIndexed(id)) {</span>
-<span class="nc" id="L514">				LOGGER.fine(&quot;[&quot; + getName() + &quot;] product already indexed &quot;</span>
-<span class="nc" id="L515">						+ product.getId());</span>
+<span class="nc bnc" id="L544" title="All 2 branches missed.">			} else if (hasProductBeenIndexed(id)) {</span>
+<span class="nc" id="L545">				LOGGER.fine(&quot;[&quot; + getName() + &quot;] product already indexed &quot;</span>
+<span class="nc" id="L546">						+ product.getId());</span>
 				// don't reindex for now
-<span class="nc" id="L517">				return;</span>
+<span class="nc" id="L548">				return;</span>
 			}
-<span class="fc" id="L519">		}</span>
-<span class="fc" id="L520">		final Date endStore = new Date();</span>
-<span class="fc" id="L521">		LOGGER.fine(&quot;[&quot; + getName() + &quot;] indexer downloaded product id=&quot;</span>
-<span class="fc" id="L522">				+ id.toString() + &quot; in &quot; +</span>
-<span class="fc" id="L523">				(endStore.getTime() - beginStore.getTime()) + &quot; ms&quot;);</span>
+<span class="fc" id="L550">		}</span>
+<span class="fc" id="L551">		final long endStore = new Date().getTime();</span>
+<span class="fc" id="L552">		LOGGER.fine(&quot;[&quot; + getName() + &quot;] indexer downloaded product id=&quot;</span>
+<span class="fc" id="L553">				+ id.toString() + &quot; in &quot; +</span>
+				(endStore - beginStore) + &quot; ms&quot;);
 
 		// -------------------------------------------------------------------//
 		// -- Step 2: Use product module to summarize product
 		// -------------------------------------------------------------------//
 
-<span class="fc" id="L529">		LOGGER.finer(&quot;[&quot; + getName() + &quot;] summarizing product id=&quot;</span>
-<span class="fc" id="L530">				+ id.toString());</span>
+<span class="fc" id="L560">		LOGGER.finer(&quot;[&quot; + getName() + &quot;] summarizing product id=&quot;</span>
+<span class="fc" id="L561">				+ id.toString());</span>
 		// Find best available indexer module
-<span class="fc" id="L532">		IndexerModule module = getModule(product);</span>
+<span class="fc" id="L563">		IndexerModule module = getModule(product);</span>
 
 		// Use this module to summarize the product
-<span class="fc" id="L535">		ProductSummary productSummary = module.getProductSummary(product);</span>
-<span class="fc" id="L536">		notification.setSummary(productSummary);</span>
+<span class="fc" id="L566">		ProductSummary productSummary = module.getProductSummary(product);</span>
 
 		// -------------------------------------------------------------------//
 		// -- Step 3: Add product summary to the product index
 		// -------------------------------------------------------------------//
 
-<span class="fc" id="L542">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] beginning index transaction&quot;);</span>
+
+		// measure time waiting to enter synchronized block
+<span class="fc" id="L574">		final long beforeEnterSync = new Date().getTime();</span>
+<span class="fc" id="L575">		synchronized (indexProductSync) {</span>
+<span class="fc" id="L576">			final long afterEnterSync = new Date().getTime();</span>
+
+			try {
+<span class="fc" id="L579">				productSummary = indexProduct(productSummary);</span>
+			} finally {
+<span class="fc" id="L581">				final long endIndex = new Date().getTime();</span>
+<span class="fc" id="L582">				LOGGER.fine(&quot;[&quot; + getName() + &quot;] indexer processed product id=&quot;</span>
+<span class="fc" id="L583">						+ id.toString() + &quot; in &quot; +</span>
+						(endIndex - beginStore) + &quot; ms&quot;
+						+ &quot; (&quot; + (afterEnterSync - beforeEnterSync) + &quot; ms sync delay)&quot;);
+			}
+<span class="fc" id="L587">		}</span>
+<span class="fc" id="L588">	}</span>
+
+	/**
+	 * Add product summary to product index.
+	 */
+	protected synchronized ProductSummary indexProduct(
+			ProductSummary productSummary) throws Exception {
+<span class="fc" id="L595">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] beginning index transaction&quot;);</span>
+
+		// The notification to be sent when we are finished with this product
+<span class="fc" id="L598">		IndexerEvent notification = new IndexerEvent(this);</span>
+<span class="fc" id="L599">		notification.setIndex(getProductIndex());</span>
+<span class="fc" id="L600">		notification.setSummary(productSummary);</span>
+
 		// Start the product index transaction, only proceed if able
-<span class="fc" id="L544">		productIndex.beginTransaction();</span>
+<span class="fc" id="L603">		productIndex.beginTransaction();</span>
 
 		try {
-<span class="fc" id="L547">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] finding previous version&quot;);</span>
+<span class="fc" id="L606">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] finding previous version&quot;);</span>
 			// Check index for previous version of this product
-<span class="fc" id="L549">			ProductSummary prevSummary = getPrevProductVersion(productSummary);</span>
-<span class="fc" id="L550">			boolean redundantProduct = isRedundantProduct(prevSummary, productSummary);</span>
+<span class="fc" id="L608">			ProductSummary prevSummary = getPrevProductVersion(productSummary);</span>
 
-<span class="fc" id="L552">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] finding previous event&quot;);</span>
-<span class="fc" id="L553">			Event prevEvent = null;</span>
-<span class="fc bfc" id="L554" title="All 2 branches covered.">			if (!redundantProduct) {</span>
+<span class="fc" id="L610">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] finding previous event&quot;);</span>
+<span class="fc" id="L611">			Event prevEvent = null;</span>
+<span class="fc" id="L612">			boolean redundantProduct = isRedundantProduct(prevSummary, productSummary);</span>
+<span class="fc bfc" id="L613" title="All 2 branches covered.">			if (!redundantProduct) {</span>
 				// Skip association queries and use existing product association
 				// performed in next branch (should be associated already if
 				// &quot;redundant&quot;).
 
 				// Check index for existing event candidate
-<span class="fc" id="L560">				prevEvent = getPrevEvent(productSummary, true);</span>
+<span class="fc" id="L619">				prevEvent = getPrevEvent(productSummary, true);</span>
 			}
 
 			// may be an update/delete to a product that previously associated
 			// to an event, even though this product isn't associating on its
 			// own
-<span class="fc bfc" id="L566" title="All 4 branches covered.">			if (prevSummary != null &amp;&amp; prevEvent == null) {</span>
+<span class="fc bfc" id="L625" title="All 4 branches covered.">			if (prevSummary != null &amp;&amp; prevEvent == null) {</span>
 				// see if prevSummary associated with an event
-<span class="fc" id="L568">				ProductIndexQuery prevEventQuery = new ProductIndexQuery();</span>
-<span class="fc" id="L569">				prevEventQuery.getProductIds().add(prevSummary.getId());</span>
-<span class="fc bfc" id="L570" title="All 2 branches covered.">				if (associateUsingCurrentProducts) {</span>
-<span class="fc" id="L571">					prevEventQuery.setResultType(ProductIndexQuery.RESULT_TYPE_CURRENT);</span>
+<span class="fc" id="L627">				ProductIndexQuery prevEventQuery = new ProductIndexQuery();</span>
+<span class="fc" id="L628">				prevEventQuery.getProductIds().add(prevSummary.getId());</span>
+<span class="fc bfc" id="L629" title="All 2 branches covered.">				if (associateUsingCurrentProducts) {</span>
+<span class="fc" id="L630">					prevEventQuery.setResultType(ProductIndexQuery.RESULT_TYPE_CURRENT);</span>
 				}
-<span class="fc" id="L573">				List&lt;Event&gt; prevEvents = productIndex.getEvents(prevEventQuery);</span>
-<span class="pc bpc" id="L574" title="1 of 2 branches missed.">				if (prevEvents.size() != 0) {</span>
+<span class="fc" id="L632">				List&lt;Event&gt; prevEvents = productIndex.getEvents(prevEventQuery);</span>
+<span class="pc bpc" id="L633" title="1 of 2 branches missed.">				if (prevEvents.size() != 0) {</span>
 					// just use first (there can really only be one).
-<span class="fc" id="L576">					prevEvent = prevEvents.get(0);</span>
+<span class="fc" id="L635">					prevEvent = prevEvents.get(0);</span>
 				}
 			}
 
 			// special handling to allow trump products to associate based on
 			// a product link. Not used when eventsource/eventsourcecode set.
-<span class="fc bfc" id="L582" title="All 2 branches covered.">			if (prevEvent == null</span>
-<span class="fc bfc" id="L583" title="All 2 branches covered.">					&amp;&amp; productSummary.getId().getType().equals(TRUMP_PRODUCT_TYPE)</span>
-<span class="pc bpc" id="L584" title="1 of 2 branches missed.">					&amp;&amp; productSummary.getLinks().containsKey(&quot;product&quot;)</span>
-<span class="pc bpc" id="L585" title="1 of 2 branches missed.">					&amp;&amp; !productSummary.getStatus().equalsIgnoreCase(</span>
+<span class="fc bfc" id="L641" title="All 2 branches covered.">			if (prevEvent == null</span>
+<span class="fc bfc" id="L642" title="All 2 branches covered.">					&amp;&amp; productSummary.getId().getType().equals(TRUMP_PRODUCT_TYPE)</span>
+<span class="pc bpc" id="L643" title="1 of 2 branches missed.">					&amp;&amp; productSummary.getLinks().containsKey(&quot;product&quot;)</span>
+<span class="pc bpc" id="L644" title="1 of 2 branches missed.">					&amp;&amp; !productSummary.getStatus().equalsIgnoreCase(</span>
 							Product.STATUS_DELETE)) {
 				// see if we can associate via another product
-<span class="fc" id="L588">				ProductIndexQuery otherEventQuery = new ProductIndexQuery();</span>
-<span class="fc" id="L589">				otherEventQuery.getProductIds().add(</span>
-<span class="fc" id="L590">						ProductId.parse(productSummary.getLinks()</span>
-<span class="fc" id="L591">								.get(&quot;product&quot;).get(0).toString()));</span>
-<span class="pc bpc" id="L592" title="1 of 2 branches missed.">				if (associateUsingCurrentProducts) {</span>
-<span class="nc" id="L593">					otherEventQuery.setResultType(ProductIndexQuery.RESULT_TYPE_CURRENT);</span>
+<span class="fc" id="L647">				ProductIndexQuery otherEventQuery = new ProductIndexQuery();</span>
+<span class="fc" id="L648">				otherEventQuery.getProductIds().add(</span>
+<span class="fc" id="L649">						ProductId.parse(productSummary.getLinks()</span>
+<span class="fc" id="L650">								.get(&quot;product&quot;).get(0).toString()));</span>
+<span class="pc bpc" id="L651" title="1 of 2 branches missed.">				if (associateUsingCurrentProducts) {</span>
+<span class="nc" id="L652">					otherEventQuery.setResultType(ProductIndexQuery.RESULT_TYPE_CURRENT);</span>
 				}
-<span class="fc" id="L595">				List&lt;Event&gt; prevEvents = productIndex</span>
-<span class="fc" id="L596">						.getEvents(otherEventQuery);</span>
-<span class="pc bpc" id="L597" title="1 of 2 branches missed.">				if (prevEvents.size() != 0) {</span>
+<span class="fc" id="L654">				List&lt;Event&gt; prevEvents = productIndex</span>
+<span class="fc" id="L655">						.getEvents(otherEventQuery);</span>
+<span class="pc bpc" id="L656" title="1 of 2 branches missed.">				if (prevEvents.size() != 0) {</span>
 					// just use first (there can really only be one).
-<span class="fc" id="L599">					prevEvent = prevEvents.get(0);</span>
+<span class="fc" id="L658">					prevEvent = prevEvents.get(0);</span>
 				}
 			}
 
 			// Add the summary to the index
-<span class="fc" id="L604">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] adding summary to index&quot;);</span>
-<span class="pc bpc" id="L605" title="1 of 4 branches missed.">			if (prevSummary != null &amp;&amp; prevSummary.equals(productSummary)) {</span>
+<span class="fc" id="L663">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] adding summary to index&quot;);</span>
+<span class="pc bpc" id="L664" title="1 of 4 branches missed.">			if (prevSummary != null &amp;&amp; prevSummary.equals(productSummary)) {</span>
 				// implied force=true, prevEvent!=null
 
 				// remove the previous version of this product summary
 				// so the new one can take its place
-<span class="nc bnc" id="L610" title="All 2 branches missed.">				if (prevEvent != null) {</span>
-<span class="nc" id="L611">					productIndex.removeAssociation(prevEvent, prevSummary);</span>
+<span class="nc bnc" id="L669" title="All 2 branches missed.">				if (prevEvent != null) {</span>
+<span class="nc" id="L670">					productIndex.removeAssociation(prevEvent, prevSummary);</span>
 				} else {
-<span class="nc" id="L613">					LOGGER.fine(&quot;[&quot; + getName()</span>
+<span class="nc" id="L672">					LOGGER.fine(&quot;[&quot; + getName()</span>
 							+ &quot;] reprocessing unassociated summary&quot;);
 				}
-<span class="nc" id="L616">				productIndex.removeProductSummary(prevSummary);</span>
+<span class="nc" id="L675">				productIndex.removeProductSummary(prevSummary);</span>
 			}
-<span class="fc" id="L618">			productSummary = productIndex.addProductSummary(productSummary);</span>
+<span class="fc" id="L677">			productSummary = productIndex.addProductSummary(productSummary);</span>
 
-<span class="fc" id="L620">			Event event = null;</span>
-<span class="fc bfc" id="L621" title="All 2 branches covered.">			if (prevEvent == null) {</span>
+<span class="fc" id="L679">			Event event = null;</span>
+<span class="fc bfc" id="L680" title="All 2 branches covered.">			if (prevEvent == null) {</span>
 				// No existing event, try to create one and associate
-<span class="fc" id="L623">				event = createEvent(productSummary);</span>
-<span class="fc bfc" id="L624" title="All 2 branches covered.">				if (event != null) {</span>
-<span class="fc" id="L625">					LOGGER.finer(&quot;[&quot; + getName() + &quot;] created event indexid=&quot;</span>
-<span class="fc" id="L626">							+ event.getIndexId());</span>
-<span class="fc" id="L627">					event.log(LOGGER);</span>
+<span class="fc" id="L682">				event = createEvent(productSummary);</span>
+<span class="fc bfc" id="L683" title="All 2 branches covered.">				if (event != null) {</span>
+<span class="fc" id="L684">					LOGGER.finer(&quot;[&quot; + getName() + &quot;] created event indexid=&quot;</span>
+<span class="fc" id="L685">							+ event.getIndexId());</span>
+<span class="fc" id="L686">					event.log(LOGGER);</span>
 				} else {
-<span class="fc" id="L629">					LOGGER.finer(&quot;[&quot; + getName()</span>
+<span class="fc" id="L688">					LOGGER.finer(&quot;[&quot; + getName()</span>
 							+ &quot;] unable to create event for product.&quot;);
 				}
 			} else {
-<span class="fc" id="L633">				LOGGER.finer(&quot;[&quot; + getName()</span>
+<span class="fc" id="L692">				LOGGER.finer(&quot;[&quot; + getName()</span>
 						+ &quot;] found existing event indexid=&quot;
-<span class="fc" id="L635">						+ prevEvent.getIndexId());</span>
-<span class="fc" id="L636">				prevEvent.log(LOGGER);</span>
+<span class="fc" id="L694">						+ prevEvent.getIndexId());</span>
+<span class="fc" id="L695">				prevEvent.log(LOGGER);</span>
 
 				// Existing event found associate to it
-<span class="fc" id="L639">				event = productIndex.addAssociation(prevEvent, productSummary);</span>
+<span class="fc" id="L698">				event = productIndex.addAssociation(prevEvent, productSummary);</span>
 			}
 
 			// Can't split or merge a non-existent event
-<span class="pc bpc" id="L643" title="1 of 4 branches missed.">			if (prevEvent != null &amp;&amp; event != null) {</span>
-<span class="fc" id="L644">				LOGGER.finer(&quot;[&quot; + getName() + &quot;] checking for event splits&quot;);</span>
+<span class="pc bpc" id="L702" title="1 of 4 branches missed.">			if (prevEvent != null &amp;&amp; event != null) {</span>
+<span class="fc" id="L703">				LOGGER.finer(&quot;[&quot; + getName() + &quot;] checking for event splits&quot;);</span>
 				// Check for event splits
-<span class="fc" id="L646">				notification.addIndexerChanges(checkForEventSplits(</span>
+<span class="fc" id="L705">				notification.addIndexerChanges(checkForEventSplits(</span>
 						productSummary, prevEvent, event));
 			}
 
@@ -654,91 +713,87 @@ public class Indexer extends DefaultNotificationListener {
 			// changes to it) and return the potentially modified object by
 			// reference.
 
-<span class="fc bfc" id="L657" title="All 2 branches covered.">			if (event != null) {</span>
-<span class="fc" id="L658">				LOGGER.finer(&quot;[&quot; + getName() + &quot;] checking for event merges&quot;);</span>
+<span class="fc bfc" id="L716" title="All 2 branches covered.">			if (event != null) {</span>
+<span class="fc" id="L717">				LOGGER.finer(&quot;[&quot; + getName() + &quot;] checking for event merges&quot;);</span>
 				// Check for event merges
-<span class="fc" id="L660">				notification.addIndexerChanges(checkForEventMerges(</span>
+<span class="fc" id="L719">				notification.addIndexerChanges(checkForEventMerges(</span>
 						productSummary, prevEvent, event));
 			}
 
 			// see if this is a trump product that needs special processing.
-<span class="fc" id="L665">			event = checkForTrump(event, productSummary, prevSummary);</span>
+<span class="fc" id="L724">			event = checkForTrump(event, productSummary, prevSummary);</span>
 
 			// Set our notification indexer changes if not set yet
-<span class="fc bfc" id="L668" title="All 2 branches covered.">			if (notification.getIndexerChanges().size() == 0) {</span>
-<span class="fc bfc" id="L669" title="All 4 branches covered.">				if (prevEvent == null &amp;&amp; event != null) {</span>
+<span class="fc bfc" id="L727" title="All 2 branches covered.">			if (notification.getIndexerChanges().size() == 0) {</span>
+<span class="fc bfc" id="L728" title="All 4 branches covered.">				if (prevEvent == null &amp;&amp; event != null) {</span>
 					// No previous event, so event added.
-<span class="fc" id="L671">					notification.addIndexerChange(new IndexerChange(</span>
+<span class="fc" id="L730">					notification.addIndexerChange(new IndexerChange(</span>
 							IndexerChange.EVENT_ADDED, prevEvent, event));
-<span class="pc bpc" id="L673" title="1 of 4 branches missed.">				} else if (prevEvent != null &amp;&amp; event != null) {</span>
+<span class="pc bpc" id="L732" title="1 of 4 branches missed.">				} else if (prevEvent != null &amp;&amp; event != null) {</span>
 					// Previous existed so event updated.
-<span class="fc" id="L675">					notification.addIndexerChange(new IndexerChange(event</span>
-<span class="fc bfc" id="L676" title="All 2 branches covered.">							.isDeleted() ? IndexerChange.EVENT_DELETED</span>
-<span class="fc" id="L677">							: IndexerChange.EVENT_UPDATED, prevEvent, event));</span>
-<span class="pc bpc" id="L678" title="2 of 4 branches missed.">				} else if (prevEvent == null &amp;&amp; event == null) {</span>
+<span class="fc" id="L734">					notification.addIndexerChange(new IndexerChange(event</span>
+<span class="fc bfc" id="L735" title="All 2 branches covered.">							.isDeleted() ? IndexerChange.EVENT_DELETED</span>
+<span class="fc" id="L736">							: IndexerChange.EVENT_UPDATED, prevEvent, event));</span>
+<span class="pc bpc" id="L737" title="2 of 4 branches missed.">				} else if (prevEvent == null &amp;&amp; event == null) {</span>
 					// No event existed or could be created.
 
-<span class="pc bpc" id="L681" title="1 of 2 branches missed.">					if (prevSummary == null) {</span>
+<span class="pc bpc" id="L740" title="1 of 2 branches missed.">					if (prevSummary == null) {</span>
 						// No previous summary, product added.
-<span class="fc" id="L683">						notification.addIndexerChange(new IndexerChange(</span>
+<span class="fc" id="L742">						notification.addIndexerChange(new IndexerChange(</span>
 								IndexerChange.PRODUCT_ADDED, null, null));
 					} else {
 						// Previous summary existed. Product updated.
-<span class="nc" id="L687">						notification</span>
-<span class="nc" id="L688">								.addIndexerChange(new IndexerChange(</span>
-<span class="nc bnc" id="L689" title="All 2 branches missed.">										productSummary.isDeleted() ? IndexerChange.PRODUCT_DELETED</span>
-<span class="nc" id="L690">												: IndexerChange.PRODUCT_UPDATED,</span>
+<span class="nc" id="L746">						notification</span>
+<span class="nc" id="L747">								.addIndexerChange(new IndexerChange(</span>
+<span class="nc bnc" id="L748" title="All 2 branches missed.">										productSummary.isDeleted() ? IndexerChange.PRODUCT_DELETED</span>
+<span class="nc" id="L749">												: IndexerChange.PRODUCT_UPDATED,</span>
 										null, null));
 					}
 				}
 			}
 
-<span class="fc" id="L696">			LOGGER.finer(&quot;[&quot; + getName()</span>
+<span class="fc" id="L755">			LOGGER.finer(&quot;[&quot; + getName()</span>
 					+ &quot;] updating event summary parameters&quot;);
 			// update preferred event parameters in index
-<span class="fc" id="L699">			productIndex.eventsUpdated(notification.getEvents());</span>
+<span class="fc" id="L758">			productIndex.eventsUpdated(notification.getEvents());</span>
 
-<span class="fc" id="L701">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] committing transaction&quot;);</span>
+<span class="fc" id="L760">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] committing transaction&quot;);</span>
 			// Commit our changes to the index (after updating summary attrs)
-<span class="fc" id="L703">			productIndex.commitTransaction();</span>
+<span class="fc" id="L762">			productIndex.commitTransaction();</span>
 
 			try {
-<span class="fc" id="L706">				LOGGER.fine(&quot;[&quot; + getName() + &quot;] notifying listeners&quot;);</span>
+<span class="fc" id="L765">				LOGGER.fine(&quot;[&quot; + getName() + &quot;] notifying listeners&quot;);</span>
 				// ---------------------------------------------------------//
 				// -- Step 5: Notify listeners with our indexer event
 				// ---------------------------------------------------------//
-<span class="fc" id="L710">				notifyListeners(notification);</span>
-<span class="nc" id="L711">			} catch (Exception e) {</span>
+<span class="fc" id="L769">				notifyListeners(notification);</span>
+<span class="nc" id="L770">			} catch (Exception e) {</span>
 				// this doesn't affect success of index transaction...
-<span class="nc" id="L713">				LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+<span class="nc" id="L772">				LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 						+ &quot;] exception while notifying listeners&quot;, e);
-<span class="fc" id="L715">			}</span>
+<span class="fc" id="L774">			}</span>
 
 			// send heartbeat info
-<span class="fc" id="L718">			HeartbeatListener.sendHeartbeatMessage(getName(),</span>
-<span class="fc" id="L719">					&quot;indexed product&quot;, id.toString());</span>
-<span class="nc" id="L720">		} catch (Exception e) {</span>
-<span class="nc" id="L721">			LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
-					+ &quot;] rolling back transaction&quot;, e);
+<span class="fc" id="L777">			HeartbeatListener.sendHeartbeatMessage(getName(),</span>
+<span class="fc" id="L778">					&quot;indexed product&quot;, productSummary.getId().toString());</span>
+
+			// return summary after added to index
+<span class="fc" id="L781">			return productSummary;</span>
+<span class="nc" id="L782">		} catch (Exception e) {</span>
+<span class="nc" id="L783">			LOGGER.log(Level.FINE, &quot;[&quot; + getName() + &quot;] rolling back transaction&quot;, e);</span>
 			// just rollback since it wasn't successful
-<span class="nc" id="L724">			productIndex.rollbackTransaction();</span>
+<span class="nc" id="L785">			productIndex.rollbackTransaction();</span>
 
 			// send heartbeat info
-<span class="nc" id="L727">			HeartbeatListener.sendHeartbeatMessage(getName(),</span>
-<span class="nc" id="L728">					&quot;index exception&quot;, id.toString());</span>
+<span class="nc" id="L788">			HeartbeatListener.sendHeartbeatMessage(getName(),</span>
+<span class="nc" id="L789">					&quot;index exception&quot;, productSummary.getId().toString());</span>
 			// send heartbeat info
-<span class="nc" id="L730">			HeartbeatListener.sendHeartbeatMessage(getName(),</span>
-<span class="nc" id="L731">					&quot;index exception class&quot;, e.getClass().getName());</span>
+<span class="nc" id="L791">			HeartbeatListener.sendHeartbeatMessage(getName(),</span>
+<span class="nc" id="L792">					&quot;index exception class&quot;, e.getClass().getName());</span>
 
-<span class="nc" id="L733">			throw e;</span>
-		} finally {
-<span class="fc" id="L735">			final Date endIndex = new Date();</span>
-<span class="fc" id="L736">			LOGGER.fine(&quot;[&quot; + getName() + &quot;] indexer processed product id=&quot;</span>
-<span class="fc" id="L737">					+ id.toString() + &quot; in &quot; +</span>
-<span class="fc" id="L738">					(endIndex.getTime() - beginStore.getTime()) + &quot; ms&quot;);</span>
+<span class="nc" id="L794">			throw e;</span>
 		}
-
-<span class="fc" id="L741">	}</span>
+	}
 
 	/**
 	 * Check whether two products are redundant, meaning would not affect event
@@ -749,32 +804,32 @@ public class Indexer extends DefaultNotificationListener {
 	 * @return true if products are equivalent for association purposes.
 	 */
 	private boolean isRedundantProduct(final ProductSummary previous, final ProductSummary current) {
-<span class="pc bpc" id="L752" title="1 of 4 branches missed.">		if (previous == null || previous.equals(current)</span>
-<span class="pc bpc" id="L753" title="1 of 2 branches missed.">				|| !previous.getId().isSameProduct(current.getId())) {</span>
-<span class="fc" id="L754">			return false;</span>
+<span class="pc bpc" id="L807" title="1 of 4 branches missed.">		if (previous == null || previous.equals(current)</span>
+<span class="pc bpc" id="L808" title="1 of 2 branches missed.">				|| !previous.getId().isSameProduct(current.getId())) {</span>
+<span class="fc" id="L809">			return false;</span>
 		}
-<span class="fc bfc" id="L756" title="All 2 branches covered.">		if (previous.getPreferredWeight() == current.getPreferredWeight()</span>
-<span class="fc bfc" id="L757" title="All 2 branches covered.">				&amp;&amp; CompareUtil.nullSafeCompare(previous.getStatus(),</span>
-<span class="fc" id="L758">						current.getStatus()) == 0</span>
-<span class="fc bfc" id="L759" title="All 2 branches covered.">				&amp;&amp; CompareUtil.nullSafeCompare(previous.getEventDepth(),</span>
-<span class="fc" id="L760">						current.getEventDepth()) == 0</span>
-<span class="fc bfc" id="L761" title="All 2 branches covered.">				&amp;&amp; CompareUtil.nullSafeCompare(previous.getEventLatitude(),</span>
-<span class="fc" id="L762">						current.getEventLatitude()) == 0</span>
-<span class="pc bpc" id="L763" title="1 of 2 branches missed.">				&amp;&amp; CompareUtil.nullSafeCompare(previous.getEventLongitude(),</span>
-<span class="fc" id="L764">						current.getEventLongitude()) == 0</span>
-<span class="pc bpc" id="L765" title="1 of 2 branches missed.">				&amp;&amp; CompareUtil.nullSafeCompare(previous.getEventMagnitude(),</span>
-<span class="fc" id="L766">						current.getEventMagnitude()) == 0</span>
-<span class="pc bpc" id="L767" title="1 of 2 branches missed.">				&amp;&amp; CompareUtil.nullSafeCompare(previous.getEventSource(),</span>
-<span class="fc" id="L768">						current.getEventSource()) == 0</span>
-<span class="pc bpc" id="L769" title="1 of 2 branches missed.">				&amp;&amp; CompareUtil.nullSafeCompare(previous.getEventSourceCode(),</span>
-<span class="fc" id="L770">						current.getEventSourceCode()) == 0</span>
-<span class="pc bpc" id="L771" title="1 of 2 branches missed.">				&amp;&amp; CompareUtil.nullSafeCompare(previous.getEventTime(),</span>
-<span class="fc" id="L772">						current.getEventTime()) == 0) {</span>
+<span class="fc bfc" id="L811" title="All 2 branches covered.">		if (previous.getPreferredWeight() == current.getPreferredWeight()</span>
+<span class="fc bfc" id="L812" title="All 2 branches covered.">				&amp;&amp; CompareUtil.nullSafeCompare(previous.getStatus(),</span>
+<span class="fc" id="L813">						current.getStatus()) == 0</span>
+<span class="fc bfc" id="L814" title="All 2 branches covered.">				&amp;&amp; CompareUtil.nullSafeCompare(previous.getEventDepth(),</span>
+<span class="fc" id="L815">						current.getEventDepth()) == 0</span>
+<span class="fc bfc" id="L816" title="All 2 branches covered.">				&amp;&amp; CompareUtil.nullSafeCompare(previous.getEventLatitude(),</span>
+<span class="fc" id="L817">						current.getEventLatitude()) == 0</span>
+<span class="pc bpc" id="L818" title="1 of 2 branches missed.">				&amp;&amp; CompareUtil.nullSafeCompare(previous.getEventLongitude(),</span>
+<span class="fc" id="L819">						current.getEventLongitude()) == 0</span>
+<span class="pc bpc" id="L820" title="1 of 2 branches missed.">				&amp;&amp; CompareUtil.nullSafeCompare(previous.getEventMagnitude(),</span>
+<span class="fc" id="L821">						current.getEventMagnitude()) == 0</span>
+<span class="pc bpc" id="L822" title="1 of 2 branches missed.">				&amp;&amp; CompareUtil.nullSafeCompare(previous.getEventSource(),</span>
+<span class="fc" id="L823">						current.getEventSource()) == 0</span>
+<span class="pc bpc" id="L824" title="1 of 2 branches missed.">				&amp;&amp; CompareUtil.nullSafeCompare(previous.getEventSourceCode(),</span>
+<span class="fc" id="L825">						current.getEventSourceCode()) == 0</span>
+<span class="fc bfc" id="L826" title="All 2 branches covered.">				&amp;&amp; CompareUtil.nullSafeCompare(previous.getEventTime(),</span>
+<span class="fc" id="L827">						current.getEventTime()) == 0) {</span>
 			// these are the properties that would influence indexer associations
 			// or preferred event properties.
-<span class="fc" id="L775">			return true;</span>
+<span class="fc" id="L830">			return true;</span>
 		}
-<span class="fc" id="L777">		return false;</span>
+<span class="fc" id="L832">		return false;</span>
 	}
 
 	/**
@@ -812,56 +867,56 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	private Event checkForTrump(Event event, ProductSummary productSummary,
 			ProductSummary prevSummary) throws Exception {
-<span class="fc bfc" id="L815" title="All 2 branches covered.">		if (event == null) {</span>
-<span class="fc" id="L816">			return event;</span>
+<span class="fc bfc" id="L870" title="All 2 branches covered.">		if (event == null) {</span>
+<span class="fc" id="L871">			return event;</span>
 		}
 
-<span class="fc" id="L819">		String type = productSummary.getId().getType();</span>
-<span class="fc bfc" id="L820" title="All 2 branches covered.">		if (type.equals(TRUMP_PRODUCT_TYPE)) {</span>
+<span class="fc" id="L874">		String type = productSummary.getId().getType();</span>
+<span class="fc bfc" id="L875" title="All 2 branches covered.">		if (type.equals(TRUMP_PRODUCT_TYPE)) {</span>
 			// version specific trump
-<span class="fc" id="L822">			ProductId trumpedId = null;</span>
-<span class="fc" id="L823">			ProductSummary trumpedSummary = null;</span>
-<span class="fc bfc" id="L824" title="All 2 branches covered.">			if (productSummary.isDeleted()) {</span>
+<span class="fc" id="L877">			ProductId trumpedId = null;</span>
+<span class="fc" id="L878">			ProductSummary trumpedSummary = null;</span>
+<span class="fc bfc" id="L879" title="All 2 branches covered.">			if (productSummary.isDeleted()) {</span>
 				// deleting version specific trump
 				// reset preferred weight of reference product
 				// (is is a link in previous version of trump)
-<span class="fc" id="L828">				trumpedId = getTrumpedProductId(prevSummary);</span>
-<span class="pc bpc" id="L829" title="1 of 2 branches missed.">				if (trumpedId == null) {</span>
-<span class="nc" id="L830">					LOGGER.warning(&quot;Unable to process trump delete, &quot;</span>
+<span class="fc" id="L883">				trumpedId = getTrumpedProductId(prevSummary);</span>
+<span class="pc bpc" id="L884" title="1 of 2 branches missed.">				if (trumpedId == null) {</span>
+<span class="nc" id="L885">					LOGGER.warning(&quot;Unable to process trump delete, &quot;</span>
 							+ &quot;missing 'product' link from previous version&quot;);
-<span class="nc" id="L832">					return event;</span>
+<span class="nc" id="L887">					return event;</span>
 				}
-<span class="fc" id="L834">				trumpedSummary = getProductSummaryById(trumpedId);</span>
-<span class="pc bpc" id="L835" title="1 of 2 branches missed.">				if (trumpedSummary == null) {</span>
+<span class="fc" id="L889">				trumpedSummary = getProductSummaryById(trumpedId);</span>
+<span class="pc bpc" id="L890" title="1 of 2 branches missed.">				if (trumpedSummary == null) {</span>
 					// no matching product in index, possibly already deleted
-<span class="nc" id="L837">					return event;</span>
+<span class="nc" id="L892">					return event;</span>
 				}
 				// resummarize product
-<span class="fc" id="L840">				event = resummarizeProduct(event, trumpedSummary);</span>
+<span class="fc" id="L895">				event = resummarizeProduct(event, trumpedSummary);</span>
 			} else {
 				// updating product weight
-<span class="fc" id="L843">				trumpedId = getTrumpedProductId(productSummary);</span>
-<span class="fc" id="L844">				Long weight = Long.valueOf(productSummary.getProperties().get(</span>
+<span class="fc" id="L898">				trumpedId = getTrumpedProductId(productSummary);</span>
+<span class="fc" id="L899">				Long weight = Long.valueOf(productSummary.getProperties().get(</span>
 						&quot;weight&quot;));
-<span class="pc bpc" id="L846" title="2 of 4 branches missed.">				if (trumpedId == null || weight == null) {</span>
-<span class="nc" id="L847">					LOGGER.warning(&quot;Invalid trump, &quot;</span>
+<span class="pc bpc" id="L901" title="2 of 4 branches missed.">				if (trumpedId == null || weight == null) {</span>
+<span class="nc" id="L902">					LOGGER.warning(&quot;Invalid trump, &quot;</span>
 							+ &quot;missing 'product' link or 'weight' property&quot;);
-<span class="nc" id="L849">					return event;</span>
+<span class="nc" id="L904">					return event;</span>
 				}
-<span class="fc" id="L851">				trumpedSummary = getProductSummaryById(trumpedId);</span>
-<span class="pc bpc" id="L852" title="1 of 2 branches missed.">				if (trumpedSummary == null) {</span>
+<span class="fc" id="L906">				trumpedSummary = getProductSummaryById(trumpedId);</span>
+<span class="pc bpc" id="L907" title="1 of 2 branches missed.">				if (trumpedSummary == null) {</span>
 					// no matching product in index, possibly already deleted
-<span class="nc" id="L854">					LOGGER.info(&quot;Unable to process trump, &quot; + &quot;product '&quot;</span>
-<span class="nc" id="L855">							+ trumpedId.toString() + &quot;' not found&quot;);</span>
-<span class="nc" id="L856">					return event;</span>
+<span class="nc" id="L909">					LOGGER.info(&quot;Unable to process trump, &quot; + &quot;product '&quot;</span>
+<span class="nc" id="L910">							+ trumpedId.toString() + &quot;' not found&quot;);</span>
+<span class="nc" id="L911">					return event;</span>
 				}
-<span class="fc" id="L858">				event = setSummaryWeight(event, trumpedSummary, weight);</span>
+<span class="fc" id="L913">				event = setSummaryWeight(event, trumpedSummary, weight);</span>
 			}
-<span class="fc" id="L860">		} else {</span>
-<span class="fc" id="L861">			return checkForPersistentTrump(event, productSummary);</span>
+<span class="fc" id="L915">		} else {</span>
+<span class="fc" id="L916">			return checkForPersistentTrump(event, productSummary);</span>
 		}
 
-<span class="fc" id="L864">		return event;</span>
+<span class="fc" id="L919">		return event;</span>
 	}
 
 	/**
@@ -901,71 +956,71 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	private Event checkForPersistentTrump(final Event event,
 			final ProductSummary productSummary) throws Exception {
-<span class="fc" id="L904">		Event updatedEvent = event;</span>
+<span class="fc" id="L959">		Event updatedEvent = event;</span>
 
 		// the type of product currently being indexed
-<span class="fc" id="L907">		String type = productSummary.getType();</span>
+<span class="fc" id="L962">		String type = productSummary.getType();</span>
 		// the &quot;trump-TYPE&quot; product type
-<span class="fc" id="L909">		String persistentTrumpType = null;</span>
+<span class="fc" id="L964">		String persistentTrumpType = null;</span>
 		// whether productSummary is a persistent trump product
-<span class="fc" id="L911">		boolean associatingTrump = false;</span>
+<span class="fc" id="L966">		boolean associatingTrump = false;</span>
 		// the product source receiving trump
-<span class="fc" id="L913">		String trumpSource = null;</span>
+<span class="fc" id="L968">		String trumpSource = null;</span>
 		// the product type receiving trump
-<span class="fc" id="L915">		String trumpType = null;</span>
+<span class="fc" id="L970">		String trumpType = null;</span>
 		// the product code receiving trump
-<span class="fc" id="L917">		String trumpCode = null;</span>
+<span class="fc" id="L972">		String trumpCode = null;</span>
 
 		// determine persistentTrumpType and trumpType
-<span class="fc bfc" id="L920" title="All 2 branches covered.">		if (type.startsWith(PERSISTENT_TRUMP_PREFIX)) {</span>
+<span class="fc bfc" id="L975" title="All 2 branches covered.">		if (type.startsWith(PERSISTENT_TRUMP_PREFIX)) {</span>
 			// incoming trump product
-<span class="fc" id="L922">			persistentTrumpType = type;</span>
-<span class="fc" id="L923">			trumpType = type.replace(PERSISTENT_TRUMP_PREFIX, &quot;&quot;);</span>
-<span class="fc" id="L924">			associatingTrump = true;</span>
+<span class="fc" id="L977">			persistentTrumpType = type;</span>
+<span class="fc" id="L978">			trumpType = type.replace(PERSISTENT_TRUMP_PREFIX, &quot;&quot;);</span>
+<span class="fc" id="L979">			associatingTrump = true;</span>
 			// always set persistent trump preferred weight to 1,
 			// so most recent updateTime is most preferred
-<span class="fc" id="L927">			updatedEvent = setSummaryWeight(updatedEvent, productSummary, 1L);</span>
+<span class="fc" id="L982">			updatedEvent = setSummaryWeight(updatedEvent, productSummary, 1L);</span>
 		} else {
 			// incoming product, possibly affected by existing trump
-<span class="fc" id="L930">			persistentTrumpType = PERSISTENT_TRUMP_PREFIX + type;</span>
-<span class="fc" id="L931">			trumpType = type;</span>
+<span class="fc" id="L985">			persistentTrumpType = PERSISTENT_TRUMP_PREFIX + type;</span>
+<span class="fc" id="L986">			trumpType = type;</span>
 		}
 
 		// find active persistent trump product for type
-<span class="fc" id="L935">		ProductSummary persistentTrump = updatedEvent.getPreferredProduct(</span>
+<span class="fc" id="L990">		ProductSummary persistentTrump = updatedEvent.getPreferredProduct(</span>
 				persistentTrumpType);
-<span class="fc bfc" id="L937" title="All 2 branches covered.">		if (persistentTrump != null) {</span>
-<span class="fc" id="L938">			trumpSource = persistentTrump.getProperties().get(&quot;trump-source&quot;);</span>
-<span class="fc" id="L939">			trumpCode = persistentTrump.getProperties().get(&quot;trump-code&quot;);</span>
+<span class="fc bfc" id="L992" title="All 2 branches covered.">		if (persistentTrump != null) {</span>
+<span class="fc" id="L993">			trumpSource = persistentTrump.getProperties().get(&quot;trump-source&quot;);</span>
+<span class="fc" id="L994">			trumpCode = persistentTrump.getProperties().get(&quot;trump-code&quot;);</span>
 		}
 
 		// if a non-trump product is coming in,
 		// only continue processing if it is affected by persistentTrump.
 		// (otherwise weights should already be set)
-<span class="fc bfc" id="L945" title="All 2 branches covered.">		if (!associatingTrump &amp;&amp;</span>
-<span class="fc bfc" id="L946" title="All 2 branches covered.">				!(productSummary.getSource().equals(trumpSource)</span>
-<span class="pc bpc" id="L947" title="1 of 2 branches missed.">				&amp;&amp; productSummary.getCode().equals(trumpCode))) {</span>
+<span class="fc bfc" id="L1000" title="All 2 branches covered.">		if (!associatingTrump &amp;&amp;</span>
+<span class="fc bfc" id="L1001" title="All 2 branches covered.">				!(productSummary.getSource().equals(trumpSource)</span>
+<span class="pc bpc" id="L1002" title="1 of 2 branches missed.">				&amp;&amp; productSummary.getCode().equals(trumpCode))) {</span>
 			// not affected by trump
-<span class="fc" id="L949">			return event;</span>
+<span class="fc" id="L1004">			return event;</span>
 		}
 
 		// update products affected by trump
-<span class="fc" id="L953">		List&lt;ProductSummary&gt; products = updatedEvent.getProducts(trumpType);</span>
-<span class="pc bpc" id="L954" title="1 of 2 branches missed.">		if (products != null) {</span>
-<span class="fc bfc" id="L955" title="All 2 branches covered.">			for (ProductSummary summary : products) {</span>
-<span class="fc bfc" id="L956" title="All 2 branches covered.">				if (summary.getSource().equals(trumpSource)</span>
-<span class="pc bpc" id="L957" title="1 of 2 branches missed.">						&amp;&amp; summary.getCode().equals(trumpCode)) {</span>
+<span class="fc" id="L1008">		List&lt;ProductSummary&gt; products = updatedEvent.getProducts(trumpType);</span>
+<span class="pc bpc" id="L1009" title="1 of 2 branches missed.">		if (products != null) {</span>
+<span class="fc bfc" id="L1010" title="All 2 branches covered.">			for (ProductSummary summary : products) {</span>
+<span class="fc bfc" id="L1011" title="All 2 branches covered.">				if (summary.getSource().equals(trumpSource)</span>
+<span class="pc bpc" id="L1012" title="1 of 2 branches missed.">						&amp;&amp; summary.getCode().equals(trumpCode)) {</span>
 					// add trump to product
-<span class="fc" id="L959">					updatedEvent = setSummaryWeight(updatedEvent, summary,</span>
-<span class="fc" id="L960">							TRUMP_PREFERRED_WEIGHT);</span>
-<span class="fc bfc" id="L961" title="All 2 branches covered.">				} else if (summary.getPreferredWeight() == TRUMP_PREFERRED_WEIGHT) {</span>
+<span class="fc" id="L1014">					updatedEvent = setSummaryWeight(updatedEvent, summary,</span>
+<span class="fc" id="L1015">							TRUMP_PREFERRED_WEIGHT);</span>
+<span class="fc bfc" id="L1016" title="All 2 branches covered.">				} else if (summary.getPreferredWeight() == TRUMP_PREFERRED_WEIGHT) {</span>
 					// remove trump from previously trumped product.
-<span class="fc" id="L963">					updatedEvent = resummarizeProduct(updatedEvent, summary);</span>
+<span class="fc" id="L1018">					updatedEvent = resummarizeProduct(updatedEvent, summary);</span>
 				}
-<span class="fc" id="L965">			}</span>
+<span class="fc" id="L1020">			}</span>
 		}
 		// return updated event
-<span class="fc" id="L968">		return updatedEvent;</span>
+<span class="fc" id="L1023">		return updatedEvent;</span>
 	}
 
 	/**
@@ -978,11 +1033,11 @@ public class Indexer extends DefaultNotificationListener {
 	protected ProductId getTrumpedProductId(final ProductSummary trumpSummary) {
 		try {
 			// use 'product' link from previous summary
-<span class="fc" id="L981">			ProductId trumpedId = ProductId.parse(trumpSummary.getLinks().get(</span>
-<span class="fc" id="L982">					&quot;product&quot;).get(0).toString());</span>
-<span class="fc" id="L983">			return trumpedId;</span>
-<span class="nc" id="L984">		} catch (Exception e) {</span>
-<span class="nc" id="L985">			return null;</span>
+<span class="fc" id="L1036">			ProductId trumpedId = ProductId.parse(trumpSummary.getLinks().get(</span>
+<span class="fc" id="L1037">					&quot;product&quot;).get(0).toString());</span>
+<span class="fc" id="L1038">			return trumpedId;</span>
+<span class="nc" id="L1039">		} catch (Exception e) {</span>
+<span class="nc" id="L1040">			return null;</span>
 		}
 	}
 
@@ -996,13 +1051,13 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	protected ProductSummary getProductSummaryById(final ProductId id)
 			throws Exception {
-<span class="fc" id="L999">		ProductIndexQuery query = new ProductIndexQuery();</span>
-<span class="fc" id="L1000">		query.getProductIds().add(id);</span>
-<span class="fc" id="L1001">		List&lt;ProductSummary&gt; summaries = productIndex.getProducts(query);</span>
-<span class="pc bpc" id="L1002" title="1 of 2 branches missed.">		if (summaries.size() &gt; 0) {</span>
-<span class="fc" id="L1003">			return summaries.get(0);</span>
+<span class="fc" id="L1054">		ProductIndexQuery query = new ProductIndexQuery();</span>
+<span class="fc" id="L1055">		query.getProductIds().add(id);</span>
+<span class="fc" id="L1056">		List&lt;ProductSummary&gt; summaries = productIndex.getProducts(query);</span>
+<span class="pc bpc" id="L1057" title="1 of 2 branches missed.">		if (summaries.size() &gt; 0) {</span>
+<span class="fc" id="L1058">			return summaries.get(0);</span>
 		}
-<span class="nc" id="L1005">		return null;</span>
+<span class="nc" id="L1060">		return null;</span>
 	}
 
 	/**
@@ -1019,26 +1074,26 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	protected Event setSummaryWeight(Event event, ProductSummary summary,
 			final Long preferredWeight) throws Exception {
-<span class="fc bfc" id="L1022" title="All 2 branches covered.">		if (summary.getPreferredWeight() == preferredWeight) {</span>
+<span class="fc bfc" id="L1077" title="All 2 branches covered.">		if (summary.getPreferredWeight() == preferredWeight) {</span>
 			// already set
-<span class="fc" id="L1024">			return event;</span>
+<span class="fc" id="L1079">			return event;</span>
 		}
 
-<span class="fc" id="L1027">		LOGGER.info(&quot;Setting product preferred weight &quot;</span>
-<span class="fc" id="L1028">				+ summary.getId().toString() + &quot;, weight &quot;</span>
-<span class="fc" id="L1029">				+ summary.getPreferredWeight() + &quot; (old) =&gt; &quot; + preferredWeight</span>
+<span class="fc" id="L1082">		LOGGER.info(&quot;Setting product preferred weight &quot;</span>
+<span class="fc" id="L1083">				+ summary.getId().toString() + &quot;, weight &quot;</span>
+<span class="fc" id="L1084">				+ summary.getPreferredWeight() + &quot; (old) =&gt; &quot; + preferredWeight</span>
 				+ &quot; (new)&quot;);
 
 		// remove existing summary from event
-<span class="fc" id="L1033">		event = productIndex.removeAssociation(event, summary);</span>
-<span class="fc" id="L1034">		productIndex.removeProductSummary(summary);</span>
+<span class="fc" id="L1088">		event = productIndex.removeAssociation(event, summary);</span>
+<span class="fc" id="L1089">		productIndex.removeProductSummary(summary);</span>
 		// set custom weight
-<span class="fc" id="L1036">		summary.setPreferredWeight(preferredWeight);</span>
+<span class="fc" id="L1091">		summary.setPreferredWeight(preferredWeight);</span>
 		// add updated summary to event
-<span class="fc" id="L1038">		summary = productIndex.addProductSummary(summary);</span>
-<span class="fc" id="L1039">		event = productIndex.addAssociation(event, summary);</span>
+<span class="fc" id="L1093">		summary = productIndex.addProductSummary(summary);</span>
+<span class="fc" id="L1094">		event = productIndex.addAssociation(event, summary);</span>
 		// return updated event
-<span class="fc" id="L1041">		return event;</span>
+<span class="fc" id="L1096">		return event;</span>
 	}
 
 	/**
@@ -1053,27 +1108,27 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	protected Event resummarizeProduct(final Event event,
 			final ProductSummary summary) throws Exception {
-<span class="fc" id="L1056">		Event updatedEvent = null;</span>
-<span class="fc" id="L1057">		ProductSummary updatedSummary = null;</span>
+<span class="fc" id="L1111">		Event updatedEvent = null;</span>
+<span class="fc" id="L1112">		ProductSummary updatedSummary = null;</span>
 		// remove existing summary from event
-<span class="fc" id="L1059">		updatedEvent = productIndex.removeAssociation(event, summary);</span>
-<span class="fc" id="L1060">		productIndex.removeProductSummary(summary);</span>
+<span class="fc" id="L1114">		updatedEvent = productIndex.removeAssociation(event, summary);</span>
+<span class="fc" id="L1115">		productIndex.removeProductSummary(summary);</span>
 		// use module to summarize original product
-<span class="fc" id="L1062">		Product product = productStorage.getProduct(summary.getId());</span>
-<span class="pc bpc" id="L1063" title="1 of 2 branches missed.">		if (product == null) {</span>
-<span class="nc" id="L1064">			throw new Exception(&quot;Unable to resummarize product, &quot;</span>
-<span class="nc" id="L1065">					+ &quot;product not in storage &quot; + summary.getId().toString());</span>
+<span class="fc" id="L1117">		Product product = productStorage.getProduct(summary.getId());</span>
+<span class="pc bpc" id="L1118" title="1 of 2 branches missed.">		if (product == null) {</span>
+<span class="nc" id="L1119">			throw new Exception(&quot;Unable to resummarize product, &quot;</span>
+<span class="nc" id="L1120">					+ &quot;product not in storage &quot; + summary.getId().toString());</span>
 		}
-<span class="fc" id="L1067">		updatedSummary = getModule(product).getProductSummary(product);</span>
-<span class="fc" id="L1068">		LOGGER.info(&quot;Resummarizing product &quot; + summary.getId().toString()</span>
-<span class="fc" id="L1069">				+ &quot;, weight &quot; + summary.getPreferredWeight() + &quot; (old) =&gt; &quot;</span>
-<span class="fc" id="L1070">				+ updatedSummary.getPreferredWeight() + &quot; (new)&quot;);</span>
+<span class="fc" id="L1122">		updatedSummary = getModule(product).getProductSummary(product);</span>
+<span class="fc" id="L1123">		LOGGER.info(&quot;Resummarizing product &quot; + summary.getId().toString()</span>
+<span class="fc" id="L1124">				+ &quot;, weight &quot; + summary.getPreferredWeight() + &quot; (old) =&gt; &quot;</span>
+<span class="fc" id="L1125">				+ updatedSummary.getPreferredWeight() + &quot; (new)&quot;);</span>
 		// add updated summary to event
-<span class="fc" id="L1072">		updatedSummary = productIndex.addProductSummary(updatedSummary);</span>
-<span class="fc" id="L1073">		updatedEvent = productIndex</span>
-<span class="fc" id="L1074">				.addAssociation(updatedEvent, updatedSummary);</span>
+<span class="fc" id="L1127">		updatedSummary = productIndex.addProductSummary(updatedSummary);</span>
+<span class="fc" id="L1128">		updatedEvent = productIndex</span>
+<span class="fc" id="L1129">				.addAssociation(updatedEvent, updatedSummary);</span>
 		// return updated event
-<span class="fc" id="L1076">		return updatedEvent;</span>
+<span class="fc" id="L1131">		return updatedEvent;</span>
 	}
 
 	/**
@@ -1091,98 +1146,98 @@ public class Indexer extends DefaultNotificationListener {
 	protected synchronized List&lt;IndexerChange&gt; checkForEventSplits(
 			final ProductSummary summary, final Event originalEvent,
 			final Event updatedEvent) throws Exception {
-<span class="fc" id="L1094">		List&lt;IndexerChange&gt; changes = new ArrayList&lt;IndexerChange&gt;();</span>
+<span class="fc" id="L1149">		List&lt;IndexerChange&gt; changes = new ArrayList&lt;IndexerChange&gt;();</span>
 
 		// save reference so we can check later if this has changed
-<span class="fc" id="L1097">		Event splitEvent = updatedEvent;</span>
+<span class="fc" id="L1152">		Event splitEvent = updatedEvent;</span>
 
 		// ## 1) Split event into sub events
-<span class="fc" id="L1100">		Map&lt;String, Event&gt; subEvents = splitEvent.getSubEvents();</span>
-<span class="fc bfc" id="L1101" title="All 2 branches covered.">		if (subEvents.size() == 1) {</span>
+<span class="fc" id="L1155">		Map&lt;String, Event&gt; subEvents = splitEvent.getSubEvents();</span>
+<span class="fc bfc" id="L1156" title="All 2 branches covered.">		if (subEvents.size() == 1) {</span>
 			// still only one event, cannot split
-<span class="fc" id="L1103">			return changes;</span>
+<span class="fc" id="L1158">			return changes;</span>
 		}
 
 		// the original eventid before the indexer started processing this
 		// update (may have already changed in updatedEvent).
-<span class="fc" id="L1108">		String originalEventId = originalEvent.getEventId();</span>
+<span class="fc" id="L1163">		String originalEventId = originalEvent.getEventId();</span>
 
 		// ## 2) See if sub events still associate
 		// list of events that actually are split
-<span class="fc" id="L1112">		List&lt;Event&gt; alreadySplit = new ArrayList&lt;Event&gt;();</span>
+<span class="fc" id="L1167">		List&lt;Event&gt; alreadySplit = new ArrayList&lt;Event&gt;();</span>
 
 		// see how sub events associate compared to this event (since the
 		// original event is the one that should be &quot;UPDATED&quot;)
-<span class="fc" id="L1116">		Event originalSubEvent = subEvents.remove(originalEventId);</span>
+<span class="fc" id="L1171">		Event originalSubEvent = subEvents.remove(originalEventId);</span>
 
-<span class="fc" id="L1118">		Iterator&lt;String&gt; subEventsIter = new ArrayList&lt;String&gt;(</span>
-<span class="fc" id="L1119">				subEvents.keySet()).iterator();</span>
-<span class="fc bfc" id="L1120" title="All 2 branches covered.">		while (subEventsIter.hasNext()) {</span>
-<span class="fc" id="L1121">			String nextEventId = subEventsIter.next();</span>
-<span class="fc" id="L1122">			Event nextEvent = subEvents.get(nextEventId);</span>
+<span class="fc" id="L1173">		Iterator&lt;String&gt; subEventsIter = new ArrayList&lt;String&gt;(</span>
+<span class="fc" id="L1174">				subEvents.keySet()).iterator();</span>
+<span class="fc bfc" id="L1175" title="All 2 branches covered.">		while (subEventsIter.hasNext()) {</span>
+<span class="fc" id="L1176">			String nextEventId = subEventsIter.next();</span>
+<span class="fc" id="L1177">			Event nextEvent = subEvents.get(nextEventId);</span>
 
-<span class="fc bfc" id="L1124" title="All 2 branches covered.">			if (!originalSubEvent.isAssociated(nextEvent, associator)) {</span>
+<span class="fc bfc" id="L1179" title="All 2 branches covered.">			if (!originalSubEvent.isAssociated(nextEvent, associator)) {</span>
 				// not associated, so split
-<span class="fc" id="L1126">				splitEvent = splitEvents(splitEvent, nextEvent);</span>
+<span class="fc" id="L1181">				splitEvent = splitEvents(splitEvent, nextEvent);</span>
 
 				// see if associated to any that already split
-<span class="fc" id="L1129">				Iterator&lt;Event&gt; alreadySplitIter = alreadySplit.iterator();</span>
-<span class="fc bfc" id="L1130" title="All 2 branches covered.">				while (alreadySplitIter.hasNext()) {</span>
-<span class="fc" id="L1131">					Event alreadySplitEvent = alreadySplitIter.next();</span>
-<span class="pc bpc" id="L1132" title="1 of 2 branches missed.">					if (alreadySplitEvent.isAssociated(nextEvent, associator)) {</span>
+<span class="fc" id="L1184">				Iterator&lt;Event&gt; alreadySplitIter = alreadySplit.iterator();</span>
+<span class="fc bfc" id="L1185" title="All 2 branches covered.">				while (alreadySplitIter.hasNext()) {</span>
+<span class="fc" id="L1186">					Event alreadySplitEvent = alreadySplitIter.next();</span>
+<span class="pc bpc" id="L1187" title="1 of 2 branches missed.">					if (alreadySplitEvent.isAssociated(nextEvent, associator)) {</span>
 						// need to merge with event that already split
 
 						// will need reference to alreadySplitEvent, so keep
 						// reference to merged event in nextEvent
-<span class="nc" id="L1137">						nextEvent = mergeEvents(alreadySplitEvent, nextEvent);</span>
+<span class="nc" id="L1192">						nextEvent = mergeEvents(alreadySplitEvent, nextEvent);</span>
 						// remove original already split
-<span class="nc" id="L1139">						alreadySplit.remove(alreadySplitEvent);</span>
+<span class="nc" id="L1194">						alreadySplit.remove(alreadySplitEvent);</span>
 						// add merged nextEvent
-<span class="nc" id="L1141">						alreadySplit.add(nextEvent);</span>
+<span class="nc" id="L1196">						alreadySplit.add(nextEvent);</span>
 						// signal that nextEvent was already added to
 						// alreadySplit
-<span class="nc" id="L1144">						nextEvent = null;</span>
+<span class="nc" id="L1199">						nextEvent = null;</span>
 						// associated, and one at a time, so stop checking
-<span class="nc" id="L1146">						break;</span>
+<span class="nc" id="L1201">						break;</span>
 					}
-<span class="fc" id="L1148">				}</span>
+<span class="fc" id="L1203">				}</span>
 
-<span class="pc bpc" id="L1150" title="1 of 2 branches missed.">				if (nextEvent != null) {</span>
+<span class="pc bpc" id="L1205" title="1 of 2 branches missed.">				if (nextEvent != null) {</span>
 					// wasn't merged with an already split event
-<span class="fc" id="L1152">					alreadySplit.add(nextEvent);</span>
+<span class="fc" id="L1207">					alreadySplit.add(nextEvent);</span>
 				}
 			}
-<span class="fc" id="L1155">		}</span>
-<span class="fc bfc" id="L1156" title="All 2 branches covered.">		if (alreadySplit.size() == 0) {</span>
+<span class="fc" id="L1210">		}</span>
+<span class="fc bfc" id="L1211" title="All 2 branches covered.">		if (alreadySplit.size() == 0) {</span>
 			// didn't split any events...
-<span class="fc" id="L1158">			return changes;</span>
+<span class="fc" id="L1213">			return changes;</span>
 		}
 
 		// ## 3) Build list of Indexer changes that actually happened.
-<span class="fc" id="L1162">		String splitEventId = splitEvent.getEventId();</span>
+<span class="fc" id="L1217">		String splitEventId = splitEvent.getEventId();</span>
 
-<span class="pc bpc" id="L1164" title="1 of 2 branches missed.">		if (!originalEventId.equalsIgnoreCase(splitEventId)) {</span>
-<span class="nc" id="L1165">			LOGGER.warning(&quot;[&quot; + getName() + &quot;] eventid (&quot; + splitEventId</span>
+<span class="pc bpc" id="L1219" title="1 of 2 branches missed.">		if (!originalEventId.equalsIgnoreCase(splitEventId)) {</span>
+<span class="nc" id="L1220">			LOGGER.warning(&quot;[&quot; + getName() + &quot;] eventid (&quot; + splitEventId</span>
 					+ &quot;) no longer matches original (&quot; + originalEventId
 					+ &quot;) after split.&quot;);
 		}
 
 		// first notify about updated original event
-<span class="fc" id="L1171">		changes.add(new IndexerChange(</span>
-<span class="pc bpc" id="L1172" title="1 of 2 branches missed.">				(splitEvent.isDeleted() ? IndexerChange.EVENT_DELETED</span>
-<span class="fc" id="L1173">						: IndexerChange.EVENT_UPDATED), originalEvent,</span>
+<span class="fc" id="L1226">		changes.add(new IndexerChange(</span>
+<span class="pc bpc" id="L1227" title="1 of 2 branches missed.">				(splitEvent.isDeleted() ? IndexerChange.EVENT_DELETED</span>
+<span class="fc" id="L1228">						: IndexerChange.EVENT_UPDATED), originalEvent,</span>
 				splitEvent));
 
 		// now notify about all events that split from original event
-<span class="fc" id="L1177">		Iterator&lt;Event&gt; alreadySplitIter = alreadySplit.iterator();</span>
-<span class="fc bfc" id="L1178" title="All 2 branches covered.">		while (alreadySplitIter.hasNext()) {</span>
-<span class="fc" id="L1179">			Event alreadySplitEvent = alreadySplitIter.next();</span>
-<span class="fc" id="L1180">			changes.add(new IndexerChange(IndexerChange.EVENT_SPLIT, null,</span>
+<span class="fc" id="L1232">		Iterator&lt;Event&gt; alreadySplitIter = alreadySplit.iterator();</span>
+<span class="fc bfc" id="L1233" title="All 2 branches covered.">		while (alreadySplitIter.hasNext()) {</span>
+<span class="fc" id="L1234">			Event alreadySplitEvent = alreadySplitIter.next();</span>
+<span class="fc" id="L1235">			changes.add(new IndexerChange(IndexerChange.EVENT_SPLIT, null,</span>
 					alreadySplitEvent));
-<span class="fc" id="L1182">		}</span>
+<span class="fc" id="L1237">		}</span>
 
 		// done
-<span class="fc" id="L1185">		return changes;</span>
+<span class="fc" id="L1240">		return changes;</span>
 	}
 
 	/**
@@ -1199,24 +1254,24 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	protected synchronized Event splitEvents(final Event root, final Event leaf)
 			throws Exception {
-<span class="fc" id="L1202">		Event updated = root;</span>
-<span class="fc" id="L1203">		Iterator&lt;ProductSummary&gt; leafProducts = leaf.getProductList()</span>
-<span class="fc" id="L1204">				.iterator();</span>
+<span class="fc" id="L1257">		Event updated = root;</span>
+<span class="fc" id="L1258">		Iterator&lt;ProductSummary&gt; leafProducts = leaf.getProductList()</span>
+<span class="fc" id="L1259">				.iterator();</span>
 
 		// assign leaf indexId by reference
-<span class="fc" id="L1207">		Event insertedLeafEvent = productIndex.addEvent(leaf);</span>
-<span class="fc" id="L1208">		leaf.setIndexId(insertedLeafEvent.getIndexId());</span>
+<span class="fc" id="L1262">		Event insertedLeafEvent = productIndex.addEvent(leaf);</span>
+<span class="fc" id="L1263">		leaf.setIndexId(insertedLeafEvent.getIndexId());</span>
 
-<span class="fc bfc" id="L1210" title="All 2 branches covered.">		while (leafProducts.hasNext()) {</span>
-<span class="fc" id="L1211">			ProductSummary product = leafProducts.next();</span>
-<span class="pc bpc" id="L1212" title="1 of 2 branches missed.">			if (updated != null) {</span>
-<span class="fc" id="L1213">				updated = productIndex.removeAssociation(updated, product);</span>
+<span class="fc bfc" id="L1265" title="All 2 branches covered.">		while (leafProducts.hasNext()) {</span>
+<span class="fc" id="L1266">			ProductSummary product = leafProducts.next();</span>
+<span class="pc bpc" id="L1267" title="1 of 2 branches missed.">			if (updated != null) {</span>
+<span class="fc" id="L1268">				updated = productIndex.removeAssociation(updated, product);</span>
 			}
 			// leaf already has the product in its list, not returning anyways.
-<span class="fc" id="L1216">			productIndex.addAssociation(leaf, product);</span>
-<span class="fc" id="L1217">		}</span>
+<span class="fc" id="L1271">			productIndex.addAssociation(leaf, product);</span>
+<span class="fc" id="L1272">		}</span>
 
-<span class="fc" id="L1219">		return updated;</span>
+<span class="fc" id="L1274">		return updated;</span>
 	}
 
 	/**
@@ -1236,22 +1291,22 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	protected synchronized Event mergeEvents(final Event target,
 			final Event child) throws Exception {
-<span class="fc" id="L1239">		Iterator&lt;ProductSummary&gt; childProducts = child.getProductList()</span>
-<span class="fc" id="L1240">				.iterator();</span>
-<span class="fc" id="L1241">		Event updatedEvent = target;</span>
-<span class="fc" id="L1242">		Event updatedChild = child;</span>
+<span class="fc" id="L1294">		Iterator&lt;ProductSummary&gt; childProducts = child.getProductList()</span>
+<span class="fc" id="L1295">				.iterator();</span>
+<span class="fc" id="L1296">		Event updatedEvent = target;</span>
+<span class="fc" id="L1297">		Event updatedChild = child;</span>
 
-<span class="fc bfc" id="L1244" title="All 2 branches covered.">		while (childProducts.hasNext()) {</span>
-<span class="fc" id="L1245">			ProductSummary product = childProducts.next();</span>
-<span class="fc" id="L1246">			productIndex.removeAssociation(child, product);</span>
-<span class="fc" id="L1247">			updatedChild = productIndex</span>
-<span class="fc" id="L1248">					.removeAssociation(updatedChild, product);</span>
-<span class="fc" id="L1249">			updatedEvent = productIndex.addAssociation(updatedEvent, product);</span>
-<span class="fc" id="L1250">		}</span>
+<span class="fc bfc" id="L1299" title="All 2 branches covered.">		while (childProducts.hasNext()) {</span>
+<span class="fc" id="L1300">			ProductSummary product = childProducts.next();</span>
+<span class="fc" id="L1301">			productIndex.removeAssociation(child, product);</span>
+<span class="fc" id="L1302">			updatedChild = productIndex</span>
+<span class="fc" id="L1303">					.removeAssociation(updatedChild, product);</span>
+<span class="fc" id="L1304">			updatedEvent = productIndex.addAssociation(updatedEvent, product);</span>
+<span class="fc" id="L1305">		}</span>
 
-<span class="fc" id="L1252">		productIndex.removeEvent(updatedChild);</span>
+<span class="fc" id="L1307">		productIndex.removeEvent(updatedChild);</span>
 
-<span class="fc" id="L1254">		return updatedEvent;</span>
+<span class="fc" id="L1309">		return updatedEvent;</span>
 	}
 
 	/**
@@ -1270,42 +1325,42 @@ public class Indexer extends DefaultNotificationListener {
 	protected synchronized List&lt;IndexerChange&gt; checkForEventMerges(
 			final ProductSummary summary, final Event originalEvent,
 			final Event updatedEvent) throws Exception {
-<span class="fc" id="L1273">		List&lt;IndexerChange&gt; changes = new ArrayList&lt;IndexerChange&gt;();</span>
-<span class="fc" id="L1274">		Event mergedEvent = updatedEvent;</span>
+<span class="fc" id="L1328">		List&lt;IndexerChange&gt; changes = new ArrayList&lt;IndexerChange&gt;();</span>
+<span class="fc" id="L1329">		Event mergedEvent = updatedEvent;</span>
 
 		// ## 1) Check for nearby events
-<span class="fc bfc" id="L1277" title="All 2 branches covered.">		if (originalEvent != null) {</span>
+<span class="fc bfc" id="L1332" title="All 2 branches covered.">		if (originalEvent != null) {</span>
 			// only if the event was not just created, because otherwise this
 			// product would have associated to an existing event
 
 			// build the query
-<span class="fc" id="L1282">			EventSummary mergedSummary = mergedEvent.getEventSummary();</span>
-<span class="fc" id="L1283">			ProductIndexQuery nearbyEvents = associator.getLocationQuery(</span>
-<span class="fc" id="L1284">					mergedSummary.getTime(), mergedSummary.getLatitude(),</span>
-<span class="fc" id="L1285">					mergedSummary.getLongitude());</span>
-<span class="pc bpc" id="L1286" title="1 of 4 branches missed.">			if (associateUsingCurrentProducts &amp;&amp; nearbyEvents != null) {</span>
-<span class="fc" id="L1287">				nearbyEvents.setResultType(ProductIndexQuery.RESULT_TYPE_CURRENT);</span>
+<span class="fc" id="L1337">			EventSummary mergedSummary = mergedEvent.getEventSummary();</span>
+<span class="fc" id="L1338">			ProductIndexQuery nearbyEvents = associator.getLocationQuery(</span>
+<span class="fc" id="L1339">					mergedSummary.getTime(), mergedSummary.getLatitude(),</span>
+<span class="fc" id="L1340">					mergedSummary.getLongitude());</span>
+<span class="pc bpc" id="L1341" title="1 of 4 branches missed.">			if (associateUsingCurrentProducts &amp;&amp; nearbyEvents != null) {</span>
+<span class="fc" id="L1342">				nearbyEvents.setResultType(ProductIndexQuery.RESULT_TYPE_CURRENT);</span>
 			}
 
-<span class="fc" id="L1290">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] searching for nearby events&quot;);</span>
+<span class="fc" id="L1345">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] searching for nearby events&quot;);</span>
 			// do the search
-<span class="fc" id="L1292">			Iterator&lt;Event&gt; events = productIndex.getEvents(nearbyEvents)</span>
-<span class="fc" id="L1293">					.iterator();</span>
-<span class="fc" id="L1294">			LOGGER.finer(&quot;[&quot; + getName()</span>
+<span class="fc" id="L1347">			Iterator&lt;Event&gt; events = productIndex.getEvents(nearbyEvents)</span>
+<span class="fc" id="L1348">					.iterator();</span>
+<span class="fc" id="L1349">			LOGGER.finer(&quot;[&quot; + getName()</span>
 					+ &quot;] search for nearby events complete&quot;);
-<span class="fc bfc" id="L1296" title="All 2 branches covered.">			while (events.hasNext()) {</span>
-<span class="fc" id="L1297">				Event foundEvent = events.next();</span>
-<span class="fc bfc" id="L1298" title="All 2 branches covered.">				if (foundEvent.getIndexId().equals(mergedEvent.getIndexId())) {</span>
+<span class="fc bfc" id="L1351" title="All 2 branches covered.">			while (events.hasNext()) {</span>
+<span class="fc" id="L1352">				Event foundEvent = events.next();</span>
+<span class="fc bfc" id="L1353" title="All 2 branches covered.">				if (foundEvent.getIndexId().equals(mergedEvent.getIndexId())) {</span>
 					// found the event currently being checked for merges,
 					// ignore
-<span class="fc" id="L1301">					continue;</span>
-<span class="fc bfc" id="L1302" title="All 2 branches covered.">				} else if (mergedEvent.isAssociated(foundEvent, associator)) {</span>
+<span class="fc" id="L1356">					continue;</span>
+<span class="fc bfc" id="L1357" title="All 2 branches covered.">				} else if (mergedEvent.isAssociated(foundEvent, associator)) {</span>
 					// event associates to another event, merge them
-<span class="fc" id="L1304">					mergedEvent = mergeEvents(mergedEvent, foundEvent);</span>
-<span class="fc" id="L1305">					changes.add(new IndexerChange(IndexerChange.EVENT_MERGED,</span>
+<span class="fc" id="L1359">					mergedEvent = mergeEvents(mergedEvent, foundEvent);</span>
+<span class="fc" id="L1360">					changes.add(new IndexerChange(IndexerChange.EVENT_MERGED,</span>
 							foundEvent, null));
 				}
-<span class="fc" id="L1308">			}</span>
+<span class="fc" id="L1363">			}</span>
 		}
 
 		// ## 2) Now look for products that were previously unassociated, but
@@ -1313,26 +1368,26 @@ public class Indexer extends DefaultNotificationListener {
 		// product
 		// (if the event already had this id, these products would already be
 		// associated...)
-<span class="fc" id="L1316">		String source = summary.getEventSource();</span>
-<span class="fc" id="L1317">		String sourceCode = summary.getEventSourceCode();</span>
+<span class="fc" id="L1371">		String source = summary.getEventSource();</span>
+<span class="fc" id="L1372">		String sourceCode = summary.getEventSourceCode();</span>
 		// without this check, all unassociated products would be added...(BAD)
-<span class="pc bpc" id="L1319" title="1 of 4 branches missed.">		if (source != null &amp;&amp; sourceCode != null) {</span>
+<span class="pc bpc" id="L1374" title="1 of 4 branches missed.">		if (source != null &amp;&amp; sourceCode != null) {</span>
 			// build the query
-<span class="fc" id="L1321">			ProductIndexQuery unassociatedProducts = new ProductIndexQuery();</span>
-<span class="fc" id="L1322">			unassociatedProducts.setEventSource(source);</span>
-<span class="fc" id="L1323">			unassociatedProducts.setEventSourceCode(sourceCode);</span>
+<span class="fc" id="L1376">			ProductIndexQuery unassociatedProducts = new ProductIndexQuery();</span>
+<span class="fc" id="L1377">			unassociatedProducts.setEventSource(source);</span>
+<span class="fc" id="L1378">			unassociatedProducts.setEventSourceCode(sourceCode);</span>
 
 			// run the query
-<span class="fc" id="L1326">			LOGGER.finer(&quot;[&quot; + getName()</span>
+<span class="fc" id="L1381">			LOGGER.finer(&quot;[&quot; + getName()</span>
 					+ &quot;] searching for unassociated products&quot;);
-<span class="fc" id="L1328">			Iterator&lt;ProductSummary&gt; summaries = productIndex</span>
-<span class="fc" id="L1329">					.getUnassociatedProducts(unassociatedProducts).iterator();</span>
-<span class="fc" id="L1330">			LOGGER.finer(&quot;[&quot; + getName()</span>
+<span class="fc" id="L1383">			Iterator&lt;ProductSummary&gt; summaries = productIndex</span>
+<span class="fc" id="L1384">					.getUnassociatedProducts(unassociatedProducts).iterator();</span>
+<span class="fc" id="L1385">			LOGGER.finer(&quot;[&quot; + getName()</span>
 					+ &quot;] search for unassociated products complete&quot;);
 			// add associations
-<span class="fc bfc" id="L1333" title="All 2 branches covered.">			while (summaries.hasNext()) {</span>
-<span class="fc" id="L1334">				mergedEvent = productIndex.addAssociation(mergedEvent,</span>
-<span class="fc" id="L1335">						summaries.next());</span>
+<span class="fc bfc" id="L1388" title="All 2 branches covered.">			while (summaries.hasNext()) {</span>
+<span class="fc" id="L1389">				mergedEvent = productIndex.addAssociation(mergedEvent,</span>
+<span class="fc" id="L1390">						summaries.next());</span>
 			}
 		}
 
@@ -1342,102 +1397,102 @@ public class Indexer extends DefaultNotificationListener {
 		// is sent. Search for existing event (during getPrevEvent) does not
 		// search associate products othereventsource or othereventsourcecode
 		// properties.
-<span class="fc bfc" id="L1345" title="All 2 branches covered.">		if (summary.getType().equals(Event.ASSOCIATE_PRODUCT_TYPE)</span>
-<span class="pc bpc" id="L1346" title="1 of 2 branches missed.">				&amp;&amp; !summary.isDeleted()) {</span>
-<span class="fc" id="L1347">			String otherEventSource = summary.getProperties().get(</span>
+<span class="fc bfc" id="L1400" title="All 2 branches covered.">		if (summary.getType().equals(Event.ASSOCIATE_PRODUCT_TYPE)</span>
+<span class="pc bpc" id="L1401" title="1 of 2 branches missed.">				&amp;&amp; !summary.isDeleted()) {</span>
+<span class="fc" id="L1402">			String otherEventSource = summary.getProperties().get(</span>
 					Event.OTHEREVENTSOURCE_PROPERTY);
-<span class="fc" id="L1349">			String otherEventSourceCode = summary.getProperties().get(</span>
+<span class="fc" id="L1404">			String otherEventSourceCode = summary.getProperties().get(</span>
 					Event.OTHEREVENTSOURCECODE_PROPERTY);
 
-<span class="pc bpc" id="L1352" title="2 of 4 branches missed.">			if (otherEventSource == null || otherEventSourceCode == null) {</span>
-<span class="nc" id="L1353">				LOGGER.warning(Event.ASSOCIATE_PRODUCT_TYPE</span>
+<span class="pc bpc" id="L1407" title="2 of 4 branches missed.">			if (otherEventSource == null || otherEventSourceCode == null) {</span>
+<span class="nc" id="L1408">				LOGGER.warning(Event.ASSOCIATE_PRODUCT_TYPE</span>
 						+ &quot; product without &quot; + Event.OTHEREVENTSOURCE_PROPERTY
 						+ &quot; or &quot; + Event.OTHEREVENTSOURCECODE_PROPERTY
 						+ &quot; properties, ignoring&quot;);
 			} else {
 				// search for associated event
-<span class="fc" id="L1359">				ProductIndexQuery associateQuery = new ProductIndexQuery();</span>
-<span class="fc" id="L1360">				associateQuery.setEventSource(otherEventSource);</span>
-<span class="fc" id="L1361">				associateQuery.setEventSourceCode(otherEventSourceCode);</span>
+<span class="fc" id="L1414">				ProductIndexQuery associateQuery = new ProductIndexQuery();</span>
+<span class="fc" id="L1415">				associateQuery.setEventSource(otherEventSource);</span>
+<span class="fc" id="L1416">				associateQuery.setEventSourceCode(otherEventSourceCode);</span>
 
-<span class="pc bpc" id="L1363" title="1 of 2 branches missed.">				if (associateUsingCurrentProducts) {</span>
-<span class="nc" id="L1364">					associateQuery.setResultType(ProductIndexQuery.RESULT_TYPE_CURRENT);</span>
+<span class="pc bpc" id="L1418" title="1 of 2 branches missed.">				if (associateUsingCurrentProducts) {</span>
+<span class="nc" id="L1419">					associateQuery.setResultType(ProductIndexQuery.RESULT_TYPE_CURRENT);</span>
 				}
 
-<span class="fc" id="L1367">				LOGGER.finer(&quot;[&quot; + getName()</span>
+<span class="fc" id="L1422">				LOGGER.finer(&quot;[&quot; + getName()</span>
 						+ &quot;] searching for associated event&quot;);
 				// do the search
-<span class="fc" id="L1370">				Iterator&lt;Event&gt; events = productIndex.getEvents(associateQuery)</span>
-<span class="fc" id="L1371">						.iterator();</span>
-<span class="fc" id="L1372">				LOGGER.finer(&quot;[&quot; + getName()</span>
+<span class="fc" id="L1425">				Iterator&lt;Event&gt; events = productIndex.getEvents(associateQuery)</span>
+<span class="fc" id="L1426">						.iterator();</span>
+<span class="fc" id="L1427">				LOGGER.finer(&quot;[&quot; + getName()</span>
 						+ &quot;] search for associated event complete&quot;);
-<span class="fc bfc" id="L1374" title="All 2 branches covered.">				while (events.hasNext()) {</span>
-<span class="fc" id="L1375">					Event foundEvent = events.next();</span>
-<span class="fc" id="L1376">					if (foundEvent.getIndexId()</span>
-<span class="fc bfc" id="L1377" title="All 2 branches covered.">							.equals(mergedEvent.getIndexId())) {</span>
+<span class="fc bfc" id="L1429" title="All 2 branches covered.">				while (events.hasNext()) {</span>
+<span class="fc" id="L1430">					Event foundEvent = events.next();</span>
+<span class="fc" id="L1431">					if (foundEvent.getIndexId()</span>
+<span class="fc bfc" id="L1432" title="All 2 branches covered.">							.equals(mergedEvent.getIndexId())) {</span>
 						// found the event currently being checked for merges,
 						// ignore
-<span class="fc" id="L1380">						continue;</span>
-<span class="pc bpc" id="L1381" title="1 of 2 branches missed.">					} else if (mergedEvent.isAssociated(foundEvent)) {</span>
+<span class="fc" id="L1435">						continue;</span>
+<span class="pc bpc" id="L1436" title="1 of 2 branches missed.">					} else if (mergedEvent.isAssociated(foundEvent)) {</span>
 						// event associates to another event, merge them
-<span class="fc" id="L1383">						mergedEvent = mergeEvents(mergedEvent, foundEvent);</span>
-<span class="fc" id="L1384">						changes.add(new IndexerChange(</span>
+<span class="fc" id="L1438">						mergedEvent = mergeEvents(mergedEvent, foundEvent);</span>
+<span class="fc" id="L1439">						changes.add(new IndexerChange(</span>
 								IndexerChange.EVENT_MERGED, foundEvent, null));
 					}
-<span class="fc" id="L1387">				}</span>
+<span class="fc" id="L1442">				}</span>
 			}
 		}
 
 		// ## 4) Check if the event has changed during this method
-<span class="fc bfc" id="L1392" title="All 2 branches covered.">		if (mergedEvent != updatedEvent) {</span>
+<span class="fc bfc" id="L1447" title="All 2 branches covered.">		if (mergedEvent != updatedEvent) {</span>
 			// something has changed, so add an IndexerChange
-<span class="fc bfc" id="L1394" title="All 2 branches covered.">			if (originalEvent == null) {</span>
+<span class="fc bfc" id="L1449" title="All 2 branches covered.">			if (originalEvent == null) {</span>
 				// no previous event, it was added (although unassociated
 				// products were associated)
-<span class="fc" id="L1397">				changes.add(new IndexerChange(IndexerChange.EVENT_ADDED, null,</span>
+<span class="fc" id="L1452">				changes.add(new IndexerChange(IndexerChange.EVENT_ADDED, null,</span>
 						mergedEvent));
 			} else {
 				// may have merged with other events, or associated unassociated
 				// products. Other changes represent the merges, so just
 				// indicate update/delete.
-<span class="fc" id="L1403">				changes.add(new IndexerChange(</span>
-<span class="pc bpc" id="L1404" title="1 of 2 branches missed.">						(mergedEvent.isDeleted() ? IndexerChange.EVENT_DELETED</span>
-<span class="fc" id="L1405">								: IndexerChange.EVENT_UPDATED), originalEvent,</span>
+<span class="fc" id="L1458">				changes.add(new IndexerChange(</span>
+<span class="pc bpc" id="L1459" title="1 of 2 branches missed.">						(mergedEvent.isDeleted() ? IndexerChange.EVENT_DELETED</span>
+<span class="fc" id="L1460">								: IndexerChange.EVENT_UPDATED), originalEvent,</span>
 						mergedEvent));
 			}
 		}
 
-<span class="fc" id="L1410">		return changes;</span>
+<span class="fc" id="L1465">		return changes;</span>
 	}
 
 	protected synchronized ProductSummary getPrevProductVersion(
 			ProductSummary summary) throws Exception {
-<span class="fc" id="L1415">		ProductSummary prevSummary = null;</span>
-<span class="fc" id="L1416">		List&lt;ProductSummary&gt; candidateSummaries = null;</span>
-<span class="fc" id="L1417">		ProductIndexQuery query = new ProductIndexQuery();</span>
+<span class="fc" id="L1470">		ProductSummary prevSummary = null;</span>
+<span class="fc" id="L1471">		List&lt;ProductSummary&gt; candidateSummaries = null;</span>
+<span class="fc" id="L1472">		ProductIndexQuery query = new ProductIndexQuery();</span>
 
 		// Set type, code and source
-<span class="fc" id="L1420">		query.setProductType(summary.getType());</span>
-<span class="fc" id="L1421">		query.setProductCode(summary.getCode());</span>
-<span class="fc" id="L1422">		query.setProductSource(summary.getSource());</span>
+<span class="fc" id="L1475">		query.setProductType(summary.getType());</span>
+<span class="fc" id="L1476">		query.setProductCode(summary.getCode());</span>
+<span class="fc" id="L1477">		query.setProductSource(summary.getSource());</span>
 
 		// Query the index (first look for associated products)
-<span class="fc" id="L1425">		candidateSummaries = productIndex.getProducts(query);</span>
+<span class="fc" id="L1480">		candidateSummaries = productIndex.getProducts(query);</span>
 
-<span class="pc bpc" id="L1427" title="1 of 4 branches missed.">		if (candidateSummaries == null || candidateSummaries.size() == 0) {</span>
+<span class="pc bpc" id="L1482" title="1 of 4 branches missed.">		if (candidateSummaries == null || candidateSummaries.size() == 0) {</span>
 			// No summaries found associated to events, try unassociated.
-<span class="fc" id="L1429">			candidateSummaries = productIndex.getUnassociatedProducts(query);</span>
+<span class="fc" id="L1484">			candidateSummaries = productIndex.getUnassociatedProducts(query);</span>
 		}
 
-<span class="pc bpc" id="L1432" title="1 of 4 branches missed.">		if (candidateSummaries != null &amp;&amp; candidateSummaries.size() &gt; 0) {</span>
-<span class="fc" id="L1433">			prevSummary = candidateSummaries.get(0);</span>
-<span class="pc bpc" id="L1434" title="1 of 2 branches missed.">			if (candidateSummaries.size() != 1) {</span>
-<span class="nc" id="L1435">				LOGGER.warning(</span>
-<span class="nc" id="L1436">						&quot;[&quot; + getName() + &quot;] &quot; + summary.getId().toString() +</span>
+<span class="pc bpc" id="L1487" title="1 of 4 branches missed.">		if (candidateSummaries != null &amp;&amp; candidateSummaries.size() &gt; 0) {</span>
+<span class="fc" id="L1488">			prevSummary = candidateSummaries.get(0);</span>
+<span class="pc bpc" id="L1489" title="1 of 2 branches missed.">			if (candidateSummaries.size() != 1) {</span>
+<span class="nc" id="L1490">				LOGGER.warning(</span>
+<span class="nc" id="L1491">						&quot;[&quot; + getName() + &quot;] &quot; + summary.getId().toString() +</span>
 						&quot;: More than one existing summary is claiming to be most recent.&quot;);
 			}
 		}
-<span class="fc" id="L1440">		return prevSummary;</span>
+<span class="fc" id="L1495">		return prevSummary;</span>
 	}
 
 	/**
@@ -1455,7 +1510,7 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	protected synchronized Event getPrevEvent(ProductSummary summary)
 			throws Exception {
-<span class="nc" id="L1458">		return getPrevEvent(summary, false);</span>
+<span class="nc" id="L1513">		return getPrevEvent(summary, false);</span>
 	}
 
 	/**
@@ -1468,29 +1523,29 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	protected synchronized Event getPrevEvent(ProductSummary summary,
 			boolean associating) throws Exception {
-<span class="fc" id="L1471">		Event prevEvent = null;</span>
-<span class="fc" id="L1472">		List&lt;Event&gt; candidateEvents = null;</span>
+<span class="fc" id="L1526">		Event prevEvent = null;</span>
+<span class="fc" id="L1527">		List&lt;Event&gt; candidateEvents = null;</span>
 
-<span class="fc" id="L1474">		SearchRequest request = associator.getSearchRequest(summary);</span>
+<span class="fc" id="L1529">		SearchRequest request = associator.getSearchRequest(summary);</span>
 
-<span class="pc bpc" id="L1476" title="1 of 4 branches missed.">		if (associating &amp;&amp; associateUsingCurrentProducts) {</span>
-<span class="fc bfc" id="L1477" title="All 2 branches covered.">			for (SearchQuery query : request.getQueries()) {</span>
-<span class="fc" id="L1478">				query.getProductIndexQuery().setResultType(</span>
+<span class="pc bpc" id="L1531" title="1 of 4 branches missed.">		if (associating &amp;&amp; associateUsingCurrentProducts) {</span>
+<span class="fc bfc" id="L1532" title="All 2 branches covered.">			for (SearchQuery query : request.getQueries()) {</span>
+<span class="fc" id="L1533">				query.getProductIndexQuery().setResultType(</span>
 						ProductIndexQuery.RESULT_TYPE_CURRENT);
-<span class="fc" id="L1480">			}</span>
+<span class="fc" id="L1535">			}</span>
 		}
 
-<span class="fc" id="L1483">		SearchResponse response = search(request);</span>
-<span class="pc bpc" id="L1484" title="1 of 2 branches missed.">		if (response != null) {</span>
-<span class="fc" id="L1485">			candidateEvents = response.getEvents();</span>
+<span class="fc" id="L1538">		SearchResponse response = search(request);</span>
+<span class="pc bpc" id="L1539" title="1 of 2 branches missed.">		if (response != null) {</span>
+<span class="fc" id="L1540">			candidateEvents = response.getEvents();</span>
 		}
 
-<span class="pc bpc" id="L1488" title="1 of 4 branches missed.">		if (candidateEvents != null &amp;&amp; candidateEvents.size() &gt; 0) {</span>
+<span class="pc bpc" id="L1543" title="1 of 4 branches missed.">		if (candidateEvents != null &amp;&amp; candidateEvents.size() &gt; 0) {</span>
 			// Found some events. Find best match.
-<span class="fc" id="L1490">			prevEvent = associator.chooseEvent(candidateEvents, summary);</span>
+<span class="fc" id="L1545">			prevEvent = associator.chooseEvent(candidateEvents, summary);</span>
 		}
 
-<span class="fc" id="L1493">		return prevEvent;</span>
+<span class="fc" id="L1548">		return prevEvent;</span>
 	}
 
 	/*
@@ -1531,181 +1586,181 @@ public class Indexer extends DefaultNotificationListener {
 	@Override
 	public synchronized void configure(Config config) throws Exception {
 		// -- Load parent configurations -- //
-<span class="fc" id="L1534">		super.configure(config);</span>
+<span class="fc" id="L1589">		super.configure(config);</span>
 
 		// reads properties from same config section
-<span class="fc" id="L1537">		defaultModule.getSignatureVerifier().configure(config);</span>
+<span class="fc" id="L1592">		defaultModule.getSignatureVerifier().configure(config);</span>
 
 		// -- Load specific configurations -- //
-<span class="fc" id="L1540">		String associatorName = config.getProperty(ASSOCIATOR_CONFIG_PROPERTY);</span>
-<span class="pc bpc" id="L1541" title="1 of 2 branches missed.">		if (associatorName != null) {</span>
-<span class="nc" id="L1542">			associator = (Associator) Config.getConfig().getObject(</span>
+<span class="fc" id="L1595">		String associatorName = config.getProperty(ASSOCIATOR_CONFIG_PROPERTY);</span>
+<span class="pc bpc" id="L1596" title="1 of 2 branches missed.">		if (associatorName != null) {</span>
+<span class="nc" id="L1597">			associator = (Associator) Config.getConfig().getObject(</span>
 					associatorName);
 		}
 
-<span class="fc" id="L1546">		String storageName = config.getProperty(STORAGE_CONFIG_PROPERTY);</span>
-<span class="fc" id="L1547">		String storageDirectory = config</span>
-<span class="fc" id="L1548">				.getProperty(STORAGE_DIRECTORY_CONFIG_PROPERTY);</span>
-<span class="pc bpc" id="L1549" title="1 of 2 branches missed.">		if (storageName != null) {</span>
-<span class="nc" id="L1550">			LOGGER.config(&quot;[&quot; + getName() + &quot;] loading ProductStorage '&quot;</span>
+<span class="fc" id="L1601">		String storageName = config.getProperty(STORAGE_CONFIG_PROPERTY);</span>
+<span class="fc" id="L1602">		String storageDirectory = config</span>
+<span class="fc" id="L1603">				.getProperty(STORAGE_DIRECTORY_CONFIG_PROPERTY);</span>
+<span class="pc bpc" id="L1604" title="1 of 2 branches missed.">		if (storageName != null) {</span>
+<span class="nc" id="L1605">			LOGGER.config(&quot;[&quot; + getName() + &quot;] loading ProductStorage '&quot;</span>
 					+ storageName + &quot;'&quot;);
-<span class="nc" id="L1552">			productStorage = (ProductStorage) Config.getConfig().getObject(</span>
+<span class="nc" id="L1607">			productStorage = (ProductStorage) Config.getConfig().getObject(</span>
 					storageName);
-<span class="nc bnc" id="L1554" title="All 2 branches missed.">			if (productStorage == null) {</span>
-<span class="nc" id="L1555">				throw new ConfigurationException(&quot;[&quot; + getName()</span>
+<span class="nc bnc" id="L1609" title="All 2 branches missed.">			if (productStorage == null) {</span>
+<span class="nc" id="L1610">				throw new ConfigurationException(&quot;[&quot; + getName()</span>
 						+ &quot;] ProductStorage '&quot; + storageName
 						+ &quot;' is not properly configured&quot;);
 			}
-<span class="pc bpc" id="L1559" title="1 of 2 branches missed.">		} else if (storageDirectory != null) {</span>
-<span class="fc" id="L1560">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using storage directory '&quot;</span>
+<span class="pc bpc" id="L1614" title="1 of 2 branches missed.">		} else if (storageDirectory != null) {</span>
+<span class="fc" id="L1615">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using storage directory '&quot;</span>
 					+ storageDirectory + &quot;'&quot;);
-<span class="fc" id="L1562">			productStorage = new FileProductStorage(new File(storageDirectory));</span>
+<span class="fc" id="L1617">			productStorage = new FileProductStorage(new File(storageDirectory));</span>
 		} else {
-<span class="nc" id="L1564">			productStorage.configure(config);</span>
+<span class="nc" id="L1619">			productStorage.configure(config);</span>
 		}
 
-<span class="fc" id="L1567">		String indexName = config.getProperty(INDEX_CONFIG_PROPERTY);</span>
-<span class="fc" id="L1568">		String indexFileName = config.getProperty(INDEXFILE_CONFIG_PROPERTY);</span>
-<span class="pc bpc" id="L1569" title="1 of 2 branches missed.">		if (indexName != null) {</span>
-<span class="nc" id="L1570">			LOGGER.config(&quot;[&quot; + getName() + &quot;] loading ProductIndex '&quot;</span>
+<span class="fc" id="L1622">		String indexName = config.getProperty(INDEX_CONFIG_PROPERTY);</span>
+<span class="fc" id="L1623">		String indexFileName = config.getProperty(INDEXFILE_CONFIG_PROPERTY);</span>
+<span class="pc bpc" id="L1624" title="1 of 2 branches missed.">		if (indexName != null) {</span>
+<span class="nc" id="L1625">			LOGGER.config(&quot;[&quot; + getName() + &quot;] loading ProductIndex '&quot;</span>
 					+ indexName + &quot;'&quot;);
-<span class="nc" id="L1572">			productIndex = (ProductIndex) Config.getConfig().getObject(</span>
+<span class="nc" id="L1627">			productIndex = (ProductIndex) Config.getConfig().getObject(</span>
 					indexName);
-<span class="nc bnc" id="L1574" title="All 2 branches missed.">			if (productIndex == null) {</span>
-<span class="nc" id="L1575">				throw new ConfigurationException(&quot;[&quot; + getName()</span>
+<span class="nc bnc" id="L1629" title="All 2 branches missed.">			if (productIndex == null) {</span>
+<span class="nc" id="L1630">				throw new ConfigurationException(&quot;[&quot; + getName()</span>
 						+ &quot;] ProductIndex '&quot; + indexName
 						+ &quot;' is not properly configured&quot;);
 			}
-<span class="pc bpc" id="L1579" title="1 of 2 branches missed.">		} else if (indexFileName != null) {</span>
-<span class="fc" id="L1580">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using sqlite product index '&quot;</span>
+<span class="pc bpc" id="L1634" title="1 of 2 branches missed.">		} else if (indexFileName != null) {</span>
+<span class="fc" id="L1635">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using sqlite product index '&quot;</span>
 					+ indexFileName + &quot;'&quot;);
-<span class="fc" id="L1582">			productIndex = new JDBCProductIndex(indexFileName);</span>
+<span class="fc" id="L1637">			productIndex = new JDBCProductIndex(indexFileName);</span>
 		} else {
-<span class="nc" id="L1584">			productIndex.configure(config);</span>
+<span class="nc" id="L1639">			productIndex.configure(config);</span>
 		}
 
 		// How often to check for expired products
-<span class="fc" id="L1588">		String archivePolicy = config</span>
-<span class="fc" id="L1589">				.getProperty(INDEX_ARCHIVE_POLICY_PROPERTY);</span>
-<span class="fc bfc" id="L1590" title="All 2 branches covered.">		if (archivePolicy != null) {</span>
-<span class="fc" id="L1591">			Iterator&lt;String&gt; iter = StringUtils.split(archivePolicy, &quot;,&quot;)</span>
-<span class="fc" id="L1592">					.iterator();</span>
-<span class="fc bfc" id="L1593" title="All 2 branches covered.">			while (iter.hasNext()) {</span>
-<span class="fc" id="L1594">				String policyName = iter.next();</span>
+<span class="fc" id="L1643">		String archivePolicy = config</span>
+<span class="fc" id="L1644">				.getProperty(INDEX_ARCHIVE_POLICY_PROPERTY);</span>
+<span class="fc bfc" id="L1645" title="All 2 branches covered.">		if (archivePolicy != null) {</span>
+<span class="fc" id="L1646">			Iterator&lt;String&gt; iter = StringUtils.split(archivePolicy, &quot;,&quot;)</span>
+<span class="fc" id="L1647">					.iterator();</span>
+<span class="fc bfc" id="L1648" title="All 2 branches covered.">			while (iter.hasNext()) {</span>
+<span class="fc" id="L1649">				String policyName = iter.next();</span>
 
-<span class="fc" id="L1596">				LOGGER.config(&quot;[&quot; + getName() + &quot;] loading ArchivePolicy '&quot;</span>
+<span class="fc" id="L1651">				LOGGER.config(&quot;[&quot; + getName() + &quot;] loading ArchivePolicy '&quot;</span>
 						+ policyName + &quot;'&quot;);
-<span class="fc" id="L1598">				ArchivePolicy policy = (ArchivePolicy) Config.getConfig()</span>
-<span class="fc" id="L1599">						.getObject(policyName);</span>
-<span class="pc bpc" id="L1600" title="1 of 2 branches missed.">				if (policy == null) {</span>
-<span class="nc" id="L1601">					throw new ConfigurationException(&quot;[&quot; + getName()</span>
+<span class="fc" id="L1653">				ArchivePolicy policy = (ArchivePolicy) Config.getConfig()</span>
+<span class="fc" id="L1654">						.getObject(policyName);</span>
+<span class="pc bpc" id="L1655" title="1 of 2 branches missed.">				if (policy == null) {</span>
+<span class="nc" id="L1656">					throw new ConfigurationException(&quot;[&quot; + getName()</span>
 							+ &quot;] ArchivePolicy '&quot; + policyName
 							+ &quot;' is not configured properly&quot;);
 				}
 
 				// Only use archive policies that are valid
-<span class="pc bpc" id="L1607" title="1 of 2 branches missed.">				if (policy.isValidPolicy()) {</span>
-<span class="fc" id="L1608">					archivePolicies.add(policy);</span>
+<span class="pc bpc" id="L1662" title="1 of 2 branches missed.">				if (policy.isValidPolicy()) {</span>
+<span class="fc" id="L1663">					archivePolicies.add(policy);</span>
 				} else {
-<span class="nc" id="L1610">					LOGGER.warning(&quot;[&quot; + getName() + &quot;] ArchivePolicy '&quot;</span>
+<span class="nc" id="L1665">					LOGGER.warning(&quot;[&quot; + getName() + &quot;] ArchivePolicy '&quot;</span>
 							+ policyName + &quot;' is not valid&quot;);
 				}
-<span class="fc" id="L1613">			}</span>
+<span class="fc" id="L1668">			}</span>
 		}
 
 		// How often should the archive policies be run
-<span class="fc" id="L1617">		String buffer = config.getProperty(INDEX_ARCHIVE_INTERVAL_PROPERTY);</span>
-<span class="fc bfc" id="L1618" title="All 2 branches covered.">		if (buffer != null) {</span>
-<span class="fc" id="L1619">			archiveInterval = Long.parseLong(buffer);</span>
+<span class="fc" id="L1672">		String buffer = config.getProperty(INDEX_ARCHIVE_INTERVAL_PROPERTY);</span>
+<span class="fc bfc" id="L1673" title="All 2 branches covered.">		if (buffer != null) {</span>
+<span class="fc" id="L1674">			archiveInterval = Long.parseLong(buffer);</span>
 		} else {
 			// Use default age
-<span class="fc" id="L1622">			archiveInterval = INDEX_ARCHIVE_INTERVAL_DEFAULT;</span>
+<span class="fc" id="L1677">			archiveInterval = INDEX_ARCHIVE_INTERVAL_DEFAULT;</span>
 		}
-<span class="fc" id="L1624">		LOGGER.config(&quot;[&quot; + getName() + &quot;] archive interval is '&quot;</span>
+<span class="fc" id="L1679">		LOGGER.config(&quot;[&quot; + getName() + &quot;] archive interval is '&quot;</span>
 				+ archiveInterval + &quot;'&quot;);
 
 		// Always use at least a default indexer module
-<span class="fc" id="L1628">		String moduleNames = config.getProperty(MODULES_CONFIG_PROPERTY);</span>
-<span class="pc bpc" id="L1629" title="1 of 2 branches missed.">		if (moduleNames != null) {</span>
-<span class="nc" id="L1630">			Iterator&lt;String&gt; modules = StringUtils.split(moduleNames, &quot;,&quot;)</span>
-<span class="nc" id="L1631">					.iterator();</span>
-<span class="nc bnc" id="L1632" title="All 2 branches missed.">			while (modules.hasNext()) {</span>
-<span class="nc" id="L1633">				String moduleName = modules.next();</span>
-<span class="nc bnc" id="L1634" title="All 2 branches missed.">				if (moduleName.equals(&quot;&quot;)) {</span>
-<span class="nc" id="L1635">					continue;</span>
+<span class="fc" id="L1683">		String moduleNames = config.getProperty(MODULES_CONFIG_PROPERTY);</span>
+<span class="pc bpc" id="L1684" title="1 of 2 branches missed.">		if (moduleNames != null) {</span>
+<span class="nc" id="L1685">			Iterator&lt;String&gt; modules = StringUtils.split(moduleNames, &quot;,&quot;)</span>
+<span class="nc" id="L1686">					.iterator();</span>
+<span class="nc bnc" id="L1687" title="All 2 branches missed.">			while (modules.hasNext()) {</span>
+<span class="nc" id="L1688">				String moduleName = modules.next();</span>
+<span class="nc bnc" id="L1689" title="All 2 branches missed.">				if (moduleName.equals(&quot;&quot;)) {</span>
+<span class="nc" id="L1690">					continue;</span>
 				}
-<span class="nc" id="L1637">				LOGGER.config(&quot;[&quot; + getName() + &quot;] loading indexer module '&quot;</span>
+<span class="nc" id="L1692">				LOGGER.config(&quot;[&quot; + getName() + &quot;] loading indexer module '&quot;</span>
 						+ moduleName + &quot;'&quot;);
-<span class="nc" id="L1639">				IndexerModule module = (IndexerModule) Config.getConfig()</span>
-<span class="nc" id="L1640">						.getObject(moduleName);</span>
-<span class="nc bnc" id="L1641" title="All 2 branches missed.">				if (module == null) {</span>
-<span class="nc" id="L1642">					throw new ConfigurationException(&quot;[&quot; + getName()</span>
+<span class="nc" id="L1694">				IndexerModule module = (IndexerModule) Config.getConfig()</span>
+<span class="nc" id="L1695">						.getObject(moduleName);</span>
+<span class="nc bnc" id="L1696" title="All 2 branches missed.">				if (module == null) {</span>
+<span class="nc" id="L1697">					throw new ConfigurationException(&quot;[&quot; + getName()</span>
 							+ &quot;] indexer module '&quot; + moduleName
 							+ &quot;' is not configured properly&quot;);
 				}
-<span class="nc" id="L1646">				addModule(module);</span>
-<span class="nc" id="L1647">			}</span>
-<span class="nc" id="L1648">		} else {</span>
-<span class="fc" id="L1649">			LOGGER.config(&quot;[&quot; + getName() + &quot;] no indexer modules configured.&quot;);</span>
+<span class="nc" id="L1701">				addModule(module);</span>
+<span class="nc" id="L1702">			}</span>
+<span class="nc" id="L1703">		} else {</span>
+<span class="fc" id="L1704">			LOGGER.config(&quot;[&quot; + getName() + &quot;] no indexer modules configured.&quot;);</span>
 		}
 
-<span class="fc" id="L1652">		String listenerNames = config.getProperty(LISTENERS_CONFIG_PROPERTY);</span>
-<span class="pc bpc" id="L1653" title="1 of 2 branches missed.">		if (listenerNames != null) {</span>
-<span class="nc" id="L1654">			Iterator&lt;String&gt; listeners = StringUtils.split(listenerNames, &quot;,&quot;)</span>
-<span class="nc" id="L1655">					.iterator();</span>
-<span class="nc bnc" id="L1656" title="All 2 branches missed.">			while (listeners.hasNext()) {</span>
-<span class="nc" id="L1657">				String listenerName = listeners.next();</span>
-<span class="nc bnc" id="L1658" title="All 2 branches missed.">				if (listenerName.equals(&quot;&quot;)) {</span>
-<span class="nc" id="L1659">					continue;</span>
+<span class="fc" id="L1707">		String listenerNames = config.getProperty(LISTENERS_CONFIG_PROPERTY);</span>
+<span class="pc bpc" id="L1708" title="1 of 2 branches missed.">		if (listenerNames != null) {</span>
+<span class="nc" id="L1709">			Iterator&lt;String&gt; listeners = StringUtils.split(listenerNames, &quot;,&quot;)</span>
+<span class="nc" id="L1710">					.iterator();</span>
+<span class="nc bnc" id="L1711" title="All 2 branches missed.">			while (listeners.hasNext()) {</span>
+<span class="nc" id="L1712">				String listenerName = listeners.next();</span>
+<span class="nc bnc" id="L1713" title="All 2 branches missed.">				if (listenerName.equals(&quot;&quot;)) {</span>
+<span class="nc" id="L1714">					continue;</span>
 				}
-<span class="nc" id="L1661">				LOGGER.config(&quot;[&quot; + getName() + &quot;] loading indexer listener '&quot;</span>
+<span class="nc" id="L1716">				LOGGER.config(&quot;[&quot; + getName() + &quot;] loading indexer listener '&quot;</span>
 						+ listenerName + &quot;'&quot;);
-<span class="nc" id="L1663">				IndexerListener listener = (IndexerListener) Config.getConfig()</span>
-<span class="nc" id="L1664">						.getObject(listenerName);</span>
-<span class="nc bnc" id="L1665" title="All 2 branches missed.">				if (listener == null) {</span>
-<span class="nc" id="L1666">					throw new ConfigurationException(&quot;[&quot; + getName()</span>
+<span class="nc" id="L1718">				IndexerListener listener = (IndexerListener) Config.getConfig()</span>
+<span class="nc" id="L1719">						.getObject(listenerName);</span>
+<span class="nc bnc" id="L1720" title="All 2 branches missed.">				if (listener == null) {</span>
+<span class="nc" id="L1721">					throw new ConfigurationException(&quot;[&quot; + getName()</span>
 							+ &quot;] indexer listener '&quot; + listenerName
 							+ &quot;' is not configured properly&quot;);
 				}
-<span class="nc" id="L1670">				addListener(listener);</span>
-<span class="nc" id="L1671">			}</span>
-<span class="nc" id="L1672">		} else {</span>
-<span class="fc" id="L1673">			LOGGER.config(&quot;[&quot; + getName()</span>
+<span class="nc" id="L1725">				addListener(listener);</span>
+<span class="nc" id="L1726">			}</span>
+<span class="nc" id="L1727">		} else {</span>
+<span class="fc" id="L1728">			LOGGER.config(&quot;[&quot; + getName()</span>
 					+ &quot;] no indexer listeners configured.&quot;);
 		}
 
-<span class="fc" id="L1677">		String localRegions = config.getProperty(LOCAL_REGIONS_PROPERTY,</span>
+<span class="fc" id="L1732">		String localRegions = config.getProperty(LOCAL_REGIONS_PROPERTY,</span>
 				DEFAULT_LOCAL_REGIONS);
-<span class="fc" id="L1679">		this.localRegionsFile = new File(localRegions);</span>
-<span class="fc" id="L1680">		LOGGER.config(&quot;[&quot; + getName() + &quot;] Local regions file: &quot;</span>
+<span class="fc" id="L1734">		this.localRegionsFile = new File(localRegions);</span>
+<span class="fc" id="L1735">		LOGGER.config(&quot;[&quot; + getName() + &quot;] Local regions file: &quot;</span>
 				+ this.localRegionsFile);
 
-<span class="fc" id="L1683">		String enableSearch = config.getProperty(ENABLE_SEARCH_PROPERTY,</span>
+<span class="fc" id="L1738">		String enableSearch = config.getProperty(ENABLE_SEARCH_PROPERTY,</span>
 				DEFAULT_ENABLE_SEARCH);
-<span class="pc bpc" id="L1685" title="1 of 2 branches missed.">		if (Boolean.valueOf(enableSearch)) {</span>
-<span class="nc" id="L1686">			searchSocket = new SearchServerSocket();</span>
-<span class="nc" id="L1687">			searchSocket.setIndex(this);</span>
+<span class="pc bpc" id="L1740" title="1 of 2 branches missed.">		if (Boolean.valueOf(enableSearch)) {</span>
+<span class="nc" id="L1741">			searchSocket = new SearchServerSocket();</span>
+<span class="nc" id="L1742">			searchSocket.setIndex(this);</span>
 
-<span class="nc" id="L1689">			int searchPort = Integer.parseInt(config.getProperty(</span>
+<span class="nc" id="L1744">			int searchPort = Integer.parseInt(config.getProperty(</span>
 					SEARCH_PORT_PROPERTY, DEFAULT_SEARCH_PORT));
-<span class="nc" id="L1691">			searchSocket.setPort(searchPort);</span>
+<span class="nc" id="L1746">			searchSocket.setPort(searchPort);</span>
 
-<span class="nc" id="L1693">			int searchThreads = Integer.parseInt(config.getProperty(</span>
+<span class="nc" id="L1748">			int searchThreads = Integer.parseInt(config.getProperty(</span>
 					SEARCH_THREADS_PROPERTY, DEFAULT_SEARCH_THREADS));
-<span class="nc" id="L1695">			searchSocket.setThreads(searchThreads);</span>
+<span class="nc" id="L1750">			searchSocket.setThreads(searchThreads);</span>
 
-<span class="nc" id="L1697">			LOGGER.config(&quot;[&quot; + getName()</span>
+<span class="nc" id="L1752">			LOGGER.config(&quot;[&quot; + getName()</span>
 					+ &quot;] SearchServerSocket running at localhost:&quot; + searchPort
 					+ &quot;, with &quot; + searchThreads + &quot; threads&quot;);
 		}
 		// -- Load dependent configurations -- //
 
-<span class="fc" id="L1703">		associateUsingCurrentProducts = Boolean.valueOf(</span>
-<span class="fc" id="L1704">				config.getProperty(ASSOCIATE_USING_CURRENT_PRODUCTS_PROPERTY,</span>
+<span class="fc" id="L1758">		associateUsingCurrentProducts = Boolean.valueOf(</span>
+<span class="fc" id="L1759">				config.getProperty(ASSOCIATE_USING_CURRENT_PRODUCTS_PROPERTY,</span>
 				DEFAULT_ASSOCIATE_USING_CURRENT_PRODUCTS));
-<span class="fc" id="L1706">		LOGGER.config(&quot;[&quot; + getName() + &quot;] associateUsingCurrentProducts = &quot;</span>
+<span class="fc" id="L1761">		LOGGER.config(&quot;[&quot; + getName() + &quot;] associateUsingCurrentProducts = &quot;</span>
 				+ associateUsingCurrentProducts);
-<span class="fc" id="L1708">	}</span>
+<span class="fc" id="L1763">	}</span>
 
 	/**
 	 * Shuts down the Indexer. The parent shutdown method is called and then all
@@ -1715,63 +1770,63 @@ public class Indexer extends DefaultNotificationListener {
 	public synchronized void shutdown() throws Exception {
 		// -- Shut down dependent processes -- //
 		try {
-<span class="fc" id="L1718">			productIndex.shutdown();</span>
-<span class="nc" id="L1719">		} catch (Exception e) {</span>
-<span class="nc" id="L1720">			LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+<span class="fc" id="L1773">			productIndex.shutdown();</span>
+<span class="nc" id="L1774">		} catch (Exception e) {</span>
+<span class="nc" id="L1775">			LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 					+ &quot;] exception shutting down product index&quot;, e);
-<span class="fc" id="L1722">		}</span>
-<span class="fc" id="L1723">		productStorage.shutdown();</span>
+<span class="fc" id="L1777">		}</span>
+<span class="fc" id="L1778">		productStorage.shutdown();</span>
 
 		// ExecutorServices tied to known listeners.
-<span class="fc" id="L1726">		Iterator&lt;IndexerListener&gt; iter = listeners.keySet().iterator();</span>
-<span class="fc bfc" id="L1727" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
-<span class="fc" id="L1728">			IndexerListener listener = iter.next();</span>
+<span class="fc" id="L1781">		Iterator&lt;IndexerListener&gt; iter = listeners.keySet().iterator();</span>
+<span class="fc bfc" id="L1782" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L1783">			IndexerListener listener = iter.next();</span>
 			try {
-<span class="fc" id="L1730">				listeners.get(listener).shutdown();</span>
-<span class="nc" id="L1731">			} catch (Exception e) {</span>
-<span class="nc" id="L1732">				LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+<span class="fc" id="L1785">				listeners.get(listener).shutdown();</span>
+<span class="nc" id="L1786">			} catch (Exception e) {</span>
+<span class="nc" id="L1787">				LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 						+ &quot;] exception shutting down listener executor&quot;, e);
-<span class="fc" id="L1734">			}</span>
-<span class="pc bpc" id="L1735" title="1 of 2 branches missed.">			if (listener instanceof Configurable) {</span>
+<span class="fc" id="L1789">			}</span>
+<span class="pc bpc" id="L1790" title="1 of 2 branches missed.">			if (listener instanceof Configurable) {</span>
 				try {
-<span class="fc" id="L1737">					((Configurable) listener).shutdown();</span>
-<span class="nc" id="L1738">				} catch (Exception e) {</span>
-<span class="nc" id="L1739">					LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+<span class="fc" id="L1792">					((Configurable) listener).shutdown();</span>
+<span class="nc" id="L1793">				} catch (Exception e) {</span>
+<span class="nc" id="L1794">					LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 							+ &quot;] exception shutting down listener&quot;, e);
-<span class="fc" id="L1741">				}</span>
+<span class="fc" id="L1796">				}</span>
 			}
-<span class="fc" id="L1743">		}</span>
+<span class="fc" id="L1798">		}</span>
 
-<span class="fc" id="L1745">		Iterator&lt;IndexerModule&gt; modules = this.modules.iterator();</span>
-<span class="fc bfc" id="L1746" title="All 2 branches covered.">		while (modules.hasNext()) {</span>
-<span class="fc" id="L1747">			IndexerModule module = modules.next();</span>
-<span class="pc bpc" id="L1748" title="1 of 2 branches missed.">			if (module instanceof Configurable) {</span>
+<span class="fc" id="L1800">		Iterator&lt;IndexerModule&gt; modules = this.modules.iterator();</span>
+<span class="fc bfc" id="L1801" title="All 2 branches covered.">		while (modules.hasNext()) {</span>
+<span class="fc" id="L1802">			IndexerModule module = modules.next();</span>
+<span class="pc bpc" id="L1803" title="1 of 2 branches missed.">			if (module instanceof Configurable) {</span>
 				try {
-<span class="fc" id="L1750">					((Configurable) module).shutdown();</span>
-<span class="nc" id="L1751">				} catch (Exception e) {</span>
-<span class="nc" id="L1752">					LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+<span class="fc" id="L1805">					((Configurable) module).shutdown();</span>
+<span class="nc" id="L1806">				} catch (Exception e) {</span>
+<span class="nc" id="L1807">					LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 							+ &quot;] exception shutting down module&quot;, e);
-<span class="fc" id="L1754">				}</span>
+<span class="fc" id="L1809">				}</span>
 			}
-<span class="fc" id="L1756">		}</span>
+<span class="fc" id="L1811">		}</span>
 		// -- Shut down our own specific processes -- //
 
 		// Shut down our timers if they exist
-<span class="fc bfc" id="L1760" title="All 2 branches covered.">		if (archiveTask != null) {</span>
-<span class="fc" id="L1761">			archiveTask.cancel();</span>
-<span class="fc" id="L1762">			archiveTask = null;</span>
+<span class="fc bfc" id="L1815" title="All 2 branches covered.">		if (archiveTask != null) {</span>
+<span class="fc" id="L1816">			archiveTask.cancel();</span>
+<span class="fc" id="L1817">			archiveTask = null;</span>
 		}
-<span class="fc bfc" id="L1764" title="All 2 branches covered.">		if (archiveTimer != null) {</span>
-<span class="fc" id="L1765">			archiveTimer.cancel();</span>
-<span class="fc" id="L1766">			archiveTimer = null;</span>
+<span class="fc bfc" id="L1819" title="All 2 branches covered.">		if (archiveTimer != null) {</span>
+<span class="fc" id="L1820">			archiveTimer.cancel();</span>
+<span class="fc" id="L1821">			archiveTimer = null;</span>
 		}
 
-<span class="pc bpc" id="L1769" title="1 of 2 branches missed.">		if (searchSocket != null) {</span>
-<span class="nc" id="L1770">			searchSocket.shutdown();</span>
+<span class="pc bpc" id="L1824" title="1 of 2 branches missed.">		if (searchSocket != null) {</span>
+<span class="nc" id="L1825">			searchSocket.shutdown();</span>
 		}
 		// -- Call parent shutdown method -- //
-<span class="fc" id="L1773">		super.shutdown();</span>
-<span class="fc" id="L1774">	}</span>
+<span class="fc" id="L1828">		super.shutdown();</span>
+<span class="fc" id="L1829">	}</span>
 
 	/**
 	 * Starts up the necessary parent, specific, and dependent processes, in
@@ -1780,66 +1835,68 @@ public class Indexer extends DefaultNotificationListener {
 	@Override
 	public synchronized void startup() throws Exception {
 		// -- Call parent startup method -- //
-<span class="fc" id="L1783">		super.startup();</span>
+<span class="fc" id="L1838">		super.startup();</span>
 
 		// -- Start up our own specific processes -- //
 
+<span class="fc" id="L1842">		backgroundService = Executors.newCachedThreadPool();</span>
+
 		// -- Start dependent processes -- //
 		// ExecutorServices tied to known listeners.
-<span class="fc" id="L1789">		Iterator&lt;IndexerListener&gt; iter = listeners.keySet().iterator();</span>
-<span class="fc bfc" id="L1790" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
-<span class="fc" id="L1791">			IndexerListener listener = iter.next();</span>
-<span class="pc bpc" id="L1792" title="1 of 2 branches missed.">			if (listener instanceof Configurable) {</span>
-<span class="fc" id="L1793">				((Configurable) listener).startup();</span>
+<span class="fc" id="L1846">		Iterator&lt;IndexerListener&gt; iter = listeners.keySet().iterator();</span>
+<span class="fc bfc" id="L1847" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L1848">			IndexerListener listener = iter.next();</span>
+<span class="pc bpc" id="L1849" title="1 of 2 branches missed.">			if (listener instanceof Configurable) {</span>
+<span class="fc" id="L1850">				((Configurable) listener).startup();</span>
 			}
-<span class="fc" id="L1795">		}</span>
+<span class="fc" id="L1852">		}</span>
 
 		// configure regions factory before modules
-<span class="fc" id="L1798">		ANSSRegionsFactory factory = ANSSRegionsFactory.getFactory(false);</span>
-<span class="fc" id="L1799">		factory.setLocalRegions(localRegionsFile);</span>
-<span class="fc" id="L1800">		factory.startup();</span>
+<span class="fc" id="L1855">		ANSSRegionsFactory factory = ANSSRegionsFactory.getFactory(false);</span>
+<span class="fc" id="L1856">		factory.setLocalRegions(localRegionsFile);</span>
+<span class="fc" id="L1857">		factory.startup();</span>
 
-<span class="fc" id="L1802">		Iterator&lt;IndexerModule&gt; modules = this.modules.iterator();</span>
-<span class="fc bfc" id="L1803" title="All 2 branches covered.">		while (modules.hasNext()) {</span>
-<span class="fc" id="L1804">			IndexerModule module = modules.next();</span>
-<span class="pc bpc" id="L1805" title="1 of 2 branches missed.">			if (module instanceof Configurable) {</span>
-<span class="fc" id="L1806">				((Configurable) module).startup();</span>
+<span class="fc" id="L1859">		Iterator&lt;IndexerModule&gt; modules = this.modules.iterator();</span>
+<span class="fc bfc" id="L1860" title="All 2 branches covered.">		while (modules.hasNext()) {</span>
+<span class="fc" id="L1861">			IndexerModule module = modules.next();</span>
+<span class="pc bpc" id="L1862" title="1 of 2 branches missed.">			if (module instanceof Configurable) {</span>
+<span class="fc" id="L1863">				((Configurable) module).startup();</span>
 			}
-<span class="fc" id="L1808">		}</span>
+<span class="fc" id="L1865">		}</span>
 
 		// ProductIndex
-<span class="fc" id="L1811">		productStorage.startup();</span>
-<span class="fc" id="L1812">		productIndex.startup();</span>
+<span class="fc" id="L1868">		productStorage.startup();</span>
+<span class="fc" id="L1869">		productIndex.startup();</span>
 
 		// Cleanup thread to purge old products
-<span class="fc bfc" id="L1815" title="All 2 branches covered.">		if (archivePolicies.size() &gt; 0) {</span>
+<span class="fc bfc" id="L1872" title="All 2 branches covered.">		if (archivePolicies.size() &gt; 0) {</span>
 			// Instantiate a timer object
-<span class="fc" id="L1817">			archiveTimer = new Timer();</span>
+<span class="fc" id="L1874">			archiveTimer = new Timer();</span>
 			// Instantiate the task object
-<span class="fc" id="L1819">			archiveTask = new TimerTask() {</span>
+<span class="fc" id="L1876">			archiveTask = new TimerTask() {</span>
 				public void run() {
 					try {
-<span class="fc" id="L1822">						int[] counts = purgeExpiredProducts();</span>
-<span class="fc" id="L1823">						LOGGER.info(String</span>
-<span class="fc" id="L1824">								.format(&quot;[&quot;</span>
-<span class="fc" id="L1825">										+ getName()</span>
+<span class="fc" id="L1879">						int[] counts = purgeExpiredProducts();</span>
+<span class="fc" id="L1880">						LOGGER.info(String</span>
+<span class="fc" id="L1881">								.format(&quot;[&quot;</span>
+<span class="fc" id="L1882">										+ getName()</span>
 										+ &quot;] purged %d expired events and %d expired unassociated products.&quot;,
-<span class="fc" id="L1827">										counts[0], counts[1]));</span>
-<span class="nc" id="L1828">					} catch (Exception ex) {</span>
-<span class="nc" id="L1829">						LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+<span class="fc" id="L1884">										counts[0], counts[1]));</span>
+<span class="nc" id="L1885">					} catch (Exception ex) {</span>
+<span class="nc" id="L1886">						LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 								+ &quot;] indexer cleanup thread threw exception&quot;,
 								ex);
-<span class="fc" id="L1832">					}</span>
-<span class="fc" id="L1833">				}</span>
+<span class="fc" id="L1889">					}</span>
+<span class="fc" id="L1890">				}</span>
 			};
 			// Run archiver immediately at startup, then at regular intervals
-<span class="fc" id="L1836">			archiveTimer.schedule(archiveTask, 0L, archiveInterval);</span>
+<span class="fc" id="L1893">			archiveTimer.schedule(archiveTask, 0L, archiveInterval);</span>
 		}
 
-<span class="pc bpc" id="L1839" title="1 of 2 branches missed.">		if (searchSocket != null) {</span>
-<span class="nc" id="L1840">			searchSocket.startup();</span>
+<span class="pc bpc" id="L1896" title="1 of 2 branches missed.">		if (searchSocket != null) {</span>
+<span class="nc" id="L1897">			searchSocket.startup();</span>
 		}
-<span class="fc" id="L1842">	}</span>
+<span class="fc" id="L1899">	}</span>
 
 	/**
 	 * Checks the index for content that match a configured archive policy.
@@ -1856,121 +1913,121 @@ public class Indexer extends DefaultNotificationListener {
 	 * @see #archivePolicies
 	 */
 	public synchronized int[] purgeExpiredProducts() throws Exception {
-<span class="fc" id="L1859">		int[] counts = { 0, 0 };</span>
-<span class="fc" id="L1860">		ProductIndexQuery query = null;</span>
-<span class="fc" id="L1861">		ArchivePolicy policy = null;</span>
+<span class="fc" id="L1916">		int[] counts = { 0, 0 };</span>
+<span class="fc" id="L1917">		ProductIndexQuery query = null;</span>
+<span class="fc" id="L1918">		ArchivePolicy policy = null;</span>
 
-<span class="fc bfc" id="L1863" title="All 2 branches covered.">		if (isDisableArchive()) {</span>
-<span class="fc" id="L1864">			LOGGER.info(&quot;Archiving disabled&quot;);</span>
-<span class="fc" id="L1865">			return counts;</span>
+<span class="fc bfc" id="L1920" title="All 2 branches covered.">		if (isDisableArchive()) {</span>
+<span class="fc" id="L1921">			LOGGER.info(&quot;Archiving disabled&quot;);</span>
+<span class="fc" id="L1922">			return counts;</span>
 		}
 
-<span class="fc bfc" id="L1868" title="All 2 branches covered.">		for (int i = 0; i &lt; archivePolicies.size(); i++) {</span>
-<span class="fc" id="L1869">			policy = archivePolicies.get(i);</span>
-<span class="fc" id="L1870">			query = policy.getIndexQuery();</span>
+<span class="fc bfc" id="L1925" title="All 2 branches covered.">		for (int i = 0; i &lt; archivePolicies.size(); i++) {</span>
+<span class="fc" id="L1926">			policy = archivePolicies.get(i);</span>
+<span class="fc" id="L1927">			query = policy.getIndexQuery();</span>
 
-<span class="fc bfc" id="L1872" title="All 2 branches covered.">			if (!(policy instanceof ProductArchivePolicy)) {</span>
+<span class="fc bfc" id="L1929" title="All 2 branches covered.">			if (!(policy instanceof ProductArchivePolicy)) {</span>
 				// -- Purge expired events for this policy -- //
-<span class="fc" id="L1874">				LOGGER.fine(&quot;[&quot; + getName()</span>
-<span class="fc" id="L1875">						+ &quot;] running event archive policy (&quot; + policy.getName()</span>
+<span class="fc" id="L1931">				LOGGER.fine(&quot;[&quot; + getName()</span>
+<span class="fc" id="L1932">						+ &quot;] running event archive policy (&quot; + policy.getName()</span>
 						+ &quot;)&quot;);
 				try {
 					// Get a list of those events
-<span class="fc" id="L1879">					List&lt;Event&gt; expiredEvents = productIndex.getEvents(query);</span>
+<span class="fc" id="L1936">					List&lt;Event&gt; expiredEvents = productIndex.getEvents(query);</span>
 
 					// Loop over list of expired events and remove each one
-<span class="fc" id="L1882">					Iterator&lt;Event&gt; eventIter = expiredEvents.iterator();</span>
-<span class="fc bfc" id="L1883" title="All 2 branches covered.">					while (eventIter.hasNext()) {</span>
-<span class="fc" id="L1884">						Event event = eventIter.next();</span>
+<span class="fc" id="L1939">					Iterator&lt;Event&gt; eventIter = expiredEvents.iterator();</span>
+<span class="fc bfc" id="L1940" title="All 2 branches covered.">					while (eventIter.hasNext()) {</span>
+<span class="fc" id="L1941">						Event event = eventIter.next();</span>
 
-<span class="fc" id="L1886">						LOGGER.info(&quot;[&quot; + getName() + &quot;] archiving event &quot;</span>
-<span class="fc" id="L1887">								+ event.getEventId());</span>
-<span class="fc" id="L1888">						event.log(LOGGER);</span>
+<span class="fc" id="L1943">						LOGGER.info(&quot;[&quot; + getName() + &quot;] archiving event &quot;</span>
+<span class="fc" id="L1944">								+ event.getEventId());</span>
+<span class="fc" id="L1945">						event.log(LOGGER);</span>
 
-<span class="fc" id="L1890">						productIndex.beginTransaction();</span>
+<span class="fc" id="L1947">						productIndex.beginTransaction();</span>
 						try {
-<span class="fc" id="L1892">							removeEvent(event);</span>
+<span class="fc" id="L1949">							removeEvent(event);</span>
 
 							// Notify of the event archived
-<span class="fc" id="L1895">							IndexerEvent notification = new IndexerEvent(this);</span>
-<span class="fc" id="L1896">							notification.setSummary(null);</span>
-<span class="fc" id="L1897">							notification.addIndexerChange(new IndexerChange(</span>
+<span class="fc" id="L1952">							IndexerEvent notification = new IndexerEvent(this);</span>
+<span class="fc" id="L1953">							notification.setSummary(null);</span>
+<span class="fc" id="L1954">							notification.addIndexerChange(new IndexerChange(</span>
 									IndexerChange.EVENT_ARCHIVED, event, null));
-<span class="fc" id="L1899">							notifyListeners(notification);</span>
+<span class="fc" id="L1956">							notifyListeners(notification);</span>
 
-<span class="fc" id="L1901">							++counts[0];</span>
-<span class="fc" id="L1902">							productIndex.commitTransaction();</span>
-<span class="nc" id="L1903">						} catch (Exception e) {</span>
-<span class="nc" id="L1904">							LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+<span class="fc" id="L1958">							++counts[0];</span>
+<span class="fc" id="L1959">							productIndex.commitTransaction();</span>
+<span class="nc" id="L1960">						} catch (Exception e) {</span>
+<span class="nc" id="L1961">							LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 									+ &quot;] exception archiving event &quot;
-<span class="nc" id="L1906">									+ event.getEventId() + &quot;, rolling back&quot;, e);</span>
-<span class="nc" id="L1907">							productIndex.rollbackTransaction();</span>
-<span class="fc" id="L1908">						}</span>
-<span class="fc" id="L1909">					}</span>
-<span class="nc" id="L1910">				} catch (Exception e) {</span>
-<span class="nc" id="L1911">					LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+<span class="nc" id="L1963">									+ event.getEventId() + &quot;, rolling back&quot;, e);</span>
+<span class="nc" id="L1964">							productIndex.rollbackTransaction();</span>
+<span class="fc" id="L1965">						}</span>
+<span class="fc" id="L1966">					}</span>
+<span class="nc" id="L1967">				} catch (Exception e) {</span>
+<span class="nc" id="L1968">					LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 							+ &quot;] exception running event archive policy (&quot;
-<span class="nc" id="L1913">							+ policy.getName() + &quot;) &quot;, e);</span>
-<span class="fc" id="L1914">				}</span>
+<span class="nc" id="L1970">							+ policy.getName() + &quot;) &quot;, e);</span>
+<span class="fc" id="L1971">				}</span>
 			}
 
-<span class="fc bfc" id="L1917" title="All 2 branches covered.">			if (policy instanceof ProductArchivePolicy) {</span>
-<span class="fc" id="L1918">				ProductArchivePolicy productPolicy = (ProductArchivePolicy) policy;</span>
+<span class="fc bfc" id="L1974" title="All 2 branches covered.">			if (policy instanceof ProductArchivePolicy) {</span>
+<span class="fc" id="L1975">				ProductArchivePolicy productPolicy = (ProductArchivePolicy) policy;</span>
 
 				// -- Purge expired products for this policy -- //
-<span class="fc" id="L1921">				LOGGER.fine(&quot;[&quot; + getName()</span>
+<span class="fc" id="L1978">				LOGGER.fine(&quot;[&quot; + getName()</span>
 						+ &quot;] running product archive policy (&quot;
-<span class="fc" id="L1923">						+ policy.getName() + &quot;)&quot;);</span>
+<span class="fc" id="L1980">						+ policy.getName() + &quot;)&quot;);</span>
 
 				try {
 					// Get a list of those products
 					List&lt;ProductSummary&gt; expiredProducts;
 
-<span class="pc bpc" id="L1929" title="1 of 2 branches missed.">					if (productPolicy.isOnlyUnassociated()) {</span>
-<span class="nc" id="L1930">						expiredProducts = productIndex</span>
-<span class="nc" id="L1931">								.getUnassociatedProducts(query);</span>
+<span class="pc bpc" id="L1986" title="1 of 2 branches missed.">					if (productPolicy.isOnlyUnassociated()) {</span>
+<span class="nc" id="L1987">						expiredProducts = productIndex</span>
+<span class="nc" id="L1988">								.getUnassociatedProducts(query);</span>
 					} else {
-<span class="fc" id="L1933">						expiredProducts = productIndex.getProducts(query);</span>
+<span class="fc" id="L1990">						expiredProducts = productIndex.getProducts(query);</span>
 					}
 
 					// Loop over list of expired products and remove each one
-<span class="fc" id="L1937">					Iterator&lt;ProductSummary&gt; productIter = expiredProducts</span>
-<span class="fc" id="L1938">							.iterator();</span>
-<span class="pc bpc" id="L1939" title="1 of 2 branches missed.">					while (productIter.hasNext()) {</span>
-<span class="nc" id="L1940">						ProductSummary product = productIter.next();</span>
+<span class="fc" id="L1994">					Iterator&lt;ProductSummary&gt; productIter = expiredProducts</span>
+<span class="fc" id="L1995">							.iterator();</span>
+<span class="pc bpc" id="L1996" title="1 of 2 branches missed.">					while (productIter.hasNext()) {</span>
+<span class="nc" id="L1997">						ProductSummary product = productIter.next();</span>
 
-<span class="nc" id="L1942">						LOGGER.info(&quot;[&quot; + getName() + &quot;] archiving product &quot;</span>
-<span class="nc" id="L1943">								+ product.getId().toString());</span>
-<span class="nc" id="L1944">						productIndex.beginTransaction();</span>
+<span class="nc" id="L1999">						LOGGER.info(&quot;[&quot; + getName() + &quot;] archiving product &quot;</span>
+<span class="nc" id="L2000">								+ product.getId().toString());</span>
+<span class="nc" id="L2001">						productIndex.beginTransaction();</span>
 						try {
-<span class="nc" id="L1946">							removeSummary(product);</span>
+<span class="nc" id="L2003">							removeSummary(product);</span>
 
 							// Notify of the product archived
-<span class="nc" id="L1949">							IndexerEvent notification = new IndexerEvent(this);</span>
-<span class="nc" id="L1950">							notification.setSummary(product);</span>
-<span class="nc" id="L1951">							notification.addIndexerChange(new IndexerChange(</span>
+<span class="nc" id="L2006">							IndexerEvent notification = new IndexerEvent(this);</span>
+<span class="nc" id="L2007">							notification.setSummary(product);</span>
+<span class="nc" id="L2008">							notification.addIndexerChange(new IndexerChange(</span>
 									IndexerChange.PRODUCT_ARCHIVED, null, null));
-<span class="nc" id="L1953">							notifyListeners(notification);</span>
+<span class="nc" id="L2010">							notifyListeners(notification);</span>
 
-<span class="nc" id="L1955">							++counts[1];</span>
-<span class="nc" id="L1956">							productIndex.commitTransaction();</span>
-<span class="nc" id="L1957">						} catch (Exception e) {</span>
-<span class="nc" id="L1958">							LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+<span class="nc" id="L2012">							++counts[1];</span>
+<span class="nc" id="L2013">							productIndex.commitTransaction();</span>
+<span class="nc" id="L2014">						} catch (Exception e) {</span>
+<span class="nc" id="L2015">							LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 									+ &quot;] exception archiving event &quot;
-<span class="nc" id="L1960">									+ product.getId().toString() + &quot;, rolling back&quot;, e);</span>
-<span class="nc" id="L1961">							productIndex.rollbackTransaction();</span>
-<span class="nc" id="L1962">						}</span>
-<span class="nc" id="L1963">					}</span>
-<span class="nc" id="L1964">				} catch (Exception e) {</span>
-<span class="nc" id="L1965">					LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+<span class="nc" id="L2017">									+ product.getId().toString() + &quot;, rolling back&quot;, e);</span>
+<span class="nc" id="L2018">							productIndex.rollbackTransaction();</span>
+<span class="nc" id="L2019">						}</span>
+<span class="nc" id="L2020">					}</span>
+<span class="nc" id="L2021">				} catch (Exception e) {</span>
+<span class="nc" id="L2022">					LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 							+ &quot;] exception running product archive policy (&quot;
-<span class="nc" id="L1967">							+ policy.getName() + &quot;)&quot;, e);</span>
-<span class="fc" id="L1968">				}</span>
+<span class="nc" id="L2024">							+ policy.getName() + &quot;)&quot;, e);</span>
+<span class="fc" id="L2025">				}</span>
 
 			}
 		}
 
-<span class="fc" id="L1973">		return counts;</span>
+<span class="fc" id="L2030">		return counts;</span>
 	}
 
 	/**
@@ -1983,19 +2040,19 @@ public class Indexer extends DefaultNotificationListener {
 	protected synchronized void removeEvent(Event event) throws Exception {
 		// Removing an &quot;event&quot; from storage is really just removing all its
 		// associated products
-<span class="fc" id="L1986">		List&lt;ProductSummary&gt; summaries = event.getAllProductList();</span>
-<span class="fc" id="L1987">		Iterator&lt;ProductSummary&gt; summaryIter = summaries.iterator();</span>
-<span class="fc bfc" id="L1988" title="All 2 branches covered.">		while (summaryIter.hasNext()) {</span>
-<span class="fc" id="L1989">			ProductSummary summary = summaryIter.next();</span>
+<span class="fc" id="L2043">		List&lt;ProductSummary&gt; summaries = event.getAllProductList();</span>
+<span class="fc" id="L2044">		Iterator&lt;ProductSummary&gt; summaryIter = summaries.iterator();</span>
+<span class="fc bfc" id="L2045" title="All 2 branches covered.">		while (summaryIter.hasNext()) {</span>
+<span class="fc" id="L2046">			ProductSummary summary = summaryIter.next();</span>
 			// Remove product from storage
-<span class="fc" id="L1991">			productStorage.removeProduct(summary.getId());</span>
+<span class="fc" id="L2048">			productStorage.removeProduct(summary.getId());</span>
 			// Remove product summary from index
-<span class="fc" id="L1993">			productIndex.removeProductSummary(summary);</span>
-<span class="fc" id="L1994">		}</span>
+<span class="fc" id="L2050">			productIndex.removeProductSummary(summary);</span>
+<span class="fc" id="L2051">		}</span>
 
 		// Remove from index
-<span class="fc" id="L1997">		productIndex.removeEvent(event);</span>
-<span class="fc" id="L1998">	}</span>
+<span class="fc" id="L2054">		productIndex.removeEvent(event);</span>
+<span class="fc" id="L2055">	}</span>
 
 	/**
 	 * Removes the given summary from the Indexer ProductIndex and
@@ -2008,34 +2065,34 @@ public class Indexer extends DefaultNotificationListener {
 	protected synchronized void removeSummary(ProductSummary summary)
 			throws Exception {
 
-<span class="nc" id="L2011">		Event event = getPrevEvent(summary);</span>
-<span class="nc bnc" id="L2012" title="All 2 branches missed.">		if (event != null) {</span>
-<span class="nc" id="L2013">			List&lt;ProductSummary&gt; eventProducts = event.getAllProductList();</span>
-<span class="nc bnc" id="L2014" title="All 4 branches missed.">			if (eventProducts != null &amp;&amp; eventProducts.size() == 1</span>
-<span class="nc bnc" id="L2015" title="All 2 branches missed.">					&amp;&amp; eventProducts.get(0).getId().equals(summary.getId())) {</span>
+<span class="nc" id="L2068">		Event event = getPrevEvent(summary);</span>
+<span class="nc bnc" id="L2069" title="All 2 branches missed.">		if (event != null) {</span>
+<span class="nc" id="L2070">			List&lt;ProductSummary&gt; eventProducts = event.getAllProductList();</span>
+<span class="nc bnc" id="L2071" title="All 4 branches missed.">			if (eventProducts != null &amp;&amp; eventProducts.size() == 1</span>
+<span class="nc bnc" id="L2072" title="All 2 branches missed.">					&amp;&amp; eventProducts.get(0).getId().equals(summary.getId())) {</span>
 				// last product for the event
-<span class="nc" id="L2017">				removeEvent(event);</span>
+<span class="nc" id="L2074">				removeEvent(event);</span>
 				// product is already removed by removeEvent
-<span class="nc" id="L2019">				return;</span>
+<span class="nc" id="L2076">				return;</span>
 			}
 		}
 
 		// Remove product from storage
-<span class="nc" id="L2024">		productStorage.removeProduct(summary.getId());</span>
+<span class="nc" id="L2081">		productStorage.removeProduct(summary.getId());</span>
 		// Remove product summary from index
-<span class="nc" id="L2026">		productIndex.removeProductSummary(summary);</span>
+<span class="nc" id="L2083">		productIndex.removeProductSummary(summary);</span>
 
 		// if product was associated to event need to update index
-<span class="nc bnc" id="L2029" title="All 2 branches missed.">		if (event != null) {</span>
+<span class="nc bnc" id="L2086" title="All 2 branches missed.">		if (event != null) {</span>
 			// remove the product from the event
-<span class="nc" id="L2031">			event.removeProduct(summary);</span>
+<span class="nc" id="L2088">			event.removeProduct(summary);</span>
 
 			// update event table
-<span class="nc" id="L2034">			ArrayList&lt;Event&gt; events = new ArrayList&lt;Event&gt;();</span>
-<span class="nc" id="L2035">			events.add(event);</span>
-<span class="nc" id="L2036">			productIndex.eventsUpdated(events);</span>
+<span class="nc" id="L2091">			ArrayList&lt;Event&gt; events = new ArrayList&lt;Event&gt;();</span>
+<span class="nc" id="L2092">			events.add(event);</span>
+<span class="nc" id="L2093">			productIndex.eventsUpdated(events);</span>
 		}
-<span class="nc" id="L2038">	}</span>
+<span class="nc" id="L2095">	}</span>
 
 	/**
 	 * Tries to create an event based on information in the given summary. If
@@ -2059,11 +2116,11 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	private synchronized Event createEvent(ProductSummary summary)
 			throws Exception {
-<span class="fc bfc" id="L2062" title="All 2 branches covered.">		if (Event.productHasOriginProperties(summary)) {</span>
-<span class="fc" id="L2063">			Event event = productIndex.addEvent(new Event());</span>
-<span class="fc" id="L2064">			return productIndex.addAssociation(event, summary);</span>
+<span class="fc bfc" id="L2119" title="All 2 branches covered.">		if (Event.productHasOriginProperties(summary)) {</span>
+<span class="fc" id="L2120">			Event event = productIndex.addEvent(new Event());</span>
+<span class="fc" id="L2121">			return productIndex.addAssociation(event, summary);</span>
 		} else {
-<span class="fc" id="L2066">			return null;</span>
+<span class="fc" id="L2123">			return null;</span>
 		}
 	}
 
@@ -2077,71 +2134,71 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	public synchronized SearchResponse search(SearchRequest request)
 			throws Exception {
-<span class="fc" id="L2080">		SearchResponse response = new SearchResponse();</span>
+<span class="fc" id="L2137">		SearchResponse response = new SearchResponse();</span>
 
 		// Execute each query
-<span class="fc" id="L2083">		Iterator&lt;SearchQuery&gt; iter = request.getQueries().iterator();</span>
-<span class="fc bfc" id="L2084" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
-<span class="fc" id="L2085">			SearchQuery query = iter.next();</span>
+<span class="fc" id="L2140">		Iterator&lt;SearchQuery&gt; iter = request.getQueries().iterator();</span>
+<span class="fc bfc" id="L2141" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L2142">			SearchQuery query = iter.next();</span>
 
-<span class="fc bfc" id="L2087" title="All 2 branches covered.">			if (query instanceof EventsSummaryQuery) {</span>
-<span class="fc" id="L2088">				List&lt;EventSummary&gt; eventSummaries = new LinkedList&lt;EventSummary&gt;();</span>
-<span class="fc" id="L2089">				Iterator&lt;Event&gt; events = productIndex.getEvents(</span>
-<span class="fc" id="L2090">						query.getProductIndexQuery()).iterator();</span>
+<span class="fc bfc" id="L2144" title="All 2 branches covered.">			if (query instanceof EventsSummaryQuery) {</span>
+<span class="fc" id="L2145">				List&lt;EventSummary&gt; eventSummaries = new LinkedList&lt;EventSummary&gt;();</span>
+<span class="fc" id="L2146">				Iterator&lt;Event&gt; events = productIndex.getEvents(</span>
+<span class="fc" id="L2147">						query.getProductIndexQuery()).iterator();</span>
 				// convert events to event summaries
-<span class="fc bfc" id="L2092" title="All 2 branches covered.">				while (events.hasNext()) {</span>
-<span class="fc" id="L2093">					Event event = events.next();</span>
-<span class="fc" id="L2094">					eventSummaries.add(event.getEventSummary());</span>
-<span class="fc" id="L2095">				}</span>
-<span class="fc" id="L2096">				((EventsSummaryQuery) query).setResult(eventSummaries);</span>
-<span class="fc" id="L2097">			}</span>
+<span class="fc bfc" id="L2149" title="All 2 branches covered.">				while (events.hasNext()) {</span>
+<span class="fc" id="L2150">					Event event = events.next();</span>
+<span class="fc" id="L2151">					eventSummaries.add(event.getEventSummary());</span>
+<span class="fc" id="L2152">				}</span>
+<span class="fc" id="L2153">				((EventsSummaryQuery) query).setResult(eventSummaries);</span>
+<span class="fc" id="L2154">			}</span>
 
-<span class="pc bpc" id="L2099" title="1 of 2 branches missed.">			else if (query instanceof EventDetailQuery) {</span>
-<span class="fc" id="L2100">				List&lt;Event&gt; events = productIndex.getEvents(query</span>
-<span class="fc" id="L2101">						.getProductIndexQuery());</span>
-<span class="fc" id="L2102">				((EventDetailQuery) query).setResult(events);</span>
-<span class="fc" id="L2103">			}</span>
+<span class="pc bpc" id="L2156" title="1 of 2 branches missed.">			else if (query instanceof EventDetailQuery) {</span>
+<span class="fc" id="L2157">				List&lt;Event&gt; events = productIndex.getEvents(query</span>
+<span class="fc" id="L2158">						.getProductIndexQuery());</span>
+<span class="fc" id="L2159">				((EventDetailQuery) query).setResult(events);</span>
+<span class="fc" id="L2160">			}</span>
 
-<span class="nc bnc" id="L2105" title="All 2 branches missed.">			else if (query instanceof ProductsSummaryQuery) {</span>
-<span class="nc" id="L2106">				List&lt;ProductSummary&gt; products = productIndex.getProducts(query</span>
-<span class="nc" id="L2107">						.getProductIndexQuery());</span>
-<span class="nc" id="L2108">				((ProductsSummaryQuery) query).setResult(products);</span>
-<span class="nc" id="L2109">			}</span>
+<span class="nc bnc" id="L2162" title="All 2 branches missed.">			else if (query instanceof ProductsSummaryQuery) {</span>
+<span class="nc" id="L2163">				List&lt;ProductSummary&gt; products = productIndex.getProducts(query</span>
+<span class="nc" id="L2164">						.getProductIndexQuery());</span>
+<span class="nc" id="L2165">				((ProductsSummaryQuery) query).setResult(products);</span>
+<span class="nc" id="L2166">			}</span>
 
-<span class="nc bnc" id="L2111" title="All 2 branches missed.">			else if (query instanceof ProductDetailQuery) {</span>
-<span class="nc" id="L2112">				List&lt;Product&gt; products = new LinkedList&lt;Product&gt;();</span>
-<span class="nc" id="L2113">				Iterator&lt;ProductId&gt; ids = query.getProductIndexQuery()</span>
-<span class="nc" id="L2114">						.getProductIds().iterator();</span>
+<span class="nc bnc" id="L2168" title="All 2 branches missed.">			else if (query instanceof ProductDetailQuery) {</span>
+<span class="nc" id="L2169">				List&lt;Product&gt; products = new LinkedList&lt;Product&gt;();</span>
+<span class="nc" id="L2170">				Iterator&lt;ProductId&gt; ids = query.getProductIndexQuery()</span>
+<span class="nc" id="L2171">						.getProductIds().iterator();</span>
 				// fetch products from storage
-<span class="nc bnc" id="L2116" title="All 2 branches missed.">				while (ids.hasNext()) {</span>
-<span class="nc" id="L2117">					ProductId id = ids.next();</span>
-<span class="nc" id="L2118">					Product product = productStorage.getProduct(id);</span>
-<span class="nc bnc" id="L2119" title="All 2 branches missed.">					if (product != null) {</span>
-<span class="nc" id="L2120">						products.add(product);</span>
+<span class="nc bnc" id="L2173" title="All 2 branches missed.">				while (ids.hasNext()) {</span>
+<span class="nc" id="L2174">					ProductId id = ids.next();</span>
+<span class="nc" id="L2175">					Product product = productStorage.getProduct(id);</span>
+<span class="nc bnc" id="L2176" title="All 2 branches missed.">					if (product != null) {</span>
+<span class="nc" id="L2177">						products.add(product);</span>
 					}
-<span class="nc" id="L2122">				}</span>
-<span class="nc" id="L2123">				((ProductDetailQuery) query).setResult(products);</span>
+<span class="nc" id="L2179">				}</span>
+<span class="nc" id="L2180">				((ProductDetailQuery) query).setResult(products);</span>
 			}
 
-<span class="fc" id="L2126">			response.addResult(query);</span>
-<span class="fc" id="L2127">		}</span>
+<span class="fc" id="L2183">			response.addResult(query);</span>
+<span class="fc" id="L2184">		}</span>
 
-<span class="fc" id="L2129">		return response;</span>
+<span class="fc" id="L2186">		return response;</span>
 	}
 
 	public boolean isDisableArchive() {
-<span class="fc" id="L2133">		return disableArchive;</span>
+<span class="fc" id="L2190">		return disableArchive;</span>
 	}
 
 	public void setDisableArchive(boolean disableArchive) {
-<span class="fc" id="L2137">		this.disableArchive = disableArchive;</span>
-<span class="fc" id="L2138">	}</span>
+<span class="fc" id="L2194">		this.disableArchive = disableArchive;</span>
+<span class="fc" id="L2195">	}</span>
 
 	/**
 	 * @return the archiveInterval
 	 */
 	public long getArchiveInterval() {
-<span class="nc" id="L2144">		return archiveInterval;</span>
+<span class="nc" id="L2201">		return archiveInterval;</span>
 	}
 
 	/**
@@ -2149,14 +2206,14 @@ public class Indexer extends DefaultNotificationListener {
 	 *            the archiveInterval to set
 	 */
 	public void setArchiveInterval(long archiveInterval) {
-<span class="nc" id="L2152">		this.archiveInterval = archiveInterval;</span>
-<span class="nc" id="L2153">	}</span>
+<span class="nc" id="L2209">		this.archiveInterval = archiveInterval;</span>
+<span class="nc" id="L2210">	}</span>
 
 	/**
 	 * @return the archivePolicies
 	 */
 	public List&lt;ArchivePolicy&gt; getArchivePolicies() {
-<span class="fc" id="L2159">		return archivePolicies;</span>
+<span class="fc" id="L2216">		return archivePolicies;</span>
 	}
 
 }

@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.105s</div>
+<div class="counter">0.133s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,7 +79,7 @@
 </thead>
 <tr>
 <td class="success">associate()</td>
-<td class="success">0.105s</td>
+<td class="success">0.133s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -89,7 +89,7 @@
 <span class="code">
 <pre>
 ###
-Fri Nov 20 11:35:40 MST 2020
+Thu Dec 03 13:42:30 MST 2020
 CONFIG	thread=15	[null] maxTries = 1
 CONFIG	thread=15	[null] maxTries = 1
 CONFIG	thread=15	[null] timeout = 0ms
@@ -99,14 +99,14 @@ CONFIG	thread=15	[null] concurrent products = 1
 CONFIG	thread=15	[null] process duplicates = false
 CONFIG	thread=15	[null] include paths = []
 CONFIG	thread=15	[null] exclude paths = []
-CONFIG	thread=15	[null] using storage directory 'C:\Users\jmfee\AppData\Local\Temp\junit12688228071292217510\storage'
-CONFIG	thread=15	[null] using sqlite product index 'C:\Users\jmfee\AppData\Local\Temp\junit12688228071292217510\productIndex.db'
+CONFIG	thread=15	[null] using storage directory 'C:\Users\jmfee\AppData\Local\Temp\junit10378092139744611676\storage'
+CONFIG	thread=15	[null] using sqlite product index 'C:\Users\jmfee\AppData\Local\Temp\junit10378092139744611676\productIndex.db'
 CONFIG	thread=15	[null] archive interval is '300000'
 CONFIG	thread=15	[null] no indexer modules configured.
 CONFIG	thread=15	[null] no indexer listeners configured.
 CONFIG	thread=15	[null] Local regions file: regions.json
 CONFIG	thread=15	[null] associateUsingCurrentProducts = false
-FINER	thread=1467	[null] running listener cleanup
+FINER	thread=1252	[null] running listener cleanup
 FINEST	thread=15	[null] storing product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
 FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
 FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
@@ -122,13 +122,10 @@ FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:or
 FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
 FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
 FINEST	thread=15	[null] stored product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
-FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:us:origin:usc00053hg:1311534397000 in 14 ms
+FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:us:origin:usc00053hg:1311534397000 in 23 ms
 FINER	thread=15	[null] summarizing product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
 FINEST	thread=15	[null] beginning index transaction
 FINER	thread=15	[null] finding previous version
-FINEST	thread=15	[null] running query 
-SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND p.id = (SELECT id FROM productSummary ps WHERE ps.source='us' AND ps.type='origin' AND ps.code='usc00053hg' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='us' AND type='origin' AND code='usc00053hg'
-FINEST	thread=15	[null] query complete
 FINER	thread=15	[null] finding previous event
 FINEST	thread=15	Product Index Query
 eventSearchType=SEARCH_EVENT_PRODUCTS
@@ -217,7 +214,7 @@ FINER	thread=15	[null] committing transaction
 FINE	thread=15	[null] notifying listeners
 INFO	thread=15	[null] indexed product id=urn:usgs-product:us:origin:usc00053hg:1311534397000, status=UPDATE
 EVENT_ADDED null =&gt; usc00053hg
-FINE	thread=15	[null] indexer processed product id=urn:usgs-product:us:origin:usc00053hg:1311534397000 in 27 ms
+FINE	thread=15	[null] indexer processed product id=urn:usgs-product:us:origin:usc00053hg:1311534397000 in 40 ms (0 ms sync delay)
 FINEST	thread=15	[null] storing product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
 FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
 FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
@@ -225,23 +222,18 @@ FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:f
 FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
 FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
 FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
-INFO	thread=1422	[null] command 'echo --preferred-eventid=usabcd1234 --preferred-eventsource=us --preferred-eventsourcecode=abcd1234 --eventids=usabcd1234 --preferred-magnitude=null --preferred-latitude=0.0 --preferred-longitude=0.0 --preferred-depth=null --preferred-eventtime=2020-11-20T18:35:40.221Z --action=EVENT_ARCHIVED' exited with status '0'
 FINER	thread=15	[null] product stored id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000, status=UPDATE
 FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
 FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
 FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
 FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
-INFO	thread=1423	[null] command 'echo --preferred-eventid=usabcd1234 --preferred-eventsource=us --preferred-eventsourcecode=abcd1234 --eventids=usabcd1234 --preferred-magnitude=null --preferred-latitude=0.0 --preferred-longitude=0.0 --preferred-depth=null --preferred-eventtime=2020-11-20T18:35:40.221Z --action=EVENT_ARCHIVED' exited with status '0'
 FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
 FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
 FINEST	thread=15	[null] stored product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
-FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000 in 15 ms
+FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000 in 12 ms
 FINER	thread=15	[null] summarizing product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
 FINEST	thread=15	[null] beginning index transaction
 FINER	thread=15	[null] finding previous version
-FINEST	thread=15	[null] running query 
-SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND p.id = (SELECT id FROM productSummary ps WHERE ps.source='us' AND ps.type='focal-mechanism' AND ps.code='usc00053hg-neic-mwc' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='us' AND type='focal-mechanism' AND code='usc00053hg-neic-mwc'
-FINEST	thread=15	[null] query complete
 FINER	thread=15	[null] finding previous event
 FINEST	thread=15	Product Index Query
 eventSearchType=SEARCH_EVENT_PRODUCTS
@@ -290,9 +282,9 @@ FINEST	thread=15	[null] Added property focal-mechanism-type:Mwc for product 2
 FINEST	thread=15	[null] Added property eids-feeder-sequence:4653 for product 2
 FINEST	thread=15	[null] Added productSummary urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000, indexid=2 to product index
 FINER	thread=15	[null] found existing event indexid=1
-FINE	thread=15	Eventindexid=1, eventid=usc00053hg, latitude=37.7580, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011, deleted=false
+FINE	thread=15	Eventindexid=1, eventid=usc00053hg, latitude=37.758, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011, deleted=false
 FINER	thread=15	Products in event
-	status=UPDATE, id=urn:usgs-product:us:origin:usc00053hg:1311534397000, eventid=usc00053hg, latitude=37.7580, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011
+	status=UPDATE, id=urn:usgs-product:us:origin:usc00053hg:1311534397000, eventid=usc00053hg, latitude=37.758, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011
 FINER	thread=15	[null] Added associations event id=1, productSummary source=us, type=focal-mechanism, code=usc00053hg-neic-mwc (id=2)
 FINER	thread=15	[null] checking for event splits
 FINER	thread=15	[null] checking for event merges
@@ -311,16 +303,17 @@ FINER	thread=15	[null] searching for unassociated products
 FINER	thread=15	[null] search for unassociated products complete
 FINER	thread=15	[null] updating event summary parameters
 FINER	thread=15	[null] Updating event indexid=1
-FINE	thread=15	Eventindexid=1, eventid=usc00053hg, latitude=37.7580, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011, deleted=false
+FINE	thread=15	Eventindexid=1, eventid=usc00053hg, latitude=37.758, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011, deleted=false
 FINER	thread=15	Products in event
-	status=UPDATE, id=urn:usgs-product:us:origin:usc00053hg:1311534397000, eventid=usc00053hg, latitude=37.7580, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011
+	status=UPDATE, id=urn:usgs-product:us:origin:usc00053hg:1311534397000, eventid=usc00053hg, latitude=37.758, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011
 	status=UPDATE, id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000, eventid=usc00053hg, latitude=37.5302, longitude=141.8643, time=Sun Jul 24 12:51:39 MDT 2011
 FINEST	thread=15	[null] Updated event properties in Product Index
 FINER	thread=15	[null] committing transaction
+INFO	thread=1233	[null] command 'echo --preferred-eventid=usabcd1234 --preferred-eventsource=us --preferred-eventsourcecode=abcd1234 --eventids=usabcd1234 --preferred-magnitude=null --preferred-latitude=0.0 --preferred-longitude=0.0 --preferred-depth=null --preferred-eventtime=2020-12-03T20:42:29.564Z --action=EVENT_ARCHIVED' exited with status '0'
 FINE	thread=15	[null] notifying listeners
 INFO	thread=15	[null] indexed product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000, status=UPDATE
 EVENT_UPDATED usc00053hg =&gt; usc00053hg
-FINE	thread=15	[null] indexer processed product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000 in 25 ms
+FINE	thread=15	[null] indexer processed product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000 in 24 ms (0 ms sync delay)
 FINEST	thread=15	[null] storing product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
 FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
 FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
@@ -328,6 +321,7 @@ FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:nc:o
 FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
 FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
 FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
+INFO	thread=1232	[null] command 'echo --preferred-eventid=usabcd1234 --preferred-eventsource=us --preferred-eventsourcecode=abcd1234 --eventids=usabcd1234 --preferred-magnitude=null --preferred-latitude=0.0 --preferred-longitude=0.0 --preferred-depth=null --preferred-eventtime=2020-12-03T20:42:29.564Z --action=EVENT_ARCHIVED' exited with status '0'
 FINER	thread=15	[null] product stored id=urn:usgs-product:nc:origin:nc71606670:1311633433000, status=UPDATE
 FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
 FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
@@ -336,13 +330,10 @@ FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:nc:or
 FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
 FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
 FINEST	thread=15	[null] stored product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
-FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nc:origin:nc71606670:1311633433000 in 14 ms
+FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nc:origin:nc71606670:1311633433000 in 13 ms
 FINER	thread=15	[null] summarizing product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
 FINEST	thread=15	[null] beginning index transaction
 FINER	thread=15	[null] finding previous version
-FINEST	thread=15	[null] running query 
-SELECT DISTINCT id FROM productSummary p WHERE p.id IS NOT NULL AND p.id = (SELECT id FROM productSummary ps WHERE ps.source='nc' AND ps.type='origin' AND ps.code='nc71606670' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='nc' AND type='origin' AND code='nc71606670'
-FINEST	thread=15	[null] query complete
 FINER	thread=15	[null] finding previous event
 FINEST	thread=15	Product Index Query
 eventSearchType=SEARCH_EVENT_PRODUCTS
@@ -407,7 +398,7 @@ FINER	thread=15	[null] committing transaction
 FINE	thread=15	[null] notifying listeners
 INFO	thread=15	[null] indexed product id=urn:usgs-product:nc:origin:nc71606670:1311633433000, status=UPDATE
 EVENT_ADDED null =&gt; nc71606670
-FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nc:origin:nc71606670:1311633433000 in 26 ms
+FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nc:origin:nc71606670:1311633433000 in 24 ms (0 ms sync delay)
 </pre>
 </span>
 </div>
@@ -419,7 +410,7 @@ FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nc:origin:nc
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 5.4.1</a> at Nov 20, 2020, 11:35:41 AM</p>
+<a href="http://www.gradle.org">Gradle 5.4.1</a> at Dec 3, 2020, 1:42:31 PM</p>
 </div>
 </div>
 </body>

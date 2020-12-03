@@ -54,19 +54,28 @@ public class JsonNotification extends URLNotification {
    * Create a JsonNotification from an existing Product.
    */
   JsonNotification(final Instant created, final Product product) throws Exception {
-<span class="nc" id="L57">    super(</span>
-<span class="nc" id="L58">        product.getId(),</span>
+<span class="nc" id="L57">    this(created, product, new Date(Instant.now().plusSeconds(7 * 86400).toEpochMilli()));</span>
+<span class="nc" id="L58">  }</span>
+
+  /**
+   * Create a JsonNotification with an expiration date.
+   */
+  JsonNotification(final Instant created, final Product product, final Date expiration)
+      throws Exception {
+<span class="nc" id="L65">    super(</span>
+<span class="nc" id="L66">        product.getId(),</span>
         // expiration date
-<span class="nc" id="L60">        new Date(created.plusSeconds(30 * 86400).toEpochMilli()),</span>
+        expiration,
         // no tracker
         EMPTY_URL,
         // store product as data url
         new URL(&quot;data:;base64,&quot; +
-<span class="nc" id="L65">            new String(Base64.getEncoder().encode(</span>
-<span class="nc" id="L66">                new JsonProduct().getJsonObject((product))</span>
-<span class="nc" id="L67">                    .toString().getBytes(StandardCharsets.UTF_8)))));</span>
-<span class="nc" id="L68">    this.created = created;</span>
-<span class="nc" id="L69">    this.product = product;</span>
-<span class="nc" id="L70">  }</span>
+<span class="nc" id="L73">            new String(Base64.getEncoder().encode(</span>
+<span class="nc" id="L74">                new JsonProduct().getJsonObject((product))</span>
+<span class="nc" id="L75">                    .toString().getBytes(StandardCharsets.UTF_8)))));</span>
+<span class="nc" id="L76">    this.created = created;</span>
+<span class="nc" id="L77">    this.product = product;</span>
+<span class="nc" id="L78">  }</span>
+
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

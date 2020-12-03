@@ -540,25 +540,77 @@ public class JsonNotificationIndex
   }
 
   /**
+   * This method is used to find notifications present in this index
+   * but not present in another JsonNotificationIndex table in the same
+   * database.
+   *
+   * This is used to optimize the queuing process at startup and returns
+   * DefaultNotifications.  The receiver process will look up the actual
+   * notification object during processing.
+   *
+   * @param otherTable
+   *     name of table in same database.
+   * @return
+   *     list of notifications found in this indexes table, but not found in the
+   *     other table.
+   * @throws Exception
+   */
+  public synchronized List&lt;Notification&gt; getMissingNotifications(
+      final String otherTable) throws Exception {
+    // this is used to requeue a notification index.
+    // run query in a way that returns list of default notifications,
+    // (by returning empty created, data, and url)
+    // since full details are not needed during requeue
+<span class="nc" id="L564">    final String sql = &quot;SELECT DISTINCT&quot;</span>
+        + &quot; '' as created, t.expires, t.source, t.type, t.code, t.updateTime&quot;
+        + &quot;, '' as url, null as data&quot;
+        + &quot; FROM &quot; + this.table + &quot; t&quot;
+        + &quot; WHERE NOT EXISTS (&quot;
+          + &quot;SELECT * FROM &quot; + otherTable
+            + &quot; WHERE source=t.source AND type=t.type&quot;
+            + &quot; AND code=t.code AND updatetime=t.updateTime&quot;
+        + &quot;)&quot;;
+    // prepare statement
+<span class="nc" id="L574">    beginTransaction();</span>
+<span class="nc" id="L575">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
+      try {
+        // execute and commit if successful
+<span class="nc" id="L578">        final List&lt;Notification&gt; notifications = getNotifications(statement);</span>
+<span class="nc" id="L579">        commitTransaction();</span>
+<span class="nc" id="L580">        return notifications;</span>
+<span class="nc" id="L581">      } catch (SQLException e) {</span>
+<span class="nc" id="L582">        LOGGER.log(Level.WARNING, &quot;Exception finding notifications&quot;, e);</span>
+        try {
+          // otherwise roll back
+<span class="nc" id="L585">          rollbackTransaction();</span>
+<span class="nc" id="L586">        } catch (SQLException e2) {</span>
+          // ignore
+<span class="nc" id="L588">        }</span>
+      }
+<span class="nc bnc" id="L590" title="All 2 branches missed.">    }</span>
+<span class="nc" id="L591">    return new ArrayList&lt;Notification&gt;();</span>
+  }
+
+  /**
    * Parse notifications from a statement ready to be executed.
    */
   protected synchronized List&lt;Notification&gt; getNotifications(PreparedStatement ps)
       throws Exception {
-<span class="fc" id="L547">    final List&lt;Notification&gt; n = new ArrayList&lt;Notification&gt;();</span>
-<span class="fc" id="L548">    try (final ResultSet rs = ps.executeQuery()) {</span>
-<span class="fc bfc" id="L549" title="All 2 branches covered.">      while (rs.next()) {</span>
-<span class="fc" id="L550">        n.add(parseNotification(</span>
-<span class="fc" id="L551">            rs.getString(&quot;created&quot;),</span>
-<span class="fc" id="L552">            rs.getString(&quot;expires&quot;),</span>
-<span class="fc" id="L553">            rs.getString(&quot;source&quot;),</span>
-<span class="fc" id="L554">            rs.getString(&quot;type&quot;),</span>
-<span class="fc" id="L555">            rs.getString(&quot;code&quot;),</span>
-<span class="fc" id="L556">            rs.getLong(&quot;updatetime&quot;),</span>
-<span class="fc" id="L557">            rs.getString(&quot;url&quot;),</span>
-<span class="fc" id="L558">            rs.getString(&quot;data&quot;)));</span>
+<span class="fc" id="L599">    final List&lt;Notification&gt; n = new ArrayList&lt;Notification&gt;();</span>
+<span class="fc" id="L600">    try (final ResultSet rs = ps.executeQuery()) {</span>
+<span class="fc bfc" id="L601" title="All 2 branches covered.">      while (rs.next()) {</span>
+<span class="fc" id="L602">        n.add(parseNotification(</span>
+<span class="fc" id="L603">            rs.getString(&quot;created&quot;),</span>
+<span class="fc" id="L604">            rs.getString(&quot;expires&quot;),</span>
+<span class="fc" id="L605">            rs.getString(&quot;source&quot;),</span>
+<span class="fc" id="L606">            rs.getString(&quot;type&quot;),</span>
+<span class="fc" id="L607">            rs.getString(&quot;code&quot;),</span>
+<span class="fc" id="L608">            rs.getLong(&quot;updatetime&quot;),</span>
+<span class="fc" id="L609">            rs.getString(&quot;url&quot;),</span>
+<span class="fc" id="L610">            rs.getString(&quot;data&quot;)));</span>
       }
     }
-<span class="fc" id="L561">    return n;</span>
+<span class="fc" id="L613">    return n;</span>
   }
 
   /**
@@ -581,20 +633,20 @@ public class JsonNotificationIndex
       final String url,
       final String data) throws Exception {
     final Notification n;
-<span class="fc" id="L584">    final ProductId id = new ProductId(source, type, code, new Date(updateTime));</span>
-<span class="fc" id="L585">    final Date expiresDate = Date.from(Instant.parse(expires));</span>
-<span class="pc bpc" id="L586" title="3 of 4 branches missed.">    if (!&quot;&quot;.equals(created) &amp;&amp; data != null) {</span>
-<span class="nc" id="L587">      Product product = new JsonProduct().getProduct(</span>
-<span class="nc" id="L588">          Json.createReader(</span>
-<span class="nc" id="L589">            new ByteArrayInputStream(data.getBytes())</span>
-<span class="nc" id="L590">          ).readObject());</span>
-<span class="nc" id="L591">      n = new JsonNotification(Instant.parse(created), product);</span>
-<span class="pc bfc" id="L592" title="All 2 branches covered.">    } else if (!&quot;&quot;.equals(url)) {</span>
-<span class="fc" id="L593">      n = new URLNotification(id, expiresDate, null, new URL(url));</span>
+<span class="fc" id="L636">    final ProductId id = new ProductId(source, type, code, new Date(updateTime));</span>
+<span class="fc" id="L637">    final Date expiresDate = Date.from(Instant.parse(expires));</span>
+<span class="pc bpc" id="L638" title="3 of 4 branches missed.">    if (!&quot;&quot;.equals(created) &amp;&amp; data != null) {</span>
+<span class="nc" id="L639">      Product product = new JsonProduct().getProduct(</span>
+<span class="nc" id="L640">          Json.createReader(</span>
+<span class="nc" id="L641">            new ByteArrayInputStream(data.getBytes())</span>
+<span class="nc" id="L642">          ).readObject());</span>
+<span class="nc" id="L643">      n = new JsonNotification(Instant.parse(created), product);</span>
+<span class="pc bfc" id="L644" title="All 2 branches covered.">    } else if (!&quot;&quot;.equals(url)) {</span>
+<span class="fc" id="L645">      n = new URLNotification(id, expiresDate, null, new URL(url));</span>
     } else {
-<span class="fc" id="L595">      n = new DefaultNotification(id, expiresDate, null);</span>
+<span class="fc" id="L647">      n = new DefaultNotification(id, expiresDate, null);</span>
     }
-<span class="fc" id="L597">    return n;</span>
+<span class="fc" id="L649">    return n;</span>
   }
 
 }

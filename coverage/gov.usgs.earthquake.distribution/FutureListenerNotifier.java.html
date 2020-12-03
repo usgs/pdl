@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FutureListenerNotifier.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">FutureListenerNotifier.java</span></div><h1>FutureListenerNotifier.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution;
+
+import gov.usgs.earthquake.product.AbstractListener;
+import gov.usgs.util.FutureExecutorTask;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.logging.Logger;
+
+/**
+ * FutureListenerNotifier is similar to ExecutorListenerNotifier, but uses
+ * Futures with an ExecutorService to implement timeouts instead of Timers.
+ *
+ * backgroundService is an unbounded executor, but will execute only as many
+ * threads are allowed by listener executors since listener executors submit
+ * tasks to the backgroundService and wait on the future.
+ *
+ * This ends up being more efficient because the threads where jobs execute are
+ * cached, instead of a new Timer thread created for each task.
+ */
+public class FutureListenerNotifier extends ExecutorListenerNotifier {
+
+<span class="fc" id="L25">  private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L26">      .getLogger(FutureListenerNotifier.class.getName());</span>
+
+  /** Service where tasks execute using futures for timeouts. */
+  private ExecutorService backgroundService;
+
+  public FutureListenerNotifier(final DefaultNotificationReceiver receiver) {
+<span class="fc" id="L32">    super(receiver);</span>
+<span class="fc" id="L33">  }</span>
+
+  @Override
+  protected void queueNotification(final NotificationListener listener,
+      final NotificationEvent event) {
+<span class="pc bpc" id="L38" title="1 of 4 branches missed.">    if (acceptBeforeQueuing</span>
+        &amp;&amp; listener instanceof DefaultNotificationListener) {
+<span class="fc" id="L40">      DefaultNotificationListener defaultListener = (DefaultNotificationListener) listener;</span>
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">      if (!defaultListener.accept(event.getNotification().getProductId())) {</span>
+<span class="nc" id="L42">        return;</span>
+      }
+    }
+
+    // determine retry delay
+<span class="fc" id="L47">    long retryDelay = 0L;</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">    if (listener instanceof AbstractListener) {</span>
+<span class="fc" id="L49">      retryDelay = ((AbstractListener) listener).getRetryDelay();</span>
+    }
+
+<span class="fc" id="L52">    ExecutorService listenerExecutor = notificationListeners.get(listener);</span>
+<span class="fc" id="L53">    FutureExecutorTask&lt;Void&gt; listenerTask = new FutureExecutorTask&lt;Void&gt;(</span>
+<span class="fc" id="L54">        backgroundService, listenerExecutor, listener.getMaxTries(),</span>
+<span class="fc" id="L55">        listener.getTimeout(), new NotificationListenerCallable(</span>
+            listener, event), retryTimer, retryDelay);
+<span class="fc" id="L57">    listenerExecutor.submit(listenerTask);</span>
+
+    // log how many notifications are pending
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">    if (listenerExecutor instanceof ThreadPoolExecutor) {</span>
+<span class="fc" id="L61">      BlockingQueue&lt;Runnable&gt; pending = ((ThreadPoolExecutor) listenerExecutor)</span>
+<span class="fc" id="L62">          .getQueue();</span>
+<span class="fc" id="L63">      LOGGER.fine(&quot;[&quot; + event.getNotificationReceiver().getName()</span>
+<span class="fc" id="L64">          + &quot;] listener (&quot; + listener.getName() + &quot;) has &quot;</span>
+<span class="fc" id="L65">          + pending.size() + &quot; queued notifications&quot;);</span>
+    }
+<span class="fc" id="L67">  }</span>
+
+  @Override
+  public void shutdown() throws Exception {
+<span class="fc" id="L71">    super.shutdown();</span>
+<span class="fc" id="L72">    backgroundService.shutdown();</span>
+<span class="fc" id="L73">    backgroundService = null;</span>
+<span class="fc" id="L74">  }</span>
+
+  @Override
+  public void startup() throws Exception {
+<span class="fc" id="L78">    backgroundService = Executors.newCachedThreadPool();</span>
+<span class="fc" id="L79">    super.startup();</span>
+<span class="fc" id="L80">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

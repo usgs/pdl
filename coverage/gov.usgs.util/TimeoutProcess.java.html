@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TimeoutProcess.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util</a> &gt; <span class="el_source">TimeoutProcess.java</span></div><h1>TimeoutProcess.java</h1><pre class="source lang-java linenums">/*
  * TimeoutProcess
- * 
+ *
  * $Id$
  * $URL$
  */
@@ -13,10 +13,10 @@ import java.util.Timer;
 
 /**
  * TimeoutProcess wraps a Process object.
- * 
+ *
  * It is most commonly used with TimeoutProcessBuilder, which configures the
  * process timeout (and sets the timed out state once the timeout is reached).
- * 
+ *
  * @see java.lang.Process
  * @see TimeoutProcessBuilder
  * @see ProcessTimeoutException
@@ -37,7 +37,7 @@ public class TimeoutProcess {
 
 	/**
 	 * Construct a new TimeoutProcess.
-	 * 
+	 *
 	 * @param process
 	 *            the wrapped process.
 	 */
@@ -72,47 +72,50 @@ public class TimeoutProcess {
 	/**
 	 * Wait for the process to complete, either normally or because its timeout
 	 * was reached.
-	 * 
+	 *
 	 * @return exitStatus.
 	 * @throws InterruptedException
 	 * @throws ProcessTimeoutException
 	 *             if the process timed out before exiting.
 	 */
 	public int waitFor() throws InterruptedException, IOException, ProcessTimeoutException {
-<span class="nc" id="L82">		int status = process.waitFor();</span>
+<span class="nc" id="L82">		int status = -1;</span>
+		try {
+<span class="nc" id="L84">			status = process.waitFor();</span>
 
-<span class="nc bnc" id="L84" title="All 2 branches missed.">		if (timeoutElapsed()) {</span>
-<span class="nc" id="L85">			throw new ProcessTimeoutException(&quot;The process has timed out.&quot;);</span>
-		}
-
-<span class="nc bnc" id="L88" title="All 2 branches missed.">		if (timer != null) {</span>
-			// the timer hasn't destroyed this process already, cancel it.
-<span class="nc" id="L90">			timer.cancel();</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">			if (timeoutElapsed()) {</span>
+<span class="nc" id="L87">				throw new ProcessTimeoutException(&quot;The process has timed out.&quot;);</span>
+			}
+		} finally {
+<span class="nc bnc" id="L90" title="All 2 branches missed.">			if (timer != null) {</span>
+				// the timer hasn't destroyed this process already, cancel it.
+<span class="nc" id="L92">				timer.cancel();</span>
+			}
 		}
 
 		try {
-<span class="nc" id="L94">			errorOutput = StreamUtils.readStream(getErrorStream());</span>
+<span class="nc" id="L97">			errorOutput = StreamUtils.readStream(getErrorStream());</span>
 		} finally {
 			// close streams
-<span class="nc" id="L97">			StreamUtils.closeStream(getErrorStream());</span>
-<span class="nc" id="L98">			StreamUtils.closeStream(getInputStream());</span>
-<span class="nc" id="L99">			StreamUtils.closeStream(getOutputStream());</span>
+<span class="nc" id="L100">			StreamUtils.closeStream(getErrorStream());</span>
+<span class="nc" id="L101">			StreamUtils.closeStream(getInputStream());</span>
+<span class="nc" id="L102">			StreamUtils.closeStream(getOutputStream());</span>
 		}
 
-<span class="nc" id="L102">		return status;</span>
+<span class="nc" id="L105">		return status;</span>
 	}
 
 	protected void setTimeoutElapsed(boolean timeoutElapsed) {
-<span class="nc" id="L106">		this.timeoutElapsed = timeoutElapsed;</span>
-<span class="nc" id="L107">	}</span>
+<span class="nc" id="L109">		this.timeoutElapsed = timeoutElapsed;</span>
+<span class="nc" id="L110">	}</span>
 
 	protected boolean timeoutElapsed() {
-<span class="nc" id="L110">		return timeoutElapsed;</span>
+<span class="nc" id="L113">		return timeoutElapsed;</span>
 	}
 
 	protected void setTimer(final Timer timer) {
-<span class="nc" id="L114">		this.timer = timer;</span>
-<span class="nc" id="L115">	}</span>
+<span class="nc" id="L117">		this.timer = timer;</span>
+<span class="nc" id="L118">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

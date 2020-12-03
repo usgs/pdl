@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FutureExecutorTask.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.util</a> &gt; <span class="el_source">FutureExecutorTask.java</span></div><h1>FutureExecutorTask.java</h1><pre class="source lang-java linenums">package gov.usgs.util;
+
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * FutureExecutorTask overrides how timeouts are handled to use a
+ * separate executor service with Futures.
+ */
+public class FutureExecutorTask&lt;T&gt; extends ExecutorTask&lt;T&gt; {
+
+  /** Logging object. */
+<span class="fc" id="L21">  private static final Logger LOGGER = Logger.getLogger(FutureExecutorTask.class</span>
+<span class="fc" id="L22">      .getName());</span>
+
+  /** Default number of milliseconds to wait before a retry. */
+  public static final long DEFAULT_RETRY_DELAY = 0L;
+
+  /** Default number of tries to run this task. */
+  public static final int DEFAULT_NUM_TRIES = 1;
+
+  /** Default timeout for this task. */
+  public static final long DEFAULT_TIMEOUT = 0L;
+
+  /** ExecutorService used to execute callable. */
+  protected ExecutorService backgroundService;
+
+  /**
+   * Construct a new ExecutorTask
+   *
+   * @param service
+   *            ExecutorService that this task will be submitted to.
+   * @param maxTries
+   *            maximum number of tries callable can throw an exception or
+   *            timeout before giving up. &amp;lt; 1 means never run.
+   * @param timeout
+   *            number of milliseconds to allow callable to run before it is
+   *            interrupted. &amp;lt;= 0 means never timeout.
+   * @param callable
+   *            the callable to call. To work well, the callable should handle
+   *            interrupts gracefully.
+   * @see InterruptedException
+   */
+  public FutureExecutorTask(ExecutorService backgroundService, ExecutorService service,
+      int maxTries, long timeout, Callable&lt;T&gt; callable) {
+<span class="fc" id="L54">    super(service, maxTries, timeout, callable, null, DEFAULT_RETRY_DELAY);</span>
+<span class="fc" id="L55">    this.backgroundService = backgroundService;</span>
+<span class="fc" id="L56">  }</span>
+
+  /**
+   * Wraps a runnable and result using the CallableRunnable class.
+   *
+   * @see java.util.concurrent.Executors#callable(Runnable, Object)
+   */
+  public FutureExecutorTask(ExecutorService backgroundService, ExecutorService service,
+      int maxTries, long timeout, Runnable runnable, T result) {
+<span class="nc" id="L65">    super(service, maxTries, timeout, Executors.callable(runnable, result));</span>
+<span class="nc" id="L66">    this.backgroundService = backgroundService;</span>
+<span class="nc" id="L67">  }</span>
+
+  /**
+   * Construct a new FutureExecutorTask
+   *
+   * @param service
+   *            ExecutorService that this task will be submitted to.
+   * @param maxTries
+   *            maximum number of tries callable can throw an exception or
+   *            timeout before giving up. &amp;lt; 1 means never run.
+   * @param timeout
+   *            number of milliseconds to allow callable to run before it is
+   *            interrupted. &amp;lt;= 0 means never timeout.
+   * @param callable
+   *            the callable to call. To work well, the callable should handle
+   *            interrupts gracefully.
+   * @param retryTimer
+   *            a timer used to schedule retries when retryDelay is non-zero.
+   * @param retryDelay
+   *            the number of milliseconds to wait before retrying after an
+   *            exception.
+   * @see InterruptedException
+   */
+  public FutureExecutorTask(ExecutorService backgroundService, ExecutorService service,
+      int maxTries, long timeout, Callable&lt;T&gt; callable, Timer retryTimer,
+      long retryDelay) {
+<span class="fc" id="L93">    super(service, maxTries, timeout, callable, retryTimer, retryDelay);</span>
+<span class="fc" id="L94">    this.backgroundService = backgroundService;</span>
+<span class="fc" id="L95">  }</span>
+
+  /**
+   * Run calls the callable, scheduling timeout interruption, catching
+   * exceptions, and potentially resubmitting to the executor service.
+   */
+  @Override
+  public void run() {
+<span class="fc" id="L103">    Future&lt;T&gt; future = null;</span>
+    try {
+<span class="pc bpc" id="L105" title="3 of 6 branches missed.">      if (done || cancelled || numTries &gt;= maxTries) {</span>
+        // already done, cancelled, or out of attempts
+<span class="nc" id="L107">        return;</span>
+      }
+
+      // otherwise,
+<span class="fc" id="L111">      ++numTries;</span>
+
+      // signal that we are running
+<span class="fc" id="L114">      runThread = Thread.currentThread();</span>
+
+      // use future to manage timeout
+<span class="fc" id="L117">      future = backgroundService.submit(this.callable);</span>
+      try {
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">        if (timeout &gt; 0) {</span>
+<span class="nc" id="L120">          result = future.get(timeout, TimeUnit.MILLISECONDS);</span>
+        } else {
+<span class="fc" id="L122">          result = future.get();</span>
+        }
+      } finally {
+        // cancel whether successful (noop) or exception (interrupt callable)
+<span class="fc" id="L126">        future.cancel(true);</span>
+      }
+
+      // signal that we are done running
+<span class="fc" id="L130">      runThread = null;</span>
+
+      // computed without exceptions, done
+<span class="fc" id="L133">      setDone();</span>
+<span class="nc" id="L134">    } catch (Exception e) {</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">      if (e instanceof ExecutionException) {</span>
+        // unpack cause
+<span class="nc" id="L137">        Throwable cause = e.getCause();</span>
+<span class="nc bnc" id="L138" title="All 4 branches missed.">        if (cause != null &amp;&amp; cause instanceof Exception) {</span>
+<span class="nc" id="L139">          e = (Exception) cause;</span>
+        }
+      }
+<span class="nc" id="L142">      LOGGER.log(Level.INFO, &quot;Exception executing task&quot;, e);</span>
+      // signal that we are not running
+<span class="nc" id="L144">      runThread = null;</span>
+
+      // track this exception
+<span class="nc" id="L147">      exceptions.add(e);</span>
+
+      // try to resubmit
+<span class="nc bnc" id="L150" title="All 4 branches missed.">      if (!cancelled &amp;&amp; numTries &lt; maxTries) {</span>
+<span class="nc" id="L151">        LOGGER.info(&quot;Resubmitting task to executor &quot; + numTries + &quot;/&quot;</span>
+            + maxTries + &quot; attempts&quot;);
+<span class="nc" id="L153">        SubmitTaskToExecutor retryTask = new SubmitTaskToExecutor(this);</span>
+<span class="nc bnc" id="L154" title="All 4 branches missed.">        if (retryDelay &lt;= 0L || retryTimer == null) {</span>
+<span class="nc" id="L155">          retryTask.run();</span>
+        } else {
+<span class="nc" id="L157">          retryTimer.schedule(retryTask, retryDelay);</span>
+        }
+<span class="nc" id="L159">      } else {</span>
+        // cancelled or out of tries, done
+<span class="nc" id="L161">        setDone();</span>
+      }
+<span class="fc" id="L163">    }</span>
+<span class="fc" id="L164">  }</span>
+
+  /**
+   * Submit a FutureExecutorTask to an ExecutorService.
+   *
+   * Used to defer resubmission of a task after it fails, but scheduling its
+   * resubmission using a timer.
+   */
+  private class SubmitTaskToExecutor extends TimerTask {
+
+    /** The task to resubmit. */
+    private FutureExecutorTask&lt;T&gt; task;
+
+    /**
+     * Construct a new SubmitTaskToExecutor instance.
+     *
+     * @param task
+     *            the task to resubmit.
+     */
+<span class="nc" id="L183">    public SubmitTaskToExecutor(final FutureExecutorTask&lt;T&gt; task) {</span>
+<span class="nc" id="L184">      this.task = task;</span>
+<span class="nc" id="L185">    }</span>
+
+    /**
+     * Submits the task to the executor.
+     */
+    public void run() {
+<span class="nc" id="L191">      service.submit(task);</span>
+<span class="nc" id="L192">    }</span>
+
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
