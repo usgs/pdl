@@ -27,6 +27,8 @@ stages:
       --no-daemon
       build
   stage: build
+  tags:
+    - development
   variables:
     JAVA_EPEL: "false"
     JAVA_PACKAGE: "java-11-openjdk-devel"
