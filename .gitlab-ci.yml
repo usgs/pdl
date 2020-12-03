@@ -1,0 +1,51 @@
+image: ${DEVOPS_REGISTRY}usgs/centos:8
+
+stages:
+  - build
+
+.check_code:
+  before_script:
+    # set up local ssh for tests
+    - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N '' -b 4096
+    - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+    - chmod 700 ~/.ssh/authorized_keys
+    # trust localhost
+    - ssh-keyscan 127.0.0.1 localhost >> ~/.ssh/known_hosts
+  cache:
+    paths:
+      - .gradle/caches
+      - .gradle/wrapper
+  script:
+    # install epel if needed (for latest)
+    - if [ "$JAVA_EPEL" = "true" ]; then yum install -y epel-release; fi
+    # install version of java
+    - yum install -y $JAVA_PACKAGE
+    # run gradle
+    - ./gradlew
+      --gradle-user-home "${CI_PROJECT_DIR}/.gradle"
+      --info
+      --no-daemon
+      build
+  stage: build
+  variables:
+    JAVA_EPEL: "false"
+    JAVA_PACKAGE: "java-11-openjdk-devel"
+
+Java 8:
+  extends:
+    - .check_code
+  variables:
+    JAVA_PACKAGE: "java-1.8.0-openjdk-devel"
+
+Java 11:
+  extends:
+    - .check_code
+  variables:
+    JAVA_PACKAGE: "java-11-openjdk-devel"
+
+Java Latest:
+  extends:
+    - .check_code
+  variables:
+    JAVA_EPEL: "true"
+    JAVA_PACKAGE: "java-latest-openjdk-devel"
