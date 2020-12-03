@@ -142,6 +142,9 @@ public class Indexer extends DefaultNotificationListener {
 	/** Task for archive policy thread. */
 	private TimerTask archiveTask = null;
 
+	/** Synchronization object for indexing. */
+	private final Object indexProductSync = new Object();
+
 	/**
 	 * Service used by FutureExecutorTask for execution.
 	 * See distribution.FutureListenerNotifier for more details.
@@ -524,7 +527,7 @@ public class Indexer extends DefaultNotificationListener {
 		// -------------------------------------------------------------------//
 		// -- Step 1: Store product
 		// -------------------------------------------------------------------//
-		final Date beginStore = new Date();
+		final long beginStore = new Date().getTime();
 		try {
 			LOGGER.finest("[" + getName() + "] storing product id="
 					+ id.toString());
@@ -545,10 +548,10 @@ public class Indexer extends DefaultNotificationListener {
 				return;
 			}
 		}
-		final Date endStore = new Date();
+		final long endStore = new Date().getTime();
 		LOGGER.fine("[" + getName() + "] indexer downloaded product id="
 				+ id.toString() + " in " +
-				(endStore.getTime() - beginStore.getTime()) + " ms");
+				(endStore - beginStore) + " ms");
 
 		// -------------------------------------------------------------------//
 		// -- Step 2: Use product module to summarize product
@@ -566,13 +569,21 @@ public class Indexer extends DefaultNotificationListener {
 		// -- Step 3: Add product summary to the product index
 		// -------------------------------------------------------------------//
 
-		try {
-			productSummary = indexProduct(productSummary);
-		} finally {
-			final Date endIndex = new Date();
-			LOGGER.fine("[" + getName() + "] indexer processed product id="
-					+ id.toString() + " in " +
-					(endIndex.getTime() - beginStore.getTime()) + " ms");
+
+		// measure time waiting to enter synchronized block
+		final long beforeEnterSync = new Date().getTime();
+		synchronized (indexProductSync) {
+			final long afterEnterSync = new Date().getTime();
+
+			try {
+				productSummary = indexProduct(productSummary);
+			} finally {
+				final long endIndex = new Date().getTime();
+				LOGGER.fine("[" + getName() + "] indexer processed product id="
+						+ id.toString() + " in " +
+						(endIndex - beginStore) + " ms"
+						+ " (" + (afterEnterSync - beforeEnterSync) + " ms sync delay)");
+			}
 		}
 	}
 
