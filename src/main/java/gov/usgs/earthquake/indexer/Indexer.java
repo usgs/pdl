@@ -478,7 +478,9 @@ public class Indexer extends DefaultNotificationListener {
 	protected boolean onBeforeProcessNotification(Notification notification) throws Exception {
 		// try to short-circuit duplicates
 		if (!isProcessDuplicates() && hasProductBeenIndexed(notification.getProductId())) {
-			LOGGER.fine("[" + getName() + " notification already indexed, skipping");
+			LOGGER.finer(
+					"[" + getName() + "] notification already indexed, skipping "
+					+ notification.getProductId().toString());
 			return false;
 		}
 		// otherwise, use default behavior
