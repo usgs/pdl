@@ -136,7 +136,7 @@ public class FutureExecutorTask<T> extends ExecutorTask<T> {
         // unpack cause
         Throwable cause = e.getCause();
         if (cause != null && cause instanceof Exception) {
-          e = (Exception) e.getCause();
+          e = (Exception) cause;
         }
       }
       LOGGER.log(Level.INFO, "Exception executing task", e);
