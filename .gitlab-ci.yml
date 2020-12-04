@@ -10,7 +10,8 @@ stages:
     - rm -fr "${CI_PROJECT_DIR}/.gradle/caches/*/plugin-resolution/"
   artifacts:
     paths:
-      - build/libs/ProductClient.jar
+      - ProductClient.jar
+      - ProductClient.zip
     reports:
       cobertura: build/reports/cobertura/cobertura.xml
       junit: build/test-results/test/TEST-*.xml
@@ -28,6 +29,9 @@ stages:
     # run gradle
     - export GRADLE_USER_HOME="${CI_PROJECT_DIR}/.gradle"
     - ./gradlew build
+    # set up artifact paths
+    - cp build/libs/ProductClient.jar ProductClient.jar
+    - cp build/libs/ProductClient.zip ProductClient.zip
   stage: build
   tags:
     - development
