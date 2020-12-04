@@ -20,11 +20,8 @@ stages:
       - .yum
   script:
     # run gradle
-    - ./gradlew
-      --gradle-user-home "${CI_PROJECT_DIR}/.gradle"
-      --info
-      --no-daemon
-      build
+    - export GRADLE_USER_HOME="${CI_PROJECT_DIR}/.gradle"
+    - ./gradlew --info --no-daemon build
   stage: build
   tags:
     - development
