@@ -40,6 +40,12 @@ Java 8:
     JAVA_PACKAGE: "java-1.8.0-openjdk-devel"
 
 Java 11:
+  artifacts:
+    paths:
+      - build/libs/ProductClient.jar
+    reports:
+      cobertura: build/reports/cobertura/cobertura.xml
+      junit: build/test-results/test/TEST-*.xml
   extends:
     - .check_code
   variables:
