@@ -8,6 +8,12 @@ stages:
     # runs before cache is saved (copying from .travis.yml)
     - rm -f  "${CI_PROJECT_DIR}/.gradle/caches/modules-2/modules-2.lock"
     - rm -fr "${CI_PROJECT_DIR}/.gradle/caches/*/plugin-resolution/"
+  artifacts:
+    paths:
+      - build/libs/ProductClient.jar
+    reports:
+      cobertura: build/reports/cobertura/cobertura.xml
+      junit: build/test-results/test/TEST-*.xml
   before_script:
     # install dependencies
     - echo "cachedir=${CI_PROJECT_DIR}/.yum/\$$basearch/\$$releasever" >> /etc/yum.conf
@@ -36,12 +42,6 @@ Java 8:
     JAVA_PACKAGE: "java-1.8.0-openjdk-devel"
 
 Java 11:
-  artifacts:
-    paths:
-      - build/libs/ProductClient.jar
-    reports:
-      cobertura: build/reports/cobertura/cobertura.xml
-      junit: build/test-results/test/TEST-*.xml
   extends:
     - .check_code
   variables:
