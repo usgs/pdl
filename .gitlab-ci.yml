@@ -8,15 +8,17 @@ stages:
     # runs before cache is saved (copying from .travis.yml)
     - rm -f  "${CI_PROJECT_DIR}/.gradle/caches/modules-2/modules-2.lock"
     - rm -fr "${CI_PROJECT_DIR}/.gradle/caches/*/plugin-resolution/"
+  before_script:
+    # install dependencies
+    - echo "cachedir=${CI_PROJECT_DIR}/.yum" >> /etc/yum.conf
+    - if [ "$JAVA_EPEL" = "true" ]; then yum install -y epel-release; fi
+    - yum install -y $JAVA_PACKAGE which
   cache:
     paths:
       - .gradle/caches
       - .gradle/wrapper
+      - .yum
   script:
-    # install epel if needed (for latest)
-    - if [ "$JAVA_EPEL" = "true" ]; then yum install -y epel-release; fi
-    # install version of java
-    - yum install -y $JAVA_PACKAGE
     # run gradle
     - ./gradlew
       --gradle-user-home "${CI_PROJECT_DIR}/.gradle"
