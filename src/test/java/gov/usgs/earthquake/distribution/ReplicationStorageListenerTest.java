@@ -12,8 +12,10 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class ReplicationStorageListenerTest {
 
 	private static final String LOCAL_STORAGE_SECTION = "localStorage";
