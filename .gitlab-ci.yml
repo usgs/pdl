@@ -10,7 +10,7 @@ stages:
     - rm -fr "${CI_PROJECT_DIR}/.gradle/caches/*/plugin-resolution/"
   before_script:
     # install dependencies
-    - echo "cachedir=${CI_PROJECT_DIR}/.yum" >> /etc/yum.conf
+    - echo "cachedir=${CI_PROJECT_DIR}/.yum/\$$basearch/\$$releasever" >> /etc/yum.conf
     - if [ "$JAVA_EPEL" = "true" ]; then yum install -y epel-release; fi
     - yum install -y $JAVA_PACKAGE which
   cache:
