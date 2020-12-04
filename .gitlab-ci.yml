@@ -4,13 +4,10 @@ stages:
   - build
 
 .check_code:
-  before_script:
-    # set up local ssh for tests
-    - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N '' -b 4096
-    - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-    - chmod 700 ~/.ssh/authorized_keys
-    # trust localhost
-    - ssh-keyscan 127.0.0.1 localhost >> ~/.ssh/known_hosts
+  after_script:
+    # runs before cache is saved (copying from .travis.yml)
+    - rm -f  "${CI_PROJECT_DIR}/.gradle/caches/modules-2/modules-2.lock"
+    - rm -fr "${CI_PROJECT_DIR}/.gradle/caches/*/plugin-resolution/"
   cache:
     paths:
       - .gradle/caches
