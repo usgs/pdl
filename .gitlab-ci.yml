@@ -27,7 +27,7 @@ stages:
   script:
     # run gradle
     - export GRADLE_USER_HOME="${CI_PROJECT_DIR}/.gradle"
-    - ./gradlew --info --no-daemon build
+    - ./gradlew build
   stage: build
   tags:
     - development
