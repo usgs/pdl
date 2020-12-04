@@ -67,6 +67,7 @@ sourceSets {
 
 // show compile warnings
 tasks.withType(JavaCompile) {
+  options.encoding = 'UTF-8';
   options.setDeprecation(true);
   options.setWarnings(true);
 }
