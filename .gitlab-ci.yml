@@ -28,10 +28,10 @@ stages:
   script:
     # run gradle
     - export GRADLE_USER_HOME="${CI_PROJECT_DIR}/.gradle"
-    - ./gradlew build
+    - ./gradlew build createZip
     # set up artifact paths
     - cp build/libs/ProductClient.jar ProductClient.jar
-    - cp build/libs/ProductClient.zip ProductClient.zip
+    - cp build/distributions/ProductClient.zip ProductClient.zip
   stage: build
   tags:
     - development
