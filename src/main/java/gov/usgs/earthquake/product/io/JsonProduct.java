@@ -54,7 +54,11 @@ public class JsonProduct {
     json.add("id", getIdJson(id));
     json.add("links", getLinksJson(product.getLinks()));
     json.add("properties", getPropertiesJson(product.getProperties()));
-    json.add("signature", product.getSignature());
+    if (product.getSignature() == null) {
+      json.addNull("signature");
+    } else {
+      json.add("signature", product.getSignature());
+    }
     json.add("signatureVersion", product.getSignatureVersion().toString());
     json.add("status", product.getStatus());
     json.add("type", "Feature");
@@ -70,7 +74,11 @@ public class JsonProduct {
     product.setLinks(getLinks(json.getJsonArray("links")));
     product.setProperties(getProperties(json.getJsonObject("properties")));
     product.setStatus(json.getString("status"));
-    product.setSignature(json.getString("signature"));
+    try {
+      product.setSignature(json.getString("signature"));
+    } catch (Exception e) {
+      product.setSignature(null);
+    }
     product.setSignatureVersion(Version.fromString(json.getString("signatureVersion")));
     product.setTrackerURL(new URL("data:,"));
     return product;

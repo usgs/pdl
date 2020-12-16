@@ -21,22 +21,22 @@ public class SocketProductSenderTest {
 
 	@Test
 	public void testSendXmlWithDeflate() throws Exception {
-		testSendProduct(/* binaryFormat */false, /* enableDeflate */true);
+		testSendProduct(/* binaryFormat */false, /* enableDeflate */true, 1984);
 	}
 
 	@Test
 	public void testSendBinaryWithDeflate() throws Exception {
-		testSendProduct(/* binaryFormat */true, /* enableDeflate */true);
+		testSendProduct(/* binaryFormat */true, /* enableDeflate */true, 1985);
 	}
 
 	@Test
 	public void testSendXmlNoDeflate() throws Exception {
-		testSendProduct(/* binaryFormat */false, /* enableDeflate */false);
+		testSendProduct(/* binaryFormat */false, /* enableDeflate */false, 1986);
 	}
 
 	@Test
 	public void testSendBinaryNoDeflate() throws Exception {
-		testSendProduct(/* binaryFormat */true, /* enableDeflate */false);
+		testSendProduct(/* binaryFormat */true, /* enableDeflate */false, 1987);
 	}
 
 	// ------------------------------------------------------------------------
@@ -45,7 +45,7 @@ public class SocketProductSenderTest {
 
 	/**
 	 * This is the testing utility method called by individual tests.
-	 * 
+	 *
 	 * @param binaryFormat
 	 *            whether to use the binary format during test.
 	 * @param enableDeflate
@@ -53,13 +53,13 @@ public class SocketProductSenderTest {
 	 * @throws Exception
 	 */
 	protected void testSendProduct(final boolean binaryFormat,
-			final boolean enableDeflate) throws Exception {
-		TestSocketAcceptor server = new TestSocketAcceptor(this);
+			final boolean enableDeflate, final int port) throws Exception {
+		TestSocketAcceptor server = new TestSocketAcceptor(this, port);
 		server.start();
 
 		SocketProductSender sender = new SocketProductSender();
 		sender.setHost("localhost");
-		sender.setPort(1984);
+		sender.setPort(port);
 		sender.setBinaryFormat(binaryFormat);
 		sender.setEnableDeflate(enableDeflate);
 		sender.startup();
@@ -105,8 +105,8 @@ public class SocketProductSenderTest {
 		private ServerSocket sock = null;
 		private SocketProductSenderTest cb = null;
 
-		public TestSocketAcceptor(SocketProductSenderTest cb) throws Exception {
-			sock = new ServerSocket(1984);
+		public TestSocketAcceptor(SocketProductSenderTest cb, final int port) throws Exception {
+			sock = new ServerSocket(port);
 			this.cb = cb;
 		}
 

@@ -1,7 +1,10 @@
 package gov.usgs.earthquake.distribution;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -95,6 +98,13 @@ public class ListenerBackupTest {
 		FileUtils.deleteTree(listener2Storage);
 	}
 
+	@Test
+	public void testListenerBackup() throws Exception {
+		for (File f : TEST_FILES) {
+			sendProduct(readProduct(f));
+		}
+	}
+
 	public void sendProduct(final Product product) throws Exception {
 		long timeStart = new Date().getTime();
 
@@ -117,39 +127,27 @@ public class ListenerBackupTest {
 
 		// the queues block until here
 		start.countDown();
-
 		// this blocks until both have completed.
 		finish.await();
+
 		Assert.assertNotNull("listener1 product is not null",
 				listener1.getProduct());
 		Assert.assertNotNull("listener2 product is not null",
 				listener2.getProduct());
 
 		long timeEnd = new Date().getTime();
-		System.err.println((timeEnd - timeStart) + "ms sending "
-				+ product.getId());
+		System.err.println((timeEnd - timeStart) + "ms sending " + product.getId());
 	}
 
 	public Product readProduct(final File file) throws Exception {
 		long start = new Date().getTime();
-		InputStream in = StreamUtils.getInputStream(file);
-		try {
-			return ObjectProductHandler.getProduct(IOUtil
-					.autoDetectProductSource(in));
+		try (
+			final InputStream in = StreamUtils.getInputStream(file);
+		) {
+			return ObjectProductHandler.getProduct(IOUtil.autoDetectProductSource(in));
 		} finally {
-			try {
-				in.close();
-			} catch (Exception ignore) {
-			}
 			long end = new Date().getTime();
 			System.err.println((end - start) + " ms reading " + file.getName());
-		}
-	}
-
-	@Test
-	public void testListenerBackup() throws Exception {
-		for (File f : TEST_FILES) {
-			sendProduct(readProduct(f));
 		}
 	}
 
@@ -166,25 +164,50 @@ public class ListenerBackupTest {
 		}
 
 		@Override
-		public void onSocket(Socket socket) {
+		public void onSocket(final Socket socket) {
 			long start = new Date().getTime();
-			try {
-				OutputStream out = socket.getOutputStream();
+			try (
+				final BufferedReader in = new BufferedReader(
+						new InputStreamReader(socket.getInputStream()));
+				final OutputStream out = socket.getOutputStream();
+			) {
+				// read request from socket
+				String line;
+				while ((line = in.readLine()) != null) {
+					if ("".equals(line)) {
+						break;
+					}
+				}
+
+				// convert product to bytes first
+				final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				final ObjectProductSource source = new ObjectProductSource(this.product);
+				source.streamTo(new BinaryProductHandler(baos));
+				final byte[] productBytes = baos.toByteArray();
+				long encoded = new Date().getTime();
+				System.err.println((encoded - start) + "ms encoding product "
+						+ this.product.getId().toString());
 
 				// this is an http response
-				out.write("HTTP/1.0 200 OK\r\n".getBytes());
-				out.write("Content-type: application/octet-stream\r\n"
-						.getBytes());
-				out.write("\r\n".getBytes());
+				out.write(
+					String.join("\r\n",
+						"HTTP/1.0 200 OK",
+						"Connection: close",
+						"Content-Length: " + productBytes.length,
+						"Content-Type: application/octet-stream",
+						"", "").getBytes());
 
-				// send the product
-				ObjectProductSource source = new ObjectProductSource(
-						this.product);
-				source.streamTo(new BinaryProductHandler(
-						new StreamUtils.UnclosableOutputStream(out)));
+				// then transfer
+				out.write(productBytes);
+				out.flush();
 
-				socket.shutdownOutput();
-				socket.close();
+				// close socket before try w/resources ends
+				try {
+					socket.shutdownOutput();
+				} catch (Exception e) { e.printStackTrace(); }
+				try {
+					socket.close();
+				} catch (Exception e) { e.printStackTrace(); }
 			} catch (Exception e) {
 				e.printStackTrace();
 			} finally {
@@ -237,13 +260,10 @@ public class ListenerBackupTest {
 		public void onNotification(final NotificationEvent notification)
 				throws Exception {
 			start.await();
-			System.err.println("retrieving product "
-					+ Thread.currentThread().getName());
-			// Thread.sleep(600);
+			System.err.println("retrieving product " + Thread.currentThread().getName());
 			// just retrieve the product
 			retrieveProduct(notification.getNotification().getProductId());
-			System.err.println("retrieved product "
-					+ Thread.currentThread().getName());
+			System.err.println("retrieved product " + Thread.currentThread().getName());
 			finish.countDown();
 		}
 

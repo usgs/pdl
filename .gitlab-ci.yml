@@ -1,0 +1,47 @@
+image: ${DEVOPS_REGISTRY}usgs/centos:8
+
+stages:
+  - build
+
+.check_code:
+  after_script:
+    # runs before cache is saved (copying from .travis.yml)
+    - rm -f  "${CI_PROJECT_DIR}/.gradle/caches/modules-2/modules-2.lock"
+    - rm -fr "${CI_PROJECT_DIR}/.gradle/caches/*/plugin-resolution/"
+  artifacts:
+    paths:
+      - ProductClient.jar
+      - ProductClient.zip
+    reports:
+      cobertura: build/reports/cobertura/cobertura.xml
+      junit: build/test-results/test/TEST-*.xml
+  cache:
+    paths:
+      - .gradle/caches
+      - .gradle/wrapper
+  image: ${DEVOPS_REGISTRY}usgs/java:11-jdk
+  script:
+    # run gradle
+    - export GRADLE_USER_HOME="${CI_PROJECT_DIR}/.gradle"
+    - ./gradlew build createZip
+    # set up artifact paths
+    - cp build/libs/ProductClient.jar ProductClient.jar
+    - cp build/distributions/ProductClient.zip ProductClient.zip
+  stage: build
+  tags:
+    - development
+
+Java 8:
+  extends:
+    - .check_code
+  image: ${DEVOPS_REGISTRY}usgs/java:8-jdk
+
+Java 11:
+  extends:
+    - .check_code
+  image: ${DEVOPS_REGISTRY}usgs/java:11-jdk
+
+Java Latest:
+  extends:
+    - .check_code
+  image: ${DEVOPS_REGISTRY}usgs/java:latest-jdk

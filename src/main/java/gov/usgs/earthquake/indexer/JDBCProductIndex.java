@@ -1270,7 +1270,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			return null;
 		}
 
-		return new BigDecimal(normalizeLongitude(lon.doubleValue()));
+		return BigDecimal.valueOf(normalizeLongitude(lon.doubleValue()));
 	}
 
 	/**
