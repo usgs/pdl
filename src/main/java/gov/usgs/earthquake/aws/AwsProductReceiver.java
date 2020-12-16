@@ -61,6 +61,12 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   protected Long lastBroadcastId = null;
   protected boolean processBroadcast = false;
 
+  /** Used to coordinate sending products_created_after message. */
+  protected boolean sendProductsCreatedAfterFlag = false;
+  protected boolean sendProductsCreatedAfterRunning = false;
+  protected Object sendProductsCreatedAfterSync = new Object();
+  protected Thread sendProductsCreatedAfterThread;
+
 
   @Override
   public void configure(Config config) throws Exception {
@@ -261,6 +267,81 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   }
 
   /**
+   * Request background thread to send "products_created_after" message.
+   *
+   * @throws IOException
+   */
+  protected void sendProductsCreatedAfter() throws IOException {
+    synchronized(sendProductsCreatedAfterSync) {
+      // set flag that we want to send products created after
+      sendProductsCreatedAfterFlag = true;
+      // wake up background thread that sends message
+      sendProductsCreatedAfterSync.notifyAll();
+    }
+  }
+
+  /**
+   * Start background thread that sends "products_created_after" messages.
+   *
+   * @return started thread.
+   */
+  protected void startSendProductsCreatedAfterThread() {
+    if (sendProductsCreatedAfterThread != null) {
+      throw new IllegalStateException("sendProductsCreatedThread already exists");
+    }
+    sendProductsCreatedAfterFlag = false;
+    sendProductsCreatedAfterRunning = true;
+    sendProductsCreatedAfterThread = new Thread(() -> {
+      while (sendProductsCreatedAfterRunning) {
+        try {
+          synchronized (sendProductsCreatedAfterSync) {
+            if (!sendProductsCreatedAfterFlag) {
+              // wait until ready to send
+              sendProductsCreatedAfterSync.wait();
+              continue;
+            }
+          }
+
+          // ready to send, try to keep queue size manageable
+          throttleQueues();
+
+          synchronized (sendProductsCreatedAfterSync) {
+            // now send actual products created after message
+            try {
+              _sendProductsCreatedAfter();
+              // message sent, reset flag
+              sendProductsCreatedAfterFlag = false;
+            } catch (IOException e) {
+              LOGGER.log(
+                  Level.WARNING,
+                  "[" + getName() + "] Exception sending products_created_after",
+                  e);
+            }
+          }
+        } catch (InterruptedException ie) {
+          // interrupted usually means shutting down thread
+        }
+      }
+    });
+    sendProductsCreatedAfterThread.start();
+  }
+
+  protected void stopProductsCreatedAfterThread() {
+    try {
+      sendProductsCreatedAfterRunning = false;
+      sendProductsCreatedAfterThread.interrupt();
+      sendProductsCreatedAfterThread.join();
+    } catch (Exception e) {
+      LOGGER.log(
+          Level.WARNING,
+          "[" + getName() + "] exception stopping sendProductsCreatedAfterThread",
+          e);
+    } finally {
+      sendProductsCreatedAfterThread = null;
+    }
+  }
+
+  /**
    * Send an "action"="products_created_after" request, which is part of the
    * catch up process.
    *
@@ -268,7 +349,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
    * then one "action"="products_created_after" message to indicate the request
    * is complete.
    */
-  protected void sendProductsCreatedAfter() throws IOException {
+  protected void _sendProductsCreatedAfter() throws IOException {
     // set default for created after
     if (this.createdAfter == null) {
       this.createdAfter = Instant.now().minusSeconds(7 * 86400);
@@ -323,6 +404,9 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
       createdAfter = Instant.parse(json.getString(CREATED_AFTER_PROPERTY));
     }
 
+    // start background thread for products_create_after messages
+    startSendProductsCreatedAfterThread();
+
     //open websocket
     client = new WebSocketClient(uri, this, attempts, timeout, true);
   }
@@ -333,8 +417,11 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
    */
   @Override
   public void shutdown() throws Exception{
+    stopProductsCreatedAfterThread();
     //close socket
-    client.shutdown();
+    try {
+      client.shutdown();
+    } catch (Exception e) {}
     super.shutdown();
   }
 
