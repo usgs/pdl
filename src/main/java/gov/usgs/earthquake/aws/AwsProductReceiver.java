@@ -56,9 +56,11 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   private Session session;
 
   /* µs timestamp of last message that has been processed */
-  private Instant createdAfter = null;
-  private JsonNotification lastBroadcast = null;
-  private boolean processBroadcast = false;
+  protected Instant createdAfter = null;
+  protected JsonNotification lastBroadcast = null;
+  protected Long lastBroadcastId = null;
+  protected boolean processBroadcast = false;
+
 
   @Override
   public void configure(Config config) throws Exception {
@@ -165,12 +167,34 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   protected void onBroadcast(final JsonObject json) throws Exception {
     final JsonNotification notification = new JsonNotification(
         json.getJsonObject("notification"));
-    lastBroadcast = notification;
     LOGGER.info("[" + getName() + "] onBroadcast(" + notification.getProductId() + ")");
-    if (!processBroadcast) {
-      return;
+
+    Long broadcastId = json.getJsonObject("notification").getJsonNumber("id").longValue();
+    if (lastBroadcastId != null && broadcastId != (lastBroadcastId + 1)) {
+      // sanity check, broadcast ids are expected to increment
+      // if incoming broadcast is not lastBroadcastId + 1, may have missed a broadcast
+      LOGGER.warning(
+          "[" + getName() + "] broadcast ids out of sequence"
+          + " (got " + broadcastId + ", expected " + (lastBroadcastId + 1) + ")");
+
+      if (processBroadcast) {
+        // not in catch up mode, switch back
+        LOGGER.info("[" + getName() + "] switching to catch up mode");
+        processBroadcast = false;
+        sendProductsCreatedAfter();
+      }
     }
-    onJsonNotification(notification);
+
+    // track last broadcast for catch up process (as long as newer)
+    if (lastBroadcastId == null || broadcastId > lastBroadcastId) {
+      lastBroadcastId = broadcastId;
+      lastBroadcast = notification;
+    }
+
+    // process message if not in catch up mode
+    if (processBroadcast) {
+      onJsonNotification(notification);
+    }
   }
 
   /**
