@@ -685,6 +685,12 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 		return null;
 	}
 
+	public void throttleQueues() throws InterruptedException {
+		if (notifier instanceof ExecutorListenerNotifier) {
+			((ExecutorListenerNotifier) notifier).throttleQueues();
+		}
+	}
+
 	public Long getReceiverCleanupInterval() {
 		return receiverCleanupInterval;
 	}
@@ -699,6 +705,14 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 
 	public void setConnectTimeout(int connectTimeout) {
 		this.connectTimeout = connectTimeout;
+	}
+
+	public ListenerNotifier getNotifier() {
+		return this.notifier;
+	}
+
+	public void setNotifier(final ListenerNotifier notifier) {
+		this.notifier = notifier;
 	}
 
 	public int getReadTimeout() {

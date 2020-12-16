@@ -48,6 +48,15 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	 */
 	protected Timer retryTimer = new Timer();
 
+	/** When queue size reaches this level, start throttling */
+	protected int throttleStartThreshold = 50000;
+
+	/** When queue size reaches this level, stop throttling */
+	protected int throttleStopThreshold = 25000;
+
+	/** When throttling, wait this many milliseconds between queue size checks. */
+	protected long throttleWaitInterval = 5000L;
+
 	public ExecutorListenerNotifier(final DefaultNotificationReceiver receiver) {
 		this.receiver = receiver;
 	}
@@ -242,6 +251,9 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 				// still valid
 				this.notifyListeners(event, gracefulListeners);
 			}
+
+			// try to keep queue size managable during restart
+			throttleQueues();
 		}
 		LOGGER.info("All notifications queued");
 
@@ -280,6 +292,58 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	}
 
 	/**
+	 * Check queue status and return length of longest queue.
+	 *
+	 * @return length of longest queue, or null if no queue lengths.
+	 */
+	public Integer getMaxQueueSize() {
+		final Map<String, Integer> status = getStatus();
+		Integer maxQueueSize = null;
+		for (Integer queueSize : status.values()) {
+			if (queueSize != null && (maxQueueSize == null || queueSize > maxQueueSize)) {
+				maxQueueSize = queueSize;
+			}
+		}
+		return maxQueueSize;
+	}
+
+	/**
+	 * If longest queue has more than 50k notifications,
+	 * wait until longest queue has 25k notifications before returning.
+	 *
+	 * @throws InterruptedException
+	 */
+	public void throttleQueues() throws InterruptedException {
+		// try to keep queue size managable during restart
+		int maxSize = throttleStartThreshold;
+		// track whether any throttles occurred
+		boolean throttled = false;
+
+		while (true) {
+			final Integer size = getMaxQueueSize();
+			if (size == null || size <= maxSize) {
+				// within limit
+				if (throttled) {
+					LOGGER.info("[" + getName() + "] done throttling (size = " + size + ")");
+				}
+				break;
+			}
+
+			throttled = true;
+			LOGGER.info("[" + getName() + "]"
+					+ " queueing throttled until below "
+					+ throttleStopThreshold
+					+ " (size = " + size + ")");
+			// too many messages queued
+			// set maxSize to stop threshold
+			maxSize = throttleStopThreshold;
+			// wait for listener to do some processing
+			// 5s is a little low, but don't want to wait too long
+			Thread.sleep(throttleWaitInterval);
+		}
+	}
+
+	/**
 	 * NOTE: messing with the executors map is not a good idea.
 	 *
 	 * @return the map of listeners and their executors.
@@ -287,5 +351,14 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	public Map<NotificationListener, ExecutorService> getExecutors() {
 		return notificationListeners;
 	}
+
+	public int getThrottleStartThreshold() { return this.throttleStartThreshold; }
+	public void setThrottleStartThreshold(final int n) { this.throttleStartThreshold = n; }
+
+	public int getThrottleStopThreshold() { return this.throttleStopThreshold; }
+	public void setThrottleStopThreshold(final int n) { this.throttleStopThreshold = n; }
+
+	public long getThrottleWaitInterval() { return this.throttleWaitInterval; }
+	public void setThrottleWaitInterval(final long ms) { this.throttleWaitInterval = ms; }
 
 }
