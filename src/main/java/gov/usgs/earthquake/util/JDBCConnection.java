@@ -1,10 +1,14 @@
 package gov.usgs.earthquake.util;
 
+import gov.usgs.util.Config;
 import gov.usgs.util.DefaultConfigurable;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,13 +23,30 @@ import java.util.logging.Logger;
  *
  * @author jmfee
  */
-public abstract class JDBCConnection extends DefaultConfigurable {
+public class JDBCConnection extends DefaultConfigurable implements AutoCloseable {
+
+	static {
+		// set default database connect/login timeout in seconds
+		DriverManager.setLoginTimeout(10);
+	}
 
 	private static final Logger LOGGER = Logger.getLogger(JDBCConnection.class
 			.getName());
 
+	/** shared executor for network timeouts */
+	private static final Executor TIMEOUT_EXECUTOR = Executors.newCachedThreadPool();
+
 	/** Connection object. */
 	private Connection connection;
+
+	/** JDBC driver class. */
+	private String driver;
+
+	/** JDBC network timeout. */
+	private int networkTimeout = 30000;
+
+	/** JDBC connect url. */
+	private String url;
 
 	/** Lock prevents statements from mixing during transaction; avoids "synchronized". */
   private final ReentrantLock transactionLock = new ReentrantLock();
@@ -37,6 +58,38 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 		this.connection = null;
 	}
 
+	public JDBCConnection(final String driver, final String url) {
+		this.driver = driver;
+		this.url = url;
+	}
+
+	/**
+	 * Implement autocloseable.
+	 *
+	 * Calls {@link #shutdown()}.
+	 *
+	 * @throws Exception
+	 */
+	@Override
+	public void close() throws Exception {
+		shutdown();
+	}
+
+	/**
+	 * Implement Configurable
+	 */
+  @Override
+  public void configure(final Config config) throws Exception {
+    setDriver(config.getProperty("driver"));
+
+		String timeout = config.getProperty("networkTimeout");
+		if (timeout != null) {
+			setNetworkTimeout(Integer.parseInt(timeout));
+		}
+
+		setUrl(config.getProperty("url"));
+  }
+
 	/**
 	 * Connect to the database.
 	 *
@@ -46,7 +99,15 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 	 * @throws Exception
 	 *             if unable to connect.
 	 */
-	protected abstract Connection connect() throws Exception;
+	protected Connection connect() throws Exception {
+    // load driver if needed
+    Class.forName(driver);
+		final Connection conn = DriverManager.getConnection(url);
+		if (networkTimeout > 0) {
+			conn.setNetworkTimeout(TIMEOUT_EXECUTOR, networkTimeout);
+		}
+		return conn;
+  }
 
 	/**
 	 * Initialize the database connection.
@@ -203,5 +264,15 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 
 		return this.connection;
 	}
+
+	public String getDriver() { return this.driver; }
+  public void setDriver(final String driver) { this.driver = driver; }
+
+	public int getNetworkTimeout() { return this.networkTimeout; }
+	/** NOTE: this does not affect existing connections. */
+	public void setNetworkTimeout(final int timeout) { this.networkTimeout = timeout; }
+
+	public String getUrl() { return this.url; }
+  public void setUrl(final String url) { this.url = url; }
 
 }

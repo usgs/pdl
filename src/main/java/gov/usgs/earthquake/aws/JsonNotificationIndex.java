@@ -67,12 +67,8 @@ public class JsonNotificationIndex
   public static final String DEFAULT_URL =
       "jdbc:sqlite:json_notification_index.db";
 
-  /** JDBC driver classname. */
-  private String driver;
   /** Database table name. */
   private String table;
-  /** JDBC database connect url. */
-  private String url;
 
   /**
    * Construct a JsonNotification using defaults.
@@ -93,38 +89,24 @@ public class JsonNotificationIndex
    */
   public JsonNotificationIndex(
       final String driver, final String url, final String table) {
-    this.driver = driver;
+    super(driver, url);
     this.table = table;
-    this.url = url;
   }
 
-  public String getDriver() { return this.driver; }
   public String getTable() { return this.table; }
-  public String getUrl() { return this.url; }
-  public void setDriver(final String driver) { this.driver = driver; }
   public void setTable(final String table) { this.table = table; }
-  public void setUrl(final String url) { this.url = url; }
 
   @Override
   public void configure(final Config config) throws Exception {
-    driver = config.getProperty("driver", DEFAULT_DRIVER);
-    LOGGER.config("[" + getName() + "] driver=" + driver);
-    table = config.getProperty("table", DEFAULT_TABLE);
-    LOGGER.config("[" + getName() + "] table=" + table);
-    url = config.getProperty("url", DEFAULT_URL);
-    // do not log url, it may contain user/pass
-  }
+    super.configure(config);
+    if (getDriver() == null) { setDriver(DEFAULT_DRIVER); }
+    if (getUrl() == null) { setUrl(DEFAULT_URL); }
 
-  /**
-   * Connect to database.
-   *
-   * Implements abstract JDBCConnection method.
-   */
-  @Override
-  protected Connection connect() throws Exception {
-    // load driver if needed
-    Class.forName(driver);
-    return DriverManager.getConnection(url);
+    setTable(config.getProperty("table", DEFAULT_TABLE));
+    LOGGER.config("[" + getName() + "] driver=" + getDriver());
+    LOGGER.config("[" + getName() + "] networkTimeout=" + getNetworkTimeout());
+    LOGGER.config("[" + getName() + "] table=" + getTable());
+    // do not log url, it may contain user/pass
   }
 
   /**
@@ -177,7 +159,7 @@ public class JsonNotificationIndex
     try (final Statement statement = getConnection().createStatement()) {
       String autoIncrement = "";
       String engine = "";
-      if (driver.contains("mysql")) {
+      if (getDriver().contains("mysql")) {
         autoIncrement = " AUTO_INCREMENT";
         engine = " ENGINE=innodb CHARSET=utf8";
       }

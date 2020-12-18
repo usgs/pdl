@@ -57,18 +57,6 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	public static final String JDBC_DEFAULT_FILE = "productIndex.db";
 
 	/**
-	 * Constant used to specify what the driver property should be called in the
-	 * config file
-	 */
-	private static final String JDBC_DRIVER_PROPERTY = "driver";
-
-	/**
-	 * Constant used to specify the url property should be called in the config
-	 * file.
-	 */
-	private static final String JDBC_URL_PROPERTY = "url";
-
-	/**
 	 * Constant used to specify what the index file property should be called in
 	 * to config file
 	 */
@@ -125,8 +113,6 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	// private static final String SUMMARY_LINK_RELATION = "relation";
 	// private static final String SUMMARY_LINK_URL = "url";
 
-	private String driver;
-	private String url;
 	private String index_file;
 
 	/**
@@ -136,13 +122,12 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 */
 	public JDBCProductIndex() throws Exception {
 		// Default index file, so calling configure() isn't required
-		index_file = JDBC_DEFAULT_FILE;
-		driver = JDBC_DEFAULT_DRIVER;
+		this(JDBC_DEFAULT_FILE);
 	}
 
 	public JDBCProductIndex(final String sqliteFileName) throws Exception {
 		index_file = sqliteFileName;
-		driver = JDBC_DEFAULT_DRIVER;
+		setDriver(JDBC_DEFAULT_DRIVER);
 	}
 
 	// ____________________________________
@@ -157,15 +142,10 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 */
 	@Override
 	public void configure(Config config) throws Exception {
+		super.configure(config);
+		if (getDriver() == null) { setDriver(JDBC_DEFAULT_DRIVER); }
 
-		driver = config.getProperty(JDBC_DRIVER_PROPERTY);
-		index_file = config.getProperty(JDBC_FILE_PROPERTY);
-		url = config.getProperty(JDBC_URL_PROPERTY);
-
-		if (driver == null || "".equals(driver)) {
-			driver = JDBC_DEFAULT_DRIVER;
-		}
-
+		index_file = config.getProperty(JDBC_FILE_PROPERTY, JDBC_DEFAULT_FILE);
 		if (index_file == null || "".equals(index_file)) {
 			index_file = JDBC_DEFAULT_FILE;
 		}
@@ -179,9 +159,8 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 */
 	@Override
 	public Connection connect() throws Exception {
-		// If they are using the sqlite driver, we need to try to create the
-		// file
-		if (driver.equals(JDBCUtils.SQLITE_DRIVER_CLASSNAME)) {
+		// If they are using the sqlite driver, we need to try to create the file
+		if (getUrl() == null && getDriver().equals(JDBCUtils.SQLITE_DRIVER_CLASSNAME)) {
 			// Make sure file exists or copy it out of the JAR
 			File indexFile = new File(index_file);
 			if (!indexFile.exists()) {
@@ -198,12 +177,10 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			}
 			indexFile = null;
 
-			// Build the JDBC url
-			url = JDBC_CONNECTION_PREFIX + index_file;
-			driver = JDBCUtils.SQLITE_DRIVER_CLASSNAME;
+			setUrl(JDBC_CONNECTION_PREFIX + index_file);
 		}
 
-		return JDBCUtils.getConnection(driver, url);
+		return super.connect();
 	}
 
 	/**
