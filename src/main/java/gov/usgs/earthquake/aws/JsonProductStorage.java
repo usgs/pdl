@@ -205,7 +205,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
    * @return product if found, otherwise null.
    */
   @Override
-  public synchronized Product getProduct(ProductId id) throws Exception {
+  public Product getProduct(ProductId id) throws Exception {
     Product product = null;
     final String sql = "SELECT * FROM " + this.table
         + " WHERE source=? AND type=? AND code=? AND updatetime=?";
@@ -253,7 +253,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
    *     if product already in storage.
    */
   @Override
-  public synchronized ProductId storeProduct(Product product) throws Exception {
+  public ProductId storeProduct(Product product) throws Exception {
     // prepare statement
     beginTransaction();
     try (
@@ -323,7 +323,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
    * Remove product from storage.
    */
   @Override
-  public synchronized void removeProduct(ProductId id) throws Exception {
+  public void removeProduct(ProductId id) throws Exception {
     // prepare statement
     final String sql = "DELETE FROM " + this.table
           + " WHERE source=? AND type=? AND code=? AND updatetime=?";

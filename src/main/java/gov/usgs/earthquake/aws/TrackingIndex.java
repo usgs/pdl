@@ -175,7 +175,7 @@ public class TrackingIndex extends JDBCConnection {
    *     name of tracking data.
    * @return null if data not found.
    */
-  public synchronized JsonObject getTrackingData(final String name) throws Exception {
+  public JsonObject getTrackingData(final String name) throws Exception {
     JsonObject data = null;
 
     final String sql = "SELECT * FROM " + this.table + " WHERE name=?";
@@ -210,7 +210,7 @@ public class TrackingIndex extends JDBCConnection {
    *     name of tracking data.
    * @throws Exception
    */
-  public synchronized void removeTrackingData(final String name) throws Exception {
+  public void removeTrackingData(final String name) throws Exception {
     final String sql = "DELETE FROM " + this.table + " WHERE name=?";
     // create schema
     beginTransaction();
@@ -234,7 +234,7 @@ public class TrackingIndex extends JDBCConnection {
    *     data to store.
    * @throws Exception
    */
-  public synchronized void setTrackingData(final String name, final JsonObject data) throws Exception {
+  public void setTrackingData(final String name, final JsonObject data) throws Exception {
     final String update = "UPDATE " + this.table + " SET data=? WHERE name=?";
     // usually updated, try update first
     beginTransaction();

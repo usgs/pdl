@@ -19,7 +19,6 @@ import java.util.logging.Level;
 
 import javax.json.Json;
 
-
 import gov.usgs.earthquake.distribution.DefaultNotification;
 import gov.usgs.earthquake.distribution.Notification;
 import gov.usgs.earthquake.distribution.NotificationIndex;
@@ -215,7 +214,7 @@ public class JsonNotificationIndex
    * TrackerURLs are ignored.
    */
   @Override
-  public synchronized void addNotification(Notification notification)
+  public void addNotification(Notification notification)
       throws Exception {
     // all notifications
     Instant expires = notification.getExpirationDate().toInstant();
@@ -276,7 +275,7 @@ public class JsonNotificationIndex
    * Tracker URLs are ignored.
    */
   @Override
-  public synchronized void removeNotification(Notification notification) throws Exception {
+  public void removeNotification(Notification notification) throws Exception {
     // all notifications
     Instant expires = notification.getExpirationDate().toInstant();
     ProductId id = notification.getProductId();
@@ -339,7 +338,7 @@ public class JsonNotificationIndex
    * @return list with matching notifications, empty if not found.
    */
   @Override
-  public synchronized List<Notification> findNotifications(
+  public List<Notification> findNotifications(
       String source, String type, String code) throws Exception {
     final ArrayList<Object> where = new ArrayList<Object>();
     final ArrayList<String> values = new ArrayList<String>();
@@ -398,7 +397,7 @@ public class JsonNotificationIndex
    * @return list with matching notifications, empty if not found.
    */
   @Override
-  public synchronized List<Notification> findNotifications(
+  public List<Notification> findNotifications(
       List<String> sources, List<String> types, List<String> codes)
       throws Exception {
     final ArrayList<Object> where = new ArrayList<Object>();
@@ -474,7 +473,7 @@ public class JsonNotificationIndex
    * @return list with matching notifications, empty if not found.
    */
   @Override
-  public synchronized List<Notification> findExpiredNotifications() throws Exception {
+  public List<Notification> findExpiredNotifications() throws Exception {
     final String sql = "SELECT * FROM " + this.table + " WHERE expires <= ?";
     // prepare statement
     beginTransaction();
@@ -498,7 +497,6 @@ public class JsonNotificationIndex
       }
     }
     return new ArrayList<Notification>();
-
   }
 
   /**
@@ -509,7 +507,7 @@ public class JsonNotificationIndex
    * @return list with matching notifications, empty if not found.
    */
   @Override
-  public synchronized List<Notification> findNotifications(ProductId id) throws Exception {
+  public List<Notification> findNotifications(ProductId id) throws Exception {
     final String sql = "SELECT * FROM " + this.table
         + " WHERE source=? AND type=? AND code=? AND updatetime=?";
     // prepare statement
@@ -555,8 +553,8 @@ public class JsonNotificationIndex
    *     other table.
    * @throws Exception
    */
-  public synchronized List<Notification> getMissingNotifications(
-      final String otherTable) throws Exception {
+  public List<Notification> getMissingNotifications( final String otherTable)
+      throws Exception {
     // this is used to requeue a notification index.
     // run query in a way that returns list of default notifications,
     // (by returning empty created, data, and url)
@@ -593,8 +591,10 @@ public class JsonNotificationIndex
 
   /**
    * Parse notifications from a statement ready to be executed.
+   *
+   * Should be called in a transaction.
    */
-  protected synchronized List<Notification> getNotifications(PreparedStatement ps)
+  protected List<Notification> getNotifications(PreparedStatement ps)
       throws Exception {
     final List<Notification> n = new ArrayList<Notification>();
     try (final ResultSet rs = ps.executeQuery()) {

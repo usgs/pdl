@@ -5,7 +5,7 @@ import gov.usgs.util.DefaultConfigurable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,6 +26,9 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 
 	/** Connection object. */
 	private Connection connection;
+
+	/** Lock prevents statements from mixing during transaction; avoids "synchronized". */
+  private final ReentrantLock transactionLock = new ReentrantLock(true);
 
 	/**
 	 * Create a new JDBCConnection object.
@@ -64,6 +67,7 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 	 */
 	@Override
 	public void shutdown() throws Exception {
+		transactionLock.lock();
 		try {
 			if (connection != null) {
 				connection.close();
@@ -73,30 +77,53 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 			e.printStackTrace();
 		} finally {
 			connection = null;
+			transactionLock.unlock();
 		}
 	}
 
 	/**
 	 * Open a transaction on the database connection
+	 *
+	 * A lock is used to ensure no other transactions can begin until either
+	 * {@link #commitTransaction()} or {@link #rollbackTransaction()} are called.
 	 */
-	public synchronized void beginTransaction() throws Exception {
-		Connection conn = this.verifyConnection();
-		conn.setAutoCommit(false);
+	public void beginTransaction() throws Exception {
+		// enter transaction, but allow thread to be interrupted
+		transactionLock.lockInterruptibly();
+		try {
+			Connection conn = this.verifyConnection();
+			conn.setAutoCommit(false);
+		} catch (Exception e) {
+			// if exception occurs, unlock and throw
+			transactionLock.unlock();
+			throw e;
+		}
+		// otherwise, remain locked until commit/rollback are called
 	}
 
 	/**
 	 * Finalize the transaction by committing all the changes and closing the
 	 * transaction.
 	 */
-	public synchronized void commitTransaction() throws Exception {
-		getConnection().setAutoCommit(true);
+	public void commitTransaction() throws Exception {
+		try {
+			getConnection().setAutoCommit(true);
+		} finally {
+			// if an exception occurred, somethings weird but still unlock
+			transactionLock.unlock();
+		}
 	}
 
 	/**
 	 * Undo all of the changes made during the current transaction
 	 */
-	public synchronized void rollbackTransaction() throws Exception {
-		getConnection().rollback();
+	public void rollbackTransaction() throws Exception {
+		try {
+			getConnection().rollback();
+		} finally {
+			// if an exception occurred, somethings weird but still unlock
+			transactionLock.unlock();
+		}
 	}
 
 	/**
@@ -113,11 +140,16 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 	 * this doesn't succeed, reinitializes the database connection by calling
 	 * shutdown() then startup().
 	 *
+	 * NOTE: this method modifies the stored connection, and should not be called
+	 * by multiple threads.
+	 *
+	 * This is normally called by {@link #beginTransaction()} which uses a lock.
+	 *
 	 * @return Valid connection object.
 	 * @throws Exception
 	 *             if unable to (re)connect.
 	 */
-	public synchronized Connection verifyConnection() throws Exception {
+	public Connection verifyConnection() throws Exception {
 		try {
 			// usually throws an exception when connection is closed
 			if (connection.isClosed()) {
