@@ -76,7 +76,7 @@ public class Indexer extends DefaultNotificationListener {
 
 	public static final String ASSOCIATE_USING_CURRENT_PRODUCTS_PROPERTY = "associateUsingCurrentProducts";
 
-	public static final String DEFAULT_ASSOCIATE_USING_CURRENT_PRODUCTS = "false";
+	public static final String DEFAULT_ASSOCIATE_USING_CURRENT_PRODUCTS = "true";
 
 	/** Property name to configure a custom storage. */
 	public static final String STORAGE_CONFIG_PROPERTY = "storage";
