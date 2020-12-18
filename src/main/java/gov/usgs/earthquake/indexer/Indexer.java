@@ -127,6 +127,9 @@ public class Indexer extends DefaultNotificationListener {
 	/** Index of stored products, and how they are related. */
 	private ProductIndex productIndex;
 
+	/** Index used by {@link #hasProductBeenIndexed(ProductId)}. */
+	private ProductIndex readProductIndex;
+
 	/** Modules provide product specific functionality. */
 	private List<IndexerModule> modules = new LinkedList<IndexerModule>();
 
@@ -406,15 +409,16 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	protected boolean hasProductBeenIndexed(final ProductId id) throws Exception {
 		boolean hasProduct = false;
-		// use transaction to avoid stepping on #indexProduct()
-		productIndex.beginTransaction();
+		// readProductIndex may be the same as productIndex,
+		// or for mysql uses a separate connection
+		readProductIndex.beginTransaction();
 		try {
-			hasProduct = productIndex.hasProduct(id);
-			productIndex.commitTransaction();
+			hasProduct = readProductIndex.hasProduct(id);
+			readProductIndex.commitTransaction();
 		} catch (Exception wtf) {
 			LOGGER.log(Level.WARNING, "[" + getName()
 					+ "] exception checking if product already indexed", wtf);
-			productIndex.rollbackTransaction();
+			readProductIndex.rollbackTransaction();
 		}
 
 		// default is it hasn't been processed
@@ -1760,6 +1764,14 @@ public class Indexer extends DefaultNotificationListener {
 			LOGGER.log(Level.WARNING, "[" + getName()
 					+ "] exception shutting down product index", e);
 		}
+		if (readProductIndex != productIndex) {
+			try {
+				readProductIndex.shutdown();
+			} catch (Exception e) {
+				LOGGER.log(Level.WARNING, "[" + getName()
+						+ "] exception shutting down read product index", e);
+			}
+		}
 		productStorage.shutdown();
 
 		// ExecutorServices tied to known listeners.
@@ -1852,6 +1864,22 @@ public class Indexer extends DefaultNotificationListener {
 		// ProductIndex
 		productStorage.startup();
 		productIndex.startup();
+
+		// when using mysql index, use separate connection for hasProductBeenIndexed
+		if (productIndex instanceof JDBCProductIndex) {
+			JDBCProductIndex jdbcProductIndex = (JDBCProductIndex) productIndex;
+			if (jdbcProductIndex.getDriver().contains("mysql")) {
+				JDBCProductIndex index = new JDBCProductIndex();
+				index.setDriver(jdbcProductIndex.getDriver());
+				index.setUrl(jdbcProductIndex.getUrl());
+				readProductIndex = index;
+				readProductIndex.startup();
+			}
+		}
+		if (readProductIndex == null) {
+			// otherwise share index
+			readProductIndex = productIndex;
+		}
 
 		// Cleanup thread to purge old products
 		if (archivePolicies.size() > 0) {
