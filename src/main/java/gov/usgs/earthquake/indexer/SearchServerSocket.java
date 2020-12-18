@@ -68,17 +68,24 @@ public class SearchServerSocket extends DefaultConfigurable implements
 
 	/**
 	 * Method to perform search.
-	 * 
+	 *
 	 * Calls Indexer.search(SearchRequest). Simplifies testing.
-	 * 
+	 *
 	 * @param request
 	 *            the search to execute.
 	 * @return the search response.
 	 * @throws Exception
 	 */
-	protected SearchResponse search(final SearchRequest request)
-			throws Exception {
-		return indexer.search(request);
+	protected SearchResponse search(final SearchRequest request) throws Exception {
+		indexer.getProductIndex().beginTransaction();
+		try {
+			SearchResponse response = indexer.search(request);
+			indexer.getProductIndex().commitTransaction();
+			return response;
+		} catch (Exception e) {
+			indexer.getProductIndex().rollbackTransaction();
+			throw e;
+		}
 	}
 
 	/**
