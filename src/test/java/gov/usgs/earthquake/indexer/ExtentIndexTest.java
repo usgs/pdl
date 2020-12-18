@@ -17,7 +17,7 @@ import java.sql.PreparedStatement;
 public class ExtentIndexTest {
 
   @Test
-  public void addExistsTest() throws Exception{
+  public void addExistsTest() throws Exception {
     ExtentIndex index = new ExtentIndex();
     index.configure(new Config());
     index.startup();
@@ -42,5 +42,6 @@ public class ExtentIndexTest {
     stmnt.executeUpdate();
 
     index.shutdown();
+    index.close();
   }
 }
