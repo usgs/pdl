@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -139,7 +140,16 @@ public class FutureExecutorTask<T> extends ExecutorTask<T> {
           e = (Exception) cause;
         }
       }
-      LOGGER.log(Level.INFO, "Exception executing task", e);
+      if (e instanceof InterruptedException) {
+        LOGGER.info("Interrupted executing " + this.callable.toString());
+      } else if (e instanceof TimeoutException) {
+        LOGGER.info("Timeout executing " + this.callable.toString());
+      } else {
+        LOGGER.log(
+            Level.INFO,
+            "Exception executing task " + this.callable.toString(),
+            e);
+      }
       // signal that we are not running
       runThread = null;
 

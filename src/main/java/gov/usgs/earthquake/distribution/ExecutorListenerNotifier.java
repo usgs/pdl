@@ -215,7 +215,7 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 		LOGGER.info("[" + receiver.getName()
 				+ "] requeueing notification index '" + index.getName() + "'");
 		// find all existing notifications
-		Iterator<Notification> allNotifications = null;
+		List<Notification> allNotifications = null;
 
 		// for json index, push intersection into database if only one listener
 		if (index instanceof JsonNotificationIndex && gracefulListeners.size() == 1) {
@@ -227,7 +227,7 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 				try {
 					allNotifications =
 							((JsonNotificationIndex) index).getMissingNotifications(
-									((JsonNotificationIndex) listenerIndex).getTable()).iterator();
+									((JsonNotificationIndex) listenerIndex).getTable());
 				} catch (Exception e) {
 					LOGGER.log(Level.INFO, "Exception loading intersection, continuing", e);
 				}
@@ -237,23 +237,23 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 		if (allNotifications == null) {
 			// fallback to previous behavior
 			allNotifications = index.findNotifications(
-					(List<String>) null, (List<String>) null, (List<String>) null)
-					.iterator();
+					(List<String>) null, (List<String>) null, (List<String>) null);
 		}
 		LOGGER.info("Done finding existing notifications");
 
 		// queue them for processing in case they were previous missed
 		Date now = new Date();
-		while (allNotifications.hasNext()) {
-			NotificationEvent event = new NotificationEvent(receiver,
-					allNotifications.next());
+		int count = 0;
+		for (final Notification n : allNotifications) {
+			NotificationEvent event = new NotificationEvent(receiver, n);
 			if (event.getNotification().getExpirationDate().after(now)) {
 				// still valid
 				this.notifyListeners(event, gracefulListeners);
 			}
+			count += 1;
 
 			// try to keep queue size managable during restart
-			throttleQueues();
+			throttleQueues(allNotifications.size() - count);
 		}
 		LOGGER.info("All notifications queued");
 
@@ -314,6 +314,10 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	 * @throws InterruptedException
 	 */
 	public void throttleQueues() throws InterruptedException {
+		throttleQueues(null);
+	}
+
+	public void throttleQueues(Integer remaining) throws InterruptedException {
 		// try to keep queue size managable during restart
 		int maxSize = throttleStartThreshold;
 		// track whether any throttles occurred
@@ -333,7 +337,9 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 			LOGGER.info("[" + getName() + "]"
 					+ " queueing throttled until below "
 					+ throttleStopThreshold
-					+ " (size = " + size + ")");
+					+ " (size = " + size + ", remaining="
+							+ (remaining == null ? "?" : remaining)
+							+ ")");
 			// too many messages queued
 			// set maxSize to stop threshold
 			maxSize = throttleStopThreshold;

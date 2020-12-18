@@ -576,6 +576,7 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 				throw new ConfigurationException("Unknown notifier type "
 						+ notifierType);
 			}
+			notifier.setName(getName() + ".notifier");
 		}
 	}
 
