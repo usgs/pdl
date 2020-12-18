@@ -28,7 +28,7 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 	private Connection connection;
 
 	/** Lock prevents statements from mixing during transaction; avoids "synchronized". */
-  private final ReentrantLock transactionLock = new ReentrantLock(true);
+  private final ReentrantLock transactionLock = new ReentrantLock();
 
 	/**
 	 * Create a new JDBCConnection object.
