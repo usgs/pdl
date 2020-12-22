@@ -66,12 +66,8 @@ public class JsonNotificationIndex
   public static final String DEFAULT_URL =
       "jdbc:sqlite:json_notification_index.db";
 
-  /** JDBC driver classname. */
-  private String driver;
   /** Database table name. */
   private String table;
-  /** JDBC database connect url. */
-  private String url;
 
   /**
    * Construct a JsonNotification using defaults.
@@ -92,17 +88,12 @@ public class JsonNotificationIndex
    */
   public JsonNotificationIndex(
       final String driver, final String url, final String table) {
-    this.driver = driver;
+    super(driver, url);
     this.table = table;
-    this.url = url;
   }
 
-  public String getDriver() { return this.driver; }
   public String getTable() { return this.table; }
-  public String getUrl() { return this.url; }
-  public void setDriver(final String driver) { this.driver = driver; }
   public void setTable(final String table) { this.table = table; }
-  public void setUrl(final String url) { this.url = url; }
 
   @Override
   public void configure(final Config config) throws Exception {
@@ -140,7 +131,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement test = getConnection().prepareStatement(sql)) {
       // should throw exception if table does not exist
-      test.setQueryTimeout(30);
+      test.setQueryTimeout(60);
       try (final ResultSet rs = test.executeQuery()) {
         rs.next();
       }
@@ -167,7 +158,7 @@ public class JsonNotificationIndex
     try (final Statement statement = getConnection().createStatement()) {
       String autoIncrement = "";
       String engine = "";
-      if (driver.contains("mysql")) {
+      if (getDriver().contains("mysql")) {
         autoIncrement = " AUTO_INCREMENT";
         engine = " ENGINE=innodb CHARSET=utf8";
       }
@@ -230,7 +221,7 @@ public class JsonNotificationIndex
           + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
     ) {
       try {
-        statement.setQueryTimeout(30);
+        statement.setQueryTimeout(60);
         // set parameters
         statement.setString(1, created != null ? created.toString() : "");
         statement.setString(2, expires.toString());
@@ -290,7 +281,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
-        statement.setQueryTimeout(30);
+        statement.setQueryTimeout(60);
         // set parameters
         statement.setString(1, created != null ? created.toString() : "");
         statement.setString(2, expires.toString());
@@ -354,7 +345,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
-        statement.setQueryTimeout(500);
+        statement.setQueryTimeout(1000);
 
         // set parameters
         for (int i = 0, len=values.size(); i < len; i++) {
@@ -438,7 +429,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
-        statement.setQueryTimeout(500);
+        statement.setQueryTimeout(1000);
 
         // set parameters
         for (int i = 0, len=values.size(); i < len; i++) {
@@ -469,12 +460,12 @@ public class JsonNotificationIndex
    */
   @Override
   public synchronized List<Notification> findExpiredNotifications() throws Exception {
-    final String sql = "SELECT * FROM " + this.table + " WHERE expires <= ?";
+    final String sql = "SELECT * FROM " + this.table + " WHERE expires <= ? LIMIT 1000";
     // prepare statement
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
-        statement.setQueryTimeout(500);
+        statement.setQueryTimeout(1000);
 
         // set parameters
         statement.setString(1, Instant.now().toString());
@@ -571,7 +562,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
-        statement.setQueryTimeout(500);
+        statement.setQueryTimeout(1000);
         // execute and commit if successful
         final List<Notification> notifications = getNotifications(statement);
         commitTransaction();

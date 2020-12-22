@@ -38,12 +38,8 @@ public class TrackingIndex extends JDBCConnection {
   public static final String DEFAULT_TABLE = "tracking";
   public static final String DEFAULT_URL = "jdbc:sqlite:json_tracking_index.db";
 
-  /** JDBC driver classname. */
-  private String driver;
   /** Database table name. */
   private String table;
-  /** JDBC database connect url. */
-  private String url;
 
   /**
    * Construct a TrackingIndex using defaults.
@@ -64,17 +60,12 @@ public class TrackingIndex extends JDBCConnection {
    */
   public TrackingIndex(
       final String driver, final String url, final String table) {
-    this.driver = driver;
+    super(driver, url);
     this.table = table;
-    this.url = url;
   }
 
-  public String getDriver() { return this.driver; }
   public String getTable() { return this.table; }
-  public String getUrl() { return this.url; }
-  public void setDriver(final String driver) { this.driver = driver; }
   public void setTable(final String table) { this.table = table; }
-  public void setUrl(final String url) { this.url = url; }
 
   @Override
   public void configure(final Config config) throws Exception {
@@ -111,7 +102,7 @@ public class TrackingIndex extends JDBCConnection {
     final String sql = "select * from " + this.table + " limit 1";
     beginTransaction();
     try (final PreparedStatement test = getConnection().prepareStatement(sql)) {
-      test.setQueryTimeout(30);
+      test.setQueryTimeout(60);
       // should throw exception if table does not exist
       try (final ResultSet rs = test.executeQuery()) {
         rs.next();
@@ -138,7 +129,7 @@ public class TrackingIndex extends JDBCConnection {
     beginTransaction();
     try (final Statement statement = getConnection().createStatement()) {
       String autoIncrement = "";
-      if (driver.contains("mysql")) {
+      if (getDriver().contains("mysql")) {
         autoIncrement = "AUTO_INCREMENT";
       }
       statement.executeUpdate(
@@ -170,7 +161,7 @@ public class TrackingIndex extends JDBCConnection {
     final String sql = "SELECT * FROM " + this.table + " WHERE name=?";
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
-      statement.setQueryTimeout(30);
+      statement.setQueryTimeout(60);
       statement.setString(1, name);
 
       // execute and parse data
@@ -205,7 +196,7 @@ public class TrackingIndex extends JDBCConnection {
     // create schema
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
-      statement.setQueryTimeout(30);
+      statement.setQueryTimeout(60);
       statement.setString(1, name);
 
       statement.executeUpdate();
@@ -230,7 +221,7 @@ public class TrackingIndex extends JDBCConnection {
     // usually updated, try update first
     beginTransaction();
     try (final PreparedStatement updateStatement = getConnection().prepareStatement(update)) {
-      updateStatement.setQueryTimeout(30);
+      updateStatement.setQueryTimeout(60);
       updateStatement.setString(1, data.toString());
       updateStatement.setString(2, name);
       // execute update
@@ -240,7 +231,7 @@ public class TrackingIndex extends JDBCConnection {
         final String insert = "INSERT INTO " + this.table + " (data, name) VALUES (?, ?)";
         // no rows updated
         try (final PreparedStatement insertStatement = getConnection().prepareStatement(insert)) {
-          insertStatement.setQueryTimeout(30);
+          insertStatement.setQueryTimeout(60);
           insertStatement.setString(1, data.toString());
           insertStatement.setString(2, name);
           // execute insert
