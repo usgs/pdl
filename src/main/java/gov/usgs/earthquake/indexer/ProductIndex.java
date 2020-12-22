@@ -10,10 +10,10 @@ import java.util.List;
 
 /**
  * An index of products.
- * 
+ *
  * The Indexer uses a ProductIndex to store received Products, and associate
  * them together into Events.
- * 
+ *
  * The transaction methods are used when one product results in several changes
  * to the database. For instance, add a ProductSummary then add an association
  * to an event.
@@ -22,7 +22,7 @@ public interface ProductIndex extends Configurable {
 
 	/**
 	 * If the index supports transactions, begin a transaction.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void beginTransaction() throws Exception;
@@ -30,7 +30,7 @@ public interface ProductIndex extends Configurable {
 	/**
 	 * If the index supports transactions, and beginTransaction was previously
 	 * called, commit the pending transaction.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void commitTransaction() throws Exception;
@@ -38,14 +38,14 @@ public interface ProductIndex extends Configurable {
 	/**
 	 * If the index supports transactions, and beginTransaction was previously
 	 * called, rollback the pending transaction.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void rollbackTransaction() throws Exception;
 
 	/**
 	 * Get events in this index.
-	 * 
+	 *
 	 * @param query
 	 *            a description of which events to retrieve.
 	 * @return a list of matching events.
@@ -55,7 +55,7 @@ public interface ProductIndex extends Configurable {
 
 	/**
 	 * Get products in this index.
-	 * 
+	 *
 	 * @param query
 	 *            a description of which products to retrieve.
 	 * @return a list of matching products.
@@ -65,8 +65,15 @@ public interface ProductIndex extends Configurable {
 			throws Exception;
 
 	/**
+	 * Check whether index has product.
+	 *
+	 * May be more efficient than {@link #getProducts(ProductIndexQuery)}.
+	 */
+	public boolean hasProduct(ProductId id) throws Exception;
+
+	/**
 	 * Get products in this index that aren't associated to any event.
-	 * 
+	 *
 	 * @param query
 	 *            a description of which products to retrieve.
 	 * @return a list of unassociated products
@@ -77,7 +84,7 @@ public interface ProductIndex extends Configurable {
 
 	/**
 	 * Add an event to the index.
-	 * 
+	 *
 	 * @param event
 	 *            the event to add.
 	 * @return Copy of event with the eventId attribute set to the id in the
@@ -88,7 +95,7 @@ public interface ProductIndex extends Configurable {
 
 	/**
 	 * Remove an event from the index.
-	 * 
+	 *
 	 * @param event
 	 *            the event to remove.
 	 * @return Copy of the event removed
@@ -99,7 +106,7 @@ public interface ProductIndex extends Configurable {
 
 	/**
 	 * Add a product summary to the index.
-	 * 
+	 *
 	 * @param summary
 	 *            the summary to add.
 	 * @return Copy of the product summary object with the indexId set to the
@@ -111,7 +118,7 @@ public interface ProductIndex extends Configurable {
 
 	/**
 	 * Remove a product summary from the index.
-	 * 
+	 *
 	 * @param summary
 	 *            the summary to remove.
 	 * @return id of removed summary.
@@ -122,7 +129,7 @@ public interface ProductIndex extends Configurable {
 
 	/**
 	 * Associate an Event and ProductSummary that are already in the index.
-	 * 
+	 *
 	 * @param event
 	 *            the event.
 	 * @param summary
@@ -135,7 +142,7 @@ public interface ProductIndex extends Configurable {
 
 	/**
 	 * Remove an association between and Event and ProductSummary.
-	 * 
+	 *
 	 * @param event
 	 *            the event.
 	 * @param summary
@@ -149,10 +156,10 @@ public interface ProductIndex extends Configurable {
 	/**
 	 * An opportunity for the ProductIndex to update summary information it may
 	 * or may not store for efficient event searches.
-	 * 
+	 *
 	 * This method is called by the indexer after it has finished updating
 	 * events during onProduct.
-	 * 
+	 *
 	 * @param events
 	 *            events that may have new preferred attributes.
 	 * @throws Exception

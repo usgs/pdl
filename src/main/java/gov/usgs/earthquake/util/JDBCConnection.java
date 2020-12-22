@@ -1,11 +1,12 @@
 package gov.usgs.earthquake.util;
 
+import gov.usgs.util.Config;
 import gov.usgs.util.DefaultConfigurable;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,7 +20,7 @@ import java.util.logging.Logger;
  *
  * @author jmfee
  */
-public abstract class JDBCConnection extends DefaultConfigurable {
+public class JDBCConnection extends DefaultConfigurable implements AutoCloseable {
 
 	private static final Logger LOGGER = Logger.getLogger(JDBCConnection.class
 			.getName());
@@ -27,11 +28,43 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 	/** Connection object. */
 	private Connection connection;
 
+	/** JDBC driver class. */
+	private String driver;
+
+	/** JDBC connect url. */
+	private String url;
+
 	/**
 	 * Create a new JDBCConnection object.
 	 */
 	public JDBCConnection() {
 		this.connection = null;
+	}
+
+	public JDBCConnection(final String driver, final String url) {
+		this.driver = driver;
+		this.url = url;
+	}
+
+	/**
+	 * Implement autocloseable.
+	 *
+	 * Calls {@link #shutdown()}.
+	 *
+	 * @throws Exception
+	 */
+	@Override
+	public void close() throws Exception {
+		shutdown();
+	}
+
+	/**
+	 * Implement Configurable
+	 */
+	@Override
+	public void configure(final Config config) throws Exception {
+		setDriver(config.getProperty("driver"));
+		setUrl(config.getProperty("url"));
 	}
 
 	/**
@@ -43,7 +76,12 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 	 * @throws Exception
 	 *             if unable to connect.
 	 */
-	protected abstract Connection connect() throws Exception;
+	protected Connection connect() throws Exception {
+		// load driver if needed
+		Class.forName(driver);
+		final Connection conn = DriverManager.getConnection(url);
+		return conn;
+	}
 
 	/**
 	 * Initialize the database connection.
@@ -171,5 +209,11 @@ public abstract class JDBCConnection extends DefaultConfigurable {
 
 		return this.connection;
 	}
+
+	public String getDriver() { return this.driver; }
+	public void setDriver(final String driver) { this.driver = driver; }
+
+	public String getUrl() { return this.url; }
+	public void setUrl(final String url) { this.url = url; }
 
 }

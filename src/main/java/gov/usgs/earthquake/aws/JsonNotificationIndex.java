@@ -2,8 +2,6 @@ package gov.usgs.earthquake.aws;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -108,24 +106,14 @@ public class JsonNotificationIndex
 
   @Override
   public void configure(final Config config) throws Exception {
-    driver = config.getProperty("driver", DEFAULT_DRIVER);
-    LOGGER.config("[" + getName() + "] driver=" + driver);
-    table = config.getProperty("table", DEFAULT_TABLE);
-    LOGGER.config("[" + getName() + "] table=" + table);
-    url = config.getProperty("url", DEFAULT_URL);
-    // do not log url, it may contain user/pass
-  }
+    super.configure(config);
+    if (getDriver() == null) { setDriver(DEFAULT_DRIVER); }
+    if (getUrl() == null) { setUrl(DEFAULT_URL); }
 
-  /**
-   * Connect to database.
-   *
-   * Implements abstract JDBCConnection method.
-   */
-  @Override
-  protected Connection connect() throws Exception {
-    // load driver if needed
-    Class.forName(driver);
-    return DriverManager.getConnection(url);
+    setTable(config.getProperty("table", DEFAULT_TABLE));
+    LOGGER.config("[" + getName() + "] driver=" + getDriver());
+    LOGGER.config("[" + getName() + "] table=" + getTable());
+    // do not log url, it may contain user/pass
   }
 
   /**
@@ -152,6 +140,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement test = getConnection().prepareStatement(sql)) {
       // should throw exception if table does not exist
+      test.setQueryTimeout(30);
       try (final ResultSet rs = test.executeQuery()) {
         rs.next();
       }
@@ -241,6 +230,7 @@ public class JsonNotificationIndex
           + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
     ) {
       try {
+        statement.setQueryTimeout(30);
         // set parameters
         statement.setString(1, created != null ? created.toString() : "");
         statement.setString(2, expires.toString());
@@ -300,6 +290,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
+        statement.setQueryTimeout(30);
         // set parameters
         statement.setString(1, created != null ? created.toString() : "");
         statement.setString(2, expires.toString());
@@ -363,6 +354,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
+        statement.setQueryTimeout(500);
 
         // set parameters
         for (int i = 0, len=values.size(); i < len; i++) {
@@ -446,6 +438,8 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
+        statement.setQueryTimeout(500);
+
         // set parameters
         for (int i = 0, len=values.size(); i < len; i++) {
           statement.setString(i+1, values.get(i));
@@ -480,6 +474,8 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
+        statement.setQueryTimeout(500);
+
         // set parameters
         statement.setString(1, Instant.now().toString());
 
@@ -516,6 +512,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
+        statement.setQueryTimeout(30);
         // set parameters
         statement.setString(1, id.getSource());
         statement.setString(2, id.getType());
@@ -574,6 +571,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
+        statement.setQueryTimeout(500);
         // execute and commit if successful
         final List<Notification> notifications = getNotifications(statement);
         commitTransaction();

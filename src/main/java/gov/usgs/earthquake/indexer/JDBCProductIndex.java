@@ -57,18 +57,6 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	public static final String JDBC_DEFAULT_FILE = "productIndex.db";
 
 	/**
-	 * Constant used to specify what the driver property should be called in the
-	 * config file
-	 */
-	private static final String JDBC_DRIVER_PROPERTY = "driver";
-
-	/**
-	 * Constant used to specify the url property should be called in the config
-	 * file.
-	 */
-	private static final String JDBC_URL_PROPERTY = "url";
-
-	/**
 	 * Constant used to specify what the index file property should be called in
 	 * to config file
 	 */
@@ -125,8 +113,6 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	// private static final String SUMMARY_LINK_RELATION = "relation";
 	// private static final String SUMMARY_LINK_URL = "url";
 
-	private String driver;
-	private String url;
 	private String index_file;
 
 	/**
@@ -137,12 +123,12 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	public JDBCProductIndex() throws Exception {
 		// Default index file, so calling configure() isn't required
 		index_file = JDBC_DEFAULT_FILE;
-		driver = JDBC_DEFAULT_DRIVER;
+		setDriver(JDBC_DEFAULT_DRIVER);
 	}
 
 	public JDBCProductIndex(final String sqliteFileName) throws Exception {
 		index_file = sqliteFileName;
-		driver = JDBC_DEFAULT_DRIVER;
+		setDriver(JDBC_DEFAULT_DRIVER);
 	}
 
 	// ____________________________________
@@ -157,15 +143,10 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 */
 	@Override
 	public void configure(Config config) throws Exception {
-
-		driver = config.getProperty(JDBC_DRIVER_PROPERTY);
+		super.configure(config);
 		index_file = config.getProperty(JDBC_FILE_PROPERTY);
-		url = config.getProperty(JDBC_URL_PROPERTY);
 
-		if (driver == null || "".equals(driver)) {
-			driver = JDBC_DEFAULT_DRIVER;
-		}
-
+		if (getDriver() == null) { setDriver(JDBC_DEFAULT_DRIVER); }
 		if (index_file == null || "".equals(index_file)) {
 			index_file = JDBC_DEFAULT_FILE;
 		}
@@ -181,7 +162,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	public Connection connect() throws Exception {
 		// If they are using the sqlite driver, we need to try to create the
 		// file
-		if (driver.equals(JDBCUtils.SQLITE_DRIVER_CLASSNAME)) {
+		if (getDriver().equals(JDBCUtils.SQLITE_DRIVER_CLASSNAME)) {
 			// Make sure file exists or copy it out of the JAR
 			File indexFile = new File(index_file);
 			if (!indexFile.exists()) {
@@ -199,11 +180,9 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			indexFile = null;
 
 			// Build the JDBC url
-			url = JDBC_CONNECTION_PREFIX + index_file;
-			driver = JDBCUtils.SQLITE_DRIVER_CLASSNAME;
+			setUrl(JDBC_CONNECTION_PREFIX + index_file);
 		}
-
-		return JDBCUtils.getConnection(driver, url);
+		return super.connect();
 	}
 
 	/**
@@ -243,6 +222,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			final PreparedStatement statement = getConnection().prepareStatement(sql);
 			final ResultSet results = statement.executeQuery();
 		) {
+			statement.setQueryTimeout(30);
 			while (results.next()) {
 				// eventid not part of product summary object,
 				// so need to do this as products are parsed...
@@ -282,6 +262,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			final PreparedStatement insertEvent =
 					getConnection().prepareStatement(sql, new String[] {"id"});
 		) {
+			insertEvent.setQueryTimeout(30);
 			// Add the values to the prepared statement
 			JDBCUtils.setParameter(insertEvent, 1, new Date().getTime(), Types.BIGINT);
 
@@ -335,6 +316,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement deleteEvent = getConnection().prepareStatement(sql);
 		) {
+			deleteEvent.setQueryTimeout(30);
 			JDBCUtils.setParameter(deleteEvent, 1, id, Types.BIGINT);
 			int rows = deleteEvent.executeUpdate();
 			// If we didn't delete a row, or we deleted more than 1 row, throw an
@@ -377,11 +359,15 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 		try (
 			final PreparedStatement statement = getConnection().prepareStatement(sql);
-			final ResultSet results = statement.executeQuery();
 		) {
-			// Now lets build product objects from each row in the result set
-			while (results.next()) {
-				products.add(parseProductSummary(results));
+			statement.setQueryTimeout(30);
+			try (
+				final ResultSet results = statement.executeQuery();
+			) {
+				// Now lets build product objects from each row in the result set
+				while (results.next()) {
+					products.add(parseProductSummary(results));
+				}
 			}
 		}
 
@@ -425,11 +411,15 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		final List<ProductSummary> products = new LinkedList<ProductSummary>();
 		try (
 			final PreparedStatement statement = getConnection().prepareStatement(sql);
-			final ResultSet results = statement.executeQuery();
 		) {
-			// Now lets build product objects from each row in the result set
-			while (results.next()) {
-				products.add(parseProductSummary(results));
+			statement.setQueryTimeout(30);
+			try (
+				final ResultSet results = statement.executeQuery();
+			) {
+				// Now lets build product objects from each row in the result set
+				while (results.next()) {
+					products.add(parseProductSummary(results));
+				}
 			}
 		}
 
@@ -439,6 +429,33 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		}
 
 		return products;
+	}
+
+	/**
+	 * Check whether product summary is in index.
+	 *
+	 * @param id
+	 *     product to search.
+	 */
+	public boolean hasProduct(final ProductId id) throws Exception {
+		final String sql = "SELECT id FROM productSummary"
+				+ " WHERE source=? AND type=? AND code=? AND updateTime=?";
+		try (
+			final PreparedStatement statement = getConnection().prepareStatement(sql);
+		) {
+			statement.setQueryTimeout(30);
+			statement.setString(1, id.getSource());
+			statement.setString(2, id.getType());
+			statement.setString(3, id.getCode());
+			statement.setLong(4, id.getUpdateTime().getTime());
+
+			try (
+				final ResultSet results = statement.executeQuery();
+			) {
+				// return true if there is a matching row, false otherwise
+				return results.next();
+			}
+		}
 	}
 
 	/**
@@ -467,6 +484,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			final PreparedStatement insertSummary =
 					getConnection().prepareStatement(sql, new String[] {"id"});
 		) {
+			insertSummary.setQueryTimeout(30);
 			// Set the created timestamp
 			JDBCUtils.setParameter(insertSummary, 1, new Date().getTime(),
 					Types.BIGINT);
@@ -594,6 +612,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement addAssociation = getConnection().prepareStatement(sql);
 		) {
+			addAssociation.setQueryTimeout(30);
 			JDBCUtils.setParameter(addAssociation, 1, event.getIndexId(), Types.BIGINT);
 			// these will target EVERY version of the given product
 			JDBCUtils.setParameter(addAssociation, 2, sid.getSource(), Types.VARCHAR);
@@ -650,6 +669,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement removeAssociation = getConnection().prepareStatement(sql);
 		) {
+			removeAssociation.setQueryTimeout(30);
 			// Now run the query
 			JDBCUtils.setParameter(removeAssociation, 1, null, Types.BIGINT);
 			// these will target EVERY version of the given product
@@ -1027,15 +1047,19 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 						",")
 				+ ")";
 		try (
-			final PreparedStatement statement = verifyConnection().prepareStatement(linkSql);
-			final ResultSet results = statement.executeQuery();
+			final PreparedStatement statement = getConnection().prepareStatement(linkSql);
 		) {
-			while (results.next()) {
-				Long id = results.getLong("id");
-				String relation = results.getString("relation");
-				String uri = results.getString("url");
-				// add properties to existing objects
-				summaryMap.get(id).addLink(relation, new URI(uri));
+			statement.setQueryTimeout(30);
+			try (
+				final ResultSet results = statement.executeQuery();
+			) {
+				while (results.next()) {
+					Long id = results.getLong("id");
+					String relation = results.getString("relation");
+					String uri = results.getString("url");
+					// add properties to existing objects
+					summaryMap.get(id).addLink(relation, new URI(uri));
+				}
 			}
 		}
 
@@ -1049,15 +1073,19 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 				+ ")";
 		try (
 			final PreparedStatement statement =
-					verifyConnection().prepareStatement(propertySql);
-			final ResultSet results = statement.executeQuery();
+					getConnection().prepareStatement(propertySql);
 		) {
-			while (results.next()) {
-				Long id = results.getLong("id");
-				String name = results.getString("name");
-				String value = results.getString("value");
-				// add properties to existing objects
-				summaryMap.get(id).getProperties().put(name, value);
+			statement.setQueryTimeout(30);
+			try (
+				final ResultSet results = statement.executeQuery();
+			) {
+				while (results.next()) {
+					Long id = results.getLong("id");
+					String name = results.getString("name");
+					String value = results.getString("value");
+					// add properties to existing objects
+					summaryMap.get(id).getProperties().put(name, value);
+				}
 			}
 		}
 	}
@@ -1156,6 +1184,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 				final PreparedStatement statement =
 						verifyConnection().prepareStatement(sql + idsIn);
 			) {
+				statement.setQueryTimeout(30);
 				int rows = statement.executeUpdate();
 				LOGGER.log(Level.FINER, "[" + getName() + "] removed " + rows + " rows");
 			}
@@ -1180,6 +1209,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement insertProperty = getConnection().prepareStatement(sql);
 		) {
+			insertProperty.setQueryTimeout(30);
 			for (String key : properties.keySet()) {
 				JDBCUtils.setParameter(insertProperty, 1, productId, Types.BIGINT);
 				JDBCUtils.setParameter(insertProperty, 2, key, Types.VARCHAR);
@@ -1213,6 +1243,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement insertLink = getConnection().prepareStatement(sql);
 		) {
+			insertLink.setQueryTimeout(30);
 			for (final String relation : links.keySet()) {
 				for (final URI uri : links.get(relation)) {
 					JDBCUtils.setParameter(insertLink, 1, productId, Types.BIGINT);
@@ -1296,7 +1327,9 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			final PreparedStatement updateEvent =
 					getConnection().prepareStatement(updatedSql);
 		) {
-
+			// big events take time...
+			updateDeletedEvent.setQueryTimeout(120);
+			updateEvent.setQueryTimeout(120);
 			Iterator<Event> iter = events.iterator();
 			while (iter.hasNext()) {
 				Event updated = iter.next();

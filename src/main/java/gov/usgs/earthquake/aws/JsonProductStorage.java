@@ -1,8 +1,6 @@
 package gov.usgs.earthquake.aws;
 
 import java.io.ByteArrayInputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -96,24 +94,14 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
 
   @Override
   public void configure(final Config config) throws Exception {
-    driver = config.getProperty("driver", DEFAULT_DRIVER);
-    LOGGER.config("[" + getName() + "] driver=" + driver);
-    table = config.getProperty("table", DEFAULT_TABLE);
-    LOGGER.config("[" + getName() + "] table=" + table);
-    url = config.getProperty("url", DEFAULT_URL);
-    // do not log url, it may contain user/pass
-  }
+    super.configure(config);
+    if (getDriver() == null) { setDriver(DEFAULT_DRIVER); }
+    if (getUrl() == null) { setUrl(DEFAULT_URL); }
 
-  /**
-   * Connect to database.
-   *
-   * Implements abstract JDBCConnection method.
-   */
-  @Override
-  protected Connection connect() throws Exception {
-    // load driver if needed
-    Class.forName(driver);
-    return DriverManager.getConnection(url);
+    setTable(config.getProperty("table", DEFAULT_TABLE));
+    LOGGER.config("[" + getName() + "] driver=" + getDriver());
+    LOGGER.config("[" + getName() + "] table=" + getTable());
+    // do not log url, it may contain user/pass
   }
 
   /**
@@ -139,6 +127,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     final String sql = "select * from " + this.table + " limit 1";
     beginTransaction();
     try (final PreparedStatement test = getConnection().prepareStatement(sql)) {
+      test.setQueryTimeout(30);
       // should throw exception if table does not exist
       try (final ResultSet rs = test.executeQuery()) {
         rs.next();
@@ -212,6 +201,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     // prepare statement
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
+      statement.setQueryTimeout(30);
       // set parameters
       statement.setString(1, id.getSource());
       statement.setString(2, id.getType());
@@ -262,6 +252,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
           + " (source, type, code, updatetime, data)"
           + " VALUES (?, ?, ?, ?, ?)")
     ) {
+      statement.setQueryTimeout(30);
       final ProductId id = product.getId();
       // set parameters
       statement.setString(1, id.getSource());
@@ -329,6 +320,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
           + " WHERE source=? AND type=? AND code=? AND updatetime=?";
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
+      statement.setQueryTimeout(30);
       // set parameters
       statement.setString(1, id.getSource());
       statement.setString(2, id.getType());

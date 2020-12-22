@@ -1,8 +1,6 @@
 package gov.usgs.earthquake.aws;
 
 import java.io.ByteArrayInputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -80,24 +78,14 @@ public class TrackingIndex extends JDBCConnection {
 
   @Override
   public void configure(final Config config) throws Exception {
-    driver = config.getProperty("driver", DEFAULT_DRIVER);
-    LOGGER.config("[" + getName() + "] driver=" + driver);
-    table = config.getProperty("table", DEFAULT_TABLE);
-    LOGGER.config("[" + getName() + "] table=" + table);
-    url = config.getProperty("url", DEFAULT_URL);
-    // do not log url, it may contain user/pass
-  }
+    super.configure(config);
+    if (getDriver() == null) { setDriver(DEFAULT_DRIVER); }
+    if (getUrl() == null) { setUrl(DEFAULT_URL); }
 
-  /**
-   * Connect to database.
-   *
-   * Implements abstract JDBCConnection method.
-   */
-  @Override
-  protected Connection connect() throws Exception {
-    // load driver if needed
-    Class.forName(driver);
-    return DriverManager.getConnection(url);
+    setTable(config.getProperty("table", DEFAULT_TABLE));
+    LOGGER.config("[" + getName() + "] driver=" + getDriver());
+    LOGGER.config("[" + getName() + "] table=" + getTable());
+    // do not log url, it may contain user/pass
   }
 
   /**
@@ -123,6 +111,7 @@ public class TrackingIndex extends JDBCConnection {
     final String sql = "select * from " + this.table + " limit 1";
     beginTransaction();
     try (final PreparedStatement test = getConnection().prepareStatement(sql)) {
+      test.setQueryTimeout(30);
       // should throw exception if table does not exist
       try (final ResultSet rs = test.executeQuery()) {
         rs.next();
@@ -181,6 +170,7 @@ public class TrackingIndex extends JDBCConnection {
     final String sql = "SELECT * FROM " + this.table + " WHERE name=?";
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
+      statement.setQueryTimeout(30);
       statement.setString(1, name);
 
       // execute and parse data
@@ -215,6 +205,7 @@ public class TrackingIndex extends JDBCConnection {
     // create schema
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
+      statement.setQueryTimeout(30);
       statement.setString(1, name);
 
       statement.executeUpdate();
@@ -239,6 +230,7 @@ public class TrackingIndex extends JDBCConnection {
     // usually updated, try update first
     beginTransaction();
     try (final PreparedStatement updateStatement = getConnection().prepareStatement(update)) {
+      updateStatement.setQueryTimeout(30);
       updateStatement.setString(1, data.toString());
       updateStatement.setString(2, name);
       // execute update
@@ -248,6 +240,7 @@ public class TrackingIndex extends JDBCConnection {
         final String insert = "INSERT INTO " + this.table + " (data, name) VALUES (?, ?)";
         // no rows updated
         try (final PreparedStatement insertStatement = getConnection().prepareStatement(insert)) {
+          insertStatement.setQueryTimeout(30);
           insertStatement.setString(1, data.toString());
           insertStatement.setString(2, name);
           // execute insert

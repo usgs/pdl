@@ -41,6 +41,6 @@ public class ExtentIndexTest {
     PreparedStatement stmnt = conn.prepareStatement("DELETE FROM " + ExtentIndex.EXTENT_TABLE + " WHERE " + ExtentIndex.EXTENT_INDEX_ID + "=" + product.getIndexId());
     stmnt.executeUpdate();
 
-    index.shutdown();
+    index.close();
   }
 }
