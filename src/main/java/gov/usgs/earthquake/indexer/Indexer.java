@@ -119,13 +119,16 @@ public class Indexer extends DefaultNotificationListener {
 	private Associator associator;
 
 	/** Whether to use (false) all products or (true) current products. */
-	private boolean associateUsingCurrentProducts = true;
+	private boolean associateUsingCurrentProducts = false;
 
 	/** Where product contents are stored. */
 	private ProductStorage productStorage;
 
 	/** Index of stored products, and how they are related. */
 	private ProductIndex productIndex;
+
+	/** Read index for {@link #hasProductBeenIndexed(ProductId)} */
+	private ProductIndex readProductIndex;
 
 	/** Modules provide product specific functionality. */
 	private List<IndexerModule> modules = new LinkedList<IndexerModule>();
@@ -406,36 +409,22 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Check whether this product is in the index.
 	 *
+	 * NOT synchronized to allow multiple threads to access.
+	 * readProductIndex.hasProduct is synchronized.
+	 *
 	 * @param id
 	 * @return true if product has already been indexed.
 	 */
 	protected boolean hasProductBeenIndexed(final ProductId id) {
 		try {
-			ProductIndexQuery alreadyProcessedQuery = new ProductIndexQuery();
-			alreadyProcessedQuery
-					.setResultType(ProductIndexQuery.RESULT_TYPE_ALL);
-
-			// alreadyProcessedQuery.getProductIds().add(id);
-			// use existing indexes
-			alreadyProcessedQuery.setProductSource(id.getSource());
-			alreadyProcessedQuery.setProductType(id.getType());
-			alreadyProcessedQuery.setProductCode(id.getCode());
-			alreadyProcessedQuery.setMinProductUpdateTime(id.getUpdateTime());
-			alreadyProcessedQuery.setMaxProductUpdateTime(id.getUpdateTime());
-
-			final List<ProductSummary> existingSummary;
-			if (productIndex instanceof JDBCProductIndex) {
-				// only checking if exists, use one query instead of multiple.
-				existingSummary = ((JDBCProductIndex) productIndex)
-						.getProducts(alreadyProcessedQuery, false);
+			if (readProductIndex == productIndex) {
+				// synchronize on this if read and product index are same
+				synchronized (indexProductSync) {
+					return readProductIndex.hasProduct(id);
+				}
 			} else {
-				existingSummary = productIndex.getProducts(alreadyProcessedQuery);
-			}
-
-			if (existingSummary.size() > 0 &&
-					existingSummary.get(0).getId().equals(id)) {
-				// it is in the product index
-				return true;
+				// otherwise readProductIndex provides own synchronization
+				return readProductIndex.hasProduct(id);
 			}
 		} catch (Exception wtf) {
 			LOGGER.log(Level.WARNING, "[" + getName()
@@ -523,10 +512,47 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	public void onProduct(final Product product, final boolean force) throws Exception {
 		ProductId id = product.getId();
+		final long beginStore = new Date().getTime();
 
 		// -------------------------------------------------------------------//
 		// -- Step 1: Store product
 		// -------------------------------------------------------------------//
+		final Product storedProduct = storeProduct(product, force);
+		if (storedProduct == null) {
+			return;
+		}
+
+		// -------------------------------------------------------------------//
+		// -- Step 2: Use product module to summarize product
+		// -------------------------------------------------------------------//
+
+		LOGGER.finer("[" + getName() + "] summarizing product id=" + id.toString());
+		final ProductSummary productSummary = summarizeProduct(product);
+
+		// -------------------------------------------------------------------//
+		// -- Step 3: Add product summary to the product index
+		// -------------------------------------------------------------------//
+
+		LOGGER.finer("[" + getName() + "] indexing product id=" + id.toString());
+		// measure time waiting to enter synchronized block
+		final long beforeEnterSync = new Date().getTime();
+		synchronized (indexProductSync) {
+			final long afterEnterSync = new Date().getTime();
+
+			try {
+				indexProduct(productSummary);
+			} finally {
+				final long endIndex = new Date().getTime();
+				LOGGER.fine("[" + getName() + "] indexer processed product id="
+						+ id.toString() + " in " +
+						(endIndex - beginStore) + " ms"
+						+ " (" + (afterEnterSync - beforeEnterSync) + " ms sync delay)");
+			}
+		}
+	}
+
+	public Product storeProduct(final Product product, final boolean force) throws Exception {
+		final ProductId id = product.getId();
 		final long beginStore = new Date().getTime();
 		try {
 			LOGGER.finest("[" + getName() + "] storing product id="
@@ -545,46 +571,23 @@ public class Indexer extends DefaultNotificationListener {
 				LOGGER.fine("[" + getName() + "] product already indexed "
 						+ product.getId());
 				// don't reindex for now
-				return;
+				return null;
 			}
 		}
 		final long endStore = new Date().getTime();
 		LOGGER.fine("[" + getName() + "] indexer downloaded product id="
 				+ id.toString() + " in " +
 				(endStore - beginStore) + " ms");
+		return product;
+	}
 
-		// -------------------------------------------------------------------//
-		// -- Step 2: Use product module to summarize product
-		// -------------------------------------------------------------------//
-
-		LOGGER.finer("[" + getName() + "] summarizing product id="
-				+ id.toString());
+	/**
+	 * Use modules to summarize product.
+	 */
+	public ProductSummary summarizeProduct(final Product product) throws Exception {
 		// Find best available indexer module
 		IndexerModule module = getModule(product);
-
-		// Use this module to summarize the product
-		ProductSummary productSummary = module.getProductSummary(product);
-
-		// -------------------------------------------------------------------//
-		// -- Step 3: Add product summary to the product index
-		// -------------------------------------------------------------------//
-
-
-		// measure time waiting to enter synchronized block
-		final long beforeEnterSync = new Date().getTime();
-		synchronized (indexProductSync) {
-			final long afterEnterSync = new Date().getTime();
-
-			try {
-				productSummary = indexProduct(productSummary);
-			} finally {
-				final long endIndex = new Date().getTime();
-				LOGGER.fine("[" + getName() + "] indexer processed product id="
-						+ id.toString() + " in " +
-						(endIndex - beginStore) + " ms"
-						+ " (" + (afterEnterSync - beforeEnterSync) + " ms sync delay)");
-			}
-		}
+		return module.getProductSummary(product);
 	}
 
 	/**
@@ -760,25 +763,6 @@ public class Indexer extends DefaultNotificationListener {
 			LOGGER.finer("[" + getName() + "] committing transaction");
 			// Commit our changes to the index (after updating summary attrs)
 			productIndex.commitTransaction();
-
-			try {
-				LOGGER.fine("[" + getName() + "] notifying listeners");
-				// ---------------------------------------------------------//
-				// -- Step 5: Notify listeners with our indexer event
-				// ---------------------------------------------------------//
-				notifyListeners(notification);
-			} catch (Exception e) {
-				// this doesn't affect success of index transaction...
-				LOGGER.log(Level.WARNING, "[" + getName()
-						+ "] exception while notifying listeners", e);
-			}
-
-			// send heartbeat info
-			HeartbeatListener.sendHeartbeatMessage(getName(),
-					"indexed product", productSummary.getId().toString());
-
-			// return summary after added to index
-			return productSummary;
 		} catch (Exception e) {
 			LOGGER.log(Level.FINE, "[" + getName() + "] rolling back transaction", e);
 			// just rollback since it wasn't successful
@@ -793,6 +777,25 @@ public class Indexer extends DefaultNotificationListener {
 
 			throw e;
 		}
+
+		try {
+			LOGGER.fine("[" + getName() + "] notifying listeners");
+			// ---------------------------------------------------------//
+			// -- Step 5: Notify listeners with our indexer event
+			// ---------------------------------------------------------//
+			notifyListeners(notification);
+		} catch (Exception e) {
+			// this doesn't affect success of index transaction...
+			LOGGER.log(Level.WARNING, "[" + getName()
+					+ "] exception while notifying listeners", e);
+		}
+
+		// send heartbeat info
+		HeartbeatListener.sendHeartbeatMessage(getName(),
+				"indexed product", productSummary.getId().toString());
+
+		// return summary after added to index
+		return productSummary;
 	}
 
 	/**
@@ -1169,6 +1172,18 @@ public class Indexer extends DefaultNotificationListener {
 		// see how sub events associate compared to this event (since the
 		// original event is the one that should be "UPDATED")
 		Event originalSubEvent = subEvents.remove(originalEventId);
+		if (originalSubEvent == null) {
+			// wtf
+			// this should always exist because its ID was returned by getEventId,
+			// should should have at least one product.  Log:
+			LOGGER.warning("[" + getName() + "] originalSubEvent is null"
+					+ ", originalEventId=" + originalEventId);
+			for (final String id: subEvents.keySet()) {
+				final Event subEvent = subEvents.get(id);
+				subEvent.log(LOGGER);
+			}
+			return changes;
+		}
 
 		Iterator<String> subEventsIter = new ArrayList<String>(
 				subEvents.keySet()).iterator();
@@ -1770,6 +1785,14 @@ public class Indexer extends DefaultNotificationListener {
 	public synchronized void shutdown() throws Exception {
 		// -- Shut down dependent processes -- //
 		try {
+			if (readProductIndex != productIndex) {
+				readProductIndex.shutdown();
+			}
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING, "[" + getName()
+					+ "] exception shutting down read product index", e);
+		}
+		try {
 			productIndex.shutdown();
 		} catch (Exception e) {
 			LOGGER.log(Level.WARNING, "[" + getName()
@@ -1867,6 +1890,22 @@ public class Indexer extends DefaultNotificationListener {
 		// ProductIndex
 		productStorage.startup();
 		productIndex.startup();
+
+		// if using mysql product index, create separate read index
+		readProductIndex = null;
+		if (productIndex instanceof JDBCProductIndex) {
+			JDBCProductIndex jdbcProductIndex = (JDBCProductIndex) productIndex;
+			if (jdbcProductIndex.getDriver().contains("mysql")) {
+				readProductIndex = new JDBCProductIndex();
+				((JDBCProductIndex) readProductIndex).setDriver(jdbcProductIndex.getDriver());
+				((JDBCProductIndex) readProductIndex).setUrl(jdbcProductIndex.getUrl());
+				readProductIndex.startup();
+			}
+		}
+		if (readProductIndex == null) {
+			// otherwise use same index
+			readProductIndex = productIndex;
+		}
 
 		// Cleanup thread to purge old products
 		if (archivePolicies.size() > 0) {
