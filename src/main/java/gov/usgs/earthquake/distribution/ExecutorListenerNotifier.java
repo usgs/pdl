@@ -215,7 +215,7 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 		LOGGER.info("[" + receiver.getName()
 				+ "] requeueing notification index '" + index.getName() + "'");
 		// find all existing notifications
-		Iterator<Notification> allNotifications = null;
+		List<Notification> allNotifications = null;
 
 		// for json index, push intersection into database if only one listener
 		if (index instanceof JsonNotificationIndex && gracefulListeners.size() == 1) {
@@ -227,7 +227,7 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 				try {
 					allNotifications =
 							((JsonNotificationIndex) index).getMissingNotifications(
-									((JsonNotificationIndex) listenerIndex).getTable()).iterator();
+									((JsonNotificationIndex) listenerIndex).getTable());
 				} catch (Exception e) {
 					LOGGER.log(Level.INFO, "Exception loading intersection, continuing", e);
 				}
@@ -237,23 +237,23 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 		if (allNotifications == null) {
 			// fallback to previous behavior
 			allNotifications = index.findNotifications(
-					(List<String>) null, (List<String>) null, (List<String>) null)
-					.iterator();
+					(List<String>) null, (List<String>) null, (List<String>) null);
 		}
 		LOGGER.info("Done finding existing notifications");
 
 		// queue them for processing in case they were previous missed
 		Date now = new Date();
-		while (allNotifications.hasNext()) {
-			NotificationEvent event = new NotificationEvent(receiver,
-					allNotifications.next());
+		int count = 0;
+		for (final Notification notification : allNotifications) {
+			NotificationEvent event = new NotificationEvent(receiver, notification);
+			count += 1;
 			if (event.getNotification().getExpirationDate().after(now)) {
 				// still valid
 				this.notifyListeners(event, gracefulListeners);
 			}
 
 			// try to keep queue size managable during restart
-			throttleQueues();
+			throttleQueues(allNotifications.size() - count);
 		}
 		LOGGER.info("All notifications queued");
 
@@ -272,19 +272,12 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	public Map<String, Integer> getStatus() {
 		HashMap<String, Integer> status = new HashMap<String, Integer>();
 
-		Iterator<NotificationListener> iter = notificationListeners.keySet()
-				.iterator();
-		while (iter.hasNext()) {
-			NotificationListener listener = iter.next();
-			ExecutorService listenerExecutor = notificationListeners
-					.get(listener);
-
+		for (final NotificationListener listener : notificationListeners.keySet()) {
+			ExecutorService listenerExecutor = notificationListeners.get(listener);
 			if (listenerExecutor instanceof ThreadPoolExecutor) {
 				// check how many notifications are pending
-				BlockingQueue<Runnable> pending = ((ThreadPoolExecutor) listenerExecutor)
-						.getQueue();
-				status.put(receiver.getName() + " - " + listener.getName(),
-						pending.size());
+				int size = ((ThreadPoolExecutor) listenerExecutor).getQueue().size();
+				status.put(receiver.getName() + " - " + listener.getName(), size);
 			}
 		}
 
@@ -297,14 +290,18 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	 * @return length of longest queue, or null if no queue lengths.
 	 */
 	public Integer getMaxQueueSize() {
-		final Map<String, Integer> status = getStatus();
-		Integer maxQueueSize = null;
-		for (Integer queueSize : status.values()) {
-			if (queueSize != null && (maxQueueSize == null || queueSize > maxQueueSize)) {
-				maxQueueSize = queueSize;
+		Integer maxSize = null;
+		for (final NotificationListener listener : notificationListeners.keySet()) {
+			ExecutorService listenerExecutor = notificationListeners.get(listener);
+			if (listenerExecutor instanceof ThreadPoolExecutor) {
+				// check how many notifications are pending
+				int size = ((ThreadPoolExecutor) listenerExecutor).getQueue().size();
+				if (maxSize == null || size > maxSize) {
+					maxSize = size;
+				}
 			}
 		}
-		return maxQueueSize;
+		return maxSize;
 	}
 
 	/**
@@ -314,14 +311,18 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	 * @throws InterruptedException
 	 */
 	public void throttleQueues() throws InterruptedException {
+		throttleQueues(null);
+	}
+
+	public void throttleQueues(Integer remaining) throws InterruptedException {
 		// try to keep queue size managable during restart
-		int maxSize = throttleStartThreshold;
+		int limit = throttleStartThreshold;
 		// track whether any throttles occurred
 		boolean throttled = false;
 
 		while (true) {
 			final Integer size = getMaxQueueSize();
-			if (size == null || size <= maxSize) {
+			if (size == null || size <= limit) {
 				// within limit
 				if (throttled) {
 					LOGGER.info("[" + getName() + "] done throttling (size = " + size + ")");
@@ -333,10 +334,13 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 			LOGGER.info("[" + getName() + "]"
 					+ " queueing throttled until below "
 					+ throttleStopThreshold
-					+ " (size = " + size + ")");
+					+ " ("
+							+ "size=" + size
+							+ ", remaining=" + (remaining == null ? "?" : remaining)
+					+ ")");
 			// too many messages queued
-			// set maxSize to stop threshold
-			maxSize = throttleStopThreshold;
+			// set limit to stop threshold
+			limit = throttleStopThreshold;
 			// wait for listener to do some processing
 			// 5s is a little low, but don't want to wait too long
 			Thread.sleep(throttleWaitInterval);
