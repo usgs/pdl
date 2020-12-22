@@ -569,6 +569,12 @@
 					notifications are processed in the order they are received.
 					</dd>
 
+				<dt>future</dt>
+				<dd>
+					Based on Executor notifier but uses Futures to implement timeouts.
+					May reduce thread usage.
+				</dd>
+
 				<dt>roundrobin</dt>
 				<dd>Round robin uses one queue per listener for each product
 					source+type and takes one product from the front of each queue.
@@ -1264,17 +1270,31 @@
 
 	<h3 id="IndexerModule">IndexerModule</h3>
 	<dl>
+		<dt><em>DefaultIndexerModule</em></dt>
+		<dd>
+			Automatically configured, and implements ANSS Authoritative region weights.
+			All other modules extend this class and can use these options:
+
+			<dl>
+				<dt>ignoreRegions</dt>
+				<dd>
+					Comma separate list of regions to ignore.<br/>
+					Products from sources in this list ignore authorative regions,
+					and instead default to preferred weight <code>1</code>.
+				</dd>
+			</dl>
+		</dd>
 		<dt>gov.usgs.earthquake.shakemap.ShakeMapIndexerModule</dt>
 		<dd>
 			Provides support for
 			<code>shakemap</code>
-			type products. There are no configuration parameters for this module.
+			type products. There are no specific configuration parameters for this module.
 		</dd>
 		<dt>gov.usgs.earthquake.momenttensor.MTIndexerModule</dt>
 			<dd>
 				Provides support for
 				<code>moment-tensor</code>
-				and adjusts the weight of a given product. There are no configuration
+				and adjusts the weight of a given product. There are no specific configuration
 				parameters for this module.
 			</dd>
 	</dl>

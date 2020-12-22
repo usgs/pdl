@@ -9,9 +9,13 @@ import gov.usgs.earthquake.geoserve.ANSSRegionsFactory;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.qdm.Point;
 import gov.usgs.earthquake.qdm.Regions;
+import gov.usgs.util.Config;
 import gov.usgs.util.DefaultConfigurable;
+import gov.usgs.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -25,6 +29,8 @@ import java.util.logging.Logger;
 public class DefaultIndexerModule extends DefaultConfigurable implements IndexerModule {
 
 	private static final Logger LOGGER = Logger.getLogger(DefaultIndexerModule.class.getName());
+
+	public static final String IGNORE_REGIONS_PROPERTY = "ignoreRegions";
 
 	/** Initial preferred weight. */
 	public static final long DEFAULT_PREFERRED_WEIGHT = 1;
@@ -46,6 +52,17 @@ public class DefaultIndexerModule extends DefaultConfigurable implements Indexer
 
 	/** Signature verifier, configured by indexer. */
 	private SignatureVerifier signatureVerifier = new SignatureVerifier();
+
+	private List<String> ignoreRegions = new ArrayList<String>();
+
+	@Override
+	public void configure(final Config config) throws Exception {
+		final String ignore = config.getProperty(IGNORE_REGIONS_PROPERTY);
+		if (ignore != null) {
+			ignoreRegions.addAll(StringUtils.split(ignore, ","));
+			LOGGER.config("[" + getName() + "] ignore regions = " + ignore);
+		}
+	}
 
 	/**
 	 * Create a ProductSummary from a Product.
@@ -85,17 +102,24 @@ public class DefaultIndexerModule extends DefaultConfigurable implements Indexer
 	 * @return the absolute preferred weight.
 	 */
 	protected long getPreferredWeight(final ProductSummary summary) throws Exception {
-		Regions regions = ANSSRegionsFactory.getFactory().getRegions();
+		long preferredWeight = DEFAULT_PREFERRED_WEIGHT;
+
+		final String source = summary.getId().getSource();
+		final String eventSource = summary.getEventSource();
+
+		// check ignore regions here for subclasses that use this method.
+		if (ignoreRegions.contains(source)) {
+			// source gets no region boost
+			return preferredWeight;
+		}
+
+		final Regions regions = ANSSRegionsFactory.getFactory().getRegions();
 		if (regions == null) {
 			throw new ContinuableListenerException("Unable to load ANSS Authoritative Regions");
 		}
 
-		long preferredWeight = DEFAULT_PREFERRED_WEIGHT;
-
-		String source = summary.getId().getSource();
-		String eventSource = summary.getEventSource();
-		BigDecimal latitude = summary.getEventLatitude();
-		BigDecimal longitude = summary.getEventLongitude();
+		final BigDecimal latitude = summary.getEventLatitude();
+		final BigDecimal longitude = summary.getEventLongitude();
 		Point location = null;
 		if (latitude != null && longitude != null) {
 			location = new Point(longitude.doubleValue(), latitude.doubleValue());
@@ -147,6 +171,10 @@ public class DefaultIndexerModule extends DefaultConfigurable implements Indexer
 		}
 
 		return type;
+	}
+
+	public List<String> getIgnoreRegions() {
+		return ignoreRegions;
 	}
 
 	/**
