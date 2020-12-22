@@ -196,6 +196,9 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	@Override
 	public synchronized List<Event> getEvents(ProductIndexQuery query)
 			throws Exception {
+		if (query == null) {
+			return new ArrayList<Event>();
+		}
 		// map of events (index id => event), so products can be added incrementally
 		final Map<Long, Event> events = new HashMap<>();
 		// all products for loading details
@@ -207,22 +210,34 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		List<String> clauses = buildProductClauses(query);
 
 		// Build the SQL Query from our ProductIndexQuery object
-		String sql = "SELECT DISTINCT e.id"
-					+ " FROM event e, productSummary p"
-					+ " WHERE e.id=p.eventId";
+		String sql = "SELECT DISTINCT ps2.*"
+				+ " FROM productSummary ps2,"
+				+ " (SELECT DISTINCT e.id FROM event e, productSummary p"
+				+ " WHERE e.id=p.eventId";
 		// Add all appropriate where clauses
 		for (final String clause : clauses) {
 			sql = sql + " AND " + clause;
 		}
+		sql = sql + ") eventids"
+				+ " WHERE ps2.eventid=eventids.id";
 
-		// Now use query that finds event ids as sub-select and load all products
-		sql = "SELECT DISTINCT * FROM productSummary ps WHERE eventId IN (" + sql + ")";
+		// add current clause to outer query
+		if (query.getResultType() == ProductIndexQuery.RESULT_TYPE_CURRENT) {
+			sql = sql + " AND NOT EXISTS ("
+					+ " SELECT * FROM productSummary"
+					+ " WHERE source=ps2.source"
+					+ " AND type=ps2.type"
+					+ " AND code=ps2.code"
+					+ " AND updateTime>ps2.updateTime"
+					+ ")";
+		}
+
 		// load event products
 		try (
 			final PreparedStatement statement = getConnection().prepareStatement(sql);
 			final ResultSet results = statement.executeQuery();
 		) {
-			statement.setQueryTimeout(30);
+			statement.setQueryTimeout(60);
 			while (results.next()) {
 				// eventid not part of product summary object,
 				// so need to do this as products are parsed...
@@ -262,7 +277,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			final PreparedStatement insertEvent =
 					getConnection().prepareStatement(sql, new String[] {"id"});
 		) {
-			insertEvent.setQueryTimeout(30);
+			insertEvent.setQueryTimeout(60);
 			// Add the values to the prepared statement
 			JDBCUtils.setParameter(insertEvent, 1, new Date().getTime(), Types.BIGINT);
 
@@ -316,7 +331,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement deleteEvent = getConnection().prepareStatement(sql);
 		) {
-			deleteEvent.setQueryTimeout(30);
+			deleteEvent.setQueryTimeout(60);
 			JDBCUtils.setParameter(deleteEvent, 1, id, Types.BIGINT);
 			int rows = deleteEvent.executeUpdate();
 			// If we didn't delete a row, or we deleted more than 1 row, throw an
@@ -360,7 +375,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement statement = getConnection().prepareStatement(sql);
 		) {
-			statement.setQueryTimeout(30);
+			statement.setQueryTimeout(60);
 			try (
 				final ResultSet results = statement.executeQuery();
 			) {
@@ -412,7 +427,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement statement = getConnection().prepareStatement(sql);
 		) {
-			statement.setQueryTimeout(30);
+			statement.setQueryTimeout(60);
 			try (
 				final ResultSet results = statement.executeQuery();
 			) {
@@ -437,13 +452,13 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @param id
 	 *     product to search.
 	 */
-	public boolean hasProduct(final ProductId id) throws Exception {
+	public synchronized boolean hasProduct(final ProductId id) throws Exception {
 		final String sql = "SELECT id FROM productSummary"
 				+ " WHERE source=? AND type=? AND code=? AND updateTime=?";
 		try (
 			final PreparedStatement statement = getConnection().prepareStatement(sql);
 		) {
-			statement.setQueryTimeout(30);
+			statement.setQueryTimeout(60);
 			statement.setString(1, id.getSource());
 			statement.setString(2, id.getType());
 			statement.setString(3, id.getCode());
@@ -484,7 +499,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			final PreparedStatement insertSummary =
 					getConnection().prepareStatement(sql, new String[] {"id"});
 		) {
-			insertSummary.setQueryTimeout(30);
+			insertSummary.setQueryTimeout(60);
 			// Set the created timestamp
 			JDBCUtils.setParameter(insertSummary, 1, new Date().getTime(),
 					Types.BIGINT);
@@ -612,7 +627,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement addAssociation = getConnection().prepareStatement(sql);
 		) {
-			addAssociation.setQueryTimeout(30);
+			addAssociation.setQueryTimeout(60);
 			JDBCUtils.setParameter(addAssociation, 1, event.getIndexId(), Types.BIGINT);
 			// these will target EVERY version of the given product
 			JDBCUtils.setParameter(addAssociation, 2, sid.getSource(), Types.VARCHAR);
@@ -669,7 +684,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement removeAssociation = getConnection().prepareStatement(sql);
 		) {
-			removeAssociation.setQueryTimeout(30);
+			removeAssociation.setQueryTimeout(60);
 			// Now run the query
 			JDBCUtils.setParameter(removeAssociation, 1, null, Types.BIGINT);
 			// these will target EVERY version of the given product
@@ -1025,7 +1040,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @param summaries
 	 * @throws Exception
 	 */
-	protected void loadProductSummaries(final List<ProductSummary> summaries)
+	protected synchronized void loadProductSummaries(final List<ProductSummary> summaries)
 			throws Exception {
 		if (summaries.size() == 0) {
 			// nothing to load
@@ -1049,7 +1064,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement statement = getConnection().prepareStatement(linkSql);
 		) {
-			statement.setQueryTimeout(30);
+			statement.setQueryTimeout(60);
 			try (
 				final ResultSet results = statement.executeQuery();
 			) {
@@ -1075,7 +1090,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			final PreparedStatement statement =
 					getConnection().prepareStatement(propertySql);
 		) {
-			statement.setQueryTimeout(30);
+			statement.setQueryTimeout(60);
 			try (
 				final ResultSet results = statement.executeQuery();
 			) {
@@ -1184,7 +1199,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 				final PreparedStatement statement =
 						verifyConnection().prepareStatement(sql + idsIn);
 			) {
-				statement.setQueryTimeout(30);
+				statement.setQueryTimeout(60);
 				int rows = statement.executeUpdate();
 				LOGGER.log(Level.FINER, "[" + getName() + "] removed " + rows + " rows");
 			}
@@ -1209,7 +1224,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement insertProperty = getConnection().prepareStatement(sql);
 		) {
-			insertProperty.setQueryTimeout(30);
+			insertProperty.setQueryTimeout(60);
 			for (String key : properties.keySet()) {
 				JDBCUtils.setParameter(insertProperty, 1, productId, Types.BIGINT);
 				JDBCUtils.setParameter(insertProperty, 2, key, Types.VARCHAR);
@@ -1243,7 +1258,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement insertLink = getConnection().prepareStatement(sql);
 		) {
-			insertLink.setQueryTimeout(30);
+			insertLink.setQueryTimeout(60);
 			for (final String relation : links.keySet()) {
 				for (final URI uri : links.get(relation)) {
 					JDBCUtils.setParameter(insertLink, 1, productId, Types.BIGINT);
@@ -1328,8 +1343,8 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 					getConnection().prepareStatement(updatedSql);
 		) {
 			// big events take time...
-			updateDeletedEvent.setQueryTimeout(120);
-			updateEvent.setQueryTimeout(120);
+			updateDeletedEvent.setQueryTimeout(300);
+			updateEvent.setQueryTimeout(300);
 			Iterator<Event> iter = events.iterator();
 			while (iter.hasNext()) {
 				Event updated = iter.next();
