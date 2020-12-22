@@ -4,8 +4,8 @@ import gov.usgs.earthquake.product.Product;
 import gov.usgs.util.Config;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -31,7 +31,7 @@ public class HeartbeatListener extends DefaultNotificationListener {
 			.getLogger(HeartbeatListener.class.getName());
 
 	/** Storage for heartbeat components */
-	private static Map<String, HeartbeatStatus> HASH_HEARTBEATS = new HashMap<String, HeartbeatStatus>();
+	private static Map<String, HeartbeatStatus> HASH_HEARTBEATS = new ConcurrentHashMap<>();
 
 	/** Configurable property for heartbeat fully qualified directory+filename. */
 	public static final String HEARTBEAT_FILENAME_PROPERTY = "heartbeatFilename";
