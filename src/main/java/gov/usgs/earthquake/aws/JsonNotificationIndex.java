@@ -17,6 +17,7 @@ import java.util.logging.Level;
 
 import javax.json.Json;
 
+
 import gov.usgs.earthquake.distribution.DefaultNotification;
 import gov.usgs.earthquake.distribution.Notification;
 import gov.usgs.earthquake.distribution.NotificationIndex;
@@ -102,7 +103,6 @@ public class JsonNotificationIndex
 
     setTable(config.getProperty("table", DEFAULT_TABLE));
     LOGGER.config("[" + getName() + "] driver=" + getDriver());
-    LOGGER.config("[" + getName() + "] networkTimeout=" + getNetworkTimeout());
     LOGGER.config("[" + getName() + "] table=" + getTable());
     // do not log url, it may contain user/pass
   }
@@ -131,6 +131,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement test = getConnection().prepareStatement(sql)) {
       // should throw exception if table does not exist
+      test.setQueryTimeout(60);
       try (final ResultSet rs = test.executeQuery()) {
         rs.next();
       }
@@ -194,7 +195,7 @@ public class JsonNotificationIndex
    * TrackerURLs are ignored.
    */
   @Override
-  public void addNotification(Notification notification)
+  public synchronized void addNotification(Notification notification)
       throws Exception {
     // all notifications
     Instant expires = notification.getExpirationDate().toInstant();
@@ -220,6 +221,7 @@ public class JsonNotificationIndex
           + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
     ) {
       try {
+        statement.setQueryTimeout(60);
         // set parameters
         statement.setString(1, created != null ? created.toString() : "");
         statement.setString(2, expires.toString());
@@ -255,7 +257,7 @@ public class JsonNotificationIndex
    * Tracker URLs are ignored.
    */
   @Override
-  public void removeNotification(Notification notification) throws Exception {
+  public synchronized void removeNotification(Notification notification) throws Exception {
     // all notifications
     Instant expires = notification.getExpirationDate().toInstant();
     ProductId id = notification.getProductId();
@@ -279,6 +281,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
+        statement.setQueryTimeout(60);
         // set parameters
         statement.setString(1, created != null ? created.toString() : "");
         statement.setString(2, expires.toString());
@@ -318,7 +321,7 @@ public class JsonNotificationIndex
    * @return list with matching notifications, empty if not found.
    */
   @Override
-  public List<Notification> findNotifications(
+  public synchronized List<Notification> findNotifications(
       String source, String type, String code) throws Exception {
     final ArrayList<Object> where = new ArrayList<Object>();
     final ArrayList<String> values = new ArrayList<String>();
@@ -342,6 +345,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
+        statement.setQueryTimeout(1000);
 
         // set parameters
         for (int i = 0, len=values.size(); i < len; i++) {
@@ -377,7 +381,7 @@ public class JsonNotificationIndex
    * @return list with matching notifications, empty if not found.
    */
   @Override
-  public List<Notification> findNotifications(
+  public synchronized List<Notification> findNotifications(
       List<String> sources, List<String> types, List<String> codes)
       throws Exception {
     final ArrayList<Object> where = new ArrayList<Object>();
@@ -425,6 +429,8 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
+        statement.setQueryTimeout(1000);
+
         // set parameters
         for (int i = 0, len=values.size(); i < len; i++) {
           statement.setString(i+1, values.get(i));
@@ -453,12 +459,14 @@ public class JsonNotificationIndex
    * @return list with matching notifications, empty if not found.
    */
   @Override
-  public List<Notification> findExpiredNotifications() throws Exception {
-    final String sql = "SELECT * FROM " + this.table + " WHERE expires <= ?";
+  public synchronized List<Notification> findExpiredNotifications() throws Exception {
+    final String sql = "SELECT * FROM " + this.table + " WHERE expires <= ? LIMIT 1000";
     // prepare statement
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
+        statement.setQueryTimeout(1000);
+
         // set parameters
         statement.setString(1, Instant.now().toString());
 
@@ -477,6 +485,7 @@ public class JsonNotificationIndex
       }
     }
     return new ArrayList<Notification>();
+
   }
 
   /**
@@ -487,13 +496,14 @@ public class JsonNotificationIndex
    * @return list with matching notifications, empty if not found.
    */
   @Override
-  public List<Notification> findNotifications(ProductId id) throws Exception {
+  public synchronized List<Notification> findNotifications(ProductId id) throws Exception {
     final String sql = "SELECT * FROM " + this.table
         + " WHERE source=? AND type=? AND code=? AND updatetime=?";
     // prepare statement
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
+        statement.setQueryTimeout(30);
         // set parameters
         statement.setString(1, id.getSource());
         statement.setString(2, id.getType());
@@ -533,8 +543,8 @@ public class JsonNotificationIndex
    *     other table.
    * @throws Exception
    */
-  public List<Notification> getMissingNotifications( final String otherTable)
-      throws Exception {
+  public synchronized List<Notification> getMissingNotifications(
+      final String otherTable) throws Exception {
     // this is used to requeue a notification index.
     // run query in a way that returns list of default notifications,
     // (by returning empty created, data, and url)
@@ -552,6 +562,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
+        statement.setQueryTimeout(1000);
         // execute and commit if successful
         final List<Notification> notifications = getNotifications(statement);
         commitTransaction();
@@ -571,10 +582,8 @@ public class JsonNotificationIndex
 
   /**
    * Parse notifications from a statement ready to be executed.
-   *
-   * Should be called in a transaction.
    */
-  protected List<Notification> getNotifications(PreparedStatement ps)
+  protected synchronized List<Notification> getNotifications(PreparedStatement ps)
       throws Exception {
     final List<Notification> n = new ArrayList<Notification>();
     try (final ResultSet rs = ps.executeQuery()) {

@@ -122,7 +122,8 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 */
 	public JDBCProductIndex() throws Exception {
 		// Default index file, so calling configure() isn't required
-		this(JDBC_DEFAULT_FILE);
+		index_file = JDBC_DEFAULT_FILE;
+		setDriver(JDBC_DEFAULT_DRIVER);
 	}
 
 	public JDBCProductIndex(final String sqliteFileName) throws Exception {
@@ -143,9 +144,9 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	@Override
 	public void configure(Config config) throws Exception {
 		super.configure(config);
-		if (getDriver() == null) { setDriver(JDBC_DEFAULT_DRIVER); }
+		index_file = config.getProperty(JDBC_FILE_PROPERTY);
 
-		index_file = config.getProperty(JDBC_FILE_PROPERTY, JDBC_DEFAULT_FILE);
+		if (getDriver() == null) { setDriver(JDBC_DEFAULT_DRIVER); }
 		if (index_file == null || "".equals(index_file)) {
 			index_file = JDBC_DEFAULT_FILE;
 		}
@@ -159,8 +160,9 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 */
 	@Override
 	public Connection connect() throws Exception {
-		// If they are using the sqlite driver, we need to try to create the file
-		if (getUrl() == null && getDriver().equals(JDBCUtils.SQLITE_DRIVER_CLASSNAME)) {
+		// If they are using the sqlite driver, we need to try to create the
+		// file
+		if (getDriver().equals(JDBCUtils.SQLITE_DRIVER_CLASSNAME)) {
 			// Make sure file exists or copy it out of the JAR
 			File indexFile = new File(index_file);
 			if (!indexFile.exists()) {
@@ -177,9 +179,9 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			}
 			indexFile = null;
 
+			// Build the JDBC url
 			setUrl(JDBC_CONNECTION_PREFIX + index_file);
 		}
-
 		return super.connect();
 	}
 
@@ -192,8 +194,11 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @return List of Event objects
 	 */
 	@Override
-	public List<Event> getEvents(ProductIndexQuery query)
+	public synchronized List<Event> getEvents(ProductIndexQuery query)
 			throws Exception {
+		if (query == null) {
+			return new ArrayList<Event>();
+		}
 		// map of events (index id => event), so products can be added incrementally
 		final Map<Long, Event> events = new HashMap<>();
 		// all products for loading details
@@ -205,21 +210,34 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		List<String> clauses = buildProductClauses(query);
 
 		// Build the SQL Query from our ProductIndexQuery object
-		String sql = "SELECT DISTINCT e.id"
-					+ " FROM event e, productSummary p"
-					+ " WHERE e.id=p.eventId";
+		String sql = "SELECT DISTINCT ps2.*"
+				+ " FROM productSummary ps2,"
+				+ " (SELECT DISTINCT e.id FROM event e, productSummary p"
+				+ " WHERE e.id=p.eventId";
 		// Add all appropriate where clauses
 		for (final String clause : clauses) {
 			sql = sql + " AND " + clause;
 		}
+		sql = sql + ") eventids"
+				+ " WHERE ps2.eventid=eventids.id";
 
-		// Now use query that finds event ids as sub-select and load all products
-		sql = "SELECT DISTINCT * FROM productSummary ps WHERE eventId IN (" + sql + ")";
+		// add current clause to outer query
+		if (query.getResultType() == ProductIndexQuery.RESULT_TYPE_CURRENT) {
+			sql = sql + " AND NOT EXISTS ("
+					+ " SELECT * FROM productSummary"
+					+ " WHERE source=ps2.source"
+					+ " AND type=ps2.type"
+					+ " AND code=ps2.code"
+					+ " AND updateTime>ps2.updateTime"
+					+ ")";
+		}
+
 		// load event products
 		try (
 			final PreparedStatement statement = getConnection().prepareStatement(sql);
 			final ResultSet results = statement.executeQuery();
 		) {
+			statement.setQueryTimeout(60);
 			while (results.next()) {
 				// eventid not part of product summary object,
 				// so need to do this as products are parsed...
@@ -251,7 +269,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @return Event object with eventId set to the database id
 	 */
 	@Override
-	public Event addEvent(Event event) throws Exception {
+	public synchronized Event addEvent(Event event) throws Exception {
 		Event e = null;
 
 		final String sql = "INSERT INTO event (created) VALUES (?)";
@@ -259,6 +277,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			final PreparedStatement insertEvent =
 					getConnection().prepareStatement(sql, new String[] {"id"});
 		) {
+			insertEvent.setQueryTimeout(60);
 			// Add the values to the prepared statement
 			JDBCUtils.setParameter(insertEvent, 1, new Date().getTime(), Types.BIGINT);
 
@@ -294,7 +313,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *         method call
 	 */
 	@Override
-	public List<ProductId> removeEvent(Event event)
+	public synchronized List<ProductId> removeEvent(Event event)
 			throws Exception {
 
 		Long id = event.getIndexId();
@@ -312,6 +331,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement deleteEvent = getConnection().prepareStatement(sql);
 		) {
+			deleteEvent.setQueryTimeout(60);
 			JDBCUtils.setParameter(deleteEvent, 1, id, Types.BIGINT);
 			int rows = deleteEvent.executeUpdate();
 			// If we didn't delete a row, or we deleted more than 1 row, throw an
@@ -338,7 +358,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *             when query event search type is SEARCH_EVENT_PREFERRED.
 	 */
 	@Override
-	public List<ProductSummary> getUnassociatedProducts(
+	public synchronized List<ProductSummary> getUnassociatedProducts(
 			ProductIndexQuery query) throws Exception {
 		if (query.getEventSearchType() == ProductIndexQuery.SEARCH_EVENT_PREFERRED) {
 			throw new IllegalArgumentException(
@@ -354,11 +374,15 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 
 		try (
 			final PreparedStatement statement = getConnection().prepareStatement(sql);
-			final ResultSet results = statement.executeQuery();
 		) {
-			// Now lets build product objects from each row in the result set
-			while (results.next()) {
-				products.add(parseProductSummary(results));
+			statement.setQueryTimeout(60);
+			try (
+				final ResultSet results = statement.executeQuery();
+			) {
+				// Now lets build product objects from each row in the result set
+				while (results.next()) {
+					products.add(parseProductSummary(results));
+				}
 			}
 		}
 
@@ -379,7 +403,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *             when query event search type is SEARCH_EVENT_PREFERRED.
 	 */
 	@Override
-	public List<ProductSummary> getProducts(ProductIndexQuery query)
+	public synchronized List<ProductSummary> getProducts(ProductIndexQuery query)
 			throws Exception {
 		// load full product summaries by default
 		return getProducts(query, true);
@@ -394,7 +418,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *     whether to call {@link #loadProductSummaries(List)},
 	 *     which loads links and properties with additional queries.
 	 */
-	public List<ProductSummary> getProducts(ProductIndexQuery query, final boolean loadDetails)
+	public synchronized List<ProductSummary> getProducts(ProductIndexQuery query, final boolean loadDetails)
 			throws Exception {
 		final List<String> clauseList = buildProductClauses(query);
 		final String sql = buildProductQuery(clauseList);
@@ -402,11 +426,15 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		final List<ProductSummary> products = new LinkedList<ProductSummary>();
 		try (
 			final PreparedStatement statement = getConnection().prepareStatement(sql);
-			final ResultSet results = statement.executeQuery();
 		) {
-			// Now lets build product objects from each row in the result set
-			while (results.next()) {
-				products.add(parseProductSummary(results));
+			statement.setQueryTimeout(60);
+			try (
+				final ResultSet results = statement.executeQuery();
+			) {
+				// Now lets build product objects from each row in the result set
+				while (results.next()) {
+					products.add(parseProductSummary(results));
+				}
 			}
 		}
 
@@ -424,12 +452,13 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @param id
 	 *     product to search.
 	 */
-	public boolean hasProduct(final ProductId id) throws Exception {
+	public synchronized boolean hasProduct(final ProductId id) throws Exception {
 		final String sql = "SELECT id FROM productSummary"
 				+ " WHERE source=? AND type=? AND code=? AND updateTime=?";
 		try (
 			final PreparedStatement statement = getConnection().prepareStatement(sql);
 		) {
+			statement.setQueryTimeout(60);
 			statement.setString(1, id.getSource());
 			statement.setString(2, id.getType());
 			statement.setString(3, id.getCode());
@@ -454,7 +483,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @throws Exception
 	 */
 	@Override
-	public ProductSummary addProductSummary(ProductSummary summary)
+	public synchronized ProductSummary addProductSummary(ProductSummary summary)
 			throws Exception {
 		// Add values to the prepared statement
 		long productId = 0;
@@ -470,6 +499,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			final PreparedStatement insertSummary =
 					getConnection().prepareStatement(sql, new String[] {"id"});
 		) {
+			insertSummary.setQueryTimeout(60);
 			// Set the created timestamp
 			JDBCUtils.setParameter(insertSummary, 1, new Date().getTime(),
 					Types.BIGINT);
@@ -565,7 +595,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *            ProductSummary object to delete
 	 */
 	@Override
-	public ProductId removeProductSummary(ProductSummary summary)
+	public synchronized ProductId removeProductSummary(ProductSummary summary)
 			throws Exception {
 		List<ProductId> removed = removeProductSummaries(Arrays.asList(summary));
 		return removed.get(0);
@@ -581,7 +611,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @return Copy of event with summary added to the event's products list
 	 */
 	@Override
-	public Event addAssociation(Event event, ProductSummary summary)
+	public synchronized Event addAssociation(Event event, ProductSummary summary)
 			throws Exception {
 
 		if (event.getIndexId() == null || summary.getIndexId() == null) {
@@ -597,6 +627,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement addAssociation = getConnection().prepareStatement(sql);
 		) {
+			addAssociation.setQueryTimeout(60);
 			JDBCUtils.setParameter(addAssociation, 1, event.getIndexId(), Types.BIGINT);
 			// these will target EVERY version of the given product
 			JDBCUtils.setParameter(addAssociation, 2, sid.getSource(), Types.VARCHAR);
@@ -629,7 +660,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @param summary
 	 */
 	@Override
-	public Event removeAssociation(Event event,
+	public synchronized Event removeAssociation(Event event,
 			ProductSummary summary) throws Exception {
 
 		// Deleting the association is really just removing the foreign key
@@ -653,6 +684,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement removeAssociation = getConnection().prepareStatement(sql);
 		) {
+			removeAssociation.setQueryTimeout(60);
 			// Now run the query
 			JDBCUtils.setParameter(removeAssociation, 1, null, Types.BIGINT);
 			// these will target EVERY version of the given product
@@ -1008,7 +1040,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @param summaries
 	 * @throws Exception
 	 */
-	protected void loadProductSummaries(final List<ProductSummary> summaries)
+	protected synchronized void loadProductSummaries(final List<ProductSummary> summaries)
 			throws Exception {
 		if (summaries.size() == 0) {
 			// nothing to load
@@ -1031,14 +1063,18 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 				+ ")";
 		try (
 			final PreparedStatement statement = getConnection().prepareStatement(linkSql);
-			final ResultSet results = statement.executeQuery();
 		) {
-			while (results.next()) {
-				Long id = results.getLong("id");
-				String relation = results.getString("relation");
-				String uri = results.getString("url");
-				// add properties to existing objects
-				summaryMap.get(id).addLink(relation, new URI(uri));
+			statement.setQueryTimeout(60);
+			try (
+				final ResultSet results = statement.executeQuery();
+			) {
+				while (results.next()) {
+					Long id = results.getLong("id");
+					String relation = results.getString("relation");
+					String uri = results.getString("url");
+					// add properties to existing objects
+					summaryMap.get(id).addLink(relation, new URI(uri));
+				}
 			}
 		}
 
@@ -1053,14 +1089,18 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement statement =
 					getConnection().prepareStatement(propertySql);
-			final ResultSet results = statement.executeQuery();
 		) {
-			while (results.next()) {
-				Long id = results.getLong("id");
-				String name = results.getString("name");
-				String value = results.getString("value");
-				// add properties to existing objects
-				summaryMap.get(id).getProperties().put(name, value);
+			statement.setQueryTimeout(60);
+			try (
+				final ResultSet results = statement.executeQuery();
+			) {
+				while (results.next()) {
+					Long id = results.getLong("id");
+					String name = results.getString("name");
+					String value = results.getString("value");
+					// add properties to existing objects
+					summaryMap.get(id).getProperties().put(name, value);
+				}
 			}
 		}
 	}
@@ -1121,7 +1161,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		return p;
 	}
 
-	public List<ProductId> removeProductSummaries(
+	public synchronized List<ProductId> removeProductSummaries(
 			final List<ProductSummary> summaries) throws Exception {
 		// index by id
 		final ArrayList<ProductId> ids = new ArrayList<>();
@@ -1157,8 +1197,9 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		for (final String sql : sqls) {
 			try (
 				final PreparedStatement statement =
-						getConnection().prepareStatement(sql + idsIn);
+						verifyConnection().prepareStatement(sql + idsIn);
 			) {
+				statement.setQueryTimeout(60);
 				int rows = statement.executeUpdate();
 				LOGGER.log(Level.FINER, "[" + getName() + "] removed " + rows + " rows");
 			}
@@ -1175,7 +1216,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @param properties
 	 * @throws SQLException
 	 */
-	protected void addProductProperties(final long productId,
+	protected synchronized void addProductProperties(final long productId,
 			final Map<String, String> properties) throws SQLException {
 		// Loop through the properties list and add them all to the database
 		final String sql = "INSERT INTO productSummaryProperty"
@@ -1183,6 +1224,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement insertProperty = getConnection().prepareStatement(sql);
 		) {
+			insertProperty.setQueryTimeout(60);
 			for (String key : properties.keySet()) {
 				JDBCUtils.setParameter(insertProperty, 1, productId, Types.BIGINT);
 				JDBCUtils.setParameter(insertProperty, 2, key, Types.VARCHAR);
@@ -1208,7 +1250,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *            Map of relations to URIs
 	 * @throws SQLException
 	 */
-	protected void addProductLinks(long productId,
+	protected synchronized void addProductLinks(long productId,
 			Map<String, List<URI>> links) throws SQLException {
 		// Loop through the properties list and add them all to the database
 		final String sql = "INSERT INTO productSummaryLink"
@@ -1216,6 +1258,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		try (
 			final PreparedStatement insertLink = getConnection().prepareStatement(sql);
 		) {
+			insertLink.setQueryTimeout(60);
 			for (final String relation : links.keySet()) {
 				for (final URI uri : links.get(relation)) {
 					JDBCUtils.setParameter(insertLink, 1, productId, Types.BIGINT);
@@ -1284,7 +1327,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *            the events that have been updated.
 	 */
 	@Override
-	public void eventsUpdated(List<Event> events) throws Exception {
+	public synchronized void eventsUpdated(List<Event> events) throws Exception {
 		Long indexId = null;
 
 		final String deletedSql = "UPDATE event SET status=? WHERE id=?";
@@ -1299,7 +1342,9 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			final PreparedStatement updateEvent =
 					getConnection().prepareStatement(updatedSql);
 		) {
-
+			// big events take time...
+			updateDeletedEvent.setQueryTimeout(300);
+			updateEvent.setQueryTimeout(300);
 			Iterator<Event> iter = events.iterator();
 			while (iter.hasNext()) {
 				Event updated = iter.next();

@@ -75,7 +75,6 @@ public class TrackingIndex extends JDBCConnection {
 
     setTable(config.getProperty("table", DEFAULT_TABLE));
     LOGGER.config("[" + getName() + "] driver=" + getDriver());
-    LOGGER.config("[" + getName() + "] networkTimeout=" + getNetworkTimeout());
     LOGGER.config("[" + getName() + "] table=" + getTable());
     // do not log url, it may contain user/pass
   }
@@ -103,6 +102,7 @@ public class TrackingIndex extends JDBCConnection {
     final String sql = "select * from " + this.table + " limit 1";
     beginTransaction();
     try (final PreparedStatement test = getConnection().prepareStatement(sql)) {
+      test.setQueryTimeout(60);
       // should throw exception if table does not exist
       try (final ResultSet rs = test.executeQuery()) {
         rs.next();
@@ -155,12 +155,13 @@ public class TrackingIndex extends JDBCConnection {
    *     name of tracking data.
    * @return null if data not found.
    */
-  public JsonObject getTrackingData(final String name) throws Exception {
+  public synchronized JsonObject getTrackingData(final String name) throws Exception {
     JsonObject data = null;
 
     final String sql = "SELECT * FROM " + this.table + " WHERE name=?";
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
+      statement.setQueryTimeout(60);
       statement.setString(1, name);
 
       // execute and parse data
@@ -190,11 +191,12 @@ public class TrackingIndex extends JDBCConnection {
    *     name of tracking data.
    * @throws Exception
    */
-  public void removeTrackingData(final String name) throws Exception {
+  public synchronized void removeTrackingData(final String name) throws Exception {
     final String sql = "DELETE FROM " + this.table + " WHERE name=?";
     // create schema
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
+      statement.setQueryTimeout(60);
       statement.setString(1, name);
 
       statement.executeUpdate();
@@ -214,11 +216,12 @@ public class TrackingIndex extends JDBCConnection {
    *     data to store.
    * @throws Exception
    */
-  public void setTrackingData(final String name, final JsonObject data) throws Exception {
+  public synchronized void setTrackingData(final String name, final JsonObject data) throws Exception {
     final String update = "UPDATE " + this.table + " SET data=? WHERE name=?";
     // usually updated, try update first
     beginTransaction();
     try (final PreparedStatement updateStatement = getConnection().prepareStatement(update)) {
+      updateStatement.setQueryTimeout(60);
       updateStatement.setString(1, data.toString());
       updateStatement.setString(2, name);
       // execute update
@@ -228,6 +231,7 @@ public class TrackingIndex extends JDBCConnection {
         final String insert = "INSERT INTO " + this.table + " (data, name) VALUES (?, ?)";
         // no rows updated
         try (final PreparedStatement insertStatement = getConnection().prepareStatement(insert)) {
+          insertStatement.setQueryTimeout(60);
           insertStatement.setString(1, data.toString());
           insertStatement.setString(2, name);
           // execute insert

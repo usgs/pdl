@@ -120,7 +120,7 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	private ObjectLock<ProductId> retrieveLocks = new ObjectLock<ProductId>();
 
 	public DefaultNotificationReceiver() {
-		notifier = new FutureListenerNotifier(this);
+		notifier = new ExecutorListenerNotifier(this);
 	}
 
 	/**
@@ -576,7 +576,6 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 				throw new ConfigurationException("Unknown notifier type "
 						+ notifierType);
 			}
-			notifier.setName(getName() + ".notifier");
 		}
 	}
 

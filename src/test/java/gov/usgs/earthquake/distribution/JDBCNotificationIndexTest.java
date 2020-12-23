@@ -15,10 +15,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.Before;
+import org.junit.Test;
 
 public class JDBCNotificationIndexTest {
 
@@ -121,7 +121,7 @@ public class JDBCNotificationIndexTest {
 	 * Creates a dummy notification index with sample notifications etc. This is
 	 * used for the testing environment and is run before the tests themselves.
 	 */
-	@BeforeEach
+	@Before
 	public void setupEnvironment() {
 		try {
 			String t = System.getProperty("user.dir"); // CWD-ish
@@ -200,7 +200,7 @@ public class JDBCNotificationIndexTest {
 	/**
 	 * Cleans up the dummy environment after running all tests.
 	 */
-	@AfterEach
+	@After
 	public void cleanupEnvironment() {
 		try {
 
@@ -267,8 +267,8 @@ public class JDBCNotificationIndexTest {
 	public void testRemoveExpiredNotifications() throws Exception {
 		List<Notification> found = index.findExpiredNotifications();
 
-		for (final Notification expired : EXPIRED_NOTIFICATIONS) {
-			Assert.assertTrue(contains(found, expired));
+		for (int i = 0; i < EXPIRED_NOTIFICATIONS.size(); ++i) {
+			Assert.assertTrue(contains(found, EXPIRED_NOTIFICATIONS.get(i)));
 		}
 	}
 

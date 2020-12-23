@@ -17,7 +17,7 @@ public class DefaultIndexerModuleTest {
 
 	/**
 	 * The "US" network is authoritative by default.
-	 * 
+	 *
 	 * Test in the middle of not-US, where no network should be authoritative
 	 * (and hence US is).
 	 */
@@ -38,7 +38,7 @@ public class DefaultIndexerModuleTest {
 
 	/**
 	 * The "CI" network is authoriative in Southern California.
-	 * 
+	 *
 	 * Test in the middle of Southern California (LA).
 	 */
 	@Test
@@ -58,7 +58,7 @@ public class DefaultIndexerModuleTest {
 
 	/**
 	 * The "NC" network is authoritative in Northern California.
-	 * 
+	 *
 	 * Test in the middle of not-Northern California (0,0).
 	 */
 	@Test
@@ -96,7 +96,7 @@ public class DefaultIndexerModuleTest {
 		Assert.assertTrue("Event and product source same",
 				weight >= DefaultIndexerModule.SAME_SOURCE_WEIGHT);
 	}
-	
+
 	/**
 	 * getBaseProductType should remove "internal-" prefix and "-scenario" suffix
 	 * from product type.
@@ -106,11 +106,34 @@ public class DefaultIndexerModuleTest {
 		String typeInternal = "internal-shakemap";
 		String typeScenario = "dyfi-scenario";
 		String typeInternalScenario = "internal-tectonic-summary-scenario";
-		
-		DefaultIndexerModule indexer = new DefaultIndexerModule(); 
-		
+
+		DefaultIndexerModule indexer = new DefaultIndexerModule();
+
 		Assert.assertEquals("shakemap", indexer.getBaseProductType(typeInternal));
 		Assert.assertEquals("dyfi", indexer.getBaseProductType(typeScenario));
 		Assert.assertEquals("tectonic-summary", indexer.getBaseProductType(typeInternalScenario));
+	}
+
+	/**
+	 * Test ignoreRegions list.
+	 */
+	@Test
+	public void testIgnoreRegions() throws Exception {
+		DefaultIndexerModule module = new DefaultIndexerModule();
+		ProductSummary summary = new ProductSummary();
+		summary.setId(new ProductId("nn", "type", "code"));
+		// nc is not authoritative at (0,0)
+		summary.setEventLatitude(new BigDecimal("39.5"));
+		summary.setEventLongitude(new BigDecimal("-119.0"));
+		summary.setEventSource("nn");
+
+		// without ignore regions, weight is authoritative
+		long preferredWeight = module.getPreferredWeight(summary);
+		Assert.assertEquals("weight for authoritative source", 157, preferredWeight);
+
+		// with ignore region, weight is 1
+		module.getIgnoreRegions().add("nn");
+		preferredWeight = module.getPreferredWeight(summary);
+		Assert.assertEquals("weight for ignored region", 1, preferredWeight);
 	}
 }

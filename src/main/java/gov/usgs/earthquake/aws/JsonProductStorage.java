@@ -91,7 +91,6 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
 
     setTable(config.getProperty("table", DEFAULT_TABLE));
     LOGGER.config("[" + getName() + "] driver=" + getDriver());
-    LOGGER.config("[" + getName() + "] networkTimeout=" + getNetworkTimeout());
     LOGGER.config("[" + getName() + "] table=" + getTable());
     // do not log url, it may contain user/pass
   }
@@ -119,6 +118,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     final String sql = "select * from " + this.table + " limit 1";
     beginTransaction();
     try (final PreparedStatement test = getConnection().prepareStatement(sql)) {
+      test.setQueryTimeout(60);
       // should throw exception if table does not exist
       try (final ResultSet rs = test.executeQuery()) {
         rs.next();
@@ -185,13 +185,14 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
    * @return product if found, otherwise null.
    */
   @Override
-  public Product getProduct(ProductId id) throws Exception {
+  public synchronized Product getProduct(ProductId id) throws Exception {
     Product product = null;
     final String sql = "SELECT * FROM " + this.table
         + " WHERE source=? AND type=? AND code=? AND updatetime=?";
     // prepare statement
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
+      statement.setQueryTimeout(60);
       // set parameters
       statement.setString(1, id.getSource());
       statement.setString(2, id.getType());
@@ -233,7 +234,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
    *     if product already in storage.
    */
   @Override
-  public ProductId storeProduct(Product product) throws Exception {
+  public synchronized ProductId storeProduct(Product product) throws Exception {
     // prepare statement
     beginTransaction();
     try (
@@ -242,6 +243,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
           + " (source, type, code, updatetime, data)"
           + " VALUES (?, ?, ?, ?, ?)")
     ) {
+      statement.setQueryTimeout(60);
       final ProductId id = product.getId();
       // set parameters
       statement.setString(1, id.getSource());
@@ -303,12 +305,13 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
    * Remove product from storage.
    */
   @Override
-  public void removeProduct(ProductId id) throws Exception {
+  public synchronized void removeProduct(ProductId id) throws Exception {
     // prepare statement
     final String sql = "DELETE FROM " + this.table
           + " WHERE source=? AND type=? AND code=? AND updatetime=?";
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
+      statement.setQueryTimeout(60);
       // set parameters
       statement.setString(1, id.getSource());
       statement.setString(2, id.getType());

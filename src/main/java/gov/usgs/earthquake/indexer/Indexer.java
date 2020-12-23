@@ -76,7 +76,7 @@ public class Indexer extends DefaultNotificationListener {
 
 	public static final String ASSOCIATE_USING_CURRENT_PRODUCTS_PROPERTY = "associateUsingCurrentProducts";
 
-	public static final String DEFAULT_ASSOCIATE_USING_CURRENT_PRODUCTS = "true";
+	public static final String DEFAULT_ASSOCIATE_USING_CURRENT_PRODUCTS = "false";
 
 	/** Property name to configure a custom storage. */
 	public static final String STORAGE_CONFIG_PROPERTY = "storage";
@@ -119,7 +119,7 @@ public class Indexer extends DefaultNotificationListener {
 	private Associator associator;
 
 	/** Whether to use (false) all products or (true) current products. */
-	private boolean associateUsingCurrentProducts = true;
+	private boolean associateUsingCurrentProducts = false;
 
 	/** Where product contents are stored. */
 	private ProductStorage productStorage;
@@ -127,7 +127,7 @@ public class Indexer extends DefaultNotificationListener {
 	/** Index of stored products, and how they are related. */
 	private ProductIndex productIndex;
 
-	/** Index used by {@link #hasProductBeenIndexed(ProductId)}. */
+	/** Read index for {@link #hasProductBeenIndexed(ProductId)} */
 	private ProductIndex readProductIndex;
 
 	/** Modules provide product specific functionality. */
@@ -144,6 +144,9 @@ public class Indexer extends DefaultNotificationListener {
 
 	/** Task for archive policy thread. */
 	private TimerTask archiveTask = null;
+
+	/** Synchronization object for indexing. */
+	private final Object indexProductSync = new Object();
 
 	/**
 	 * Service used by FutureExecutorTask for execution.
@@ -354,7 +357,7 @@ public class Indexer extends DefaultNotificationListener {
 	 *            IndexerEvent has a specific "type" to clarify the type of
 	 *            event that occurred.
 	 */
-	protected void notifyListeners(final IndexerEvent event) {
+	protected synchronized void notifyListeners(final IndexerEvent event) {
 		StringBuffer buf = new StringBuffer();
 		Iterator<IndexerChange> changes = event.getIndexerChanges().iterator();
 		while (changes.hasNext()) {
@@ -391,7 +394,9 @@ public class Indexer extends DefaultNotificationListener {
 					+ "event.");
 		}
 
-		for (final IndexerListener listener : listeners.keySet()) {
+		Iterator<IndexerListener> it = listeners.keySet().iterator();
+		while (it.hasNext()) {
+			final IndexerListener listener = it.next();
 			ExecutorService listenerExecutor = listeners.get(listener);
 			FutureExecutorTask<Void> listenerTask = new FutureExecutorTask<Void>(
 					backgroundService, listenerExecutor, listener.getMaxTries(),
@@ -404,25 +409,30 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Check whether this product is in the index.
 	 *
+	 * NOT synchronized to allow multiple threads to access.
+	 * readProductIndex.hasProduct is synchronized.
+	 *
 	 * @param id
 	 * @return true if product has already been indexed.
 	 */
-	protected boolean hasProductBeenIndexed(final ProductId id) throws Exception {
-		boolean hasProduct = false;
-		// readProductIndex may be the same as productIndex,
-		// or for mysql uses a separate connection
-		readProductIndex.beginTransaction();
+	protected boolean hasProductBeenIndexed(final ProductId id) {
 		try {
-			hasProduct = readProductIndex.hasProduct(id);
-			readProductIndex.commitTransaction();
+			if (readProductIndex == productIndex) {
+				// synchronize on this if read and product index are same
+				synchronized (indexProductSync) {
+					return readProductIndex.hasProduct(id);
+				}
+			} else {
+				// otherwise readProductIndex provides own synchronization
+				return readProductIndex.hasProduct(id);
+			}
 		} catch (Exception wtf) {
 			LOGGER.log(Level.WARNING, "[" + getName()
 					+ "] exception checking if product already indexed", wtf);
-			readProductIndex.rollbackTransaction();
 		}
 
 		// default is it hasn't been processed
-		return hasProduct;
+		return false;
 	}
 
 	/**
@@ -502,10 +512,47 @@ public class Indexer extends DefaultNotificationListener {
 	 */
 	public void onProduct(final Product product, final boolean force) throws Exception {
 		ProductId id = product.getId();
+		final long beginStore = new Date().getTime();
 
 		// -------------------------------------------------------------------//
 		// -- Step 1: Store product
 		// -------------------------------------------------------------------//
+		final Product storedProduct = storeProduct(product, force);
+		if (storedProduct == null) {
+			return;
+		}
+
+		// -------------------------------------------------------------------//
+		// -- Step 2: Use product module to summarize product
+		// -------------------------------------------------------------------//
+
+		LOGGER.finer("[" + getName() + "] summarizing product id=" + id.toString());
+		final ProductSummary productSummary = summarizeProduct(product);
+
+		// -------------------------------------------------------------------//
+		// -- Step 3: Add product summary to the product index
+		// -------------------------------------------------------------------//
+
+		LOGGER.finer("[" + getName() + "] indexing product id=" + id.toString());
+		// measure time waiting to enter synchronized block
+		final long beforeEnterSync = new Date().getTime();
+		synchronized (indexProductSync) {
+			final long afterEnterSync = new Date().getTime();
+
+			try {
+				indexProduct(productSummary);
+			} finally {
+				final long endIndex = new Date().getTime();
+				LOGGER.fine("[" + getName() + "] indexer processed product id="
+						+ id.toString() + " in " +
+						(endIndex - beginStore) + " ms"
+						+ " (" + (afterEnterSync - beforeEnterSync) + " ms sync delay)");
+			}
+		}
+	}
+
+	public Product storeProduct(final Product product, final boolean force) throws Exception {
+		final ProductId id = product.getId();
 		final long beginStore = new Date().getTime();
 		try {
 			LOGGER.finest("[" + getName() + "] storing product id="
@@ -524,47 +571,31 @@ public class Indexer extends DefaultNotificationListener {
 				LOGGER.fine("[" + getName() + "] product already indexed "
 						+ product.getId());
 				// don't reindex for now
-				return;
+				return null;
 			}
 		}
 		final long endStore = new Date().getTime();
 		LOGGER.fine("[" + getName() + "] indexer downloaded product id="
 				+ id.toString() + " in " +
 				(endStore - beginStore) + " ms");
-
-		// -------------------------------------------------------------------//
-		// -- Step 2: Use product module to summarize product
-		// -------------------------------------------------------------------//
-
-		LOGGER.finer("[" + getName() + "] summarizing product id=" + id.toString());
-		final ProductSummary productSummary = summarizeProduct(product);
-
-		// -------------------------------------------------------------------//
-		// -- Step 3: Add product summary to the product index
-		// -------------------------------------------------------------------//
-
-		LOGGER.finer("[" + getName() + "] indexing product id=" + id.toString());
-		indexProduct(productSummary);
+		return product;
 	}
 
 	/**
 	 * Use modules to summarize product.
 	 */
-	protected ProductSummary summarizeProduct(final Product product) throws Exception {
+	public ProductSummary summarizeProduct(final Product product) throws Exception {
 		// Find best available indexer module
 		IndexerModule module = getModule(product);
-
-		// Use this module to summarize the product
-		ProductSummary productSummary = module.getProductSummary(product);
-
-		return productSummary;
+		return module.getProductSummary(product);
 	}
 
 	/**
 	 * Add product summary to product index.
 	 */
-	protected ProductSummary indexProduct(
+	protected synchronized ProductSummary indexProduct(
 			ProductSummary productSummary) throws Exception {
+		LOGGER.finest("[" + getName() + "] beginning index transaction");
 
 		// The notification to be sent when we are finished with this product
 		IndexerEvent notification = new IndexerEvent(this);
@@ -572,11 +603,7 @@ public class Indexer extends DefaultNotificationListener {
 		notification.setSummary(productSummary);
 
 		// Start the product index transaction, only proceed if able
-		final long beforeBegin = new Date().getTime();
 		productIndex.beginTransaction();
-		final long afterBegin = new Date().getTime();
-		LOGGER.finer("[" + getName() + "] beginning index transaction"
-				+ " (" + (afterBegin - beforeBegin) + " ms waiting for lock)");
 
 		try {
 			LOGGER.finer("[" + getName() + "] finding previous version");
@@ -736,7 +763,6 @@ public class Indexer extends DefaultNotificationListener {
 			LOGGER.finer("[" + getName() + "] committing transaction");
 			// Commit our changes to the index (after updating summary attrs)
 			productIndex.commitTransaction();
-
 		} catch (Exception e) {
 			LOGGER.log(Level.FINE, "[" + getName() + "] rolling back transaction", e);
 			// just rollback since it wasn't successful
@@ -750,26 +776,18 @@ public class Indexer extends DefaultNotificationListener {
 					"index exception class", e.getClass().getName());
 
 			throw e;
-		} finally {
-			final long afterIndex = new Date().getTime();
-			LOGGER.fine("[" + getName() + "] index transaction total"
-					+ " (" + (afterIndex - afterBegin) + " ms)");
 		}
 
-		// ---------------------------------------------------------//
-		// -- Step 5: Notify listeners with our indexer event
-		// ---------------------------------------------------------//
-
-		// this doesn't affect transaction, run outside
 		try {
 			LOGGER.fine("[" + getName() + "] notifying listeners");
+			// ---------------------------------------------------------//
+			// -- Step 5: Notify listeners with our indexer event
+			// ---------------------------------------------------------//
 			notifyListeners(notification);
 		} catch (Exception e) {
 			// this doesn't affect success of index transaction...
-			LOGGER.log(
-					Level.WARNING,
-					"[" + getName() + "] exception notifying listeners",
-					e);
+			LOGGER.log(Level.WARNING, "[" + getName()
+					+ "] exception while notifying listeners", e);
 		}
 
 		// send heartbeat info
@@ -1029,8 +1047,6 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Get a product summary object using its product id.
 	 *
-	 * Should be called within productIndex transaction.
-	 *
 	 * @param id
 	 *            id to find.
 	 * @return matching product summary or null.
@@ -1049,8 +1065,6 @@ public class Indexer extends DefaultNotificationListener {
 
 	/**
 	 * Update a product summary weight
-	 *
-	 * Should be called within productIndex transaction.
 	 *
 	 * @param event
 	 *            the event.
@@ -1088,8 +1102,6 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Resummarize a product within an event.
 	 *
-	 * Should be called within productIndex transaction.
-	 *
 	 * @param event
 	 *            the event.
 	 * @param summary
@@ -1125,8 +1137,6 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Check for event splits (and split them if needed).
 	 *
-	 * Should be called within productIndex transaction.
-	 *
 	 * @param summary
 	 *            the summary the indexer is currently processing.
 	 * @param originalEvent
@@ -1136,7 +1146,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * @return List of changes made during this method.
 	 * @throws Exception
 	 */
-	protected List<IndexerChange> checkForEventSplits(
+	protected synchronized List<IndexerChange> checkForEventSplits(
 			final ProductSummary summary, final Event originalEvent,
 			final Event updatedEvent) throws Exception {
 		List<IndexerChange> changes = new ArrayList<IndexerChange>();
@@ -1166,15 +1176,19 @@ public class Indexer extends DefaultNotificationListener {
 			// wtf
 			// this should always exist because its ID was returned by getEventId,
 			// should should have at least one product.  Log:
-			LOGGER.fine("[" + getName() + "] originalSubEvent is null"
+			LOGGER.warning("[" + getName() + "] originalSubEvent is null"
 					+ ", originalEventId=" + originalEventId);
 			for (final String id: subEvents.keySet()) {
 				final Event subEvent = subEvents.get(id);
 				subEvent.log(LOGGER);
 			}
+			return changes;
 		}
 
-		for (final String nextEventId : subEvents.keySet()) {
+		Iterator<String> subEventsIter = new ArrayList<String>(
+				subEvents.keySet()).iterator();
+		while (subEventsIter.hasNext()) {
+			String nextEventId = subEventsIter.next();
 			Event nextEvent = subEvents.get(nextEventId);
 
 			if (!originalSubEvent.isAssociated(nextEvent, associator)) {
@@ -1245,8 +1259,6 @@ public class Indexer extends DefaultNotificationListener {
 	 * Removes the leaf event (and all its products) from the root event. This
 	 * method modifies the runtime objects as well as updating the index DB.
 	 *
-	 * Should be called within productIndex transaction.
-	 *
 	 * @param root
 	 *            The root event from which all leaf products will be removed
 	 * @param leaf
@@ -1255,7 +1267,7 @@ public class Indexer extends DefaultNotificationListener {
 	 *         indexId property of leaf is updated to its new value.
 	 * @throws Exception
 	 */
-	protected Event splitEvents(final Event root, final Event leaf)
+	protected synchronized Event splitEvents(final Event root, final Event leaf)
 			throws Exception {
 		Event updated = root;
 		Iterator<ProductSummary> leafProducts = leaf.getProductList()
@@ -1286,15 +1298,13 @@ public class Indexer extends DefaultNotificationListener {
 	 * products are duplicates. This method modifies the runtime objects as well
 	 * as the index DB. The child event is then deleted.
 	 *
-	 * Should be called within productIndex transaction.
-	 *
 	 * @param target
 	 *            The target event into which the child is merged.
 	 * @param child
 	 *            The child event to be merged into the target.
 	 * @throws Exception
 	 */
-	protected Event mergeEvents(final Event target,
+	protected synchronized Event mergeEvents(final Event target,
 			final Event child) throws Exception {
 		Iterator<ProductSummary> childProducts = child.getProductList()
 				.iterator();
@@ -1318,8 +1328,6 @@ public class Indexer extends DefaultNotificationListener {
 	 * Check and merge any nearby events or previously unassociated products
 	 * that now associate.
 	 *
-	 * Should be called within productIndex transaction.
-	 *
 	 * @param summary
 	 *            the summary currently being processed by the indexer.
 	 * @param originalEvent
@@ -1329,7 +1337,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * @return list of any merge type changes.
 	 * @throws Exception
 	 */
-	protected List<IndexerChange> checkForEventMerges(
+	protected synchronized List<IndexerChange> checkForEventMerges(
 			final ProductSummary summary, final Event originalEvent,
 			final Event updatedEvent) throws Exception {
 		List<IndexerChange> changes = new ArrayList<IndexerChange>();
@@ -1472,16 +1480,7 @@ public class Indexer extends DefaultNotificationListener {
 		return changes;
 	}
 
-	/**
-	 * Find previous version of product.
-	 *
-	 * Should be called within productIndex transaction.
-	 *
-	 * @param summary
-	 * @return
-	 * @throws Exception
-	 */
-	protected ProductSummary getPrevProductVersion(
+	protected synchronized ProductSummary getPrevProductVersion(
 			ProductSummary summary) throws Exception {
 		ProductSummary prevSummary = null;
 		List<ProductSummary> candidateSummaries = null;
@@ -1516,8 +1515,6 @@ public class Indexer extends DefaultNotificationListener {
 	 * {@link #checkForEventMerges(ProductSummary, Event, Event)} and are
 	 * ignored during this method.
 	 *
-	 * Should be called within productIndex transaction.
-	 *
 	 * @see Associator#getSearchRequest(ProductSummary)
 	 * @see Associator#chooseEvent(List, ProductSummary)
 	 *
@@ -1526,7 +1523,7 @@ public class Indexer extends DefaultNotificationListener {
 	 *         found.
 	 * @throws Exception
 	 */
-	protected Event getPrevEvent(ProductSummary summary)
+	protected synchronized Event getPrevEvent(ProductSummary summary)
 			throws Exception {
 		return getPrevEvent(summary, false);
 	}
@@ -1534,15 +1531,13 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Find an existing event that summary should associate with.
 	 *
-	 * Should be called within productIndex transaction.
-	 *
 	 * @param summary the previous event.
 	 * @param associating whether associating (vs archiving).
 	 * @return previous event, or null if none found.
 	 * @throws Exception
 	 */
-	protected Event getPrevEvent(ProductSummary summary, boolean associating)
-			throws Exception {
+	protected synchronized Event getPrevEvent(ProductSummary summary,
+			boolean associating) throws Exception {
 		Event prevEvent = null;
 		List<Event> candidateEvents = null;
 
@@ -1568,11 +1563,43 @@ public class Indexer extends DefaultNotificationListener {
 		return prevEvent;
 	}
 
+	/*
+	 * protected IndexerEvent createIndexerEvent(ProductSummary prevSummary,
+	 * Event prevEvent, ProductSummary summary, Event event) { IndexerType type
+	 * = null; IndexerEvent indexerEvent = new IndexerEvent(this);
+	 *
+	 * // ---------------------------------- // Determine the type if
+	 * IndexerEvent // ----------------------------------
+	 *
+	 * if (summary.getStatus() == Product.STATUS_DELETE) { type =
+	 * IndexerEvent.PRODUCT_DELETED; if (event != null) { // Since we have an
+	 * event, this is now an EVENT_UPDATED type type =
+	 * IndexerEvent.EVENT_UPDATED;
+	 *
+	 * // Check if all products on event are deleted. if
+	 * (event.getProductList().size() == 0) { type = IndexerEvent.EVENT_DELETED;
+	 * } } } else { // Product was not a "DELETE" status. Must be an added or
+	 * updated. if (prevEvent == null && event != null) { type =
+	 * IndexerEvent.EVENT_ADDED; } else if (prevEvent != null && event != null)
+	 * { type = IndexerEvent.EVENT_UPDATED; } else if (prevSummary == null &&
+	 * summary != null) { type = IndexerEvent.PRODUCT_ADDED; } else if
+	 * (prevSummary != null && summary != null) { type =
+	 * IndexerEvent.PRODUCT_UPDATED; }
+	 *
+	 * if (summary == null) { // Not sure how this happens.
+	 * LOGGER.warning("Trying to notify of a null summary."); } }
+	 *
+	 * // Set parameters indexerEvent.setEventType(type);
+	 * indexerEvent.setOldEvent(prevEvent); indexerEvent.setSummary(summary);
+	 * indexerEvent.setEvent(event);
+	 *
+	 * return indexerEvent; }
+	 */
 	/**
 	 * Loads parent, specific, and dependent configurations; in that order.
 	 */
 	@Override
-	public void configure(Config config) throws Exception {
+	public synchronized void configure(Config config) throws Exception {
 		// -- Load parent configurations -- //
 		super.configure(config);
 
@@ -1755,22 +1782,21 @@ public class Indexer extends DefaultNotificationListener {
 	 * executor services (from listeners) are shutdown in sequence.
 	 */
 	@Override
-	public void shutdown() throws Exception {
+	public synchronized void shutdown() throws Exception {
 		// -- Shut down dependent processes -- //
 		try {
-			// waits for current transaction, unless transaction thread is interrupted
+			if (readProductIndex != productIndex) {
+				readProductIndex.shutdown();
+			}
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING, "[" + getName()
+					+ "] exception shutting down read product index", e);
+		}
+		try {
 			productIndex.shutdown();
 		} catch (Exception e) {
 			LOGGER.log(Level.WARNING, "[" + getName()
 					+ "] exception shutting down product index", e);
-		}
-		if (readProductIndex != productIndex) {
-			try {
-				readProductIndex.shutdown();
-			} catch (Exception e) {
-				LOGGER.log(Level.WARNING, "[" + getName()
-						+ "] exception shutting down read product index", e);
-			}
 		}
 		productStorage.shutdown();
 
@@ -1830,7 +1856,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * that order.
 	 */
 	@Override
-	public void startup() throws Exception {
+	public synchronized void startup() throws Exception {
 		// -- Call parent startup method -- //
 		super.startup();
 
@@ -1865,19 +1891,19 @@ public class Indexer extends DefaultNotificationListener {
 		productStorage.startup();
 		productIndex.startup();
 
-		// when using mysql index, use separate connection for hasProductBeenIndexed
+		// if using mysql product index, create separate read index
+		readProductIndex = null;
 		if (productIndex instanceof JDBCProductIndex) {
 			JDBCProductIndex jdbcProductIndex = (JDBCProductIndex) productIndex;
 			if (jdbcProductIndex.getDriver().contains("mysql")) {
-				JDBCProductIndex index = new JDBCProductIndex();
-				index.setDriver(jdbcProductIndex.getDriver());
-				index.setUrl(jdbcProductIndex.getUrl());
-				readProductIndex = index;
+				readProductIndex = new JDBCProductIndex();
+				((JDBCProductIndex) readProductIndex).setDriver(jdbcProductIndex.getDriver());
+				((JDBCProductIndex) readProductIndex).setUrl(jdbcProductIndex.getUrl());
 				readProductIndex.startup();
 			}
 		}
 		if (readProductIndex == null) {
-			// otherwise share index
+			// otherwise use same index
 			readProductIndex = productIndex;
 		}
 
@@ -1925,177 +1951,138 @@ public class Indexer extends DefaultNotificationListener {
 	 *
 	 * @see #archivePolicies
 	 */
-	public int[] purgeExpiredProducts() throws Exception {
+	public synchronized int[] purgeExpiredProducts() throws Exception {
 		int[] counts = { 0, 0 };
+		ProductIndexQuery query = null;
+		ArchivePolicy policy = null;
 
 		if (isDisableArchive()) {
 			LOGGER.info("Archiving disabled");
 			return counts;
 		}
 
-		for (final ArchivePolicy policy : archivePolicies) {
-			int countIndex = 0;
-			String policyName = policy.getName();
-			String policyType = "event";
-			if (policy instanceof ProductArchivePolicy) {
-				countIndex = 1;
-				policyType = "product";
-			}
-			LOGGER.fine("[" + getName() + "]"
-					+ " running " + policyType + " archive policy (" + policyName + ")");
-			try {
-				int count = runArchivePolicy(policy);
-				counts[countIndex] += count;
-				LOGGER.finer("[" + getName() + "]"
-						+ " archive policy (" + policyName + ")"
-						+ " removed " + count + " " + policyType + "s");
-			} catch (Exception e) {
-				LOGGER.log(
-						Level.WARNING,
-						"[" + getName() + "] exception"
-						+ " running " + policyType + " archive policy (" + policyName + ")",
-						e);
+		for (int i = 0; i < archivePolicies.size(); i++) {
+			policy = archivePolicies.get(i);
+			query = policy.getIndexQuery();
+
+			if (!(policy instanceof ProductArchivePolicy)) {
+				// -- Purge expired events for this policy -- //
+				LOGGER.fine("[" + getName()
+						+ "] running event archive policy (" + policy.getName()
+						+ ")");
+				try {
+					// Get a list of those events
+					List<Event> expiredEvents = productIndex.getEvents(query);
+
+					// Loop over list of expired events and remove each one
+					Iterator<Event> eventIter = expiredEvents.iterator();
+					while (eventIter.hasNext()) {
+						Event event = eventIter.next();
+
+						LOGGER.info("[" + getName() + "] archiving event "
+								+ event.getEventId());
+						event.log(LOGGER);
+
+						productIndex.beginTransaction();
+						try {
+							removeEvent(event);
+
+							// Notify of the event archived
+							IndexerEvent notification = new IndexerEvent(this);
+							notification.setSummary(null);
+							notification.addIndexerChange(new IndexerChange(
+									IndexerChange.EVENT_ARCHIVED, event, null));
+							notifyListeners(notification);
+
+							++counts[0];
+							productIndex.commitTransaction();
+						} catch (Exception e) {
+							LOGGER.log(Level.WARNING, "[" + getName()
+									+ "] exception archiving event "
+									+ event.getEventId() + ", rolling back", e);
+							productIndex.rollbackTransaction();
+						}
+					}
+				} catch (Exception e) {
+					LOGGER.log(Level.WARNING, "[" + getName()
+							+ "] exception running event archive policy ("
+							+ policy.getName() + ") ", e);
+				}
 			}
 
+			if (policy instanceof ProductArchivePolicy) {
+				ProductArchivePolicy productPolicy = (ProductArchivePolicy) policy;
+
+				// -- Purge expired products for this policy -- //
+				LOGGER.fine("[" + getName()
+						+ "] running product archive policy ("
+						+ policy.getName() + ")");
+
+				try {
+					// Get a list of those products
+					List<ProductSummary> expiredProducts;
+
+					if (productPolicy.isOnlyUnassociated()) {
+						expiredProducts = productIndex
+								.getUnassociatedProducts(query);
+					} else {
+						expiredProducts = productIndex.getProducts(query);
+					}
+
+					// Loop over list of expired products and remove each one
+					Iterator<ProductSummary> productIter = expiredProducts
+							.iterator();
+					while (productIter.hasNext()) {
+						ProductSummary product = productIter.next();
+
+						LOGGER.info("[" + getName() + "] archiving product "
+								+ product.getId().toString());
+						productIndex.beginTransaction();
+						try {
+							removeSummary(product);
+
+							// Notify of the product archived
+							IndexerEvent notification = new IndexerEvent(this);
+							notification.setSummary(product);
+							notification.addIndexerChange(new IndexerChange(
+									IndexerChange.PRODUCT_ARCHIVED, null, null));
+							notifyListeners(notification);
+
+							++counts[1];
+							productIndex.commitTransaction();
+						} catch (Exception e) {
+							LOGGER.log(Level.WARNING, "[" + getName()
+									+ "] exception archiving event "
+									+ product.getId().toString() + ", rolling back", e);
+							productIndex.rollbackTransaction();
+						}
+					}
+				} catch (Exception e) {
+					LOGGER.log(Level.WARNING, "[" + getName()
+							+ "] exception running product archive policy ("
+							+ policy.getName() + ")", e);
+				}
+
+			}
 		}
 
 		return counts;
 	}
 
 	/**
-	 * Run an archive policy.
-	 *
-	 * Calls {@link #runProductArchivePolicy(ProductArchivePolicy)} instead for
-	 * product archive policies.
-	 *
-	 * Otherwise, runs multiple productIndex transactions to incrementally
-	 * remove events matching policy..
-	 *
-	 * @param policy
-	 * @return
-	 * @throws Exception
-	 */
-	protected int runArchivePolicy(final ArchivePolicy policy) throws Exception {
-		if (policy instanceof ProductArchivePolicy) {
-			return runProductArchivePolicy((ProductArchivePolicy) policy);
-		}
-
-		int count = 0;
-		final ProductIndexQuery query = policy.getIndexQuery();
-
-		// loop over query with limit for smaller transactions
-		query.setLimit(100);
-		while (true) {
-			List<Event> expiredEvents;
-			productIndex.beginTransaction();
-			try {
-				// Get a list of those events
-				expiredEvents = productIndex.getEvents(query);
-
-				// Remove events
-				for (final Event event : expiredEvents) {
-					LOGGER.info("[" + getName() + "] archiving event " + event.getEventId());
-					event.log(LOGGER);
-
-					removeEvent(event);
-					count += 1;
-				}
-
-				productIndex.commitTransaction();
-				if (expiredEvents.size() == 0) {
-					// no more events to remove
-					break;
-				}
-			} catch (Exception e) {
-				// something went wrong, rollback and stop
-				productIndex.rollbackTransaction();
-				throw e;
-			}
-
-			// notify listeners if removed successfully; outside transaction
-			for (final Event event : expiredEvents) {
-				IndexerEvent notification = new IndexerEvent(this);
-				notification.setSummary(null);
-				notification.addIndexerChange(new IndexerChange(
-						IndexerChange.EVENT_ARCHIVED, event, null));
-				notifyListeners(notification);
-			}
-		}
-		return count;
-	}
-
-	/**
-	 * Run a product archive policy.
-	 *
-	 * Runs multiple productIndex transactions to incrementally
-	 * remove products matching policy..
-	 *
-	 * @param policy
-	 * @return
-	 * @throws Exception
-	 */
-	protected int runProductArchivePolicy(final ProductArchivePolicy policy)
-			throws Exception {
-		int count = 0;
-		final ProductIndexQuery query = policy.getIndexQuery();
-
-		// loop over query with limit for smaller transactions
-		query.setLimit(500);
-		while (true) {
-			List<ProductSummary> expiredProducts;
-			productIndex.beginTransaction();
-			try {
-				// Get a list of those products
-				if (policy.isOnlyUnassociated()) {
-					expiredProducts = productIndex.getUnassociatedProducts(query);
-				} else {
-					expiredProducts = productIndex.getProducts(query);
-				}
-
-				for (final ProductSummary product : expiredProducts) {
-					LOGGER.info("[" + getName() + "]"
-							+ " archiving product " + product.getId().toString());
-					removeSummary(product);
-					count += 1;
-				}
-
-				productIndex.commitTransaction();
-				if (expiredProducts.size() == 0) {
-					// no more products to remove
-					break;
-				}
-			} catch (Exception e) {
-				// something went wrong, rollback and stop
-				productIndex.rollbackTransaction();
-				throw e;
-			}
-
-			// notify listeners if removed successfully; outside transaction
-			for (final ProductSummary product : expiredProducts) {
-				IndexerEvent notification = new IndexerEvent(this);
-				notification.setSummary(product);
-				notification.addIndexerChange(new IndexerChange(
-						IndexerChange.PRODUCT_ARCHIVED, null, null));
-				notifyListeners(notification);
-			}
-		}
-
-		return count;
-	}
-
-	/**
 	 * Removes the given event from the Indexer ProductIndex and ProductStorage.
-	 *
-	 * Should be called within productIndex transaction.
 	 *
 	 * @param event
 	 * @throws Exception
 	 *             If errors occur while removing the event
 	 */
-	protected void removeEvent(Event event) throws Exception {
+	protected synchronized void removeEvent(Event event) throws Exception {
 		// Removing an "event" from storage is really just removing all its
 		// associated products
-		for (final ProductSummary summary : event.getAllProductList()) {
+		List<ProductSummary> summaries = event.getAllProductList();
+		Iterator<ProductSummary> summaryIter = summaries.iterator();
+		while (summaryIter.hasNext()) {
+			ProductSummary summary = summaryIter.next();
 			// Remove product from storage
 			productStorage.removeProduct(summary.getId());
 			// Remove product summary from index
@@ -2107,15 +2094,14 @@ public class Indexer extends DefaultNotificationListener {
 	}
 
 	/**
-	 * Removes the given summary from the Indexer ProductIndex and ProductStorage.
-	 *
-	 * Should be called within productIndex transaction.
+	 * Removes the given summary from the Indexer ProductIndex and
+	 * ProductStorage.
 	 *
 	 * @param summary
 	 * @throws Exception
 	 *             If errors occur while removing the summary
 	 */
-	protected void removeSummary(ProductSummary summary)
+	protected synchronized void removeSummary(ProductSummary summary)
 			throws Exception {
 
 		Event event = getPrevEvent(summary);
@@ -2157,8 +2143,6 @@ public class Indexer extends DefaultNotificationListener {
 	 * latitude and longitude, and (time) time, in order to have the minimum
 	 * properties required to create a new event.
 	 *
-	 * Should be called within productIndex transaction.
-	 *
 	 * @param summary
 	 *            The product summary serving as the basis for the new event.
 	 * @return The event that is created, added and associated or null if the
@@ -2169,7 +2153,7 @@ public class Indexer extends DefaultNotificationListener {
 	 *             happen if this method is called before the summary is added
 	 *             to the ProductIndex.
 	 */
-	private Event createEvent(ProductSummary summary)
+	private synchronized Event createEvent(ProductSummary summary)
 			throws Exception {
 		if (Event.productHasOriginProperties(summary)) {
 			Event event = productIndex.addEvent(new Event());
@@ -2182,48 +2166,60 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Search for products in this index.
 	 *
-	 * Should be called within productIndex transaction.
-	 *
 	 * @param request
 	 *            the search request.
 	 * @return the search response.
 	 * @throws Exception
 	 */
-	public SearchResponse search(SearchRequest request)
+	public synchronized SearchResponse search(SearchRequest request)
 			throws Exception {
 		SearchResponse response = new SearchResponse();
 
 		// Execute each query
-		for (final SearchQuery search : request.getQueries()) {
-			final ProductIndexQuery query = search.getProductIndexQuery();
+		Iterator<SearchQuery> iter = request.getQueries().iterator();
+		while (iter.hasNext()) {
+			SearchQuery query = iter.next();
 
-			if (search instanceof EventDetailQuery) {
-				List<Event> events = productIndex.getEvents(query);
-				((EventDetailQuery) search).setResult(events);
-			} else if (search instanceof EventsSummaryQuery) {
+			if (query instanceof EventsSummaryQuery) {
 				List<EventSummary> eventSummaries = new LinkedList<EventSummary>();
-				List<Event> events = productIndex.getEvents(query);
+				Iterator<Event> events = productIndex.getEvents(
+						query.getProductIndexQuery()).iterator();
 				// convert events to event summaries
-				for (final Event event : events) {
+				while (events.hasNext()) {
+					Event event = events.next();
 					eventSummaries.add(event.getEventSummary());
 				}
-				((EventsSummaryQuery) search).setResult(eventSummaries);
-			} else if (search instanceof ProductDetailQuery) {
+				((EventsSummaryQuery) query).setResult(eventSummaries);
+			}
+
+			else if (query instanceof EventDetailQuery) {
+				List<Event> events = productIndex.getEvents(query
+						.getProductIndexQuery());
+				((EventDetailQuery) query).setResult(events);
+			}
+
+			else if (query instanceof ProductsSummaryQuery) {
+				List<ProductSummary> products = productIndex.getProducts(query
+						.getProductIndexQuery());
+				((ProductsSummaryQuery) query).setResult(products);
+			}
+
+			else if (query instanceof ProductDetailQuery) {
 				List<Product> products = new LinkedList<Product>();
+				Iterator<ProductId> ids = query.getProductIndexQuery()
+						.getProductIds().iterator();
 				// fetch products from storage
-				for (final ProductId id : query.getProductIds()) {
+				while (ids.hasNext()) {
+					ProductId id = ids.next();
 					Product product = productStorage.getProduct(id);
 					if (product != null) {
 						products.add(product);
 					}
 				}
-				((ProductDetailQuery) search).setResult(products);
-			} else if (search instanceof ProductsSummaryQuery) {
-				List<ProductSummary> products = productIndex.getProducts(query);
-				((ProductsSummaryQuery) search).setResult(products);
+				((ProductDetailQuery) query).setResult(products);
 			}
 
-			response.addResult(search);
+			response.addResult(query);
 		}
 
 		return response;

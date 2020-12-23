@@ -244,13 +244,13 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 		// queue them for processing in case they were previous missed
 		Date now = new Date();
 		int count = 0;
-		for (final Notification n : allNotifications) {
-			NotificationEvent event = new NotificationEvent(receiver, n);
+		for (final Notification notification : allNotifications) {
+			NotificationEvent event = new NotificationEvent(receiver, notification);
+			count += 1;
 			if (event.getNotification().getExpirationDate().after(now)) {
 				// still valid
 				this.notifyListeners(event, gracefulListeners);
 			}
-			count += 1;
 
 			// try to keep queue size managable during restart
 			throttleQueues(allNotifications.size() - count);
@@ -272,19 +272,12 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	public Map<String, Integer> getStatus() {
 		HashMap<String, Integer> status = new HashMap<String, Integer>();
 
-		Iterator<NotificationListener> iter = notificationListeners.keySet()
-				.iterator();
-		while (iter.hasNext()) {
-			NotificationListener listener = iter.next();
-			ExecutorService listenerExecutor = notificationListeners
-					.get(listener);
-
+		for (final NotificationListener listener : notificationListeners.keySet()) {
+			ExecutorService listenerExecutor = notificationListeners.get(listener);
 			if (listenerExecutor instanceof ThreadPoolExecutor) {
 				// check how many notifications are pending
-				BlockingQueue<Runnable> pending = ((ThreadPoolExecutor) listenerExecutor)
-						.getQueue();
-				status.put(receiver.getName() + " - " + listener.getName(),
-						pending.size());
+				int size = ((ThreadPoolExecutor) listenerExecutor).getQueue().size();
+				status.put(receiver.getName() + " - " + listener.getName(), size);
 			}
 		}
 
@@ -297,14 +290,18 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	 * @return length of longest queue, or null if no queue lengths.
 	 */
 	public Integer getMaxQueueSize() {
-		final Map<String, Integer> status = getStatus();
-		Integer maxQueueSize = null;
-		for (Integer queueSize : status.values()) {
-			if (queueSize != null && (maxQueueSize == null || queueSize > maxQueueSize)) {
-				maxQueueSize = queueSize;
+		Integer maxSize = null;
+		for (final NotificationListener listener : notificationListeners.keySet()) {
+			ExecutorService listenerExecutor = notificationListeners.get(listener);
+			if (listenerExecutor instanceof ThreadPoolExecutor) {
+				// check how many notifications are pending
+				int size = ((ThreadPoolExecutor) listenerExecutor).getQueue().size();
+				if (maxSize == null || size > maxSize) {
+					maxSize = size;
+				}
 			}
 		}
-		return maxQueueSize;
+		return maxSize;
 	}
 
 	/**
@@ -319,13 +316,13 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 
 	public void throttleQueues(Integer remaining) throws InterruptedException {
 		// try to keep queue size managable during restart
-		int maxSize = throttleStartThreshold;
+		int limit = throttleStartThreshold;
 		// track whether any throttles occurred
 		boolean throttled = false;
 
 		while (true) {
 			final Integer size = getMaxQueueSize();
-			if (size == null || size <= maxSize) {
+			if (size == null || size <= limit) {
 				// within limit
 				if (throttled) {
 					LOGGER.info("[" + getName() + "] done throttling (size = " + size + ")");
@@ -337,12 +334,13 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 			LOGGER.info("[" + getName() + "]"
 					+ " queueing throttled until below "
 					+ throttleStopThreshold
-					+ " (size = " + size + ", remaining="
-							+ (remaining == null ? "?" : remaining)
-							+ ")");
+					+ " ("
+							+ "size=" + size
+							+ ", remaining=" + (remaining == null ? "?" : remaining)
+					+ ")");
 			// too many messages queued
-			// set maxSize to stop threshold
-			maxSize = throttleStopThreshold;
+			// set limit to stop threshold
+			limit = throttleStopThreshold;
 			// wait for listener to do some processing
 			// 5s is a little low, but don't want to wait too long
 			Thread.sleep(throttleWaitInterval);

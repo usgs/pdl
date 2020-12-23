@@ -65,11 +65,9 @@ public interface ProductIndex extends Configurable {
 			throws Exception;
 
 	/**
-	 * Check whether product is in index.
+	 * Check whether index has product.
 	 *
-	 * @param id
-	 * @return
-	 * @throws Exception
+	 * May be more efficient than {@link #getProducts(ProductIndexQuery)}.
 	 */
 	public boolean hasProduct(ProductId id) throws Exception;
 
