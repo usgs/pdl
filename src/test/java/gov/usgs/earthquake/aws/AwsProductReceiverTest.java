@@ -62,11 +62,11 @@ public class AwsProductReceiverTest {
     TestSession testSession = new TestSession();
     // connect
     receiver.onOpen(testSession);
-    // enable broadcast mode
-    receiver.setProcessBroadcast(true);
-    receiver.setLastBroadcastId(10L);
+    // complete catch up process (switch to broadcast)
+    receiver.onMessage(getProductsCreatedAfter(Instant.now(), 0).toString());
 
     // receive broadcast in order
+    receiver.setLastBroadcastId(10L);
     receiver.onMessage(getNotification("broadcast", 11, Instant.now()).toString());
     Assert.assertTrue("still in broadcast mode", receiver.isProcessBroadcast());
     Assert.assertNotNull("processed broadcast", receiver.lastJsonNotification);
@@ -80,10 +80,10 @@ public class AwsProductReceiverTest {
     // receive broadcast out of order
     receiver.onMessage(getNotification("broadcast", 13, Instant.now()).toString());
     Assert.assertFalse("no longer in broadcast mode", receiver.isProcessBroadcast());
-    Assert.assertNull("did not broadcast", receiver.lastJsonNotification);
+    Assert.assertNull("did not process broadcast", receiver.lastJsonNotification);
     Assert.assertEquals("still saved broadcast id",
         Long.valueOf(13L), receiver.getLastBroadcastId());
-    String sent = testSession.waitForBasicSendText(100L);
+    String sent = testSession.waitForBasicSendText(1000L);
     Assert.assertTrue(
         "sent products_created_after",
         sent.contains("\"action\":\"products_created_after\""));

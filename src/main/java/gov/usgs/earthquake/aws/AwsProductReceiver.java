@@ -61,11 +61,18 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   protected Long lastBroadcastId = null;
   protected boolean processBroadcast = false;
 
-  /** Used to coordinate sending products_created_after message. */
-  protected boolean sendProductsCreatedAfterFlag = false;
-  protected boolean sendProductsCreatedAfterRunning = false;
-  protected Object sendProductsCreatedAfterSync = new Object();
-  protected Thread sendProductsCreatedAfterThread;
+  /** Used to coordinate catch up. */
+
+  /** Whether catch up thread should continue running. */
+  protected boolean catchUpRunning = false;
+  /** Whether catch up thread should send message when ready */
+  protected boolean catchUpSend = false;
+  /** Synchronize access to catch up state */
+  protected Object catchUpSync = new Object();
+  /** Catch up thread. */
+  protected Thread catchUpThread = null;
+  /** Whether waiting for catch up response */
+  protected boolean catchUpWait = false;
 
 
   @Override
@@ -173,15 +180,15 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   protected void onBroadcast(final JsonObject json) throws Exception {
     final JsonNotification notification = new JsonNotification(
         json.getJsonObject("notification"));
-    LOGGER.info("[" + getName() + "] onBroadcast(" + notification.getProductId() + ")");
-
     Long broadcastId = json.getJsonObject("notification").getJsonNumber("id").longValue();
+    LOGGER.fine("[" + getName() + "]"
+        + " onBroadcast(" + notification.getProductId() + ")"
+        + " sequence=" + broadcastId + ", lastSequence=" + lastBroadcastId);
+
     if (lastBroadcastId != null && broadcastId != (lastBroadcastId + 1)) {
       // sanity check, broadcast ids are expected to increment
       // if incoming broadcast is not lastBroadcastId + 1, may have missed a broadcast
-      LOGGER.warning(
-          "[" + getName() + "] broadcast ids out of sequence"
-          + " (got " + broadcastId + ", expected " + (lastBroadcastId + 1) + ")");
+      LOGGER.fine("[" + getName() + "] broadcast ids out of sequence");
 
       if (processBroadcast) {
         // not in catch up mode, switch back
@@ -248,22 +255,34 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     final int count = json.getInt("count");
     LOGGER.finer("[" + getName() + "] onProductsCreatedAfter(" + after
         + ", " + count + " products)");
-    // check whether caught up
-    if (
-        // if a broadcast received during catchup,
-        (lastBroadcast != null &&
-            // and createdAfter is at or after last broadcast
-            createdAfter.compareTo(lastBroadcast.created) >= 0)
-        // or no additional products returned
-        || (lastBroadcast == null && count == 0)
-    ) {
-      // caught up
-      LOGGER.info("[" + getName() + "] Caught up, switching to broadcast");
-      processBroadcast = true;
-    } else {
-      // keep catching up
-      sendProductsCreatedAfter();
+
+    // no longer waiting for catch up response, reset status
+    // this thread will request a new catch up message if needed
+    synchronized (catchUpSync) {
+      catchUpSend = false;
+      catchUpWait = false;
+
+      // check whether caught up
+      if (
+          // if a broadcast received during catchup,
+          (lastBroadcast != null &&
+              // and createdAfter is at or after last broadcast
+              createdAfter.compareTo(lastBroadcast.created) >= 0)
+          // or no additional products returned
+          || (lastBroadcast == null && count == 0)
+      ) {
+        // caught up
+        LOGGER.info("[" + getName() + "] Caught up, switching to broadcast");
+        processBroadcast = true;
+      } else {
+        // keep catching up
+        sendProductsCreatedAfter();
+      }
+
+      // wake up thread
+      catchUpSync.notify();
     }
+
   }
 
   /**
@@ -272,11 +291,11 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
    * @throws IOException
    */
   protected void sendProductsCreatedAfter() throws IOException {
-    synchronized(sendProductsCreatedAfterSync) {
+    synchronized (catchUpSync) {
       // set flag that we want to send products created after
-      sendProductsCreatedAfterFlag = true;
-      // wake up background thread that sends message
-      sendProductsCreatedAfterSync.notifyAll();
+      catchUpSend = true;
+      // notify send thread
+      catchUpSync.notify();
     }
   }
 
@@ -286,18 +305,19 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
    * @return started thread.
    */
   protected void startSendProductsCreatedAfterThread() {
-    if (sendProductsCreatedAfterThread != null) {
-      throw new IllegalStateException("sendProductsCreatedThread already exists");
+    if (catchUpThread != null) {
+      throw new IllegalStateException("catchUpThread already exists");
     }
-    sendProductsCreatedAfterFlag = false;
-    sendProductsCreatedAfterRunning = true;
-    sendProductsCreatedAfterThread = new Thread(() -> {
-      while (sendProductsCreatedAfterRunning) {
+    catchUpRunning = true;
+    catchUpSend = false;
+    catchUpWait = false;
+    catchUpThread = new Thread(() -> {
+      while (catchUpRunning) {
         try {
-          synchronized (sendProductsCreatedAfterSync) {
-            if (!sendProductsCreatedAfterFlag) {
+          synchronized (catchUpSync) {
+            if (!catchUpSend || catchUpWait) {
               // wait until ready to send
-              sendProductsCreatedAfterSync.wait();
+              catchUpSync.wait();
               continue;
             }
           }
@@ -305,12 +325,14 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
           // ready to send, try to keep queue size manageable
           throttleQueues();
 
-          synchronized (sendProductsCreatedAfterSync) {
+          synchronized (catchUpSync) {
             // now send actual products created after message
             try {
               _sendProductsCreatedAfter();
-              // message sent, reset flag
-              sendProductsCreatedAfterFlag = false;
+              // already sent
+              catchUpSend = false;
+              // waiting for reply
+              catchUpWait = true;
             } catch (IOException e) {
               LOGGER.log(
                   Level.WARNING,
@@ -323,21 +345,23 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
         }
       }
     });
-    sendProductsCreatedAfterThread.start();
+    catchUpThread.start();
   }
 
   protected void stopProductsCreatedAfterThread() {
     try {
-      sendProductsCreatedAfterRunning = false;
-      sendProductsCreatedAfterThread.interrupt();
-      sendProductsCreatedAfterThread.join();
+      synchronized(catchUpSync) {
+        catchUpRunning = false;
+        catchUpThread.interrupt();
+      }
+      catchUpThread.join();
     } catch (Exception e) {
       LOGGER.log(
           Level.WARNING,
-          "[" + getName() + "] exception stopping sendProductsCreatedAfterThread",
+          "[" + getName() + "] exception stopping catchUpThread",
           e);
     } finally {
-      sendProductsCreatedAfterThread = null;
+      catchUpThread = null;
     }
   }
 
