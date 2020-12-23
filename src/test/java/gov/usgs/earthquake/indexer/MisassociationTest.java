@@ -1,6 +1,7 @@
 package gov.usgs.earthquake.indexer;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -9,7 +10,6 @@ import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 import java.util.List;
 import java.util.logging.ConsoleHandler;
@@ -22,12 +22,13 @@ import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.io.ObjectProductHandler;
 import gov.usgs.earthquake.product.io.XmlProductSource;
 import gov.usgs.util.Config;
+import gov.usgs.util.FileUtils;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.logging.SimpleLogFormatter;
 
 public class MisassociationTest {
 
-	@TempDir
+	// @TempDir
 	public Path testDir;
 
 	public static final String[] TEST_PRODUCTS = {
@@ -48,6 +49,8 @@ public class MisassociationTest {
 
 	@BeforeEach
 	public void setup() throws Exception {
+		testDir = Files.createTempDirectory("misassociation-test");
+
 		// turn off tracking during test
 		ProductTracker.setTrackerEnabled(false);
 
@@ -71,8 +74,22 @@ public class MisassociationTest {
 
 	@AfterEach
 	public void teardown() throws Exception {
-		indexer.shutdown();
-		indexer = null;
+		if (indexer != null) {
+			try {
+				indexer.shutdown();
+				indexer.setDisableArchive(false);
+				indexer = null;
+			} catch (Exception e) {
+				System.err.println("Error in shutting down indexer.");
+			}
+		}
+
+		try {
+			FileUtils.deleteTree(testDir.toFile());
+		} catch (Exception e) {
+			System.err.println("Error deleting test directory");
+			e.printStackTrace();
+		}
 	}
 
 	@Test

@@ -1,6 +1,7 @@
 package gov.usgs.earthquake.indexer;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -22,6 +23,7 @@ import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.io.ObjectProductHandler;
 import gov.usgs.earthquake.product.io.XmlProductSource;
 import gov.usgs.util.Config;
+import gov.usgs.util.FileUtils;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.logging.SimpleLogFormatter;
 
@@ -43,7 +45,7 @@ public class MultipleSameSourceTest {
 		"etc/test_products/multiple_samesource/origin_nn00488366_nn_1427492772081.xml"
 	};
 
-	@TempDir
+	// @TempDir
 	public Path testDir;
 
 	private Indexer indexer;
@@ -59,6 +61,8 @@ public class MultipleSameSourceTest {
 
 	@BeforeEach
 	public void setup() throws Exception {
+		testDir = Files.createTempDirectory("multiple-same-source-test");
+
 		// turn off tracking during test
 		ProductTracker.setTrackerEnabled(false);
 
@@ -82,8 +86,22 @@ public class MultipleSameSourceTest {
 
 	@AfterEach
 	public void teardown() throws Exception {
-		indexer.shutdown();
-		indexer = null;
+		if (indexer != null) {
+			try {
+				indexer.shutdown();
+				indexer.setDisableArchive(false);
+				indexer = null;
+			} catch (Exception e) {
+				System.err.println("Error in shutting down indexer.");
+			}
+		}
+
+		try {
+			FileUtils.deleteTree(testDir.toFile());
+		} catch (Exception e) {
+			System.err.println("Error deleting test directory");
+			e.printStackTrace();
+		}
 	}
 
 	@Test

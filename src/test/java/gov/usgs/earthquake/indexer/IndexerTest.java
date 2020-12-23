@@ -13,6 +13,7 @@ import gov.usgs.earthquake.product.io.ObjectProductHandler;
 import gov.usgs.earthquake.product.io.XmlProductSource;
 import gov.usgs.util.Config;
 import gov.usgs.util.DefaultConfigurable;
+import gov.usgs.util.FileUtils;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.logging.SimpleLogFormatter;
 
@@ -20,6 +21,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,7 +39,6 @@ import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 /**
  * IndexerTest is designed to be a unit test suite for the Indexer class.
@@ -67,7 +68,7 @@ import org.junit.jupiter.api.io.TempDir;
  */
 public class IndexerTest extends DefaultConfigurable implements IndexerListener {
 
-	@TempDir
+	// @TempDir
 	public Path testDir;
 
 	/* The indexer object used to run tests. */
@@ -95,6 +96,8 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 	 */
 	@BeforeEach
 	public void setupTestEnvironment() throws Exception {
+		testDir = Files.createTempDirectory("indexer-test");
+
 		Logger.getLogger("").setLevel(Level.FINE);
 		indexer = new Indexer();
 		Config.setConfig(new Config());
@@ -154,6 +157,13 @@ public class IndexerTest extends DefaultConfigurable implements IndexerListener 
 			} catch (Exception e) {
 				System.err.println("Error in shutting down indexer.");
 			}
+		}
+
+		try {
+			FileUtils.deleteTree(testDir.toFile());
+		} catch (Exception e) {
+			System.err.println("Error deleting test directory");
+			e.printStackTrace();
 		}
 	}
 
