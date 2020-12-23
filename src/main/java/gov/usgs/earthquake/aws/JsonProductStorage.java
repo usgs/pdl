@@ -1,6 +1,8 @@
 package gov.usgs.earthquake.aws;
 
 import java.io.ByteArrayInputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -54,8 +56,12 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
   public static final String DEFAULT_TABLE = "product";
   public static final String DEFAULT_URL = "jdbc:sqlite:json_product_index.db";
 
+  /** JDBC driver classname. */
+  private String driver;
   /** Database table name. */
   private String table;
+  /** JDBC database connect url. */
+  private String url;
 
   /**
    * Create a JsonProductStorage using defaults.
@@ -76,24 +82,38 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
    */
   public JsonProductStorage(
       final String driver, final String url, final String table) {
-    super(driver, url);
+    this.driver = driver;
     this.table = table;
+    this.url = url;
   }
 
+  public String getDriver() { return this.driver; }
   public String getTable() { return this.table; }
+  public String getUrl() { return this.url; }
+  public void setDriver(final String driver) { this.driver = driver; }
   public void setTable(final String table) { this.table = table; }
+  public void setUrl(final String url) { this.url = url; }
 
   @Override
   public void configure(final Config config) throws Exception {
-    super.configure(config);
-    if (getDriver() == null) { setDriver(DEFAULT_DRIVER); }
-    if (getUrl() == null) { setUrl(DEFAULT_URL); }
-
-    setTable(config.getProperty("table", DEFAULT_TABLE));
-    LOGGER.config("[" + getName() + "] driver=" + getDriver());
-    LOGGER.config("[" + getName() + "] networkTimeout=" + getNetworkTimeout());
-    LOGGER.config("[" + getName() + "] table=" + getTable());
+    driver = config.getProperty("driver", DEFAULT_DRIVER);
+    LOGGER.config("[" + getName() + "] driver=" + driver);
+    table = config.getProperty("table", DEFAULT_TABLE);
+    LOGGER.config("[" + getName() + "] table=" + table);
+    url = config.getProperty("url", DEFAULT_URL);
     // do not log url, it may contain user/pass
+  }
+
+  /**
+   * Connect to database.
+   *
+   * Implements abstract JDBCConnection method.
+   */
+  @Override
+  protected Connection connect() throws Exception {
+    // load driver if needed
+    Class.forName(driver);
+    return DriverManager.getConnection(url);
   }
 
   /**
@@ -146,7 +166,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     try (final Statement statement = getConnection().createStatement()) {
       String autoIncrement = "";
       String engine = "";
-      if (getDriver().contains("mysql")) {
+      if (driver.contains("mysql")) {
         autoIncrement = " AUTO_INCREMENT";
         engine = " ENGINE=innodb CHARSET=utf8";
       }
@@ -185,7 +205,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
    * @return product if found, otherwise null.
    */
   @Override
-  public Product getProduct(ProductId id) throws Exception {
+  public synchronized Product getProduct(ProductId id) throws Exception {
     Product product = null;
     final String sql = "SELECT * FROM " + this.table
         + " WHERE source=? AND type=? AND code=? AND updatetime=?";
@@ -233,7 +253,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
    *     if product already in storage.
    */
   @Override
-  public ProductId storeProduct(Product product) throws Exception {
+  public synchronized ProductId storeProduct(Product product) throws Exception {
     // prepare statement
     beginTransaction();
     try (
@@ -303,7 +323,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
    * Remove product from storage.
    */
   @Override
-  public void removeProduct(ProductId id) throws Exception {
+  public synchronized void removeProduct(ProductId id) throws Exception {
     // prepare statement
     final String sql = "DELETE FROM " + this.table
           + " WHERE source=? AND type=? AND code=? AND updatetime=?";

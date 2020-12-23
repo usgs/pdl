@@ -390,7 +390,7 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	 *
 	 * @see gov.usgs.util.Configurable
 	 */
-	public void shutdown() throws Exception {
+	public synchronized void shutdown() throws Exception {
 		// Close the DML statements
 		try {
 			_dml_addNotification.close();
@@ -513,8 +513,11 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	 *             if an error occurs while storing the notification.
 	 * @see gov.usgs.earthquake.distribution.NotificationIndex
 	 */
-	public void addNotification(Notification notification)
+	public synchronized void addNotification(Notification notification)
 			throws Exception {
+		// verify connection
+		this.verifyConnection();
+
 		// Read the product id from the notification
 		ProductId productId = notification.getProductId();
 
@@ -531,35 +534,45 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 				? notification.getTrackerURL().toString()
 				: "";
 
-		beginTransaction();
+		// Set the values we parsed above
+		_dml_addNotification.setString(1, productId.getSource());
+		_dml_addNotification.setString(2, productId.getType());
+		_dml_addNotification.setString(3, productId.getCode());
+		_dml_addNotification.setDate(4, updateDate);
+		_dml_addNotification.setDate(5, expirationDate);
+		_dml_addNotification.setString(6, trackerUrl);
+
+		// If this is a URL notification, set the product URL value as well
+		if (notification instanceof URLNotification) {
+			String productUrl = ((URLNotification) notification)
+					.getProductURL().toString();
+			_dml_addNotification.setString(7, productUrl);
+		} else {
+			_dml_addNotification.setString(7, "");
+		}
+
+		// already verified above
+		Connection conn = getConnection();
 		try {
-			// Set the values we parsed above
-			_dml_addNotification.setString(1, productId.getSource());
-			_dml_addNotification.setString(2, productId.getType());
-			_dml_addNotification.setString(3, productId.getCode());
-			_dml_addNotification.setDate(4, updateDate);
-			_dml_addNotification.setDate(5, expirationDate);
-			_dml_addNotification.setString(6, trackerUrl);
-
-			// If this is a URL notification, set the product URL value as well
-			if (notification instanceof URLNotification) {
-				String productUrl = ((URLNotification) notification)
-						.getProductURL().toString();
-				_dml_addNotification.setString(7, productUrl);
-			} else {
-				_dml_addNotification.setString(7, "");
-			}
-
+			// Begin a transaction
+			conn.setAutoCommit(false);
 			// Execute the query
 			_dml_addNotification.executeUpdate();
-			commitTransaction();
+			// Commit the changes
+			conn.setAutoCommit(true);
 		} catch (SQLException sqx) {
 			// Undo any changes that may be in an unknown state. Ignore
 			// exceptions that occur in this call since we're already throwing
 			// an exception
-			rollbackTransaction();
+			try {
+				conn.rollback();
+			} catch (SQLException ex) {
+			}
+
 			// Re-throw this exception
 			throw sqx;
+		} finally {
+			conn.setAutoCommit(true);
 		}
 	}
 
@@ -574,8 +587,10 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	 *             if an error occurs while removing the notification.
 	 * @see gov.usgs.earthquake.distribution.NotificationIndex
 	 */
-	public void removeNotification(Notification notification)
+	public synchronized void removeNotification(Notification notification)
 			throws Exception {
+		// verify connection
+		this.verifyConnection();
 
 		// Read the product id from the notification
 		ProductId productId = notification.getProductId();
@@ -590,39 +605,45 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 				? notification.getTrackerURL().toString()
 				: "";
 
-		// start transaction
-		beginTransaction();
+		// Set the values we parsed above
+		_dml_removeNotification.setString(1, productId.getSource());
+		_dml_removeNotification.setString(2, productId.getType());
+		_dml_removeNotification.setString(3, productId.getCode());
+		_dml_removeNotification.setDate(4, updateDate);
+		_dml_removeNotification.setDate(5, expirationDate);
+		_dml_removeNotification.setString(6, trackerUrl);
+
+		// If this is a URL notification, set the product URL value as well
+		if (notification instanceof URLNotification) {
+			String productUrl = ((URLNotification) notification)
+					.getProductURL().toString();
+			_dml_removeNotification.setString(7, productUrl);
+		} else {
+			// _dml_removeNotification.setNull(7, java.sql.Types.VARCHAR);
+			_dml_removeNotification.setString(7, "");
+		}
+
+		// already verified above
+		Connection conn = getConnection();
 		try {
-			// Set the values we parsed above
-			_dml_removeNotification.setString(1, productId.getSource());
-			_dml_removeNotification.setString(2, productId.getType());
-			_dml_removeNotification.setString(3, productId.getCode());
-			_dml_removeNotification.setDate(4, updateDate);
-			_dml_removeNotification.setDate(5, expirationDate);
-			_dml_removeNotification.setString(6, trackerUrl);
-
-			// If this is a URL notification, set the product URL value as well
-			if (notification instanceof URLNotification) {
-				String productUrl = ((URLNotification) notification)
-						.getProductURL().toString();
-				_dml_removeNotification.setString(7, productUrl);
-			} else {
-				// _dml_removeNotification.setNull(7, java.sql.Types.VARCHAR);
-				_dml_removeNotification.setString(7, "");
-			}
-
+			// Begin a transaction
+			conn.setAutoCommit(false);
 			// Execute the query
 			_dml_removeNotification.executeUpdate();
-
-			commitTransaction();
+			// Commit the changes
+			conn.setAutoCommit(true);
 		} catch (SQLException sqx) {
 			// Undo any changes that may be in an unknown state. Ignore
 			// exceptions that occur in this call since we're already throwing
 			// an exception
-			rollbackTransaction();
-
+			try {
+				conn.rollback();
+			} catch (SQLException ex) {
+			}
 			// Re-throw this exception
 			throw sqx;
+		} finally {
+			conn.setAutoCommit(true);
 		}
 	}
 
@@ -638,27 +659,22 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	 *             if an error occurs while searching the index.
 	 * @see gov.usgs.earthquake.distribution.NotificationIndex
 	 */
-	public List<Notification> findNotifications(ProductId id) throws Exception {
+	public synchronized List<Notification> findNotifications(ProductId id)
+			throws Exception {
+		// verify connection
+		this.verifyConnection();
+
 		String source = id.getSource();
 		String type = id.getType();
 		String code = id.getCode();
 		java.sql.Date update = new java.sql.Date(id.getUpdateTime().getTime());
 
-		// start transaction
-		this.beginTransaction();
-		try {
-			_query_findNotificationsById.setString(1, source);
-			_query_findNotificationsById.setString(2, type);
-			_query_findNotificationsById.setString(3, code);
-			_query_findNotificationsById.setDate(4, update);
+		_query_findNotificationsById.setString(1, source);
+		_query_findNotificationsById.setString(2, type);
+		_query_findNotificationsById.setString(3, code);
+		_query_findNotificationsById.setDate(4, update);
 
-			List<Notification> n =  getNotifications(_query_findNotificationsById);
-			commitTransaction();
-			return n;
-		} catch (Exception e) {
-			rollbackTransaction();
-			throw e;
-		}
+		return getNotifications(_query_findNotificationsById);
 	}
 
 	/**
@@ -682,25 +698,20 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	 *             if an error occurs while searching the index.
 	 * @see gov.usgs.earthquake.distribution.NotificationIndex
 	 */
-	public List<Notification> findNotifications(String source,
+	public synchronized List<Notification> findNotifications(String source,
 			String type, String code) throws Exception {
+		// verify connection
+		this.verifyConnection();
+
 		source = (source == null) ? "%" : source.toUpperCase();
 		type = (type == null) ? "%" : type.toUpperCase();
 		code = (code == null) ? "%" : code.toUpperCase();
 
-		beginTransaction();
-		try {
-			_query_findNotificationsByData.setString(1, source);
-			_query_findNotificationsByData.setString(2, type);
-			_query_findNotificationsByData.setString(3, code);
+		_query_findNotificationsByData.setString(1, source);
+		_query_findNotificationsByData.setString(2, type);
+		_query_findNotificationsByData.setString(3, code);
 
-			final List<Notification> n = getNotifications(_query_findNotificationsByData);
-			commitTransaction();
-			return n;
-		} catch (Exception e) {
-			rollbackTransaction();
-			throw e;
-		}
+		return getNotifications(_query_findNotificationsByData);
 	}
 
 	/**
@@ -728,13 +739,19 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	 * @throws Exception
 	 *             if an error occurs while searching the index.
 	 */
-	public List<Notification> findNotifications(
+	public synchronized List<Notification> findNotifications(
 			List<String> sources, List<String> types, List<String> codes)
 			throws Exception {
+		// verify connection
+		this.verifyConnection();
+
 		List<Notification> n = null;
 
-		beginTransaction();
+		Connection conn = getConnection();
 		try {
+			// begin a transaction
+			conn.setAutoCommit(false);
+
 			// Create a temporary lookup table
 			_dml_createTmpTable.executeUpdate();
 
@@ -772,10 +789,11 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 			// is this a problem? reading with uncommitted writes?
 			PreparedStatement ps = getCorrectStatement(sources, types, codes);
 			n = getNotifications(ps);
-			commitTransaction();
-		} catch (Exception e) {
-			rollbackTransaction();
-			throw e;
+		} finally {
+			conn.rollback();
+			// todo: this looks funky, but it's re-enabling autoCommit, which is
+			// needed for selects to not block other transactions
+			conn.setAutoCommit(true);
 		}
 
 		return n;
@@ -791,22 +809,18 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	 *             if an error occurs while searching the index.
 	 * @see gov.usgs.earthquake.distribution.NotificationIndex
 	 */
-	public List<Notification> findExpiredNotifications() throws Exception {
+	public synchronized List<Notification> findExpiredNotifications()
+			throws Exception {
+		// verify connection
+		this.verifyConnection();
+
 		// Create a new calendar object set to current date/time
 		java.sql.Date curDate = new java.sql.Date((new Date()).getTime());
 
-		beginTransaction();
-		try {
-			// Bind the expiration date parameter and run the query
-			_query_findExpiredNotifications.setDate(1, curDate);
+		// Bind the expiration date parameter and run the query
+		_query_findExpiredNotifications.setDate(1, curDate);
 
-			List<Notification> n = getNotifications(_query_findExpiredNotifications);
-			commitTransaction();
-			return n;
-		} catch (Exception e) {
-			rollbackTransaction();
-			throw e;
-		}
+		return getNotifications(_query_findExpiredNotifications);
 	}
 
 	/**
@@ -828,11 +842,13 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	 * @throws Exception
 	 *             If a <code>SQLException</code> occurs.
 	 */
-	protected List<Notification> getNotifications(PreparedStatement ps)
+	protected synchronized List<Notification> getNotifications(PreparedStatement ps)
 			throws Exception {
 		List<Notification> n = new ArrayList<Notification>();
+		ResultSet rs = null;
 
-		try (final ResultSet rs = ps.executeQuery()) {
+		try {
+			rs = ps.executeQuery();
 			while (rs.next()) {
 				n.add(parseNotification(rs.getString(PRODUCT_SOURCE_COLUMN),
 						rs.getString(PRODUCT_TYPE_COLUMN),
@@ -841,6 +857,12 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 						rs.getDate(EXPIRATION_DATE_COLUMN),
 						rs.getString(TRACKER_URL_COLUMN),
 						rs.getString(PRODUCT_URL_COLUMN)));
+			}
+		} finally {
+			try {
+				rs.close();
+			} catch (Exception e) {
+				//ignore
 			}
 		}
 

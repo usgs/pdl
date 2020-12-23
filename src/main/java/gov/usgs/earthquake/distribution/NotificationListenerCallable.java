@@ -51,11 +51,4 @@ public class NotificationListenerCallable implements Callable<Void> {
 		}
 	}
 
-	/**
-	 * Displayed in logs when timeout occurs.
-	 */
-	public String toString() {
-		return this.listener.getName()
-				+ ": " + event.getNotification().getProductId().toString();
-	}
 }

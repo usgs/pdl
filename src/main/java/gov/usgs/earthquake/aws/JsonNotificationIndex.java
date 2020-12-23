@@ -2,6 +2,8 @@ package gov.usgs.earthquake.aws;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,6 +18,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import javax.json.Json;
+
 
 import gov.usgs.earthquake.distribution.DefaultNotification;
 import gov.usgs.earthquake.distribution.Notification;
@@ -65,8 +68,12 @@ public class JsonNotificationIndex
   public static final String DEFAULT_URL =
       "jdbc:sqlite:json_notification_index.db";
 
+  /** JDBC driver classname. */
+  private String driver;
   /** Database table name. */
   private String table;
+  /** JDBC database connect url. */
+  private String url;
 
   /**
    * Construct a JsonNotification using defaults.
@@ -87,24 +94,38 @@ public class JsonNotificationIndex
    */
   public JsonNotificationIndex(
       final String driver, final String url, final String table) {
-    super(driver, url);
+    this.driver = driver;
     this.table = table;
+    this.url = url;
   }
 
+  public String getDriver() { return this.driver; }
   public String getTable() { return this.table; }
+  public String getUrl() { return this.url; }
+  public void setDriver(final String driver) { this.driver = driver; }
   public void setTable(final String table) { this.table = table; }
+  public void setUrl(final String url) { this.url = url; }
 
   @Override
   public void configure(final Config config) throws Exception {
-    super.configure(config);
-    if (getDriver() == null) { setDriver(DEFAULT_DRIVER); }
-    if (getUrl() == null) { setUrl(DEFAULT_URL); }
-
-    setTable(config.getProperty("table", DEFAULT_TABLE));
-    LOGGER.config("[" + getName() + "] driver=" + getDriver());
-    LOGGER.config("[" + getName() + "] networkTimeout=" + getNetworkTimeout());
-    LOGGER.config("[" + getName() + "] table=" + getTable());
+    driver = config.getProperty("driver", DEFAULT_DRIVER);
+    LOGGER.config("[" + getName() + "] driver=" + driver);
+    table = config.getProperty("table", DEFAULT_TABLE);
+    LOGGER.config("[" + getName() + "] table=" + table);
+    url = config.getProperty("url", DEFAULT_URL);
     // do not log url, it may contain user/pass
+  }
+
+  /**
+   * Connect to database.
+   *
+   * Implements abstract JDBCConnection method.
+   */
+  @Override
+  protected Connection connect() throws Exception {
+    // load driver if needed
+    Class.forName(driver);
+    return DriverManager.getConnection(url);
   }
 
   /**
@@ -157,7 +178,7 @@ public class JsonNotificationIndex
     try (final Statement statement = getConnection().createStatement()) {
       String autoIncrement = "";
       String engine = "";
-      if (getDriver().contains("mysql")) {
+      if (driver.contains("mysql")) {
         autoIncrement = " AUTO_INCREMENT";
         engine = " ENGINE=innodb CHARSET=utf8";
       }
@@ -194,7 +215,7 @@ public class JsonNotificationIndex
    * TrackerURLs are ignored.
    */
   @Override
-  public void addNotification(Notification notification)
+  public synchronized void addNotification(Notification notification)
       throws Exception {
     // all notifications
     Instant expires = notification.getExpirationDate().toInstant();
@@ -255,7 +276,7 @@ public class JsonNotificationIndex
    * Tracker URLs are ignored.
    */
   @Override
-  public void removeNotification(Notification notification) throws Exception {
+  public synchronized void removeNotification(Notification notification) throws Exception {
     // all notifications
     Instant expires = notification.getExpirationDate().toInstant();
     ProductId id = notification.getProductId();
@@ -318,7 +339,7 @@ public class JsonNotificationIndex
    * @return list with matching notifications, empty if not found.
    */
   @Override
-  public List<Notification> findNotifications(
+  public synchronized List<Notification> findNotifications(
       String source, String type, String code) throws Exception {
     final ArrayList<Object> where = new ArrayList<Object>();
     final ArrayList<String> values = new ArrayList<String>();
@@ -377,7 +398,7 @@ public class JsonNotificationIndex
    * @return list with matching notifications, empty if not found.
    */
   @Override
-  public List<Notification> findNotifications(
+  public synchronized List<Notification> findNotifications(
       List<String> sources, List<String> types, List<String> codes)
       throws Exception {
     final ArrayList<Object> where = new ArrayList<Object>();
@@ -453,7 +474,7 @@ public class JsonNotificationIndex
    * @return list with matching notifications, empty if not found.
    */
   @Override
-  public List<Notification> findExpiredNotifications() throws Exception {
+  public synchronized List<Notification> findExpiredNotifications() throws Exception {
     final String sql = "SELECT * FROM " + this.table + " WHERE expires <= ?";
     // prepare statement
     beginTransaction();
@@ -477,6 +498,7 @@ public class JsonNotificationIndex
       }
     }
     return new ArrayList<Notification>();
+
   }
 
   /**
@@ -487,7 +509,7 @@ public class JsonNotificationIndex
    * @return list with matching notifications, empty if not found.
    */
   @Override
-  public List<Notification> findNotifications(ProductId id) throws Exception {
+  public synchronized List<Notification> findNotifications(ProductId id) throws Exception {
     final String sql = "SELECT * FROM " + this.table
         + " WHERE source=? AND type=? AND code=? AND updatetime=?";
     // prepare statement
@@ -533,8 +555,8 @@ public class JsonNotificationIndex
    *     other table.
    * @throws Exception
    */
-  public List<Notification> getMissingNotifications( final String otherTable)
-      throws Exception {
+  public synchronized List<Notification> getMissingNotifications(
+      final String otherTable) throws Exception {
     // this is used to requeue a notification index.
     // run query in a way that returns list of default notifications,
     // (by returning empty created, data, and url)
@@ -571,10 +593,8 @@ public class JsonNotificationIndex
 
   /**
    * Parse notifications from a statement ready to be executed.
-   *
-   * Should be called in a transaction.
    */
-  protected List<Notification> getNotifications(PreparedStatement ps)
+  protected synchronized List<Notification> getNotifications(PreparedStatement ps)
       throws Exception {
     final List<Notification> n = new ArrayList<Notification>();
     try (final ResultSet rs = ps.executeQuery()) {

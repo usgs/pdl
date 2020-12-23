@@ -116,7 +116,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
     this.session = session;
     // start catch up process
     try {
-      LOGGER.fine("[" + getName() + "] Starting catch up");
+      LOGGER.info("[" + getName() + "] Starting catch up");
       sendProductsCreatedAfter();
     } catch (Exception e) {
       LOGGER.log(
@@ -173,19 +173,19 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   protected void onBroadcast(final JsonObject json) throws Exception {
     final JsonNotification notification = new JsonNotification(
         json.getJsonObject("notification"));
-    LOGGER.fine("[" + getName() + "] onBroadcast(" + notification.getProductId() + ")");
+    LOGGER.info("[" + getName() + "] onBroadcast(" + notification.getProductId() + ")");
 
     Long broadcastId = json.getJsonObject("notification").getJsonNumber("id").longValue();
     if (lastBroadcastId != null && broadcastId != (lastBroadcastId + 1)) {
       // sanity check, broadcast ids are expected to increment
       // if incoming broadcast is not lastBroadcastId + 1, may have missed a broadcast
-      LOGGER.finer(
+      LOGGER.warning(
           "[" + getName() + "] broadcast ids out of sequence"
           + " (got " + broadcastId + ", expected " + (lastBroadcastId + 1) + ")");
 
       if (processBroadcast) {
         // not in catch up mode, switch back
-        LOGGER.fine("[" + getName() + "] switching to catch up mode");
+        LOGGER.info("[" + getName() + "] switching to catch up mode");
         processBroadcast = false;
         sendProductsCreatedAfter();
       }
@@ -228,7 +228,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements W
   protected void onProduct(final JsonObject json) throws Exception {
     final JsonNotification notification = new JsonNotification(
         json.getJsonObject("notification"));
-    LOGGER.fine("[" + getName() + "] onProduct(" + notification.getProductId() + ")");
+    LOGGER.info("[" + getName() + "] onProduct(" + notification.getProductId() + ")");
     onJsonNotification(notification);
   }
 

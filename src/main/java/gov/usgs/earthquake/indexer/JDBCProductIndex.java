@@ -57,6 +57,18 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	public static final String JDBC_DEFAULT_FILE = "productIndex.db";
 
 	/**
+	 * Constant used to specify what the driver property should be called in the
+	 * config file
+	 */
+	private static final String JDBC_DRIVER_PROPERTY = "driver";
+
+	/**
+	 * Constant used to specify the url property should be called in the config
+	 * file.
+	 */
+	private static final String JDBC_URL_PROPERTY = "url";
+
+	/**
 	 * Constant used to specify what the index file property should be called in
 	 * to config file
 	 */
@@ -113,6 +125,8 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	// private static final String SUMMARY_LINK_RELATION = "relation";
 	// private static final String SUMMARY_LINK_URL = "url";
 
+	private String driver;
+	private String url;
 	private String index_file;
 
 	/**
@@ -122,12 +136,13 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 */
 	public JDBCProductIndex() throws Exception {
 		// Default index file, so calling configure() isn't required
-		this(JDBC_DEFAULT_FILE);
+		index_file = JDBC_DEFAULT_FILE;
+		driver = JDBC_DEFAULT_DRIVER;
 	}
 
 	public JDBCProductIndex(final String sqliteFileName) throws Exception {
 		index_file = sqliteFileName;
-		setDriver(JDBC_DEFAULT_DRIVER);
+		driver = JDBC_DEFAULT_DRIVER;
 	}
 
 	// ____________________________________
@@ -142,10 +157,15 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 */
 	@Override
 	public void configure(Config config) throws Exception {
-		super.configure(config);
-		if (getDriver() == null) { setDriver(JDBC_DEFAULT_DRIVER); }
 
-		index_file = config.getProperty(JDBC_FILE_PROPERTY, JDBC_DEFAULT_FILE);
+		driver = config.getProperty(JDBC_DRIVER_PROPERTY);
+		index_file = config.getProperty(JDBC_FILE_PROPERTY);
+		url = config.getProperty(JDBC_URL_PROPERTY);
+
+		if (driver == null || "".equals(driver)) {
+			driver = JDBC_DEFAULT_DRIVER;
+		}
+
 		if (index_file == null || "".equals(index_file)) {
 			index_file = JDBC_DEFAULT_FILE;
 		}
@@ -159,8 +179,9 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 */
 	@Override
 	public Connection connect() throws Exception {
-		// If they are using the sqlite driver, we need to try to create the file
-		if (getUrl() == null && getDriver().equals(JDBCUtils.SQLITE_DRIVER_CLASSNAME)) {
+		// If they are using the sqlite driver, we need to try to create the
+		// file
+		if (driver.equals(JDBCUtils.SQLITE_DRIVER_CLASSNAME)) {
 			// Make sure file exists or copy it out of the JAR
 			File indexFile = new File(index_file);
 			if (!indexFile.exists()) {
@@ -177,10 +198,12 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 			}
 			indexFile = null;
 
-			setUrl(JDBC_CONNECTION_PREFIX + index_file);
+			// Build the JDBC url
+			url = JDBC_CONNECTION_PREFIX + index_file;
+			driver = JDBCUtils.SQLITE_DRIVER_CLASSNAME;
 		}
 
-		return super.connect();
+		return JDBCUtils.getConnection(driver, url);
 	}
 
 	/**
@@ -192,7 +215,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @return List of Event objects
 	 */
 	@Override
-	public List<Event> getEvents(ProductIndexQuery query)
+	public synchronized List<Event> getEvents(ProductIndexQuery query)
 			throws Exception {
 		// map of events (index id => event), so products can be added incrementally
 		final Map<Long, Event> events = new HashMap<>();
@@ -251,7 +274,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @return Event object with eventId set to the database id
 	 */
 	@Override
-	public Event addEvent(Event event) throws Exception {
+	public synchronized Event addEvent(Event event) throws Exception {
 		Event e = null;
 
 		final String sql = "INSERT INTO event (created) VALUES (?)";
@@ -294,7 +317,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *         method call
 	 */
 	@Override
-	public List<ProductId> removeEvent(Event event)
+	public synchronized List<ProductId> removeEvent(Event event)
 			throws Exception {
 
 		Long id = event.getIndexId();
@@ -338,7 +361,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *             when query event search type is SEARCH_EVENT_PREFERRED.
 	 */
 	@Override
-	public List<ProductSummary> getUnassociatedProducts(
+	public synchronized List<ProductSummary> getUnassociatedProducts(
 			ProductIndexQuery query) throws Exception {
 		if (query.getEventSearchType() == ProductIndexQuery.SEARCH_EVENT_PREFERRED) {
 			throw new IllegalArgumentException(
@@ -379,7 +402,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *             when query event search type is SEARCH_EVENT_PREFERRED.
 	 */
 	@Override
-	public List<ProductSummary> getProducts(ProductIndexQuery query)
+	public synchronized List<ProductSummary> getProducts(ProductIndexQuery query)
 			throws Exception {
 		// load full product summaries by default
 		return getProducts(query, true);
@@ -394,7 +417,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *     whether to call {@link #loadProductSummaries(List)},
 	 *     which loads links and properties with additional queries.
 	 */
-	public List<ProductSummary> getProducts(ProductIndexQuery query, final boolean loadDetails)
+	public synchronized List<ProductSummary> getProducts(ProductIndexQuery query, final boolean loadDetails)
 			throws Exception {
 		final List<String> clauseList = buildProductClauses(query);
 		final String sql = buildProductQuery(clauseList);
@@ -419,32 +442,6 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	}
 
 	/**
-	 * Check whether product summary is in index.
-	 *
-	 * @param id
-	 *     product to search.
-	 */
-	public boolean hasProduct(final ProductId id) throws Exception {
-		final String sql = "SELECT id FROM productSummary"
-				+ " WHERE source=? AND type=? AND code=? AND updateTime=?";
-		try (
-			final PreparedStatement statement = getConnection().prepareStatement(sql);
-		) {
-			statement.setString(1, id.getSource());
-			statement.setString(2, id.getType());
-			statement.setString(3, id.getCode());
-			statement.setLong(4, id.getUpdateTime().getTime());
-
-			try (
-				final ResultSet results = statement.executeQuery();
-			) {
-				// return true if there is a matching row, false otherwise
-				return results.next();
-			}
-		}
-	}
-
-	/**
 	 * Add a product summary to the database
 	 *
 	 * @param summary
@@ -454,7 +451,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @throws Exception
 	 */
 	@Override
-	public ProductSummary addProductSummary(ProductSummary summary)
+	public synchronized ProductSummary addProductSummary(ProductSummary summary)
 			throws Exception {
 		// Add values to the prepared statement
 		long productId = 0;
@@ -565,7 +562,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *            ProductSummary object to delete
 	 */
 	@Override
-	public ProductId removeProductSummary(ProductSummary summary)
+	public synchronized ProductId removeProductSummary(ProductSummary summary)
 			throws Exception {
 		List<ProductId> removed = removeProductSummaries(Arrays.asList(summary));
 		return removed.get(0);
@@ -581,7 +578,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @return Copy of event with summary added to the event's products list
 	 */
 	@Override
-	public Event addAssociation(Event event, ProductSummary summary)
+	public synchronized Event addAssociation(Event event, ProductSummary summary)
 			throws Exception {
 
 		if (event.getIndexId() == null || summary.getIndexId() == null) {
@@ -629,7 +626,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @param summary
 	 */
 	@Override
-	public Event removeAssociation(Event event,
+	public synchronized Event removeAssociation(Event event,
 			ProductSummary summary) throws Exception {
 
 		// Deleting the association is really just removing the foreign key
@@ -1030,7 +1027,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 						",")
 				+ ")";
 		try (
-			final PreparedStatement statement = getConnection().prepareStatement(linkSql);
+			final PreparedStatement statement = verifyConnection().prepareStatement(linkSql);
 			final ResultSet results = statement.executeQuery();
 		) {
 			while (results.next()) {
@@ -1052,7 +1049,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 				+ ")";
 		try (
 			final PreparedStatement statement =
-					getConnection().prepareStatement(propertySql);
+					verifyConnection().prepareStatement(propertySql);
 			final ResultSet results = statement.executeQuery();
 		) {
 			while (results.next()) {
@@ -1121,7 +1118,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		return p;
 	}
 
-	public List<ProductId> removeProductSummaries(
+	public synchronized List<ProductId> removeProductSummaries(
 			final List<ProductSummary> summaries) throws Exception {
 		// index by id
 		final ArrayList<ProductId> ids = new ArrayList<>();
@@ -1157,7 +1154,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		for (final String sql : sqls) {
 			try (
 				final PreparedStatement statement =
-						getConnection().prepareStatement(sql + idsIn);
+						verifyConnection().prepareStatement(sql + idsIn);
 			) {
 				int rows = statement.executeUpdate();
 				LOGGER.log(Level.FINER, "[" + getName() + "] removed " + rows + " rows");
@@ -1175,7 +1172,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @param properties
 	 * @throws SQLException
 	 */
-	protected void addProductProperties(final long productId,
+	protected synchronized void addProductProperties(final long productId,
 			final Map<String, String> properties) throws SQLException {
 		// Loop through the properties list and add them all to the database
 		final String sql = "INSERT INTO productSummaryProperty"
@@ -1208,7 +1205,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *            Map of relations to URIs
 	 * @throws SQLException
 	 */
-	protected void addProductLinks(long productId,
+	protected synchronized void addProductLinks(long productId,
 			Map<String, List<URI>> links) throws SQLException {
 		// Loop through the properties list and add them all to the database
 		final String sql = "INSERT INTO productSummaryLink"
@@ -1284,7 +1281,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *            the events that have been updated.
 	 */
 	@Override
-	public void eventsUpdated(List<Event> events) throws Exception {
+	public synchronized void eventsUpdated(List<Event> events) throws Exception {
 		Long indexId = null;
 
 		final String deletedSql = "UPDATE event SET status=? WHERE id=?";

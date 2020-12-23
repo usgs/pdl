@@ -1,6 +1,8 @@
 package gov.usgs.earthquake.aws;
 
 import java.io.ByteArrayInputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -38,8 +40,12 @@ public class TrackingIndex extends JDBCConnection {
   public static final String DEFAULT_TABLE = "tracking";
   public static final String DEFAULT_URL = "jdbc:sqlite:json_tracking_index.db";
 
+  /** JDBC driver classname. */
+  private String driver;
   /** Database table name. */
   private String table;
+  /** JDBC database connect url. */
+  private String url;
 
   /**
    * Construct a TrackingIndex using defaults.
@@ -60,24 +66,38 @@ public class TrackingIndex extends JDBCConnection {
    */
   public TrackingIndex(
       final String driver, final String url, final String table) {
-    super(driver, url);
+    this.driver = driver;
     this.table = table;
+    this.url = url;
   }
 
+  public String getDriver() { return this.driver; }
   public String getTable() { return this.table; }
+  public String getUrl() { return this.url; }
+  public void setDriver(final String driver) { this.driver = driver; }
   public void setTable(final String table) { this.table = table; }
+  public void setUrl(final String url) { this.url = url; }
 
   @Override
   public void configure(final Config config) throws Exception {
-    super.configure(config);
-    if (getDriver() == null) { setDriver(DEFAULT_DRIVER); }
-    if (getUrl() == null) { setUrl(DEFAULT_URL); }
-
-    setTable(config.getProperty("table", DEFAULT_TABLE));
-    LOGGER.config("[" + getName() + "] driver=" + getDriver());
-    LOGGER.config("[" + getName() + "] networkTimeout=" + getNetworkTimeout());
-    LOGGER.config("[" + getName() + "] table=" + getTable());
+    driver = config.getProperty("driver", DEFAULT_DRIVER);
+    LOGGER.config("[" + getName() + "] driver=" + driver);
+    table = config.getProperty("table", DEFAULT_TABLE);
+    LOGGER.config("[" + getName() + "] table=" + table);
+    url = config.getProperty("url", DEFAULT_URL);
     // do not log url, it may contain user/pass
+  }
+
+  /**
+   * Connect to database.
+   *
+   * Implements abstract JDBCConnection method.
+   */
+  @Override
+  protected Connection connect() throws Exception {
+    // load driver if needed
+    Class.forName(driver);
+    return DriverManager.getConnection(url);
   }
 
   /**
@@ -129,7 +149,7 @@ public class TrackingIndex extends JDBCConnection {
     beginTransaction();
     try (final Statement statement = getConnection().createStatement()) {
       String autoIncrement = "";
-      if (getDriver().contains("mysql")) {
+      if (driver.contains("mysql")) {
         autoIncrement = "AUTO_INCREMENT";
       }
       statement.executeUpdate(
@@ -155,7 +175,7 @@ public class TrackingIndex extends JDBCConnection {
    *     name of tracking data.
    * @return null if data not found.
    */
-  public JsonObject getTrackingData(final String name) throws Exception {
+  public synchronized JsonObject getTrackingData(final String name) throws Exception {
     JsonObject data = null;
 
     final String sql = "SELECT * FROM " + this.table + " WHERE name=?";
@@ -190,7 +210,7 @@ public class TrackingIndex extends JDBCConnection {
    *     name of tracking data.
    * @throws Exception
    */
-  public void removeTrackingData(final String name) throws Exception {
+  public synchronized void removeTrackingData(final String name) throws Exception {
     final String sql = "DELETE FROM " + this.table + " WHERE name=?";
     // create schema
     beginTransaction();
@@ -214,7 +234,7 @@ public class TrackingIndex extends JDBCConnection {
    *     data to store.
    * @throws Exception
    */
-  public void setTrackingData(final String name, final JsonObject data) throws Exception {
+  public synchronized void setTrackingData(final String name, final JsonObject data) throws Exception {
     final String update = "UPDATE " + this.table + " SET data=? WHERE name=?";
     // usually updated, try update first
     beginTransaction();
