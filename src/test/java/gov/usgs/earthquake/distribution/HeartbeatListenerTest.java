@@ -2,10 +2,9 @@ package gov.usgs.earthquake.distribution;
 
 import gov.usgs.util.Config;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class HeartbeatListenerTest {
-
 
 	/**
 	 * JSON Heartbeat Listener test should pass
@@ -13,7 +12,7 @@ public class HeartbeatListenerTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void testJSONHeartbeatListener() throws Exception {
+	public synchronized void testJSONHeartbeatListener() throws Exception {
 		HeartbeatListener objListener;
 
 		try {
@@ -57,7 +56,7 @@ public class HeartbeatListenerTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void testWriteHeartbeat() throws Exception {
+	public synchronized void testWriteHeartbeat() throws Exception {
 		HeartbeatListener objListener;
 
 		try {
@@ -97,7 +96,7 @@ public class HeartbeatListenerTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void testManualClearHeartbeat() throws Exception {
+	public synchronized void testManualClearHeartbeat() throws Exception {
 		HeartbeatListener objListener;
 
 		Config config = new Config();
@@ -138,7 +137,7 @@ public class HeartbeatListenerTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void testAutoClearHeartbeat() throws Exception {
+	public synchronized void testAutoClearHeartbeat() throws Exception {
 		HeartbeatListener objListener;
 
 		long delayMillSec = 5000L;
