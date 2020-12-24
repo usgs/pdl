@@ -22,12 +22,12 @@ public class AwsProductReceiverTest {
   @BeforeEach
   public void before() throws Exception {
     receiver = new TestAwsProductReceiver();
-    receiver.startSendProductsCreatedAfterThread();
+    receiver.startCatchUpThread();
   }
 
   @AfterEach
   public void after() throws Exception {
-    receiver.stopProductsCreatedAfterThread();
+    receiver.stopCatchUpThread();
     receiver = null;
   }
 
@@ -83,7 +83,7 @@ public class AwsProductReceiverTest {
     Assert.assertNull("did not process broadcast", receiver.lastJsonNotification);
     Assert.assertEquals("still saved broadcast id",
         Long.valueOf(13L), receiver.getLastBroadcastId());
-    String sent = testSession.waitForBasicSendText(1000L);
+    String sent = testSession.waitForBasicSendText(100L);
     Assert.assertTrue(
         "sent products_created_after",
         sent.contains("\"action\":\"products_created_after\""));
