@@ -345,7 +345,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
-        statement.setQueryTimeout(1000);
+        statement.setQueryTimeout(1800);
 
         // set parameters
         for (int i = 0, len=values.size(); i < len; i++) {
@@ -429,7 +429,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
-        statement.setQueryTimeout(1000);
+        statement.setQueryTimeout(1800);
 
         // set parameters
         for (int i = 0, len=values.size(); i < len; i++) {
@@ -465,7 +465,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
-        statement.setQueryTimeout(1000);
+        statement.setQueryTimeout(1800);
 
         // set parameters
         statement.setString(1, Instant.now().toString());
@@ -562,7 +562,7 @@ public class JsonNotificationIndex
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
-        statement.setQueryTimeout(1000);
+        statement.setQueryTimeout(1800);
         // execute and commit if successful
         final List<Notification> notifications = getNotifications(statement);
         commitTransaction();
