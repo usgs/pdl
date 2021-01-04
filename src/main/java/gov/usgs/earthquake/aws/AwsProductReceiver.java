@@ -40,10 +40,12 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
   public static final String TRACKING_FILE_NAME_PROPERTY = "trackingFileName";
   public static final String CONNECT_ATTEMPTS_PROPERTY = "connectAttempts";
   public static final String CONNECT_TIMEOUT_PROPERTY = "connectTimeout";
+  public static final String INITIAL_CATCHUP_AGE_PROPERTY = "initialCatchUpAge";
 
   public static final String DEFAULT_TRACKING_FILE_NAME = "data/AwsReceiver.json";
   public static final String DEFAULT_CONNECT_ATTEMPTS = "5";
   public static final String DEFAULT_CONNECT_TIMEOUT = "1000";
+  public static final String DEFAULT_INITIAL_CATCHUP_AGE = "7.0";
 
   private URI uri;
   private String trackingFileName;
@@ -58,6 +60,10 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
 
   /* µs timestamp of last message that has been processed */
   protected Instant createdAfter = null;
+
+  /** How far back to check when first connecting. */
+  protected double initialCatchUpAge = Double.valueOf(DEFAULT_INITIAL_CATCHUP_AGE);
+
   /* last broadcast message that has been processed (used for catch up) */
   protected JsonNotification lastBroadcast = null;
   protected Long lastBroadcastId = null;
@@ -80,8 +86,12 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
     super.configure(config);
 
     uri = new URI(config.getProperty(URI_PROPERTY));
-    attempts = Integer.parseInt(config.getProperty(CONNECT_ATTEMPTS_PROPERTY, DEFAULT_CONNECT_ATTEMPTS));
-    timeout = Long.parseLong(config.getProperty(CONNECT_TIMEOUT_PROPERTY, DEFAULT_CONNECT_TIMEOUT));
+    attempts = Integer.parseInt(
+        config.getProperty(CONNECT_ATTEMPTS_PROPERTY, DEFAULT_CONNECT_ATTEMPTS));
+    timeout = Long.parseLong(
+        config.getProperty(CONNECT_TIMEOUT_PROPERTY, DEFAULT_CONNECT_TIMEOUT));
+    initialCatchUpAge = Double.valueOf(
+        config.getProperty(INITIAL_CATCHUP_AGE_PROPERTY, DEFAULT_INITIAL_CATCHUP_AGE));
 
     final String trackingIndexName = config.getProperty(TRACKING_INDEX_PROPERTY);
     if (trackingIndexName != null) {
@@ -338,7 +348,8 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
   protected void sendProductsCreatedAfter() throws IOException {
     // set default for created after
     if (this.createdAfter == null) {
-      this.createdAfter = Instant.now().minusSeconds(7 * 86400);
+      this.createdAfter = Instant.now().minusSeconds(
+          Math.round(initialCatchUpAge * 86400));
     }
     String request = Json.createObjectBuilder()
         .add("action", "products_created_after")
@@ -393,6 +404,9 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
    * Stop background thread for catch up process.
    */
   protected void stopCatchUpThread() {
+    if (catchUpThread == null) {
+      return;
+    }
     // stop catch up thread
     try {
       synchronized (catchUpSync) {

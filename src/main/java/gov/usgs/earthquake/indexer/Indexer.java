@@ -420,11 +420,28 @@ public class Indexer extends DefaultNotificationListener {
 			if (readProductIndex == productIndex) {
 				// synchronize on this if read and product index are same
 				synchronized (indexProductSync) {
-					return readProductIndex.hasProduct(id);
+					readProductIndex.beginTransaction();
+					try {
+						boolean hasProduct = readProductIndex.hasProduct(id);
+						readProductIndex.commitTransaction();
+						return hasProduct;
+					} catch (Exception e) {
+						readProductIndex.rollbackTransaction();
+					}
 				}
 			} else {
-				// otherwise readProductIndex provides own synchronization
-				return readProductIndex.hasProduct(id);
+				// otherwise synchronize on readProductIndex
+				// transaction reconnects if needed
+				synchronized (readProductIndex) {
+					readProductIndex.beginTransaction();
+					try {
+						boolean hasProduct = readProductIndex.hasProduct(id);
+						readProductIndex.commitTransaction();
+						return hasProduct;
+					} catch (Exception e) {
+						readProductIndex.rollbackTransaction();
+					}
+				}
 			}
 		} catch (Exception wtf) {
 			LOGGER.log(Level.WARNING, "[" + getName()

@@ -161,10 +161,26 @@ public class JsonProduct {
     final BigDecimal latitude = product.getLatitude();
     final BigDecimal longitude = product.getLongitude();
     final BigDecimal depth = product.getDepth();
-    if (latitude != null || longitude != null) {
+    if (latitude != null || longitude != null || depth != null) {
+      final JsonArrayBuilder coordinates = Json.createArrayBuilder();
+      if (latitude != null) {
+        coordinates.add(latitude);
+      } else {
+        coordinates.addNull();
+      }
+      if (longitude != null) {
+        coordinates.add(longitude);
+      } else {
+        coordinates.addNull();
+      }
+      if (depth != null) {
+        coordinates.add(depth);
+      } else {
+        coordinates.addNull();
+      }
       return Json.createObjectBuilder()
           .add("type", "Point")
-          .add("coordinates", Json.createArrayBuilder().add(longitude).add(latitude).add(depth));
+          .add("coordinates", coordinates);
     }
     return null;
   }
