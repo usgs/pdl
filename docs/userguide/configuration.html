@@ -604,11 +604,24 @@
 				<dt>trackingFileName</dt>
 				<dd>File where current position in hub notifications is tracked.</dd>
 
+				<dt>trackingIndex</dt>
+				<dd>
+					Custom tracking index.
+					(by default created is a sqlite database at trackingFileName)
+				</dd>
+
 				<dt>connectAttempts</dt>
 				<dd>(Optional, default 5) Number to attempts to connect before pausing</dd>
 
 				<dt>connectTimeout</dt>
 				<dd>(Optional, default 1000ms) timeout for each connect attempt.</dd>
+
+				<dt>initialCatchUpAge</dt>
+				<dd>
+					(Optional, default 7.0 days) how far back in time to start when
+					connecting to server.  subsequent attempts start at current position,
+					which is tracked.
+				</dd>
 			</dl>
 		</dd>
 
