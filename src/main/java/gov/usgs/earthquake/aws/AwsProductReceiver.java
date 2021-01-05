@@ -129,11 +129,25 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
     LOGGER.info("[" + getName() + "] onOpen connection_id=" + session.getId());
     // save session
     this.session = session;
+
     // start catch up process
     LOGGER.info("[" + getName() + "] Starting catch up");
     // ignore broadcast until caught up
     processBroadcast = false;
     startCatchUp();
+  }
+
+  /**
+   * Called when connection is closed, either because shutdown on this end or
+   * closed by server.
+   */
+  @Override
+  public void onClose(Session session, CloseReason closeReason) {
+    LOGGER.info("[" + getName() + "] onClose " + closeReason.toString());
+    this.session = null;
+
+    // cannot catch up when not connected, restart in onOpen
+    stopCatchUp();
   }
 
   /**
@@ -308,7 +322,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
               continue;
             } else {
               // timed out
-              LOGGER.warning("No products_created_response"
+              LOGGER.warning("No products_created_after response"
                   + ", sent at " + lastCatchUpSent.toString());
               // fall through
             }
@@ -320,15 +334,19 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
 
         try {
           synchronized (catchUpSync) {
+            // connection may have closed while throttling
+            if (!catchUpRunning) {
+              continue;
+            }
+            sendProductsCreatedAfter();
             // track when sent
             lastCatchUpSent = Instant.now();
-            sendProductsCreatedAfter();
           }
         } catch (Exception e){
           LOGGER.log(Level.WARNING, "Exception sending products_created_after", e);
           if (catchUpThreadRunning && catchUpRunning) {
             // wait before next attempt
-            Thread.sleep(5000);
+            Thread.sleep(1000);
           }
         }
       } catch (InterruptedException e) {
@@ -369,6 +387,8 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
     // notify background thread to start catch up
     synchronized (catchUpSync) {
       catchUpRunning = true;
+      // clear sent time
+      lastCatchUpSent = null;
       catchUpSync.notify();
     }
   }
@@ -424,24 +444,16 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
     }
   }
 
-  /**
-   * Called when connection is closed, either because shutdown on this end or
-   * closed by server.
-   */
-  @Override
-  public void onClose(Session session, CloseReason closeReason) {
-    LOGGER.info("[" + getName() + "] onClose " + closeReason.toString());
-    this.session = null;
-  }
-
   @Override
   public void onConnectFail() {
     // client failed to connect
+    LOGGER.info("[" + getName() + "] onConnectFail");
   }
 
   @Override
   public void onReconnectFail() {
     // failed to reconnect after close
+    LOGGER.info("[" + getName() + "] onReconnectFail");
   }
 
   /**
