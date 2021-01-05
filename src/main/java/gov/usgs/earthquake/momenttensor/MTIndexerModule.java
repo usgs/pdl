@@ -13,7 +13,7 @@ import gov.usgs.earthquake.product.Product;
 
 /**
  * Moment Tensor Indexer Module.
- * 
+ *
  * Implements ANSS business logic for preferred moment tensors.
  *
  * Intended order is:
@@ -46,17 +46,17 @@ import gov.usgs.earthquake.product.Product;
  *   from the product property <code>beachball-type</code>
  * </li>
  * </ul>
- * 
+ *
  * <dl>
  * <dt>Type is <code>Mww</code></dt>
  * <dd><code>+60</code></dd>
- * 
+ *
  * <dt>Type is <code>Mwc</code></dt>
  * <dd><code>+2</code></dd>
- * 
+ *
  * <dt>Type is <code>Mwb</code>
  * <dd><code>+1</code></dd>
- * 
+ *
  * <dt>Type is <code>Mwb</code>, and Magnitude outside the
  * 	 range <code>[5.5, 7.0]</code></dt>
  * <dd><code>-100</code></dd>
@@ -87,7 +87,7 @@ public class MTIndexerModule extends DefaultIndexerModule {
 
 	/**
 	 * Override IndexerModule api method.
-	 * 
+	 *
 	 * @return
 	 * 		IndexerModule.LEVEL_SUPPORTED when type is <code>moment-tensor</code>;
 	 * 		otherwise, IndexerModule.LEVEL_UNSUPPORTED.
@@ -106,7 +106,7 @@ public class MTIndexerModule extends DefaultIndexerModule {
 
 	/**
 	 * Calculate preferred weight for <code>moment-tensor</code> type product.
-	 * 
+	 *
 	 * @param summary "moment-tensor" type product summary.
 	 * @return
 	 *      when type is <code>moment-tensor</code>, {@link IndexerModule#LEVEL_SUPPORTED};
@@ -149,7 +149,7 @@ public class MTIndexerModule extends DefaultIndexerModule {
 		}
 
 		// Add gcmt bonus if required
-		if (eventSource.equalsIgnoreCase(EVENT_SOURCE_GCMT)) {
+		if (eventSource != null && eventSource.equalsIgnoreCase(EVENT_SOURCE_GCMT)) {
 			weight += EVENT_SOURCE_GCMT_BONUS;
 		}
 
