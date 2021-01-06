@@ -4,6 +4,9 @@ import java.time.Instant;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.websocket.CloseReason;
+import javax.websocket.CloseReason.CloseCode;
+import javax.websocket.CloseReason.CloseCodes;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -102,6 +105,30 @@ public class AwsProductReceiverTest {
     Assert.assertFalse("not in process broadcast mode", receiver.isProcessBroadcast());
 
     String sent = testSession.waitForBasicSendText(1000L);
+    Assert.assertTrue(
+        "sent products_created_after",
+        sent.contains("\"action\":\"products_created_after\""));
+  }
+
+  /**
+   * Test to reproduce onOpen start catch up hang.
+   */
+  @Test
+  public void testStartCatchUpWhenReconnected() throws Exception {
+    TestSession testSession = new TestSession();
+
+    // seem to need startCatchUp before close to trigger bug
+    receiver.startCatchUp();
+    // simulate disconnect (before start catch up)
+    receiver.onClose(testSession, new CloseReason(CloseCodes.GOING_AWAY, "test going away"));
+    receiver.startCatchUp();
+
+    // new session, simulate reconnect
+    testSession = new TestSession();
+    // call onOpen to simulate connection
+    receiver.onOpen(testSession);
+    // wait for products created after
+    String sent = testSession.waitForBasicSendText(2000L);
     Assert.assertTrue(
         "sent products_created_after",
         sent.contains("\"action\":\"products_created_after\""));
