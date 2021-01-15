@@ -5,6 +5,9 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -20,6 +23,7 @@ import gov.usgs.earthquake.indexer.Indexer;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
 import gov.usgs.earthquake.product.io.JsonProduct;
+import gov.usgs.earthquake.util.JDBCConnection;
 import gov.usgs.util.Config;
 import gov.usgs.util.StreamUtils;
 import gov.usgs.util.XmlUtils;
@@ -34,6 +38,16 @@ import gov.usgs.util.XmlUtils;
  * and call indexer.onProduct.
  */
 public class AwsBatchIndexer implements Bootstrappable {
+
+  public static final String FORCE_REINDEX_ARGUMENT = "--force";
+  public static final String GET_PRODUCT_URL_ARGUMENT = "--getProductUrl=";
+  public static final String INDEXER_CONFIG_NAME_ARGUMENT="--indexerConfigName=";
+  public static final String INDEXER_CONFIG_NAME_DEFAULT = "indexer";
+
+  public static final String DATABASE_DRIVER_ARGUMENT = "--databaseDriver=";
+  public static final String DATABASE_URL_ARGUMENT = "--databaseUrl=";
+  public static final String INDEXER_DATABASE_ARGUMENT = "--indexerDatabase=";
+  public static final String INDEXER_DATABASE_DEFAULT = "indexer";
 
   /** Logging object. */
   private static final Logger LOGGER = Logger.getLogger(AwsBatchIndexer.class.getName());
@@ -52,18 +66,18 @@ public class AwsBatchIndexer implements Bootstrappable {
   private Indexer indexer;
 
 
-  public static final String FORCE_REINDEX_ARGUMENT = "--force";
-  public static final String GET_PRODUCT_URL_ARGUMENT = "--getProductUrl=";
-  public static final String INDEXER_CONFIG_NAME_ARGUMENT="--indexerConfigName=";
-  public static final String INDEXER_CONFIG_NAME_DEFAULT = "indexer";
-
   @Override
   public void run(String[] args) throws Exception {
-    String indexerConfigName = INDEXER_CONFIG_NAME_DEFAULT;
-
     // parse arguments
+    String databaseDriver = "com.mysql.jdbc.Driver";
+    String databaseUrl = null;
+    String indexerConfigName = INDEXER_CONFIG_NAME_DEFAULT;
     for (final String arg : args) {
-      if (arg.equals(FORCE_REINDEX_ARGUMENT)) {
+      if (arg.equals(DATABASE_DRIVER_ARGUMENT)) {
+        databaseDriver = arg.replace(DATABASE_DRIVER_ARGUMENT, "");
+      } else if (arg.equals(DATABASE_URL_ARGUMENT)) {
+        databaseUrl = arg.replace(DATABASE_URL_ARGUMENT, "");
+      } else if (arg.equals(FORCE_REINDEX_ARGUMENT)) {
         force = true;
       } else if (arg.startsWith(GET_PRODUCT_URL_ARGUMENT)) {
         getProductUrlTemplate = arg.replace(GET_PRODUCT_URL_ARGUMENT, "");
@@ -75,46 +89,12 @@ public class AwsBatchIndexer implements Bootstrappable {
     // load indexer from configuration
     indexer = (Indexer) Config.getConfig().getObject(indexerConfigName);
 
-    // read product ids from stdin
-    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-    String line = null;
-    while ((line = br.readLine()) != null) {
-      if (line.equals("")) {
-        continue;
-      }
-
-      // parse product id
-      ProductId id;
-      try {
-        id = ProductId.parse(line);
-      } catch (Exception e) {
-        LOGGER.warning("Error parsing product id '" + line + "'");
-        continue;
-      }
-
-      // queue for processing
-      executor.submit(() -> {
-        long start = new Date().getTime();
-        Exception e = indexProduct(id);
-        long total = new Date().getTime() - start;
-        if (e == null) {
-          LOGGER.info("Indexed " + id.toString() + " in " + total + " ms");
-        } else {
-          LOGGER.log(
-              Level.WARNING,
-              "Error indexing " + id.toString() + " in " + total + "ms",
-              e);
-        }
-      });
-
-      // keep queue size smallish
-      if (executor.getQueue().size() > 500) {
-        while (executor.getQueue().size() > 100) {
-          LOGGER.info("Queue size " + executor.getQueue().size());
-          Thread.sleep(5000L);
-        }
-      }
-
+    if (databaseUrl != null) {
+      LOGGER.info("Reading product ids from database");
+      readProductIdsFromDatabase(databaseDriver, databaseUrl);
+    } else {
+      LOGGER.info("Reading product ids from stdin");
+      readProductIdsFromStdin();
     }
   }
 
@@ -159,24 +139,136 @@ public class AwsBatchIndexer implements Bootstrappable {
   }
 
   /**
-   * Index a product.
+   * Fetch and Index a product.
    *
-   * @param product
+   * Called from executor service to process product ids.
+   *
+   * @param id
    *     which product
    * @throws Exception
    */
-  public Exception indexProduct(final ProductId id) {
+  public void processProductId(final ProductId id) {
+    long start = new Date().getTime();
     try {
-      long start = new Date().getTime();
       final Product product = getProduct(id);
       long afterGetProduct = new Date().getTime();
       LOGGER.fine("Loaded product " + id.toString() + " in "
           + (afterGetProduct - start) + " ms");
+
       indexer.onProduct(product, force);
-      return null;
+      LOGGER.info("Indexed " + id.toString()
+          + " in " + (new Date().getTime() - afterGetProduct) + " ms");
     } catch (Exception e) {
-      return e;
+      LOGGER.log(
+          Level.WARNING,
+          "Error indexing " + id.toString()
+              + " in " + (new Date().getTime() - start) + "ms",
+          e);
     }
   }
 
+  public void readProductIdsFromDatabase(
+      final String driver,
+      final String url) throws Exception {
+    try (
+      final JDBCConnection jdbcConnection = new JDBCConnection()
+    ) {
+      jdbcConnection.setDriver(driver);
+      jdbcConnection.setUrl(url);
+      jdbcConnection.startup();
+
+      final String sql = "SELECT id, source, type, code, updatetime"
+          + " FROM pdl.product h"
+          + " WHERE id > ?"
+          + " AND NOT EXISTS ("
+          + "  SELECT * FROM indexer.productSummary i"
+          + "  WHERE h.source=i.source"
+          + "  AND h.type=i.type"
+          + "  AND h.code=i.code"
+          + "  AND h.updatetime=i.updateTime"
+          + " )"
+          + " ORDER BY id"
+          + " LIMIT 500";
+
+      // start at the beginning
+      long lastId = -1;
+      while (true) {
+        try (
+          final Connection conn = jdbcConnection.verifyConnection();
+          final PreparedStatement statement = conn.prepareStatement(sql);
+        ) {
+          // load next batch of products
+          statement.setLong(1, lastId);
+          try (
+            final ResultSet rs = statement.executeQuery();
+          ) {
+            int count = 0;
+            while (rs.next()) {
+              lastId = rs.getLong("id");
+              final ProductId id = new ProductId(
+                  rs.getString("source"),
+                  rs.getString("type"),
+                  rs.getString("code"),
+                  new Date(rs.getLong("updatetime")));
+              submitProductId(id);
+              count++;
+            }
+
+            // exit once all products processed
+            if (count == 0) {
+              LOGGER.info("No more rows returned, exiting");
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Read product ids (as urns) from stdin and submit to executor for processing.
+   *
+   * @throws Exception
+   */
+  public void readProductIdsFromStdin() throws Exception {
+    // read product ids from stdin
+    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    String line = null;
+    while ((line = br.readLine()) != null) {
+      if (line.equals("")) {
+        continue;
+      }
+      // parse product id
+      final ProductId id;
+      try {
+        id = ProductId.parse(line);
+      } catch (Exception e) {
+        LOGGER.warning("Error parsing product id '" + line + "'");
+        continue;
+      }
+      submitProductId(id);
+    }
+  }
+
+  /**
+   * Submit a product id to the executor service for processing.
+   *
+   * If queue is too large (500 ids), blocks until queue is smaller (100 ids).
+   *
+   * @param id
+   *     which product
+   * @throws InterruptedException
+   */
+  public void submitProductId(final ProductId id) throws InterruptedException {
+    // queue for processing
+    executor.submit(() -> processProductId(id));
+
+    // keep queue size smallish
+    if (executor.getQueue().size() > 500) {
+      while (executor.getQueue().size() > 100) {
+        LOGGER.info("Queue size " + executor.getQueue().size());
+        Thread.sleep(5000L);
+      }
+    }
+  }
 }
