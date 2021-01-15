@@ -57,8 +57,8 @@ public class AwsBatchIndexer implements Bootstrappable {
   public static final String INDEXER_CONFIG_NAME_ARGUMENT="--indexerConfigName=";
   public static final String INDEXER_CONFIG_NAME_DEFAULT = "indexer";
 
-	@Override
-	public void run(String[] args) throws Exception {
+  @Override
+  public void run(String[] args) throws Exception {
     String indexerConfigName = INDEXER_CONFIG_NAME_DEFAULT;
 
     // parse arguments
@@ -116,7 +116,7 @@ public class AwsBatchIndexer implements Bootstrappable {
       }
 
     }
-	}
+  }
 
   /**
    * Use getProductUrl template to generate URL.
