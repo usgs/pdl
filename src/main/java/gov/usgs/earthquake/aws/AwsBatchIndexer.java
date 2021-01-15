@@ -73,9 +73,9 @@ public class AwsBatchIndexer implements Bootstrappable {
     String databaseUrl = null;
     String indexerConfigName = INDEXER_CONFIG_NAME_DEFAULT;
     for (final String arg : args) {
-      if (arg.equals(DATABASE_DRIVER_ARGUMENT)) {
+      if (arg.startsWith(DATABASE_DRIVER_ARGUMENT)) {
         databaseDriver = arg.replace(DATABASE_DRIVER_ARGUMENT, "");
-      } else if (arg.equals(DATABASE_URL_ARGUMENT)) {
+      } else if (arg.startsWith(DATABASE_URL_ARGUMENT)) {
         databaseUrl = arg.replace(DATABASE_URL_ARGUMENT, "");
       } else if (arg.equals(FORCE_REINDEX_ARGUMENT)) {
         force = true;
@@ -88,13 +88,18 @@ public class AwsBatchIndexer implements Bootstrappable {
 
     // load indexer from configuration
     indexer = (Indexer) Config.getConfig().getObject(indexerConfigName);
+    indexer.startup();
 
-    if (databaseUrl != null) {
-      LOGGER.info("Reading product ids from database");
-      readProductIdsFromDatabase(databaseDriver, databaseUrl);
-    } else {
-      LOGGER.info("Reading product ids from stdin");
-      readProductIdsFromStdin();
+    try {
+      if (databaseUrl != null) {
+        LOGGER.info("Reading product ids from database");
+        readProductIdsFromDatabase(databaseDriver, databaseUrl);
+      } else {
+        LOGGER.info("Reading product ids from stdin");
+        readProductIdsFromStdin();
+      }
+    } finally {
+      indexer.shutdown();
     }
   }
 
@@ -134,7 +139,8 @@ public class AwsBatchIndexer implements Bootstrappable {
     ) {
       // parse message
       final JsonObject json = reader.readObject();
-      return new JsonProduct().getProduct(json);
+      final JsonNotification notification = new JsonNotification(json);
+      return notification.product;
     }
   }
 
