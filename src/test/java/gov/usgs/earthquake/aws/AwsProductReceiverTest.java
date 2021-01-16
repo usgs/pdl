@@ -5,7 +5,6 @@ import java.time.Instant;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.websocket.CloseReason;
-import javax.websocket.CloseReason.CloseCode;
 import javax.websocket.CloseReason.CloseCodes;
 
 import org.junit.Assert;
