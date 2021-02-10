@@ -129,7 +129,7 @@ public class URLProductStorage extends FileProductStorage {
 		}
 		LOGGER.config("[" + getName() + "] using format " + storageFormat);
 
-		storagePath = config.getProperty(STORAGE_PATH_PROPERTY, DEFAULT_DIRECTORY);
+		storagePath = config.getProperty(STORAGE_PATH_PROPERTY, DEFAULT_STORAGE_PATH);
 		LOGGER.config("[" + getName() + "] using path " + storagePath);
 	}
 
