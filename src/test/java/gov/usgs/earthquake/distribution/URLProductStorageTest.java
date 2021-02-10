@@ -23,12 +23,11 @@ public class URLProductStorageTest {
     config.setProperty(URLProductStorage.URL_PROPERTY_NAME, "http://testserver/product/");
     storage.configure(config);
 
-    ProductId id = new ProductId("source", "type", "code", new Date());
+    ProductId id = new ProductId("example_source", "example_type", "example_code", new Date());
     String path = storage.getProductPath(id);
-    System.err.println(path);
-    Assert.assertTrue("contains source", path.contains("source"));
-    Assert.assertTrue("contains type", path.contains("type"));
-    Assert.assertTrue("contains code", path.contains("code"));
+    Assert.assertTrue("contains source", path.contains("example_source"));
+    Assert.assertTrue("contains type", path.contains("example_type"));
+    Assert.assertTrue("contains code", path.contains("example_code"));
     Assert.assertTrue(
         "contains updateTime",
         path.contains("" + id.getUpdateTime().getTime()));
