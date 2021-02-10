@@ -22,7 +22,6 @@ import gov.usgs.earthquake.distribution.Bootstrappable;
 import gov.usgs.earthquake.indexer.Indexer;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.ProductId;
-import gov.usgs.earthquake.product.io.JsonProduct;
 import gov.usgs.earthquake.util.JDBCConnection;
 import gov.usgs.util.Config;
 import gov.usgs.util.StreamUtils;
