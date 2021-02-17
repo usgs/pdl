@@ -7,7 +7,7 @@ import gov.usgs.earthquake.product.Product;
 
 /**
  * DYFI Indexer Module.
- * 
+ *
  * Uses {@link DYFIProduct} class to summarize product.
  */
 <span class="fc" id="L13">public class DYFIIndexerModule extends DefaultIndexerModule {</span>
@@ -27,9 +27,8 @@ import gov.usgs.earthquake.product.Product;
 	@Override
 	public ProductSummary getProductSummary(Product product) throws Exception {
 		// DYFI-specific properties load through the DYFIProduct.
-<span class="fc" id="L30">		ProductSummary summary = super.getProductSummary(new DYFIProduct(</span>
-				product));
-<span class="fc" id="L32">		return summary;</span>
+<span class="fc" id="L30">		ProductSummary summary = super.getProductSummary(new DYFIProduct(product));</span>
+<span class="fc" id="L31">		return summary;</span>
 	}
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

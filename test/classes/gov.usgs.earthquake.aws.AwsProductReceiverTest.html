@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - AwsProductReceiverTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>AwsProductReceiverTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/gov.usgs.earthquake.aws.html">gov.usgs.earthquake.aws</a> &gt; AwsProductReceiverTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">5</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">1.445s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="tabs">
+<ul class="tabLinks">
+<li>
+<a href="#tab0">Tests</a>
+</li>
+<li>
+<a href="#tab1">Standard error</a>
+</li>
+</ul>
+<div id="tab0" class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">testBroadcastOutOfOrder()</td>
+<td class="success">0.030s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testStartCatchUpWhenConnected()</td>
+<td class="success">0.009s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testStartCatchUpWhenReconnected()</td>
+<td class="success">1.010s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testSwitchToBroadcast()</td>
+<td class="success">0.286s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testThrottleQueue()</td>
+<td class="success">0.110s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div id="tab1" class="tab">
+<h2>Standard error</h2>
+<span class="code">
+<pre>Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+INFO: [null] onOpen connection_id=test session
+Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+INFO: [null] Starting catch up
+Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-02-10T18:33:33.581157600Z&quot;}
+Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver onProductsCreatedAfter
+INFO: [null] Caught up, switching to broadcast
+Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+INFO: [null] onOpen connection_id=test session
+Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+INFO: [null] Starting catch up
+Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.distribution.ExecutorListenerNotifier throttleQueues
+INFO: [null] queueing throttled until below 2500 (size=5001, remaining=?)
+Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.distribution.ExecutorListenerNotifier throttleQueues
+INFO: [null] done throttling (size = 2499)
+Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-02-10T18:33:33.865086500Z&quot;}
+Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver run
+WARNING: Exception sending products_created_after
+java.lang.NullPointerException
+	at gov.usgs.earthquake.aws.AwsProductReceiver.sendProductsCreatedAfter(AwsProductReceiver.java:379)
+	at gov.usgs.earthquake.aws.AwsProductReceiver.run(AwsProductReceiver.java:341)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver onClose
+INFO: [null] onClose CloseReason[1001,test going away]
+Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+INFO: [null] onOpen connection_id=test session
+Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+INFO: [null] Starting catch up
+Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-02-10T18:33:33.871424400Z&quot;}
+Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+INFO: [null] onOpen connection_id=test session
+Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+INFO: [null] Starting catch up
+Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-02-10T18:33:34.884452100Z&quot;}
+Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.AwsProductReceiver onProductsCreatedAfter
+INFO: [null] Caught up, switching to broadcast
+Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.AwsProductReceiver onBroadcast
+INFO: [null] broadcast ids out of sequence (at 11, received 13), switching to catch up mode
+Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-02-17T18:33:34.887462Z&quot;}
+Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+INFO: [null] onOpen connection_id=test session
+Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+INFO: [null] Starting catch up
+Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-02-10T18:33:34.917918100Z&quot;}
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="http://www.gradle.org">Gradle 6.7.1</a> at Feb 17, 2021, 11:35:07 AM</p>
+</div>
+</div>
+</body>
+</html>

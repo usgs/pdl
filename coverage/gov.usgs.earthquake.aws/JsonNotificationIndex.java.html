@@ -2,8 +2,6 @@
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -60,86 +58,67 @@ public class JsonNotificationIndex
     extends JDBCConnection
     implements NotificationIndex {
 
-<span class="fc" id="L63">  private static final Logger LOGGER = Logger.getLogger(</span>
-<span class="fc" id="L64">      JsonNotificationIndex.class.getName());</span>
+<span class="fc" id="L61">  private static final Logger LOGGER = Logger.getLogger(</span>
+<span class="fc" id="L62">      JsonNotificationIndex.class.getName());</span>
 
   public static final String DEFAULT_DRIVER = &quot;org.sqlite.JDBC&quot;;
   public static final String DEFAULT_TABLE = &quot;notification&quot;;
   public static final String DEFAULT_URL =
       &quot;jdbc:sqlite:json_notification_index.db&quot;;
 
-  /** JDBC driver classname. */
-  private String driver;
   /** Database table name. */
   private String table;
-  /** JDBC database connect url. */
-  private String url;
 
   /**
    * Construct a JsonNotification using defaults.
    */
   public JsonNotificationIndex() {
-<span class="fc" id="L82">    this(DEFAULT_DRIVER, DEFAULT_URL);</span>
-<span class="fc" id="L83">  }</span>
+<span class="fc" id="L76">    this(DEFAULT_DRIVER, DEFAULT_URL);</span>
+<span class="fc" id="L77">  }</span>
 
   /**
    * Construct a JsonNotificationIndex with the default table.
    */
   public JsonNotificationIndex(final String driver, final String url) {
-<span class="fc" id="L89">    this(driver, url, DEFAULT_TABLE);</span>
-<span class="fc" id="L90">  }</span>
+<span class="fc" id="L83">    this(driver, url, DEFAULT_TABLE);</span>
+<span class="fc" id="L84">  }</span>
 
   /**
    * Construct a JsonNotificationIndex with custom driver, url, and table.
    */
   public JsonNotificationIndex(
-<span class="fc" id="L96">      final String driver, final String url, final String table) {</span>
-<span class="fc" id="L97">    this.driver = driver;</span>
-<span class="fc" id="L98">    this.table = table;</span>
-<span class="fc" id="L99">    this.url = url;</span>
-<span class="fc" id="L100">  }</span>
+      final String driver, final String url, final String table) {
+<span class="fc" id="L91">    super(driver, url);</span>
+<span class="fc" id="L92">    this.table = table;</span>
+<span class="fc" id="L93">  }</span>
 
-<span class="nc" id="L102">  public String getDriver() { return this.driver; }</span>
-<span class="nc" id="L103">  public String getTable() { return this.table; }</span>
-<span class="nc" id="L104">  public String getUrl() { return this.url; }</span>
-<span class="nc" id="L105">  public void setDriver(final String driver) { this.driver = driver; }</span>
-<span class="nc" id="L106">  public void setTable(final String table) { this.table = table; }</span>
-<span class="nc" id="L107">  public void setUrl(final String url) { this.url = url; }</span>
+<span class="fc" id="L95">  public String getTable() { return this.table; }</span>
+<span class="fc" id="L96">  public void setTable(final String table) { this.table = table; }</span>
 
   @Override
   public void configure(final Config config) throws Exception {
-<span class="fc" id="L111">    driver = config.getProperty(&quot;driver&quot;, DEFAULT_DRIVER);</span>
-<span class="fc" id="L112">    LOGGER.config(&quot;[&quot; + getName() + &quot;] driver=&quot; + driver);</span>
-<span class="fc" id="L113">    table = config.getProperty(&quot;table&quot;, DEFAULT_TABLE);</span>
-<span class="fc" id="L114">    LOGGER.config(&quot;[&quot; + getName() + &quot;] table=&quot; + table);</span>
-<span class="fc" id="L115">    url = config.getProperty(&quot;url&quot;, DEFAULT_URL);</span>
-    // do not log url, it may contain user/pass
-<span class="fc" id="L117">  }</span>
+<span class="fc" id="L100">    super.configure(config);</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">    if (getDriver() == null) { setDriver(DEFAULT_DRIVER); }</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">    if (getUrl() == null) { setUrl(DEFAULT_URL); }</span>
 
-  /**
-   * Connect to database.
-   *
-   * Implements abstract JDBCConnection method.
-   */
-  @Override
-  protected Connection connect() throws Exception {
-    // load driver if needed
-<span class="fc" id="L127">    Class.forName(driver);</span>
-<span class="fc" id="L128">    return DriverManager.getConnection(url);</span>
-  }
+<span class="fc" id="L104">    setTable(config.getProperty(&quot;table&quot;, DEFAULT_TABLE));</span>
+<span class="fc" id="L105">    LOGGER.config(&quot;[&quot; + getName() + &quot;] driver=&quot; + getDriver());</span>
+<span class="fc" id="L106">    LOGGER.config(&quot;[&quot; + getName() + &quot;] table=&quot; + getTable());</span>
+    // do not log url, it may contain user/pass
+<span class="fc" id="L108">  }</span>
 
   /**
    * After normal startup, check whether schema exists and attempt to create.
    */
   @Override
   public void startup() throws Exception {
-<span class="fc" id="L136">    super.startup();</span>
+<span class="fc" id="L115">    super.startup();</span>
     // make sure schema exists
-<span class="pc bpc" id="L138" title="1 of 2 branches missed.">    if (!schemaExists()) {</span>
-<span class="fc" id="L139">      LOGGER.warning(&quot;[&quot; + getName() + &quot;] schema not found, creating&quot;);</span>
-<span class="fc" id="L140">      createSchema();</span>
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">    if (!schemaExists()) {</span>
+<span class="fc" id="L118">      LOGGER.warning(&quot;[&quot; + getName() + &quot;] schema not found, creating&quot;);</span>
+<span class="fc" id="L119">      createSchema();</span>
     }
-<span class="fc" id="L142">  }</span>
+<span class="fc" id="L121">  }</span>
 
   /**
    * Check whether schema exists.
@@ -148,19 +127,20 @@ public class JsonNotificationIndex
    * @throws Exception
    */
   public boolean schemaExists() throws Exception {
-<span class="fc" id="L151">    final String sql = &quot;select * from &quot; + this.table + &quot; limit 1&quot;;</span>
-<span class="fc" id="L152">    beginTransaction();</span>
-<span class="nc" id="L153">    try (final PreparedStatement test = getConnection().prepareStatement(sql)) {</span>
+<span class="fc" id="L130">    final String sql = &quot;select * from &quot; + this.table + &quot; limit 1&quot;;</span>
+<span class="fc" id="L131">    beginTransaction();</span>
+<span class="nc" id="L132">    try (final PreparedStatement test = getConnection().prepareStatement(sql)) {</span>
       // should throw exception if table does not exist
-<span class="nc" id="L155">      try (final ResultSet rs = test.executeQuery()) {</span>
-<span class="nc" id="L156">        rs.next();</span>
+<span class="nc" id="L134">      test.setQueryTimeout(60);</span>
+<span class="nc" id="L135">      try (final ResultSet rs = test.executeQuery()) {</span>
+<span class="nc" id="L136">        rs.next();</span>
       }
-<span class="nc" id="L158">      commitTransaction();</span>
+<span class="nc" id="L138">      commitTransaction();</span>
       // schema exists
-<span class="nc" id="L160">      return true;</span>
-<span class="fc" id="L161">    } catch (Exception e) {</span>
-<span class="fc" id="L162">      rollbackTransaction();</span>
-<span class="fc" id="L163">      return false;</span>
+<span class="nc" id="L140">      return true;</span>
+<span class="fc" id="L141">    } catch (Exception e) {</span>
+<span class="fc" id="L142">      rollbackTransaction();</span>
+<span class="fc" id="L143">      return false;</span>
     }
   }
 
@@ -174,15 +154,15 @@ public class JsonNotificationIndex
    */
   public void createSchema() throws Exception {
     // create schema
-<span class="fc" id="L177">    beginTransaction();</span>
-<span class="fc" id="L178">    try (final Statement statement = getConnection().createStatement()) {</span>
-<span class="fc" id="L179">      String autoIncrement = &quot;&quot;;</span>
-<span class="fc" id="L180">      String engine = &quot;&quot;;</span>
-<span class="pc bpc" id="L181" title="1 of 2 branches missed.">      if (driver.contains(&quot;mysql&quot;)) {</span>
-<span class="nc" id="L182">        autoIncrement = &quot; AUTO_INCREMENT&quot;;</span>
-<span class="nc" id="L183">        engine = &quot; ENGINE=innodb CHARSET=utf8&quot;;</span>
+<span class="fc" id="L157">    beginTransaction();</span>
+<span class="fc" id="L158">    try (final Statement statement = getConnection().createStatement()) {</span>
+<span class="fc" id="L159">      String autoIncrement = &quot;&quot;;</span>
+<span class="fc" id="L160">      String engine = &quot;&quot;;</span>
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">      if (getDriver().contains(&quot;mysql&quot;)) {</span>
+<span class="nc" id="L162">        autoIncrement = &quot; AUTO_INCREMENT&quot;;</span>
+<span class="nc" id="L163">        engine = &quot; ENGINE=innodb CHARSET=utf8&quot;;</span>
       }
-<span class="fc" id="L185">      statement.executeUpdate(</span>
+<span class="fc" id="L165">      statement.executeUpdate(</span>
           &quot;CREATE TABLE &quot; + this.table
           + &quot; (id INTEGER PRIMARY KEY&quot; + autoIncrement
           + &quot;, created VARCHAR(255)&quot;
@@ -194,20 +174,20 @@ public class JsonNotificationIndex
           + &quot;, url TEXT&quot;
           + &quot;, data TEXT&quot;
           + &quot;)&quot; + engine);
-<span class="fc" id="L197">      statement.executeUpdate(</span>
+<span class="fc" id="L177">      statement.executeUpdate(</span>
           &quot;CREATE INDEX source_index ON &quot; + this.table + &quot; (source)&quot;);
-<span class="fc" id="L199">      statement.executeUpdate(</span>
+<span class="fc" id="L179">      statement.executeUpdate(</span>
           &quot;CREATE INDEX type_index ON &quot; + this.table + &quot; (type)&quot;);
-<span class="fc" id="L201">      statement.executeUpdate(</span>
+<span class="fc" id="L181">      statement.executeUpdate(</span>
           &quot;CREATE INDEX code_index ON &quot; + this.table + &quot; (code)&quot;);
-<span class="fc" id="L203">      statement.executeUpdate(</span>
+<span class="fc" id="L183">      statement.executeUpdate(</span>
           &quot;CREATE INDEX expires_index ON &quot; + this.table + &quot; (expires)&quot;);
-<span class="fc" id="L205">      commitTransaction();</span>
-<span class="nc" id="L206">    } catch (Exception e) {</span>
-<span class="nc" id="L207">      rollbackTransaction();</span>
-<span class="nc" id="L208">      throw e;</span>
-<span class="fc" id="L209">    }</span>
-<span class="fc" id="L210">  }</span>
+<span class="fc" id="L185">      commitTransaction();</span>
+<span class="nc" id="L186">    } catch (Exception e) {</span>
+<span class="nc" id="L187">      rollbackTransaction();</span>
+<span class="nc" id="L188">      throw e;</span>
+<span class="fc" id="L189">    }</span>
+<span class="fc" id="L190">  }</span>
 
   /**
    * Add a notification to the index.
@@ -218,57 +198,58 @@ public class JsonNotificationIndex
   public synchronized void addNotification(Notification notification)
       throws Exception {
     // all notifications
-<span class="fc" id="L221">    Instant expires = notification.getExpirationDate().toInstant();</span>
-<span class="fc" id="L222">    ProductId id = notification.getProductId();</span>
+<span class="fc" id="L201">    Instant expires = notification.getExpirationDate().toInstant();</span>
+<span class="fc" id="L202">    ProductId id = notification.getProductId();</span>
     // json only
-<span class="fc" id="L224">    Instant created = null;</span>
-<span class="fc" id="L225">    Product product = null;</span>
+<span class="fc" id="L204">    Instant created = null;</span>
+<span class="fc" id="L205">    Product product = null;</span>
     // url only
-<span class="fc" id="L227">    URL url = null;</span>
-<span class="pc bpc" id="L228" title="1 of 2 branches missed.">    if (notification instanceof JsonNotification) {</span>
-<span class="nc" id="L229">      JsonNotification jsonNotification = (JsonNotification) notification;</span>
-<span class="nc" id="L230">      created = jsonNotification.created;</span>
-<span class="nc" id="L231">      product = jsonNotification.product;</span>
-<span class="pc bfc" id="L232" title="All 2 branches covered.">    } else if (notification instanceof URLNotification) {</span>
-<span class="fc" id="L233">      url = ((URLNotification) notification).getProductURL();</span>
+<span class="fc" id="L207">    URL url = null;</span>
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">    if (notification instanceof JsonNotification) {</span>
+<span class="nc" id="L209">      JsonNotification jsonNotification = (JsonNotification) notification;</span>
+<span class="nc" id="L210">      created = jsonNotification.created;</span>
+<span class="nc" id="L211">      product = jsonNotification.product;</span>
+<span class="pc bfc" id="L212" title="All 2 branches covered.">    } else if (notification instanceof URLNotification) {</span>
+<span class="fc" id="L213">      url = ((URLNotification) notification).getProductURL();</span>
     }
     // prepare statement
-<span class="fc" id="L236">    beginTransaction();</span>
+<span class="fc" id="L216">    beginTransaction();</span>
     try (
-<span class="fc" id="L238">      final PreparedStatement statement = getConnection().prepareStatement(</span>
+<span class="fc" id="L218">      final PreparedStatement statement = getConnection().prepareStatement(</span>
           &quot;INSERT INTO &quot; + this.table
           + &quot; (created, expires, source, type, code, updatetime, url, data)&quot;
           + &quot; VALUES (?, ?, ?, ?, ?, ?, ?, ?)&quot;)
     ) {
       try {
+<span class="fc" id="L224">        statement.setQueryTimeout(60);</span>
         // set parameters
-<span class="pc bpc" id="L245" title="1 of 2 branches missed.">        statement.setString(1, created != null ? created.toString() : &quot;&quot;);</span>
-<span class="fc" id="L246">        statement.setString(2, expires.toString());</span>
-<span class="fc" id="L247">        statement.setString(3, id.getSource());</span>
-<span class="fc" id="L248">        statement.setString(4, id.getType());</span>
-<span class="fc" id="L249">        statement.setString(5, id.getCode());</span>
-<span class="fc" id="L250">        statement.setLong(6, id.getUpdateTime().getTime());</span>
-<span class="fc bfc" id="L251" title="All 2 branches covered.">        statement.setString(7, url != null ? url.toString() : &quot;&quot;);</span>
-<span class="pc bpc" id="L252" title="1 of 2 branches missed.">        if (product == null) {</span>
-<span class="fc" id="L253">          statement.setNull(8, Types.VARCHAR);</span>
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">        statement.setString(1, created != null ? created.toString() : &quot;&quot;);</span>
+<span class="fc" id="L227">        statement.setString(2, expires.toString());</span>
+<span class="fc" id="L228">        statement.setString(3, id.getSource());</span>
+<span class="fc" id="L229">        statement.setString(4, id.getType());</span>
+<span class="fc" id="L230">        statement.setString(5, id.getCode());</span>
+<span class="fc" id="L231">        statement.setLong(6, id.getUpdateTime().getTime());</span>
+<span class="fc bfc" id="L232" title="All 2 branches covered.">        statement.setString(7, url != null ? url.toString() : &quot;&quot;);</span>
+<span class="pc bpc" id="L233" title="1 of 2 branches missed.">        if (product == null) {</span>
+<span class="fc" id="L234">          statement.setNull(8, Types.VARCHAR);</span>
         } else {
-<span class="nc" id="L255">          statement.setString(8,</span>
-<span class="nc" id="L256">              new JsonProduct().getJsonObject(product).toString());</span>
+<span class="nc" id="L236">          statement.setString(8,</span>
+<span class="nc" id="L237">              new JsonProduct().getJsonObject(product).toString());</span>
         }
         // execute
-<span class="fc" id="L259">        statement.executeUpdate();</span>
-<span class="fc" id="L260">        commitTransaction();</span>
-<span class="nc" id="L261">      } catch (SQLException e) {</span>
-<span class="nc" id="L262">        LOGGER.log(Level.WARNING, &quot;Exception adding notification&quot;, e);</span>
+<span class="fc" id="L240">        statement.executeUpdate();</span>
+<span class="fc" id="L241">        commitTransaction();</span>
+<span class="nc" id="L242">      } catch (SQLException e) {</span>
+<span class="nc" id="L243">        LOGGER.log(Level.WARNING, &quot;Exception adding notification&quot;, e);</span>
         try {
           // otherwise roll back
-<span class="nc" id="L265">          rollbackTransaction();</span>
-<span class="nc" id="L266">        } catch (SQLException e2) {</span>
+<span class="nc" id="L246">          rollbackTransaction();</span>
+<span class="nc" id="L247">        } catch (SQLException e2) {</span>
           // ignore
-<span class="nc" id="L268">        }</span>
-<span class="fc" id="L269">      }</span>
+<span class="nc" id="L249">        }</span>
+<span class="fc" id="L250">      }</span>
     }
-<span class="fc" id="L271">  }</span>
+<span class="fc" id="L252">  }</span>
 
   /**
    * Remove notification from index.
@@ -278,54 +259,55 @@ public class JsonNotificationIndex
   @Override
   public synchronized void removeNotification(Notification notification) throws Exception {
     // all notifications
-<span class="fc" id="L281">    Instant expires = notification.getExpirationDate().toInstant();</span>
-<span class="fc" id="L282">    ProductId id = notification.getProductId();</span>
+<span class="fc" id="L262">    Instant expires = notification.getExpirationDate().toInstant();</span>
+<span class="fc" id="L263">    ProductId id = notification.getProductId();</span>
     // json only
-<span class="fc" id="L284">    Instant created = null;</span>
-<span class="fc" id="L285">    Product product = null;</span>
+<span class="fc" id="L265">    Instant created = null;</span>
+<span class="fc" id="L266">    Product product = null;</span>
     // url only
-<span class="fc" id="L287">    URL url = null;</span>
-<span class="pc bpc" id="L288" title="1 of 2 branches missed.">    if (notification instanceof JsonNotification) {</span>
-<span class="nc" id="L289">      JsonNotification jsonNotification = (JsonNotification) notification;</span>
-<span class="nc" id="L290">      created = jsonNotification.created;</span>
-<span class="nc" id="L291">      product = jsonNotification.product;</span>
-<span class="pc bfc" id="L292" title="All 2 branches covered.">    } else if (notification instanceof URLNotification) {</span>
-<span class="fc" id="L293">      url = ((URLNotification) notification).getProductURL();</span>
+<span class="fc" id="L268">    URL url = null;</span>
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">    if (notification instanceof JsonNotification) {</span>
+<span class="nc" id="L270">      JsonNotification jsonNotification = (JsonNotification) notification;</span>
+<span class="nc" id="L271">      created = jsonNotification.created;</span>
+<span class="nc" id="L272">      product = jsonNotification.product;</span>
+<span class="pc bfc" id="L273" title="All 2 branches covered.">    } else if (notification instanceof URLNotification) {</span>
+<span class="fc" id="L274">      url = ((URLNotification) notification).getProductURL();</span>
     }
     // prepare statement
-<span class="fc" id="L296">    final String sql = &quot;DELETE FROM &quot; + this.table</span>
+<span class="fc" id="L277">    final String sql = &quot;DELETE FROM &quot; + this.table</span>
           + &quot; WHERE created=? AND expires=? AND source=? AND type=? AND code=?&quot;
           + &quot; AND updatetime=? AND url=? AND data&quot;
-<span class="pc bpc" id="L299" title="1 of 2 branches missed.">          + (product == null ? &quot; IS NULL&quot; : &quot;=?&quot;);</span>
-<span class="fc" id="L300">    beginTransaction();</span>
-<span class="fc" id="L301">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
+<span class="pc bpc" id="L280" title="1 of 2 branches missed.">          + (product == null ? &quot; IS NULL&quot; : &quot;=?&quot;);</span>
+<span class="fc" id="L281">    beginTransaction();</span>
+<span class="fc" id="L282">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
       try {
+<span class="fc" id="L284">        statement.setQueryTimeout(60);</span>
         // set parameters
-<span class="pc bpc" id="L304" title="1 of 2 branches missed.">        statement.setString(1, created != null ? created.toString() : &quot;&quot;);</span>
-<span class="fc" id="L305">        statement.setString(2, expires.toString());</span>
-<span class="fc" id="L306">        statement.setString(3, id.getSource());</span>
-<span class="fc" id="L307">        statement.setString(4, id.getType());</span>
-<span class="fc" id="L308">        statement.setString(5, id.getCode());</span>
-<span class="fc" id="L309">        statement.setLong(6, id.getUpdateTime().getTime());</span>
-<span class="fc bfc" id="L310" title="All 2 branches covered.">        statement.setString(7, url != null ? url.toString() : &quot;&quot;);</span>
-<span class="pc bpc" id="L311" title="1 of 2 branches missed.">        if (product != null) {</span>
-<span class="nc" id="L312">          statement.setString(8,</span>
-<span class="nc" id="L313">              new JsonProduct().getJsonObject(product).toString());</span>
+<span class="pc bpc" id="L286" title="1 of 2 branches missed.">        statement.setString(1, created != null ? created.toString() : &quot;&quot;);</span>
+<span class="fc" id="L287">        statement.setString(2, expires.toString());</span>
+<span class="fc" id="L288">        statement.setString(3, id.getSource());</span>
+<span class="fc" id="L289">        statement.setString(4, id.getType());</span>
+<span class="fc" id="L290">        statement.setString(5, id.getCode());</span>
+<span class="fc" id="L291">        statement.setLong(6, id.getUpdateTime().getTime());</span>
+<span class="fc bfc" id="L292" title="All 2 branches covered.">        statement.setString(7, url != null ? url.toString() : &quot;&quot;);</span>
+<span class="pc bpc" id="L293" title="1 of 2 branches missed.">        if (product != null) {</span>
+<span class="nc" id="L294">          statement.setString(8,</span>
+<span class="nc" id="L295">              new JsonProduct().getJsonObject(product).toString());</span>
         }
         // execute
-<span class="fc" id="L316">        statement.executeUpdate();</span>
-<span class="fc" id="L317">        commitTransaction();</span>
-<span class="nc" id="L318">      } catch (SQLException e) {</span>
-<span class="nc" id="L319">        LOGGER.log(Level.WARNING, &quot;Exception removing notification&quot;, e);</span>
+<span class="fc" id="L298">        statement.executeUpdate();</span>
+<span class="fc" id="L299">        commitTransaction();</span>
+<span class="nc" id="L300">      } catch (SQLException e) {</span>
+<span class="nc" id="L301">        LOGGER.log(Level.WARNING, &quot;Exception removing notification&quot;, e);</span>
         try {
           // otherwise roll back
-<span class="nc" id="L322">          rollbackTransaction();</span>
-<span class="nc" id="L323">        } catch (SQLException e2) {</span>
+<span class="nc" id="L304">          rollbackTransaction();</span>
+<span class="nc" id="L305">        } catch (SQLException e2) {</span>
           // ignore
-<span class="nc" id="L325">        }</span>
-<span class="fc" id="L326">      }</span>
+<span class="nc" id="L307">        }</span>
+<span class="fc" id="L308">      }</span>
     }
-<span class="fc" id="L328">  }</span>
+<span class="fc" id="L310">  }</span>
 
   /**
    * Search index for notifications.
@@ -341,49 +323,50 @@ public class JsonNotificationIndex
   @Override
   public synchronized List&lt;Notification&gt; findNotifications(
       String source, String type, String code) throws Exception {
-<span class="fc" id="L344">    final ArrayList&lt;Object&gt; where = new ArrayList&lt;Object&gt;();</span>
-<span class="fc" id="L345">    final ArrayList&lt;String&gt; values = new ArrayList&lt;String&gt;();</span>
-<span class="fc bfc" id="L346" title="All 2 branches covered.">    if (source != null) {</span>
-<span class="fc" id="L347">      where.add(&quot;source=?&quot;);</span>
-<span class="fc" id="L348">      values.add(source);</span>
+<span class="fc" id="L326">    final ArrayList&lt;Object&gt; where = new ArrayList&lt;Object&gt;();</span>
+<span class="fc" id="L327">    final ArrayList&lt;String&gt; values = new ArrayList&lt;String&gt;();</span>
+<span class="fc bfc" id="L328" title="All 2 branches covered.">    if (source != null) {</span>
+<span class="fc" id="L329">      where.add(&quot;source=?&quot;);</span>
+<span class="fc" id="L330">      values.add(source);</span>
     }
-<span class="fc bfc" id="L350" title="All 2 branches covered.">    if (type != null) {</span>
-<span class="fc" id="L351">      where.add(&quot;type=?&quot;);</span>
-<span class="fc" id="L352">      values.add(type);</span>
+<span class="fc bfc" id="L332" title="All 2 branches covered.">    if (type != null) {</span>
+<span class="fc" id="L333">      where.add(&quot;type=?&quot;);</span>
+<span class="fc" id="L334">      values.add(type);</span>
     }
-<span class="fc bfc" id="L354" title="All 2 branches covered.">    if (code != null) {</span>
-<span class="fc" id="L355">      where.add(&quot;code=?&quot;);</span>
-<span class="fc" id="L356">      values.add(code);</span>
+<span class="fc bfc" id="L336" title="All 2 branches covered.">    if (code != null) {</span>
+<span class="fc" id="L337">      where.add(&quot;code=?&quot;);</span>
+<span class="fc" id="L338">      values.add(code);</span>
     }
-<span class="fc" id="L358">    String sql = &quot;SELECT * FROM &quot; + this.table;</span>
-<span class="pc bpc" id="L359" title="1 of 2 branches missed.">    if (where.size() &gt; 0) {</span>
-<span class="fc" id="L360">      sql += &quot; WHERE &quot; + StringUtils.join(where, &quot; AND &quot;);</span>
+<span class="fc" id="L340">    String sql = &quot;SELECT * FROM &quot; + this.table;</span>
+<span class="pc bpc" id="L341" title="1 of 2 branches missed.">    if (where.size() &gt; 0) {</span>
+<span class="fc" id="L342">      sql += &quot; WHERE &quot; + StringUtils.join(where, &quot; AND &quot;);</span>
     }
     // prepare statement
-<span class="fc" id="L363">    beginTransaction();</span>
-<span class="fc" id="L364">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
+<span class="fc" id="L345">    beginTransaction();</span>
+<span class="fc" id="L346">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
       try {
+<span class="fc" id="L348">        statement.setQueryTimeout(1800);</span>
 
         // set parameters
-<span class="fc bfc" id="L368" title="All 2 branches covered.">        for (int i = 0, len=values.size(); i &lt; len; i++) {</span>
-<span class="fc" id="L369">          statement.setString(i+1, values.get(i));</span>
+<span class="fc bfc" id="L351" title="All 2 branches covered.">        for (int i = 0, len=values.size(); i &lt; len; i++) {</span>
+<span class="fc" id="L352">          statement.setString(i+1, values.get(i));</span>
         }
 
         // execute
-<span class="fc" id="L373">        final List&lt;Notification&gt; notifications = getNotifications(statement);</span>
-<span class="fc" id="L374">        commitTransaction();</span>
-<span class="fc" id="L375">        return notifications;</span>
-<span class="nc" id="L376">      } catch (SQLException e) {</span>
-<span class="nc" id="L377">        LOGGER.log(Level.WARNING, &quot;Exception finding notifications&quot;, e);</span>
+<span class="fc" id="L356">        final List&lt;Notification&gt; notifications = getNotifications(statement);</span>
+<span class="fc" id="L357">        commitTransaction();</span>
+<span class="fc" id="L358">        return notifications;</span>
+<span class="nc" id="L359">      } catch (SQLException e) {</span>
+<span class="nc" id="L360">        LOGGER.log(Level.WARNING, &quot;Exception finding notifications&quot;, e);</span>
         try {
           // otherwise roll back
-<span class="nc" id="L380">          rollbackTransaction();</span>
-<span class="nc" id="L381">        } catch (SQLException e2) {</span>
+<span class="nc" id="L363">          rollbackTransaction();</span>
+<span class="nc" id="L364">        } catch (SQLException e2) {</span>
           // ignore
-<span class="nc" id="L383">        }</span>
+<span class="nc" id="L366">        }</span>
       }
-<span class="pc bpc" id="L385" title="1 of 2 branches missed.">    }</span>
-<span class="nc" id="L386">    return new ArrayList&lt;Notification&gt;();</span>
+<span class="pc bpc" id="L368" title="1 of 2 branches missed.">    }</span>
+<span class="nc" id="L369">    return new ArrayList&lt;Notification&gt;();</span>
   }
 
   /**
@@ -401,35 +384,35 @@ public class JsonNotificationIndex
   public synchronized List&lt;Notification&gt; findNotifications(
       List&lt;String&gt; sources, List&lt;String&gt; types, List&lt;String&gt; codes)
       throws Exception {
-<span class="fc" id="L404">    final ArrayList&lt;Object&gt; where = new ArrayList&lt;Object&gt;();</span>
-<span class="fc" id="L405">    final ArrayList&lt;String&gt; values = new ArrayList&lt;String&gt;();</span>
-<span class="pc bpc" id="L406" title="1 of 4 branches missed.">    if (sources != null &amp;&amp; sources.size() &gt; 0) {</span>
-<span class="fc" id="L407">      where.add(&quot;source IN (&quot; +</span>
-<span class="fc" id="L408">          StringUtils.join(</span>
-<span class="fc" id="L409">              Collections.nCopies(sources.size(), (Object)&quot;?&quot;),</span>
+<span class="fc" id="L387">    final ArrayList&lt;Object&gt; where = new ArrayList&lt;Object&gt;();</span>
+<span class="fc" id="L388">    final ArrayList&lt;String&gt; values = new ArrayList&lt;String&gt;();</span>
+<span class="pc bpc" id="L389" title="1 of 4 branches missed.">    if (sources != null &amp;&amp; sources.size() &gt; 0) {</span>
+<span class="fc" id="L390">      where.add(&quot;source IN (&quot; +</span>
+<span class="fc" id="L391">          StringUtils.join(</span>
+<span class="fc" id="L392">              Collections.nCopies(sources.size(), (Object)&quot;?&quot;),</span>
               &quot;,&quot;)
           + &quot;)&quot;);
-<span class="fc" id="L412">      values.addAll(sources);</span>
+<span class="fc" id="L395">      values.addAll(sources);</span>
     }
-<span class="pc bpc" id="L414" title="1 of 4 branches missed.">    if (types != null &amp;&amp; types.size() &gt; 0) {</span>
-<span class="fc" id="L415">      where.add(&quot;type IN (&quot; +</span>
-<span class="fc" id="L416">          StringUtils.join(</span>
-<span class="fc" id="L417">              Collections.nCopies(types.size(), (Object)&quot;?&quot;),</span>
+<span class="pc bpc" id="L397" title="1 of 4 branches missed.">    if (types != null &amp;&amp; types.size() &gt; 0) {</span>
+<span class="fc" id="L398">      where.add(&quot;type IN (&quot; +</span>
+<span class="fc" id="L399">          StringUtils.join(</span>
+<span class="fc" id="L400">              Collections.nCopies(types.size(), (Object)&quot;?&quot;),</span>
               &quot;,&quot;)
           + &quot;)&quot;);
-<span class="fc" id="L420">      values.addAll(types);</span>
+<span class="fc" id="L403">      values.addAll(types);</span>
     }
-<span class="pc bpc" id="L422" title="1 of 4 branches missed.">    if (codes != null &amp;&amp; codes.size() &gt; 0) {</span>
-<span class="fc" id="L423">      where.add(&quot;code IN (&quot; +</span>
-<span class="fc" id="L424">          StringUtils.join(</span>
-<span class="fc" id="L425">              Collections.nCopies(codes.size(), (Object)&quot;?&quot;),</span>
+<span class="pc bpc" id="L405" title="1 of 4 branches missed.">    if (codes != null &amp;&amp; codes.size() &gt; 0) {</span>
+<span class="fc" id="L406">      where.add(&quot;code IN (&quot; +</span>
+<span class="fc" id="L407">          StringUtils.join(</span>
+<span class="fc" id="L408">              Collections.nCopies(codes.size(), (Object)&quot;?&quot;),</span>
               &quot;,&quot;)
           + &quot;)&quot;);
-<span class="fc" id="L428">      values.addAll(codes);</span>
+<span class="fc" id="L411">      values.addAll(codes);</span>
     }
-<span class="fc" id="L430">    String sql = &quot;SELECT * FROM &quot; + this.table;</span>
-<span class="fc bfc" id="L431" title="All 2 branches covered.">    if (where.size() &gt; 0) {</span>
-<span class="fc" id="L432">      sql += &quot; WHERE &quot; + StringUtils.join(where, &quot; AND &quot;);</span>
+<span class="fc" id="L413">    String sql = &quot;SELECT * FROM &quot; + this.table;</span>
+<span class="fc bfc" id="L414" title="All 2 branches covered.">    if (where.size() &gt; 0) {</span>
+<span class="fc" id="L415">      sql += &quot; WHERE &quot; + StringUtils.join(where, &quot; AND &quot;);</span>
     } else {
       // searching for all notifications
 
@@ -437,35 +420,37 @@ public class JsonNotificationIndex
       // run query in a way that returns list of default notifications,
       // (by returning empty created, data, and url)
       // since full details are not needed during requeue
-<span class="fc" id="L440">      sql = &quot;SELECT DISTINCT&quot;</span>
+<span class="fc" id="L423">      sql = &quot;SELECT DISTINCT&quot;</span>
           + &quot; '' as created, expires, source, type, code, updateTime&quot;
           + &quot;, '' as url, null as data&quot;
           + &quot; FROM &quot; + this.table;
     }
     // prepare statement
-<span class="fc" id="L446">    beginTransaction();</span>
-<span class="fc" id="L447">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
+<span class="fc" id="L429">    beginTransaction();</span>
+<span class="fc" id="L430">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
       try {
+<span class="fc" id="L432">        statement.setQueryTimeout(1800);</span>
+
         // set parameters
-<span class="fc bfc" id="L450" title="All 2 branches covered.">        for (int i = 0, len=values.size(); i &lt; len; i++) {</span>
-<span class="fc" id="L451">          statement.setString(i+1, values.get(i));</span>
+<span class="fc bfc" id="L435" title="All 2 branches covered.">        for (int i = 0, len=values.size(); i &lt; len; i++) {</span>
+<span class="fc" id="L436">          statement.setString(i+1, values.get(i));</span>
         }
 
         // execute
-<span class="fc" id="L455">        final List&lt;Notification&gt; notifications = getNotifications(statement);</span>
-<span class="fc" id="L456">        commitTransaction();</span>
-<span class="fc" id="L457">        return notifications;</span>
-<span class="nc" id="L458">      } catch (SQLException e) {</span>
-<span class="nc" id="L459">        LOGGER.log(Level.WARNING, &quot;Exception finding notifications&quot;, e);</span>
+<span class="fc" id="L440">        final List&lt;Notification&gt; notifications = getNotifications(statement);</span>
+<span class="fc" id="L441">        commitTransaction();</span>
+<span class="fc" id="L442">        return notifications;</span>
+<span class="nc" id="L443">      } catch (SQLException e) {</span>
+<span class="nc" id="L444">        LOGGER.log(Level.WARNING, &quot;Exception finding notifications&quot;, e);</span>
         try {
           // otherwise roll back
-<span class="nc" id="L462">          rollbackTransaction();</span>
-<span class="nc" id="L463">        } catch (SQLException e2) {</span>
+<span class="nc" id="L447">          rollbackTransaction();</span>
+<span class="nc" id="L448">        } catch (SQLException e2) {</span>
           // ignore
-<span class="nc" id="L465">        }</span>
+<span class="nc" id="L450">        }</span>
       }
-<span class="pc bpc" id="L467" title="1 of 2 branches missed.">    }</span>
-<span class="nc" id="L468">    return new ArrayList&lt;Notification&gt;();</span>
+<span class="pc bpc" id="L452" title="1 of 2 branches missed.">    }</span>
+<span class="nc" id="L453">    return new ArrayList&lt;Notification&gt;();</span>
   }
 
   /**
@@ -475,29 +460,31 @@ public class JsonNotificationIndex
    */
   @Override
   public synchronized List&lt;Notification&gt; findExpiredNotifications() throws Exception {
-<span class="fc" id="L478">    final String sql = &quot;SELECT * FROM &quot; + this.table + &quot; WHERE expires &lt;= ?&quot;;</span>
+<span class="fc" id="L463">    final String sql = &quot;SELECT * FROM &quot; + this.table + &quot; WHERE expires &lt;= ? LIMIT 1000&quot;;</span>
     // prepare statement
-<span class="fc" id="L480">    beginTransaction();</span>
-<span class="fc" id="L481">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
+<span class="fc" id="L465">    beginTransaction();</span>
+<span class="fc" id="L466">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
       try {
+<span class="fc" id="L468">        statement.setQueryTimeout(1800);</span>
+
         // set parameters
-<span class="fc" id="L484">        statement.setString(1, Instant.now().toString());</span>
+<span class="fc" id="L471">        statement.setString(1, Instant.now().toString());</span>
 
         // execute
-<span class="fc" id="L487">        final List&lt;Notification&gt; notifications = getNotifications(statement);</span>
-<span class="fc" id="L488">        commitTransaction();</span>
-<span class="fc" id="L489">        return notifications;</span>
-<span class="nc" id="L490">      } catch (SQLException e) {</span>
-<span class="nc" id="L491">        LOGGER.log(Level.WARNING, &quot;Exception finding notifications&quot;, e);</span>
+<span class="fc" id="L474">        final List&lt;Notification&gt; notifications = getNotifications(statement);</span>
+<span class="fc" id="L475">        commitTransaction();</span>
+<span class="fc" id="L476">        return notifications;</span>
+<span class="nc" id="L477">      } catch (SQLException e) {</span>
+<span class="nc" id="L478">        LOGGER.log(Level.WARNING, &quot;Exception finding notifications&quot;, e);</span>
         try {
           // otherwise roll back
-<span class="nc" id="L494">          rollbackTransaction();</span>
-<span class="nc" id="L495">        } catch (SQLException e2) {</span>
+<span class="nc" id="L481">          rollbackTransaction();</span>
+<span class="nc" id="L482">        } catch (SQLException e2) {</span>
           // ignore
-<span class="nc" id="L497">        }</span>
+<span class="nc" id="L484">        }</span>
       }
-<span class="pc bpc" id="L499" title="1 of 2 branches missed.">    }</span>
-<span class="nc" id="L500">    return new ArrayList&lt;Notification&gt;();</span>
+<span class="pc bpc" id="L486" title="1 of 2 branches missed.">    }</span>
+<span class="nc" id="L487">    return new ArrayList&lt;Notification&gt;();</span>
 
   }
 
@@ -510,33 +497,34 @@ public class JsonNotificationIndex
    */
   @Override
   public synchronized List&lt;Notification&gt; findNotifications(ProductId id) throws Exception {
-<span class="fc" id="L513">    final String sql = &quot;SELECT * FROM &quot; + this.table</span>
+<span class="fc" id="L500">    final String sql = &quot;SELECT * FROM &quot; + this.table</span>
         + &quot; WHERE source=? AND type=? AND code=? AND updatetime=?&quot;;
     // prepare statement
-<span class="fc" id="L516">    beginTransaction();</span>
-<span class="fc" id="L517">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
+<span class="fc" id="L503">    beginTransaction();</span>
+<span class="fc" id="L504">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
       try {
+<span class="fc" id="L506">        statement.setQueryTimeout(30);</span>
         // set parameters
-<span class="fc" id="L520">        statement.setString(1, id.getSource());</span>
-<span class="fc" id="L521">        statement.setString(2, id.getType());</span>
-<span class="fc" id="L522">        statement.setString(3, id.getCode());</span>
-<span class="fc" id="L523">        statement.setLong(4, id.getUpdateTime().getTime());</span>
+<span class="fc" id="L508">        statement.setString(1, id.getSource());</span>
+<span class="fc" id="L509">        statement.setString(2, id.getType());</span>
+<span class="fc" id="L510">        statement.setString(3, id.getCode());</span>
+<span class="fc" id="L511">        statement.setLong(4, id.getUpdateTime().getTime());</span>
 
         // executes and commit ifsuccessful
-<span class="fc" id="L526">        final List&lt;Notification&gt; notifications = getNotifications(statement);</span>
-<span class="fc" id="L527">        commitTransaction();</span>
-<span class="fc" id="L528">        return notifications;</span>
-<span class="nc" id="L529">      } catch (SQLException e) {</span>
-<span class="nc" id="L530">        LOGGER.log(Level.WARNING, &quot;Exception finding notifications&quot;, e);</span>
+<span class="fc" id="L514">        final List&lt;Notification&gt; notifications = getNotifications(statement);</span>
+<span class="fc" id="L515">        commitTransaction();</span>
+<span class="fc" id="L516">        return notifications;</span>
+<span class="nc" id="L517">      } catch (SQLException e) {</span>
+<span class="nc" id="L518">        LOGGER.log(Level.WARNING, &quot;Exception finding notifications&quot;, e);</span>
         try {
           // otherwise roll back
-<span class="nc" id="L533">          rollbackTransaction();</span>
-<span class="nc" id="L534">        } catch (SQLException e2) {</span>
+<span class="nc" id="L521">          rollbackTransaction();</span>
+<span class="nc" id="L522">        } catch (SQLException e2) {</span>
           // ignore
-<span class="nc" id="L536">        }</span>
+<span class="nc" id="L524">        }</span>
       }
-<span class="pc bpc" id="L538" title="1 of 2 branches missed.">    }</span>
-<span class="nc" id="L539">    return new ArrayList&lt;Notification&gt;();</span>
+<span class="pc bpc" id="L526" title="1 of 2 branches missed.">    }</span>
+<span class="nc" id="L527">    return new ArrayList&lt;Notification&gt;();</span>
   }
 
   /**
@@ -561,7 +549,7 @@ public class JsonNotificationIndex
     // run query in a way that returns list of default notifications,
     // (by returning empty created, data, and url)
     // since full details are not needed during requeue
-<span class="nc" id="L564">    final String sql = &quot;SELECT DISTINCT&quot;</span>
+<span class="nc" id="L552">    final String sql = &quot;SELECT DISTINCT&quot;</span>
         + &quot; '' as created, t.expires, t.source, t.type, t.code, t.updateTime&quot;
         + &quot;, '' as url, null as data&quot;
         + &quot; FROM &quot; + this.table + &quot; t&quot;
@@ -571,24 +559,25 @@ public class JsonNotificationIndex
             + &quot; AND code=t.code AND updatetime=t.updateTime&quot;
         + &quot;)&quot;;
     // prepare statement
-<span class="nc" id="L574">    beginTransaction();</span>
-<span class="nc" id="L575">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
+<span class="nc" id="L562">    beginTransaction();</span>
+<span class="nc" id="L563">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
       try {
+<span class="nc" id="L565">        statement.setQueryTimeout(1800);</span>
         // execute and commit if successful
-<span class="nc" id="L578">        final List&lt;Notification&gt; notifications = getNotifications(statement);</span>
-<span class="nc" id="L579">        commitTransaction();</span>
-<span class="nc" id="L580">        return notifications;</span>
-<span class="nc" id="L581">      } catch (SQLException e) {</span>
-<span class="nc" id="L582">        LOGGER.log(Level.WARNING, &quot;Exception finding notifications&quot;, e);</span>
+<span class="nc" id="L567">        final List&lt;Notification&gt; notifications = getNotifications(statement);</span>
+<span class="nc" id="L568">        commitTransaction();</span>
+<span class="nc" id="L569">        return notifications;</span>
+<span class="nc" id="L570">      } catch (SQLException e) {</span>
+<span class="nc" id="L571">        LOGGER.log(Level.WARNING, &quot;Exception finding notifications&quot;, e);</span>
         try {
           // otherwise roll back
-<span class="nc" id="L585">          rollbackTransaction();</span>
-<span class="nc" id="L586">        } catch (SQLException e2) {</span>
+<span class="nc" id="L574">          rollbackTransaction();</span>
+<span class="nc" id="L575">        } catch (SQLException e2) {</span>
           // ignore
-<span class="nc" id="L588">        }</span>
+<span class="nc" id="L577">        }</span>
       }
-<span class="nc bnc" id="L590" title="All 2 branches missed.">    }</span>
-<span class="nc" id="L591">    return new ArrayList&lt;Notification&gt;();</span>
+<span class="nc bnc" id="L579" title="All 2 branches missed.">    }</span>
+<span class="nc" id="L580">    return new ArrayList&lt;Notification&gt;();</span>
   }
 
   /**
@@ -596,21 +585,21 @@ public class JsonNotificationIndex
    */
   protected synchronized List&lt;Notification&gt; getNotifications(PreparedStatement ps)
       throws Exception {
-<span class="fc" id="L599">    final List&lt;Notification&gt; n = new ArrayList&lt;Notification&gt;();</span>
-<span class="fc" id="L600">    try (final ResultSet rs = ps.executeQuery()) {</span>
-<span class="fc bfc" id="L601" title="All 2 branches covered.">      while (rs.next()) {</span>
-<span class="fc" id="L602">        n.add(parseNotification(</span>
-<span class="fc" id="L603">            rs.getString(&quot;created&quot;),</span>
-<span class="fc" id="L604">            rs.getString(&quot;expires&quot;),</span>
-<span class="fc" id="L605">            rs.getString(&quot;source&quot;),</span>
-<span class="fc" id="L606">            rs.getString(&quot;type&quot;),</span>
-<span class="fc" id="L607">            rs.getString(&quot;code&quot;),</span>
-<span class="fc" id="L608">            rs.getLong(&quot;updatetime&quot;),</span>
-<span class="fc" id="L609">            rs.getString(&quot;url&quot;),</span>
-<span class="fc" id="L610">            rs.getString(&quot;data&quot;)));</span>
+<span class="fc" id="L588">    final List&lt;Notification&gt; n = new ArrayList&lt;Notification&gt;();</span>
+<span class="fc" id="L589">    try (final ResultSet rs = ps.executeQuery()) {</span>
+<span class="fc bfc" id="L590" title="All 2 branches covered.">      while (rs.next()) {</span>
+<span class="fc" id="L591">        n.add(parseNotification(</span>
+<span class="fc" id="L592">            rs.getString(&quot;created&quot;),</span>
+<span class="fc" id="L593">            rs.getString(&quot;expires&quot;),</span>
+<span class="fc" id="L594">            rs.getString(&quot;source&quot;),</span>
+<span class="fc" id="L595">            rs.getString(&quot;type&quot;),</span>
+<span class="fc" id="L596">            rs.getString(&quot;code&quot;),</span>
+<span class="fc" id="L597">            rs.getLong(&quot;updatetime&quot;),</span>
+<span class="fc" id="L598">            rs.getString(&quot;url&quot;),</span>
+<span class="fc" id="L599">            rs.getString(&quot;data&quot;)));</span>
       }
     }
-<span class="fc" id="L613">    return n;</span>
+<span class="fc" id="L602">    return n;</span>
   }
 
   /**
@@ -633,21 +622,21 @@ public class JsonNotificationIndex
       final String url,
       final String data) throws Exception {
     final Notification n;
-<span class="fc" id="L636">    final ProductId id = new ProductId(source, type, code, new Date(updateTime));</span>
-<span class="fc" id="L637">    final Date expiresDate = Date.from(Instant.parse(expires));</span>
-<span class="pc bpc" id="L638" title="3 of 4 branches missed.">    if (!&quot;&quot;.equals(created) &amp;&amp; data != null) {</span>
-<span class="nc" id="L639">      Product product = new JsonProduct().getProduct(</span>
-<span class="nc" id="L640">          Json.createReader(</span>
-<span class="nc" id="L641">            new ByteArrayInputStream(data.getBytes())</span>
-<span class="nc" id="L642">          ).readObject());</span>
-<span class="nc" id="L643">      n = new JsonNotification(Instant.parse(created), product);</span>
-<span class="pc bfc" id="L644" title="All 2 branches covered.">    } else if (!&quot;&quot;.equals(url)) {</span>
-<span class="fc" id="L645">      n = new URLNotification(id, expiresDate, null, new URL(url));</span>
+<span class="fc" id="L625">    final ProductId id = new ProductId(source, type, code, new Date(updateTime));</span>
+<span class="fc" id="L626">    final Date expiresDate = Date.from(Instant.parse(expires));</span>
+<span class="pc bpc" id="L627" title="3 of 4 branches missed.">    if (!&quot;&quot;.equals(created) &amp;&amp; data != null) {</span>
+<span class="nc" id="L628">      Product product = new JsonProduct().getProduct(</span>
+<span class="nc" id="L629">          Json.createReader(</span>
+<span class="nc" id="L630">            new ByteArrayInputStream(data.getBytes())</span>
+<span class="nc" id="L631">          ).readObject());</span>
+<span class="nc" id="L632">      n = new JsonNotification(Instant.parse(created), product);</span>
+<span class="pc bfc" id="L633" title="All 2 branches covered.">    } else if (!&quot;&quot;.equals(url)) {</span>
+<span class="fc" id="L634">      n = new URLNotification(id, expiresDate, null, new URL(url));</span>
     } else {
-<span class="fc" id="L647">      n = new DefaultNotification(id, expiresDate, null);</span>
+<span class="fc" id="L636">      n = new DefaultNotification(id, expiresDate, null);</span>
     }
-<span class="fc" id="L649">    return n;</span>
+<span class="fc" id="L638">    return n;</span>
   }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

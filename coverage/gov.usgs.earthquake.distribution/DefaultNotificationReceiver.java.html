@@ -120,7 +120,7 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 <span class="fc" id="L120">	private ObjectLock&lt;ProductId&gt; retrieveLocks = new ObjectLock&lt;ProductId&gt;();</span>
 
 <span class="fc" id="L122">	public DefaultNotificationReceiver() {</span>
-<span class="fc" id="L123">		notifier = new FutureListenerNotifier(this);</span>
+<span class="fc" id="L123">		notifier = new ExecutorListenerNotifier(this);</span>
 <span class="fc" id="L124">	}</span>
 
 	/**
@@ -685,29 +685,43 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 <span class="nc" id="L685">		return null;</span>
 	}
 
+	public void throttleQueues() throws InterruptedException {
+<span class="pc bpc" id="L689" title="1 of 2 branches missed.">		if (notifier instanceof ExecutorListenerNotifier) {</span>
+<span class="fc" id="L690">			((ExecutorListenerNotifier) notifier).throttleQueues();</span>
+		}
+<span class="fc" id="L692">	}</span>
+
 	public Long getReceiverCleanupInterval() {
-<span class="nc" id="L689">		return receiverCleanupInterval;</span>
+<span class="nc" id="L695">		return receiverCleanupInterval;</span>
 	}
 
 	public void setReceiverCleanupInterval(Long receiverCleanupInterval) {
-<span class="nc" id="L693">		this.receiverCleanupInterval = receiverCleanupInterval;</span>
-<span class="nc" id="L694">	}</span>
+<span class="nc" id="L699">		this.receiverCleanupInterval = receiverCleanupInterval;</span>
+<span class="nc" id="L700">	}</span>
 
 	public int getConnectTimeout() {
-<span class="nc" id="L697">		return connectTimeout;</span>
+<span class="nc" id="L703">		return connectTimeout;</span>
 	}
 
 	public void setConnectTimeout(int connectTimeout) {
-<span class="nc" id="L701">		this.connectTimeout = connectTimeout;</span>
-<span class="nc" id="L702">	}</span>
+<span class="nc" id="L707">		this.connectTimeout = connectTimeout;</span>
+<span class="nc" id="L708">	}</span>
+
+	public ListenerNotifier getNotifier() {
+<span class="nc" id="L711">		return this.notifier;</span>
+	}
+
+	public void setNotifier(final ListenerNotifier notifier) {
+<span class="fc" id="L715">		this.notifier = notifier;</span>
+<span class="fc" id="L716">	}</span>
 
 	public int getReadTimeout() {
-<span class="fc" id="L705">		return readTimeout;</span>
+<span class="fc" id="L719">		return readTimeout;</span>
 	}
 
 	public void setReadTimeout(int readTimeout) {
-<span class="nc" id="L709">		this.readTimeout = readTimeout;</span>
-<span class="nc" id="L710">	}</span>
+<span class="nc" id="L723">		this.readTimeout = readTimeout;</span>
+<span class="nc" id="L724">	}</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

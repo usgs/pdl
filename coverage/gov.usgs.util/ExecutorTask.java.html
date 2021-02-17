@@ -153,20 +153,20 @@ public class ExecutorTask&lt;T&gt; implements Future&lt;T&gt;, Runnable {
 	@Override
 	public void run() {
 		// used to schedule timeout
-<span class="nc" id="L156">		Timer timeoutTimer = new Timer();</span>
+<span class="fc" id="L156">		Timer timeoutTimer = new Timer();</span>
 
 		try {
 			// synchronized (this) {
-<span class="nc bnc" id="L160" title="All 6 branches missed.">			if (done || cancelled || numTries &gt;= maxTries) {</span>
+<span class="pc bpc" id="L160" title="3 of 6 branches missed.">			if (done || cancelled || numTries &gt;= maxTries) {</span>
 				// already done, cancelled, or out of attempts
 <span class="nc" id="L162">				return;</span>
 			}
 
 			// otherwise,
-<span class="nc" id="L166">			++numTries;</span>
+<span class="fc" id="L166">			++numTries;</span>
 			// signal that we are running
-<span class="nc" id="L168">			runThread = Thread.currentThread();</span>
-<span class="nc bnc" id="L169" title="All 2 branches missed.">			if (timeout &gt; 0) {</span>
+<span class="fc" id="L168">			runThread = Thread.currentThread();</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">			if (timeout &gt; 0) {</span>
 				// schedule interrupt
 <span class="nc" id="L171">				final Thread currentThread = runThread;</span>
 <span class="nc" id="L172">				timeoutTimer.schedule(new TimerTask() {</span>
@@ -180,14 +180,14 @@ public class ExecutorTask&lt;T&gt; implements Future&lt;T&gt;, Runnable {
 			// }
 
 			// compute result, outside synchronized
-<span class="nc" id="L183">			result = callable.call();</span>
+<span class="fc" id="L183">			result = callable.call();</span>
 
 			// synchronized (this) {
 			// signal that we are done running
-<span class="nc" id="L187">			runThread = null;</span>
+<span class="fc" id="L187">			runThread = null;</span>
 
 			// computed without exceptions, done
-<span class="nc" id="L190">			setDone();</span>
+<span class="fc" id="L190">			setDone();</span>
 			// }
 <span class="nc" id="L192">		} catch (Exception e) {</span>
 <span class="nc" id="L193">			LOGGER.log(Level.INFO, &quot;Exception executing task&quot;, e);</span>
@@ -215,9 +215,9 @@ public class ExecutorTask&lt;T&gt; implements Future&lt;T&gt;, Runnable {
 			// }
 		} finally {
 			// cancel timeout based interrupt
-<span class="nc" id="L218">			timeoutTimer.cancel();</span>
+<span class="fc" id="L218">			timeoutTimer.cancel();</span>
 		}
-<span class="nc" id="L220">	}</span>
+<span class="fc" id="L220">	}</span>
 
 	/**
 	 * Called when task is completed, either successfully, or unsuccessfully and
@@ -413,4 +413,4 @@ public class ExecutorTask&lt;T&gt; implements Future&lt;T&gt;, Runnable {
 	}
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

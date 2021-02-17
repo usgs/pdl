@@ -13,7 +13,7 @@ import gov.usgs.earthquake.product.Product;
 
 /**
  * Moment Tensor Indexer Module.
- * 
+ *
  * Implements ANSS business logic for preferred moment tensors.
  *
  * Intended order is:
@@ -46,17 +46,17 @@ import gov.usgs.earthquake.product.Product;
  *   from the product property &lt;code&gt;beachball-type&lt;/code&gt;
  * &lt;/li&gt;
  * &lt;/ul&gt;
- * 
+ *
  * &lt;dl&gt;
  * &lt;dt&gt;Type is &lt;code&gt;Mww&lt;/code&gt;&lt;/dt&gt;
  * &lt;dd&gt;&lt;code&gt;+60&lt;/code&gt;&lt;/dd&gt;
- * 
+ *
  * &lt;dt&gt;Type is &lt;code&gt;Mwc&lt;/code&gt;&lt;/dt&gt;
  * &lt;dd&gt;&lt;code&gt;+2&lt;/code&gt;&lt;/dd&gt;
- * 
+ *
  * &lt;dt&gt;Type is &lt;code&gt;Mwb&lt;/code&gt;
  * &lt;dd&gt;&lt;code&gt;+1&lt;/code&gt;&lt;/dd&gt;
- * 
+ *
  * &lt;dt&gt;Type is &lt;code&gt;Mwb&lt;/code&gt;, and Magnitude outside the
  * 	 range &lt;code&gt;[5.5, 7.0]&lt;/code&gt;&lt;/dt&gt;
  * &lt;dd&gt;&lt;code&gt;-100&lt;/code&gt;&lt;/dd&gt;
@@ -87,7 +87,7 @@ import gov.usgs.earthquake.product.Product;
 
 	/**
 	 * Override IndexerModule api method.
-	 * 
+	 *
 	 * @return
 	 * 		IndexerModule.LEVEL_SUPPORTED when type is &lt;code&gt;moment-tensor&lt;/code&gt;;
 	 * 		otherwise, IndexerModule.LEVEL_UNSUPPORTED.
@@ -106,7 +106,7 @@ import gov.usgs.earthquake.product.Product;
 
 	/**
 	 * Calculate preferred weight for &lt;code&gt;moment-tensor&lt;/code&gt; type product.
-	 * 
+	 *
 	 * @param summary &quot;moment-tensor&quot; type product summary.
 	 * @return
 	 *      when type is &lt;code&gt;moment-tensor&lt;/code&gt;, {@link IndexerModule#LEVEL_SUPPORTED};
@@ -149,11 +149,11 @@ import gov.usgs.earthquake.product.Product;
 		}
 
 		// Add gcmt bonus if required
-<span class="fc bfc" id="L152" title="All 2 branches covered.">		if (eventSource.equalsIgnoreCase(EVENT_SOURCE_GCMT)) {</span>
+<span class="pc bpc" id="L152" title="1 of 4 branches missed.">		if (eventSource != null &amp;&amp; eventSource.equalsIgnoreCase(EVENT_SOURCE_GCMT)) {</span>
 <span class="fc" id="L153">			weight += EVENT_SOURCE_GCMT_BONUS;</span>
 		}
 
 <span class="fc" id="L156">		return weight;</span>
 	}
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

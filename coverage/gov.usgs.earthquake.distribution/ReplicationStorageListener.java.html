@@ -21,8 +21,8 @@ import java.util.logging.Logger;
 
 public class ReplicationStorageListener extends DefaultStorageListener {
 
-<span class="fc" id="L24">	private static final Logger LOGGER = Logger</span>
-<span class="fc" id="L25">			.getLogger(ReplicationStorageListener.class.getName());</span>
+<span class="nc" id="L24">	private static final Logger LOGGER = Logger</span>
+<span class="nc" id="L25">			.getLogger(ReplicationStorageListener.class.getName());</span>
 
 	/**
 	 * Name of the property specifying whether to use archive flag on the
@@ -67,20 +67,20 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 	private static final long REPL_TIMEOUT_DEFAULT = 30000L;
 
 	/** Default replication hosts. None. */
-<span class="fc" id="L70">	private static final Map&lt;String, ExecutorService&gt; REPL_HOSTS_DEFAULT = new HashMap&lt;String, ExecutorService&gt;();</span>
+<span class="nc" id="L70">	private static final Map&lt;String, ExecutorService&gt; REPL_HOSTS_DEFAULT = new HashMap&lt;String, ExecutorService&gt;();</span>
 
-<span class="pc" id="L72">	private boolean archiveFlag = ARCHIVE_FLAG_DEFAULT;</span>
-<span class="pc" id="L73">	private String replCmd = REPL_CMD_DEFAULT;</span>
-<span class="pc" id="L74">	private int replMaxTries = REPL_MAX_TRIES_DEFAULT;</span>
-<span class="pc" id="L75">	private long replTimeout = REPL_TIMEOUT_DEFAULT;</span>
-<span class="pc" id="L76">	private Map&lt;String, ExecutorService&gt; replHosts = REPL_HOSTS_DEFAULT;</span>
+<span class="nc" id="L72">	private boolean archiveFlag = ARCHIVE_FLAG_DEFAULT;</span>
+<span class="nc" id="L73">	private String replCmd = REPL_CMD_DEFAULT;</span>
+<span class="nc" id="L74">	private int replMaxTries = REPL_MAX_TRIES_DEFAULT;</span>
+<span class="nc" id="L75">	private long replTimeout = REPL_TIMEOUT_DEFAULT;</span>
+<span class="nc" id="L76">	private Map&lt;String, ExecutorService&gt; replHosts = REPL_HOSTS_DEFAULT;</span>
 
 	/**
 	 * Default constructor used when this object is instantiated via
 	 * configuration.
 	 */
-<span class="fc" id="L82">	public ReplicationStorageListener() {</span>
-<span class="fc" id="L83">	}</span>
+<span class="nc" id="L82">	public ReplicationStorageListener() {</span>
+<span class="nc" id="L83">	}</span>
 
 	public ReplicationStorageListener(final boolean archiveFlag,
 <span class="nc" id="L86">			String replCmd, final long replTimeout, final List&lt;String&gt; replHosts) {</span>
@@ -91,23 +91,23 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 <span class="nc" id="L91">	}</span>
 
 	protected void setReplHosts(List&lt;String&gt; replHosts) {
-<span class="fc" id="L94">		this.replHosts = new HashMap&lt;String, ExecutorService&gt;();</span>
-<span class="fc" id="L95">		Iterator&lt;String&gt; replHostsIter = replHosts.iterator();</span>
-<span class="fc bfc" id="L96" title="All 2 branches covered.">		while (replHostsIter.hasNext()) {</span>
-<span class="fc" id="L97">			String replHost = replHostsIter.next();</span>
-<span class="fc" id="L98">			ExecutorService service = Executors.newSingleThreadExecutor();</span>
-<span class="fc" id="L99">			this.replHosts.put(replHost, service);</span>
-<span class="fc" id="L100">		}</span>
-<span class="fc" id="L101">	}</span>
+<span class="nc" id="L94">		this.replHosts = new HashMap&lt;String, ExecutorService&gt;();</span>
+<span class="nc" id="L95">		Iterator&lt;String&gt; replHostsIter = replHosts.iterator();</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">		while (replHostsIter.hasNext()) {</span>
+<span class="nc" id="L97">			String replHost = replHostsIter.next();</span>
+<span class="nc" id="L98">			ExecutorService service = Executors.newSingleThreadExecutor();</span>
+<span class="nc" id="L99">			this.replHosts.put(replHost, service);</span>
+<span class="nc" id="L100">		}</span>
+<span class="nc" id="L101">	}</span>
 
 	@Override
 	public void configure(Config config) {
 
 		// -- Configure the archive flag property
 		try {
-<span class="fc" id="L108">			String useArchive = config.getProperty(ARCHIVE_FLAG_PROPERTY);</span>
-<span class="pc bpc" id="L109" title="1 of 2 branches missed.">			if (&quot;TRUE&quot;.equalsIgnoreCase(useArchive)) {</span>
-<span class="fc" id="L110">				archiveFlag = true;</span>
+<span class="nc" id="L108">			String useArchive = config.getProperty(ARCHIVE_FLAG_PROPERTY);</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">			if (&quot;TRUE&quot;.equalsIgnoreCase(useArchive)) {</span>
+<span class="nc" id="L110">				archiveFlag = true;</span>
 			} else {
 <span class="nc" id="L112">				archiveFlag = false;</span>
 			}
@@ -116,12 +116,12 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 					+ &quot;] replicationStorageListener::Archive flag &quot; + &quot;&quot;
 					+ &quot;misconfigured. Using default.&quot;);
 <span class="nc" id="L118">			archiveFlag = ARCHIVE_FLAG_DEFAULT;</span>
-<span class="fc" id="L119">		}</span>
+<span class="nc" id="L119">		}</span>
 
 		// -- Configure the replication command property
 		try {
-<span class="fc" id="L123">			replCmd = config.getProperty(REPL_CMD_PROPERTY);</span>
-<span class="pc bpc" id="L124" title="2 of 4 branches missed.">			if (replCmd == null || &quot;&quot;.equals(replCmd)) {</span>
+<span class="nc" id="L123">			replCmd = config.getProperty(REPL_CMD_PROPERTY);</span>
+<span class="nc bnc" id="L124" title="All 4 branches missed.">			if (replCmd == null || &quot;&quot;.equals(replCmd)) {</span>
 <span class="nc" id="L125">				replCmd = REPL_CMD_DEFAULT;</span>
 			}
 <span class="nc" id="L127">		} catch (Exception ex) {</span>
@@ -129,12 +129,12 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 					+ &quot;] replicationStorageListener::Exception &quot;
 <span class="nc" id="L130">					+ &quot;configuring replication command. (&quot; + ex.getMessage()</span>
 					+ &quot;)&quot;);
-<span class="fc" id="L132">		}</span>
+<span class="nc" id="L132">		}</span>
 
 		// -- Configure the replication max tries property
 		try {
-<span class="fc" id="L136">			replMaxTries = Integer.parseInt(config</span>
-<span class="fc" id="L137">					.getProperty(REPL_MAX_TRIES_PROPERTY));</span>
+<span class="nc" id="L136">			replMaxTries = Integer.parseInt(config</span>
+<span class="nc" id="L137">					.getProperty(REPL_MAX_TRIES_PROPERTY));</span>
 <span class="nc" id="L138">		} catch (NumberFormatException npx) {</span>
 <span class="nc" id="L139">			LOGGER.warning(&quot;[&quot; + getName()</span>
 					+ &quot;] replicationStorageListener::Bad value for &quot;
@@ -143,12 +143,12 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 <span class="nc" id="L143">		} catch (NullPointerException npx) {</span>
 			// User didn't configure timeout. Just use default; no warning.
 <span class="nc" id="L145">			replTimeout = REPL_MAX_TRIES_DEFAULT;</span>
-<span class="pc" id="L146">		}</span>
+<span class="nc" id="L146">		}</span>
 
 		// -- Configure the replication timeout property
 		try {
-<span class="fc" id="L150">			replTimeout = Long.parseLong(config</span>
-<span class="fc" id="L151">					.getProperty(REPL_TIMEOUT_PROPERTY));</span>
+<span class="nc" id="L150">			replTimeout = Long.parseLong(config</span>
+<span class="nc" id="L151">					.getProperty(REPL_TIMEOUT_PROPERTY));</span>
 <span class="nc" id="L152">		} catch (NumberFormatException npx) {</span>
 <span class="nc" id="L153">			LOGGER.warning(&quot;[&quot; + getName()</span>
 					+ &quot;] replicationStorageListener::Bad value for &quot;
@@ -157,19 +157,19 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 <span class="nc" id="L157">		} catch (NullPointerException npx) {</span>
 			// User didn't configure timeout. Just use default; no warning.
 <span class="nc" id="L159">			replTimeout = REPL_TIMEOUT_DEFAULT;</span>
-<span class="pc" id="L160">		}</span>
+<span class="nc" id="L160">		}</span>
 
 		// -- Configure the replication hosts property
 		try {
-<span class="fc" id="L164">			setReplHosts(StringUtils.split(</span>
-<span class="fc" id="L165">					config.getProperty(REPL_HOSTS_PROPERTY), &quot;,&quot;));</span>
+<span class="nc" id="L164">			setReplHosts(StringUtils.split(</span>
+<span class="nc" id="L165">					config.getProperty(REPL_HOSTS_PROPERTY), &quot;,&quot;));</span>
 <span class="nc" id="L166">		} catch (Exception ex) {</span>
 <span class="nc" id="L167">			LOGGER.warning(&quot;[&quot;</span>
 <span class="nc" id="L168">					+ getName()</span>
 					+ &quot;] replicationStorageListener::No replication hosts configured.&quot;);
 <span class="nc" id="L170">			replHosts = REPL_HOSTS_DEFAULT;</span>
-<span class="fc" id="L171">		}</span>
-<span class="fc" id="L172">	}</span>
+<span class="nc" id="L171">		}</span>
+<span class="nc" id="L172">	}</span>
 
 	@Override
 	public void onProductStored(StorageEvent event) throws Exception {
@@ -345,4 +345,4 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 <span class="nc" id="L345">		}</span>
 	}
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

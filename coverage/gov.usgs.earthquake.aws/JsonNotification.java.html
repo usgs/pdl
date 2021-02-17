@@ -26,12 +26,12 @@ public class JsonNotification extends URLNotification {
   static {
     try {
       // make sure data protocol handler is registered
-<span class="nc" id="L29">      Handler.register();</span>
-<span class="nc" id="L30">      EMPTY_URL = new URL(&quot;data:,&quot;);</span>
+<span class="fc" id="L29">      Handler.register();</span>
+<span class="fc" id="L30">      EMPTY_URL = new URL(&quot;data:,&quot;);</span>
 <span class="nc" id="L31">    } catch (MalformedURLException mue) {</span>
 <span class="nc" id="L32">      throw new RuntimeException(&quot;failed to parse empty url&quot;);</span>
-<span class="nc" id="L33">    }</span>
-<span class="nc" id="L34">  }</span>
+<span class="fc" id="L33">    }</span>
+<span class="fc" id="L34">  }</span>
 
   /** When notification was created. */
   public final Instant created;
@@ -45,37 +45,37 @@ public class JsonNotification extends URLNotification {
    * @throws Exception
    */
   JsonNotification(final JsonObject json) throws Exception {
-<span class="nc" id="L48">    this(</span>
-<span class="nc" id="L49">        Instant.parse(json.getString(&quot;created&quot;)),</span>
-<span class="nc" id="L50">        new JsonProduct().getProduct(json.getJsonObject(&quot;product&quot;)));</span>
-<span class="nc" id="L51">  }</span>
+<span class="fc" id="L48">    this(</span>
+<span class="fc" id="L49">        Instant.parse(json.getString(&quot;created&quot;)),</span>
+<span class="fc" id="L50">        new JsonProduct().getProduct(json.getJsonObject(&quot;product&quot;)));</span>
+<span class="fc" id="L51">  }</span>
 
   /**
    * Create a JsonNotification from an existing Product.
    */
   JsonNotification(final Instant created, final Product product) throws Exception {
-<span class="nc" id="L57">    this(created, product, new Date(Instant.now().plusSeconds(7 * 86400).toEpochMilli()));</span>
-<span class="nc" id="L58">  }</span>
+<span class="fc" id="L57">    this(created, product, new Date(Instant.now().plusSeconds(7 * 86400).toEpochMilli()));</span>
+<span class="fc" id="L58">  }</span>
 
   /**
    * Create a JsonNotification with an expiration date.
    */
   JsonNotification(final Instant created, final Product product, final Date expiration)
       throws Exception {
-<span class="nc" id="L65">    super(</span>
-<span class="nc" id="L66">        product.getId(),</span>
+<span class="fc" id="L65">    super(</span>
+<span class="fc" id="L66">        product.getId(),</span>
         // expiration date
         expiration,
         // no tracker
         EMPTY_URL,
         // store product as data url
         new URL(&quot;data:;base64,&quot; +
-<span class="nc" id="L73">            new String(Base64.getEncoder().encode(</span>
-<span class="nc" id="L74">                new JsonProduct().getJsonObject((product))</span>
-<span class="nc" id="L75">                    .toString().getBytes(StandardCharsets.UTF_8)))));</span>
-<span class="nc" id="L76">    this.created = created;</span>
-<span class="nc" id="L77">    this.product = product;</span>
-<span class="nc" id="L78">  }</span>
+<span class="fc" id="L73">            new String(Base64.getEncoder().encode(</span>
+<span class="fc" id="L74">                new JsonProduct().getJsonObject((product))</span>
+<span class="fc" id="L75">                    .toString().getBytes(StandardCharsets.UTF_8)))));</span>
+<span class="fc" id="L76">    this.created = created;</span>
+<span class="fc" id="L77">    this.product = product;</span>
+<span class="fc" id="L78">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

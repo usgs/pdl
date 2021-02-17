@@ -90,9 +90,9 @@ public class FutureExecutorTask&lt;T&gt; extends ExecutorTask&lt;T&gt; {
   public FutureExecutorTask(ExecutorService backgroundService, ExecutorService service,
       int maxTries, long timeout, Callable&lt;T&gt; callable, Timer retryTimer,
       long retryDelay) {
-<span class="fc" id="L93">    super(service, maxTries, timeout, callable, retryTimer, retryDelay);</span>
-<span class="fc" id="L94">    this.backgroundService = backgroundService;</span>
-<span class="fc" id="L95">  }</span>
+<span class="nc" id="L93">    super(service, maxTries, timeout, callable, retryTimer, retryDelay);</span>
+<span class="nc" id="L94">    this.backgroundService = backgroundService;</span>
+<span class="nc" id="L95">  }</span>
 
   /**
    * Run calls the callable, scheduling timeout interruption, catching
@@ -194,4 +194,4 @@ public class FutureExecutorTask&lt;T&gt; extends ExecutorTask&lt;T&gt; {
   }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

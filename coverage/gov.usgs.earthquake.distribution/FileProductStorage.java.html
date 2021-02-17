@@ -187,18 +187,18 @@ public class FileProductStorage extends DefaultConfigurable implements
 		// Set up our configured listeners
 <span class="fc" id="L188">		Iterator&lt;String&gt; listenerIter = StringUtils.split(</span>
 <span class="fc" id="L189">				config.getProperty(STORAGE_LISTENER_PROPERTY), &quot;,&quot;).iterator();</span>
-<span class="fc bfc" id="L190" title="All 2 branches covered.">		while (listenerIter.hasNext()) {</span>
-<span class="fc" id="L191">			String listenerName = listenerIter.next();</span>
+<span class="pc bpc" id="L190" title="1 of 2 branches missed.">		while (listenerIter.hasNext()) {</span>
+<span class="nc" id="L191">			String listenerName = listenerIter.next();</span>
 			try {
-<span class="fc" id="L193">				StorageListener listener = (StorageListener) Config.getConfig()</span>
-<span class="fc" id="L194">						.getObject(listenerName);</span>
-<span class="fc" id="L195">				addStorageListener(listener);</span>
+<span class="nc" id="L193">				StorageListener listener = (StorageListener) Config.getConfig()</span>
+<span class="nc" id="L194">						.getObject(listenerName);</span>
+<span class="nc" id="L195">				addStorageListener(listener);</span>
 <span class="nc" id="L196">			} catch (Exception ccx) {</span>
 <span class="nc" id="L197">				throw new ConfigurationException(&quot;[&quot; + getName()</span>
 						+ &quot;] listener \&quot;&quot; + listenerName
 <span class="nc" id="L199">						+ &quot;\&quot; was not properly configured. &quot; + ccx.getMessage());</span>
-<span class="fc" id="L200">			}</span>
-<span class="fc" id="L201">		}</span>
+<span class="nc" id="L200">			}</span>
+<span class="nc" id="L201">		}</span>
 
 		// load legacy storages
 <span class="fc" id="L204">		Iterator&lt;String&gt; legacyIter = StringUtils.split(</span>
@@ -237,22 +237,22 @@ public class FileProductStorage extends DefaultConfigurable implements
 
 	@Override
 	public void addStorageListener(final StorageListener listener) {
-<span class="fc" id="L240">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] adding listener :: &quot;</span>
-<span class="fc" id="L241">				+ listener.getClass().getCanonicalName());</span>
-<span class="pc bpc" id="L242" title="1 of 2 branches missed.">		if (!listeners.containsKey(listener)) {</span>
-<span class="fc" id="L243">			ExecutorService service = Executors.newSingleThreadExecutor();</span>
-<span class="fc" id="L244">			listeners.put(listener, service);</span>
+<span class="nc" id="L240">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] adding listener :: &quot;</span>
+<span class="nc" id="L241">				+ listener.getClass().getCanonicalName());</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">		if (!listeners.containsKey(listener)) {</span>
+<span class="nc" id="L243">			ExecutorService service = Executors.newSingleThreadExecutor();</span>
+<span class="nc" id="L244">			listeners.put(listener, service);</span>
 		}
-<span class="fc" id="L246">	}</span>
+<span class="nc" id="L246">	}</span>
 
 	@Override
 	public void removeStorageListener(final StorageListener listener) {
-<span class="fc" id="L250">		ExecutorService service = listeners.remove(listener);</span>
+<span class="nc" id="L250">		ExecutorService service = listeners.remove(listener);</span>
 
-<span class="pc bpc" id="L252" title="1 of 2 branches missed.">		if (service != null) {</span>
-<span class="fc" id="L253">			service.shutdown();</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">		if (service != null) {</span>
+<span class="nc" id="L253">			service.shutdown();</span>
 		}
-<span class="fc" id="L255">	}</span>
+<span class="nc" id="L255">	}</span>
 
 	/**
 	 * A method for subclasses to override the storage path.
@@ -796,8 +796,8 @@ public class FileProductStorage extends DefaultConfigurable implements
 		// Remove all our listeners. Doing this will also shut down the
 		// ExecutorServices
 <span class="fc" id="L798">		Iterator&lt;StorageListener&gt; listenerIter = listeners.keySet().iterator();</span>
-<span class="fc bfc" id="L799" title="All 2 branches covered.">		while (listenerIter.hasNext()) {</span>
-<span class="fc" id="L800">			removeStorageListener(listenerIter.next());</span>
+<span class="pc bpc" id="L799" title="1 of 2 branches missed.">		while (listenerIter.hasNext()) {</span>
+<span class="nc" id="L800">			removeStorageListener(listenerIter.next());</span>
 			// Maybe we should call &quot;listener.shutdown()&quot; here as well?
 		}
 
@@ -899,4 +899,4 @@ public class FileProductStorage extends DefaultConfigurable implements
 	}
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

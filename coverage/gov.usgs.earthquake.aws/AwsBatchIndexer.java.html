@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AwsBatchIndexer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.aws</a> &gt; <span class="el_source">AwsBatchIndexer.java</span></div><h1>AwsBatchIndexer.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.aws;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+import gov.usgs.earthquake.distribution.Bootstrappable;
+import gov.usgs.earthquake.indexer.Indexer;
+import gov.usgs.earthquake.product.Product;
+import gov.usgs.earthquake.product.ProductId;
+import gov.usgs.earthquake.util.JDBCConnection;
+import gov.usgs.util.Config;
+import gov.usgs.util.StreamUtils;
+import gov.usgs.util.XmlUtils;
+
+/**
+ * Class to index a batch of products that have already been sent to the AWS hub.
+ *
+ * Reads a list of products to be indexed.
+ * Reads indexer from configuration file.
+ *
+ * For each product, fetch product information from the get_product AWS endpoint
+ * and call indexer.onProduct.
+ */
+<span class="nc" id="L39">public class AwsBatchIndexer implements Bootstrappable {</span>
+
+  public static final String FORCE_REINDEX_ARGUMENT = &quot;--force&quot;;
+  public static final String GET_PRODUCT_URL_ARGUMENT = &quot;--getProductUrl=&quot;;
+  public static final String INDEXER_CONFIG_NAME_ARGUMENT=&quot;--indexerConfigName=&quot;;
+  public static final String INDEXER_CONFIG_NAME_DEFAULT = &quot;indexer&quot;;
+
+  public static final String DATABASE_DRIVER_ARGUMENT = &quot;--databaseDriver=&quot;;
+  public static final String DATABASE_URL_ARGUMENT = &quot;--databaseUrl=&quot;;
+  public static final String INDEXER_DATABASE_ARGUMENT = &quot;--indexerDatabase=&quot;;
+  public static final String INDEXER_DATABASE_DEFAULT = &quot;indexer&quot;;
+
+  /** Logging object. */
+<span class="nc" id="L52">  private static final Logger LOGGER = Logger.getLogger(AwsBatchIndexer.class.getName());</span>
+
+  /** Executor where indexing runs. */
+<span class="nc" id="L55">  private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);</span>
+
+  /** Whether to force indexing. */
+<span class="nc" id="L58">  private boolean force = false;</span>
+
+  /** AWS URL for get_product endpoint, with placeholders. */
+<span class="nc" id="L61">  private String getProductUrlTemplate = &quot;https://earthquake.usgs.gov/pdl/west&quot;</span>
+      + &quot;/get_product?source={source}&amp;type={type}&amp;code={code}&amp;updateTime={updateTime}&quot;;
+
+  /** Indexer to process products. */
+  private Indexer indexer;
+
+
+  @Override
+  public void run(String[] args) throws Exception {
+    // parse arguments
+<span class="nc" id="L71">    String databaseDriver = &quot;com.mysql.jdbc.Driver&quot;;</span>
+<span class="nc" id="L72">    String databaseUrl = null;</span>
+<span class="nc" id="L73">    String indexerConfigName = INDEXER_CONFIG_NAME_DEFAULT;</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">    for (final String arg : args) {</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">      if (arg.startsWith(DATABASE_DRIVER_ARGUMENT)) {</span>
+<span class="nc" id="L76">        databaseDriver = arg.replace(DATABASE_DRIVER_ARGUMENT, &quot;&quot;);</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">      } else if (arg.startsWith(DATABASE_URL_ARGUMENT)) {</span>
+<span class="nc" id="L78">        databaseUrl = arg.replace(DATABASE_URL_ARGUMENT, &quot;&quot;);</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">      } else if (arg.equals(FORCE_REINDEX_ARGUMENT)) {</span>
+<span class="nc" id="L80">        force = true;</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">      } else if (arg.startsWith(GET_PRODUCT_URL_ARGUMENT)) {</span>
+<span class="nc" id="L82">        getProductUrlTemplate = arg.replace(GET_PRODUCT_URL_ARGUMENT, &quot;&quot;);</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">      } else if (arg.startsWith(INDEXER_CONFIG_NAME_ARGUMENT)) {</span>
+<span class="nc" id="L84">        indexerConfigName = arg.replace(INDEXER_CONFIG_NAME_ARGUMENT, &quot;&quot;);</span>
+      }
+    }
+
+    // load indexer from configuration
+<span class="nc" id="L89">    indexer = (Indexer) Config.getConfig().getObject(indexerConfigName);</span>
+<span class="nc" id="L90">    indexer.startup();</span>
+
+    try {
+<span class="nc bnc" id="L93" title="All 2 branches missed.">      if (databaseUrl != null) {</span>
+<span class="nc" id="L94">        LOGGER.info(&quot;Reading product ids from database&quot;);</span>
+<span class="nc" id="L95">        readProductIdsFromDatabase(databaseDriver, databaseUrl);</span>
+      } else {
+<span class="nc" id="L97">        LOGGER.info(&quot;Reading product ids from stdin&quot;);</span>
+<span class="nc" id="L98">        readProductIdsFromStdin();</span>
+      }
+    } finally {
+<span class="nc" id="L101">      indexer.shutdown();</span>
+    }
+<span class="nc" id="L103">  }</span>
+
+  /**
+   * Use getProductUrl template to generate URL.
+   *
+   * Replace &quot;{source}&quot;, &quot;{type}&quot;, &quot;{code}&quot;, and &quot;{updateTime}&quot; placeholders.
+   *
+   * @param id
+   *     which product.
+   * @return URL with placeholders replaced.
+   * @throws Exception
+   */
+  public URL getProductUrl(final ProductId id) throws Exception {
+<span class="nc" id="L116">    String url = getProductUrlTemplate;</span>
+<span class="nc" id="L117">    url = url.replace(&quot;{source}&quot;, id.getSource());</span>
+<span class="nc" id="L118">    url = url.replace(&quot;{type}&quot;, id.getType());</span>
+<span class="nc" id="L119">    url = url.replace(&quot;{code}&quot;, id.getCode());</span>
+<span class="nc" id="L120">    url = url.replace(&quot;{updateTime}&quot;, XmlUtils.formatDate(id.getUpdateTime()));</span>
+<span class="nc" id="L121">    return new URL(url);</span>
+  }
+
+  /**
+   * Get Product from endpoint.
+   *
+   * @param id
+   *     which product.
+   * @return Product object.
+   * @throws Exception
+   */
+  public Product getProduct(final ProductId id) throws Exception {
+<span class="nc" id="L133">    final URL url = getProductUrl(id);</span>
+<span class="nc" id="L134">    byte[] bytes = StreamUtils.readStream(url);</span>
+    try (
+<span class="nc" id="L136">        final JsonReader reader = Json.createReader(new StringReader(</span>
+            new String(bytes, StandardCharsets.UTF_8)))
+    ) {
+      // parse message
+<span class="nc" id="L140">      final JsonObject json = reader.readObject();</span>
+<span class="nc" id="L141">      final JsonNotification notification = new JsonNotification(json);</span>
+<span class="nc" id="L142">      return notification.product;</span>
+    }
+  }
+
+  /**
+   * Fetch and Index a product.
+   *
+   * Called from executor service to process product ids.
+   *
+   * @param id
+   *     which product
+   */
+  public void processProductId(final ProductId id) {
+<span class="nc" id="L155">    long start = new Date().getTime();</span>
+    try {
+<span class="nc" id="L157">      final Product product = getProduct(id);</span>
+<span class="nc" id="L158">      long afterGetProduct = new Date().getTime();</span>
+<span class="nc" id="L159">      LOGGER.fine(&quot;Loaded product &quot; + id.toString() + &quot; in &quot;</span>
+          + (afterGetProduct - start) + &quot; ms&quot;);
+
+<span class="nc" id="L162">      indexer.onProduct(product, force);</span>
+<span class="nc" id="L163">      LOGGER.info(&quot;Indexed &quot; + id.toString()</span>
+<span class="nc" id="L164">          + &quot; in &quot; + (new Date().getTime() - afterGetProduct) + &quot; ms&quot;);</span>
+<span class="nc" id="L165">    } catch (Exception e) {</span>
+<span class="nc" id="L166">      LOGGER.log(</span>
+          Level.WARNING,
+<span class="nc" id="L168">          &quot;Error indexing &quot; + id.toString()</span>
+<span class="nc" id="L169">              + &quot; in &quot; + (new Date().getTime() - start) + &quot;ms&quot;,</span>
+          e);
+<span class="nc" id="L171">    }</span>
+<span class="nc" id="L172">  }</span>
+
+  public void readProductIdsFromDatabase(
+      final String driver,
+      final String url) throws Exception {
+    try (
+<span class="nc" id="L178">      final JDBCConnection jdbcConnection = new JDBCConnection()</span>
+    ) {
+<span class="nc" id="L180">      jdbcConnection.setDriver(driver);</span>
+<span class="nc" id="L181">      jdbcConnection.setUrl(url);</span>
+<span class="nc" id="L182">      jdbcConnection.startup();</span>
+
+<span class="nc" id="L184">      final String sql = &quot;SELECT id, source, type, code, updatetime&quot;</span>
+          + &quot; FROM pdl.product h&quot;
+          + &quot; WHERE id &gt; ?&quot;
+          + &quot; AND NOT EXISTS (&quot;
+          + &quot;  SELECT * FROM indexer.productSummary i&quot;
+          + &quot;  WHERE h.source=i.source&quot;
+          + &quot;  AND h.type=i.type&quot;
+          + &quot;  AND h.code=i.code&quot;
+          + &quot;  AND h.updatetime=i.updateTime&quot;
+          + &quot; )&quot;
+          + &quot; ORDER BY id&quot;
+          + &quot; LIMIT 500&quot;;
+
+      // start at the beginning
+<span class="nc" id="L198">      long lastId = -1;</span>
+      while (true) {
+<span class="nc" id="L200">        try (</span>
+<span class="nc" id="L201">          final Connection conn = jdbcConnection.verifyConnection();</span>
+<span class="nc" id="L202">          final PreparedStatement statement = conn.prepareStatement(sql);</span>
+        ) {
+          // load next batch of products
+<span class="nc" id="L205">          statement.setLong(1, lastId);</span>
+          try (
+<span class="nc" id="L207">            final ResultSet rs = statement.executeQuery();</span>
+          ) {
+<span class="nc" id="L209">            int count = 0;</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L211">              lastId = rs.getLong(&quot;id&quot;);</span>
+<span class="nc" id="L212">              final ProductId id = new ProductId(</span>
+<span class="nc" id="L213">                  rs.getString(&quot;source&quot;),</span>
+<span class="nc" id="L214">                  rs.getString(&quot;type&quot;),</span>
+<span class="nc" id="L215">                  rs.getString(&quot;code&quot;),</span>
+<span class="nc" id="L216">                  new Date(rs.getLong(&quot;updatetime&quot;)));</span>
+<span class="nc" id="L217">              submitProductId(id);</span>
+<span class="nc" id="L218">              count++;</span>
+<span class="nc" id="L219">            }</span>
+
+            // exit once all products processed
+<span class="nc bnc" id="L222" title="All 2 branches missed.">            if (count == 0) {</span>
+<span class="nc" id="L223">              LOGGER.info(&quot;No more rows returned, exiting&quot;);</span>
+              break;
+            }
+<span class="nc bnc" id="L226" title="All 2 branches missed.">          }</span>
+<span class="nc bnc" id="L227" title="All 4 branches missed.">        }</span>
+      }
+    }
+<span class="nc" id="L230">  }</span>
+
+  /**
+   * Read product ids (as urns) from stdin and submit to executor for processing.
+   *
+   * @throws Exception
+   */
+  public void readProductIdsFromStdin() throws Exception {
+    // read product ids from stdin
+<span class="nc" id="L239">    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));</span>
+<span class="nc" id="L240">    String line = null;</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">    while ((line = br.readLine()) != null) {</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">      if (line.equals(&quot;&quot;)) {</span>
+<span class="nc" id="L243">        continue;</span>
+      }
+      // parse product id
+      final ProductId id;
+      try {
+<span class="nc" id="L248">        id = ProductId.parse(line);</span>
+<span class="nc" id="L249">      } catch (Exception e) {</span>
+<span class="nc" id="L250">        LOGGER.warning(&quot;Error parsing product id '&quot; + line + &quot;'&quot;);</span>
+<span class="nc" id="L251">        continue;</span>
+<span class="nc" id="L252">      }</span>
+<span class="nc" id="L253">      submitProductId(id);</span>
+<span class="nc" id="L254">    }</span>
+<span class="nc" id="L255">  }</span>
+
+  /**
+   * Submit a product id to the executor service for processing.
+   *
+   * If queue is too large (500 ids), blocks until queue is smaller (100 ids).
+   *
+   * @param id
+   *     which product
+   * @throws InterruptedException
+   */
+  public void submitProductId(final ProductId id) throws InterruptedException {
+    // queue for processing
+<span class="nc" id="L268">    executor.submit(() -&gt; processProductId(id));</span>
+
+    // keep queue size smallish
+<span class="nc bnc" id="L271" title="All 2 branches missed.">    if (executor.getQueue().size() &gt; 500) {</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">      while (executor.getQueue().size() &gt; 100) {</span>
+<span class="nc" id="L273">        LOGGER.info(&quot;Queue size &quot; + executor.getQueue().size());</span>
+<span class="nc" id="L274">        Thread.sleep(5000L);</span>
+      }
+    }
+<span class="nc" id="L277">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>
