@@ -58,7 +58,7 @@
 	use a sender's public key to verify signatures.</p>
 
 	<div class="code"><pre>
-ssh-keygen -t dsa -b 1024 -C 'Comment describing key' -f &lt;keyfilename&gt;
+ssh-keygen -t dsa -b 1024 -m PEM -C 'Comment describing key' -f &lt;keyfilename&gt;
 </pre></div>
 
 	<p>Do not assign a key passphrase. This creates two files: a
@@ -312,7 +312,7 @@ external listeners to receive products.</p>
 	character network code followed by up to 8 character network event
 	code) <br />
 	Examples include <code>us2009abcd</code> and <code>nc12345678</code></dd>
-	
+
 	<dt>--trackerURL=&lt;trackerURL&gt;</dt>
 	<dd>A location where tracking updates are sent. <br />
 	Example: <code> --trackerURL=http://ehppdl1.cr.usgs.gov/tracker/ </code></dd>
@@ -562,14 +562,14 @@ sent, or was signed using a different key.</p>
 
 <h2 id="compression">Compression</h2>
 
-<p>Depending on the type of content	your product contains 
+<p>Depending on the type of content	your product contains
 	(text/binary/compressed binary), transfer compression can significantly
-	decrease network usage.  However, this is a trade off between available CPU and 
+	decrease network usage.  However, this is a trade off between available CPU and
 	network bandwidth.</p>
 
 <p>A general rule is text or uncompressed binary content should use compression;
 	compressed binary content should not use additional compression.
-	You can read how to configure your transfer on the 
+	You can read how to configure your transfer on the
 	<a href="configuration.html#ProductSender">ProductSender configuration</a>.</p>
 
 
