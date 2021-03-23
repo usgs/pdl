@@ -15,7 +15,7 @@ import gov.usgs.util.StreamUtils;
 
 /**
  * A listener that listens for a specific content path.
- * 
+ *
  * This is intended for users who wish to output specific pieces of product
  * content, such as "quakeml.xml", for products that otherwise meet their
  * configured NotificationListener criteria.
@@ -25,11 +25,14 @@ public class ContentListener extends DefaultNotificationListener {
 	private static final Logger LOGGER = Logger.getLogger(ContentListener.class
 			.getName());
 
-	/** configuration property for includePaths. */
+	/** configuration property for includePaths - output directory. */
 	public static final String OUTPUT_DIRECTORY_PROPERTY = "outputDirectory";
+	/** property for temporary directory */
 	public static final String TEMP_DIRECTORY_PROPERTY = "tempDirectory";
+	/** property for output format */
 	public static final String OUTPUT_FORMAT_PROPERTY = "outputFormat";
 
+	/** property for default output format */
 	public static final String DEFAULT_OUTPUT_FORMAT = "SOURCE_TYPE_CODE_UPDATETIME_PATH";
 
 	/** Directory where content is output. */
@@ -44,6 +47,7 @@ public class ContentListener extends DefaultNotificationListener {
 	/** Output format for files inside outputDirectory. */
 	private String outputFormat = DEFAULT_OUTPUT_FORMAT;
 
+	/** empty constructor for ContentListener */
 	public ContentListener() {
 	}
 
@@ -89,7 +93,7 @@ public class ContentListener extends DefaultNotificationListener {
 
 	/**
 	 * Generate an output path based on product id and content path.
-	 * 
+	 *
 	 * @param id
 	 *            the product id.
 	 * @param path
@@ -108,7 +112,7 @@ public class ContentListener extends DefaultNotificationListener {
 
 	/**
 	 * Output a product content that was in includePaths.
-	 * 
+	 *
 	 * @param id
 	 *            the product id.
 	 * @param path

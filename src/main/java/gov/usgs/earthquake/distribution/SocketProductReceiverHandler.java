@@ -19,14 +19,23 @@ public class SocketProductReceiverHandler implements Runnable {
 
 	private static final Logger LOGGER = Logger.getLogger(SocketProductReceiverHandler.class.getName());
 
+	/** buffer for PDL protocol. Set to 1024 */
 	public static final int PDL_PROTOCOL_BUFFER = 1024;
 
+	/** Protected Variable for BinaryIO */
 	protected final BinaryIO io = new BinaryIO();
+	/** Protected Variable for SocketProductReceiver */
 	protected final SocketProductReceiver receiver;
+	/** Protected Variable for Socket */
 	protected final Socket socket;
+	/** Protected Variable for a string of protocolVersion */
 	protected String protocolVersion;
 
-
+	/**
+	 * Constructor
+	 * @param receiver SocketProductReceiver
+	 * @param socket Socket
+	 */
 	public SocketProductReceiverHandler(final SocketProductReceiver receiver, final Socket socket) {
 		this.receiver = receiver;
 		this.socket = socket;
@@ -72,7 +81,7 @@ public class SocketProductReceiverHandler implements Runnable {
 	 * @param in input stream to read
 	 * @return version, or null if not the PDL protocol.
 	 *
-	 * @throws IOException
+	 * @throws IOException if IO error occurs
 	 */
 	public String readProtocolVersion(final InputStream in) throws IOException {
 		String version = null;
@@ -208,6 +217,7 @@ public class SocketProductReceiverHandler implements Runnable {
 	 *
 	 * @param out output stream where exception message is written
 	 * @param str string to write
+	 * @throws IOException if IO error occurs
 	 */
 	public void sendString(final OutputStream out, final String str) throws IOException {
 		try {

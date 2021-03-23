@@ -272,7 +272,10 @@ public class FileProductStorage extends DefaultConfigurable implements
 			return getNormalProductPath(id);
 		}
 	}
-
+	/**
+	 * @param id Specific productID
+	 * @return string buffer of hashed product path
+	 */
 	protected String getHashedProductPath(final ProductId id) {
 		try {
 			MessageDigest digest;
@@ -330,6 +333,10 @@ public class FileProductStorage extends DefaultConfigurable implements
 		return buf.toString();
 	}
 
+	/**
+	 * @param id ProductId
+	 * @return string buffer of normal product path
+	 */
 	public String getNormalProductPath(final ProductId id) {
 		StringBuffer buf = new StringBuffer();
 		buf.append(id.getType());
@@ -351,6 +358,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 * @param file
 	 *            a file that should be converted into a ProductHandler.
 	 * @return the ProductHandler.
+	 * @throws Exception if error occurs
 	 */
 	protected ProductHandler getProductHandlerFormat(final File file)
 			throws Exception {
@@ -366,6 +374,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 * @param file
 	 *            a file that should be converted into a ProductSource.
 	 * @return the ProductSource.
+	 * @throws Exception if error occurs
 	 */
 	protected ProductSource getProductSourceFormat(final File file)
 			throws Exception {
@@ -415,7 +424,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 * @param id
 	 *            the product to retrieve.
 	 * @return the loaded product.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public Product getInMemoryProduct(ProductId id) throws Exception {
 		LOGGER.finest("[" + getName() + "] acquiring read lock for product id="

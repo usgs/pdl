@@ -15,12 +15,19 @@ import java.util.Date;
  */
 public class ProductTrackerUpdate {
 
+	/** String for products created */
 	public static final String PRODUCT_CREATED = "Product Created";
+	/** String for products received */
 	public static final String PRODUCT_RECEIVED = "Product Received";
+	/** String for product exception*/
 	public static final String PRODUCT_EXCEPTION = "Exception";
+	/** String for notification sent*/
 	public static final String NOTIFICATION_SENT = "Notification Sent";
+	/** String for notification received*/
 	public static final String NOTIFICATION_RECEIVED = "Notification Received";
+	/** String for product downloaded*/
 	public static final String PRODUCT_DOWNLOADED = "Product Downloaded";
+	/** String for product indexed*/
 	public static final String PRODUCT_INDEXED = "Product Indexed";
 
 	/** Which ProductTracker stored this update. */
@@ -49,11 +56,11 @@ public class ProductTrackerUpdate {
 	/**
 	 * Create a tracker update for submission. Calls other constructor with null
 	 * arguments for those that are not included.
-	 * 
-	 * @param trackerURL
-	 * @param id
-	 * @param className
-	 * @param message
+	 *
+	 * @param trackerURL url of ProductTracker
+	 * @param id the id of the product being updated
+	 * @param className which component is sending the update
+	 * @param message the update being send
 	 */
 	public ProductTrackerUpdate(final URL trackerURL, final ProductId id,
 			final String className, final String message) {
@@ -62,14 +69,14 @@ public class ProductTrackerUpdate {
 
 	/**
 	 * Create a new ProductTrackerUpdate object.
-	 * 
-	 * @param trackerURL
-	 * @param sequenceNumber
-	 * @param created
-	 * @param host
-	 * @param id
-	 * @param className
-	 * @param message
+	 *
+	 * @param trackerURL url of ProductTracker
+	 * @param sequenceNumber assigned by ProductTracker
+	 * @param created When the update was created
+	 * @param host Host that sent the update
+	 * @param id the id of the product being updated
+	 * @param className which component is sending the update
+	 * @param message the update being send
 	 */
 	public ProductTrackerUpdate(final URL trackerURL,
 			final Long sequenceNumber, final Date created,
