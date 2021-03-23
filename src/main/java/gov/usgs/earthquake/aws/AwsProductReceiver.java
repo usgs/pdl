@@ -31,20 +31,31 @@ import java.util.logging.Logger;
  */
 public class AwsProductReceiver extends DefaultNotificationReceiver implements Runnable, WebSocketListener {
 
+  /** Initialzation of logger. For us later in file. */
   public static final Logger LOGGER = Logger
           .getLogger(AwsProductReceiver.class.getName());
-
+  /** Variable for URI string */
   public static final String URI_PROPERTY = "url";
+  /** Variable for createdAfter string */
   public static final String CREATED_AFTER_PROPERTY = "createdAfter";
+  /** Variable for trackingIndex string */
   public static final String TRACKING_INDEX_PROPERTY = "trackingIndex";
+  /** Variable for trackingFileName string */
   public static final String TRACKING_FILE_NAME_PROPERTY = "trackingFileName";
+  /** Variable for connectAttempts string */
   public static final String CONNECT_ATTEMPTS_PROPERTY = "connectAttempts";
+  /** Variable for connectTimeout string */
   public static final String CONNECT_TIMEOUT_PROPERTY = "connectTimeout";
+  /** Variable for initialCatchUpAge string */
   public static final String INITIAL_CATCHUP_AGE_PROPERTY = "initialCatchUpAge";
 
+  /** Variable for tracking file. Links to data/AwsReceiver.json */
   public static final String DEFAULT_TRACKING_FILE_NAME = "data/AwsReceiver.json";
+  /** Variable for connect attempts. Set to 5 */
   public static final String DEFAULT_CONNECT_ATTEMPTS = "5";
+  /** Variable for timout. Set to 1000 */
   public static final String DEFAULT_CONNECT_TIMEOUT = "1000";
+  /** Variable for catchup age. Set to 7.0 */
   public static final String DEFAULT_INITIAL_CATCHUP_AGE = "7.0";
 
   private URI uri;
@@ -55,30 +66,31 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
   private TrackingIndex trackingIndex;
   private WebSocketClient client;
 
-  /* Websocket session */
+  /** Websocket session */
   private Session session;
 
-  /* µs timestamp of last message that has been processed */
+  /** µs timestamp of last message that has been processed */
   protected Instant createdAfter = null;
 
   /** How far back to check when first connecting. */
   protected double initialCatchUpAge = Double.valueOf(DEFAULT_INITIAL_CATCHUP_AGE);
 
-  /* last broadcast message that has been processed (used for catch up) */
+  /** last broadcast message that has been processed (used for catch up) */
   protected JsonNotification lastBroadcast = null;
+  /** ID of the previously mentioned last broadcast */
   protected Long lastBroadcastId = null;
-  /* whether to process broadcast messages (after catching up). */
+  /** whether to process broadcast messages (after catching up). */
   protected boolean processBroadcast = false;
 
-  /* whether currenting catching up. */
+  /** whether currenting catching up. */
   protected boolean catchUpRunning = false;
-  /* sync object for catchUp state. */
+  /** sync object for catchUp state. */
   protected final Object catchUpSync = new Object();
-  /* thread where catch up process runs. */
+  /** thread where catch up process runs. */
   protected Thread catchUpThread = null;
-  /* whether thread should continue running (shutdown flag) */
+  /** whether thread should continue running (shutdown flag) */
   protected boolean catchUpThreadRunning = false;
-  /* last catch up message sent (for response timeouts) */
+  /** last catch up message sent (for response timeouts) */
   protected Instant lastCatchUpSent = null;
 
   @Override
@@ -160,7 +172,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
    * compares state of latest product to determine whether caught up and if
    * broadcasts should be processed.
    *
-   * @param message
+   * @param message Message notification - string
    */
   @Override
   synchronized public void onMessage(String message) throws IOException {
@@ -191,8 +203,8 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
    * If caught up process notification as usual, otherwise save notification
    * to help detect when caught up.
    *
-   * @param json
-   * @throws Exception
+   * @param json JSON Message
+   * @throws Exception Exception
    */
   protected void onBroadcast(final JsonObject json) throws Exception {
     final JsonNotification notification = new JsonNotification(
@@ -230,8 +242,8 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
   /**
    * Process a received notification and update current "created" timestamp.
    *
-   * @param notification
-   * @throws Exception
+   * @param notification JSON Notification
+   * @throws Exception Exception
    */
   protected void onJsonNotification(final JsonNotification notification) throws Exception {
     // receive and notify listeners
@@ -246,8 +258,8 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
   /**
    * Handle a message with "action"="product", which is received during catch up.
    *
-   * @param json
-   * @throws Exception
+   * @param json JSON Message
+   * @throws Exception Exception
    */
   protected void onProduct(final JsonObject json) throws Exception {
     final JsonNotification notification = new JsonNotification(
@@ -264,8 +276,8 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
    * Check whether caught up, and either switch to broadcast mode or continue
    * catch up process.
    *
-   * @param json
-   * @throws Exception
+   * @param json JSON Message
+   * @throws Exception Exception
    */
   protected void onProductsCreatedAfter(final JsonObject json) throws Exception {
     final String after = json.getString("created_after");
@@ -362,6 +374,8 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
    * The server will reply with zero or more "action"="product" messages, and
    * then one "action"="products_created_after" message to indicate the request
    * is complete.
+   *
+   * @throws IOException IOException
    */
   protected void sendProductsCreatedAfter() throws IOException {
     // set default for created after
@@ -460,7 +474,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
    * Reads createdAfter from a tracking file if it exists,
    * then connects to web socket.
    *
-   * @throws Exception
+   * @throws Exception Exception
    */
   @Override
   public void startup() throws Exception{
@@ -485,7 +499,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
 
   /**
    * Closes web socket
-   * @throws Exception
+   * @throws Exception Exception
    */
   @Override
   public void shutdown() throws Exception {
@@ -502,7 +516,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
    * Reads tracking file.
    *
    * @return  JsonObject tracking file
-   * @throws Exception
+   * @throws Exception Exception
    */
   public JsonObject readTrackingData() throws Exception {
     // use name as key
@@ -512,7 +526,7 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
   /**
    * Writes tracking file.
    *
-   * @throws Exception
+   * @throws Exception Exception
    */
   public void writeTrackingData() throws Exception {
     JsonObject json = Json.createObjectBuilder()
@@ -523,42 +537,82 @@ public class AwsProductReceiver extends DefaultNotificationReceiver implements R
     trackingIndex.setTrackingData(getName(), json);
   }
 
+  /**
+   * Getter for URI
+   * @return URI
+   */
   public URI getURI() {
     return uri;
   }
 
+  /**
+   * Setter for URI
+   * @param uri URI
+   */
   public void setURI(final URI uri) {
     this.uri = uri;
   }
 
+  /**
+   * Getter for trackingFileName
+   * @return name of tracking file
+   */
   public String getTrackingFileName() {
     return trackingFileName;
   }
 
+   /**
+   * Setter for trackingFileName
+   * @param trackingFileName trackingFileName
+   */
   public void setTrackingFileName(final String trackingFileName) {
     this.trackingFileName = trackingFileName;
   }
 
+  /**
+   * Getter for createdAfter
+   * @return createdAfter
+   */
   public Instant getCreatedAfter() {
     return createdAfter;
   }
 
+  /**
+   * Setter for createdAfter
+   * @param createdAfter createdAfter
+   */
   public void setCreatedAfter(final Instant createdAfter) {
     this.createdAfter = createdAfter;
   }
 
+  /**
+   * Getter for attempts
+   * @return attempts
+   */
   public int getAttempts() {
     return attempts;
   }
 
+  /**
+   * Setter for attempts
+   * @param attempts attempts
+   */
   public void setAttempts(final int attempts) {
     this.attempts = attempts;
   }
 
+  /**
+   * Getter for timeout
+   * @return timeout
+   */
   public long getTimeout() {
     return timeout;
   }
 
+  /**
+   * Setter for timeout
+   * @param timeout long timeout
+   */
   public void setTimeout(final long timeout) {
     this.timeout = timeout;
   }

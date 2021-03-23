@@ -64,6 +64,7 @@ public class HeartbeatListener extends DefaultNotificationListener {
 	 * Create a new HeartbeatListener.
 	 *
 	 * Sets up the includeTypes list to contain "heartbeat".
+	 * @throws Exception if error occurs
 	 */
 	public HeartbeatListener() throws Exception {
 		LISTENING = true;
@@ -119,9 +120,9 @@ public class HeartbeatListener extends DefaultNotificationListener {
 	/**
 	 * Send heartbeat data to heartbeat listener
 	 *
-	 * @param component
-	 * @param key
-	 * @param value
+	 * @param component String component
+	 * @param key Heartbeat key
+	 * @param value Heartbeat value
 	 */
 	public static void sendHeartbeatMessage(final String component,
 			final String key, final String value) {
@@ -152,7 +153,7 @@ public class HeartbeatListener extends DefaultNotificationListener {
 	 * Write heartbeat data for all components to the heartbeat file
 	 *
 	 * @return true
-	 * @throws IOException
+	 * @throws IOException if IO error occurs
 	 */
 	public boolean writeHeartbeat() throws IOException {
 		String tempFileName = heartbeatFile.getName() + "-temp";
@@ -231,18 +232,22 @@ public class HeartbeatListener extends DefaultNotificationListener {
 
 	}
 
+	/** @return heartbeatFile */
 	public File getHeartbeatFile() {
 		return heartbeatFile;
 	}
 
+	/** @param heartbeatFile to set */
 	public void setHeartbeatFile(File heartbeatFile) {
 		this.heartbeatFile = heartbeatFile;
 	}
 
+	/** @return storageTimeout */
 	public long getStorageTimeout() {
 		return storageTimeout;
 	}
 
+	/** @param storageTimeout to set */
 	public void setStorageTimeout(long storageTimeout) {
 		this.storageTimeout = storageTimeout;
 	}

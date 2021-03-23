@@ -37,15 +37,22 @@ import gov.usgs.util.XmlUtils;
  * and call indexer.onProduct.
  */
 public class AwsBatchIndexer implements Bootstrappable {
-
+  /** Force reindex argument */
   public static final String FORCE_REINDEX_ARGUMENT = "--force";
+  /** Get product URL argument */
   public static final String GET_PRODUCT_URL_ARGUMENT = "--getProductUrl=";
+  /** Argument for indexer configuration name */
   public static final String INDEXER_CONFIG_NAME_ARGUMENT="--indexerConfigName=";
+  /** Default indexer configuration name */
   public static final String INDEXER_CONFIG_NAME_DEFAULT = "indexer";
 
+  /** Argument for database driver */
   public static final String DATABASE_DRIVER_ARGUMENT = "--databaseDriver=";
+  /** Argument for database URL */
   public static final String DATABASE_URL_ARGUMENT = "--databaseUrl=";
+  /** Argument for indexer database */
   public static final String INDEXER_DATABASE_ARGUMENT = "--indexerDatabase=";
+  /** Default database for indexer */
   public static final String INDEXER_DATABASE_DEFAULT = "indexer";
 
   /** Logging object. */
@@ -110,7 +117,7 @@ public class AwsBatchIndexer implements Bootstrappable {
    * @param id
    *     which product.
    * @return URL with placeholders replaced.
-   * @throws Exception
+   * @throws Exception Exception
    */
   public URL getProductUrl(final ProductId id) throws Exception {
     String url = getProductUrlTemplate;
@@ -127,7 +134,7 @@ public class AwsBatchIndexer implements Bootstrappable {
    * @param id
    *     which product.
    * @return Product object.
-   * @throws Exception
+   * @throws Exception Exception
    */
   public Product getProduct(final ProductId id) throws Exception {
     final URL url = getProductUrl(id);
@@ -150,7 +157,6 @@ public class AwsBatchIndexer implements Bootstrappable {
    *
    * @param id
    *     which product
-   * @throws Exception
    */
   public void processProductId(final ProductId id) {
     long start = new Date().getTime();
@@ -172,6 +178,14 @@ public class AwsBatchIndexer implements Bootstrappable {
     }
   }
 
+  /**
+   * Read product ids (as urns) from database and submit to executor for processing.
+   *
+   * @param driver database driver
+   * @param url database url
+   *
+   * @throws Exception exception
+   */
   public void readProductIdsFromDatabase(
       final String driver,
       final String url) throws Exception {
@@ -233,7 +247,7 @@ public class AwsBatchIndexer implements Bootstrappable {
   /**
    * Read product ids (as urns) from stdin and submit to executor for processing.
    *
-   * @throws Exception
+   * @throws Exception Exception
    */
   public void readProductIdsFromStdin() throws Exception {
     // read product ids from stdin
@@ -262,7 +276,7 @@ public class AwsBatchIndexer implements Bootstrappable {
    *
    * @param id
    *     which product
-   * @throws InterruptedException
+   * @throws InterruptedException InterruptedException
    */
   public void submitProductId(final ProductId id) throws InterruptedException {
     // queue for processing

@@ -31,20 +31,20 @@ import java.util.zip.DeflaterOutputStream;
 
 /**
  * Send Products to SocketProductReceivers.
- * 
+ *
  * The SocketProductSender implements the Configurable interface and uses the
  * following configuration parameters:
- * 
+ *
  * <dl>
  * <dt>host</dt>
  * <dd>(Required) The IP address or hostname of a SocketProductReceiver.</dd>
- * 
+ *
  * <dt>port</dt>
  * <dd>(Optional, default=11235) The port on host of a SocketProductReceiver</dd>
  * </dl>
- * 
+ *
  * @author jmfee
- * 
+ *
  */
 public class SocketProductSender extends DefaultConfigurable implements
 		ProductSender {
@@ -53,19 +53,27 @@ public class SocketProductSender extends DefaultConfigurable implements
 	private static final Logger LOGGER = Logger
 			.getLogger(SocketProductSender.class.getName());
 
+	/** property for sender host */
 	public static final String SENDER_HOST_PROPERTY = "host";
+	/** property for sender port */
 	public static final String SENDER_PORT_PROPERTY = "port";
 
 	/** The default port number for SocketProductReceivers. */
 	public static final String DEFAULT_SENDER_PORT = "11235";
 
+	/** property for connectTimeout */
 	public static final String CONNECT_TIMEOUT_PROPERTY = "connectTimeout";
+	/** Default connection timeout */
 	public static final String DEFAULT_CONNECT_TIMEOUT = "15000";
 
+	/** property for readTimeout */
 	public static final String READ_TIMEOUT_PROPERTY = "readTimeout";
+	/** Default read timeout */
 	public static final String DEFAULT_READ_TIMEOUT = "15000";
 
+	/** property for writeTimeout */
 	public static final String WRITE_TIMEOUT_PROPERTY = "writeTimeout";
+	/** Default write timeout */
 	public static final String DEFAULT_WRITE_TIMEOUT = "-1";
 
 	/** Property name to configure binary or xml format. */
@@ -78,16 +86,25 @@ public class SocketProductSender extends DefaultConfigurable implements
 	/** Default value for whether to use deflate compression. */
 	public static final String ENABLE_DEFLATE_DEFAULT = "true";
 
+	/** property for deflateLevel */
 	public static final String DEFLATE_LEVEL_PROPERTY = "deflateLevel";
+	/** Default deflate level */
 	public static final String DEFLATE_LEVEL_DEFAULT = "1";
 
+	/** Property to enablePdlProtocol */
 	public static final String ENABLE_PDL_PROTOCOL_PROPERTY = "enablePdlProtocol";
+	/** Default for enable pdl protocol */
 	public static final String DEFAULT_ENABLE_PDL_PROTOCOL = "true";
 
+	/** Byte array for protocl header */
 	public static final byte[] PROTOCOL_HEADER = { 'P', 'D', 'L' };
+	/** Static var for v0.1 protocol */
 	public static final String PROTOCOL_VERSION_0_1 = "v0.1";
+	/** Static var for unknown product */
 	public static final String UNKNOWN_PRODUCT = "Unknown product";
+	/** Static var for alreadying having the product */
 	public static final String ALREADY_HAVE_PRODUCT = "Already have product";
+	/** Static var for a receive error */
 	public static final String RECEIVE_ERROR = "Error receiving product";
 
 	/** Whether to store in binary format (true), or xml format (false). */
@@ -115,15 +132,21 @@ public class SocketProductSender extends DefaultConfigurable implements
 	private Socket socket = null;
 
 	/**
-	 * Construct a new ProductSender.
-	 * 
-	 * @param host
-	 * @param port
+	 * Construct a new ProductSender with default connection timeout.
+	 *
+	 * @param host Host of product sender
+	 * @param port Port of product sender
 	 */
 	public SocketProductSender(final String host, final int port) {
 		this(host, port, Integer.parseInt(DEFAULT_CONNECT_TIMEOUT));
 	}
 
+	/**
+	 * Construct a new ProductSender with default read and write timeouts
+	 * @param host Host of product sender
+	 * @param port Port of product sender
+	 * @param connectTimeout Timeout in ms
+	 */
 	public SocketProductSender(final String host, final int port,
 			final int connectTimeout) {
 		this(host, port, connectTimeout,
@@ -131,6 +154,15 @@ public class SocketProductSender extends DefaultConfigurable implements
 						.parseInt(DEFAULT_WRITE_TIMEOUT));
 	}
 
+	/**
+	 *
+	 * Construct a new ProductSender
+	 * @param host Host of product sender
+	 * @param port Port of product sender
+	 * @param connectTimeout connect timeout in ms
+	 * @param readTimeout read timeout in ms
+	 * @param writeTimeout write timeout in ms
+	 */
 	public SocketProductSender(final String host, final int port,
 			final int connectTimeout, final int readTimeout,
 			final int writeTimeout) {
@@ -147,9 +179,9 @@ public class SocketProductSender extends DefaultConfigurable implements
 
 	/**
 	 * Construct a new ProductSender using a Config object.
-	 * 
-	 * @param config
-	 * @throws Exception
+	 *
+	 * @param config Config object
+	 * @throws Exception if error occurs
 	 */
 	public SocketProductSender(Config config) throws Exception {
 		configure(config);
@@ -157,10 +189,10 @@ public class SocketProductSender extends DefaultConfigurable implements
 
 	/**
 	 * Implement the ProductSender interface.
-	 * 
+	 *
 	 * Connects to host:port and sends a Deflaterped xml encoded Product. There
 	 * is no direct response over the socket at this time.
-	 * 
+	 *
 	 * Updates may be retrieved from a ProductTracker.
 	 */
 	public void sendProduct(Product product) throws Exception {
@@ -293,7 +325,7 @@ public class SocketProductSender extends DefaultConfigurable implements
 
 	/**
 	 * Reads the host and port from config.
-	 * 
+	 *
 	 * @param config
 	 *            a Config object with host and port properties.
 	 */

@@ -82,6 +82,13 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 	public ReplicationStorageListener() {
 	}
 
+	/**
+	 * Customer initialization of the constructor
+	 * @param archiveFlag Bool flag of what to do on archive
+	 * @param replCmd Replication command on host system
+	 * @param replTimeout Replication in ms
+	 * @param replHosts List of Replication hosts
+	 */
 	public ReplicationStorageListener(final boolean archiveFlag,
 			String replCmd, final long replTimeout, final List<String> replHosts) {
 		this.archiveFlag = archiveFlag;
@@ -90,6 +97,10 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 		setReplHosts(replHosts);
 	}
 
+	/**
+	 * Set new Replication hosts
+	 * @param replHosts string list of new hosts
+	 */
 	protected void setReplHosts(List<String> replHosts) {
 		this.replHosts = new HashMap<String, ExecutorService>();
 		Iterator<String> replHostsIter = replHosts.iterator();
@@ -198,6 +209,13 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 				+ event.getProductId().toString() + ")");
 	}
 
+	/**
+	 *
+	 * @param storage FileProductStorage to use as the base directory
+	 * @param id ID of product in storage
+	 * @param deleting Bool flag for deleting
+	 * @throws IOException if IO error occurs
+	 */
 	protected void syncProductContents(FileProductStorage storage,
 			ProductId id, boolean deleting) throws IOException {
 
@@ -216,7 +234,7 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 
 	/**
 	 * Create the replication command.
-	 * 
+	 *
 	 * @param baseDir
 	 *            The directory from which replication will be executed.
 	 * @param path
@@ -226,10 +244,10 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 	 *            = user@host:path
 	 * @param deleting
 	 *            Flag whether this should be a deleting replication or not
-	 * 
+	 *
 	 * @return The command and arguments as a list suitable for a
 	 *         <code>ProcessBuilder</code>.
-	 * @throws IOException 
+	 * @throws IOException if IO error occurs
 	 */
 	protected List<String> createReplicationCommand(final File baseDir,
 			final String path, final String host, final boolean deleting) throws IOException {
@@ -274,7 +292,6 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 
 		return command;
 	}
-
 	protected class ReplicationTask extends Thread {
 
 		// Command to execute
@@ -290,6 +307,14 @@ public class ReplicationStorageListener extends DefaultStorageListener {
 		// Executor service to repeat this task if appropriate
 		private ExecutorService service = null;
 
+		/**
+		 * Constructor of a replication task
+		 * @param command command to execute
+		 * @param cwd Direcetory to execute the command
+		 * @param numTries How many times to try the replication
+		 * @param timeout in ms
+		 * @param service Executor service
+		 */
 		public ReplicationTask(final List<String> command, final File cwd,
 				final int numTries, final long timeout,
 				final ExecutorService service) {

@@ -20,7 +20,9 @@ public class RelayProductListener extends DefaultNotificationListener {
 	private static final Logger LOGGER = Logger
 			.getLogger(RelayProductListener.class.getName());
 
+	/** property for senderType */
 	public static final String SENDER_TYPE_PROPERTY = "senderType";
+	/** property saying the sender type is aws */
 	public static final String SENDER_TYPE_AWS = "aws";
 
 	/** Sender used to send products. */

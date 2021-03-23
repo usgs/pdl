@@ -65,43 +65,61 @@ public class CLIProductBuilder extends DefaultConfigurable {
 	/** Exit code when errors occur while sending, but not to all senders. */
 	public static final int EXIT_PARTIALLY_SENT = 4;
 
-	// product id arguments
+	/** product id type argument */
 	public static final String TYPE_ARGUMENT = "--type=";
+	/** product id code argument */
 	public static final String CODE_ARGUMENT = "--code=";
+	/** product id source argument */
 	public static final String SOURCE_ARGUMENT = "--source=";
+	/** product id updateTime argument */
 	public static final String UPDATE_TIME_ARGUMENT = "--updateTime=";
 
-	// product status arguments
+	/** product status argument */
 	public static final String STATUS_ARGUMENT = "--status=";
+	/** product delete argument */
 	public static final String DELETE_ARGUMENT = "--delete";
 
-	// tracking url
+	/** tracker url argument */
 	public static final String TRACKER_URL_ARGUMENT = "--trackerURL=";
 
-	// product properties
+  /** property argument */
 	public static final String PROPERTY_ARGUMENT = "--property-";
+	/** eventID argument */
 	public static final String EVENTID_ARGUMENT = "--eventid=";
+	/** eventsource argument */
 	public static final String EVENTSOURCE_ARGUMENT = "--eventsource=";
+	/** eventsourcecode argument */
 	public static final String EVENTSOURCECODE_ARGUMENT = "--eventsourcecode=";
+	/** eventCode argument */
 	public static final String EVENTCODE_ARGUMENT = "--eventcode=";
+	/** eventtime argument */
 	public static final String EVENTTIME_ARGUMENT = "--eventtime=";
+	/** latitude argument */
 	public static final String LATITUDE_ARGUMENT = "--latitude=";
+	/** longitude argument */
 	public static final String LONGITUDE_ARGUMENT = "--longitude=";
+	/** depth argument */
 	public static final String DEPTH_ARGUMENT = "--depth=";
+	/** magnitude argument */
 	public static final String MAGNITUDE_ARGUMENT = "--magnitude=";
+	/** version argument */
 	public static final String VERSION_ARGUMENT = "--version=";
 
-	// product links
+	/** product link argument */
 	public static final String LINK_ARGUMENT = "--link-";
 
-	// product content arguments
+	/** product content argument */
 	public static final String CONTENT_ARGUMENT = "--content";
+	/** product content type argument */
 	public static final String CONTENT_TYPE_ARGUMENT = "--contentType=";
+	/** product directory argument */
 	public static final String DIRECTORY_ARGUMENT = "--directory=";
+	/** product file argument */
 	public static final String FILE_ARGUMENT = "--file=";
 
-	// private key used for signature
+	/** private key argument */
 	public static final String PRIVATE_KEY_ARGUMENT = "--privateKey=";
+	/** signature version argument */
 	public static final String SIGNATURE_VERSION_ARGUMENT = "--signatureVersion=";
 
 	/** Property name used for configuring a tracker url. */
@@ -112,11 +130,17 @@ public class CLIProductBuilder extends DefaultConfigurable {
 
 	/** Arguments for configuring servers and connectTimeouts. */
 	public static final String SERVERS_ARGUMENT = "--servers=";
+	/** connectionTimeout argument */
 	public static final String CONNECT_TIMEOUT_ARGUMENT = "--connectTimeout=";
+	/** Default connectionTimeout argument. 15s */
 	public static final Integer DEFAULT_CONNECT_TIMEOUT = 15000;
+	/** binaryFormat argument */
 	public static final String BINARY_FORMAT_ARGUMENT = "--binaryFormat";
+	/** disableDeflate argument */
 	public static final String DISABLE_DEFLATE = "--disableDeflate";
+	/** disableParallelSend argument */
 	public static final String DISABLE_PARALLEL_SEND = "--disableParallelSend";
+	/** parallelSendTimeout argument */
 	public static final String PARALLEL_SEND_TIMEOUT_ARGUMENT = "--parallelSendTimeout=";
 
 	/** Tracker URL that is used when not overriden by an argument. */
@@ -133,7 +157,8 @@ public class CLIProductBuilder extends DefaultConfigurable {
 	private long parallelSendTimeout = Long.valueOf(ProductBuilder.DEFAULT_PARALLEL_SEND_TIMEOUT);
 
 	/**
-	 * This class is not intended to be instantiated directly. f
+	 * This class is not intended to be instantiated directly.
+	 * @param args arguments
 	 */
 	protected CLIProductBuilder(final String[] args) {
 		this.args = args;
@@ -257,7 +282,8 @@ public class CLIProductBuilder extends DefaultConfigurable {
 	/**
 	 * Build a product using command line arguments.
 	 *
-	 * @throws Exception
+	 * @return Product
+	 * @throws Exception if error occurs
 	 */
 	public Product buildProduct() throws Exception {
 		// start product id with null values, and verify they are all set after
@@ -425,6 +451,14 @@ public class CLIProductBuilder extends DefaultConfigurable {
 		return product;
 	}
 
+	/**
+	 * Parse servers for list of product senders
+	 * @param servers CSV string of servers
+	 * @param connectTimeout timeout
+	 * @param binaryFormat if binaryFormat
+	 * @param enableDeflate if enableDeflate
+	 * @return List of product senders
+	 * */
 	public static List<ProductSender> parseServers(final String servers,
 			final Integer connectTimeout, final boolean binaryFormat,
 			final boolean enableDeflate) {
@@ -449,8 +483,8 @@ public class CLIProductBuilder extends DefaultConfigurable {
 	 *
 	 * Called by Main if the --build argument is present.
 	 *
-	 * @param args
-	 * @throws Exception
+	 * @param args arguments
+	 * @throws Exception if error occurs
 	 */
 	public static void main(final String[] args) throws Exception {
 		CLIProductBuilder builder = new CLIProductBuilder(args);
@@ -530,7 +564,10 @@ public class CLIProductBuilder extends DefaultConfigurable {
 		builder.shutdown();
 		System.exit(0);
 	}
-
+	/**
+	 * Function on how to use command
+	 * @return string
+	 */
 	public static String getUsage() {
 		StringBuffer buf = new StringBuffer();
 
