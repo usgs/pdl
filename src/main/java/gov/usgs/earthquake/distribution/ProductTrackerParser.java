@@ -29,19 +29,25 @@ public class ProductTrackerParser extends SAXAdapter {
 	/** The current update being parsed. */
 	private ProductTrackerUpdate update = null;
 
-	/** Create a new TrackerUpdateParser. */
+	/**
+	 * Create a new TrackerUpdateParser.
+	 * @param trackerURL URL that generated the list being parsed
+	 */
 	public ProductTrackerParser(final URL trackerURL) {
 		this.trackerURL = trackerURL;
 	}
 
-	/** Get the parsed updates. */
+	/**
+	 * Get the parsed updates.
+	 * @return list of parsed updates
+	 */
 	public List<ProductTrackerUpdate> getUpdates() {
 		return updates;
 	}
 
 	/**
 	 * SAXAdapter start element handler.
-	 * 
+	 *
 	 * @param uri
 	 *            element uri.
 	 * @param localName
@@ -82,7 +88,7 @@ public class ProductTrackerParser extends SAXAdapter {
 	/**
 	 * SAXAdapter end element handler. Content only includes characters that
 	 * were read from this element, NOT any characters from child elements.
-	 * 
+	 *
 	 * @param uri
 	 *            element uri.
 	 * @param localName

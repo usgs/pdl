@@ -19,7 +19,7 @@ import gov.usgs.util.DefaultConfigurable;
 
 /**
  * Use round-robin queues to notify listeners.
- * 
+ *
  * This attempts to prevent any one product source+type from blocking processing
  * of notifications from other product source+type.
  */
@@ -44,7 +44,7 @@ public class RoundRobinListenerNotifier extends DefaultConfigurable implements
 
 	/**
 	 * Create new RoundRobinListenerNotifier.
-	 * 
+	 *
 	 * @param receiver
 	 *            the receiver using this notifier.
 	 */
@@ -112,14 +112,15 @@ public class RoundRobinListenerNotifier extends DefaultConfigurable implements
 
 	/**
 	 * Notify a specific list of listeners.
-	 * 
+	 *
 	 * Used during renotification to only notify listeners that have an index.
-	 * 
+	 *
 	 * @param event
 	 *            notification.
 	 * @param toNotify
 	 *            list of listeners to notify.
 	 * @throws Exception
+	 *            if error occurs
 	 */
 	protected void notifyListeners(NotificationEvent event,
 			final Collection<ListenerNotifierThread> toNotify) throws Exception {
@@ -163,8 +164,8 @@ public class RoundRobinListenerNotifier extends DefaultConfigurable implements
 
 	/**
 	 * Requeue existing notifications at startup.
-	 * 
-	 * @throws Exception
+	 *
+	 * @throws Exception if error occurs
 	 */
 	protected void requeue() throws Exception {
 		NotificationIndex index = receiver.getNotificationIndex();

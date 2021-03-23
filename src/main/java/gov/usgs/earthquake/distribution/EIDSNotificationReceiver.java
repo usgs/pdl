@@ -15,8 +15,8 @@ import gov.usgs.util.StreamUtils;
 
 /**
  * Receive XML notifications using EIDS.
- * 
- * 
+ *
+ *
  * This class implements the Configurable interface, and has the following
  * options:
  * <dl>
@@ -64,7 +64,7 @@ public class EIDSNotificationReceiver extends DefaultNotificationReceiver
 	//TODO: Change condition using URLNotificationParser
 	/**
 	 * Implement the EIDSListener interface to process messages from EIDS.
-	 * 
+	 *
 	 * Checks to make sure message has Correct namespace and root element before
 	 * parsing.
 	 */
@@ -154,10 +154,12 @@ public class EIDSNotificationReceiver extends DefaultNotificationReceiver
 		client.startup();
 	}
 
+	/** @return EIDSClient */
 	public EIDSClient getClient() {
 		return client;
 	}
 
+	/** @param client set EIDSClient */
 	public void setClient(EIDSClient client) {
 		this.client = client;
 	}

@@ -11,7 +11,7 @@ public class ConfigurationException extends Exception {
 	/**
 	 * Construct a configuration exception with only a string describing the
 	 * error.
-	 * 
+	 *
 	 * @param message
 	 *            description of the error (and possibly, solution).
 	 */
@@ -22,9 +22,11 @@ public class ConfigurationException extends Exception {
 	/**
 	 * Construct a configuration exception with a string describing the error,
 	 * and an exception that was caught that led to the problem.
-	 * 
+	 *
 	 * @param message
+	 *            description of the error (and possibly, solution).
 	 * @param cause
+	 *            exception that led to problem
 	 */
 	public ConfigurationException(final String message, final Exception cause) {
 		super(message, cause);

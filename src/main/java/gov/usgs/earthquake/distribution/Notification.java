@@ -14,16 +14,25 @@ import java.util.Date;
  */
 public interface Notification {
 
-	/** The product that is available. */
+	/** The product that is available.
+	 * @return ProductId
+	 */
 	public ProductId getProductId();
 
-	/** How long the product is available. */
+	/** How long the product is available.
+	 * @return Date
+	 */
 	public Date getExpirationDate();
 
-	/** A tracking url where status updates can be sent. */
+	/** A tracking url where status updates can be sent.
+	 * @return Tracker URL
+	 */
 	public URL getTrackerURL();
-	
-	/** A comparison method to see if two notifications are equal. */
+
+	/** A comparison method to see if two notifications are equal.
+	 * @param that Notification
+	 * @return boolean
+	 */
 	public boolean equals(Notification that);
 
 }

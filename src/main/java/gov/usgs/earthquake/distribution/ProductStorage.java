@@ -10,7 +10,7 @@ import gov.usgs.util.Configurable;
 
 /**
  * Stores and retrieves Products.
- * 
+ *
  * This is typically used by a NotificationReceiver to store downloaded
  * products.
  */
@@ -18,11 +18,11 @@ public interface ProductStorage extends Configurable {
 
 	/**
 	 * A method to check whether a product is already in storage.
-	 * 
+	 *
 	 * Implementers should define this method as more than
 	 * "getProduct(id) != null" when it is significantly less expensive to check
 	 * whether a product exists, compared to loading a product from storage.
-	 * 
+	 *
 	 * @param id
 	 *            the product to check.
 	 * @return true if the product is in this storage, false otherwise.
@@ -33,13 +33,13 @@ public interface ProductStorage extends Configurable {
 
 	/**
 	 * Retrieve a stored product.
-	 * 
+	 *
 	 * May be implemented as
-	 * 
+	 *
 	 * <pre>
 	 * return ObjectProductHandler.getProduct(getProductInput(id));
 	 * </pre>
-	 * 
+	 *
 	 * @param id
 	 *            which product to retrieve.
 	 * @return the retrieved product, or null if the product isn't in storage.
@@ -50,13 +50,13 @@ public interface ProductStorage extends Configurable {
 
 	/**
 	 * Store a product.
-	 * 
+	 *
 	 * May be implemented as
-	 * 
+	 *
 	 * <pre>
 	 * return storeProductSource(new ObjectProductInput(product));
 	 * </pre>
-	 * 
+	 *
 	 * @param product
 	 *            the product to store.
 	 * @return the stored product's id.
@@ -67,7 +67,7 @@ public interface ProductStorage extends Configurable {
 
 	/**
 	 * Retrieve a ProductSource for a stored product.
-	 * 
+	 *
 	 * @param id
 	 *            which product to retrieve.
 	 * @return a ProductInput for the stored product, or null if not in storage.
@@ -78,7 +78,7 @@ public interface ProductStorage extends Configurable {
 
 	/**
 	 * Store a ProductSource.
-	 * 
+	 *
 	 * @param input
 	 *            the product to store.
 	 * @return the stored product's id.
@@ -90,7 +90,7 @@ public interface ProductStorage extends Configurable {
 
 	/**
 	 * Remove a Product from storage, if it exists.
-	 * 
+	 *
 	 * @param id
 	 *            which product to remove.
 	 * @throws Exception
@@ -101,15 +101,16 @@ public interface ProductStorage extends Configurable {
 	/**
 	 * Notifies <code>StorageListener</code>s of the change to the
 	 * <code>ProductStorage</code>.
-	 * 
+	 *
 	 * @param event
+	 *             StorageEvent
 	 */
 	public void notifyListeners(final StorageEvent event);
 
 	/**
 	 * Adds a <code>StorageListener</code> to be notified when a change occurs
 	 * in this <code>ProductStorage</code>.
-	 * 
+	 *
 	 * @param listener
 	 *            The listener to notify of changes.
 	 */
@@ -118,7 +119,7 @@ public interface ProductStorage extends Configurable {
 	/**
 	 * Removes a <code>StorageListener</code> from being notified when a change
 	 * occurs in this <code>ProductStorage</code>.
-	 * 
+	 *
 	 * @param listener
 	 *            The listener to remove
 	 */

@@ -31,6 +31,7 @@ import javax.json.JsonObject;
 /** Send using AWS Hub API. */
 public class AwsProductSender extends DefaultConfigurable implements ProductSender {
 
+  /** Initialzation of logger. For us later in file. */
   public static final Logger LOGGER = Logger.getLogger(AwsProductSender.class.getName());
 
   /** Base URL for Hub API. */
@@ -40,19 +41,19 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
   /** Whether to sign products using private key. */
   public static final String SIGN_PRODUCTS_PROPERTY = "signProducts";
 
-  // url where products are sent
+  /**url where products are sent */
   protected URL hubUrl;
-  // signing key
+  /** signing key */
   protected PrivateKey privateKey;
-  // whether to sign products
+  /** wheter to sign products */
   protected boolean signProducts = false;
 
-  // 5s seems excessive, but be cautious for now
+  /** Connection timeout. 5s seems excessive, but be cautious for now */
   protected int connectTimeout = 5000;
-  // this corresponds to server-side timeout
-  // read timeout applies once getInputStream().read() is called
+  /** Server-side timeout. Called at getInputStream().read() */
   protected int readTimeout = 30000;
 
+  /** Empty class constructor */
   public AwsProductSender() {}
 
   public AwsProductSender(URL url) {
@@ -208,7 +209,7 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
    *
    * @param json product in json format.
    * @return product with content urls set to upload URLs.
-   * @throws Exception
+   * @throws Exception Exception
    */
   protected Product getUploadUrls(final JsonObject json) throws Exception {
     final URL url = new URL(hubUrl, "get_upload_urls");
@@ -238,10 +239,10 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
    * This is a HTTP POST method,
    * with a JSON content body with a "product" property with the product.
    *
-   * @param url
-   * @param product
-   * @return
-   * @throws Exception
+   * @param url url of connection
+   * @param product product in json format
+   * @return new HTTP POST response
+   * @throws Exception Exception
    */
   protected HttpResponse postProductJson(final URL url, final JsonObject product) throws Exception {
     // send as attribute, for extensibility
@@ -263,7 +264,7 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
    *
    * @param json product in json format.
    * @return product with content urls pointing to hub.
-   * @throws Exception
+   * @throws Exception Exception
    */
   protected Product sendProduct(final JsonObject json) throws Exception {
     // send request
@@ -304,8 +305,8 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
    * @param path content path.
    * @param content content to upload.
    * @param signedUrl url where content should be uploaded.
-   * @return
-   * @throws Exception
+   * @return HTTP result
+   * @throws Exception Exception
    */
   protected HttpResponse uploadContent(final String path, final Content content, final URL signedUrl)
       throws Exception {
@@ -399,19 +400,30 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
     }
     return uploadResults;
   }
-
+  /** Getter for signProducts
+   * @return boolean
+   */
   public boolean getSignProducts() {
     return signProducts;
   }
 
+  /** Setter for signProducts
+   * @param sign boolean
+   */
   public void setSignProducts(final boolean sign) {
     this.signProducts = sign;
   }
 
+  /** getter for privateKey
+   * @return privateKey
+   */
   public PrivateKey getPrivateKey() {
     return privateKey;
   }
 
+  /** setting for privateKey
+   * @param key PrivateKey
+   */
   public void setPrivateKey(final PrivateKey key) {
     this.privateKey = key;
   }

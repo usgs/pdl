@@ -93,7 +93,7 @@ public class Bootstrap {
 	public static final String MAINCLASS_PROPERTY_NAME = "mainclass";
 	/** Default mainclass is "gov.usgs.earthquake.distribution.ProductClient. */
 	public static final String DEFAULT_MAINCLASS = "gov.usgs.earthquake.distribution.ProductClient";
-
+	/** Argument for version */
 	public static final String VERSION_ARGUMENT = "--version";
 
 	// private static
@@ -106,8 +106,7 @@ public class Bootstrap {
 	/** List of logger objects that have level overrides configured. */
 	private final ArrayList<Logger> loggers = new ArrayList<Logger>();
 
-	// constructors
-
+	/** Constructor */
 	public Bootstrap() {
 	}
 
@@ -118,7 +117,10 @@ public class Bootstrap {
 	 *
 	 * @param configFile
 	 *            config file to load.
+	 * @return
+	 *            config
 	 * @throws IOException
+	 *            if IO error occurs
 	 */
 	public Config loadConfig(final File configFile) throws IOException {
 		Config config = new Config();
@@ -153,6 +155,10 @@ public class Bootstrap {
 		return config;
 	}
 
+	/**
+	 * Sets up LogManager
+	 * @param config Config file
+	 */
 	public void setupLogging(final Config config) {
 		final LogManager logManager = LogManager.getLogManager();
 		logManager.reset();

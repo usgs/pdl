@@ -11,7 +11,7 @@ import javax.json.JsonObjectBuilder;
 
 /**
  * Heartbeat status information for a single component
- * 
+ *
  */
 public class HeartbeatStatus {
 
@@ -19,7 +19,7 @@ public class HeartbeatStatus {
 
 	/**
 	 * Create a new HeartbeatStatus.
-	 * 
+	 *
 	 */
 	public HeartbeatStatus() {
 		statuses = new HashMap<String, HeartbeatInfo>();
@@ -27,26 +27,28 @@ public class HeartbeatStatus {
 
 	/**
 	 * Add or update a Heartbeat's key/value pair
-	 * 
-	 * @param key
-	 * @param value
+	 *
+	 * @param key String key
+	 * @param value String value of heartbeat info
 	 */
 	public void updateStatus(String key, String value) {
 		statuses.put(key, new HeartbeatInfo(value, new Date()));
 	}
 
+	/** @return statuses - map of string, heartbeatInfo */
 	public Map<String, HeartbeatInfo> getStatuses() {
 		return statuses;
 	}
 
+	/** @return boolean - checking statuses */
 	public boolean isEmpty() {
 		return (statuses.size() == 0);
 	}
 
 	/**
 	 * Purge all heartbeatStatus data for this component older than given date
-	 * 
-	 * @param purgeDate
+	 *
+	 * @param purgeDate purge data until this date
 	 */
 	public void clearDataOlderThanDate(Date purgeDate) {
 		Iterator<String> iterator = statuses.keySet().iterator();

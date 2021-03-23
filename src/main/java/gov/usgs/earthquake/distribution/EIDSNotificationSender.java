@@ -110,10 +110,12 @@ public class EIDSNotificationSender extends DefaultNotificationSender {
 		super.startup();
 	}
 
+	/** @return serverPolldir */
 	public File getServerPolldir() {
 		return serverPolldir;
 	}
 
+	/** @param serverPolldir file to set */
 	public void setServerPolldir(File serverPolldir) {
 		this.serverPolldir = serverPolldir;
 	}

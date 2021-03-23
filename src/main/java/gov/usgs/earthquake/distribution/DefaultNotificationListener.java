@@ -41,22 +41,27 @@ public class DefaultNotificationListener extends AbstractListener implements
 
 	/** Property referencing a notification index config section. */
 	public static final String NOTIFICATION_INDEX_PROPERTY = "listenerIndex";
+	/** Property for listener index file */
 	public static final String INDEX_FILE_PROPERTY = "listenerIndexFile";
 
 	/** How long to wait until checking for expired notifications/products. */
 	public static final String CLEANUP_INTERVAL_PROPERTY = "cleanupInterval";
+	/** Default time to wait for cleanup. 1h */
 	public static final String DEFAULT_CLEANUP_INTERVAL = "3600000";
 
-	/** How many products to process at a time. */
+	/** Property for concurrentProducts */
 	public static final String CONCURRENT_PRODUCTS_PROPERTY = "concurrentProducts";
+	/** How many products to process at a time.  */
 	public static final String DEFAULT_CONCURRENT_PRODUCTS = "1";
 
 	/** Whether or not to process products more than once. */
 	public static final String PROCESS_DUPLICATES = "processDuplicates";
+	/** Default for process duplicates. False */
 	public static final String DEFAULT_PROCESS_DUPLICATES = "false";
 
 	/** Filter products based on content paths they contain. */
 	public static final String INCLUDE_PATHS_PROPERTY = "includePaths";
+	/** Property for exludePaths */
 	public static final String EXCLUDE_PATHS_PROPERTY = "excludePaths";
 
 	/** Optional notification index. */
@@ -141,7 +146,7 @@ public class DefaultNotificationListener extends AbstractListener implements
 	 *
 	 * @param product
 	 *            a product whose notification was accepted.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public void onProduct(final Product product) throws Exception {
 		// subclasses do stuff here
@@ -169,7 +174,7 @@ public class DefaultNotificationListener extends AbstractListener implements
 	 * @param notification
 	 *            notification about to be processed.
 	 * @return true to process the notification, false to skip
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected boolean onBeforeProcessNotification(
 			final Notification notification) throws Exception {
@@ -199,7 +204,7 @@ public class DefaultNotificationListener extends AbstractListener implements
 	 * @param product
 	 *            product about to be processed.
 	 * @return true to process the product, false to skip
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected boolean onBeforeProcessProduct(final Product product)
 			throws Exception {
@@ -246,7 +251,7 @@ public class DefaultNotificationListener extends AbstractListener implements
 	 *
 	 * @param notification
 	 *            notification that was processed.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected void onAfterProcessNotification(final Notification notification)
 			throws Exception {
@@ -258,8 +263,8 @@ public class DefaultNotificationListener extends AbstractListener implements
 	/**
 	 * Called when an expired notification is being removed from the index.
 	 *
-	 * @param notification
-	 * @throws Exception
+	 * @param notification to be removed
+	 * @throws Exception if error occurs
 	 */
 	protected void onExpiredNotification(final Notification notification)
 			throws Exception {
@@ -384,34 +389,42 @@ public class DefaultNotificationListener extends AbstractListener implements
 		LOGGER.config("[" + getName() + "] exclude paths = " + excludePaths);
 	}
 
+	/** @return notificationIndex */
 	public NotificationIndex getNotificationIndex() {
 		return notificationIndex;
 	}
 
+	/** @param notificationIndex to set */
 	public void setNotificationIndex(NotificationIndex notificationIndex) {
 		this.notificationIndex = notificationIndex;
 	}
 
+	/** @return cleanupInterval */
 	public Long getCleanupInterval() {
 		return cleanupInterval;
 	}
 
+	/** @param cleanupInterval long to set */
 	public void setCleanupInterval(Long cleanupInterval) {
 		this.cleanupInterval = cleanupInterval;
 	}
 
+	/** @return concurrentProducts */
 	public int getConcurrentProducts() {
 		return concurrentProducts;
 	}
 
+	/** @param concurrentProducts int to set */
 	public void setConcurrentProducts(int concurrentProducts) {
 		this.concurrentProducts = concurrentProducts;
 	}
 
+	/** @return processDuplicates */
 	public boolean isProcessDuplicates() {
 		return processDuplicates;
 	}
 
+	/** @param processDuplicates boolean to set */
 	public void setProcessDuplicates(boolean processDuplicates) {
 		this.processDuplicates = processDuplicates;
 	}
