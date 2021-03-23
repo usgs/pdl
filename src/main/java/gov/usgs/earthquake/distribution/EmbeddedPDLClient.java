@@ -9,7 +9,7 @@ import java.io.File;
 
 /**
  * An example of an embedded PDL client.
- * 
+ *
  * Creates a notification receiver, which store it's information in a specified
  * directory. Listeners can be added to this receiver before its startup()
  * method is called, which starts the distribution process.
@@ -30,7 +30,7 @@ public class EmbeddedPDLClient {
 
 	/**
 	 * Construct an embedded PDL client.
-	 * 
+	 *
 	 * @param dataDirectory
 	 *            directory where receiver files are stored.
 	 * @param serverHost
@@ -39,7 +39,7 @@ public class EmbeddedPDLClient {
 	 *            PDL hub port.
 	 * @param alternateServersList
 	 *            comma separated list of "hostname:port" alternate pdl hubs.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public EmbeddedPDLClient(final File dataDirectory, final String serverHost,
 			final Integer serverPort, final String alternateServersList)
@@ -51,7 +51,7 @@ public class EmbeddedPDLClient {
 		client.setTrackingFileName(new File(dataDirectory,
 				EMBEDDED_TRACKING_FILE).getCanonicalPath());
 
-		
+
 		eidsReceiver = new EIDSNotificationReceiver();
 		eidsReceiver.setName(EMBEDDED_NAME);
 		eidsReceiver.setNotificationIndex(new JDBCNotificationIndex(new File(
@@ -69,7 +69,7 @@ public class EmbeddedPDLClient {
 	 * Get the embedded EIDSNotificationReceiver object for further
 	 * configuration, adding/removing listeners, and starting/stopping
 	 * distribution.
-	 * 
+	 *
 	 * @return the embedded EIDSNotificationReceiver object.
 	 */
 	public EIDSNotificationReceiver getReceiver() {
@@ -78,10 +78,10 @@ public class EmbeddedPDLClient {
 
 	/**
 	 * Example main method that uses the EmbeddedPDLClient.
-	 * 
+	 *
 	 * @param args
 	 *            not used.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public static void main(final String[] args) throws Exception {
 		// disable product tracker messages

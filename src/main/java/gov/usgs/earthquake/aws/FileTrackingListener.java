@@ -28,13 +28,15 @@ import gov.usgs.util.StreamUtils;
  */
 public class FileTrackingListener extends DefaultConfigurable implements NotificationListener {
 
+  /** Initialzation of logger. For us later in file. */
   private static final Logger LOGGER = Logger.getLogger(FileTrackingListener.class.getName());
 
-  // tracking index properties
+  /** Tracking index property */
   public static final String TRACKING_INDEX_PROPERTY = "trackingIndex";
+  /** Tracking index file property */
   public static final String TRACKING_INDEX_FILE_PROPERTY = "trackingIndexFile";
 
-  // tracking file properties
+  /** Tracking file property */
   public static final String TRACKING_FILE_PROEPRTY = "trackingFile";
 
   /** File being tracked. */
@@ -42,20 +44,39 @@ public class FileTrackingListener extends DefaultConfigurable implements Notific
   /** Tracking Index where contents are stored */
   private TrackingIndex trackingIndex;
 
+  /** FileTrackingListener constructor */
   public FileTrackingListener() {
   }
 
+  /** Initializable FileTrackingListener
+   * @param trackingFile file to be traacked
+   * @param trackingIndex Index where contents are stored
+   */
   public FileTrackingListener(final File trackingFile, final TrackingIndex trackingIndex) {
     this.trackingFile = trackingFile;
     this.trackingIndex = trackingIndex;
   }
 
+  /** Getter for trackingFile
+   * @return trackingFile
+   */
   public File getTrackingFile() { return this.trackingFile; }
+
+  /** Setter for trackingFile
+   * @param trackingFile File to be tracked
+   */
   public void setTrackingFile(final File trackingFile) {
     this.trackingFile = trackingFile;
   }
 
+  /** Getter for trackingIndex
+   * @return trackingIndex
+   */
   public TrackingIndex getTrackingIndex() { return this.trackingIndex; }
+
+  /** Setter for trackingIndex
+   * @param trackingIndex Index where contents are stored
+   */
   public void setTrackingIndex(final TrackingIndex trackingIndex) {
     this.trackingIndex = trackingIndex;
   }
@@ -121,7 +142,7 @@ public class FileTrackingListener extends DefaultConfigurable implements Notific
   /**
    * Read trackingIndex and write trackingFile.
    *
-   * @throws Exception
+   * @throws Exception Exception
    */
   public void loadTrackingFile() throws Exception {
     final String name = trackingFile.getAbsolutePath();
@@ -137,7 +158,7 @@ public class FileTrackingListener extends DefaultConfigurable implements Notific
   /**
    * Read trackingFile and write into trackingIndex.
    *
-   * @throws Exception
+   * @throws Exception Exception
    */
   public void storeTrackingFile() throws Exception {
     try {

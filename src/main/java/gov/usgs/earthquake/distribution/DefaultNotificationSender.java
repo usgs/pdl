@@ -31,11 +31,16 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
 
   /** Property referencing the length of time products should be held in storage*/
   public static final String PRODUCT_STORAGE_MAX_AGE_PROPERTY = "storageage";
+  /** property for max age of product in storage. 7000 days? */
   public static final String DEFAULT_PRODUCT_STORAGE_MAX_AGE = "604800000";
 
+  /** Variable for String serverHost */
   protected String serverHost;
+  /** Variable for String serverPort */
   protected String serverPort;
+  /** Variable for URL productStorage */
   protected URLProductStorage productStorage;
+  /** Variable for long productStorageMaxAge */
   protected long productStorageMaxAge;
 
 
@@ -44,7 +49,7 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
    *
    * @param config
    *            The config
-   * @throws Exception
+   * @throws Exception if something goes wrong
    */
   public void configure(Config config) throws Exception {
     // let default notification listener configure itself
@@ -81,7 +86,7 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
    *
    * @param product
    *            a product whose notification was accepted.
-   * @throws Exception
+   * @throws Exception if something goes wrong
    */
   public void onProduct(final Product product) throws Exception {
     ProductId id = product.getId();
@@ -132,7 +137,7 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
    * @param notification
    *            notification about to be processed.
    * @return true to process the notification, false to skip
-   * @throws Exception
+   * @throws Exception if something goes wrong
    */
   @Override
   protected boolean onBeforeProcessNotification(
@@ -170,7 +175,7 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
    *
    * @param notification
    *                The expired notification
-   * @throws Exception
+   * @throws Exception if something goes wrong
    */
   @Override
   protected void onExpiredNotification(final Notification notification) throws Exception{
@@ -192,7 +197,7 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
    *
    * @param notification
    *            The notification to send
-   * @throws Exception
+   * @throws Exception if something goes wrong
    */
   protected void sendNotification(final Notification notification) throws Exception {
     LOGGER.info("[" + getName() + "] sent message " + notification.toString());
@@ -223,38 +228,42 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
   }
 
 
-  /**
-   * Getters and Setters
-   */
-
+  /** @return serverHost */
   public String getServerHost() {
     return serverHost;
   }
 
+  /** @param serverHost string to set */
   public void setServerHost(String serverHost) {
     this.serverHost = serverHost;
   }
 
+  /** @return serverPort */
   public String getServerPort() {
     return serverPort;
   }
 
+  /** @param serverPort string to set */
   public void setServerPort(String serverPort) {
     this.serverPort = serverPort;
   }
 
+  /** @return productStorage */
   public URLProductStorage getProductStorage() {
     return productStorage;
   }
 
+  /** @param productStorage URLProductStorage to set */
   public void setProductStorage(URLProductStorage productStorage) {
     this.productStorage = productStorage;
   }
 
+  /** @return productStorageMaxAge */
   public long getProductStorageMaxAge() {
     return productStorageMaxAge;
   }
 
+  /** @param productStorageMaxAge long to set */
   public void setProductStorageMaxAge(long productStorageMaxAge) {
     this.productStorageMaxAge = productStorageMaxAge;
   }

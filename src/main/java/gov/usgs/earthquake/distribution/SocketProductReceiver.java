@@ -16,21 +16,21 @@ import gov.usgs.util.SocketListenerInterface;
 
 /**
  * Receive Products directly via a Socket.
- * 
+ *
  * The received products are sent using a SocketProductSender.
- * 
+ *
  * A SocketProductReceiver receives products directly and notifies listeners of
  * received notifications.
- * 
+ *
  * These are typically used on hubs with an EIDSNotificationSender or
  * RelayProductReceiver.
- * 
+ *
  * The NotificationReceiver uses a NotificationIndex to track received
  * notifications, and a ProductStorage to store retrieved products.
- * 
+ *
  * The DefaultNotificationReceiver implements the Configurable interface and
  * uses the following configuration parameters:
- * 
+ *
  * Each listener has a separate queue of notifications. Each listener is
  * allocated one thread to process notifications from this queue.
  */
@@ -44,9 +44,9 @@ public class SocketProductReceiver extends DefaultNotificationReceiver
 	private static final String PRODUCT_PORT_PROPERTY = "port";
 
 	private static final String DEFAULT_PRODUCT_PORT = "11235";
-	
+
 	private static final String SIZE_LIMIT_PROPERTY = "sizeLimit";
-	
+
 	private static final String DEFAULT_SIZE_LIMIT = "-1";
 
 
@@ -59,6 +59,10 @@ public class SocketProductReceiver extends DefaultNotificationReceiver
 
 	private SocketAcceptor acceptor = null;
 
+	/**
+	 * Default constructor setting port, threads, and sizeLimit to default
+	 * @throws Exception if error occurs
+	 */
 	public SocketProductReceiver() throws Exception {
 		super();
 		this.port = Integer.parseInt(DEFAULT_PRODUCT_PORT);
@@ -66,6 +70,11 @@ public class SocketProductReceiver extends DefaultNotificationReceiver
 		this.sizeLimit = Long.parseLong(DEFAULT_SIZE_LIMIT);
 	}
 
+	/**
+	 * Constructor based on config file
+	 * @param config Configuration file
+	 * @throws Exception if error occurs
+	 */
 	public SocketProductReceiver(Config config) throws Exception {
 		this();
 		configure(config);
@@ -141,6 +150,12 @@ public class SocketProductReceiver extends DefaultNotificationReceiver
 				+ socket.toString());
 	}
 
+	/**
+	 * Stores ProductSource as a notification, tracks it, and notifies Listeners
+	 * @param source ProductSource
+	 * @return String note for log file
+	 * @throws Exception if error occurs
+	 */
 	protected String storeAndNotify(final ProductSource source)
 			throws Exception {
 		Notification notification = storeProductSource(source);
@@ -163,26 +178,32 @@ public class SocketProductReceiver extends DefaultNotificationReceiver
 		}
 	}
 
+	/** @return port */
 	public int getPort() {
 		return port;
 	}
 
+	/** @param port int to set */
 	public void setPort(int port) {
 		this.port = port;
 	}
 
+	/** @return sizeLimit */
 	public long getSizeLimit() {
 		return sizeLimit;
 	}
 
+	/** @param sizeLimit long to set */
 	public void setSizeLimit(long sizeLimit) {
 		this.sizeLimit = sizeLimit;
 	}
 
+	/** @return threads */
 	public int getThreads() {
 		return threads;
 	}
 
+	/** @param threads int to set */
 	public void setThreads(int threads) {
 		this.threads = threads;
 	}

@@ -50,8 +50,11 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
   private static final Logger LOGGER = Logger.getLogger(
       JsonProductStorage.class.getName());
 
+  /** Variable for the default driver */
   public static final String DEFAULT_DRIVER = "org.sqlite.JDBC";
+  /** Variable for the default table */
   public static final String DEFAULT_TABLE = "product";
+  /** Variable for the default URL */
   public static final String DEFAULT_URL = "jdbc:sqlite:json_product_index.db";
 
   /** Database table name. */
@@ -66,6 +69,8 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
 
   /**
    * Create a JsonProductStorage with a default table.
+   * @param driver Driver to use
+   * @param url URL to use
    */
   public JsonProductStorage(final String driver, final String url) {
     this(driver, url, DEFAULT_TABLE);
@@ -73,6 +78,9 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
 
   /**
    * Create a JsonProductStorage with a custom driver, url, and table.
+   * @param driver Driver to use
+   * @param url URL to use
+   * @param table Table to use
    */
   public JsonProductStorage(
       final String driver, final String url, final String table) {
@@ -80,7 +88,9 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
     this.table = table;
   }
 
+  /** @return table */
   public String getTable() { return this.table; }
+  /** @param table Table to set */
   public void setTable(final String table) { this.table = table; }
 
   @Override
@@ -97,6 +107,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
 
   /**
    * After normal startup, check whether schema exists and attempt to create.
+   * @throws Exception if error occurs
    */
   @Override
   public void startup() throws Exception {
@@ -111,8 +122,8 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
   /**
    * Check whether schema exists.
    *
-   * @return
-   * @throws Exception
+   * @return boolean
+   * @throws Exception if error occurs
    */
   public boolean schemaExists() throws Exception {
     final String sql = "select * from " + this.table + " limit 1";
@@ -138,7 +149,7 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
    * Only supports sqlite or mysql.  When not using sqlite, relying on this
    * method is only recommended for local development.
    *
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   public void createSchema() throws Exception {
     // create schema

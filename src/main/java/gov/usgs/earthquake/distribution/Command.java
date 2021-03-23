@@ -26,9 +26,15 @@ public class Command {
 	private long timeout = 0;
 	private int exitCode = -1;
 
+	/** Empty command constructor */
 	public Command() {
 	}
 
+	/**
+	 * @throws CommandTimeout CommandTimeout
+	 * @throws IOException IOException
+	 * @throws InterruptedException InterruptedException
+	 */
 	public void execute() throws CommandTimeout, IOException,
 			InterruptedException {
 		StreamTransferThread outputTransfer = null;
@@ -89,54 +95,67 @@ public class Command {
 		}
 	}
 
+	/** @return string[] */
 	public String[] getCommand() {
 		return commandArray;
 	}
 
+	/**	@param command single command */
 	public void setCommand(final String command) {
 		setCommand(splitCommand(command));
 	}
 
+	/** @param commandArray string[] */
 	public void setCommand(final String[] commandArray) {
 		this.commandArray = commandArray;
 	}
 
+	/** @return envp */
 	public String[] getEnvp() {
 		return envp;
 	}
 
+	/** @param envp String[] */
 	public void setEnvp(final String[] envp) {
 		this.envp = envp;
 	}
 
+	/** @return dir */
 	public File getDir() {
 		return dir;
 	}
 
+	/** @param dir File */
 	public void setDir(final File dir) {
 		this.dir = dir;
 	}
 
+	/** @return timeout */
 	public long getTimeout() {
 		return timeout;
 	}
 
+	/** @param timeout long */
 	public void setTimeout(final long timeout) {
 		this.timeout = timeout;
 	}
 
+	/** @return exitCode */
 	public int getExitCode() {
 		return exitCode;
 	}
 
+	/** @param stdin InputStream */
 	public void setStdin(final InputStream stdin) {
 		this.stdin = stdin;
 	}
 
+	/** @return stdout byte[] */
 	public byte[] getStdout() {
 		return stdout.toByteArray();
 	}
 
+	/** @return stderr byte[] */
 	public byte[] getStderr() {
 		return stderr.toByteArray();
 	}

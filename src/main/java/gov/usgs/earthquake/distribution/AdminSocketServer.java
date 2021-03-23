@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 /**
  * Telnet to this socket to get a "command prompt".
- * 
+ *
  * @author jmfee
  */
 public class AdminSocketServer extends DefaultConfigurable implements
@@ -28,7 +28,9 @@ public class AdminSocketServer extends DefaultConfigurable implements
 	private static final Logger LOGGER = Logger
 			.getLogger(AdminSocketServer.class.getName());
 
+	/** Variable for default thread pool size */
 	private static final int DEFAULT_THREAD_POOL_SIZE = 10;
+	/** Variable for default admin port */
 	private static final int DEFAULT_ADMIN_PORT = 11111;
 
 	private int port = -1;
@@ -38,10 +40,16 @@ public class AdminSocketServer extends DefaultConfigurable implements
 	/** the client this server is providing stats for. */
 	private ProductClient client = null;
 
+	/** Initializes socket with default thread pool size and port */
 	public AdminSocketServer() {
 		this(DEFAULT_ADMIN_PORT, DEFAULT_THREAD_POOL_SIZE, null);
 	}
 
+	/** Initializes socket with custom port, threads, and client
+	 * @param port Admind port
+	 * @param threads Thread pool size
+	 * @param client Product Client
+	 */
 	public AdminSocketServer(final int port, final int threads,
 			final ProductClient client) {
 		this.port = port;
@@ -74,7 +82,7 @@ public class AdminSocketServer extends DefaultConfigurable implements
 
 	/**
 	 * Process a line of input.
-	 * 
+	 *
 	 * @param line
 	 *            input
 	 * @param out
@@ -186,26 +194,32 @@ public class AdminSocketServer extends DefaultConfigurable implements
 				+ socket.toString());
 	}
 
+	/** @return port */
 	public int getPort() {
 		return port;
 	}
 
+	/** @param port port number */
 	public void setPort(int port) {
 		this.port = port;
 	}
 
+	/** @return threads */
 	public int getThreads() {
 		return threads;
 	}
 
+	/** @param threads set number of threads */
 	public void setThreads(int threads) {
 		this.threads = threads;
 	}
 
+	/** @return product client */
 	public ProductClient getClient() {
 		return client;
 	}
 
+	/** @param client set product client */
 	public void setClient(ProductClient client) {
 		this.client = client;
 	}

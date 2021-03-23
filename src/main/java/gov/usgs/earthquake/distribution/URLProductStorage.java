@@ -29,8 +29,11 @@ import java.util.logging.Logger;
 public class URLProductStorage extends FileProductStorage {
 
 	public enum Format {
+		/** Enum for BINARY/bin format */
 		BINARY("bin"),
+		/** Enum for JSON format */
 		JSON("json"),
+		/** Enum for XML format */
 		XML("xml");
 
 		private String value;
@@ -43,6 +46,11 @@ public class URLProductStorage extends FileProductStorage {
 			return this.value;
 		}
 
+		/**
+		 * Takes a string value and returns ENUM of its format
+		 * @param value String
+		 * @return Format ENUM
+		 */
 		public static Format fromString(final String value) {
 			if (BINARY.value.equals(value)) {
 				return BINARY;
@@ -65,9 +73,12 @@ public class URLProductStorage extends FileProductStorage {
 	/** The URL which corresponds to baseDirectory. */
 	private URL baseURL;
 
+	/** Property for storageFormat */
 	public static final String STORAGE_FORMAT_PROPERTY = "storageFormat";
 
+	/** Property for storagePath */
 	public static final String STORAGE_PATH_PROPERTY = "storagePath";
+	/** Sets up default storage path */
 	public static final String DEFAULT_STORAGE_PATH = "{source}_{type}_{code}_{updateTime}.{format}";
 
 	/** (Deprecated, use STORAGE_PATH) Property name to configure binary or xml format. */
@@ -139,7 +150,7 @@ public class URLProductStorage extends FileProductStorage {
 	 * @param id
 	 *            which product.
 	 * @return the URL to a product.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public URL getProductURL(final ProductId id) throws Exception {
 		return new URL(baseURL, getProductPath(id));
@@ -210,18 +221,22 @@ public class URLProductStorage extends FileProductStorage {
 		}
 	}
 
+	/** @return storageFormat */
 	public Format getStorageFormat() {
 		return this.storageFormat;
 	}
 
+	/** @param format set a storageFormat */
 	public void setStorageFormat(final Format format) {
 		this.storageFormat = format;
 	}
 
+	/** @return storagePath */
 	public String getStoragePath() {
 		return this.storagePath;
 	}
 
+	/** @param path set a string as the storagePath */
 	public void setStoragePath(final String path) {
 		this.storagePath = path;
 	}

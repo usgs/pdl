@@ -16,11 +16,12 @@ import java.util.logging.Logger;
 
 /**
  * This represents a public key used to verify product signatures.
- * 
+ *
  * A key should have at least one source and/or one type.
  */
 public class ProductKey extends DefaultConfigurable {
 
+	/** Logger for use in file */
 	public final Logger LOGGER = Logger.getLogger(ProductKey.class.getName());
 
 	/** Property name for sources. */
@@ -49,9 +50,9 @@ public class ProductKey extends DefaultConfigurable {
 
 	/**
 	 * Construct a new ProductPublicKey.
-	 * 
+	 *
 	 * Sources
-	 * 
+	 *
 	 * @param key
 	 *            the public key.
 	 * @param sources
@@ -72,10 +73,10 @@ public class ProductKey extends DefaultConfigurable {
 
 	/**
 	 * Check whether this key is a candidate for verifying a signature.
-	 * 
+	 *
 	 * If any sources, product source must be in list. If any types, product
 	 * type must be in list.
-	 * 
+	 *
 	 * @param id
 	 *            which product to check.
 	 * @return true if this key might verify the signature for given product.

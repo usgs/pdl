@@ -80,6 +80,7 @@ public class ProductTracker {
 
 	/**
 	 * Create a new ProductTracker object.
+	 * @param trackerURL location of tracker
 	 */
 	public ProductTracker(final URL trackerURL) {
 		this.trackerURL = trackerURL;
@@ -107,7 +108,7 @@ public class ProductTracker {
 	 *            the update to send to the tracker.
 	 * @return the update object processed by the tracker, including sequence
 	 *         number, or null if unable to send.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate sendUpdate(final ProductTrackerUpdate update)
 			throws Exception {
@@ -137,7 +138,7 @@ public class ProductTracker {
 	 * @param update
 	 *            the update to send to the tracker.
 	 * @return the raw XML returned by the tracker, or null if unable to send.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public String sendUpdateXML(final ProductTrackerUpdate update)
 			throws Exception {
@@ -183,7 +184,21 @@ public class ProductTracker {
 		return null;
 	}
 
-	/** Same as getUpdates with 0 for startid. */
+	/**
+	 * Same as getUpdates with 0 for startid
+	 * @param source
+	 *            product source.
+	 * @param type
+	 *            product type.
+	 * @param code
+	 *            product code.
+	 * @param updateTime
+	 *            product update time.
+	 * @param className
+	 *            module name.
+	 * @return updates matching the provided fields.
+	 * @throws Exception if error occurs
+	 */
 	public List<ProductTrackerUpdate> getUpdates(final String source,
 			final String type, final String code, final Date updateTime,
 			final String className) throws Exception {
@@ -206,8 +221,10 @@ public class ProductTracker {
 	 *            product update time.
 	 * @param className
 	 *            module name.
+	 * @param startid
+	 *            starting ID
 	 * @return updates matching the provided fields.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public List<ProductTrackerUpdate> getUpdates(final String source,
 			final String type, final String code, final Date updateTime,
@@ -223,13 +240,19 @@ public class ProductTracker {
 	 * Search for updates on this tracker, returning raw xml.
 	 *
 	 * @param source
+	 *            product source.
 	 * @param type
+	 *            product type.
 	 * @param code
+	 *            product code.
 	 * @param updateTime
+	 *            product update time.
 	 * @param className
+	 *            module name.
 	 * @param startid
+	 *            start id
 	 * @return the raw xml response from the tracker.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public String getUpdateXML(final String source, final String type,
 			final String code, final Date updateTime, final String className,
@@ -273,7 +296,7 @@ public class ProductTracker {
 	 * @param message
 	 *            the message about the product.
 	 * @return the sent update.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate sendUpdate(final String className,
 			final ProductId id, final String message) throws Exception {
@@ -290,7 +313,7 @@ public class ProductTracker {
 	 * @param id
 	 *            the product that was created.
 	 * @return the sent update.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate productCreated(final String className,
 			final ProductId id) throws Exception {
@@ -307,7 +330,7 @@ public class ProductTracker {
 	 * @param id
 	 *            the product that was indexed.
 	 * @return the sent update.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate productIndexed(final String className,
 			final ProductId id) throws Exception {
@@ -324,7 +347,7 @@ public class ProductTracker {
 	 * @param notification
 	 *            the notification that was sent.
 	 * @return the sent update.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate notificationSent(final String className,
 			final Notification notification) throws Exception {
@@ -342,7 +365,7 @@ public class ProductTracker {
 	 * @param notification
 	 *            the notification that was received.
 	 * @return the sent update.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate notificationReceived(final String className,
 			final Notification notification) throws Exception {
@@ -360,7 +383,7 @@ public class ProductTracker {
 	 * @param id
 	 *            the product that was downloaded.
 	 * @return the sent update.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate productDownloaded(final String className,
 			final ProductId id) throws Exception {
@@ -378,7 +401,7 @@ public class ProductTracker {
 	 * @param id
 	 *            the product that was received.
 	 * @return the sent update.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate productReceived(final String className,
 			final ProductId id) throws Exception {
@@ -398,7 +421,7 @@ public class ProductTracker {
 	 * @param e
 	 *            the exception that was caught.
 	 * @return the sent update.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate exception(final String className,
 			final ProductId id, final Exception e) throws Exception {
@@ -414,7 +437,7 @@ public class ProductTracker {
 	 * @param data
 	 *            a map containing name value pairs for encoding.
 	 * @return a string of encoded data.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public static String encodeURLData(final Map<String, String> data)
 			throws Exception {
@@ -440,7 +463,7 @@ public class ProductTracker {
 	 * @param data
 	 *            the data to send.
 	 * @return the response text.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public static String post(final URL url, final Map<String, String> data)
 			throws Exception {
@@ -498,8 +521,8 @@ public class ProductTracker {
 	/**
 	 * Command Line Interface to ProductTracker.
 	 *
-	 * @param args
-	 * @throws Exception
+	 * @param args CLI arguments
+	 * @throws Exception if error occurs
 	 */
 	public static void main(final String[] args) throws Exception {
 		// whether we are sending an update (true)
@@ -595,6 +618,9 @@ public class ProductTracker {
 		}
 	}
 
+	/** Usage for ProductTracker
+	 * @return CLI usage
+	 */
 	public static String getUsage() {
 		StringBuffer buf = new StringBuffer();
 

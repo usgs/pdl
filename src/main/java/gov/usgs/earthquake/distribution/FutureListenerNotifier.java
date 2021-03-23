@@ -28,6 +28,10 @@ public class FutureListenerNotifier extends ExecutorListenerNotifier {
   /** Service where tasks execute using futures for timeouts. */
   private ExecutorService backgroundService;
 
+  /**
+   * Constructor
+   * @param receiver DefaultNotificationReceiver
+   */
   public FutureListenerNotifier(final DefaultNotificationReceiver receiver) {
     super(receiver);
   }

@@ -139,7 +139,9 @@ public class ProductClient extends DefaultConfigurable implements
 	/** Property used to disable tracker updates. */
 	public static final String ENABLE_TRACKER_PROPERTY_NAME = "enableTracker";
 
+	/** Property used to enable Admin Socket */
 	public static final String ENABLE_ADMIN_SOCKET = "enableAdminSocket";
+	/** Default bool for admin socket property */
 	public static final String DEFAULT_ENABLE_ADMIN_SOCKET = "false";
 
 	/** List of receivers that generate notifications. */
@@ -177,7 +179,7 @@ public class ProductClient extends DefaultConfigurable implements
 	 *
 	 * @param config
 	 *            the configuration.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public void loadListeners(final Config config) throws Exception {
 		Iterator<String> iter = StringUtils.split(
@@ -205,7 +207,7 @@ public class ProductClient extends DefaultConfigurable implements
 	 *
 	 * @param config
 	 *            the configuration
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public void loadReceivers(final Config config) throws Exception {
 		Iterator<String> iter = StringUtils.split(
@@ -291,7 +293,7 @@ public class ProductClient extends DefaultConfigurable implements
 	/**
 	 * Entry point into Product Distribution.
 	 *
-	 * @param args
+	 * @param args argument
 	 */
 	public void run(final String[] args) throws Exception {
 		try {
@@ -422,6 +424,7 @@ public class ProductClient extends DefaultConfigurable implements
 		return listeners;
 	}
 
+	/** @return Product usage */
 	public static String getUsage() {
 		StringBuffer buf = new StringBuffer();
 

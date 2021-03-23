@@ -86,14 +86,22 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 */
 	public static final String DEFAULT_RECEIVER_CLEANUP = "900000";
 
+	/** Property for connection Timeout */
 	public static final String CONNECT_TIMEOUT_PROPERTY = "connectTimeout";
+	/** Default connection timeout. 15 seconds */
 	public static final String DEFAULT_CONNECT_TIMEOUT = "15000";
+	/** Property for read timeout */
 	public static final String READ_TIMEOUT_PROPERTY = "readTimeout";
+	/** default read timeout. 15 seconds */
 	public static final String DEFAULT_READ_TIMEOUT = "15000";
 
+	/** Property for listener notifier */
 	public static final String LISTENER_NOTIFIER_PROPERTY = "listenerNotifier";
+	/** Property for listener notifier to set to executor*/
 	public static final String EXECUTOR_LISTENER_NOTIFIER = "executor";
+	/** Property to listener notifier to set to future */
 	public static final String FUTURE_LISTENER_NOTIFIER = "future";
+	/** Property to listener notifier to set to roundrobin */
 	public static final String ROUNDROBIN_LISTENER_NOTIFIER = "roundrobin";
 
 	/** The notification index where received notifications are stored. */
@@ -119,6 +127,7 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	/** A lock that is acquired when a product is being retrieved. */
 	private ObjectLock<ProductId> retrieveLocks = new ObjectLock<ProductId>();
 
+	/** Creates new ExecutorListenerNotifier to var notifier */
 	public DefaultNotificationReceiver() {
 		notifier = new ExecutorListenerNotifier(this);
 	}
@@ -129,6 +138,7 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 * @param listener
 	 *            the listener to add. When notifications are received, this
 	 *            listener will be notified.
+	 * @throws Exception exception
 	 */
 	public void addNotificationListener(NotificationListener listener)
 			throws Exception {
@@ -143,6 +153,7 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 * @param listener
 	 *            the listener to remove. When notifications are receive, this
 	 *            listener will no longer be notified.
+	 * @throws Exception exception
 	 */
 	public void removeNotificationListener(NotificationListener listener)
 			throws Exception {
@@ -200,7 +211,7 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 *
 	 * @param notification
 	 *            the notification being sent to listeners.
-	 * @throws Exception
+	 * @throws Exception exception
 	 */
 	protected void notifyListeners(final Notification notification)
 			throws Exception {
@@ -212,7 +223,7 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 		NotificationEvent event = new NotificationEvent(this, notification);
 		notifier.notifyListeners(event);
 	}
-
+	/** @return "Using notifier" */
 	public String getListenerQueueStatus() {
 		return "Using notifier";
 	}
@@ -262,6 +273,7 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 * @param id
 	 *            the product to retrieve
 	 * @return the retrieved product, or null if not available.
+	 * @throws Exception exception
 	 */
 	public Product retrieveProduct(ProductId id) throws Exception {
 		Product product = null;
@@ -432,7 +444,7 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 *            The <code>ProductSource</code> to store.
 	 * @return The <code>ProductId</code> of the product referenced by the given
 	 *         <code>ProductSource</code>.
-	 * @throws Exception
+	 * @throws Exception exception
 	 * @see gov.usgs.earthquake.distribution.ProductStorage
 	 */
 	protected Notification storeProductSource(ProductSource source)
@@ -678,6 +690,9 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 		this.productStorageMaxAge = productStorageMaxAge;
 	}
 
+	/**
+	 * @return the QueueStatus or null if ExecutorListenerNotifier doesn't exist
+	 */
 	public Map<String, Integer> getQueueStatus() {
 		if (notifier instanceof ExecutorListenerNotifier) {
 			return ((ExecutorListenerNotifier) notifier).getStatus();
@@ -685,40 +700,68 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 		return null;
 	}
 
+	/**
+	 * Throttle notifier queues
+	 * @throws InterruptedException InterruptedException
+	 */
 	public void throttleQueues() throws InterruptedException {
 		if (notifier instanceof ExecutorListenerNotifier) {
 			((ExecutorListenerNotifier) notifier).throttleQueues();
 		}
 	}
 
+	/**
+	 * @return receiverCleanupInterval
+	 */
 	public Long getReceiverCleanupInterval() {
 		return receiverCleanupInterval;
 	}
 
+	/**
+	 * @param receiverCleanupInterval the receiverCleanupInterval to set
+	 */
 	public void setReceiverCleanupInterval(Long receiverCleanupInterval) {
 		this.receiverCleanupInterval = receiverCleanupInterval;
 	}
 
+	/**
+	 * @return connectionTimeout
+	 */
 	public int getConnectTimeout() {
 		return connectTimeout;
 	}
 
+	/**
+	 * @param connectTimeout int connectionTimeout to set
+	 */
 	public void setConnectTimeout(int connectTimeout) {
 		this.connectTimeout = connectTimeout;
 	}
 
+	/**
+	 * @return ListenerNotifier
+	 */
 	public ListenerNotifier getNotifier() {
 		return this.notifier;
 	}
 
+	/**
+	 * @param notifier ListenerNotifier to set
+	 */
 	public void setNotifier(final ListenerNotifier notifier) {
 		this.notifier = notifier;
 	}
 
+	/**
+	 * @return readTimeout
+	 */
 	public int getReadTimeout() {
 		return readTimeout;
 	}
 
+	/**
+	 * @param readTimeout int readTimeout to set
+	 */
 	public void setReadTimeout(int readTimeout) {
 		this.readTimeout = readTimeout;
 	}

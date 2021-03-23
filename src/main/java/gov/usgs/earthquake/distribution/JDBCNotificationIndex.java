@@ -90,9 +90,11 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	/** Default SQLite database filename. */
 	private static final String JDBC_DEFAULT_FILE = "pd_index.db";
 
-	// This is the property key used in the configuration file to specify a
-	// different SQLite database file. If this file doesn't exist it will be
-	// created at startup time
+	/**
+	 * This is the property key used in the configuration file to specify a
+	 * different SQLite database file. If this file doesn't exist it will be
+	 * created at startup time
+	 */
 	protected static final String JDBC_FILE_PROPERTY = "indexfile";
 
 	/** SQL stub for adding a notification to the index. */
@@ -280,6 +282,12 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 		this((String) null);
 	}
 
+	/**
+	 * Constructor call from filename, where filename is jdbc index file
+	 * If null, then index file defaults
+	 * @param filename String - What will be the index file
+	 * @throws Exception if error occurs
+	 */
 	public JDBCNotificationIndex(final String filename) throws Exception {
 		Class.forName(JDBC_DRIVER_CLASS);
 		_jdbc_index_file = filename;
@@ -914,6 +922,13 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 		return n;
 	}
 
+	/**
+	 * @param sources List string of sources
+	 * @param types List string of types
+	 * @param codes List string of codes
+	 * @return prepared query based on what is/is not null
+	 * @throws Exception if error occurs
+	 */
 	protected PreparedStatement getCorrectStatement(List<String> sources,
 			List<String> types, List<String> codes) throws Exception {
 		if (sources != null && types != null && codes != null) {

@@ -30,7 +30,7 @@ public class DefaultStorageListener extends DefaultConfigurable implements
 	/**
 	 * Simple dispatch method for listeners who are only interested in certain
 	 * types of <code>StorageEvent</code>s.
-	 * 
+	 *
 	 * @param event
 	 *            The event that triggered the call
 	 */
@@ -51,8 +51,9 @@ public class DefaultStorageListener extends DefaultConfigurable implements
 	/**
 	 * Dispatched method called when the type of event is
 	 * <code>StorageEvent.StorageEventType.PRODUCT_STORED</code>.
-	 * 
-	 * @param event
+	 *
+	 * @param event The event that triggered the call
+	 * @throws Exception if error occurs
 	 */
 	public void onProductStored(StorageEvent event) throws Exception {
 		LOGGER.info("onProductStored::" + event.getProductId().toString());
@@ -61,8 +62,9 @@ public class DefaultStorageListener extends DefaultConfigurable implements
 	/**
 	 * Dispatched method called when the type of event is
 	 * <code>StorageEvent.StorageEventType.PRODUCT_REMOVED</code>.
-	 * 
-	 * @param event
+	 *
+	 * @param event The event that triggered the call
+	 * @throws Exception if error occurs
 	 */
 	public void onProductRemoved(StorageEvent event) throws Exception {
 		LOGGER.info("onProductRemoved::" + event.getProductId().toString());

@@ -61,8 +61,11 @@ public class JsonNotificationIndex
   private static final Logger LOGGER = Logger.getLogger(
       JsonNotificationIndex.class.getName());
 
+  /** Variable for the default driver */
   public static final String DEFAULT_DRIVER = "org.sqlite.JDBC";
+  /** Variable for the default table */
   public static final String DEFAULT_TABLE = "notification";
+  /** Variable for the default URL */
   public static final String DEFAULT_URL =
       "jdbc:sqlite:json_notification_index.db";
 
@@ -78,6 +81,8 @@ public class JsonNotificationIndex
 
   /**
    * Construct a JsonNotificationIndex with the default table.
+   * @param driver Driver to use
+   * @param url URL to use
    */
   public JsonNotificationIndex(final String driver, final String url) {
     this(driver, url, DEFAULT_TABLE);
@@ -85,6 +90,9 @@ public class JsonNotificationIndex
 
   /**
    * Construct a JsonNotificationIndex with custom driver, url, and table.
+   * @param driver Driver to use
+   * @param url URL to use
+   * @param table Table to use
    */
   public JsonNotificationIndex(
       final String driver, final String url, final String table) {
@@ -92,7 +100,9 @@ public class JsonNotificationIndex
     this.table = table;
   }
 
+  /** @return table */
   public String getTable() { return this.table; }
+  /** @param table Table to set */
   public void setTable(final String table) { this.table = table; }
 
   @Override
@@ -109,6 +119,7 @@ public class JsonNotificationIndex
 
   /**
    * After normal startup, check whether schema exists and attempt to create.
+   * @throws Exception if error occurs
    */
   @Override
   public void startup() throws Exception {
@@ -123,8 +134,8 @@ public class JsonNotificationIndex
   /**
    * Check whether schema exists.
    *
-   * @return
-   * @throws Exception
+   * @return boolean
+   * @throws Exception if error occurs
    */
   public boolean schemaExists() throws Exception {
     final String sql = "select * from " + this.table + " limit 1";
@@ -150,7 +161,7 @@ public class JsonNotificationIndex
    * Only supports sqlite or mysql.  When not using sqlite, relying on this
    * method is only recommended for local development.
    *
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   public void createSchema() throws Exception {
     // create schema
@@ -193,6 +204,8 @@ public class JsonNotificationIndex
    * Add a notification to the index.
    *
    * TrackerURLs are ignored.
+   * @param notification To be added to index
+   * @throws Exception if error occurs
    */
   @Override
   public synchronized void addNotification(Notification notification)
@@ -255,6 +268,8 @@ public class JsonNotificationIndex
    * Remove notification from index.
    *
    * Tracker URLs are ignored.
+   * @param notification to be removed from index
+   * @throws Exception if error occurs
    */
   @Override
   public synchronized void removeNotification(Notification notification) throws Exception {
@@ -319,6 +334,7 @@ public class JsonNotificationIndex
    * @param code
    *     code, or null for all codes.
    * @return list with matching notifications, empty if not found.
+   * @throws Exception if error occurs
    */
   @Override
   public synchronized List<Notification> findNotifications(
@@ -379,6 +395,7 @@ public class JsonNotificationIndex
    * @param codes
    *     codes, or null for all codes.
    * @return list with matching notifications, empty if not found.
+   * @throws Exception if error occurs
    */
   @Override
   public synchronized List<Notification> findNotifications(
@@ -457,6 +474,7 @@ public class JsonNotificationIndex
    * Find notifications with expires time before or equal to current time.
    *
    * @return list with matching notifications, empty if not found.
+   * @throws Exception if error occurs
    */
   @Override
   public synchronized List<Notification> findExpiredNotifications() throws Exception {
@@ -494,6 +512,7 @@ public class JsonNotificationIndex
    * @param id
    *     the product id to search.
    * @return list with matching notifications, empty if not found.
+   * @throws Exception if error occurs
    */
   @Override
   public synchronized List<Notification> findNotifications(ProductId id) throws Exception {
@@ -541,7 +560,7 @@ public class JsonNotificationIndex
    * @return
    *     list of notifications found in this indexes table, but not found in the
    *     other table.
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   public synchronized List<Notification> getMissingNotifications(
       final String otherTable) throws Exception {
@@ -582,6 +601,9 @@ public class JsonNotificationIndex
 
   /**
    * Parse notifications from a statement ready to be executed.
+   * @param ps PreparedStatement to be parsed
+   * @return List of notifications
+   * @throws Exception if error occurs
    */
   protected synchronized List<Notification> getNotifications(PreparedStatement ps)
       throws Exception {
@@ -611,6 +633,16 @@ public class JsonNotificationIndex
    * <li>Return a URLNotification if <code>url</code> is set
    * <li>Otherwise, return a DefaultNotification
    * </ul>
+   * @param created When created
+   * @param expires When notification expires
+   * @param source sources
+   * @param type types
+   * @param code codes
+   * @param updateTime updateTime
+   * @param url URL
+   * @param data data
+   * @return Notification, JSONNotification, URLNotification, or DefaultNotification
+   * @throws Exception if error occurs
    */
   protected Notification parseNotification(
       final String created,

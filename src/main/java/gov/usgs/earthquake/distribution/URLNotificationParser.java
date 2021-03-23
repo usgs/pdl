@@ -15,13 +15,20 @@ import org.xml.sax.SAXException;
 
 public class URLNotificationParser extends SAXAdapter {
 
+	/** Namespace for product XML */
 	public static final String PRODUCT_XML_NAMESPACE = "http://earthquake.usgs.gov/distribution/product";
 
+	/** static var for notification element */
 	public static final String NOTIFICATION_ELEMENT = "notification";
+	/** attribute for product id */
 	public static final String ATTRIBUTE_PRODUCT_ID = "id";
+	/** attribute for updated */
 	public static final String ATTRIBUTE_PRODUCT_UPDATED = "updated";
+	/** attribute for trackerURL */
 	public static final String ATTRIBUTE_TRACKER_URL = "trackerURL";
+	/** attribute for expires */
 	public static final String ATTRIBUTE_EXPIRES = "expires";
+	/** attribute for url */
 	public static final String ATTRIBUTE_URL = "url";
 
 	/** The parsed notification. */
@@ -44,7 +51,7 @@ public class URLNotificationParser extends SAXAdapter {
 
 	/**
 	 * SAXAdapter start element handler.
-	 * 
+	 *
 	 * @param uri
 	 *            element uri.
 	 * @param localName

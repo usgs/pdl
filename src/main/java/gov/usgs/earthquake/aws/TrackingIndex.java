@@ -34,8 +34,11 @@ public class TrackingIndex extends JDBCConnection {
   private static final Logger LOGGER = Logger.getLogger(
       TrackingIndex.class.getName());
 
+  /** Variable for the default driver */
   public static final String DEFAULT_DRIVER = "org.sqlite.JDBC";
+  /** Variable for the default table */
   public static final String DEFAULT_TABLE = "tracking";
+  /** Variable for the default URL */
   public static final String DEFAULT_URL = "jdbc:sqlite:json_tracking_index.db";
 
   /** Database table name. */
@@ -50,6 +53,8 @@ public class TrackingIndex extends JDBCConnection {
 
   /**
    * Construct a TrackingIndex with the default table.
+   * @param driver Driver to use
+   * @param url URL to use
    */
   public TrackingIndex(final String driver, final String url) {
     this(driver, url, DEFAULT_TABLE);
@@ -57,6 +62,9 @@ public class TrackingIndex extends JDBCConnection {
 
   /**
    * Construct a TrackingIndex with custom driver, url, and table.
+   * @param driver Driver to use
+   * @param url URL to use
+   * @param table Table to use
    */
   public TrackingIndex(
       final String driver, final String url, final String table) {
@@ -64,7 +72,9 @@ public class TrackingIndex extends JDBCConnection {
     this.table = table;
   }
 
+  /** @return table */
   public String getTable() { return this.table; }
+  /** @param table Table to set */
   public void setTable(final String table) { this.table = table; }
 
   @Override
@@ -95,8 +105,8 @@ public class TrackingIndex extends JDBCConnection {
   /**
    * Check whether schema exists.
    *
-   * @return
-   * @throws Exception
+   * @return boolean
+   * @throws Exception if error occurs
    */
   public boolean schemaExists() throws Exception {
     final String sql = "select * from " + this.table + " limit 1";
@@ -122,7 +132,7 @@ public class TrackingIndex extends JDBCConnection {
    * Only supports sqlite or mysql.  When not using sqlite, relying on this
    * method is only recommended for local development.
    *
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   public void createSchema() throws Exception {
     // create schema
@@ -154,6 +164,7 @@ public class TrackingIndex extends JDBCConnection {
    * @param name
    *     name of tracking data.
    * @return null if data not found.
+   * @throws Exception if error occurs
    */
   public synchronized JsonObject getTrackingData(final String name) throws Exception {
     JsonObject data = null;
@@ -189,7 +200,7 @@ public class TrackingIndex extends JDBCConnection {
    *
    * @param name
    *     name of tracking data.
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   public synchronized void removeTrackingData(final String name) throws Exception {
     final String sql = "DELETE FROM " + this.table + " WHERE name=?";
@@ -214,7 +225,7 @@ public class TrackingIndex extends JDBCConnection {
    *     name of tracking data.
    * @param data
    *     data to store.
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   public synchronized void setTrackingData(final String name, final JsonObject data) throws Exception {
     final String update = "UPDATE " + this.table + " SET data=? WHERE name=?";
