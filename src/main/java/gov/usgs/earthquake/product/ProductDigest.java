@@ -62,7 +62,9 @@ public class ProductDigest implements ProductHandler {
 	private Version version = null;
 
 	/**
-	* Construct a new ProductDigest.
+	 * Construct a new ProductDigest.
+	 * @param version signature version
+	 * @throws NoSuchAlgorithmException if not SHA1 or SHA-256
 	 */
 	protected ProductDigest(final Version version) throws NoSuchAlgorithmException {
 		final String algorithm = version == Version.SIGNATURE_V2
@@ -88,6 +90,13 @@ public class ProductDigest implements ProductHandler {
 		return digestProduct(product, Version.SIGNATURE_V1);
 	}
 
+	/**
+	 *
+	 * @param product A product
+	 * @param version What version of product digest
+	 * @return A byte array of the product digest
+	 * @throws Exception if error occurs
+	 */
 	public static byte[] digestProduct(final Product product, final Version version)
 			throws Exception {
 		Date start = new Date();
@@ -193,6 +202,11 @@ public class ProductDigest implements ProductHandler {
 	}
 
 
+	/**
+	 * CLI access into ProductDigest
+	 * @param args CLI Args
+	 * @throws Exception if error occurs
+	 */
 	public static void main(final String[] args) throws Exception {
 		if (args.length == 0) {
 			System.err.println("Usage: ProductDigest FILE [FILE ...]");

@@ -102,7 +102,9 @@ public class ObjectProductSource implements ProductSource {
 	 * order by relation name, by URI.
 	 *
 	 * @param out
+	 *            the receiving ProductOutput.
 	 * @throws Exception
+	 *             if out.onProperty throws an Exception.
 	 */
 	public void sendLinks(final ProductHandler out) throws Exception {
 		ProductId id = product.getId();

@@ -15,33 +15,33 @@ import java.util.Objects;
  * <dd>
  *   The organization <u>sending</u> the product;
  *   not necessarily the author of the product.
- * 
+ *
  *   Typically a FDSN network code.
  * </dd>
- * 
+ *
  * <dt>Type</dt>
  * <dd>
  *   The type of product being sent.
  * </dd>
- * 
+ *
  * <dt>Code</dt>
  * <dd>
  *   A unique code assigned by the <code>source</code> and <code>type</code>.
  *   Source and Type are effectively a namespace for codes.
- * 
+ *
  *   If the same <code>code</code> is re-used, it indicates a different
  *   version of the same product.
  * </dd>
- * 
+ *
  * <dt>Update Time</dt>
  * <dd>
  *   A timestamp representing when a product was created.
- * 
+ *
  *   Update Time is also used as a <strong>version</strong>.
  *   Products from the same <code>source</code> and <code>type</code> with
  *   the same <code>code</code> are considered different versions of the
  *   same product.
- * 
+ *
  *   More recent (newer) <code>updateTime</code>s
  *   supersede less recent (older) <code>updateTimes</code>.
  * </dd>
@@ -63,8 +63,14 @@ public class ProductId implements Comparable<ProductId> {
 
 	/**
 	 * Create a new ProductId.
-	 * 
+	 *
 	 * Same as new ProductId(type, code, source, new Date()).
+	 * @param source
+	 *            the product source.
+	 * @param type
+	 *            the product type.
+	 * @param code
+	 *            the product code.
 	 */
 	public ProductId(final String source, final String type, final String code) {
 		this(source, type, code, new Date());
@@ -72,7 +78,7 @@ public class ProductId implements Comparable<ProductId> {
 
 	/**
 	 * Create a new ProductId.
-	 * 
+	 *
 	 * @param source
 	 *            the product source.
 	 * @param type
@@ -153,7 +159,7 @@ public class ProductId implements Comparable<ProductId> {
 	/**
 	 * Convert this product id to a string. This string does not include the
 	 * update time.
-	 * 
+	 *
 	 * @return a product id string.
 	 */
 	public String toString() {
@@ -163,7 +169,7 @@ public class ProductId implements Comparable<ProductId> {
 
 	/**
 	 * Parse a product id string.
-	 * 
+	 *
 	 * @param str
 	 *            a valid product id string.
 	 * @return a ProductId object.
@@ -196,7 +202,7 @@ public class ProductId implements Comparable<ProductId> {
 
 	/**
 	 * Implement the Comparable interface.
-	 * 
+	 *
 	 * @param that
 	 *            product id being compared.
 	 * @return -1 if this precedes that, 0 if same, and 1 if that precedes this.
@@ -224,10 +230,10 @@ public class ProductId implements Comparable<ProductId> {
 
 	/**
 	 * Whether these are the same product, even if they are different versions.
-	 * 
+	 *
 	 * It is possible for isSameProduct to return true if equals returns false,
 	 * but if equals returns true isSameProduct will also return true.
-	 * 
+	 *
 	 * @param that
 	 *            a ProductId to test.
 	 * @return true if these are the same product (source,type,code), false
@@ -244,7 +250,7 @@ public class ProductId implements Comparable<ProductId> {
 
 	/**
 	 * Escape id parts so they do not interfere with formatting/parsing.
-	 * 
+	 *
 	 * @param part
 	 *            part to escape.
 	 * @return escaped part.

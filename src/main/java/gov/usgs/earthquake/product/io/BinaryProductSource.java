@@ -24,6 +24,10 @@ public class BinaryProductSource implements ProductSource {
 	/** binary io utility. */
 	private BinaryIO io;
 
+	/**
+	 * Constructor. Sets up a new BinaryIO
+	 * @param in an InputStream
+	 */
 	public BinaryProductSource(final InputStream in) {
 		this.in = in;
 		this.io = new BinaryIO();
