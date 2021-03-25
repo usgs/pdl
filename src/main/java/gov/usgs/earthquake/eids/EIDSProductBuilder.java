@@ -18,7 +18,7 @@ import gov.usgs.util.Config;
 
 /**
  * Convert messages from EIDS into products.
- * 
+ *
  * Listens to messages from an EIDSClient. Uses EQXMLProductParser and
  * EventAddonParser to build products. Any built products are sent to all
  * configured productSenders.
@@ -37,7 +37,7 @@ public class EIDSProductBuilder extends ProductBuilder implements EIDSListener {
 
 	/**
 	 * Receive EIDS messages from an EIDSClient.
-	 * 
+	 *
 	 * Any received messages are parsed and sent to any ProductSenders. If the
 	 * message is not EQXML, this method returns immediately.
 	 */
@@ -121,11 +121,11 @@ public class EIDSProductBuilder extends ProductBuilder implements EIDSListener {
 
 	/**
 	 * Main method to test EQXMLProductBuilder.
-	 * 
+	 *
 	 * Connects an eids client to the product builder, and uses a dummy product
 	 * sender that outputs to stderr.
-	 * 
-	 * @param args
+	 *
+	 * @param args arguments included in the running of main
 	 */
 	public static void main(final String[] args) {
 		EIDSProductBuilder builder = new EIDSProductBuilder();

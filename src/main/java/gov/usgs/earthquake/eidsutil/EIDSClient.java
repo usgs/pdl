@@ -77,17 +77,18 @@ public class EIDSClient implements EIDSListener {
 	/** Whether we are debugging or not. Affects log level. */
 	private boolean debug;
 
+	/** Constructor using default host and port */
 	public EIDSClient() {
 		this(DEFAULT_SERVER_HOST, DEFAULT_SERVER_PORT);
 	}
 
 	/**
 	 * Construct an EIDSClient using only server host and port.
-	 * 
+	 *
 	 * Calls other constructor with null values for other parameters.
-	 * 
-	 * @param serverHost
-	 * @param serverPort
+	 *
+	 * @param serverHost Specific host
+	 * @param serverPort Specific port
 	 */
 	public EIDSClient(final String serverHost, final Integer serverPort) {
 		this(serverHost, serverPort, "");
@@ -96,10 +97,12 @@ public class EIDSClient implements EIDSListener {
 	/**
 	 * Construct an EIDSClient using serverHost, serverPort, and
 	 * alternateServersList.
-	 * 
-	 * @param serverHost
-	 * @param serverPort
+	 *
+	 * @param serverHost Host
+	 * @param serverPort Port
 	 * @param alternateServersList
+	 *            a comma delimited list of host:port that are used when unable
+	 *            to connect to the primary serverHost and serverPort.
 	 */
 	public EIDSClient(final String serverHost, final Integer serverPort,
 			final String alternateServersList) {
@@ -110,7 +113,7 @@ public class EIDSClient implements EIDSListener {
 
 	/**
 	 * Constructor with all options.
-	 * 
+	 *
 	 * @param serverHost
 	 *            the eids server host or ip address.
 	 * @param serverPort
@@ -123,6 +126,8 @@ public class EIDSClient implements EIDSListener {
 	 * @param trackingFileName
 	 *            location where tracking file is stored. This file is used to
 	 *            track which messages have been received.
+	 * @param clientRestartInterval
+	 *            How often to periodically restart the client, in milliseconds
 	 */
 	public EIDSClient(final String serverHost, final Integer serverPort,
 			final String alternateServersList,
@@ -138,7 +143,7 @@ public class EIDSClient implements EIDSListener {
 
 	/**
 	 * Runs the client.
-	 * 
+	 *
 	 * Any listeners should be added before calling this method.
 	 */
 	public void startup() {
@@ -177,7 +182,7 @@ public class EIDSClient implements EIDSListener {
 
 	/**
 	 * Shuts down a running client.
-	 * 
+	 *
 	 * Does not call system.exit.
 	 */
 	public void shutdown() {
@@ -192,7 +197,7 @@ public class EIDSClient implements EIDSListener {
 
 	/**
 	 * Add a listener.
-	 * 
+	 *
 	 * @param listener
 	 *            the listener to add.
 	 */
@@ -202,7 +207,7 @@ public class EIDSClient implements EIDSListener {
 
 	/**
 	 * Remove a listener.
-	 * 
+	 *
 	 * @param listener
 	 *            the listener to remove.
 	 */
@@ -294,22 +299,34 @@ public class EIDSClient implements EIDSListener {
 		this.trackingFileName = trackingFileName;
 	}
 
+	/**
+	 * @return clientRestartInterval
+	 */
 	public Long getClientRestartInterval() {
 		return clientRestartInterval;
 	}
 
+	/**
+	 * @param clientRestartInterval
+	 *            the clientRestartInterval to set
+	 */
 	public void setClientRestartInterval(Long clientRestartInterval) {
 		this.clientRestartInterval = clientRestartInterval;
 	}
 
+	/** @param debug to set */
 	public void setDebug(boolean debug) {
 		this.debug = debug;
 	}
 
+	/** @return debug boolean */
 	public boolean isDebug() {
 		return debug;
 	}
 
+	/**
+	 * @return result of reinitialzing the client connection
+	 */
 	public boolean reinitConnection() {
 		if (client != null) {
 			return client.getConnManagerObj().reinitConnection();
@@ -319,9 +336,9 @@ public class EIDSClient implements EIDSListener {
 
 	/**
 	 * A method to test the EIDSClient.
-	 * 
-	 * @param args
-	 * @throws Exception
+	 *
+	 * @param args arguments
+	 * @throws Exception if error occurs
 	 */
 	public static void main(final String[] args) throws Exception {
 		EIDSListener listener = new EIDSListener() {

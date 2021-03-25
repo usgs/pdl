@@ -14,15 +14,19 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class EventDataXMLHandler extends DefaultHandler {
 
-	// XML Element Names
+	/** XML Element Name for event_data */
 	public static final String DYFI_EVENTDATA_ELEMENT = "event_data";
+	/** XML Element Name  for event */
 	public static final String DYFI_EVENT_ELEMENT = "event";
+	/** XML Element Name for cdi_summary */
 	public static final String DYFI_CDI_SUMMARY_ELEMENT = "cdi_summary";
+	/** XML Element Name for products */
 	public static final String DYFI_PRODUCTS_ELEMENT = "products";
 
+	/** Static string to stop parsing before list of products */
 	public static final String DYFI_STOP_PARSING_BEFORE_PRODUCTS = "Stop parsing before list of product files.";
 
-	// XML Attributes
+	/** Map of XML attributes */
 	public static final Map<String, String[]> DYFI_ELEMENT_ATTRIBUTES = new HashMap<String, String[]>();
 	static {
 		// Statically add all these attributes and associate them to their
@@ -36,18 +40,30 @@ public class EventDataXMLHandler extends DefaultHandler {
 
 	private DYFIProduct dyfi = null;
 
+	/**
+	 * Constructor
+	 * @param dyfi takes in DYFIProduct
+	 */
 	public EventDataXMLHandler(final DYFIProduct dyfi) {
 		this.dyfi = dyfi;
 	}
 
+	/** @return DYFIProduct */
 	public DYFIProduct getDYFI() {
 		return this.dyfi;
 	}
 
+	/** @param dyfi Product to set */
 	public void setDYFI(final DYFIProduct dyfi) {
 		this.dyfi = dyfi;
 	}
 
+	/**
+	 *
+	 * @param in XML object to parse
+	 * @return DYFIProduct
+	 * @throws Exception if exception message equals stop_parsing string
+	 */
 	public DYFIProduct parse(final Object in) throws Exception {
 		try {
 			XmlUtils.parse(in, this);

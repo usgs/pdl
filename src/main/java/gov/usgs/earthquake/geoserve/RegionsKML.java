@@ -14,6 +14,8 @@ public class RegionsKML {
 
     /**
      * Output ANSS Authoritative Regions in KML format.
+     * @param regions ANSS Authoritative regions
+     * @return string of ANSS regions in KML format
      */
     public String formatKML(final Regions regions) {
         StringBuffer kml = new StringBuffer(String.join("\n",
@@ -67,6 +69,8 @@ public class RegionsKML {
     /**
      * Download ANSS Authoritative Regions,
      * and print to console in Regions KML format.
+     * @param args Console arguments
+     * @throws Exception if error occurs
      */
     public static void main(final String[] args) throws Exception {
         Regions regions = ANSSRegionsFactory.getFactory().getRegions();

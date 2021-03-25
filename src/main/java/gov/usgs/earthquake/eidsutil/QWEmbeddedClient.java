@@ -61,17 +61,18 @@ public class QWEmbeddedClient extends QWTrackingClient implements EIDSListener {
 	/** Console log level. */
 	private String consoleLogLevel = "Info";
 
+	/** Constructor using the default host and port */
 	public QWEmbeddedClient() {
 		this(DEFAULT_SERVER_HOST, DEFAULT_SERVER_PORT);
 	}
 
 	/**
 	 * Construct an EIDSClient using only server host and port.
-	 * 
+	 *
 	 * Calls other constructor with null values for other parameters.
-	 * 
-	 * @param serverHost
-	 * @param serverPort
+	 *
+	 * @param serverHost host of EIDS client
+	 * @param serverPort port of EIDS client
 	 */
 	public QWEmbeddedClient(final String serverHost, final Integer serverPort) {
 		this(serverHost, serverPort, "");
@@ -80,10 +81,12 @@ public class QWEmbeddedClient extends QWTrackingClient implements EIDSListener {
 	/**
 	 * Construct an EIDSClient using serverHost, serverPort, and
 	 * alternateServersList.
-	 * 
-	 * @param serverHost
-	 * @param serverPort
+	 *
+	 * @param serverHost host of EIDS client
+	 * @param serverPort port of EIDS client
 	 * @param alternateServersList
+	 *            a comma delimited list of host:port that are used when unable
+	 *            to connect to the primary serverHost and serverPort.
 	 */
 	public QWEmbeddedClient(final String serverHost, final Integer serverPort,
 			final String alternateServersList) {
@@ -93,7 +96,7 @@ public class QWEmbeddedClient extends QWTrackingClient implements EIDSListener {
 
 	/**
 	 * Constructor with all options.
-	 * 
+	 *
 	 * @param serverHost
 	 *            the eids server host or ip address.
 	 * @param serverPort
@@ -118,7 +121,7 @@ public class QWEmbeddedClient extends QWTrackingClient implements EIDSListener {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	public void setupConfiguration(CfgProperties userPropsObj,
 			Object connGroupSelObj, Object logGroupSelObj,
@@ -150,7 +153,7 @@ public class QWEmbeddedClient extends QWTrackingClient implements EIDSListener {
 
 	/**
 	 * Runs the client.
-	 * 
+	 *
 	 * Any listeners should be added before calling this method.
 	 */
 	public void startup() {
@@ -169,7 +172,7 @@ public class QWEmbeddedClient extends QWTrackingClient implements EIDSListener {
 
 	/**
 	 * Shuts down a running client.
-	 * 
+	 *
 	 * Does not call system.exit.
 	 */
 	public void shutdown() {
@@ -191,7 +194,7 @@ public class QWEmbeddedClient extends QWTrackingClient implements EIDSListener {
 
 	/**
 	 * Add a listener.
-	 * 
+	 *
 	 * @param listener
 	 *            the listener to add.
 	 */
@@ -201,7 +204,7 @@ public class QWEmbeddedClient extends QWTrackingClient implements EIDSListener {
 
 	/**
 	 * Remove a listener.
-	 * 
+	 *
 	 * @param listener
 	 *            the listener to remove.
 	 */
@@ -293,19 +296,21 @@ public class QWEmbeddedClient extends QWTrackingClient implements EIDSListener {
 		this.trackingFileName = trackingFileName;
 	}
 
+	/** @return console Log level */
 	public String getConsoleLogLevel() {
 		return consoleLogLevel;
 	}
 
+	/** @param consoleLogLevel to set */
 	public void setConsoleLogLevel(String consoleLogLevel) {
 		this.consoleLogLevel = consoleLogLevel;
 	}
 
 	/**
 	 * A method to test the EIDSClient.
-	 * 
-	 * @param args
-	 * @throws Exception
+	 *
+	 * @param args arguments
+	 * @throws Exception if error occurs
 	 */
 	public static void main(final String[] args) throws Exception {
 		EIDSListener listener = new EIDSListener() {

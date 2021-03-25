@@ -28,32 +28,32 @@ import gov.usgs.util.XmlUtils;
  */
 public class ANSSRegionsFactory {
 
-    // logging object
+    /** logging object */
     public static final Logger LOGGER = Logger.getLogger(ANSSRegionsFactory.class.getName());
 
-    // milliseconds per day
+    /** milliseconds per day */
     public static final long MILLISECONDS_PER_DAY = 86400000L;
 
-    // path to write regions.json
+    /** path to write regions.json */
     public static final String DEFAULT_REGIONS_JSON = "regions.json";
 
-    // global factory object
+    /** global factory object */
     private static ANSSRegionsFactory SINGLETON;
 
 
-    // service used to load regions
+    /** service used to load regions */
     private GeoserveLayersService geoserveLayersService;
 
-    // path to local regions file
+    /** path to local regions file */
     private File localRegions = new File(DEFAULT_REGIONS_JSON);
 
-    // the current regions object
+    /** the current regions object */
     private Regions regions;
 
-    // shutdown hook registered by startup
+    /** shutdown hook registered by startup */
     private Thread shutdownHook;
 
-    // timer used to auto fetch region updates
+    /** timer used to auto fetch region updates */
     private Timer updateTimer = new Timer();
 
 
@@ -66,6 +66,7 @@ public class ANSSRegionsFactory {
 
     /**
      * Use custom GeoserveLayersService.
+     * @param geoserveLayersService to use
      */
     public ANSSRegionsFactory (final GeoserveLayersService geoserveLayersService) {
         this.geoserveLayersService = geoserveLayersService;
@@ -74,11 +75,16 @@ public class ANSSRegionsFactory {
     /**
      * Get the global ANSSRegionsFactory,
      * creating and starting if needed.
+     * @return ANSSRegionsFactory
      */
     public static synchronized ANSSRegionsFactory getFactory() {
         return getFactory(true);
     }
 
+    /**
+     * @param startup if Factory should be created and started, if needed
+     * @return ANSSRegionsFactory
+     */
     public static synchronized ANSSRegionsFactory getFactory(final boolean startup) {
         if (SINGLETON == null) {
             SINGLETON = new ANSSRegionsFactory();
@@ -92,6 +98,7 @@ public class ANSSRegionsFactory {
     /**
      * Set the global ANSSRegionsFactory,
      * shutting down any existing factory if needed.
+     * @param factory to set
      */
     public static synchronized void setFactory(final ANSSRegionsFactory factory) {
         if (SINGLETON != null) {
@@ -129,6 +136,8 @@ public class ANSSRegionsFactory {
 
     /**
      * Read regions from local regions file.
+     * @return Regions
+     * @throws IOException if error occurs
      */
     protected Regions loadFromFile() throws IOException {
         try (InputStream in = StreamUtils.getInputStream(this.localRegions)) {
@@ -145,6 +154,8 @@ public class ANSSRegionsFactory {
 
     /**
      * Read regions from geoserve service.
+     * @return Regions
+     * @throws IOException if error occurs
      */
     protected Regions loadFromGeoserve() throws IOException {
         LOGGER.fine("Fetching ANSS Authoritative Regions from Geoserve");
@@ -163,7 +174,9 @@ public class ANSSRegionsFactory {
     /**
      * Store json to local regions file.
      *
+     * @param regionsFile to store to
      * @param json json response to store locally.
+     * @throws IOException if IO error occurs
      */
     protected void saveToFile(final File regionsFile, final JsonObject json) throws IOException {
         LOGGER.fine("Storing ANSS Authoritative Regions to " + regionsFile);
@@ -229,6 +242,7 @@ public class ANSSRegionsFactory {
 
     /**
      * Get the service.
+     * @return geoserveLayersService
      */
     public GeoserveLayersService getGeoserveLayersService() {
         return this.geoserveLayersService;
@@ -236,6 +250,7 @@ public class ANSSRegionsFactory {
 
     /**
      * Set the service.
+     * @param service GeoserveLayersService to set
      */
     public void setGeoserveLayersService(final GeoserveLayersService service) {
         this.geoserveLayersService = service;
@@ -243,6 +258,7 @@ public class ANSSRegionsFactory {
 
     /**
      * Get the local regions file.
+     * @return localRegions
      */
     public File getLocalRegions() {
         return this.localRegions;
@@ -250,6 +266,7 @@ public class ANSSRegionsFactory {
 
     /**
      * Set the local regions file.
+     * @param localRegions file to set
      */
     public void setLocalRegions(final File localRegions) {
         this.localRegions = localRegions;
@@ -257,6 +274,7 @@ public class ANSSRegionsFactory {
 
     /**
      * Get the most recently fetched Regions.
+     * @return regions
      */
     public Regions getRegions () {
         return this.regions;
