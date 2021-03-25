@@ -32,6 +32,8 @@ public class InputStreamContent extends AbstractContent {
 	 *
 	 * @param content
 	 *            the content to duplicate.
+	 * @throws IOException
+	 *            if IO error occurs
 	 */
 	public InputStreamContent(final Content content) throws IOException {
 		super(content);

@@ -103,13 +103,21 @@ public class Product {
 	/** The status message when a product is being deleted. */
 	public static final String STATUS_DELETE = "DELETE";
 
+	/** Property for eventsource */
 	public static final String EVENTSOURCE_PROPERTY = "eventsource";
+	/** Property for eventsourcecode */
 	public static final String EVENTSOURCECODE_PROPERTY = "eventsourcecode";
+	/** Property for eventtime */
 	public static final String EVENTTIME_PROPERTY = "eventtime";
+	/** Property for magnitude */
 	public static final String MAGNITUDE_PROPERTY = "magnitude";
+	/** Property for latitude */
 	public static final String LATITUDE_PROPERTY = "latitude";
+	/** Property for longitude */
 	public static final String LONGITUDE_PROPERTY = "longitude";
+	/** Property for depth */
 	public static final String DEPTH_PROPERTY = "depth";
+	/** Property for version */
 	public static final String VERSION_PROPERTY = "version";
 
 	/** A unique identifier for this product. */
@@ -337,6 +345,8 @@ public class Product {
 
 	/**
 	 * Sign this product using a PrivateKey and signature v1.
+	 * @param privateKey used to sign
+	 * @throws Exception if error occurs
 	 */
 	public void sign(final PrivateKey privateKey) throws Exception {
 		this.sign(privateKey, Version.SIGNATURE_V1);
@@ -349,7 +359,7 @@ public class Product {
 	 *            a DSAPrivateKey or RSAPrivateKey.
 	 * @param version
 	 *            the signature version to use.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public void sign(final PrivateKey privateKey, final Version version) throws Exception {
 		setSignature(CryptoUtils.sign(
@@ -361,6 +371,9 @@ public class Product {
 
 	/**
 	 * Verify this product's signature using Signature V1.
+	 * @param publicKeys Array of public keys to verify
+	 * @throws Exception if error occurs
+	 * @return true if valid, false otherwise.
 	 */
 	public boolean verifySignature(final PublicKey[] publicKeys)
 			throws Exception {
@@ -379,7 +392,7 @@ public class Product {
 	 * @param version
 	 *            the signature version to use.
 	 * @return true if valid, false otherwise.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public boolean verifySignature(final PublicKey[] publicKeys, final Version version)
 			throws Exception {
@@ -388,6 +401,10 @@ public class Product {
 
 	/**
 	 * Try to verify using multiple candidate keys.
+	 * @param publicKeys an array of publicKeys to test
+	 * @param version the signature version to use.
+	 * @return true if valid, false otherwise.
+	 * @throws Exception if error occurs
 	 */
 	public PublicKey verifySignatureKey(final PublicKey[] publicKeys, final Version version) throws Exception {
 		if (signature == null) {

@@ -123,7 +123,7 @@ public abstract class AbstractContent implements Content {
 	/**
 	 * Set the content length.
 	 *
-	 * @param length
+	 * @param length long to set
 	 */
 	public void setLength(final Long length) {
 		if (length == null) {
@@ -144,7 +144,8 @@ public abstract class AbstractContent implements Content {
 	 * Get or generate the MD5 hash of content.
 	 *
 	 * @param computeIfMissing Use getInputStream to generate hash if missing.
-	 * @throws Exception
+	 * @return sha256 string
+	 * @throws Exception if error occurs
 	 */
 	public String getSha256(final boolean computeIfMissing) throws Exception {
 		if (sha256 == null && computeIfMissing) {
@@ -162,7 +163,7 @@ public abstract class AbstractContent implements Content {
 	/**
 	 * Set the sha256 hash of content.
 	 *
-	 * @param sha256
+	 * @param sha256 to set
 	 */
 	public void setSha256(final String sha256) {
 		this.sha256 = sha256;

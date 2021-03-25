@@ -304,10 +304,12 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 		}
 	}
 
+	/** @return ProductHandler */
 	protected synchronized ProductHandler getHandler() {
 		return out;
 	}
 
+	/** @param out ProductHandler to set */
 	protected synchronized void setHandler(ProductHandler out) {
 		this.out = out;
 	}
@@ -337,6 +339,10 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 	 * will close the connection in {@link #closeContent()}.  If
 	 * errors occur, the objects handling the product source object
 	 * call closeContent to ensure the resource is closed.
+	 *
+	 * @param encoded if it needs to decode base 64 content
+	 * @return a input stream of the Piped output stream
+	 * @throws IOException if io error occurs
 	 */
 	@SuppressWarnings("resource")
 	public InputStream openContentStream(boolean encoded) throws IOException {
@@ -357,6 +363,9 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 		return contentInputStream;
 	}
 
+	/**
+	 * Closes an open output stream
+	 */
 	public void closeContent() {
 		StreamUtils.closeStream(contentOutputStream);
 		contentOutputStream = null;

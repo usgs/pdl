@@ -14,17 +14,32 @@ import java.util.zip.ZipException;
  */
 public class IOUtil {
 
+	/** Argument for input file */
 	public static final String INFILE_ARGUMENT = "--infile=";
+	/** Argument for input format */
 	public static final String INFORMAT_ARGUMENT = "--informat=";
 
+	/** Argument for output file */
 	public static final String OUTFILE_ARGUMENT = "--outfile=";
+	/** Argument for output format */
 	public static final String OUTFORMAT_ARGUMENT = "--outformat=";
 
+	/** Zip format */
 	public static final String ZIP_FORMAT = "zip";
+	/** XML format */
 	public static final String XML_FORMAT = "xml";
+	/** Directory format */
 	public static final String DIRECTORY_FORMAT = "directory";
+	/** Binary format */
 	public static final String BINARY_FORMAT = "binary";
 
+	/**
+	 * Returns a ProductHandler based on the output format
+	 * @param outformat Output format
+	 * @param outfile Output file
+	 * @return a Product Handler
+	 * @throws IOException if IO error occurs
+	 */
 	public static ProductHandler getProductHandler(final String outformat,
 			final File outfile) throws IOException {
 		ProductHandler out = null;
@@ -43,6 +58,14 @@ public class IOUtil {
 		return out;
 	}
 
+	/**
+	 * Returns a product source based on input format
+	 * @param informat input file format
+	 * @param infile input file
+	 * @return a Productsource
+	 * @throws IllegalArgumentException if informat argument error
+	 * @throws IOException if error occurs
+	 */
 	public static ProductSource getProductSource(final String informat,
 			final File infile) throws IllegalArgumentException, IOException {
 		ProductSource in = null;
@@ -63,7 +86,7 @@ public class IOUtil {
 
 	/**
 	 * Auto detect an Xml or Binary product source, that is optionally deflated.
-	 * 
+	 *
 	 * @param in
 	 *            input stream containing optionally deflated xml or binary
 	 *            product stream.
@@ -96,7 +119,7 @@ public class IOUtil {
 
 	/**
 	 * Auto detect an optionally deflated stream.
-	 * 
+	 *
 	 * @param in
 	 *            input stream containing optionally deflated xml or binary
 	 *            product stream.
@@ -125,6 +148,13 @@ public class IOUtil {
 		return bufferedIn;
 	}
 
+	/**
+	 * Access into IOUtil
+	 * Takes arguments, gets product source and handler
+	 * Streams source to handler
+	 * @param args CLI args for infile, informat, outfile, outformat
+	 * @throws Exception if error occurs
+	 */
 	public static void main(final String[] args) throws Exception {
 		File infile = null;
 		File outfile = null;
@@ -159,6 +189,7 @@ public class IOUtil {
 		in.streamTo(out);
 	}
 
+	/** CLI usage */
 	public static void printUsage() {
 		System.err
 				.println("IOUtil --infile=FILE --informat=(xml|directory|zip|binary) --outfile=FILE --outformat=(xml|directory|zip|binary)");
