@@ -13,9 +13,11 @@ public interface IndexerListener extends Configurable {
 	/**
 	 * This method is called when the indexer makes a change to the
 	 * ProductIndex.
-	 * 
+	 *
 	 * @param change
 	 *            description of the change.
+	 * @throws Exception
+	 *            if error occurs
 	 */
 	public void onIndexerEvent(final IndexerEvent change) throws Exception;
 
@@ -23,7 +25,7 @@ public interface IndexerListener extends Configurable {
 	 * An indexer that generates a IndexerEvent will attempt to deliver the
 	 * event at most this many times, if the listener throws an Exception while
 	 * processing.
-	 * 
+	 *
 	 * @return A value of less than one means never attempt to deliver.
 	 */
 	public int getMaxTries();
@@ -31,7 +33,7 @@ public interface IndexerListener extends Configurable {
 	/**
 	 * A IndexerListener has this many milliseconds to process an event before
 	 * being interrupted.
-	 * 
+	 *
 	 * @return number of milliseconds before timing out. A value of 0 or less
 	 *         means never time out.
 	 */

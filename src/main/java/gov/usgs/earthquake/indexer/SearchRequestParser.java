@@ -21,9 +21,11 @@ public class SearchRequestParser extends DefaultHandler {
 	/** The query being parsed. */
 	private SearchQuery searchQuery;
 
+	/** Empty constructor */
 	public SearchRequestParser() {
 	}
 
+	/** @return searchRequest */
 	public SearchRequest getSearchRequest() {
 		return searchRequest;
 	}

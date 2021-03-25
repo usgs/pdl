@@ -86,6 +86,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	private static final String SUMMARY_TABLE = "productSummary";
 	private static final String SUMMARY_TABLE_ALIAS = "p";
 	// private static final String SUMMARY_CREATED = "created";
+	/** Public var for summary product index IDs */
 	public static final String SUMMARY_PRODUCT_INDEX_ID = "id";
 	private static final String SUMMARY_PRODUCT_ID = "productId";
 	// private static final String SUMMARY_EVENT_ID = "eventId";
@@ -118,7 +119,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Constructor. Sets index_file to the default value JDBC_DEFAULT_FILE
 	 *
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public JDBCProductIndex() throws Exception {
 		// Default index file, so calling configure() isn't required
@@ -126,6 +127,11 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		setDriver(JDBC_DEFAULT_DRIVER);
 	}
 
+	/**
+	 * Constructor. Uses custom index_file
+	 * @param sqliteFileName String for sqlite file name
+	 * @throws Exception if error occurs
+	 */
 	public JDBCProductIndex(final String sqliteFileName) throws Exception {
 		index_file = sqliteFileName;
 		setDriver(JDBC_DEFAULT_DRIVER);
@@ -156,7 +162,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * Return a connection to the database.
 	 *
 	 * @return Connection object
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	@Override
 	public Connection connect() throws Exception {
@@ -417,6 +423,10 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @param loadDetails
 	 *     whether to call {@link #loadProductSummaries(List)},
 	 *     which loads links and properties with additional queries.
+	 * @return
+	 *     A list of loaded product summaries
+	 * @throws Exception
+	 *     if error occurs
 	 */
 	public synchronized List<ProductSummary> getProducts(ProductIndexQuery query, final boolean loadDetails)
 			throws Exception {
@@ -480,7 +490,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *            ProductSummary object to store. Must not be null.
 	 * @return Copy of the product summary object with the indexId set to the
 	 *         newly inserted id.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	@Override
 	public synchronized ProductSummary addProductSummary(ProductSummary summary)
@@ -606,8 +616,8 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * assumes that both the event and the product are already stored in their
 	 * respective tables.
 	 *
-	 * @param event
-	 * @param summary
+	 * @param event Event to add association to
+	 * @param summary ProductSummary to add association to
 	 * @return Copy of event with summary added to the event's products list
 	 */
 	@Override
@@ -656,8 +666,9 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *
 	 * NOTE: this removes the association between the event and ALL versions of the product summary.
 	 *
-	 * @param event
-	 * @param summary
+	 * @param event An event to remove an association with
+	 * @param summary A ProductSummary to remove an association with
+	 * @throws Exception if error occurs
 	 */
 	@Override
 	public synchronized Event removeAssociation(Event event,
@@ -748,7 +759,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * method will return an empty list. It is up to the calling methods to
 	 * check if the clause list is empty when they build their WHERE clause.
 	 *
-	 * @param query
+	 * @param query ProductIndexQuery
 	 * @return list containing clauses in the form: column="value"
 	 */
 	protected List<String> buildProductClauses(ProductIndexQuery query) {
@@ -1027,7 +1038,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * {@link #buildProductQuery(List, String)} with an empty
 	 * orderby string
 	 *
-	 * @param clauseList
+	 * @param clauseList List of clauses for WHERE
 	 * @return String containing the full SELECT query
 	 */
 	protected String buildProductQuery(List<String> clauseList) {
@@ -1037,8 +1048,8 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Populate links and properties for provided product summaries.
 	 *
-	 * @param summaries
-	 * @throws Exception
+	 * @param summaries List of ProductSummaries
+	 * @throws Exception if error occurs
 	 */
 	protected synchronized void loadProductSummaries(final List<ProductSummary> summaries)
 			throws Exception {
@@ -1108,9 +1119,9 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Parse ProductSummary without loading links or properties.
 	 *
-	 * @param results
+	 * @param results ResultSet to parse
 	 * @return ProductSummary object without links or properties.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected ProductSummary parseProductSummary(ResultSet results)
 			throws Exception {
@@ -1161,6 +1172,12 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		return p;
 	}
 
+	/**
+	 *
+	 * @param summaries List of product summaries to remove
+	 * @return List of ProductIds that were removed
+	 * @throws Exception if error occurs
+	 */
 	public synchronized List<ProductId> removeProductSummaries(
 			final List<ProductSummary> summaries) throws Exception {
 		// index by id
@@ -1212,9 +1229,9 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * Save the properties in the database and associate them to the given
 	 * productId
 	 *
-	 * @param productId
-	 * @param properties
-	 * @throws SQLException
+	 * @param productId long product ID to associate to
+	 * @param properties Map of properties to save
+	 * @throws SQLException if SQL error occurs
 	 */
 	protected synchronized void addProductProperties(final long productId,
 			final Map<String, String> properties) throws SQLException {
@@ -1248,7 +1265,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 *            Index id of the product to select
 	 * @param links
 	 *            Map of relations to URIs
-	 * @throws SQLException
+	 * @throws SQLException if sql error occurs
 	 */
 	protected synchronized void addProductLinks(long productId,
 			Map<String, List<URI>> links) throws SQLException {
@@ -1278,7 +1295,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * Convert the given longitude to be between -180 and 180. If the given
 	 * value is already in the range, this method just returns the value.
 	 *
-	 * @param lon
+	 * @param lon Double longitude
 	 * @return double normalized between -180 and 180
 	 */
 	protected double normalizeLongitude(double lon) {
@@ -1308,7 +1325,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	/**
 	 * Wrapper to normalize BigDecimal longitudes
 	 *
-	 * @param lon
+	 * @param lon BigDecimal Longitude
 	 * @return Normalized BigDecimal latitude
 	 */
 	protected BigDecimal normalizeLongitude(BigDecimal lon) {

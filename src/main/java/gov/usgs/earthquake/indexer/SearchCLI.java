@@ -11,7 +11,7 @@ import gov.usgs.util.XmlUtils;
 
 /**
  * Command line interface for search socket.
- * 
+ *
  * This class reads arguments from the command line that represent a
  * ProductIndexQuery. Then it connects to a configured socket, executes the
  * search, and outputs the response xml.
@@ -24,31 +24,55 @@ public class SearchCLI {
 	/**
 	 * Command-line argument definitions
 	 */
+	/** Argument for search method */
 	public static String SEARCH_METHOD_ARGUMENT = "--searchMethod=";
+	/** Argument for result type */
 	public static String RESULT_TYPE_ARGUMENT = "--resultType=";
+	/** Argument for event Source */
 	public static String EVENT_SOURCE_ARGUMENT = "--eventSource=";
+	/** Argument for event Source Code */
 	public static String EVENT_SOURCE_CODE_ARGUMENT = "--eventSourceCode=";
+	/** Argument for minimum Event Time */
 	public static String MIN_EVENT_TIME_ARGUMENT = "--minEventTime=";
+	/** Argument for maximum event time */
 	public static String MAX_EVENT_TIME_ARGUMENT = "--maxEventTime=";
+	/** Argument for minimum event latitude */
 	public static String MIN_EVENT_LATITUDE_ARGUMENT = "--minEventLatitude=";
+	/** Argument for minimum event longitude */
 	public static String MIN_EVENT_LONGITUDE_ARGUMENT = "--minEventLongitude=";
+	/** Argument for maximum event latitude */
 	public static String MAX_EVENT_LATITUDE_ARGUMENT = "--maxEventLatitude=";
+	/** Argument for maximum event longitude */
 	public static String MAX_EVENT_LONGITUDE_ARGUMENT = "--maxEventLongitude=";
+	/** Argument for minimum event depth */
 	public static String MIN_EVENT_DEPTH_ARGUMENT = "--minEventDepth=";
+	/** Argument for maximum event depth */
 	public static String MAX_EVENT_DEPTH_ARGUMENT = "--maxEventDepth=";
+	/** Argument for minimum event magnitude */
 	public static String MIN_EVENT_MAGNITUDE_ARGUMENT = "--minEventMagnitude=";
+	/** Argument for maximum event magnitude */
 	public static String MAX_EVENT_MAGNITUDE_ARGUMENT = "--maxEventMagnitude=";
+	/** Argument for product ID */
 	public static String PRODUCT_ID_ARGUMENT = "--productId=";
+	/** Argument for  minimum product update time */
 	public static String MIN_PRODUCT_UPDATE_TIME_ARGUMENT = "--minProductUpdateTime=";
+	/** Argument for maximum product update time */
 	public static String MAX_PRODUCT_UPDATE_TIME_ARGUMENT = "--maxProductUpdateTime=";
+	/** Argument for product source */
 	public static String PRODUCT_SOURCE_ARGUMENT = "--productSource=";
+	/** Argument for product type */
 	public static String PRODUCT_TYPE_ARGUMENT = "--productType=";
+	/** Argument for product verion */
 	public static String PRODUCT_VERSION_ARGUMENT = "--productVersion=";
+	/** Argument for product status */
 	public static String PRODUCT_STATUS_ARGUMENT = "--productStatus=";
 
+	/** Argument for search host */
 	public static String SEARCH_HOST_ARGUMENT = "--searchHost=";
+	/** Argument for search port */
 	public static String SEARCH_PORT_ARGUMENT = "--searchPort=";
 
+	/** Argument for file output */
 	public static String FILE_OUTPUT_ARGUMENT = "--outputFile=";
 
 	/**
@@ -60,10 +84,10 @@ public class SearchCLI {
 	/**
 	 * Entry point into search. Called by Main when the --search argument is
 	 * used.
-	 * 
+	 *
 	 * @param args
 	 *            command line arguments.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public static void main(final String[] args) throws Exception {
 		String outputFilePath = null;
@@ -167,6 +191,10 @@ public class SearchCLI {
 		socket.search(request, stream);
 	}
 
+	/**
+	 * CLI Usage
+	 * @return string of usage
+	 */
 	public static String getUsage() {
 		StringBuffer buf = new StringBuffer();
 

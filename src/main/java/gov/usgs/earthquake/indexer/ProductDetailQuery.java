@@ -12,6 +12,10 @@ public class ProductDetailQuery extends SearchQuery {
 
 	private List<Product> result;
 
+	/**
+	 * Constructor making a SearchQuery object with PRODUCT_DETAIL as the method
+	 * @param query a ProductIndexQuery
+	 */
 	public ProductDetailQuery(final ProductIndexQuery query) {
 		super(SearchMethod.PRODUCT_DETAIL, query);
 	}
@@ -21,6 +25,7 @@ public class ProductDetailQuery extends SearchQuery {
 		return result;
 	}
 
+	/** @param product list to set */
 	public void setResult(final List<Product> product) {
 		this.result = product;
 	}
