@@ -38,6 +38,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class XmlUtils {
 
+	/** Hashmap of ESCAPES */
 	public static final Map<String, String> ESCAPES = new HashMap<String, String>();
 	static {
 		// xml

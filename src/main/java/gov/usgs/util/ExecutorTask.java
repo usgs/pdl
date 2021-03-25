@@ -81,6 +81,7 @@ public class ExecutorTask<T> implements Future<T>, Runnable {
 	/** Name for this task. */
 	protected String name = null;
 
+	/** A synchronized object  */
 	protected final Object syncObject = new Object();
 
 	/**
@@ -106,6 +107,16 @@ public class ExecutorTask<T> implements Future<T>, Runnable {
 
 	/**
 	 * Wraps a runnable and result using the CallableRunnable class.
+	 * @param service
+	 *            ExecutorService that this task will be submitted to.
+	 * @param maxTries
+	 *            maximum number of tries callable can throw an exception or
+	 *            timeout before giving up. &lt; 1 means never run.
+	 * @param timeout
+	 *            number of milliseconds to allow callable to run before it is
+	 *            interrupted. &lt;= 0 means never timeout.
+	 * @param runnable a runnable
+	 * @param result the result
 	 *
 	 * @see java.util.concurrent.Executors#callable(Runnable, Object)
 	 */
@@ -344,10 +355,12 @@ public class ExecutorTask<T> implements Future<T>, Runnable {
 		return callable;
 	}
 
+	/** @return name */
 	public String getName() {
 		return this.name;
 	}
 
+	/** @param name to set */
 	public void setName(final String name) {
 		this.name = name;
 	}

@@ -10,68 +10,113 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Parser for ShakeMap grid.xml metadata.
- * 
+ *
  * Accepts a ShakeMap object and updates the properties of that product based on
  * the product's grid.xml file.
  */
 public class GridXMLHandler extends DefaultHandler {
-	
+
 	// ShakeMap grid parameters
+		/** Element for shakemap grid */
 		public static final String SHAKEMAPGRID_ELEMENT = "shakemap_grid";
+		/** Shakemap grid id */
 		public static final String SHAKEMAPGRID_ID = "shakemap_id";
+		/** Shakemap grid originator */
 		public static final String SHAKEMAPGRID_ORIGINATOR = "shakemap_originator";
+		/** Shakemap grid process timestamp */
 		public static final String SHAKEMAPGRID_TIMESTAMP = "process_timestamp";
+		/** Shakemap grid version */
 		public static final String SHAKEMAPGRID_VERSION = "shakemap_version";
+		/** Shakemap grid event type */
 		public static final String SHAKEMAPGRID_EVENT_TYPE = "shakemap_event_type";
+		/** Shakemap grid event/map status */
 		public static final String SHAKEMAPGRID_EVENT_STATUS = "map_status";
 
 		// ShakeMap event parameters
+		/** Element for event */
 		public static final String EVENT_ELEMENT = "event";
+		/** Event latitude */
 		public static final String EVENT_LATITUDE = "lat";
+		/** Event longitude */
 		public static final String EVENT_LONGITUDE = "lon";
+		/** Event magnitude */
 		public static final String EVENT_MAGNITUDE = "magnitude";
+		/** Event timestamp */
 		public static final String EVENT_TIMESTAMP = "event_timestamp";
+		/** Event description */
 		public static final String EVENT_DESCRIPTION = "event_description";
+		/** Event depth */
 		public static final String EVENT_DEPTH = "depth";
+
 		// These are new parameters used by GSM when it is contributing to a
 		// different
 		// network as a backup
+		/** GSM Parameter when using a different network as a backup */
 		public static final String EVENT_NETWORK = "event_network";
+		/** GSM Parameter when using a different network as a backup */
 		public static final String EVENT_ID = "event_id";
-		
+
 		// ShakeMap gridspec parameters
+		/** Element for grid specification */
 		public static final String GRIDSPEC_ELEMENT = "grid_specification";
+		/** gridspec longitude min */
 		public static final String GRIDSPEC_LONMIN = "lon_min";
+		/** gridspec longitude max */
 		public static final String GRIDSPEC_LONMAX = "lon_max";
+		/** gridspec latitude min */
 		public static final String GRIDSPEC_LATMIN = "lat_min";
+		/** gridspec latitude max */
 		public static final String GRIDSPEC_LATMAX = "lat_max";
-			
+
+		/** XML for SHAKEMAPGRID_ELEMENT */
 		public static final String SHAKEMAPGRID_ELEMENT_XML = SHAKEMAPGRID_ELEMENT;
+		/** XML for SHAKEMAPGRID_ID */
 		public static final String SHAKEMAPGRID_ID_XML =  SHAKEMAPGRID_ELEMENT+ "[" + SHAKEMAPGRID_ID + "]";
+		/** XML for SHAKEMAPGRID_ORIGINATOR */
 		public static final String SHAKEMAPGRID_ORIGINATOR_XML = SHAKEMAPGRID_ELEMENT + "[" + SHAKEMAPGRID_ORIGINATOR + "]";
+		/** XML for SHAKEMAPGRID_TIMESTAMP */
 		public static final String SHAKEMAPGRID_TIMESTAMP_XML = SHAKEMAPGRID_ELEMENT + "[" + SHAKEMAPGRID_TIMESTAMP + "]";
+		/** XML for SHAKEMAPGRID_VERSION */
 		public static final String SHAKEMAPGRID_VERSION_XML = SHAKEMAPGRID_ELEMENT+ "[" + SHAKEMAPGRID_VERSION + "]";
+		/** XML for SHAKEMAPGRID_EVENT_TYPE */
 		public static final String SHAKEMAPGRID_EVENT_TYPE_XML = SHAKEMAPGRID_ELEMENT+ "[" + SHAKEMAPGRID_EVENT_TYPE + "]";
+		/** XML for SHAKEMAPGRID_EVENT_STATUS */
 		public static final String SHAKEMAPGRID_EVENT_STATUS_XML = SHAKEMAPGRID_ELEMENT+ "[" + SHAKEMAPGRID_EVENT_STATUS + "]";
 
+		/** XML for EVENT_ELEMENT */
 		public static final String EVENT_ELEMENT_XML = EVENT_ELEMENT;
+		/** XML for EVENT_LATITUDE */
 		public static final String EVENT_LATITUDE_XML = EVENT_ELEMENT + "[" + EVENT_LATITUDE + "]";
+		/** XML for EVENT_LONGITUDE */
 		public static final String EVENT_LONGITUDE_XML = EVENT_ELEMENT+ "[" + EVENT_LONGITUDE + "]";
+		/** XML for EVENT_MAGNITUDE */
 		public static final String EVENT_MAGNITUDE_XML = EVENT_ELEMENT+ "[" + EVENT_MAGNITUDE + "]";
+		/** XML for EVENT_TIMESTAMP */
 		public static final String EVENT_TIMESTAMP_XML = EVENT_ELEMENT+ "[" + EVENT_TIMESTAMP + "]";
+		/** XML for EVENT_DESCRIPTION */
 		public static final String EVENT_DESCRIPTION_XML = EVENT_ELEMENT+ "[" + EVENT_DESCRIPTION + "]";
+		/** XML for EVENT_DEPTH */
 		public static final String EVENT_DEPTH_XML = EVENT_ELEMENT+ "[" + EVENT_DEPTH + "]";
+		/** XML for EVENT_NETWORK */
 		public static final String EVENT_NETWORK_XML = EVENT_ELEMENT + "[" + EVENT_NETWORK + "]";
+		/** XML for EVENT_ID */
 		public static final String EVENT_ID_XML = EVENT_ELEMENT + "[" + EVENT_ID + "]";
-		
+
+		/** XML for GRIDSPEC_ELEMENT */
 		public static final String GRIDSPEC_ELEMENT_XML = GRIDSPEC_ELEMENT;
+		/** XML for GRIDSPEC_LONMIN */
 		public static final String GRIDSPEC_LONMIN_XML = GRIDSPEC_ELEMENT+ "[" + GRIDSPEC_LONMIN + "]";
+		/** XML for GRIDSPEC_LONMAX */
 		public static final String GRIDSPEC_LONMAX_XML = GRIDSPEC_ELEMENT+ "[" + GRIDSPEC_LONMAX + "]";
+		/** XML for GRIDSPEC_LATMIN */
 		public static final String GRIDSPEC_LATMIN_XML = GRIDSPEC_ELEMENT+ "[" + GRIDSPEC_LATMIN + "]";
+		/** XML for GRIDSPEC_LATMAX */
 		public static final String GRIDSPEC_LATMAX_XML = GRIDSPEC_ELEMENT+ "[" + GRIDSPEC_LATMAX + "]";
-			
+
 	// ShakeMap griddata parameters
+	/** Element for Shakemap griddata */
 	public static final String GRIDDATA_ELEMENT = "grid_data";
+	/** Shakemap griddata parameter to stop parsing before */
 	public static final String STOP_PARSING_BEFORE_GRIDDATA =
 			"Stop parsing before grid data.";
 
@@ -86,7 +131,7 @@ public class GridXMLHandler extends DefaultHandler {
 	 * @param in
 	 *            - the file or stream to parse
 	 * @return the ShakeMap associated with this XML handler
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public HashMap<String, String> parse(final Object in) throws Exception {
 		try {

@@ -19,13 +19,19 @@ import java.util.logging.Logger;
  */
 public class NATSClient implements Configurable {
 
+  /** Logger object */
   public static Logger LOGGER  = Logger
           .getLogger(NATSClient.class.getName());
 
+  /** Property for server host */
   public static String SERVER_HOST_PROPERTY = "serverHost";
+  /** Property for server port */
   public static String SERVER_PORT_PROPERTY = "serverPort";
+  /** Property for cluster id */
   public static String CLUSTER_ID_PROPERTY = "clusterId";
+  /** Property for client id */
   public static String CLIENT_ID_PROPERTY = "clientId";
+  /** Property for subject */
   public static String SUBJECT_PROPERTY = "subject";
 
   private String serverHost;
@@ -36,10 +42,18 @@ public class NATSClient implements Configurable {
 
   private StreamingConnection connection;
 
+  /** Constructor for testing*/
   public NATSClient() {
     this("localhost","4222","test-cluster",Long.toString(Thread.currentThread().getId()));
   }
 
+  /**
+   * Custom constructor
+   * @param serverHost String of host
+   * @param serverPort String of port
+   * @param clusterId String of clusterID
+   * @param clientIdSuffix String of idSuffix
+   */
   public NATSClient(String serverHost, String serverPort, String clusterId, String clientIdSuffix) {
     // try to generate a unique ID; use suffix only if fail
     this.serverHost = serverHost;
@@ -53,7 +67,7 @@ public class NATSClient implements Configurable {
    *
    * @param config
    *            the Config to load.
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   @Override
   public void configure(Config config) throws Exception {
@@ -142,42 +156,52 @@ public class NATSClient implements Configurable {
 
   }
 
+  /** @return serverHost */
   public String getServerHost() {
     return serverHost;
   }
 
+  /** @param serverHost to set */
   public void setServerHost(String serverHost) {
     this.serverHost = serverHost;
   }
 
+  /** @return serverPort */
   public String getServerPort() {
     return serverPort;
   }
 
+  /** @param serverPort to set */
   public void setServerPort(String serverPort) {
     this.serverPort = serverPort;
   }
 
+  /** @return clusterID */
   public String getClusterId() {
     return clusterId;
   }
 
+  /** @param clusterId to set */
   public void setClusterId(String clusterId) {
     this.clusterId = clusterId;
   }
 
+  /** @return clientID */
   public String getClientId() {
     return clientId;
   }
 
+  /** @param clientId to set */
   public void setClientId(String clientId) {
     this.clientId = clientId;
   }
 
+  /** @return StreamingConnection */
   public StreamingConnection getConnection() {
     return connection;
   }
 
+  /** @param connection StreamingConnection to set */
   public void setConnection(StreamingConnection connection) {
     this.connection = connection;
   }

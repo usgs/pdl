@@ -32,6 +32,7 @@ public class SizeLimitInputStream extends FilterInputStream {
 
 	/**
 	 * Return number of bytes read.
+	 * @return bytes read
 	 */
 	public long getRead() {
 		return this.read;

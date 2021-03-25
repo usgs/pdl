@@ -27,7 +27,7 @@ public class InfoXMLHandler extends DefaultHandler {
 	 * @param in
 	 *            - the file or stream to parse
 	 * @return the ShakeMap associated with this XML handler
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public HashMap<String, String> parse(final Object in) throws Exception {
 		XmlUtils.parse(in, this);

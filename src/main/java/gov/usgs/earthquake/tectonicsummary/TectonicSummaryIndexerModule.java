@@ -15,6 +15,7 @@ import gov.usgs.earthquake.product.Product;
 @Deprecated()
 public class TectonicSummaryIndexerModule extends DefaultIndexerModule {
 
+	/** Summary weight */
 	public static final int REVIEWED_TECTONIC_SUMMARY_WEIGHT = 200;
 
 	@Override

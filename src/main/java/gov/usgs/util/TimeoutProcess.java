@@ -45,26 +45,32 @@ public class TimeoutProcess {
 		this.process = process;
 	}
 
+	/** Destroys a process */
 	public void destroy() {
 		process.destroy();
 	}
 
+	/** @return errorOutput byte array */
 	public byte[] errorOutput() {
 		return errorOutput;
 	}
 
+	/** @return exit value */
 	public int exitValue() {
 		return process.exitValue();
 	}
 
+	/** @return InputStream of error stream */
 	public InputStream getErrorStream() {
 		return process.getErrorStream();
 	}
 
+	/** @return InputStream */
 	public InputStream getInputStream() {
 		return process.getInputStream();
 	}
 
+	/** @return OutputStream */
 	public OutputStream getOutputStream() {
 		return process.getOutputStream();
 	}
@@ -75,6 +81,9 @@ public class TimeoutProcess {
 	 *
 	 * @return exitStatus.
 	 * @throws InterruptedException
+	 *             if thread interruption occurs
+	 * @throws IOException
+	 *             if IO error occurs
 	 * @throws ProcessTimeoutException
 	 *             if the process timed out before exiting.
 	 */
@@ -105,14 +114,17 @@ public class TimeoutProcess {
 		return status;
 	}
 
+	/** @param timeoutElapsed to set */
 	protected void setTimeoutElapsed(boolean timeoutElapsed) {
 		this.timeoutElapsed = timeoutElapsed;
 	}
 
+	/** @return timeoutElapsed boolean */
 	protected boolean timeoutElapsed() {
 		return timeoutElapsed;
 	}
 
+	/** @param timer to set */
 	protected void setTimer(final Timer timer) {
 		this.timer = timer;
 	}
