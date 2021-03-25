@@ -18,6 +18,7 @@ public class RegionsJSON {
      * Parse {@link gov.usgs.earthquake.qdm.Regions} from a GeoJSON feature collection.
      *
      * @param json geojson feature collection.
+     * @return Regions
      */
     public Regions parseRegions(final JsonObject json) {
         Regions regions = new Regions();
@@ -26,7 +27,7 @@ public class RegionsJSON {
 
         JsonArray features = json.getJsonArray("features");
         for (JsonValue value : features) {
-            JsonObject jsonRegion = value.asJsonObject();            
+            JsonObject jsonRegion = value.asJsonObject();
             Region region = parseRegion(jsonRegion);
             regions.netids.add(region.netid);
             regions.regions.add(region);
@@ -39,6 +40,7 @@ public class RegionsJSON {
      * Parse {@link gov.usgs.earthquake.qdm.Region} from a GeoJSON feature.
      *
      * @param json geojson feature.
+     * @return region
      */
     public Region parseRegion(final JsonObject json) {
         JsonObject properties = json.getJsonObject("properties");

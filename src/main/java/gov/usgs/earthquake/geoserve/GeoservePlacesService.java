@@ -14,10 +14,15 @@ import javax.json.JsonReader;
 
 import gov.usgs.util.StreamUtils;
 
+/**
+ * Access places from the Geoserve Places service.
+ */
 public class GeoservePlacesService {
   /** Default URL for GeoServe Places service. */
   public static final String DEFAULT_ENDPOINT_URL = "https://earthquake.usgs.gov/ws/geoserve/places.json";
+  /** Default connection timeout */
   public static final int DEFAULT_CONNECT_TIMEOUT = 300; // ms
+  /** Default read timeout */
   public static final int DEFAULT_READ_TIMEOUT = 1700; // ms
 
   /** Configured URL for GeoServe Places service. */
@@ -25,32 +30,58 @@ public class GeoservePlacesService {
   private int connectTimeout;
   private int readTimeout;
 
+  /** Default constructor */
   public GeoservePlacesService() {
     this(DEFAULT_ENDPOINT_URL, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);
   }
 
+  /**
+   * Constructor taking in endpointURL
+   * @param endpointUrl for places service
+   */
   public GeoservePlacesService(final String endpointUrl) {
     this(endpointUrl, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);
   }
 
+  /**
+   * Constructor taking in timeouts and using default endpoint URL
+   * @param connectTimeout in ms
+   * @param readTimeout in ms
+   */
   public GeoservePlacesService(final int connectTimeout, final int readTimeout) {
     this(DEFAULT_ENDPOINT_URL, connectTimeout, readTimeout);
   }
 
+  /**
+   * Custom constructor
+   * @param endpointUrl for Places service
+   * @param connectTimeout in ms
+   * @param readTimeout in ms
+   */
   public GeoservePlacesService(final String endpointUrl, final int connectTimeout, final int readTimeout) {
     this.setEndpointURL(endpointUrl);
     this.setConnectTimeout(connectTimeout);
     this.setReadTimeout(readTimeout);
   }
 
+  /** @return connectTimemout */
   public int getConnectTimeout() {
     return this.connectTimeout;
   }
 
+  /** @return endpointURL */
   public String getEndpointURL() {
     return this.endpointUrl;
   }
 
+  /**
+   * Find an event in the Places service via a latitude and longitude
+   * @param latitude of event
+   * @param longitude of event
+   * @return JSONObject of event
+   * @throws IOException on IO error
+   * @throws MalformedURLException or URL error
+   */
   public JsonObject getEventPlaces(BigDecimal latitude, BigDecimal longitude)
       throws IOException, MalformedURLException {
     final URL url = new URL(this.endpointUrl +
@@ -67,6 +98,14 @@ public class GeoservePlacesService {
     }
   }
 
+  /**
+   * Get nearest place to a latitude and longitude
+   * @param latitude of place
+   * @param longitude of place
+   * @return JSONObject of place
+   * @throws IOException on IO error
+   * @throws MalformedURLException on URL error
+   */
   public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude) throws IOException, MalformedURLException {
     JsonObject places = this.getEventPlaces(latitude, longitude);
     JsonObject feature = places.getJsonArray("features").getJsonObject(0);
@@ -74,18 +113,22 @@ public class GeoservePlacesService {
     return feature;
   }
 
+  /** @return readTimeout */
   public int getReadTimeout() {
     return this.readTimeout;
   }
 
+  /** @param connectTimeout int to set */
   public void setConnectTimeout(final int connectTimeout) {
     this.connectTimeout = connectTimeout;
   }
 
+  /** @param endpointUrl string to set */
   public void setEndpointURL(final String endpointUrl) {
     this.endpointUrl = endpointUrl;
   }
 
+  /** @param readTimeout int to set */
   public void setReadTimeout(final int readTimeout) {
     this.readTimeout = readTimeout;
   }

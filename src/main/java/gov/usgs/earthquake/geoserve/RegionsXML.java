@@ -20,6 +20,8 @@ public class RegionsXML {
 
     /**
      * Output ANSS Authoritative Regions in the legacy Regions XML format.
+     * @param regions ANSS Authoritative regions
+     * @return String on regions in an XML format
      */
     public String formatXML(final Regions regions) {
         StringBuffer xml = new StringBuffer(String.join("\n",
@@ -86,7 +88,9 @@ public class RegionsXML {
     /**
      * Parse regions from an XML input stream.
      *
-     * @throws Exception
+     * @param in input stream
+     * @throws Exception if error occurs
+     * @return Regions
      */
     public static Regions getRegions(final InputStream in) throws Exception {
         RegionsHandler regionsHandler = new RegionsHandler();
@@ -100,6 +104,9 @@ public class RegionsXML {
     /**
      * Download ANSS Authoritative regions from Geoserve,
      * and print to the screen in Regions XML format.
+     *
+     * @param args console arguments
+     * @throws Exception if error occurs
      */
     public static void main(final String[] args) throws Exception {
         Regions regions = ANSSRegionsFactory.getFactory().getRegions();

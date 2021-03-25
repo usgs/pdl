@@ -55,15 +55,21 @@ import org.quakeml_1_2.EvaluationStatus;
  */
 public class QuakemlProductCreator implements ProductCreator {
 
+	/** For use in logging issues */
 	public static final Logger LOGGER = Logger
 			.getLogger(QuakemlProductCreator.class.getName());
 
+	/** Content type for xml */
 	public static final String XML_CONTENT_TYPE = "application/xml";
+	/** Content path for quakeml */
 	public static final String QUAKEML_CONTENT_PATH = "quakeml.xml";
+	/** Contents XML path */
 	public static final String CONTENTS_XML_PATH = "contents.xml";
 
+	/** Var for number of meters/kilometer... */
 	public static final BigDecimal METERS_PER_KILOMETER = new BigDecimal("1000");
 
+	/** Version */
 	public static final String VERSION = "1.0";
 
 	/**
@@ -91,19 +97,36 @@ public class QuakemlProductCreator implements ProductCreator {
 
 	private boolean padForBase64Bug = false;
 
+	/** Default Constructor */
 	public QuakemlProductCreator() {
 		super();
 	}
 
+	/**
+	 * Constructor taking in argument for Base64 bug padding
+	 * @param padForBase64Bug Boolean if needed to pad
+	 */
 	public QuakemlProductCreator(boolean padForBase64Bug) {
 		this.padForBase64Bug = padForBase64Bug;
 	}
 
+	/**
+	 * Gets Quakeml products with no rawQuakeml
+	 * @param message Parsed quakeml message
+	 * @return List of products
+	 * @throws Exception if error occurs
+	 */
 	public List<Product> getQuakemlProducts(final Quakeml message)
 			throws Exception {
 		return getQuakemlProducts(message, null);
 	}
 
+	/**
+	 * Gets Quakeml products with the message as a rawQuakeml
+	 * @param message Parsed quakeml message
+	 * @return List of products
+	 * @throws Exception if error occurs
+	 */
 	public List<Product> getQuakemlProducts(final String message)
 			throws Exception {
 		Quakeml quakeml = formatConverter.getQuakeml(message, validate);
@@ -121,7 +144,7 @@ public class QuakemlProductCreator implements ProductCreator {
 	 *            original input, instead of always serializing from the quakeml
 	 *            object.
 	 * @return list of products generated from quakeml message.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public List<Product> getQuakemlProducts(final Quakeml message,
 			final String rawQuakeml) throws Exception {
@@ -177,7 +200,7 @@ public class QuakemlProductCreator implements ProductCreator {
 	 * @param event
 	 *            the internal event element.
 	 * @return list of internal products found in event element, may be empty.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public List<Product> getInternalEventProducts(final Quakeml message,
 			final InternalEvent event) throws Exception {
@@ -201,7 +224,7 @@ public class QuakemlProductCreator implements ProductCreator {
 	 * @param event
 	 *            the scenario event element.
 	 * @return list of scenario products found in event element, may be empty.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public List<Product> getScenarioEventProducts(final Quakeml message,
 			final ScenarioEvent event) throws Exception {
@@ -222,7 +245,7 @@ public class QuakemlProductCreator implements ProductCreator {
 	 * @param event
 	 *            the event element in the quakeml message.
 	 * @return list of products found in event element, may be empty.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public List<Product> getEventProducts(final Quakeml message, Event event)
 			throws Exception {
@@ -531,6 +554,13 @@ public class QuakemlProductCreator implements ProductCreator {
 		return products;
 	}
 
+	/**
+	 * @param quakeml Quakeml
+	 * @param event the event element in the quakeml message
+	 * @param mech A focal mechanism
+	 * @param quakemlContent String of content in Quakeml
+	 * @return A product derived from a focal mechanism
+	 */
 	protected Product getFocalMechanismProduct(final Quakeml quakeml,
 			final Event event, final FocalMechanism mech,
 			final String quakemlContent) {
@@ -744,11 +774,24 @@ public class QuakemlProductCreator implements ProductCreator {
 		return product;
 	}
 
+	/**
+	 * setProperty for RealQuantity values. No exponentials
+	 * @param properties to add
+	 * @param name of property
+	 * @param value of property
+	 */
 	public void setProperty(final Map<String, String> properties,
 			final String name, final RealQuantity value) {
 		setProperty(properties, name, value, false);
 	}
 
+	/**
+	 * setProperty for RealQuantity values
+	 * @param properties to add
+	 * @param name of property
+	 * @param value of property
+	 * @param allowExponential if allowed
+	 */
 	public void setProperty(final Map<String, String> properties,
 			final String name, final RealQuantity value,
 			final boolean allowExponential) {
@@ -759,6 +802,12 @@ public class QuakemlProductCreator implements ProductCreator {
 		setProperty(properties, name, value.getValue(), allowExponential);
 	}
 
+	/**
+	 * setProperty for strings
+	 * @param properties to add
+	 * @param name of property
+	 * @param value of property
+	 */
 	public void setProperty(final Map<String, String> properties,
 			final String name, final String value) {
 		if (value == null) {
@@ -768,6 +817,12 @@ public class QuakemlProductCreator implements ProductCreator {
 		properties.put(name, value);
 	}
 
+	/**
+	 * setProperty for TimeQuantities
+	 * @param properties to add
+	 * @param name of property
+	 * @param value of property
+	 */
 	public void setProperty(final Map<String, String> properties,
 			final String name, final TimeQuantity value) {
 		if (value == null) {
@@ -777,11 +832,24 @@ public class QuakemlProductCreator implements ProductCreator {
 		properties.put(name, XmlUtils.formatDate(value.getValue()));
 	}
 
+	/**
+	 * setProperty taking in BigDecimals. No exponentials
+	 * @param properties to add
+	 * @param name of property
+	 * @param value of property
+	 */
 	public void setProperty(final Map<String, String> properties,
 			final String name, final BigDecimal value) {
 		setProperty(properties, name, value, false);
 	}
 
+	/**
+	 * setProperty taking in BigDecimals
+	 * @param properties to add
+	 * @param name of property
+	 * @param value of property
+	 * @param allowExponential boolean
+	 */
 	public void setProperty(final Map<String, String> properties,
 			final String name, final BigDecimal value,
 			final boolean allowExponential) {
@@ -793,6 +861,12 @@ public class QuakemlProductCreator implements ProductCreator {
 				: value.toPlainString());
 	}
 
+	/**
+	 * setProperty taking in BigIntegers. No exponentials
+	 * @param properties to add
+	 * @param name of property
+	 * @param value of property
+	 */
 	public void setProperty(final Map<String, String> properties,
 			final String name, final BigInteger value) {
 		if (value == null) {
@@ -802,6 +876,12 @@ public class QuakemlProductCreator implements ProductCreator {
 		properties.put(name, value.toString());
 	}
 
+	/**
+	 * setProperty taking in Integers
+	 * @param properties to add
+	 * @param name of property
+	 * @param value of property
+	 */
 	public void setProperty(final Map<String, String> properties,
 			final String name, final Integer value) {
 		if (value == null) {
@@ -811,10 +891,12 @@ public class QuakemlProductCreator implements ProductCreator {
 		properties.put(name, value.toString());
 	}
 
+	/** @param converter FileToQuakeml Converter to set */
 	public void setConverter(FileToQuakemlConverter converter) {
 		this.converter = converter;
 	}
 
+	/** @return FileToQuakeml converter */
 	public FileToQuakemlConverter getConverter() {
 		return converter;
 	}
@@ -844,6 +926,9 @@ public class QuakemlProductCreator implements ProductCreator {
 		}
 	}
 
+	/**
+	 * @return XML contents
+	 */
 	protected Content getContentsXML() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("<?xml version=\"1.0\"?>\n");
@@ -860,27 +945,33 @@ public class QuakemlProductCreator implements ProductCreator {
 		return content;
 	}
 
+	/** @return boolean sendOriginWhenPhasesExist */
 	public boolean isSendOriginWhenPhasesExist() {
 		return sendOriginWhenPhasesExist;
 	}
 
+	/** @param sendOriginWhenPhasesExist boolean to set */
 	public void setSendOriginWhenPhasesExist(boolean sendOriginWhenPhasesExist) {
 		this.sendOriginWhenPhasesExist = sendOriginWhenPhasesExist;
 	}
 
+	/** @param sendMechanismWhenPhasesExist boolean to set */
 	public void setSendMechanismWhenPhasesExist(
 			boolean sendMechanismWhenPhasesExist) {
 		this.sendMechanismWhenPhasesExist = sendMechanismWhenPhasesExist;
 	}
 
+	/** @return sendMechanismWhenPhasesExist boolean */
 	public boolean isSendMechanismWhenPhasesExist() {
 		return sendMechanismWhenPhasesExist;
 	}
 
+	/** @param padForBase64Bug to set */
 	public void setPadForBase64Bug(boolean padForBase64Bug) {
 		this.padForBase64Bug = padForBase64Bug;
 	}
 
+	/** @return padForBase64Bug */
 	public boolean isPadForBase64Bug() {
 		return padForBase64Bug;
 	}
@@ -917,7 +1008,7 @@ public class QuakemlProductCreator implements ProductCreator {
 	 *
 	 * @param args
 	 *            a list of files to convert from quakeml to products.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public static void main(final String[] args) throws Exception {
 		QuakemlProductCreator creator = new QuakemlProductCreator();

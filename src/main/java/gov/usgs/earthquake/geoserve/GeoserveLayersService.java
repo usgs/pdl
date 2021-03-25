@@ -31,7 +31,7 @@ public class GeoserveLayersService {
 
     /**
      * Create a service using a custom URL.
-     * 
+     *
      * @param endpointUrl layers service URL.
      *       Should contain the string <code>{type}</code>,
      *       which is replaced during the #{@link #getLayer(String)}.
@@ -42,6 +42,7 @@ public class GeoserveLayersService {
 
     /**
      * Get the endpoint URL.
+     * @return endpoint URL
      */
     public String getEndpointURL() {
         return this.endpointUrl;
@@ -49,6 +50,7 @@ public class GeoserveLayersService {
 
     /**
      * Set the endpoint URL.
+     * @param url endpoint URL to set
      */
     public void setEndpointURL(final String url) {
         this.endpointUrl = url;
@@ -56,6 +58,10 @@ public class GeoserveLayersService {
 
     /**
      * Fetch and parse a JSON response from the Geoserve layers service.
+     * @param type type of response to fetch
+     * @return JSONObject response
+     * @throws IOException on IO error
+     * @throws MalformedURLException Error on URL failure
      */
     public JsonObject getLayer(final String type) throws IOException, MalformedURLException {
         final URL url = new URL(endpointUrl.replace("{type}", type));

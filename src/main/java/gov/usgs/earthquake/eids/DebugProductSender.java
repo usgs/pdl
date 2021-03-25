@@ -12,6 +12,7 @@ import gov.usgs.util.StreamUtils;
  */
 public class DebugProductSender extends DefaultConfigurable implements ProductSender {
 
+	/** Constructor */
 	public DebugProductSender() {
 		setName("debug_sender");
 	}

@@ -17,20 +17,35 @@ import gov.usgs.ansseqmsg.EQMessage;
  */
 public class LegacyConverter {
 
+	/** Different format types */
 	public static enum Format {
-		CUBE, EQXML, QUAKEML
+		/** Enum for Cube Format */
+		CUBE,
+		/** Enum for EQXML Format */
+		EQXML,
+		/** Enum for QUAKEML Format */
+		QUAKEML
 	};
 
+	/** Cube Format */
 	public static final Format CUBE = Format.CUBE;
+	/** EQXML Format */
 	public static final Format EQXML = Format.EQXML;
+	/** QUAKEML Format */
 	public static final Format QUAKEML = Format.QUAKEML;
 
+	/** Path to EQXML content */
 	public static final String EQXML_CONTENT_PATH = "eqxml.xml";
+	/** Path to Quakeml content */
 	public static final String QUAKEML_CONTENT_PATH = "quakeml.xml";
 
 	private final Format outputFormat;
 	private final Converter converter;
 
+	/**
+	 * Constructor
+	 * @param outputFormat format you want to switch to
+	 */
 	public LegacyConverter(final Format outputFormat) {
 		this.outputFormat = outputFormat;
 		this.converter = new Converter();
@@ -60,12 +75,12 @@ public class LegacyConverter {
 	/**
 	 * Handles conversion from a product containing either eqxml or quakeml
 	 * contents to either eqxml, quakeml, or cube byte array.
-	 * 
+	 *
 	 * @param product
 	 *            the product object to convert.
 	 * @return byte array containing the output format, or null if unable to
 	 *         convert.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public byte[] convert(final Product product) throws Exception {
 		Map<String, Content> contents = product.getContents();
@@ -89,12 +104,12 @@ public class LegacyConverter {
 	/**
 	 * Handles conversion from an eqxml to either eqxml, quakeml, or cube byte
 	 * array.
-	 * 
+	 *
 	 * @param eqxml
 	 *            the eqxml object to convert.
 	 * @return byte array containing output format, or null if unable to
 	 *         convert.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public byte[] convert(EQMessage eqxml) throws Exception {
 		if (eqxml == null) {
@@ -120,12 +135,12 @@ public class LegacyConverter {
 	/**
 	 * Handles conversion from a quakeml message to either eqxml, quakeml, or
 	 * cube byte array.
-	 * 
+	 *
 	 * @param quakeml
 	 *            the quakeml object to convert.
 	 * @return byte array containing output format, or null if unable to
 	 *         convert.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public byte[] convert(Quakeml quakeml) throws Exception {
 		if (quakeml == null) {
@@ -151,12 +166,12 @@ public class LegacyConverter {
 	/**
 	 * Handles conversion from a cube message to either eqxml, quakeml, or cube
 	 * byte array.
-	 * 
+	 *
 	 * @param cube
 	 *            the cube object to convert.
 	 * @return byte array containing output format, or null if unable to
 	 *         convert.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public byte[] convert(CubeMessage cube) throws Exception {
 		if (cube == null) {
