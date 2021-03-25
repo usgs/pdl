@@ -31,8 +31,8 @@ public class QuakemlUtils {
 	 * If a quakeml event object does not exist, check for the first internal or
 	 * scenario event.
 	 *
-	 * @param eventParameters
-	 * @return
+	 * @param eventParameters to find event from
+	 * @return first event
 	 */
 	public static Event getFirstEvent(final EventParameters eventParameters) {
 		// only process first event
@@ -61,7 +61,7 @@ public class QuakemlUtils {
 	/**
 	 * Find the preferred Origin in an Event.
 	 *
-	 * @param event
+	 * @param event event
 	 * @return Origin with publicID equal to event.getPreferredOriginID(), or null
 	 *         if not found.
 	 */
@@ -147,7 +147,7 @@ public class QuakemlUtils {
 	 * Flatten multiple creation info objects, but using the most specific (at end
 	 * of list) value that is not null.
 	 *
-	 * @param infos
+	 * @param infos to flatten
 	 * @return a CreationInfo object with the most specific properties (later in
 	 *         arguments list), which may be null.
 	 */
@@ -185,7 +185,7 @@ public class QuakemlUtils {
 	}
 
 	/**
-	 * @param value
+	 * @param value RealQuantity
 	 * @return value.getValue(), or null if value == null.
 	 */
 	public static BigDecimal getValue(final RealQuantity value) {
@@ -197,7 +197,7 @@ public class QuakemlUtils {
 	}
 
 	/**
-	 * @param value
+	 * @param value IntegerQuantity
 	 * @return value.getValue(), or null if value == null.
 	 */
 	public static BigInteger getValue(final IntegerQuantity value) {
@@ -209,7 +209,7 @@ public class QuakemlUtils {
 	}
 
 	/**
-	 * @param value
+	 * @param value TimeQuantity
 	 * @return value.getValue(), or null if value == null.
 	 */
 	public static Date getValue(final TimeQuantity value) {
@@ -220,6 +220,9 @@ public class QuakemlUtils {
 		}
 	}
 
+	/**
+	 * @param magnitudeType to return
+	 * @return MagntitudeType string */
 	public static String getMagnitudeType(final String magnitudeType) {
 		if (magnitudeType == null) {
 			return null;
@@ -428,7 +431,7 @@ public class QuakemlUtils {
 	 *
 	 * omits anies, events, and other attributes.
 	 *
-	 * @param oldEventParameters
+	 * @param oldEventParameters to copy
 	 * @return a new EventParameters object.
 	 */
 	public static EventParameters shallowClone(final EventParameters oldEventParameters) {
@@ -446,7 +449,7 @@ public class QuakemlUtils {
 	 * omits amplitudes, anies, event descriptions, mechanisms, magnitudes, origins,
 	 * other attributes, picks, preferred*ID, and station magnitudes.
 	 *
-	 * @param oldEvent
+	 * @param oldEvent to copy
 	 * @return a new Event object.
 	 */
 	public static Event shallowClone(final Event oldEvent) {
@@ -468,7 +471,7 @@ public class QuakemlUtils {
 	 *
 	 * omits anies, arrivals, and other attributes.
 	 *
-	 * @param oldOrigin
+	 * @param oldOrigin to copy
 	 * @return a new Origin object.
 	 */
 	public static Origin shallowClone(final Origin oldOrigin) {
@@ -505,7 +508,7 @@ public class QuakemlUtils {
 	 *
 	 * omits anies, other attributes, and station magnitude contributions.
 	 *
-	 * @param oldMagnitude
+	 * @param oldMagnitude to copy
 	 * @return a new Magnitude object.
 	 */
 	public static Magnitude shallowClone(final Magnitude oldMagnitude) {
@@ -533,7 +536,7 @@ public class QuakemlUtils {
 	 *
 	 * omits anies, other attributes.
 	 *
-	 * @param oldMech
+	 * @param oldMech to copy
 	 * @return a new FocalMechanism object.
 	 */
 	public static FocalMechanism shallowClone(final FocalMechanism oldMech) {

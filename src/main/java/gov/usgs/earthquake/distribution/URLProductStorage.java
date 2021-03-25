@@ -28,6 +28,7 @@ import java.util.logging.Logger;
  */
 public class URLProductStorage extends FileProductStorage {
 
+	/** Different types of formats */
 	public enum Format {
 		/** Enum for BINARY/bin format */
 		BINARY("bin"),

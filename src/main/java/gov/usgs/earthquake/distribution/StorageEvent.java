@@ -20,7 +20,9 @@ public class StorageEvent extends EventObject {
 	public static final StorageEventType PRODUCT_REMOVED = StorageEventType.PRODUCT_REMOVED;
 
 	private static final long serialVersionUID = 0x019A1A8BL;
+	/** The product ID */
 	private ProductId id = null;
+	/** The StorageEventType */
 	private StorageEventType type = null;
 
 	/**

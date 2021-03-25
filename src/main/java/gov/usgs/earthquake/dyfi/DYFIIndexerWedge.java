@@ -16,9 +16,11 @@ public class DYFIIndexerWedge extends ExternalNotificationListener {
 	private static final Logger LOGGER = Logger
 			.getLogger("gov.usgs.earthquake.dyfi.DYFIIndexerWedge");
 
+	/** Property for baseDirectory */
 	public static final String BASE_DIRECTORY_PROPERTY = "baseDirectory";
 	private String baseDirectory = null;
 
+	/** Constructor */
 	public DYFIIndexerWedge() {
 		getIncludeTypes().add("dyfi");
 	}
@@ -27,10 +29,10 @@ public class DYFIIndexerWedge extends ExternalNotificationListener {
 	 * Builds the command to index the product. Just appends the relative
 	 * product directory (from the DYFILegacyStorage) to the configured index
 	 * command.
-	 * 
+	 *
 	 * @param product
 	 *            the Product used to build the indexing command.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	@Override
 	public String getProductCommand(final Product product) throws Exception {
