@@ -16,20 +16,28 @@ public class EIDSOutputWedge extends DefaultNotificationListener {
 	private static final Logger LOGGER = Logger
 			.getLogger(EIDSOutputWedge.class.getName());
 
+	/** String for output type of EQXML */
 	public static final String OUTPUT_TYPE_EQXML = "eqxml.xml";
+	/** String for output type of quakeml */
 	public static final String OUTPUT_TYPE_QUAKEML = "quakeml.xml";
+	/** String for output type of cube */
 	public static final String OUTPUT_TYPE_CUBE = "cube.txt";
 
-	// Config keys
+	/** Property for output directory */
 	public static final String OUTPUT_DIRECTORY_PROPERTY = "directory";
+	/** Property for temp directory */
 	public static final String TEMP_DIRECTORY_PROPERTY = "tempDirectory";
+	/** Property for file name */
 	public static final String FILE_NAME_PROPERTY = "contentFile";
+	/** Property for output format */
 	public static final String OUTPUT_FORMAT_PROPERTY = "outputFormat";
 
-	// Defaults
+	/** Default output directory */
 	public static final File DEFAULT_DIRECTORY = new File("outputdir");
+	/** Default temp directory */
 	public static final File DEFAULT_TEMP_DIRECTORY = new File(
 			System.getProperty("java.io.tmpdir"));
+	/** Sets default output format to cube.txt */
 	public static final String DEFAULT_OUTPUT_FORMAT = OUTPUT_TYPE_CUBE;
 
 	// Local Variables
@@ -41,7 +49,7 @@ public class EIDSOutputWedge extends DefaultNotificationListener {
 
 	/**
 	 * Create a new EIDSOutputWedge.
-	 * 
+	 *
 	 * Sets up the includeTypes list to contain "origin". Override this if you
 	 * want the behavior to extend past origin products.
 	 */
@@ -52,8 +60,8 @@ public class EIDSOutputWedge extends DefaultNotificationListener {
 
 	/**
 	 * Receive a product from Product Distribution.
-	 * 
-	 * @param product
+	 *
+	 * @param product A product
 	 */
 	@Override
 	public void onProduct(final Product product) throws Exception {
@@ -85,7 +93,7 @@ public class EIDSOutputWedge extends DefaultNotificationListener {
 	/**
 	 * Writes the content of the file you wish to extract to disk with a unique
 	 * name and at the directory specified in configuration
-	 * 
+	 *
 	 * @param data
 	 * @throws Exception
 	 */
@@ -108,32 +116,37 @@ public class EIDSOutputWedge extends DefaultNotificationListener {
 		FileUtils.writeFileThenMove(srcFile, destFile, data);
 	}
 
-	// Getters
+	/** @return directory */
 	public File getDirectory() {
 		return directory;
 	}
 
+	/** @return tempDirectory */
 	public File getTempDirectory() {
 		return tempDirectory;
 	}
 
+	/** @return outputFormat */
 	public String getOutputFormat() {
 		return outputFormat;
 	}
 
+	/** @return legacy converter */
 	public LegacyConverter getConverter() {
 		return converter;
 	}
 
-	// Setters
+	/** @param directory file to set */
 	public void setDirectory(File directory) {
 		this.directory = directory;
 	}
 
+	/** @param tempDirectory file to set */
 	public void setTempDirectory(File tempDirectory) {
 		this.tempDirectory = tempDirectory;
 	}
 
+	/** @param outputFormat string to set */
 	public void setOutputFormat(String outputFormat) {
 		if (outputFormat.equals(OUTPUT_TYPE_EQXML)) {
 			converter = LegacyConverter.eqxmlConverter();

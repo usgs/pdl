@@ -48,7 +48,7 @@ import gov.usgs.util.XmlUtils;
 
 /**
  * Convert EQXML messages to Products.
- * 
+ *
  * <p>
  * Product source is EQMessage/Source.
  * </p>
@@ -64,7 +64,7 @@ import gov.usgs.util.XmlUtils;
  * <p>
  * Product updateTime is EQMessage/Sent.
  * </p>
- * 
+ *
  * <p>
  * Origin properties appear only on origin type products. Magnitude properties
  * appear on both magnitude and origin products.
@@ -75,10 +75,12 @@ public class EQMessageProductCreator implements ProductCreator {
 	private static final Logger LOGGER = Logger
 			.getLogger(EQMessageProductCreator.class.getName());
 
+	/** Static var for the xml content type */
 	public static final String XML_CONTENT_TYPE = "application/xml";
 
 	/** Path to content where source message is stored in created product. */
 	public static final String EQMESSAGE_CONTENT_PATH = "eqxml.xml";
+	/** Path to contests xml */
 	public static final String CONTENTS_XML_PATH = "contents.xml";
 
 	/**
@@ -123,13 +125,13 @@ public class EQMessageProductCreator implements ProductCreator {
 
 	/**
 	 * Get all the products contained in an EQMessage.
-	 * 
+	 *
 	 * Same as getEQMessageProducts(message, null).
-	 * 
+	 *
 	 * @param message
 	 *            the EQMessage containing products.
 	 * @return a list of created products.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public synchronized List<Product> getEQMessageProducts(
 			final EQMessage message) throws Exception {
@@ -138,16 +140,16 @@ public class EQMessageProductCreator implements ProductCreator {
 
 	/**
 	 * Get all the products contained in an EQMessage.
-	 * 
+	 *
 	 * Parses rawEqxml string into an EQMessage, but preserves raw eqxml in
 	 * created products.
-	 * 
+	 *
 	 * Same as getEQMessageProducts(EQMessageParser.parse(rawEqxml), rawEqxml);
-	 * 
+	 *
 	 * @param rawEqxml
 	 *            the raw EQXML message.
 	 * @return a list of created products.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public synchronized List<Product> getEQMessageProducts(final String rawEqxml)
 			throws Exception {
@@ -157,14 +159,14 @@ public class EQMessageProductCreator implements ProductCreator {
 
 	/**
 	 * Get all the products contained in an EQMessage.
-	 * 
+	 *
 	 * @param message
 	 *            the EQMessage containing products.
 	 * @param rawEqxml
 	 *            the raw EQXML message. When null, an EQXML message is
 	 *            serialized from the object.
 	 * @return a list of created products.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public synchronized List<Product> getEQMessageProducts(
 			final EQMessage message, final String rawEqxml) throws Exception {
@@ -209,11 +211,11 @@ public class EQMessageProductCreator implements ProductCreator {
 
 	/**
 	 * Get products from an event.
-	 * 
+	 *
 	 * @param event
 	 *            the event containing products.
 	 * @return a list of created products.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected synchronized List<Product> getEventProducts(final Event event)
 			throws Exception {
@@ -268,14 +270,16 @@ public class EQMessageProductCreator implements ProductCreator {
 
 	/**
 	 * Get origin product(s).
-	 * 
+	 *
 	 * This implementation only creates one origin (the first one) regardless of
 	 * how many origins are provided.
-	 * 
+	 *
 	 * @param origins
 	 *            the list of origins.
+	 * @param event
+	 *            A specific event
 	 * @return a list of created products.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected synchronized List<Product> getOriginProducts(
 			final List<Origin> origins, final Event event) throws Exception {
@@ -447,9 +451,9 @@ public class EQMessageProductCreator implements ProductCreator {
 
 	/**
 	 * Build magnitude products.
-	 * 
+	 *
 	 * This implementation builds at most one magnitude product (the first).
-	 * 
+	 *
 	 * @param magnitudes
 	 *            a list of candidate magsnitude objects.
 	 * @return a list of built magnitude products, which may be empty.
@@ -502,6 +506,11 @@ public class EQMessageProductCreator implements ProductCreator {
 		return products;
 	}
 
+	/**
+	 * Gets a list of Focal Mechanism products from momentTensors
+	 * @param momentTensors List of Moment Tensors
+	 * @return a list of products
+	 */
 	protected synchronized List<Product> getFocalMechanismProducts(
 			final List<MomentTensor> momentTensors) {
 		List<Product> products = new LinkedList<Product>();
@@ -639,12 +648,11 @@ public class EQMessageProductCreator implements ProductCreator {
 
 	/**
 	 * Get product(s) from a ProductLink object.
-	 * 
-	 * 
+	 *
 	 * @param link
 	 *            the link object.
 	 * @return a list of found products.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected synchronized List<Product> getProductLinkProducts(
 			final ProductLink link) throws Exception {
@@ -690,11 +698,11 @@ public class EQMessageProductCreator implements ProductCreator {
 
 	/**
 	 * Get product(s) from a Comment object.
-	 * 
+	 *
 	 * @param comment
 	 *            the comment object.
 	 * @return a list of found products.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected synchronized List<Product> getCommentProducts(
 			final Comment comment) throws Exception {
@@ -738,11 +746,11 @@ public class EQMessageProductCreator implements ProductCreator {
 
 	/**
 	 * Build a product skeleton based on the current state.
-	 * 
+	 *
 	 * Product type is : [internal-](origin,magnitude,addon)[-(scenario|test)]
 	 * where the optional scope is not "Public", and the optional usage is not
 	 * "Actual".
-	 * 
+	 *
 	 * @param type
 	 *            short product type, like "origin", "magnitude".
 	 * @param action
@@ -829,6 +837,9 @@ public class EQMessageProductCreator implements ProductCreator {
 		return product;
 	}
 
+	/**
+	 * @return a buffer of XML content
+	 */
 	protected Content getContentsXML() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("<?xml version=\"1.0\"?>\n");
@@ -851,12 +862,12 @@ public class EQMessageProductCreator implements ProductCreator {
 
 	/**
 	 * Extract a CUBE_Code from a Comment.
-	 * 
+	 *
 	 * This is the ISTI convention for preserving CUBE information in EQXML
 	 * messages. Checks a list of Comment objects for one with
 	 * TypeKey="CUBE_Code" and Text="CUBE_Code X", where X is the returned cube
 	 * code.
-	 * 
+	 *
 	 * @param comments
 	 *            the list of comments.
 	 * @return the cube code, or null if not found.
@@ -878,10 +889,14 @@ public class EQMessageProductCreator implements ProductCreator {
 		return cubeCode;
 	}
 
+	/**
+	 * @return boolean sendOriginWhenPhasesExist
+	 */
 	public boolean isSendOriginWhenPhasesExist() {
 		return sendOriginWhenPhasesExist;
 	}
 
+	/** @param sendOriginWhenPhasesExist boolean to set */
 	public void setSendOriginWhenPhasesExist(boolean sendOriginWhenPhasesExist) {
 		this.sendOriginWhenPhasesExist = sendOriginWhenPhasesExist;
 	}
@@ -945,34 +960,45 @@ public class EQMessageProductCreator implements ProductCreator {
 		return this.getEQMessageProducts(eqxml, rawEqxml);
 	}
 
+	/** Type for general text */
 	public static final String GENERAL_TEXT_TYPE = "general-text";
+	/** Empty string array for general text addons */
 	public static final String[] GENERAL_TEXT_ADDONS = new String[] {};
 
+	/** Type for scitech text */
 	public static final String SCITECH_TEXT_TYPE = "scitech-text";
+	/** Empty string array for scitech text addons */
 	public static final String[] SCITECH_TEXT_ADDONS = new String[] {};
 
+	/** Type for impact text */
 	public static final String IMPACT_TEXT_TYPE = "impact-text";
+	/** String array for impact text addons */
 	public static final String[] IMPACT_TEXT_ADDONS = new String[] { "feltreports" };
 
 	/** Selected link type products have a mapping. */
 	public static final String GENERAL_LINK_TYPE = "general-link";
+	/** String array for general link addons */
 	public static final String[] GENERAL_LINK_ADDONS = new String[] {
 			"aftershock", "afterwarn", "asw", "generalmisc" };
 
+	/** Type for scitech link */
 	public static final String SCITECH_LINK_TYPE = "scitech-link";
+	/** String array for scitech link */
 	public static final String[] SCITECH_LINK_ADDONS = new String[] { "energy",
 			"focalmech", "ncfm", "histmomenttensor", "finitefault",
 			"momenttensor", "mtensor", "phase", "seiscrosssec", "seisrecsec",
 			"traveltimes", "waveform", "seismograms", "scitechmisc" };
 
+	/** Type for impact link */
 	public static final String IMPACT_LINK_TYPE = "impact-link";
+	/** String array for impact link */
 	public static final String[] IMPACT_LINK_ADDONS = new String[] {
 			"tsunamilinks", "impactmisc" };
 
 	/**
 	 * Map from cube style link addon to product type.
-	 * 
-	 * @param addonType
+	 *
+	 * @param addonType String to find correct link type
 	 * @return null if link should not be converted to a product.
 	 */
 	public String getLinkAddonProductType(final String addonType) {
@@ -1001,8 +1027,8 @@ public class EQMessageProductCreator implements ProductCreator {
 
 	/**
 	 * Map from cube style text addon to product type.
-	 * 
-	 * @param addonType
+	 *
+	 * @param addonType to find correct addon type
 	 * @return null if comment should not be converted to a product.
 	 */
 	public String getTextAddonProductType(final String addonType) {

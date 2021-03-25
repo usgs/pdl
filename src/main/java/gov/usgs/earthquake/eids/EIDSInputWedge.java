@@ -55,28 +55,42 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 	private static final Logger LOGGER = Logger.getLogger(EIDSInputWedge.class
 			.getName());
 
+	/** Property for parser class */
 	public static final String PARSER_CLASS_PROPERTY = "parserClass";
+	/** Default parser class */
 	public static final String DEFAULT_PARSER_CLASS = "gov.usgs.earthquake.event.QuakemlToQuakemlConverter";
 
+	/** Property for polldir */
 	public static final String POLLDIR_PROPERTY = "directory";
+	/** Default polldir */
 	public static final String DEFAULT_POLLDIR = "polldir";
 	private File polldir = new File(DEFAULT_POLLDIR);
 
+	/** Property for storage directory */
 	public static final String STORAGEDIR_PROPERTY = "oldinputdir";
+	/** Default storage directory */
 	public static final String DEFAULT_STORAGEDIR = "oldinput";
 	private File storagedir = new File(DEFAULT_STORAGEDIR);
 
+	/** Property for error directory */
 	public static final String ERRORDIR_PROPERTY = "errordir";
+	/** Default error directory */
 	public static final String DEFAULT_ERRORDIR = "errordir";
 	private File errordir = new File(DEFAULT_ERRORDIR);
 
+	/** Property for validate */
 	public static final String VALIDATE_PROPERTY = "validate";
+	/** Default status of validate */
 	public static final String DEFAULT_VALIDATE = "false";
 
+	/** Property for sendOriginWhenPhasesExist */
 	public static final String SEND_ORIGIN_WHEN_PHASES_EXIST_PROPERTY = "sendOriginWhenPhasesExist";
+	/** Default status of sendOrigin...  */
 	public static final String DEFAULT_SEND_ORIGIN_WHEN_PHASES_EXIST = "false";
 
+	/** Property for sendMechanismWhenPhasesExist */
 	public static final String SEND_MECHANISM_WHEN_PHASES_EXIST_PROPERTY = "sendMechanismWhenPhasesExist";
+	/** Default status of sendMechanism... */
 	public static final String DEFAULT_SEND_MECHANISM_WHEN_PHASES_EXIST = "false";
 
 	/** Convert parsed quakeml to a product. */
@@ -84,34 +98,56 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 
 	/** Whether created products should be converted to internal types. */
 	public static final String CREATE_INTERNAL_PRODUCTS_PROPERTY = "createInternalProducts";
+	/** Default status of CREATE_INTERNAL_PRODUCTS */
 	public static final String DEFAULT_CREATE_INTERNAL_PRODUCTS = "false";
 	private boolean createInternalProducts = false;
 
 	/** Whether created products should be converted to scenario types. */
 	public static final String CREATE_SCENARIO_PRODUCTS_PROPERTY = "createScenarioProducts";
+	/** Default status of CREATE_SCENARIO_PRODUCTS */
 	public static final String DEFAULT_CREATE_SCENARIO_PRODUCTS = "false";
 	private boolean createScenarioProducts = false;
 
 	/** Directory polling object. */
 	private DirectoryPoller directoryPoller;
 
+	/** Poll interval property */
 	public static final String POLLINTERVAL_PROPERTY = "interval";
+	/** Default interval for POLLINTERVAL */
 	public static final String DEFAULT_POLLINTERVAL = "1000";
 	private long pollInterval = 1000L;
 
+	/** Property for pollCarefully */
 	public static final String POLL_CAREFULLY_PROPERTY = "pollCarefully";
+	/** Default status of POLL_CAREFULLY */
 	public static final String DEFAULT_POLL_CAREFULLY = "false";
 	private boolean pollCarefully = false;
 
+	/** Property for doBufferFix */
 	public static final String DO_BUFFER_FIX_PROPERTY = "doBufferFix";
+	/** Default status of DO_BUFFER_FIX property */
 	public static final String DEFAULT_DO_BUFFER_FIX = "true";
 	private boolean doBufferFix = true;
 
 	private Thread pollThread = null;
 
+	/**
+	 * Empty constructor
+	 * @throws Exception if error occurs
+	 */
 	public EIDSInputWedge() throws Exception {
 	}
 
+	/**
+	 * Gets products from file and iterates through each product
+	 * During iteration, sets type to internal/scenario if createInternalProducts
+	 * or createScenarioProducts is true. Attaches Content files to product,
+	 * Sends product
+	 * @param file File containing products
+	 * @param attachContent Map of String and Content
+	 * @return Map of product IDs and sent products
+	 * @throws Exception if error occurs
+	 */
 	public Map<ProductId, Map<ProductSender, Exception>> parseAndSend(
 			final File file, final Map<String, Content> attachContent)
 			throws Exception {
@@ -148,6 +184,10 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 		return sendProductResults;
 	}
 
+	/**
+	 * Parses given file, looking for send exceptions and reports statistics
+	 * @param file to parse and look for errors
+	 */
 	public void onFile(File file) {
 		Date inputtime = new Date();
 		LOGGER.info("Reading file " + file.getName());
@@ -346,58 +386,72 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 		}
 	}
 
+	/** @return polldir */
 	public File getPolldir() {
 		return polldir;
 	}
 
+	/** @param polldir File to set */
 	public void setPolldir(File polldir) {
 		this.polldir = polldir;
 	}
 
+	/** @return storagedir */
 	public File getStoragedir() {
 		return storagedir;
 	}
 
+	/** @param storagedir File to set */
 	public void setStoragedir(File storagedir) {
 		this.storagedir = storagedir;
 	}
 
+	/** @return errordir */
 	public File getErrordir() {
 		return errordir;
 	}
 
+	/** @param errordir File to send */
 	public void setErrordir(File errordir) {
 		this.errordir = errordir;
 	}
 
+	/** @return productCreator */
 	public ProductCreator getProductCreator() {
 		return productCreator;
 	}
 
+	/** @param productCreator to set */
 	public void setProductCreator(ProductCreator productCreator) {
 		this.productCreator = productCreator;
 	}
 
+	/** @return directoryPoller */
 	public DirectoryPoller getDirectoryPoller() {
 		return directoryPoller;
 	}
 
+	/** @param directoryPoller to set */
 	public void setDirectoryPoller(DirectoryPoller directoryPoller) {
 		this.directoryPoller = directoryPoller;
 	}
 
+	/** @return pollInterval long */
 	public long getPollInterval() {
 		return pollInterval;
 	}
 
+	/** @param pollInterval long to set */
 	public void setPollInterval(long pollInterval) {
 		this.pollInterval = pollInterval;
 	}
 
+	/** @return pollCarefully boolean */
 	public boolean isPollCarefully() {
 		return pollCarefully;
 	}
 
+	/** @param pollCarefully boolean to set */
 	public void setPollCarefully(boolean pollCarefully) {
 		this.pollCarefully = pollCarefully;
 	}
@@ -432,6 +486,15 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 		this.createScenarioProducts = createScenarioProducts;
 	}
 
+	/**
+	 * Parses a string of servers into SocketProductSenders, all put into a list
+	 * of product senders
+	 * @param servers String of servers, split by commas
+	 * @param connectTimeout int timeout
+	 * @param binaryFormat boolean if binary format
+	 * @param enableDeflate boolean if Deflate should be enabled
+	 * @return List of product senders
+	 */
 	public static List<ProductSender> parseServers(final String servers,
 			final Integer connectTimeout, final boolean binaryFormat,
 			final boolean enableDeflate) {
@@ -451,36 +514,61 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 		return senders;
 	}
 
+	/** Argument for help */
 	public static final String HELP_ARGUMENT = "--help";
+	/** Argument for poll */
 	public static final String POLL_ARGUMENT = "--poll";
 
+	/** Argument for poleCarefully */
 	public static final String POLL_CAREFULLY_ARGUMENT = "--pollCarefully";
+	/** Argument for polldir */
 	public static final String POLLDIR_ARGUMENT = "--polldir=";
+	/** Argument for errordir */
 	public static final String ERRORDIR_ARGUMENT = "--errordir=";
+	/** Argument for storagedir */
 	public static final String STORAGEDIR_ARGUMENT = "--oldinputdir=";
+	/** Argument for poll interval */
 	public static final String POLL_INTERVAL_ARGUMENT = "--pollInterval=";
+	/** Argument for tracker url */
 	public static final String TRACKER_URL_ARGUMENT = "--trackerURL=";
 
+	/** Argument for file */
 	public static final String FILE_ARGUMENT = "--file=";
 
+	/** Argument for parser */
 	public static final String PARSER_ARGUMENT = "--parser=";
+	/** Argument for validate */
 	public static final String VALIDATE_ARGUMENT = "--validate";
+	/** Argument for privateKey */
 	public static final String PRIVATE_KEY_ARGUMENT = "--privateKey=";
+	/** Argument for signatureVersion */
 	public static final String SIGNATURE_VERSION_ARGUMENT = "--signatureVersion=";
 
+	/** Argument for servers */
 	public static final String SERVERS_ARGUMENT = "--servers=";
+	/** Default server for server argument */
 	public static final String SERVERS_DEFAULT = "prod01-pdl01.cr.usgs.gov:11235,prod02-pdl01.cr.usgs.gov:11235";
+	/** Argument for connection timeout */
 	public static final String CONNECT_TIMEOUT_ARGUMENT = "--connectTimeout=";
+	/** Default timeout for connection */
 	public static final Integer DEFAULT_CONNECT_TIMEOUT = 15000;
+	/** Argument for binaryFormat */
 	public static final String BINARY_FORMAT_ARGUMENT = "--binaryFormat";
+	/** Argument for disableDeflate */
 	public static final String DISABLE_DEFLATE_ARGUMENT = "--disableDeflate";
+	/** Argument for attach */
 	public static final String ATTACH_ARGUMENT = "--attach=";
+	/** Argument for sending origin with phases */
 	public static final String SEND_ORIGINS_WITH_PHASES = "--sendOriginWhenPhasesExist";
+	/** Argument for sending mechanisms with phases */
 	public static final String SEND_MECHANISMS_WITH_PHASES = "--sendMechanismWhenPhasesExist";
 
+	/** Argument for creating internal products */
 	public static final String CREATE_INTERNAL_PRODUCTS = "--internal";
+	/** Argument for creating scenario products */
 	public static final String CREATE_SCENARIO_PRODUCTS = "--scenario";
 
+	/** Argument for testing */
 	public static final String TEST_ARGUMENT = "--test";
 
 	/**
@@ -695,6 +783,7 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 
 	}
 
+	/** Usage for interface */
 	public static void printUsage() {
 		System.err
 				.println("\nUsage:\n\n"
