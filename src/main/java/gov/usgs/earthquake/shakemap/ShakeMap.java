@@ -21,20 +21,29 @@ import java.util.logging.Logger;
  */
 public class ShakeMap extends Product {
 
+	/** Property for event description */
 	public static final String EVENT_DESCRIPTION_PROPERTY = "event-description";
+	/** Property for event type */
 	public static final String EVENT_TYPE_PROPERTY = "event-type";
+	/** Property for map status */
 	public static final String MAP_STATUS_PROPERTY = "map-status";
+	/** Property for max latitude */
 	public static final String MAXIMUM_LATITUDE_PROPERTY = "maximum-latitude";
+	/** Property for max longitude */
 	public static final String MAXIMUM_LONGITUDE_PROPERTY = "maximum-longitude";
+	/** Property for min latitude */
 	public static final String MINIMUM_LATITUDE_PROPERTY = "minimum-latitude";
+	/** Property for min longitude */
 	public static final String MINIMUM_LONGITUDE_PROPERTY = "minimum-longitude";
+	/** Property for process timestamp */
 	public static final String PROCESS_TIMESTAMP_PROPERTY = "process-timestamp";
 
 	private static final Logger LOGGER = Logger.getLogger(ShakeMap.class
 			.getName());
 
-	// References to file content in the Product
+	/** References to file content in the Product */
 	public static final String GRID_XML_ATTACHMENT = "download/grid.xml";
+	/** References to file content in the Product */
 	public static final String INFO_XML_ATTACHMENT = "download/info.xml";
 
 	// The files below have been decided to be unsupported at this time to
@@ -43,18 +52,23 @@ public class ShakeMap extends Product {
 	// public static final String GRID_XYZ_ATTACHMENT = "download/grid.xyz.zip";
 	// public static final String STATIONLIST_XML_ATTACHMENT =
 	// "download/stationlist.xml";
+	/** Invisible attachment */
 	public static final String INVISIBLE_ATTACHMENT = ".invisible";
 
-	// A suffix added to all event codes for scenarios
+	/** A suffix added to all event codes for scenarios */
 	public static final String SCENARIO_ID_SUFFIX = "_se";
 
 	// Map types
+	/** Map type - actual */
 	public static final String ACTUAL = "ACTUAL";
+	/** Map type - scenario */
 	public static final String SCENARIO = "SCENARIO";
+	/** Map type - test */
 	public static final String TEST = "TEST";
 
-	// key in info.xml for maximum mmi
+	/** key in info.xml for maximum mmi */
 	public static final String MAXIMUM_MMI_INFO_KEY = "mi_max";
+	/** Property for max MMI */
 	public static final String MAXIMUM_MMI_PROPERTY = "maxmmi";
 
 	/**
@@ -408,6 +422,8 @@ public class ShakeMap extends Product {
 
 	/**
 	 * Returns String value as BigDecimal
+	 * @param value to return as BigDecimal
+	 * @return a BigDecimal
 	 */
 	protected BigDecimal getBigDecimal (String value) {
 		if (value == null) {
@@ -418,6 +434,8 @@ public class ShakeMap extends Product {
 
 	/**
 	 * Returns BigDecimal value as String
+	 * @param value a BigDecimal
+	 * @return a string
 	 */
 	protected String getString (BigDecimal value) {
 		if (value == null) {

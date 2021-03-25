@@ -36,6 +36,8 @@ public class FutureExecutorTask<T> extends ExecutorTask<T> {
   /**
    * Construct a new ExecutorTask
    *
+   * @param backgroundService
+   *            ExecutorService used to execute callableÍ
    * @param service
    *            ExecutorService that this task will be submitted to.
    * @param maxTries
@@ -58,6 +60,19 @@ public class FutureExecutorTask<T> extends ExecutorTask<T> {
   /**
    * Wraps a runnable and result using the CallableRunnable class.
    *
+   * @param backgroundService
+   *            ExecutorService used to execute callable
+   * @param service
+   *            ExecutorService that this task will be submitted to.
+   * @param maxTries
+   *            maximum number of tries callable can throw an exception or
+   *            timeout before giving up. &lt; 1 means never run.
+   * @param timeout
+   *            number of milliseconds to allow callable to run before it is
+   *            interrupted. &lt;= 0 means never timeout.
+   * @param runnable a runnable
+   * @param result the result passed to Executors callable
+   *
    * @see java.util.concurrent.Executors#callable(Runnable, Object)
    */
   public FutureExecutorTask(ExecutorService backgroundService, ExecutorService service,
@@ -69,6 +84,8 @@ public class FutureExecutorTask<T> extends ExecutorTask<T> {
   /**
    * Construct a new FutureExecutorTask
    *
+   * @param backgroundService
+   *            ExecutorService used to execute callable
    * @param service
    *            ExecutorService that this task will be submitted to.
    * @param maxTries
@@ -85,7 +102,7 @@ public class FutureExecutorTask<T> extends ExecutorTask<T> {
    * @param retryDelay
    *            the number of milliseconds to wait before retrying after an
    *            exception.
-   * @see InterruptedException
+   * @see InterruptedException on interrupted
    */
   public FutureExecutorTask(ExecutorService backgroundService, ExecutorService service,
       int maxTries, long timeout, Callable<T> callable, Timer retryTimer,

@@ -55,18 +55,22 @@ public class DirectoryPoller {
 		this.storageDirectory = storageDirectory;
 	}
 
+	/** @return pollDirectory file */
 	public File getPollDirectory() {
 		return this.pollDirectory;
 	}
 
+	/** @return storageDirectory file */
 	public File getStorageDirectory() {
 		return this.storageDirectory;
 	}
 
+	/** @param listener FileListenerInterface to add */
 	public void addFileListener(final FileListenerInterface listener) {
 		listeners.add(listener);
 	}
 
+	/** @param listener FileListenerInterface to remove */
 	public void removeFileListener(final FileListenerInterface listener) {
 		listeners.remove(listener);
 	}
@@ -124,7 +128,7 @@ public class DirectoryPoller {
 	/**
 	 * Notify all listeners that files exist and need to be processed.
 	 *
-	 * @param file
+	 * @param file that needs to be processed
 	 */
 	public void notifyListeners(final File file) {
 		Iterator<FileListenerInterface> iter = new LinkedList<FileListenerInterface>(
