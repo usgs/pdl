@@ -10,6 +10,11 @@ public class ProductsSummaryQuery extends SearchQuery {
 
 	private List<ProductSummary> result;
 
+	/**
+	 * Constructor
+	 * makes a SearchQuery of type product summary
+	 * @param query ProductIndexQuery
+	 */
 	public ProductsSummaryQuery(final ProductIndexQuery query) {
 		super(SearchMethod.PRODUCTS_SUMMARY, query);
 	}
@@ -19,6 +24,7 @@ public class ProductsSummaryQuery extends SearchQuery {
 		return result;
 	}
 
+	/** @param products List of ProductSummaries */
 	public void setResult(final List<ProductSummary> products) {
 		this.result = products;
 	}

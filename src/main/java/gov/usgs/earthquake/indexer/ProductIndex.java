@@ -23,7 +23,7 @@ public interface ProductIndex extends Configurable {
 	/**
 	 * If the index supports transactions, begin a transaction.
 	 *
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public void beginTransaction() throws Exception;
 
@@ -31,7 +31,7 @@ public interface ProductIndex extends Configurable {
 	 * If the index supports transactions, and beginTransaction was previously
 	 * called, commit the pending transaction.
 	 *
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public void commitTransaction() throws Exception;
 
@@ -39,7 +39,7 @@ public interface ProductIndex extends Configurable {
 	 * If the index supports transactions, and beginTransaction was previously
 	 * called, rollback the pending transaction.
 	 *
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public void rollbackTransaction() throws Exception;
 
@@ -49,7 +49,7 @@ public interface ProductIndex extends Configurable {
 	 * @param query
 	 *            a description of which events to retrieve.
 	 * @return a list of matching events.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public List<Event> getEvents(ProductIndexQuery query) throws Exception;
 
@@ -59,7 +59,7 @@ public interface ProductIndex extends Configurable {
 	 * @param query
 	 *            a description of which products to retrieve.
 	 * @return a list of matching products.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public List<ProductSummary> getProducts(ProductIndexQuery query)
 			throws Exception;
@@ -68,6 +68,10 @@ public interface ProductIndex extends Configurable {
 	 * Check whether index has product.
 	 *
 	 * May be more efficient than {@link #getProducts(ProductIndexQuery)}.
+	 *
+	 * @param id a ProductId
+	 * @return boolean if index has product
+	 * @throws Exception if error occurs
 	 */
 	public boolean hasProduct(ProductId id) throws Exception;
 
@@ -77,7 +81,7 @@ public interface ProductIndex extends Configurable {
 	 * @param query
 	 *            a description of which products to retrieve.
 	 * @return a list of unassociated products
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public List<ProductSummary> getUnassociatedProducts(ProductIndexQuery query)
 			throws Exception;
@@ -89,7 +93,7 @@ public interface ProductIndex extends Configurable {
 	 *            the event to add.
 	 * @return Copy of event with the eventId attribute set to the id in the
 	 *         database
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public Event addEvent(final Event event) throws Exception;
 
@@ -111,7 +115,7 @@ public interface ProductIndex extends Configurable {
 	 *            the summary to add.
 	 * @return Copy of the product summary object with the indexId set to the
 	 *         newly inserted id.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductSummary addProductSummary(final ProductSummary summary)
 			throws Exception;
@@ -122,7 +126,7 @@ public interface ProductIndex extends Configurable {
 	 * @param summary
 	 *            the summary to remove.
 	 * @return id of removed summary.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductId removeProductSummary(final ProductSummary summary)
 			throws Exception;
@@ -135,7 +139,7 @@ public interface ProductIndex extends Configurable {
 	 * @param summary
 	 *            the summary.
 	 * @return Copy of event with summary added to the products list
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public Event addAssociation(final Event event, final ProductSummary summary)
 			throws Exception;
@@ -148,7 +152,7 @@ public interface ProductIndex extends Configurable {
 	 * @param summary
 	 *            the summary.
 	 * @return Copy of event with summary removed from the products list
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public Event removeAssociation(final Event event,
 			final ProductSummary summary) throws Exception;
@@ -162,7 +166,7 @@ public interface ProductIndex extends Configurable {
 	 *
 	 * @param events
 	 *            events that may have new preferred attributes.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public void eventsUpdated(final List<Event> events) throws Exception;
 

@@ -15,7 +15,7 @@ import java.util.Vector;
 
 /**
  * A description of a change to a ProductIndex.
- * 
+ *
  * IndexerEvents are created by the Indexer, and sent to IndexerListeners.
  */
 public class IndexerEvent extends EventObject {
@@ -38,7 +38,7 @@ public class IndexerEvent extends EventObject {
 
 	/**
 	 * Construct a new IndexerEvent.
-	 * 
+	 *
 	 * @param source
 	 *            the indexer that made the change.
 	 */
@@ -48,32 +48,39 @@ public class IndexerEvent extends EventObject {
 		this.indexerChanges = new Vector<IndexerChange>(5, 5);
 	}
 
+	/** @return Indexer */
 	public Indexer getIndexer() {
 		return (Indexer) getSource();
 	}
 
+	/** @return Product Index */
 	public ProductIndex getIndex() {
 		return this.index;
 	}
 
+	/** @param index to set */
 	public void setIndex(ProductIndex index) {
 		this.index = index;
 	}
 
+	/** @return product summary */
 	public ProductSummary getSummary() {
 		return this.summary;
 	}
 
+	/** @param summary to add */
 	public void setSummary(ProductSummary summary) {
 		this.summary = summary;
 	}
 
+	/** @param change to add */
 	public void addIndexerChange(IndexerChange change) {
 		if (change != null) {
 			this.indexerChanges.add(change);
 		}
 	}
 
+	/** @param changes list of changes to add */
 	public void addIndexerChanges(List<IndexerChange> changes) {
 		if (changes == null) {
 			return;
@@ -85,15 +92,16 @@ public class IndexerEvent extends EventObject {
 		}
 	}
 
+	/** @return vector of Indexer Changes */
 	public Vector<IndexerChange> getIndexerChanges() {
 		return this.indexerChanges;
 	}
 
 	/**
 	 * Convenience method to retrieve Product from Indexer storage.
-	 * 
+	 *
 	 * @return Product object corresponding to ProductSummary.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public Product getProduct() throws Exception {
 		if (summary == null) {
@@ -105,7 +113,7 @@ public class IndexerEvent extends EventObject {
 	/**
 	 * Retrieve a distinct list of events that were changed as part of this
 	 * IndexerEvent.
-	 * 
+	 *
 	 * @return list of events
 	 */
 	public List<Event> getEvents() {

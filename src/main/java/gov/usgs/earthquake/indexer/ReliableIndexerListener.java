@@ -33,6 +33,7 @@ import gov.usgs.util.Config;
 
 public class ReliableIndexerListener extends DefaultIndexerListener implements Runnable {
 
+  /** Logger object */
   protected static final Logger LOGGER = Logger
           .getLogger(ReliableIndexerListener.class.getName());
 
@@ -43,6 +44,7 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements R
   private final Object syncObject = new Object();
 
   private Thread processThread;
+  /** Product Index */
   protected ProductIndex productIndex;
 
   /**
@@ -183,10 +185,12 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements R
     }
   }
 
+  /** @return ProductIndex */
   public ProductIndex getProductIndex() {
     return this.productIndex;
   }
 
+  /** @param productIndex to set */
   public void setProductIndex(ProductIndex productIndex) {
     this.productIndex = productIndex;
   }
@@ -198,6 +202,7 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements R
 
   /**
    * Gets index ID of last processed product
+   * @return lastIndexId
    */
   public long getLastIndexId() {
     return lastIndexId;
@@ -205,6 +210,7 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements R
 
   /**
    * Sets index ID of last processed product
+   * @param lastIndexId to set
    */
   public void setLastIndexId(final long lastIndexId) {
     this.lastIndexId = lastIndexId;
@@ -244,6 +250,7 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements R
   /**
    * Gets the next products using the index provided in Config
    *
+   * @return List of product summaries
    * @throws Exception if we have a database issue
    */
   public List<ProductSummary> getNextProducts() throws Exception{
@@ -258,6 +265,7 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements R
   /**
    * Does a task with each product
    *
+   * @param product ProductSummary  to process
    * @throws Exception available for subclasses
    */
   public void processProduct(final ProductSummary product) throws Exception {

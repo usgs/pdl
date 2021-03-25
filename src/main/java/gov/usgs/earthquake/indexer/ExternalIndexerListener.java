@@ -69,16 +69,26 @@ public class ExternalIndexerListener extends DefaultIndexerListener {
 	private static final Logger LOGGER = Logger
 			.getLogger(ExternalIndexerListener.class.getName());
 
+	/** Argument for event action */
 	public static final String EVENT_ACTION_ARGUMENT = "--action=";
+	/** Argument for event ids */
 	public static final String EVENT_IDS_ARGUMENT = "--eventids=";
 
+	/** Argument for preferred event id */
 	public static final String PREFERRED_ID_ARGUMENT = "--preferred-eventid=";
+	/** Argument for preferred eventsource */
 	public static final String PREFERRED_EVENTSOURCE_ARGUMENT = "--preferred-eventsource=";
+	/** Argument for preferred eventsourcecode */
 	public static final String PREFERRED_EVENTSOURCECODE_ARGUMENT = "--preferred-eventsourcecode=";
+	/** Argument for preferred magnitude */
 	public static final String PREFERRED_MAGNITUDE_ARGUMENT = "--preferred-magnitude=";
+	/** Argument for preferred longitude */
 	public static final String PREFERRED_LONGITUDE_ARGUMENT = "--preferred-longitude=";
+	/** Argument for preferred latitude */
 	public static final String PREFERRED_LATITUDE_ARGUMENT = "--preferred-latitude=";
+	/** Argument for preferred depth */
 	public static final String PREFERRED_DEPTH_ARGUMENT = "--preferred-depth=";
+	/** Argument for preferred eventitme */
 	public static final String PREFERRED_ORIGIN_TIME_ARGUMENT = "--preferred-eventtime=";
 	/** Configuration parameter for storage directory product. */
 	public static final String STORAGE_NAME_PROPERTY = "storage";
@@ -91,6 +101,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener {
 
 	/** Configuration parameter for autoArchive. */
 	public static final String AUTO_ARCHIVE_PROPERTY = "autoArchive";
+	/** Default state for auto archive */
 	public static final String AUTO_ARCHIVE_DEFAULT = "true";
 
 	/** Argument used to pass signature to external process. */
@@ -186,7 +197,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener {
 	 *
 	 * @param product product to be stored.
 	 * @return a new product object, read from the listener storage.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public Product storeProduct(final Product product) throws Exception {
 		Product listenerProduct = null;
@@ -213,7 +224,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener {
 	 * @param command command and arguments.
 	 * @param product product, when set and empty content (path "") is defined,
 	 *        the content is provided to the command on stdin.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public void runProductCommand(final String command, final Product product) throws Exception {
 		// execute
@@ -278,8 +289,10 @@ public class ExternalIndexerListener extends DefaultIndexerListener {
 	 *
 	 * @param change
 	 *            The IndexerEvent received by the ExternalIndexerListener
+	 * @param indexerChange
+	 *            The IndexerChange
 	 * @return the command to execute with its arguments as a string
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public String getProductSummaryCommand(IndexerEvent change,
 			IndexerChange indexerChange) throws Exception {
@@ -304,10 +317,10 @@ public class ExternalIndexerListener extends DefaultIndexerListener {
 	/**
 	 * Get the command for a specific event and summary.
 	 *
-	 * @param event
-	 * @param summary
+	 * @param event Specific event
+	 * @param summary Specific product summary
 	 * @return command line arguments as a string.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public String getProductSummaryCommand(Event event, ProductSummary summary) throws Exception {
 		StringBuffer indexerCommand = new StringBuffer(getCommand());
@@ -410,6 +423,7 @@ public class ExternalIndexerListener extends DefaultIndexerListener {
 	 *
 	 * @param summary the product summary
 	 * @return command line arguments
+	 * @throws IOException if IO error occurs
 	 */
 	public String getProductSummaryArguments(final ProductSummary summary) throws IOException {
 		StringBuffer buf = new StringBuffer();

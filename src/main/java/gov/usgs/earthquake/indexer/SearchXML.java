@@ -20,60 +20,102 @@ import java.util.Map;
  */
 public class SearchXML {
 
+	/** Location of Indexer on distribution site */
 	public static final String INDEXER_XMLNS = "http://earthquake.usgs.gov/distribution/indexer";
 
+	/** Element for searchRequests */
 	public static final String REQUEST_ELEMENT = "searchrequest";
+	/** Element for searchResponses */
 	public static final String RESPONSE_ELEMENT = "searchresponse";
 
+	/** Element for results */
 	public static final String RESULT_ELEMENT = "result";
+	/** Element for queries */
 	public static final String QUERY_ELEMENT = "query";
+	/** Element for events */
 	public static final String EVENT_ELEMENT = "event";
+	/** Element for errors */
 	public static final String ERROR_ELEMENT = "error";
 
+	/** Attribute for methods */
 	public static final String METHOD_ATTRIBUTE = "method";
 
+	/** Attribute for event source */
 	public static final String EVENT_SOURCE_ATTRIBUTE = "eventSource";
+	/** Attribute for event source code */
 	public static final String EVENT_SOURCE_CODE_ATTRIBUTE = "eventSourceCode";
+	/** Attribute for min event time */
 	public static final String MIN_EVENT_TIME_ATTRIBUTE = "minEventTime";
+	/** Attribute for max event time */
 	public static final String MAX_EVENT_TIME_ATTRIBUTE = "maxEventTime";
+	/** Attribute for min event latitude*/
 	public static final String MIN_EVENT_LATITUDE_ATTRIBUTE = "minEventLatitude";
+	/** Attribute for max event latitude */
 	public static final String MAX_EVENT_LATITUDE_ATTRIBUTE = "maxEventLatitude";
+	/** Attribute for min event longitude */
 	public static final String MIN_EVENT_LONGITUDE_ATTRIBUTE = "minEventLongitude";
+	/** Attribute for max event longitude */
 	public static final String MAX_EVENT_LONGITUDE_ATTRIBUTE = "maxEventLongitude";
+	/** Attribute for min event depth */
 	public static final String MIN_EVENT_DEPTH_ATTRIBUTE = "minEventDepth";
+	/** Attribute for max event depth*/
 	public static final String MAX_EVENT_DEPTH_ATTRIBUTE = "maxEventDepth";
+	/** Attribute for min event magnitude */
 	public static final String MIN_EVENT_MAGNITUDE_ATTRIBUTE = "minEventMagnitude";
+	/** Attribute for max event magnitude */
 	public static final String MAX_EVENT_MAGNITUDE_ATTRIBUTE = "maxEventMagnitude";
+	/** Attribute for min product update time */
 	public static final String MIN_PRODUCT_UPDATE_TIME_ATTRIBUTE = "minProductUpdateTime";
+	/** Attribute for max product update time */
 	public static final String MAX_PRODUCT_UPDATE_TIME_ATTRIBUTE = "maxProductUpdateTime";
+	/** Attribute for product source */
 	public static final String PRODUCT_SOURCE_ATTRIBUTE = "productSource";
+	/** Attribute for product type */
 	public static final String PRODUCT_TYPE_ATTRIBUTE = "productType";
+	/** Attribute for product code */
 	public static final String PRODUCT_CODE_ATTRIBUTE = "productCode";
+	/** Attribute for product version */
 	public static final String PRODUCT_VERSION_ATTRIBUTE = "productVersion";
+	/** Attribute for product Status */
 	public static final String PRODUCT_STATUS_ATTRIBUTE = "productStatus";
 
+	/** Element for event summary */
 	public static final String EVENT_SUMMARY_ELEMENT = "eventSummary";
+	/** Element for product summary */
 	public static final String PRODUCT_SUMMARY_ELEMENT = "productSummary";
 
+	/** Attribute for id */
 	public static final String ID_ATTRIBUTE = "id";
+	/** Attribute for update time */
 	public static final String UPDATE_TIME_ATTRIBUTE = "updateTime";
+	/** Attribute for status */
 	public static final String STATUS_ATTRIBUTE = "status";
+	/** Attribute for source */
 	public static final String SOURCE_ATTRIBUTE = "source";
+	/** Attribute for source code */
 	public static final String SOURCE_CODE_ATTRIBUTE = "sourceCode";
+	/** Attribute for time */
 	public static final String TIME_ATTRIBUTE = "time";
+	/** Attribute for latitude */
 	public static final String LATITUDE_ATTRIBUTE = "latitude";
+	/** Attribute for longitude */
 	public static final String LONGITUDE_ATTRIBUTE = "longitude";
+	/** Attribute for depth */
 	public static final String DEPTH_ATTRIBUTE = "depth";
+	/** Attribute for magnitude */
 	public static final String MAGNITUDE_ATTRIBUTE = "magnitude";
+	/** Attribute for version */
 	public static final String VERSION_ATTRIBUTE = "version";
+	/** Attribute for preferred weight */
 	public static final String PREFERRED_WEIGHT_ATTRIBUTE = "preferredWeight";
 
 	/**
 	 * Parse an input stream with xml to a SearchRequest object.
-	 * 
+	 *
 	 * @param in
 	 *            the input stream containing xml.
 	 * @return the parsed SearchRequest object.
+	 * @throws Exception if error occurs
 	 */
 	public static SearchRequest parseRequest(final InputStream in)
 			throws Exception {
@@ -84,13 +126,13 @@ public class SearchXML {
 
 	/**
 	 * Parse an input stream with xml to a SearchResponse object.
-	 * 
+	 *
 	 * @param in
 	 *            the input stream containing xml.
 	 * @param storage
 	 *            the storage where received products are stored.
 	 * @return the parsed SearchResponse object.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public static SearchResponse parseResponse(final InputStream in,
 			final FileProductStorage storage) throws Exception {
@@ -101,12 +143,12 @@ public class SearchXML {
 
 	/**
 	 * Convert a SearchRequest object to xml.
-	 * 
+	 *
 	 * @param request
 	 *            the search request object to convert.
 	 * @param out
 	 *            the output stream where xml is written.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public static void toXML(final SearchRequest request, final OutputStream out)
 			throws Exception {
@@ -127,12 +169,12 @@ public class SearchXML {
 
 	/**
 	 * Convert a SearchResponse object to xml.
-	 * 
+	 *
 	 * @param response
 	 *            the search response object to convert.
 	 * @param out
 	 *            the output stream where xml is written.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public static void toXML(final SearchResponse response,
 			final OutputStream out) throws Exception {

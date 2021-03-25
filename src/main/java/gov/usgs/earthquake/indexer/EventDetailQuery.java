@@ -10,6 +10,10 @@ public class EventDetailQuery extends SearchQuery {
 
 	private List<Event> result;
 
+	/**
+	 * Constructor. Takes in a single ProductIndexQuery
+	 * @param query ProductIndexQuery
+	 */
 	public EventDetailQuery(final ProductIndexQuery query) {
 		super(SearchMethod.EVENT_DETAIL, query);
 	}
@@ -19,6 +23,7 @@ public class EventDetailQuery extends SearchQuery {
 		return result;
 	}
 
+	/** @param event list of events to set as result */
 	public void setResult(final List<Event> event) {
 		this.result = event;
 	}

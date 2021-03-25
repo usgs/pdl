@@ -18,7 +18,7 @@ import gov.usgs.earthquake.product.io.XmlProductSource;
 
 /**
  * Used by SearchResponseParser to store products during parsing.
- * 
+ *
  * Creates a "background" storage thread for storing, while this classes
  * startElement, characters, and endElement methods are called by the
  * "foreground" xml parsing thread.
@@ -53,7 +53,7 @@ public class SearchResponseXmlProductSource extends XmlProductSource {
 
 	/**
 	 * Construct a SearchResponseXmlProductSource.
-	 * 
+	 *
 	 * @param storage
 	 *            the storage where the parsed product is stored.
 	 */
@@ -64,7 +64,7 @@ public class SearchResponseXmlProductSource extends XmlProductSource {
 
 	/**
 	 * Called by the underlying product storage as part os storeProductSource.
-	 * 
+	 *
 	 * This method notifies the XML parsing thread that parsing may continue,
 	 * since the handler is now setup.
 	 */
@@ -189,10 +189,12 @@ public class SearchResponseXmlProductSource extends XmlProductSource {
 		}
 	}
 
+	/** @param storage FileProductStorage to set */
 	public void setStorage(FileProductStorage storage) {
 		this.storage = storage;
 	}
 
+	/** @return FileProductStorage */
 	public FileProductStorage getStorage() {
 		return storage;
 	}
@@ -206,8 +208,8 @@ public class SearchResponseXmlProductSource extends XmlProductSource {
 
 	/**
 	 * Method used by storage to provide the parsed product.
-	 * 
-	 * @param product
+	 *
+	 * @param product to set
 	 */
 	protected void setProduct(final Product product) {
 		this.storedProduct = product;

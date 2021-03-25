@@ -7,20 +7,24 @@ import gov.usgs.earthquake.product.Product;
 
 /**
  * (Experimental) Notify external processes when preferred product change within events.
- * 
+ *
  * @author jmfee
  *
  */
 public class ExternalPreferredListener extends ExternalIndexerListener {
 
+	/** Argument for Preferred action */
 	public static final String PREFERRED_ACTION_ARGUMENT = "--preferred-action=";
 
 	/**
 	 * Types of preferred product actions.
 	 */
 	public static enum PreferredAction {
+		/** Preferred added product enum */
 		PREFERRED_ADDED,
+		/** Preferred changed product enum */
 		PREFERRED_CHANGED,
+		/** Preferred removed product enum */
 		PREFERRED_REMOVED
 	};
 
@@ -85,7 +89,7 @@ public class ExternalPreferredListener extends ExternalIndexerListener {
 
 	/**
 	 * Compare preferred products before/after IndexerChange was applied.
-	 * 
+	 *
 	 * @param change indexer change to evaluate.
 	 * @return map of preferred products that were changed.
 	 */
@@ -101,7 +105,7 @@ public class ExternalPreferredListener extends ExternalIndexerListener {
 				changeType != IndexerChange.EVENT_UPDATED) {
 			return changes;
 		}
-		
+
 		Map<String, ProductSummary> newProducts = getPreferredProducts(change.getNewEvent());
 		Map<String, ProductSummary> originalProducts = getPreferredProducts(change.getOriginalEvent());
 
@@ -109,7 +113,7 @@ public class ExternalPreferredListener extends ExternalIndexerListener {
 		for (String type : newProducts.keySet()) {
 			ProductSummary newProduct = newProducts.get(type);
 			ProductSummary originalProduct = originalProducts.get(type);
-			
+
 			if (originalProduct == null) {
 				// no product of this type previously existed
 				changes.put(newProduct,
@@ -120,7 +124,7 @@ public class ExternalPreferredListener extends ExternalIndexerListener {
 						PreferredAction.PREFERRED_CHANGED);
 			}
 		}
-		
+
 		for (String type : originalProducts.keySet()) {
 			if (newProducts.get(type) == null) {
 				// no product of this type exists anymore
@@ -128,7 +132,7 @@ public class ExternalPreferredListener extends ExternalIndexerListener {
 						PreferredAction.PREFERRED_REMOVED);
 			}
 		}
-		
+
 		return changes;
 	}
 
