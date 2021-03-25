@@ -22,33 +22,54 @@ import gov.usgs.earthquake.product.ProductId;
  */
 public class XmlProductHandler implements ProductHandler {
 
+	/** Declaration for XML and version */
 	public static final String XML_DECLARATION = "<?xml version=\"1.0\"?>\n";
+	/** Namespace for XML product */
 	public static final String PRODUCT_XML_NAMESPACE = "http://earthquake.usgs.gov/distribution/product";
 
+	/** Element for product */
 	public static final String PRODUCT_ELEMENT = "product";
+	/** Product Attribute for id */
 	public static final String PRODUCT_ATTRIBUTE_ID = "id";
+	/** Product Attribute for updateTime */
 	public static final String PRODUCT_ATTRIBUTE_UPDATED = "updateTime";
+	/** Product Attribute for status */
 	public static final String PRODUCT_ATTRIBUTE_STATUS = "status";
+	/** Product Attribute for trackerURL */
 	public static final String PRODUCT_ATTRIBUTE_TRACKER_URL = "trackerURL";
 
+	/** Element for property */
 	public static final String PROPERTY_ELEMENT = "property";
+	/** Property attribute for name */
 	public static final String PROPERTY_ATTRIBUTE_NAME = "name";
+	/** Property attribute for value */
 	public static final String PROPERTY_ATTRIBUTE_VALUE = "value";
 
+	/** Element for link */
 	public static final String LINK_ELEMENT = "link";
+	/** Link attribute for relation */
 	public static final String LINK_ATTRIBUTE_RELATION = "rel";
+	/** Link attribute for href */
 	public static final String LINK_ATTRIBUTE_HREF = "href";
 
+	/** Element for content */
 	public static final String CONTENT_ELEMENT = "content";
+	/** Content attribute for path */
 	public static final String CONTENT_ATTRIBUTE_PATH = "path";
+	/** Content attribute for type */
 	public static final String CONTENT_ATTRIBUTE_TYPE = "type";
+	/** Content attribute for length */
 	public static final String CONTENT_ATTRIBUTE_LENGTH = "length";
+	/** Content attribute for modified */
 	public static final String CONTENT_ATTRIBUTE_MODIFIED = "modified";
 	/** Used with URLContent. */
 	public static final String CONTENT_ATTRIBUTE_HREF = "href";
+	/** Content attribute for encoded */
 	public static final String CONTENT_ATTRIBUTE_ENCODED = "encoded";
 
+	/** Element for signature */
 	public static final String SIGNATURE_ELEMENT = "signature";
+	/** Signature attribute for version */
 	public static final String SIGNATURE_ATTRIBUTE_VERSION = "version";
 
 	/** The OutputStream where xml is written. */

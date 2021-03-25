@@ -47,6 +47,7 @@ public interface Content {
 	 * Digest of content.
 	 *
 	 * @return base64 encoded sha256 of content bytes.
+	 * @throws Exception if error occurs
 	 */
 	public String getSha256() throws Exception;
 

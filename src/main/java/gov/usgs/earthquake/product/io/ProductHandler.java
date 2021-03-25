@@ -41,6 +41,8 @@ public interface ProductHandler {
 	 *            the product's status.
 	 * @param trackerURL
 	 *            a location to send status updates.
+	 * @throws Exception
+	 *            if error occurs
 	 */
 	public void onBeginProduct(final ProductId id, final String status,
 			final URL trackerURL) throws Exception;
@@ -54,6 +56,8 @@ public interface ProductHandler {
 	 *            the property name.
 	 * @param value
 	 *            the property value.
+	 * @throws Exception
+	 *            if error occurs
 	 */
 	public void onProperty(final ProductId id, final String name,
 			final String value) throws Exception;
@@ -67,6 +71,8 @@ public interface ProductHandler {
 	 *            how the URI is related to this product.
 	 * @param href
 	 *            the URI that is related to this product.
+	 * @throws Exception
+	 *            if error occurs
 	 */
 	public void onLink(final ProductId id, final String relation, final URI href)
 			throws Exception;
@@ -80,12 +86,21 @@ public interface ProductHandler {
 	 *            path to content within product.
 	 * @param content
 	 *            the product content.
+	 * @throws Exception
+	 *            if error occurs
 	 */
 	public void onContent(final ProductId id, final String path,
 			final Content content) throws Exception;
 
 	/**
 	 * Product signature version.
+	 *
+	 * @param id
+	 *            which product.
+	 * @param version
+	 *            product version
+	 * @throws Exception
+	 *            if error occurs
 	 */
 	public void onSignatureVersion(final ProductId id, final Version version)
 			throws Exception;
@@ -99,6 +114,8 @@ public interface ProductHandler {
 	 * @param signature
 	 *            the product signature, which can be verified using the
 	 *            ProductSigner class.
+	 * @throws Exception
+	 *            if error occurs
 	 */
 	public void onSignature(final ProductId id, final String signature)
 			throws Exception;
@@ -110,6 +127,8 @@ public interface ProductHandler {
 	 *
 	 * @param id
 	 *            which product.
+	 * @throws Exception
+	 *            if error occurs
 	 */
 	public void onEndProduct(final ProductId id) throws Exception;
 
