@@ -33,7 +33,7 @@ public class FileUtils {
 	 *
 	 * Calls getContentType(file.getName()).
 	 *
-	 * @param file
+	 * @param file a file to get type from
 	 * @return String mime type.
 	 */
 	public static String getContentType(final File file) {
@@ -73,6 +73,8 @@ public class FileUtils {
 	 *            file to write.
 	 * @param content
 	 *            content to write to file.
+	 * @throws IOException
+	 *            if any errors occur
 	 */
 	public static void writeFile(final File file, final byte[] content)
 			throws IOException {

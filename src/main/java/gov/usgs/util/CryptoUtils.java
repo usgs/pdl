@@ -81,7 +81,9 @@ public class CryptoUtils {
 
 	/** Signature versions. */
 	public enum Version {
+		/** Signature enum for v1 */
 		SIGNATURE_V1("v1"),
+		/** Signature enum for v2 */
 		SIGNATURE_V2("v2");
 
 		private String value;
@@ -95,6 +97,8 @@ public class CryptoUtils {
 		}
 
 		/**
+		 * @param value to get a signature from
+		 * @return a version
 		 * @throws IllegalArgumentException if unknown version.
 		 */
 		public static Version fromString(final String value) {
@@ -126,10 +130,10 @@ public class CryptoUtils {
 	 *            the data to encrypt.
 	 * @param out
 	 *            where encrypted data is written.
-	 * @throws NoSuchAlgorithmException
-	 * @throws NoSuchPaddingException
-	 * @throws InvalidKeyException
-	 * @throws IOException
+	 * @throws NoSuchAlgorithmException if invalid encrypt/decrypt algorithm
+	 * @throws NoSuchPaddingException on padding error
+	 * @throws InvalidKeyException if key is not RSA or DSA.
+	 * @throws IOException if IO error occurs
 	 */
 	public static void processCipherStream(final Cipher cipher,
 			final InputStream in, final OutputStream out)
@@ -146,9 +150,9 @@ public class CryptoUtils {
 	 * @param key
 	 *            the key used to encrypt.
 	 * @return a cipher used to encrypt.
-	 * @throws NoSuchAlgorithmException
-	 * @throws NoSuchPaddingException
-	 * @throws InvalidKeyException
+	 * @throws NoSuchAlgorithmException on invalid algorithm
+	 * @throws NoSuchPaddingException on invalid padding
+	 * @throws InvalidKeyException if key is not RSA or DSA.
 	 */
 	public static Cipher getEncryptCipher(final Key key)
 			throws NoSuchAlgorithmException, NoSuchPaddingException,
@@ -165,9 +169,9 @@ public class CryptoUtils {
 	 * @param key
 	 *            the key used to decrypt.
 	 * @return a cipher used to decrypt.
-	 * @throws NoSuchAlgorithmException
-	 * @throws NoSuchPaddingException
-	 * @throws InvalidKeyException
+	 * @throws NoSuchAlgorithmException on invalid algorithm
+	 * @throws NoSuchPaddingException on invalid padding
+	 * @throws InvalidKeyException if key is not RSA or DSA.
 	 */
 	public static Cipher getDecryptCipher(final Key key)
 			throws NoSuchAlgorithmException, NoSuchPaddingException,
@@ -189,7 +193,9 @@ public class CryptoUtils {
 	 * @throws InvalidKeyException
 	 *     if key is not RSA or DSA.
 	 * @throws NoSuchAlgorithmException
+	 *     on invalid algorithm
 	 * @throws SignatureException
+	 *     on signature error
 	 */
 	public static Signature getSignature(final Key key, final Version version)
 			throws InvalidKeyException, NoSuchAlgorithmException,
@@ -216,6 +222,14 @@ public class CryptoUtils {
 		return signature;
 	}
 
+	/**
+	 *
+	 * @param key Key used to sign/verify.
+	 * @param version SIGNATURE_V1 or SIGNATURE_V2
+	 * @param signature A signature
+	 * @throws InvalidAlgorithmParameterException
+	 *     on invalid or inappropriate algorithm parameters
+	 */
 	public static void configureSignature(final Key key, final Version version,
 			final Signature signature) throws InvalidAlgorithmParameterException {
 		if (version == Version.SIGNATURE_V2
@@ -239,7 +253,18 @@ public class CryptoUtils {
 	/**
 	 * A convenience method that chooses a signature algorithm based on the key
 	 * type. Works with DSA and RSA keys.
+	 *
+	 * @param privateKey a private key
+	 * @param data data to sign
+	 * @return signature as hex encoded string
 	 * @throws InvalidAlgorithmParameterException
+	 *     on invalid or inappropriate algorithm parameters
+	 * @throws InvalidKeyException
+	 *     if key is not RSA or DSA.
+	 * @throws NoSuchAlgorithmException
+	 *     on invalid algorithm
+	 * @throws SignatureException
+	 *     on signature error
 	 */
 	public static String sign(final PrivateKey privateKey, final byte[] data)
 			throws InvalidAlgorithmParameterException, InvalidKeyException,
@@ -259,9 +284,14 @@ public class CryptoUtils {
 	 * @param version
 	 *            the signature version.
 	 * @return signature as hex encoded string.
+	 * @throws InvalidAlgorithmParameterException
+	 *            on invalid or inappropriate algorithm parameters
 	 * @throws NoSuchAlgorithmException
+	 *            on invalid algorithm
 	 * @throws InvalidKeyException
+	 *            if key is not RSA or DSA.
 	 * @throws SignatureException
+	 *            on signature error
 	 */
 	public static String sign(final PrivateKey privateKey, final byte[] data,
 			final Version version) throws InvalidAlgorithmParameterException,
@@ -276,6 +306,23 @@ public class CryptoUtils {
 	/**
 	 * A convenience method that chooses a signature algorithm based on the key
 	 * type. Works with DSA and RSA keys.
+	 *
+	 * @param publicKey
+	 *            public key corresponding to private key that generated
+	 *            signature.
+	 * @param data
+	 *            data/hash to verify
+	 * @param allegedSignature
+	 *            to try and verify with
+	 * @return boolean
+	 * @throws InvalidAlgorithmParameterException
+	 *            on invalid or inappropriate algorithm parameters
+	 * @throws InvalidKeyException
+	 *            if key is not RSA or DSA.
+	 * @throws NoSuchAlgorithmException
+	 *            on invalid algorithm
+	 * @throws SignatureException
+	 *            on signature error
 	 */
 	public static boolean verify(final PublicKey publicKey, final byte[] data,
 			final String allegedSignature)
@@ -297,9 +344,14 @@ public class CryptoUtils {
 	 * @param version
 	 *            signature version.
 	 * @return true if computed signature matches allegedSignature.
+	 * @throws InvalidAlgorithmParameterException
+	 *            on invalid or inappropriate algorithm parameters
 	 * @throws NoSuchAlgorithmException
+	 *            on invalid algorithm
 	 * @throws InvalidKeyException
+	 *            if key is not RSA or DSA.
 	 * @throws SignatureException
+	 *            on signature error
 	 */
 	public static boolean verify(final PublicKey publicKey, final byte[] data,
 			final String allegedSignature, final Version version)
@@ -321,10 +373,15 @@ public class CryptoUtils {
 	 *            the data to encrypt.
 	 * @return encrypted byte array.
 	 * @throws InvalidKeyException
+	 *            if key is not RSA or DSA.
 	 * @throws NoSuchAlgorithmException
+	 *            on invalid algorithm
 	 * @throws NoSuchPaddingException
+	 *            on invalid padding
 	 * @throws IllegalArgumentException
+	 *            on illegal args passed to function
 	 * @throws IOException
+	 *            on IO error
 	 */
 	public static byte[] encrypt(final Key key, final byte[] toEncrypt)
 			throws InvalidKeyException, NoSuchAlgorithmException,
@@ -344,10 +401,15 @@ public class CryptoUtils {
 	 *            the data to decrypt.
 	 * @return decrypted byte array.
 	 * @throws InvalidKeyException
+	 *            if key is not RSA or DSA.
 	 * @throws NoSuchAlgorithmException
+	 *            on invalid algorithm
 	 * @throws NoSuchPaddingException
+	 *            on invalid padding
 	 * @throws IllegalArgumentException
+	 *            on illegal args passed to function
 	 * @throws IOException
+	 *            on IO error
 	 */
 	public static byte[] decrypt(final Key key, final byte[] toDecrypt)
 			throws InvalidKeyException, NoSuchAlgorithmException,
@@ -365,6 +427,7 @@ public class CryptoUtils {
 	 *            how many bits. This should be AES_128 or AES256.
 	 * @return generated AES key.
 	 * @throws NoSuchAlgorithmException
+	 *            on invalid algorithm
 	 */
 	public static Key generateAESKey(final int bits)
 			throws NoSuchAlgorithmException {
@@ -380,6 +443,7 @@ public class CryptoUtils {
 	 *            how many bits. Must be a valid RSA size.
 	 * @return generated RSA key pair.
 	 * @throws NoSuchAlgorithmException
+	 *            on invalid algorithm
 	 */
 	public static KeyPair generateRSAKeyPair(final int bits)
 			throws NoSuchAlgorithmException {
@@ -395,6 +459,7 @@ public class CryptoUtils {
 	 *            how many bits. Must be a valid DSA size.
 	 * @return generated DSA key pair.
 	 * @throws NoSuchAlgorithmException
+	 *            on invalid algorithm
 	 */
 	public static KeyPair generateDSAKeyPair(final int bits)
 			throws NoSuchAlgorithmException {
@@ -410,7 +475,9 @@ public class CryptoUtils {
 	 *            the certificate data as a byte array.
 	 * @return parsed certificate.
 	 * @throws CertificateException
+	 *            on certificate issue
 	 * @throws IOException
+	 *            on IO error
 	 */
 	public static Certificate readCertificate(final byte[] bytes)
 			throws CertificateException, IOException {
@@ -430,7 +497,9 @@ public class CryptoUtils {
 	 *            the key data as a byte array.
 	 * @return parsed public key.
 	 * @throws IOException
+	 *            on IO error
 	 * @throws NoSuchAlgorithmException
+	 *            on invalid algorithm
 	 */
 	public static PublicKey readPublicKey(final byte[] bytes)
 			throws IOException, NoSuchAlgorithmException {
@@ -462,7 +531,9 @@ public class CryptoUtils {
 	 *            the key data as a byte array.
 	 * @return parsed private key.
 	 * @throws IOException
+	 *            on IO error
 	 * @throws NoSuchAlgorithmException
+	 *            on invalid algorithm
 	 */
 	public static PrivateKey readPrivateKey(final byte[] bytes)
 			throws IOException, NoSuchAlgorithmException {
@@ -496,8 +567,11 @@ public class CryptoUtils {
 	 *            password if the key is encrypted.
 	 * @return decoded PrivateKey.
 	 * @throws IOException
+	 *            on IO error
 	 * @throws InvalidKeySpecException
+	 *            when key has invalid specifications
 	 * @throws NoSuchAlgorithmException
+	 *            on invalid algorithm
 	 */
 	public static PrivateKey readOpenSSHPrivateKey(final byte[] bytes,
 			final String password) throws IOException,
@@ -531,9 +605,13 @@ public class CryptoUtils {
 	 *
 	 * @param bytes
 	 *            bytes to read.
+	 * @return a publicKey
 	 * @throws IOException
+	 *            on IO error
 	 * @throws NoSuchAlgorithmException
+	 *            on invalid algorithm
 	 * @throws InvalidKeySpecException
+	 *            when key has invalid specifications
 	 */
 	public static PublicKey readOpenSSHPublicKey(final byte[] bytes)
 			throws IOException, InvalidKeySpecException,
@@ -605,6 +683,7 @@ public class CryptoUtils {
 	 *            string containing PEM formatted data.
 	 * @return DER formatted data.
 	 * @throws IOException
+	 *            on IO error
 	 */
 	public static byte[] convertPEMToDER(final String string)
 			throws IOException {

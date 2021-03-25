@@ -11,10 +11,10 @@ import java.util.Queue;
 
 /**
  * An abstract base class for round-robin queueing.
- * 
+ *
  * Sub classes should implement the {@link #getQueueId(Object)} to control how
  * objects are added to queues.
- * 
+ *
  * @param <T>
  *            type of object being queued.
  */
@@ -37,7 +37,7 @@ public class RoundRobinQueue<T> implements Queue<T> {
 
 	/**
 	 * This method determines which queue an object uses.
-	 * 
+	 *
 	 * @param object
 	 *            the object being added.
 	 * @return id of the queue where object should be added.
@@ -50,7 +50,7 @@ public class RoundRobinQueue<T> implements Queue<T> {
 
 	/**
 	 * Add an item to the queue.
-	 * 
+	 *
 	 * @param e
 	 *            item to add
 	 * @return true if added.
@@ -72,7 +72,7 @@ public class RoundRobinQueue<T> implements Queue<T> {
 
 	/**
 	 * Add an item to the queue, if possible.
-	 * 
+	 *
 	 * @param e
 	 *            item to add
 	 * @return true if added, false otherwise.
@@ -89,7 +89,7 @@ public class RoundRobinQueue<T> implements Queue<T> {
 
 	/**
 	 * Retrieves and removes the head of this queue.
-	 * 
+	 *
 	 * @return first element in queue.
 	 * @throws NoSuchElementException
 	 *             if queue is empty.
@@ -121,7 +121,7 @@ public class RoundRobinQueue<T> implements Queue<T> {
 	 * Retrieves, but does not remove, the head of this queue. This method
 	 * differs from the {@link #peek()} method only in that it throws an
 	 * exception if this queue is empty.
-	 * 
+	 *
 	 * @return the head of this queue.
 	 * @throws NoSuchElementException
 	 *             if this queue is empty.
@@ -137,7 +137,7 @@ public class RoundRobinQueue<T> implements Queue<T> {
 
 	/**
 	 * Retrieves and removes the head of this queue.
-	 * 
+	 *
 	 * @return the head of this queue, or null if this queue is empty.
 	 */
 	@Override
@@ -152,7 +152,7 @@ public class RoundRobinQueue<T> implements Queue<T> {
 	/**
 	 * Retrieves, but does not remove, the head of this queue, returning null if
 	 * this queue is empty.
-	 * 
+	 *
 	 * @return the head of this queue, or null if this queue is empty.
 	 */
 	@Override
@@ -251,13 +251,13 @@ public class RoundRobinQueue<T> implements Queue<T> {
 
 	/**
 	 * Deep copy of another RoundRobinQueue.
-	 * 
+	 *
 	 * This method is used for semi-destructive iteration methods.
-	 * 
+	 *
 	 * NOTE: this assumes {@link #getQueueId(Object)} behaves the same for this
 	 * and that.
-	 * 
-	 * @param that
+	 *
+	 * @param that a RoundRobinQueue to make a deep copy of
 	 */
 	public RoundRobinQueue(final RoundRobinQueue<T> that) {
 		Iterator<LinkedList<T>> iter = that.queueList.iterator();
@@ -274,10 +274,10 @@ public class RoundRobinQueue<T> implements Queue<T> {
 
 	/**
 	 * Flatten queue to a list.
-	 * 
+	 *
 	 * Creates a copy (see {@link #RoundRobinQueue(RoundRobinQueue)}, then
 	 * builds list by polling until it is empty.
-	 * 
+	 *
 	 * @return list of all items currently in queue.
 	 */
 	public List<T> toList() {

@@ -7,9 +7,16 @@ package gov.usgs.earthquake.qdm;
  */
 public class Point {
 
+  /** A double for x position */
   public double x;
+  /** A double for y position */
   public double y;
 
+  /**
+   * Constructor
+   * @param x double x pos
+   * @param y double y pos
+   */
   public Point(double x, double y) {
     this.x = x;
     this.y = y;

@@ -54,11 +54,16 @@ public class Ini extends Properties {
 	/** Section names map to Section properties. */
 	private HashMap<String, Properties> sections = new HashMap<String, Properties>();
 
+	/** String for representing a comment start */
 	public static final String COMMENT_START = ";";
+	/** String for representing an alternate comment start */
 	public static final String ALTERNATE_COMMENT_START = "#";
 
+	/** String to represent a section start */
 	public static final String SECTION_START = "[";
+	/** String to represent a section end */
 	public static final String SECTION_END = "]";
+	/** String to delimit properties */
 	public static final String PROPERTY_DELIMITER = "=";
 
 	/**

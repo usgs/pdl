@@ -67,18 +67,22 @@ public class NATSStreamingNotificationSender extends DefaultNotificationSender {
     super.shutdown();
   }
 
+  /** @return NATSClient */
   public NATSClient getClient() {
     return client;
   }
 
+  /** @param client NATSClient to set */
   public void setClient(NATSClient client) {
     this.client = client;
   }
 
+  /** @return subject */
   public String getSubject() {
     return subject;
   }
 
+  /** @param subject to set */
   public void setSubject(String subject) {
     this.subject = subject;
   }

@@ -34,24 +34,38 @@ public class OriginIndexerModule extends DefaultIndexerModule {
   private GeoserveRegionsService geoserveRegions;
 
 
+  /** Property for places endpoint url */
   public static final String PLACES_ENDPOINT_URL_PROPERTY = "placesEndpointUrl";
+  /** property for regions endpoint url */
   public static final String REGIONS_ENDPOINT_URL_PROPERTY = "regionsEndpointUrl";
+  /** property for connectTimeout */
   public static final String CONNECT_TIMEOUT_PROPERTY = "connectTimeout";
+  /** Properties for readTimeout */
   public static final String READ_TIMEOUT_PROPERTY = "readTimeout";
 
-
+  /** Property for Geoserve distance threshold */
   public static final String GEOSERVE_DISTANCE_THRESHOLD_PROPERTY = "geoserveDistanceThreshold";
 
-  // Distance threshold (in km), determines whether to use fe region
-  // or nearest place in the event title
+  /**
+   * Distance threshold (in km), determines whether to use fe region
+   * or nearest place in the event title
+   */
   public static final int DEFAULT_GEOSERVE_DISTANCE_THRESHOLD = 300;
 
   private int distanceThreshold;
 
+  /**
+   * Empty constructor
+   * Do nothing, must be configured through bootstrapping before use
+   */
   public OriginIndexerModule() {
-    // Do nothing, must be configured through bootstrapping before use
   }
 
+  /**
+   * Constructor
+   * @param geoservePlaces GeoservePlacesService
+   * @param geoserveRegions GeoserveRegionsService
+   */
   public OriginIndexerModule(
       final GeoservePlacesService geoservePlaces,
       final GeoserveRegionsService geoserveRegions
@@ -233,6 +247,8 @@ public class OriginIndexerModule extends DefaultIndexerModule {
    * @param longitude event longitude in degrees
    *
    * @return {String} event name
+   *
+   * @throws IOException if IO error occurs
    */
   public String getEventTitle(BigDecimal latitude, BigDecimal longitude) throws IOException {
     try {
@@ -249,6 +265,11 @@ public class OriginIndexerModule extends DefaultIndexerModule {
     return this.geoserveRegions.getFeRegionName(latitude, longitude);
   }
 
+  /**
+   * Takes properties from feature and formats them into a string
+   * @param feature feature to format
+   * @return string with distance, direction, name, and admin
+   */
   public String formatEventTitle(JsonObject feature) {
     JsonObject properties = feature.getJsonObject("properties");
 

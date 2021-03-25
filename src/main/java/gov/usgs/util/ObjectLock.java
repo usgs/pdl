@@ -110,7 +110,7 @@ public class ObjectLock<T> {
 	 *
 	 * @param object
 	 *            the object to lock for reading.
-	 * @throws InterruptedException
+	 * @throws InterruptedException if thread is interrupted
 	 */
 	public void acquireReadLock(final T object) throws InterruptedException {
 		ReentrantReadWriteLock lock = null;
@@ -161,7 +161,7 @@ public class ObjectLock<T> {
 	 *
 	 * @param object
 	 *            the object to lock for writing.
-	 * @throws InterruptedException
+	 * @throws InterruptedException if thread is interrupted
 	 */
 	public void acquireWriteLock(final T object) throws InterruptedException {
 		ReentrantReadWriteLock lock = null;
@@ -195,7 +195,7 @@ public class ObjectLock<T> {
 	 *
 	 * @param object
 	 *            the object to lock.
-	 * @throws InterruptedException
+	 * @throws InterruptedException if thread is interrupted
 	 */
 	public void acquireLock(final T object) throws InterruptedException {
 		acquireWriteLock(object);

@@ -208,6 +208,7 @@ public class StreamUtils {
 	 * @param to
 	 *            streamable target.
 	 * @throws IOException
+	 *            if IO error occurs
 	 */
 	public static void transferStream(final Object from, final Object to)
 			throws IOException {
@@ -222,6 +223,8 @@ public class StreamUtils {
 	 *            streamable source.
 	 * @param to
 	 *            streamable target.
+	 * @param bufferSize
+	 *            size of buffer
 	 * @throws IOException
 	 *             if thrown by calls to read/write on streams.
 	 */

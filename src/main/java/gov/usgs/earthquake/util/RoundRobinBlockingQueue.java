@@ -8,10 +8,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Round Robin Blocking Queue.
- * 
+ *
  * {@link #put(Object)} and {@link #take()} are recommended, as other methods
  * internally call these methods.
- * 
+ *
  * @param <T> queue item type.
  */
 public class RoundRobinBlockingQueue<T> extends RoundRobinQueue<T> implements
@@ -20,6 +20,7 @@ public class RoundRobinBlockingQueue<T> extends RoundRobinQueue<T> implements
 	private final ReentrantLock changeLock;
 	private final Condition notEmptyCondition;
 
+	/** Constructor */
 	public RoundRobinBlockingQueue() {
 		changeLock = new ReentrantLock();
 		notEmptyCondition = changeLock.newCondition();
@@ -63,7 +64,7 @@ public class RoundRobinBlockingQueue<T> extends RoundRobinQueue<T> implements
 
 	/**
 	 * Offer an item to the queue.
-	 * 
+	 *
 	 * Calls {@link #add(Object)}, but returns false if any exceptions thrown.
 	 */
 	@Override
@@ -77,7 +78,7 @@ public class RoundRobinBlockingQueue<T> extends RoundRobinQueue<T> implements
 
 	/**
 	 * Offer an item to the queue.
-	 * 
+	 *
 	 * Same as {@link #offer(Object)}, this is an unbounded queue.
 	 */
 	@Override
@@ -116,7 +117,7 @@ public class RoundRobinBlockingQueue<T> extends RoundRobinQueue<T> implements
 
 	/**
 	 * Put an item in the queue.
-	 * 
+	 *
 	 * @throws InterruptedException
 	 *             if interrupted while acquiring lock.
 	 */
@@ -138,7 +139,7 @@ public class RoundRobinBlockingQueue<T> extends RoundRobinQueue<T> implements
 
 	/**
 	 * Unbounded queues return Integer.MAX_VALUE.
-	 * 
+	 *
 	 * @return Integer.MAX_VALUE;
 	 */
 	@Override

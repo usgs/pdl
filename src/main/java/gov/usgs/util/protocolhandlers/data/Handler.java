@@ -12,6 +12,7 @@ import java.net.URLStreamHandler;
  */
 public class Handler extends URLStreamHandler {
 
+  /** property for protocol handlers */
   public static final String PROTOCOL_HANDLERS_PROPERTY = "java.protocol.handler.pkgs";
 
   /**
