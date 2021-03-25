@@ -33,10 +33,10 @@ public class SimpleLogFileHandler extends Handler {
 
 	/**
 	 * Create a default SimpleLogHandler.
-	 * 
+	 *
 	 * Uses the system locale to roll log files once a day, and default filename
 	 * format "log_YYYYMMDD.log".
-	 * 
+	 *
 	 * @param logDirectory
 	 *            the directory to write log files.
 	 */
@@ -46,7 +46,7 @@ public class SimpleLogFileHandler extends Handler {
 
 	/**
 	 * Create a SimpleLogHandler with a custom filename format.
-	 * 
+	 *
 	 * @param logDirectory
 	 *            the directory to write log files.
 	 * @param filenameFormat
@@ -96,7 +96,7 @@ public class SimpleLogFileHandler extends Handler {
 
 	/**
 	 * Retrieve the outputstream for the current log file.
-	 * 
+	 *
 	 * @param date
 	 *            the date of the message about to be logged.
 	 * @return and OutputStream where the log message may be written.
@@ -146,7 +146,12 @@ public class SimpleLogFileHandler extends Handler {
 	private static final Logger LOGGER = Logger
 			.getLogger(SimpleLogFileHandler.class.getName());
 
-	public static void main(final String[] args) throws Exception {
+		/**
+		 * Testing for handler
+		 * @param args CLI args
+		 * @throws Exception if error occurs
+		 */
+			public static void main(final String[] args) throws Exception {
 		SimpleDateFormat ridiculouslyShortLogs = new SimpleDateFormat(
 				"'log_'yyyyMMddHHmmss'.log'");
 		File logDirectory = new File("log");

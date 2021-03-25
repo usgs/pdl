@@ -30,19 +30,26 @@ public class ShakeMapIndexerModule extends DefaultIndexerModule {
 	private static final Logger LOGGER = Logger
 			.getLogger(ShakeMapIndexerModule.class.getName());
 
+	/** Path to overlay img */
 	public static final String OVERLAY_IMAGE_PATH = "download/ii_overlay.png";
+	/** Property for overlay width */
 	public static final String OVERLAY_WIDTH_PROPERTY = "overlayWidth";
+	/** Property for overlay height */
 	public static final String OVERLAY_HEIGHT_PROPERTY = "overlayHeight";
 
+	/** CONTAINS_EPICENTER_WEIGHT */
 	public static final int CONTAINS_EPICENTER_WEIGHT = 50;
+	/** CENTERED_ON_EPICENTER_WEIGHT */
 	public static final int CENTERED_ON_EPICENTER_WEIGHT = 25;
-	// Number of degrees at which no additional weight will be
-	// assigned based on the proximity of the map center to the
-	// epicenter.
+	/** Number of degrees at which no additional weight will be
+	 * assigned based on the proximity of the map center to the
+	 * epicenter.
+	 */
 	public static final double MAX_DELTA_DEGREES = 2.0;
 
-	// ShakeMap atlas is the most preferred ShakeMap contributor
+	/** ShakeMap atlas is the most preferred ShakeMap contributor */
 	public static final String SHAKEMAP_ATLAS_SOURCE = "atlas";
+	/** Atlas weight */
 	public static final int SHAKEMAP_ATLAS_WEIGHT = 200;
 
 	@Override

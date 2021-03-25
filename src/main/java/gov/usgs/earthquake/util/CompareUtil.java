@@ -8,13 +8,15 @@ public class CompareUtil {
 	/**
 	 * A method to simplify comparison of two values, either of which may be
 	 * null.
-	 * 
+	 *
 	 * For purposes of this comparison, null values are &gt; non-null values.
-	 * 
+	 *
 	 * @param a
 	 *            value to compare
 	 * @param b
 	 *            value to compare
+	 * @param <T>
+	 *            type
 	 * @return -1, if a is not null and b is null; 0, if a is null and b is
 	 *         null; 1, if a is null and b is not null; otherwise,
 	 *         a.compareTo(b).

@@ -4,17 +4,25 @@ import java.util.ArrayList;
 
 /**
  * A polygon without holes.
- * 
+ *
  * Points are assumed to use x=longitude, y=latitude.
  * A "default" region has no boundary points, and contains all points.
  */
 public class Region {
 
+  /** String for net id */
   public String netid;
+  /** String for region id */
   public String regionid;
 
+  /** Arraylist of points */
   public ArrayList<Point> points;
 
+  /**
+   * Region constructor
+   * @param netid string
+   * @param regionid string
+   */
   public Region(String netid, String regionid) {
     this.netid = netid;
     this.regionid = regionid;
@@ -25,6 +33,9 @@ public class Region {
    * Method to determine if this lat-lon in this region? In or out algorithm taken
    * from an algorithm by Edwards and Coleman of Oak Ridge Lab, version for BNL by
    * Benkovitz translated to C by Andy Michael and into Java by Alan Jones.
+   *
+   * @param xy point
+   * @return bool if point is in region
    */
   public boolean inpoly(Point xy) {
     int in;

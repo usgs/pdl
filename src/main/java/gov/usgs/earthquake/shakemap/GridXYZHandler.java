@@ -26,21 +26,29 @@ import java.text.SimpleDateFormat;
  */
 public class GridXYZHandler {
 
+	/** Format for event times */
 	public static final SimpleDateFormat EVENT_TIMESTAMP_FORMAT = new SimpleDateFormat(
 			"MMM dd yyyy HH:mm:ss zzz");
+	/** Format for process times */
 	public static final SimpleDateFormat PROCESS_TIMESTAMP_FORMAT = new SimpleDateFormat(
 			"'(Process time: 'EEE MMM dd HH:mm:ss yyyy')'");
 
 	private ShakeMap shakemap;
 
+	/**
+	 * Constructor
+	 * @param shakemap a shakemap
+	 */
 	public GridXYZHandler(ShakeMap shakemap) {
 		this.shakemap = shakemap;
 	}
 
+	/** @return shakemap */
 	public ShakeMap getShakemap() {
 		return shakemap;
 	}
 
+	/** @param shakemap to set */
 	public void setShakemap(ShakeMap shakemap) {
 		this.shakemap = shakemap;
 	}
@@ -49,6 +57,7 @@ public class GridXYZHandler {
 	 * Read first line of grid.xyz file and set properties on ShakeMap object.
 	 *
 	 * @param in the grid.xyz input stream.
+	 * @throws Exception if error occurs
 	 */
 	public void parse(final InputStream in) throws Exception {
 		try {
@@ -99,6 +108,12 @@ public class GridXYZHandler {
 		}
 	}
 
+	/**
+	 * Appends a string array of parts with a delimeter inbetween
+	 * @param delimeter to add between parts
+	 * @param parts string array to combine
+	 * @return A string of delimited parts
+	 */
 	protected String join(final String delimeter, final String[] parts) {
 		StringBuffer buf = new StringBuffer();
 		if (parts == null) {

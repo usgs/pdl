@@ -12,7 +12,7 @@ import gov.usgs.util.XmlUtils;
 
 /**
  * XML SAX Handler for ANSS "regions.xml".
- * 
+ *
  * See the resource file <code>etc/config/regions.xml</code>
  *
  * Example:
@@ -29,20 +29,21 @@ import gov.usgs.util.XmlUtils;
  */
 public class RegionsHandler extends SAXAdapter {
 
+    /** Logger object */
     public static final Logger LOGGER = Logger.getLogger(RegionsHandler.class.getName());
 
-    // the regions that have been parsed
+    /** the regions that have been parsed */
     public Regions regions = new Regions();
-    // update timestamp
+    /** update timestamp */
     public Date updated = null;
-    // reported format version (no version-specific logic implemented)
+    /** reported format version (no version-specific logic implemented) */
     public String formatVersion = null;
-    
+
     // variables for tracking state
     private boolean inRegions = false;
     private String netid = null;
     private Region region = null;
-    
+
     /**
      * Start Element handler.
      *
@@ -94,7 +95,7 @@ public class RegionsHandler extends SAXAdapter {
 
     /**
      * End element handler.
-     * 
+     *
      * Adds built region objects to regions object.
      *
      * @param uri namespace of element.

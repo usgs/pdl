@@ -15,6 +15,10 @@ public class DataURLConnection extends URLConnection {
   private byte[] data;
   private String type;
 
+  /**
+   * @param url URL
+   * @throws Exception if error occurs
+   */
   public DataURLConnection(final URL url) throws Exception {
     super(url);
 
