@@ -35,14 +35,20 @@ public class EventSummary implements Comparable<EventSummary> {
 	public EventSummary() {
 	}
 
+	/** @param indexId to set */
 	public void setIndexId(Long indexId) {
 		this.indexId = indexId;
 	}
 
+	/** @return indexID */
 	public Long getIndexId() {
 		return indexId;
 	}
 
+	/**
+	 * Combines source + source code for ID or returns null
+	 * @return Id or null
+	 */
 	public String getId() {
 		if (source != null && sourceCode != null) {
 			return source + sourceCode;
@@ -50,66 +56,82 @@ public class EventSummary implements Comparable<EventSummary> {
 		return null;
 	}
 
+	/** @return source */
 	public String getSource() {
 		return source;
 	}
 
+	/** @param source to set */
 	public void setSource(String source) {
 		this.source = source;
 	}
 
+	/** @return sourceCode */
 	public String getSourceCode() {
 		return sourceCode;
 	}
 
+	/** @param sourceCode to set */
 	public void setSourceCode(String sourceCode) {
 		this.sourceCode = sourceCode;
 	}
 
+	/** @return time */
 	public Date getTime() {
 		return time;
 	}
 
+	/** @param time to set */
 	public void setTime(Date time) {
 		this.time = time;
 	}
 
+	/** @return latitude */
 	public BigDecimal getLatitude() {
 		return latitude;
 	}
 
+	/** @param latitude to set */
 	public void setLatitude(BigDecimal latitude) {
 		this.latitude = latitude;
 	}
 
+	/** @return longitude */
 	public BigDecimal getLongitude() {
 		return longitude;
 	}
 
+	/** @param longitude to set */
 	public void setLongitude(BigDecimal longitude) {
 		this.longitude = longitude;
 	}
 
+	/** @return depth */
 	public BigDecimal getDepth() {
 		return depth;
 	}
 
+	/** @param depth to set */
 	public void setDepth(BigDecimal depth) {
 		this.depth = depth;
 	}
 
+	/** @return magnitude */
 	public BigDecimal getMagnitude() {
 		return magnitude;
 	}
 
+	/** @param magnitude to set */
 	public void setMagnitude(BigDecimal magnitude) {
 		this.magnitude = magnitude;
 	}
 
+	/** @param deleted to set */
 	public void setDeleted(final boolean deleted) {
 		this.deleted = deleted;
 	}
 
+	/** @return deleted */
 	public boolean isDeleted() {
 		return deleted;
 	}
@@ -117,7 +139,7 @@ public class EventSummary implements Comparable<EventSummary> {
 	/**
 	 * These properties are derived from product properties, and are those
 	 * desirable for searching at an event level.
-	 * 
+	 *
 	 * @return The properties of this event.
 	 */
 	public Map<String, String> getProperties() {
@@ -125,7 +147,7 @@ public class EventSummary implements Comparable<EventSummary> {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return A map of event codes associated with this event.
 	 */
 	public Map<String, String> getEventCodes() {

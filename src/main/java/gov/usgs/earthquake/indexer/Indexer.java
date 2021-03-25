@@ -67,15 +67,16 @@ public class Indexer extends DefaultNotificationListener {
 
 	/** Preferred weight for persistent trump. */
 	public static final long TRUMP_PREFERRED_WEIGHT = 100000000;
-
+	/** Type for persistent trimp */
 	public static final String TRUMP_PRODUCT_TYPE = "trump";
+	/** Prefix for persistent trump */
 	public static final String PERSISTENT_TRUMP_PREFIX = "trump-";
 
 	/** Property name to configure a custom associator. */
 	public static final String ASSOCIATOR_CONFIG_PROPERTY = "associator";
-
+	/** Property to associate using current products */
 	public static final String ASSOCIATE_USING_CURRENT_PRODUCTS_PROPERTY = "associateUsingCurrentProducts";
-
+	/** Default state for associate using current products */
 	public static final String DEFAULT_ASSOCIATE_USING_CURRENT_PRODUCTS = "false";
 
 	/** Property name to configure a custom storage. */
@@ -158,7 +159,9 @@ public class Indexer extends DefaultNotificationListener {
 	private boolean disableArchive = false;
 
 	// -- Configurable property names -- //
+	/** Configurable property for index archive internal */
 	public static final String INDEX_ARCHIVE_INTERVAL_PROPERTY = "archiveInterval";
+	/** Configurable property for index archive policy */
 	public static final String INDEX_ARCHIVE_POLICY_PROPERTY = "archivePolicy";
 
 	// -- Default configurable property values -- //
@@ -412,7 +415,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * NOT synchronized to allow multiple threads to access.
 	 * readProductIndex.hasProduct is synchronized.
 	 *
-	 * @param id
+	 * @param id ProductId to check
 	 * @return true if product has already been indexed.
 	 */
 	protected boolean hasProductBeenIndexed(final ProductId id) {
@@ -525,7 +528,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * @param force
 	 *            Whether to reprocess products that have already been processed
 	 *            (true), or skip (false).
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public void onProduct(final Product product, final boolean force) throws Exception {
 		ProductId id = product.getId();
@@ -568,6 +571,13 @@ public class Indexer extends DefaultNotificationListener {
 		}
 	}
 
+	/**
+	 * Stores a product
+	 * @param product Product to store
+	 * @param force if should skip already indexed check
+	 * @return Product if stored, null if not
+	 * @throws Exception if error occurs
+	 */
 	public Product storeProduct(final Product product, final boolean force) throws Exception {
 		final ProductId id = product.getId();
 		final long beginStore = new Date().getTime();
@@ -600,6 +610,9 @@ public class Indexer extends DefaultNotificationListener {
 
 	/**
 	 * Use modules to summarize product.
+	 * @param product To summarize
+	 * @return A product summary
+	 * @throws Exception if error occurs
 	 */
 	public ProductSummary summarizeProduct(final Product product) throws Exception {
 		// Find best available indexer module
@@ -609,6 +622,9 @@ public class Indexer extends DefaultNotificationListener {
 
 	/**
 	 * Add product summary to product index.
+	 * @param productSummary to add
+	 * @return Summary added to index
+	 * @throws Exception if error occurs
 	 */
 	protected synchronized ProductSummary indexProduct(
 			ProductSummary productSummary) throws Exception {
@@ -1067,7 +1083,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * @param id
 	 *            id to find.
 	 * @return matching product summary or null.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected ProductSummary getProductSummaryById(final ProductId id)
 			throws Exception {
@@ -1090,7 +1106,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * @param preferredWeight
 	 *            the weight to set.
 	 * @return event with updated summary.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected Event setSummaryWeight(Event event, ProductSummary summary,
 			final Long preferredWeight) throws Exception {
@@ -1124,7 +1140,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * @param summary
 	 *            the summary.
 	 * @return event with updated summary.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected Event resummarizeProduct(final Event event,
 			final ProductSummary summary) throws Exception {
@@ -1161,7 +1177,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * @param updatedEvent
 	 *            the event after the indexer made any changes.
 	 * @return List of changes made during this method.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected synchronized List<IndexerChange> checkForEventSplits(
 			final ProductSummary summary, final Event originalEvent,
@@ -1282,7 +1298,7 @@ public class Indexer extends DefaultNotificationListener {
 	 *            The event (with products) that will be removed from the root
 	 * @return copy of root without the products that have been removed. The
 	 *         indexId property of leaf is updated to its new value.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected synchronized Event splitEvents(final Event root, final Event leaf)
 			throws Exception {
@@ -1319,7 +1335,8 @@ public class Indexer extends DefaultNotificationListener {
 	 *            The target event into which the child is merged.
 	 * @param child
 	 *            The child event to be merged into the target.
-	 * @throws Exception
+	 * @return the updated event
+	 * @throws Exception if error occurs
 	 */
 	protected synchronized Event mergeEvents(final Event target,
 			final Event child) throws Exception {
@@ -1352,7 +1369,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * @param updatedEvent
 	 *            the event after the summary was associated.
 	 * @return list of any merge type changes.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected synchronized List<IndexerChange> checkForEventMerges(
 			final ProductSummary summary, final Event originalEvent,
@@ -1497,6 +1514,12 @@ public class Indexer extends DefaultNotificationListener {
 		return changes;
 	}
 
+	/**
+	 * Takes a summary return the previous
+	 * @param summary A product summary
+	 * @return The previous summary
+	 * @throws Exception if error occurs
+	 */
 	protected synchronized ProductSummary getPrevProductVersion(
 			ProductSummary summary) throws Exception {
 		ProductSummary prevSummary = null;
@@ -1535,10 +1558,10 @@ public class Indexer extends DefaultNotificationListener {
 	 * @see Associator#getSearchRequest(ProductSummary)
 	 * @see Associator#chooseEvent(List, ProductSummary)
 	 *
-	 * @param summary
+	 * @param summary ProductSummary
 	 * @return Event to which a productSummary is associated, or null if not
 	 *         found.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected synchronized Event getPrevEvent(ProductSummary summary)
 			throws Exception {
@@ -1551,7 +1574,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * @param summary the previous event.
 	 * @param associating whether associating (vs archiving).
 	 * @return previous event, or null if none found.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected synchronized Event getPrevEvent(ProductSummary summary,
 			boolean associating) throws Exception {
@@ -1967,6 +1990,8 @@ public class Indexer extends DefaultNotificationListener {
 	 * the index.
 	 *
 	 * @see #archivePolicies
+	 * @return Int array of size 2
+	 * @throws Exception if error occurs
 	 */
 	public synchronized int[] purgeExpiredProducts() throws Exception {
 		int[] counts = { 0, 0 };
@@ -2089,7 +2114,7 @@ public class Indexer extends DefaultNotificationListener {
 	/**
 	 * Removes the given event from the Indexer ProductIndex and ProductStorage.
 	 *
-	 * @param event
+	 * @param event event to remove
 	 * @throws Exception
 	 *             If errors occur while removing the event
 	 */
@@ -2114,7 +2139,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * Removes the given summary from the Indexer ProductIndex and
 	 * ProductStorage.
 	 *
-	 * @param summary
+	 * @param summary to remove
 	 * @throws Exception
 	 *             If errors occur while removing the summary
 	 */
@@ -2186,7 +2211,7 @@ public class Indexer extends DefaultNotificationListener {
 	 * @param request
 	 *            the search request.
 	 * @return the search response.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public synchronized SearchResponse search(SearchRequest request)
 			throws Exception {
@@ -2242,10 +2267,12 @@ public class Indexer extends DefaultNotificationListener {
 		return response;
 	}
 
+	/** @return disableArchive */
 	public boolean isDisableArchive() {
 		return disableArchive;
 	}
 
+	/** @param disableArchive boolean to set */
 	public void setDisableArchive(boolean disableArchive) {
 		this.disableArchive = disableArchive;
 	}

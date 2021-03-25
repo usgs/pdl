@@ -9,10 +9,10 @@ import java.util.List;
 
 /**
  * Implement event association logic used by the indexer.
- * 
+ *
  * It is the associators job to describe how to find matching events, and then
  * choose the best matching event that was found.
- * 
+ *
  * The indexer uses the Associator to build a query used to search the
  * ProductIndex. After querying the ProductIndex, the indexer then calls the
  * chooseEvent method with any found events.
@@ -21,7 +21,7 @@ public interface Associator {
 
 	/**
 	 * Create a SearchRequest that can be used to find related events.
-	 * 
+	 *
 	 * @param summary
 	 *            the product summary being associated.
 	 * @return a SearchRequest that can be used to search the ProductIndex.
@@ -31,7 +31,7 @@ public interface Associator {
 	/**
 	 * Choose the best matching event for a product summary from a list of
 	 * events. If no events match, returns null.
-	 * 
+	 *
 	 * @param events
 	 *            a list of candidate events.
 	 * @param summary
@@ -43,7 +43,7 @@ public interface Associator {
 
 	/**
 	 * Check if two events are associated.
-	 * 
+	 *
 	 * @param event1
 	 *            the first event
 	 * @param event2
@@ -54,9 +54,9 @@ public interface Associator {
 
 	/**
 	 * Get a ProductIndexQuery that searches by eventid.
-	 * 
-	 * @param eventSource
-	 * @param eventCode
+	 *
+	 * @param eventSource relevant to event
+	 * @param eventCode relevant to event
 	 * @return a ProductIndexQuery that searches by eventid.
 	 */
 	public ProductIndexQuery getEventIdQuery(final String eventSource,
@@ -64,10 +64,10 @@ public interface Associator {
 
 	/**
 	 * Get a ProductIndexQuery that searches by location.
-	 * 
-	 * @param time
-	 * @param latitude
-	 * @param longitude
+	 *
+	 * @param time of event
+	 * @param latitude of event
+	 * @param longitude of event
 	 * @return a ProductIndexQuery that searches by location.
 	 */
 	public ProductIndexQuery getLocationQuery(final Date time,

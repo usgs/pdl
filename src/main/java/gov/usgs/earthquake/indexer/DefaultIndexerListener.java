@@ -13,34 +13,34 @@ import java.util.logging.Logger;
 /**
  * DefaultIndexerListener provides a starting point from which all
  * IndexerListeners may extend.
- * 
+ *
  * As a child-class of the AbstractListener, this may be configured with all of
  * the parent parameters and also accepts the following:
- * 
+ *
  * <dl>
  * <dt>command</dt>
  * <dd>(Required) The command to execute. This must be an executable command and
  * may include arguments. Any product-specific arguments are appended at the end
  * of command.</dd>
- * 
+ *
  * <dt>storage</dt>
  * <dd>(Required) A directory used to store all products. Each product is
  * extracted into a separate directory within this directory and is referenced
  * by the --directory=/path/to/directory argument when command is executed.</dd>
- * 
+ *
  * <dt>processUnassociated</dt>
  * <dd>(Optional, Default = false) Whether or not to process unassociated
  * products. Valid values are "true" and "false".</dd>
- * 
+ *
  * <dt>processPreferredOnly</dt>
  * <dd>(Optional, Default = false) Whether or not to process only preferred
  * products of the type accepted by this listener. Valid values are "true" and
  * "false".</dd>
- * 
+ *
  * <dt>ignoreArchive</dt>
  * <dd>(Optional, Default = false) Whether or not to ignore EVENT_ARCHIVED and
  * PRODUCT_ARCHIVED indexer events. Value values are "true" and "false".</dd>
- * 
+ *
  * </dl>
  */
 public class DefaultIndexerListener extends AbstractListener implements
@@ -49,16 +49,24 @@ public class DefaultIndexerListener extends AbstractListener implements
 	private static final Logger LOGGER = Logger
 			.getLogger(DefaultIndexerListener.class.getName());
 
+	/** Property for process preferred only */
 	public static final String PROCESS_PREFERRED_ONLY_PROPERTY = "processPreferredOnly";
+	/** Default state of process preferred only */
 	public static final String PROCESS_PREFERRED_ONLY_DEFAULT = "false";
 
+	/** Property for process unassociated */
 	public static final String PROCESS_UNASSOCIATED_PROPERTY = "processUnassociated";
+	/** Default state of process unassociated */
 	public static final String PROCESS_UNASSOCIATED_DEFAULT = "true";
 
+	/** Property for process only when event change */
 	public static final String PROCESS_ONLY_WHEN_EVENT_CHANGE_PROPERTY = "processOnlyWhenEventChanged";
+	/** Default state of process only when event change */
 	public static final String PROCESS_ONLY_WHEN_EVENT_CHANGE_DEFAULT = "false";
 
+	/** Property for Ignore archive */
 	public static final String IGNORE_ARCHIVE_PROPERTY = "ignoreArchive";
+	/** Default state of ignore archive */
 	public static final String IGNORE_ARCHIVE_DEFAULT = "true";
 
 	/** Whether or not to process only preferred products. */
@@ -102,7 +110,7 @@ public class DefaultIndexerListener extends AbstractListener implements
 	 * @param change
 	 *            the indexer event that has occurred
 	 * @return whether this external indexer listener handles this product type
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public boolean accept(IndexerEvent change) throws Exception {
 		String productType = null;
@@ -155,6 +163,14 @@ public class DefaultIndexerListener extends AbstractListener implements
 		return true;
 	}
 
+	/**
+	 * Returns a boolean based on if the preferred event params have changed
+	 * Returns false if change is an archive indexer
+	 * @param event an IndexerEvent
+	 * @param change and IndexerChange
+	 * @return boolean
+	 * @throws Exception if error occurs
+	 */
 	public boolean accept(IndexerEvent event, IndexerChange change)
 			throws Exception {
 		// check whether this is an archive indexer change
@@ -246,28 +262,34 @@ public class DefaultIndexerListener extends AbstractListener implements
 		this.processOnlyPreferredProducts = processOnlyPreferredProducts;
 	}
 
+	/** @param processUnassociatedProducts to set */
 	public void setProcessUnassociatedProducts(
 			final boolean processUnassociatedProducts) {
 		this.processUnassociatedProducts = processUnassociatedProducts;
 	}
 
+	/** @return boolean processUnassociatedProducts */
 	public boolean getProcessUnassociatedProducts() {
 		return processUnassociatedProducts;
 	}
 
+	/** @return boolean processOnlyWhenEventChanged */
 	public boolean isProcessOnlyWhenEventChanged() {
 		return processOnlyWhenEventChanged;
 	}
 
+	/** @param processOnlyWhenEventChanged to set */
 	public void setProcessOnlyWhenEventChanged(
 			boolean processOnlyWhenEventChanged) {
 		this.processOnlyWhenEventChanged = processOnlyWhenEventChanged;
 	}
 
+	/** @return ignoreArchive */
 	public boolean isIgnoreArchive() {
 		return ignoreArchive;
 	}
 
+	/** @param ignoreArchive to set */
 	public void setIgnoreArchive(boolean ignoreArchive) {
 		this.ignoreArchive = ignoreArchive;
 	}

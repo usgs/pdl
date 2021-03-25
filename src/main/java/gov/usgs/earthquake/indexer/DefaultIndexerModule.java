@@ -30,6 +30,7 @@ public class DefaultIndexerModule extends DefaultConfigurable implements Indexer
 
 	private static final Logger LOGGER = Logger.getLogger(DefaultIndexerModule.class.getName());
 
+	/** Property for ignoreRegions */
 	public static final String IGNORE_REGIONS_PROPERTY = "ignoreRegions";
 
 	/** Initial preferred weight. */
@@ -100,6 +101,7 @@ public class DefaultIndexerModule extends DefaultConfigurable implements Indexer
 	 *
 	 * @param summary the summary to calculate a preferred weight.
 	 * @return the absolute preferred weight.
+	 * @throws Exception if error occurs
 	 */
 	protected long getPreferredWeight(final ProductSummary summary) throws Exception {
 		long preferredWeight = DEFAULT_PREFERRED_WEIGHT;
@@ -173,6 +175,7 @@ public class DefaultIndexerModule extends DefaultConfigurable implements Indexer
 		return type;
 	}
 
+	/** @return ignoreRegions */
 	public List<String> getIgnoreRegions() {
 		return ignoreRegions;
 	}
@@ -187,10 +190,12 @@ public class DefaultIndexerModule extends DefaultConfigurable implements Indexer
 		return IndexerModule.LEVEL_DEFAULT;
 	}
 
+	/** @return signatureVerifier */
 	public SignatureVerifier getSignatureVerifier() {
 		return signatureVerifier;
 	}
 
+	/** @param signatureVerifier to set */
 	public void setSignatureVerifier(SignatureVerifier signatureVerifier) {
 		this.signatureVerifier = signatureVerifier;
 	}

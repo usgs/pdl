@@ -21,17 +21,22 @@ import java.util.logging.Logger;
 
 /**
  * An event is a group of products that are nearby in space and time.
- * 
+ *
  * Which products appear in an event depend primarily on the
  * ProductIndexQuery.ResultType that is used when retrieving an event from the
  * index. Unless CURRENT is used, you may not get what you expect.
  */
 public class Event implements Comparable<Event> {
 
+	/** Origin product type */
 	public static final String ORIGIN_PRODUCT_TYPE = "origin";
+	/** Associate product type */
 	public static final String ASSOCIATE_PRODUCT_TYPE = "associate";
+	/** Disassociate product type */
 	public static final String DISASSOCIATE_PRODUCT_TYPE = "disassociate";
+	/** Property for othereventsource */
 	public static final String OTHEREVENTSOURCE_PROPERTY = "othereventsource";
+	/** Property for othereventsourcecode */
 	public static final String OTHEREVENTSOURCECODE_PROPERTY = "othereventsourcecode";
 
 	/** An ID used by the ProductIndex. */
@@ -45,7 +50,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Default constructor.
-	 * 
+	 *
 	 * All fields are set to null, and the list of products is empty.
 	 */
 	public Event() {
@@ -53,7 +58,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Construct an event with only an indexId. The products map will be empty.
-	 * 
+	 *
 	 * @param indexId
 	 *            the indexId to set.
 	 */
@@ -63,7 +68,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Construct and event with an indexId and a list of products.
-	 * 
+	 *
 	 * @param indexId
 	 *            the product index id.
 	 * @param products
@@ -77,10 +82,10 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Copy constructor for event.
-	 * 
+	 *
 	 * The products associated with this event are not cloned, but the list of
 	 * products is.
-	 * 
+	 *
 	 * @param copy
 	 *            the event to clone.
 	 */
@@ -90,7 +95,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Get the index id.
-	 * 
+	 *
 	 * @return the indexId or null if one hasn't been assigned.
 	 */
 	public Long getIndexId() {
@@ -99,7 +104,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Set the index id.
-	 * 
+	 *
 	 * @param indexId
 	 *            the indexId to set.
 	 */
@@ -109,7 +114,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Get all products associated with event, even if they are deleted.
-	 * 
+	 *
 	 * @return all products associated with event.
 	 */
 	public Map<String, List<ProductSummary>> getAllProducts() {
@@ -118,11 +123,11 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Get the event products.
-	 * 
+	 *
 	 * Only returns products that have not been deleted or superseded. This
 	 * method returns a copy of the underlying product map that has been
 	 * filtered to remove deleted products.
-	 * 
+	 *
 	 * @return a map of event products.
 	 * @see #getAllProducts()
 	 */
@@ -141,9 +146,9 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Set products.
-	 * 
+	 *
 	 * ProductSummaries are not cloned, but lists are.
-	 * 
+	 *
 	 * @param newProducts
 	 *            the products to set.
 	 */
@@ -161,9 +166,9 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * A convenience method for adding a product summary to an event object.
-	 * 
+	 *
 	 * Note: this method does not update any associated product index.
-	 * 
+	 *
 	 * @param summary
 	 *            the summary to add to this event.
 	 */
@@ -182,9 +187,9 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * A convenience method for removing a product summary from an event object.
-	 * 
+	 *
 	 * Note: this method does not update any associated product index.
-	 * 
+	 *
 	 * @param summary
 	 *            the summary to remove from this event.
 	 */
@@ -205,10 +210,10 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Convenience method to get products of a given type.
-	 * 
+	 *
 	 * This method always returns a copy of the internal list, and may be empty.
 	 * Only returns products that have not been deleted or superseded.
-	 * 
+	 *
 	 * @param type
 	 *            the product type.
 	 * @return a list of products of that type, which may be empty.
@@ -227,7 +232,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Get all event products (including those that are deleted or superseded).
-	 * 
+	 *
 	 * @return a list of event products.
 	 */
 	public List<ProductSummary> getAllProductList() {
@@ -243,7 +248,7 @@ public class Event implements Comparable<Event> {
 	/**
 	 * Get all event products that have not been deleted or superseded as a
 	 * list.
-	 * 
+	 *
 	 * @return a list of event products.
 	 */
 	public List<ProductSummary> getProductList() {
@@ -258,10 +263,10 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Get preferred products of all types.
-	 * 
+	 *
 	 * This map will contain one product of each type, chosen by preferred
 	 * weight.
-	 * 
+	 *
 	 * @return a map from product type to the preferred product of that type.
 	 */
 	public Map<String, ProductSummary> getPreferredProducts() {
@@ -280,7 +285,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Get the preferred product of a specific type.
-	 * 
+	 *
 	 * @param type
 	 *            type of product to get.
 	 * @return most preferred product of that type, or null if no product of
@@ -292,9 +297,9 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Get a map of all event ids associated with this event.
-	 * 
+	 *
 	 * Same as Event.getEventCodes(this.getAllProductList());
-	 * 
+	 *
 	 * @deprecated use {@link #getAllEventCodes(boolean)} instead.
 	 * @return map of all event ids associated with this event.
 	 */
@@ -304,9 +309,9 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Get a map of all event ids associated with this event.
-	 * 
+	 *
 	 * Map key is eventSource, Map value is eventSourceCode.
-	 * 
+	 *
 	 * @deprecated use {@link #getAllEventCodes(boolean)} instead.
 	 * @param summaries
 	 *            the summaries list to extract event codes from.
@@ -337,7 +342,7 @@ public class Event implements Comparable<Event> {
 	 * Get a map of all event ids associated with this event, recognizing that
 	 * one source may have multiple codes (they broke the rules, but it
 	 * happens).
-	 * 
+	 *
 	 * @param includeDeleted
 	 *            whether to include ids for sub events whose products have all
 	 *            been deleted.
@@ -385,7 +390,7 @@ public class Event implements Comparable<Event> {
 	/**
 	 * Get a list of all the preferred products sorted based on their
 	 * authoritative weights
-	 * 
+	 *
 	 * @return sorted list of ProductSummary objects
 	 */
 	public List<ProductSummary> getPreferredProductsSorted() {
@@ -403,9 +408,9 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Get the event id.
-	 * 
+	 *
 	 * The event id is the combination of event source and event source code.
-	 * 
+	 *
 	 * @return the event id, or null if either event source or event source code
 	 *         is null.
 	 * @see #getSource()
@@ -419,10 +424,10 @@ public class Event implements Comparable<Event> {
 		return null;
 	}
 
-	/*
+	/**
 	 * Get the preferred source for this event. If an origin product exists,
 	 * it's value is used.
-	 * 
+	 *
 	 * @return Source from preferred product or null
 	 */
 	public String getSource() {
@@ -433,10 +438,10 @@ public class Event implements Comparable<Event> {
 		return null;
 	}
 
-	/*
+	/**
 	 * Get the preferred source code for this event. If an origin product
 	 * exists, it's value is used.
-	 * 
+	 *
 	 * @return Source code from preferred product or null
 	 */
 	public String getSourceCode() {
@@ -449,9 +454,9 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Get the product used for eventsource and eventsourcecode.
-	 * 
+	 *
 	 * Event ID comes from the preferred origin product.
-	 * 
+	 *
 	 * @return The most preferred product summary. This summary is used to
 	 *         determine the eventsouce and eventsourcecode.
 	 * @see #getPreferredOriginProduct()
@@ -466,7 +471,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Get the most recent product with origin properties (id, lat, lon, time).
-	 * 
+	 *
 	 * <strong>NOTE</strong>: this product may have been superseded by a delete.
 	 * When an event has not been deleted, this method should be consistent with
 	 *  {@link #getPreferredOriginProduct()}.
@@ -483,7 +488,7 @@ public class Event implements Comparable<Event> {
 	 * <li>products superseded by a delete,
 	 * 		that have origin properties</li>
 	 * </ol>
-	 * 
+	 *
 	 * @return the most recent product with origin properties.
 	 * @see #productHasOriginProperties(ProductSummary)
 	 */
@@ -545,7 +550,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Get the most preferred origin-like product for this event.
-	 * 
+	 *
 	 * The event is considered deleted if the returned product is null, deleted,
 	 * or does not have origin properties.  Information about the event
 	 * may still be available using {@link #getProductWithOriginProperties()}.
@@ -570,7 +575,7 @@ public class Event implements Comparable<Event> {
 	 * 		</ol>
 	 * </li>
 	 * </ul>
-	 * 
+	 *
 	 * @return the most recent product with origin properties.
 	 * @see #productHasOriginProperties(ProductSummary)
 	 */
@@ -640,7 +645,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Check if a product can define an event (id, lat, lon, time).
-	 * 
+	 *
 	 * @param product
 	 *            product to check.
 	 * @return true if product has id, lat, lon, and time properties.
@@ -656,19 +661,19 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Get the most preferred magnitude product for event.
-	 * 
+	 *
 	 * Currently calls {@link #getPreferredOriginProduct()}.
-	 * 
+	 *
 	 * @return the most preferred magnitude product for event.
 	 */
 	public ProductSummary getPreferredMagnitudeProduct() {
 		return getPreferredOriginProduct();
 	}
 
-	/*
+	/**
 	 * Get the preferred time for this event. If an origin product exists, it's
 	 * value is used.
-	 * 
+	 *
 	 * @return Time from preferred product or null
 	 */
 	public Date getTime() {
@@ -679,10 +684,10 @@ public class Event implements Comparable<Event> {
 		return null;
 	}
 
-	/*
+	/**
 	 * Get the preferred latitude for this event. If an origin product exists,
 	 * it's value is used.
-	 * 
+	 *
 	 * @return Latitude from preferred product or null
 	 */
 	public BigDecimal getLatitude() {
@@ -694,10 +699,10 @@ public class Event implements Comparable<Event> {
 
 	}
 
-	/*
+	/**
 	 * Get the preferred longitude for this event. If an origin product exists,
 	 * it's value is used.
-	 * 
+	 *
 	 * @return Longitude from preferred product or null
 	 */
 	public BigDecimal getLongitude() {
@@ -711,7 +716,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Event update time is most recent product update time.
-	 * 
+	 *
 	 * @return the most recent product update time.
 	 */
 	public Date getUpdateTime() {
@@ -727,10 +732,10 @@ public class Event implements Comparable<Event> {
 		return updateTime;
 	}
 
-	/*
+	/**
 	 * Get the preferred depth for this event. If an origin product exists, it's
 	 * value is used.
-	 * 
+	 *
 	 * @return Depth from preferred product or null
 	 */
 	public BigDecimal getDepth() {
@@ -741,6 +746,12 @@ public class Event implements Comparable<Event> {
 		return null;
 	}
 
+	/**
+	 * Get the preferred magntitude for this event. If an origin product exists, it's
+	 * value is used.
+	 *
+	 * @return magnitude from preferred product or null
+	 */
 	public BigDecimal getMagnitude() {
 		ProductSummary preferred = getPreferredMagnitudeProduct();
 		if (preferred != null) {
@@ -749,11 +760,14 @@ public class Event implements Comparable<Event> {
 		return null;
 	}
 
+	/**
+	 * @return boolean if the preferred event is deleted
+	 */
 	public boolean isDeleted() {
 		ProductSummary preferred = getPreferredOriginProduct();
 		if (preferred != null && !preferred.isDeleted() &&
 				Event.productHasOriginProperties(preferred)) {
-			// have "origin" type product, that isn't deleted, 
+			// have "origin" type product, that isn't deleted,
 			// and has origin properties
 			return false;
 		}
@@ -763,7 +777,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Get the most preferred product from a list of products.
-	 * 
+	 *
 	 * @param all
 	 *            a list of products containing only one type of product.
 	 * @return the product with the highest preferred weight, and if tied the
@@ -794,11 +808,11 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Summarize this event into preferred values.
-	 * 
+	 *
 	 * NOTE: the event summary may include information from an origin product,
 	 * even when the preferred origin for the event has been deleted.  Use
 	 * getPreferredOriginProduct() to check the preferred origin of the event.
-	 * 
+	 *
 	 * @return an event summary.
 	 */
 	public EventSummary getEventSummary() {
@@ -823,7 +837,7 @@ public class Event implements Comparable<Event> {
 			summary.setTime(originProduct.getEventTime());
 			summary.setDepth(originProduct.getEventDepth());
 		}
-		
+
 		ProductSummary magnitudeProduct = this.getPreferredMagnitudeProduct();
 		if (magnitudeProduct != null) {
 			summary.setMagnitude(magnitudeProduct.getEventMagnitude());
@@ -842,7 +856,7 @@ public class Event implements Comparable<Event> {
 	/**
 	 * Comparison class that compares two ProductSummary objects based on their
 	 * preferred weight and update time.
-	 * 
+	 *
 	 */
 	static class MostPreferredFirstComparator implements
 			Comparator<ProductSummary> {
@@ -892,13 +906,13 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Find the most preferred product.
-	 * 
+	 *
 	 * If preferredType is not null, products of this type are favored over
 	 * those not of this type.
-	 * 
+	 *
 	 * If preferredNotNullProperty is not null, products that have this property
 	 * set are favored over those without this property set.
-	 * 
+	 *
 	 * @param products
 	 *            the list of products to search.
 	 * @param preferredType
@@ -957,7 +971,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Remove deleted products from the list.
-	 * 
+	 *
 	 * @param products
 	 *            list of products to filter.
 	 * @return copy of the products list with deleted products removed.
@@ -979,7 +993,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Remove deleted products from the list.
-	 * 
+	 *
 	 * @param products
 	 *            list of products to filter.
 	 * @return copy of the products list with deleted products removed.
@@ -1001,7 +1015,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Remove old versions of products from the list.
-	 * 
+	 *
 	 * @param products
 	 *            list of products to filter.
 	 * @return a copy of the products list with products of the same
@@ -1040,7 +1054,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Sort a list of products, most preferred first.
-	 * 
+	 *
 	 * @param products
 	 *            the list of products to sort.
 	 * @return a copy of the list sorted with most preferred first.
@@ -1086,16 +1100,16 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Return a list of sub-events that make up this event.
-	 * 
+	 *
 	 * Event lines are drawn by eventid. Products that have no eventid are
 	 * included with the sub event whose id is considered preferred.
-	 * 
+	 *
 	 * @return map from eventid to event object with products for that eventid.
 	 */
 	public Map<String, Event> getSubEvents() {
 		// Map of sub-events keyed by product "eventId"
 		Map<String, Event> subEvents = new HashMap<String, Event>();
-		
+
 		// Map of events by source_type_code
 		Map<String, Event> productEvents = new HashMap<String, Event>();
 
@@ -1151,7 +1165,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Check if this event has an associate product for another given Event.
-	 * 
+	 *
 	 * @param otherEvent
 	 *            the other event.
 	 * @return true if there is an associate product, false otherwise.
@@ -1190,7 +1204,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Check if this event has an disassociate product for another given Event.
-	 * 
+	 *
 	 * @param otherEvent
 	 *            the other event.
 	 * @return true if there is an disassociate product, false otherwise.
@@ -1229,6 +1243,8 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Same as isAssociated(that, new DefaultAssociator());
+	 * @param that an event to test
+	 * @return boolean true if associated, false otherwise
 	 */
 	public boolean isAssociated(final Event that) {
 		return this.isAssociated(that, new DefaultAssociator());
@@ -1236,7 +1252,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Check if an event is associated to this event.
-	 * 
+	 *
 	 * Reasons events may be considered disassociated:
 	 * <ol>
 	 * <li>Share a common EVENTSOURCE with different EVENTSOURCECODE.</li>
@@ -1244,22 +1260,28 @@ public class Event implements Comparable<Event> {
 	 * <li>Preferred location in space and time is NOT nearby, and no other
 	 * reason to associate.</li>
 	 * </ol>
-	 * 
+	 *
 	 * Reasons events may be considered associated:
 	 * <ol>
 	 * <li>Share a common EVENTID</li>
 	 * <li>Either has an associate product for the other.</li>
 	 * <li>Their preferred location in space and time is nearby.</li>
 	 * </ol>
-	 * 
+	 *
 	 * @param that
 	 *            candidate event to test.
+	 * @param associator
+	 *            An associator to compare two events
 	 * @return true if associated, false otherwise.
 	 */
 	public boolean isAssociated(final Event that, final Associator associator) {
 		return associator.eventsAssociated(this, that);
 	}
 
+	/**
+	 * Depending on logger level, takes in summary data and appends to buffer
+	 * @param logger logger object
+	 */
 	public void log(final Logger logger) {
 		if (logger.isLoggable(Level.FINE)) {
 			EventSummary summary = this.getEventSummary();

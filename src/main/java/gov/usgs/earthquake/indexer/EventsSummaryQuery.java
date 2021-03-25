@@ -12,8 +12,8 @@ public class EventsSummaryQuery extends SearchQuery {
 
 	/**
 	 * Construct an EventsSummaryQuery.
-	 * 
-	 * @param query
+	 *
+	 * @param query ProductIndexQuery
 	 */
 	public EventsSummaryQuery(final ProductIndexQuery query) {
 		super(SearchMethod.EVENTS_SUMMARY, query);
@@ -24,6 +24,7 @@ public class EventsSummaryQuery extends SearchQuery {
 		return result;
 	}
 
+	/** @param events list of EventSummarys to set as result */
 	public void setResult(List<EventSummary> events) {
 		this.result = events;
 	}
