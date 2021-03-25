@@ -96,17 +96,28 @@ import java.net.URL;
  */
 public class BinaryProductHandler implements ProductHandler {
 
+	/** HEADER - BEGINPRODUCT */
 	public static final String HEADER = "BEGINPRODUCT";
+	/** PROPERTY */
 	public static final String PROPERTY = "PROPERTY";
+	/** LINK */
 	public static final String LINK = "LINK";
+	/** CONTENT */
 	public static final String CONTENT = "CONTENT";
+	/** SIGNATURE VERSION */
 	public static final String SIGNATUREVERSION = "SIGNATUREVERSION";
+	/** SIGNATURE */
 	public static final String SIGNATURE = "SIGNATURE";
+	/** ENDPRODUCT */
 	public static final String FOOTER = "ENDPRODUCT";
 
 	private OutputStream out;
 	private BinaryIO io;
 
+	/**
+	 * Constructor. Sets up a new BinaryIO
+	 * @param out an OutputStream
+	 */
 	public BinaryProductHandler(final OutputStream out) {
 		this.out = out;
 		this.io = new BinaryIO();

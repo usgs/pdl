@@ -53,7 +53,7 @@ public class FileContent extends AbstractContent {
 	/**
 	 * Construct a new FileContent that does not use a nested path. same as new
 	 * FileContent(file, file.getParentFile());
-	 * 
+	 *
 	 * @param file
 	 *            the source of content.
 	 */
@@ -66,10 +66,10 @@ public class FileContent extends AbstractContent {
 
 	/**
 	 * Construct a new FileContent from a URLContent for legacy products
-	 * 
+	 *
 	 * @param urlc
 	 *            the source of content.
-	 * @throws URISyntaxException
+	 * @throws URISyntaxException if error in URI
 	 */
 	public FileContent(final URLContent urlc) throws URISyntaxException {
 		super(urlc);
@@ -78,13 +78,15 @@ public class FileContent extends AbstractContent {
 
 	/**
 	 * Convert a Content to a file backed content.
-	 * 
+	 *
 	 * The file written is new File(baseDirectory, content.getPath()).
-	 * 
+	 *
 	 * @param content
 	 *            the content that will be converted to a file.
 	 * @param toWrite
 	 *            the file where content is written.
+	 * @throws IOException
+	 *            if IO error occurs
 	 */
 	public FileContent(final Content content, final File toWrite)
 			throws IOException {
@@ -146,11 +148,11 @@ public class FileContent extends AbstractContent {
 	/**
 	 * Search a directory for files. This is equivalent to
 	 * getDirectoryContents(directory, directory).
-	 * 
+	 *
 	 * @param directory
 	 *            the directory to search.
 	 * @return a map of relative paths to FileContent objects.
-	 * @throws IOException
+	 * @throws IOException if IO error occurs
 	 */
 	public static Map<String, FileContent> getDirectoryContents(
 			final File directory) throws IOException {
@@ -161,13 +163,13 @@ public class FileContent extends AbstractContent {
 	/**
 	 * Search a directory for files. The path to files relative to baseDirectory
 	 * is used as a key in the returned map.
-	 * 
+	 *
 	 * @param directory
 	 *            the directory to search.
 	 * @param baseDirectory
 	 *            the directory used to compute relative paths.
 	 * @return a map of relative paths to FileContent objects.
-	 * @throws IOException
+	 * @throws IOException if IO error occurs
 	 */
 	public static Map<String, FileContent> getDirectoryContents(
 			final File directory, final File baseDirectory) throws IOException {
@@ -195,7 +197,7 @@ public class FileContent extends AbstractContent {
 	/**
 	 * This implementation calls defaultGetMimeType, and exists so subclasses
 	 * can override.
-	 * 
+	 *
 	 * @param file
 	 *            file to check.
 	 * @return corresponding mime type.
@@ -207,7 +209,7 @@ public class FileContent extends AbstractContent {
 	/**
 	 * Check a local list of mime types, and fall back to MimetypeFileTypesMap
 	 * if not specified.
-	 * 
+	 *
 	 * @param file
 	 *            file to check.
 	 * @return corresponding mime type.

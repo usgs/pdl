@@ -19,6 +19,13 @@ public class ContentOutputThread extends Thread {
 	private final String path;
 	private final Content content;
 
+	/**
+	 * Constructor
+	 * @param handler A product handler
+	 * @param id A product ID
+	 * @param path String path
+	 * @param content Content
+	 */
 	public ContentOutputThread(final ProductHandler handler,
 			final ProductId id, final String path, final Content content) {
 		this.handler = handler;

@@ -36,9 +36,9 @@ public class JsonProduct {
   /**
    * Convert product object to json.
    *
-   * @param product
-   * @return
-   * @throws Exception
+   * @param product a product
+   * @return a json object
+   * @throws Exception if error occurs
    */
   public JsonObject getJsonObject(final Product product) throws Exception {
     JsonObjectBuilder json = Json.createObjectBuilder();
@@ -67,6 +67,9 @@ public class JsonProduct {
 
   /**
    * Convert json object to product.
+   * @param json a json object
+   * @return a product
+   * @throws Exception if error occurs
    */
   public Product getProduct(final JsonObject json) throws Exception {
     Product product = new Product(getId(json.getJsonObject("id")));
@@ -87,9 +90,9 @@ public class JsonProduct {
   /**
    * Convert contents map to json.
    *
-   * @param contents
-   * @return
-   * @throws Exception
+   * @param contents contents map
+   * @return JSOnArrayBuilder
+   * @throws Exception if error occurs
    */
   public JsonArrayBuilder getContentsJson(final Map<String, Content> contents) throws Exception {
     final JsonArrayBuilder builder = Json.createArrayBuilder();
@@ -125,9 +128,9 @@ public class JsonProduct {
   /**
    * Convert contents json to map.
    *
-   * @param json
-   * @return
-   * @throws Exception
+   * @param json JsonArray
+   * @return Contents map
+   * @throws Exception if error occurs
    */
   public Map<String, Content> getContents(final JsonArray json) throws Exception {
     Map<String, Content> contents = new HashMap<String, Content>();
@@ -153,9 +156,9 @@ public class JsonProduct {
   /**
    * Create json geometry from product properties.
    *
-   * @param product
-   * @return
-   * @throws Exception
+   * @param product a product
+   * @return JSON geometry via JsonObjectBuilder
+   * @throws Exception if error occurs
    */
   public JsonObjectBuilder getGeometryJson(final Product product) throws Exception {
     final BigDecimal latitude = product.getLatitude();
@@ -188,9 +191,9 @@ public class JsonProduct {
   /**
    * Convert json id to ProductId object.
    *
-   * @param json
-   * @return
-   * @throws Exception
+   * @param json A JsonObject ID
+   * @return a productId
+   * @throws Exception if error occurs
    */
   public ProductId getId(final JsonObject json) throws Exception {
     final String code = json.getString("code");
@@ -202,9 +205,9 @@ public class JsonProduct {
 
   /**
    * Convert ProductId to json object.
-   * @param id
-   * @return
-   * @throws Exception
+   * @param id A ProductId
+   * @return JsonObjectBuilder
+   * @throws Exception if error occurs
    */
   public JsonObjectBuilder getIdJson(final ProductId id) throws Exception {
     return Json.createObjectBuilder()
@@ -216,9 +219,9 @@ public class JsonProduct {
 
   /**
    * Convert json links to map.
-   * @param json
-   * @return
-   * @throws Exception
+   * @param json a Jsonarray
+   * @return a Map of links
+   * @throws Exception if error occurs
    */
   public Map<String, List<URI>> getLinks(final JsonArray json) throws Exception {
     final Map<String, List<URI>> links = new HashMap<String, List<URI>>();
@@ -239,9 +242,9 @@ public class JsonProduct {
   /**
    * Convert links map to json.
    *
-   * @param links
-   * @return
-   * @throws Exception
+   * @param links map
+   * @return JsonArray of JsonArrayBuilder
+   * @throws Exception if error occurs
    */
   public JsonArrayBuilder getLinksJson(final Map<String, List<URI>> links) throws Exception {
     final JsonArrayBuilder builder = Json.createArrayBuilder();
@@ -257,9 +260,9 @@ public class JsonProduct {
 
   /**
    * Convert properties json to map.
-   * @param json
-   * @return
-   * @throws Exception
+   * @param json JsonObject properties
+   * @return A map
+   * @throws Exception if error occurs
    */
   public Map<String, String> getProperties(final JsonObject json) throws Exception {
     final Map<String, String> properties = new HashMap<String, String>();
@@ -272,9 +275,9 @@ public class JsonProduct {
   /**
    * Convert properties map to json.
    *
-   * @param properties
-   * @return
-   * @throws Exception
+   * @param properties Map of properties
+   * @return JsonObjectBuilder
+   * @throws Exception if error occurs
    */
   public JsonObjectBuilder getPropertiesJson(final Map<String, String> properties)
       throws Exception {
