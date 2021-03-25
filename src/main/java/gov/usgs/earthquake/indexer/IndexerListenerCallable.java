@@ -11,6 +11,7 @@ import java.util.logging.Logger;
  */
 public class IndexerListenerCallable implements Callable<Void> {
 
+	/** Logger object */
 	public static final Logger LOGGER = Logger
 			.getLogger(IndexerListenerCallable.class.getName());
 
@@ -19,7 +20,7 @@ public class IndexerListenerCallable implements Callable<Void> {
 
 	/**
 	 * Get a callable object for deferred listener notification.
-	 * 
+	 *
 	 * @param listener
 	 *            the listener to notify
 	 * @param event

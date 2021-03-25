@@ -13,13 +13,13 @@ public abstract class SearchQuery implements Comparable<SearchQuery> {
 
 	/** The search parameters. */
 	private final ProductIndexQuery query;
-	
+
 	/** Contains an error returned in a SearchResult if one occurred **/
 	private String error;
 
 	/**
 	 * Construct a new SearchQuery object.
-	 * 
+	 *
 	 * @param type
 	 *            the type of search.
 	 * @param query
@@ -31,24 +31,26 @@ public abstract class SearchQuery implements Comparable<SearchQuery> {
 		this.error = null;
 	}
 
+	/** @return type */
 	public SearchMethod getType() {
 		return this.type;
 	}
 
+	/** @return ProductIndexQuery */
 	public ProductIndexQuery getProductIndexQuery() {
 		return this.query;
 	}
 
 	/**
 	 * Get the result associated with a specific query type.
-	 * 
+	 *
 	 * @return the result, or null if the search has not yet executed.
 	 */
 	public abstract Object getResult();
 
 	/**
 	 * Create a SearchQuery object based on a SearchType.
-	 * 
+	 *
 	 * @param type
 	 *            the search type to create
 	 * @param query

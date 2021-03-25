@@ -14,15 +14,27 @@ import java.sql.SQLException;
  */
 public class ExtentIndex extends JDBCProductIndex {
 
+  /** Table for extentSummary */
   public static final String EXTENT_TABLE = "extentSummary";
+  /** Extent index id - productSummaryIndexId */
   public static final String EXTENT_INDEX_ID = "productSummaryIndexId";
+  /** Extent start time */
   public static final String EXTENT_START_TIME = "starttime";
+  /** Extent end time */
   public static final String EXTENT_END_TIME = "endtime";
+  /** Extent max latitude */
   public static final String EXTENT_MAX_LAT = "maximum_latitude";
+  /** Extent minimum latitude */
   public static final String EXTENT_MIN_LAT = "minimum_latitude";
+  /** Extent max longitude */
   public static final String EXTENT_MAX_LONG = "maximum_longitude";
+  /** Extent min longitude */
   public static final String EXTENT_MIN_LONG = "minimum_longitude";
 
+  /**
+   * Default constructor
+   * @throws Exception if error occurs
+   */
   public ExtentIndex() throws Exception {
     super();
   }
@@ -30,6 +42,7 @@ public class ExtentIndex extends JDBCProductIndex {
   /**
    * Queries extentSummary table for the largest index id.
    *
+   * @return long last extent index id
    * @throws Exception if something goes wrong with database transaction
    */
   public long getLastExtentIndexId() throws Exception {

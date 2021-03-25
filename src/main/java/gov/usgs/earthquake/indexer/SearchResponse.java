@@ -21,8 +21,8 @@ public class SearchResponse {
 
 	/**
 	 * Add a search result to this response.
-	 * 
-	 * @param result
+	 *
+	 * @param result a searchQuery result
 	 */
 	public void addResult(final SearchQuery result) {
 		results.add(result);
@@ -70,7 +70,7 @@ public class SearchResponse {
 
 	/**
 	 * Get a distinct list of events from EventDetailQuery results.
-	 * 
+	 *
 	 * @return List of found events. List will be empty if there were no
 	 *         EventDetailQueries, or no matching events were found.
 	 */

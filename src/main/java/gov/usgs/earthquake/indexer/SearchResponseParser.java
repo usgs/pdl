@@ -36,10 +36,15 @@ public class SearchResponseParser extends DefaultHandler {
 	private FileProductStorage storage;
 	private SearchResponseXmlProductSource productHandler = null;
 
+	/**
+	 * Constructor
+	 * @param storage a FileProductStorage
+	 */
 	public SearchResponseParser(final FileProductStorage storage) {
 		this.storage = storage;
 	}
 
+	/** @return SearchResponse */
 	public SearchResponse getSearchResponse() {
 		return response;
 	}
