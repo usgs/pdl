@@ -45,3 +45,9 @@ Java Latest:
   extends:
     - .check_code
   image: ${DEVOPS_REGISTRY}usgs/java:latest-jdk
+
+Javadoc:
+  extends:
+    - .check_code
+  script:
+    - ./gradlew javadoc
