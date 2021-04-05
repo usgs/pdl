@@ -50,4 +50,5 @@ Javadoc:
   extends:
     - .check_code
   script:
-    - ./gradlew javadoc
+    - ./gradlew javadoc -Werror
+  image: ${DEVOPS_REGISTRY}usgs/java:latest-jdk
