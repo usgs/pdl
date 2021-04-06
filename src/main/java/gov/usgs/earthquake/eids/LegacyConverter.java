@@ -20,6 +20,7 @@ public class LegacyConverter {
 	/** Different format types */
 	public static enum Format {
 		/** Enum for Cube Format */
+
 		CUBE,
 		/** Enum for EQXML Format */
 		EQXML,
