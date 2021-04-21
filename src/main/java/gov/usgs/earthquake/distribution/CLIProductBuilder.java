@@ -3,6 +3,7 @@
  */
 package gov.usgs.earthquake.distribution;
 
+import gov.usgs.earthquake.aws.AwsProductSender;
 import gov.usgs.earthquake.product.ByteContent;
 import gov.usgs.earthquake.product.FileContent;
 import gov.usgs.earthquake.product.InputStreamContent;
@@ -427,18 +428,23 @@ public class CLIProductBuilder extends DefaultConfigurable {
 
 	public static List<ProductSender> parseServers(final String servers,
 			final Integer connectTimeout, final boolean binaryFormat,
-			final boolean enableDeflate) {
+			final boolean enableDeflate) throws Exception {
 		List<ProductSender> senders = new ArrayList<ProductSender>();
 
 		Iterator<String> iter = StringUtils.split(servers, ",").iterator();
 		while (iter.hasNext()) {
 			String server = iter.next();
-			String[] parts = server.split(":");
-			SocketProductSender sender = new SocketProductSender(parts[0],
-					Integer.parseInt(parts[1]), connectTimeout);
-			sender.setBinaryFormat(binaryFormat);
-			sender.setEnableDeflate(enableDeflate);
-			senders.add(sender);
+			if (server.startsWith("https://")) {
+				AwsProductSender sender = new AwsProductSender(new URL(server));
+				senders.add(sender);
+			} else {
+				String[] parts = server.split(":");
+				SocketProductSender sender = new SocketProductSender(parts[0],
+						Integer.parseInt(parts[1]), connectTimeout);
+				sender.setBinaryFormat(binaryFormat);
+				sender.setEnableDeflate(enableDeflate);
+				senders.add(sender);
+			}
 		}
 
 		return senders;

@@ -150,7 +150,6 @@ public class AwsBatchIndexer implements Bootstrappable {
    *
    * @param id
    *     which product
-   * @throws Exception
    */
   public void processProductId(final ProductId id) {
     long start = new Date().getTime();

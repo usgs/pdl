@@ -3,19 +3,23 @@ package gov.usgs.earthquake.distribution;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.security.PrivateKey;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import gov.usgs.earthquake.aws.AwsProductSender;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.io.IOUtil;
 import gov.usgs.earthquake.product.io.ObjectProductHandler;
 import gov.usgs.earthquake.product.io.ProductSource;
+import gov.usgs.util.CryptoUtils;
+import gov.usgs.util.FileUtils;
 
 /**
  * A utility class to (re)send an existing product to pdl hubs.
- * 
+ *
  * Mainly used when one server has not received a product, in order to
  * redistribute the product.
  */
@@ -26,6 +30,7 @@ public class ProductResender {
 
 	public static final String SERVERS_ARGUMENT = "--servers=";
 	public static final String BATCH_ARGUMENT = "--batch";
+	public static final String PRIVATE_KEY_ARGUMENT = "--privateKey=";
 
 	public static void main(final String[] args) throws Exception {
 		// disable tracker
@@ -37,6 +42,7 @@ public class ProductResender {
 		boolean binaryFormat = false;
 		boolean enableDeflate = true;
 		boolean batchMode = false;
+		PrivateKey privateKey = null;
 
 		for (String arg : args) {
 			if (arg.startsWith(IOUtil.INFILE_ARGUMENT)) {
@@ -51,6 +57,14 @@ public class ProductResender {
 				enableDeflate = false;
 			} else if (arg.equals(BATCH_ARGUMENT)) {
 				batchMode = true;
+			} else if (arg.startsWith(PRIVATE_KEY_ARGUMENT)) {
+				privateKey = CryptoUtils.readOpenSSHPrivateKey(
+						FileUtils.readFile(new File(arg.replace(PRIVATE_KEY_ARGUMENT, ""))),
+						null);
+				if (privateKey == null) {
+					LOGGER.warning("Unable to parse private key " + arg);
+					System.exit(1);
+				}
 			}
 		}
 
@@ -67,6 +81,16 @@ public class ProductResender {
 		builder.getProductSenders().addAll(
 				CLIProductBuilder.parseServers(servers, 15000, binaryFormat,
 						enableDeflate));
+		if (privateKey != null) {
+			// resign products
+			for (ProductSender sender : builder.getProductSenders()) {
+				if (sender instanceof AwsProductSender) {
+					AwsProductSender awsSender = (AwsProductSender) sender;
+					awsSender.setPrivateKey(privateKey);
+					awsSender.setSignProducts(true);;
+				}
+			}
+		}
 
 		if ((!batchMode && product == null) || builder.getProductSenders().size() == 0) {
 			System.err.println("Usage: ProductResender --servers=SERVERLIST"

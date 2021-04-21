@@ -55,6 +55,10 @@ public class AwsProductSender extends DefaultConfigurable implements ProductSend
 
   public AwsProductSender() {}
 
+  public AwsProductSender(URL url) {
+    this.hubUrl = url;
+  }
+
   @Override
   public void configure(Config config) throws Exception {
     super.configure(config);
