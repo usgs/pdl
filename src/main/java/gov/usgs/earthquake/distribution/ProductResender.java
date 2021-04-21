@@ -32,6 +32,7 @@ public class ProductResender {
 	public static final String SERVERS_ARGUMENT = "--servers=";
 	/** Batch arguments */
 	public static final String BATCH_ARGUMENT = "--batch";
+	/** Private Key Argument */
 	public static final String PRIVATE_KEY_ARGUMENT = "--privateKey=";
 
 	/**
