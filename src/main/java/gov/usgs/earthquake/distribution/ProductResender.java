@@ -28,10 +28,19 @@ public class ProductResender {
 	private static final Logger LOGGER = Logger.getLogger(ProductResender.class
 			.getName());
 
+	/** Servers arguments */
 	public static final String SERVERS_ARGUMENT = "--servers=";
+	/** Batch arguments */
 	public static final String BATCH_ARGUMENT = "--batch";
+	/** Private Key Argument */
 	public static final String PRIVATE_KEY_ARGUMENT = "--privateKey=";
 
+	/**
+	 * Command Line Interface to ProductResender.
+	 *
+	 * @param args CLI arguments
+	 * @throws Exception if error occurs
+	 */
 	public static void main(final String[] args) throws Exception {
 		// disable tracker
 		ProductTracker.setTrackerEnabled(false);
@@ -128,6 +137,13 @@ public class ProductResender {
 		System.exit(0);
 	}
 
+	/**
+	 * Sends product to builder
+	 * @param builder ProductBuilder
+	 * @param product Product
+	 * @param batchMode bool
+	 * @throws Exception if error occurs
+	 */
 	protected static void sendProduct(final ProductBuilder builder,
 			final Product product, final boolean batchMode) throws Exception {
 		// extracted from CLIProductBuilder

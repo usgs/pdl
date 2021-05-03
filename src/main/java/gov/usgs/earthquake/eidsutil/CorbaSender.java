@@ -61,11 +61,11 @@ public class CorbaSender {
 	 * messages using this <code>CorbaSender</code>.
 	 * @param port The port number to send messages to on the host.
 	 *
-	 * @throws InvalidName If the RootPOA is not aware of the type of object we 
+	 * @throws InvalidName If the RootPOA is not aware of the type of object we
 	 * request from it.
 	 * @throws AdapterInactive If the poaManager is not active.
 	 */
-	public CorbaSender(String host, String port) 
+	public CorbaSender(String host, String port)
 			throws InvalidName, AdapterInactive {
 
 		// Create the corbaloc url
@@ -89,12 +89,13 @@ public class CorbaSender {
 
 	} // END: constructor CorbaSender
 
+	/** Cleanup */
 	public void destroy() {
 		try { feeder._release(); } catch (Exception ex) { /* ignore */ }
 		try { object._release(); } catch (Exception ex) { /* ignore */ }
 		try { orb.shutdown(true); } catch (Exception ex) { /* ignore */ }
 		try { orb.destroy(); } catch (Exception ex) { /* ignore */ }
-		
+
 		feeder = null;
 		object = null;
 		poaManager = null;
@@ -104,7 +105,7 @@ public class CorbaSender {
 
 	/**
 	 * Retrieve a QWFeeder object associated with this CorbaSender.
-	 * 
+	 *
 	 * First checks if the object is "non_existent", and if so re-narrows the object.
 	 * @return QWFeeder object, or null if unable to narrow.
 	 */
@@ -116,7 +117,7 @@ public class CorbaSender {
 					object = null;
 				}
 			} catch (org.omg.CORBA.OBJECT_NOT_EXIST e) {
-				// feeder._non_existent throws the OBJECT_NOT_EXIST exception 
+				// feeder._non_existent throws the OBJECT_NOT_EXIST exception
 				// instead of returning true...
 				feeder = null;
 				object = null;
@@ -144,9 +145,9 @@ public class CorbaSender {
 
 	/**
 	 * Sends a data event message. If the event data does not begin with a
-	 * &ldquo;DataMessage&rdquo; XML element then the data will be surrounded 
-	 * with one. The &ldquo;sendSourced...&rdquo; methods are preferred because 
-	 * the feeder-source host name and message number are used for improved 
+	 * &ldquo;DataMessage&rdquo; XML element then the data will be surrounded
+	 * with one. The &ldquo;sendSourced...&rdquo; methods are preferred because
+	 * the feeder-source host name and message number are used for improved
 	 * message tracking.
 	 *
 	 * @param message The data event message string.
@@ -156,12 +157,12 @@ public class CorbaSender {
 	public boolean sendMessage(String message) {
 		return getFeeder().sendMessage(message);
 	}
-	
+
 	/**
 	 * Sends a data event message. If the event data does not begin with a
-	 * &ldquo;DataMessage&rdquo; XML element then the data will be surrounded 
-	 * with one. The &ldquo;sendSourced...&rdquo; methods are preferred because 
-	 * the feeder-source host name and message number are used for improved 
+	 * &ldquo;DataMessage&rdquo; XML element then the data will be surrounded
+	 * with one. The &ldquo;sendSourced...&rdquo; methods are preferred because
+	 * the feeder-source host name and message number are used for improved
 	 * message tracking.
 	 *
 	 * @param domain The domain name to use.
@@ -178,9 +179,9 @@ public class CorbaSender {
 
 	/**
 	 * Sends a data event message. If the event data does not begin with a
-	 * &ldquo;DataMessage&rdquo; XML element then the data will be surrounded 
-	 * with one. The &ldquo;sendSourced...&rdquo; methods are preferred because 
-	 * the feeder-source host name and message number are used for improved 
+	 * &ldquo;DataMessage&rdquo; XML element then the data will be surrounded
+	 * with one. The &ldquo;sendSourced...&rdquo; methods are preferred because
+	 * the feeder-source host name and message number are used for improved
 	 * message tracking.
 	 *
 	 * @param domain The domain name to use.
@@ -195,7 +196,7 @@ public class CorbaSender {
 			String message) {
 		return getFeeder().sendDomainTypeNameMessage(domain, type, name, message);
 	}
-	
+
 	/**
 	 * Sends a data event message. If the event data does not begin with a
 	 * &ldquo;DataMessage&rdquo; XML element then the data will be surrounded
@@ -211,17 +212,17 @@ public class CorbaSender {
 	 * @return <code>true</code> after the message has been successfully stored
 	 * and processed; <code>false</code> if an error occurred.
 	 */
-	public boolean sendMessage(String message, String feederSourceHost, 
+	public boolean sendMessage(String message, String feederSourceHost,
 			long feederSrcHostMsgId) {
-		return getFeeder().sendSourcedMsg(message, feederSourceHost, 
+		return getFeeder().sendSourcedMsg(message, feederSourceHost,
 				feederSrcHostMsgId);
 	}
 
 	/**
 	 * Sends a data event message. If the event data does not begin with a
-	 * &ldquo;DataMessage&rdquo; XML element then the data will be surrounded 
-	 * with one. The &ldquo;sendSourced...&rdquo; methods are preferred because 
-	 * the feeder-source host name and message number are used for improved 
+	 * &ldquo;DataMessage&rdquo; XML element then the data will be surrounded
+	 * with one. The &ldquo;sendSourced...&rdquo; methods are preferred because
+	 * the feeder-source host name and message number are used for improved
 	 * message tracking.
 	 *
 	 * @param domain The domain name to use.
@@ -234,7 +235,7 @@ public class CorbaSender {
 	 * @return <code>true</code> after the message has been successfully stored
 	 * and processed; <code>false</code> if an error occurred.
 	 */
-	public boolean sendMessage(String domain, String type, String message, 
+	public boolean sendMessage(String domain, String type, String message,
 			String feederSourceHost, long feederSrcHostMsgId) {
 		return getFeeder().sendSourcedDomainTypeMsg(domain, type, message,
 				feederSourceHost, feederSrcHostMsgId);
@@ -242,9 +243,9 @@ public class CorbaSender {
 
 	/**
 	 * Sends a data event message. If the event data does not begin with a
-	 * &ldquo;DataMessage&rdquo; XML element then the data will be surrounded 
-	 * with one. The &ldquo;sendSourced...&rdquo; methods are preferred because 
-	 * the feeder-source host name and message number are used for improved 
+	 * &ldquo;DataMessage&rdquo; XML element then the data will be surrounded
+	 * with one. The &ldquo;sendSourced...&rdquo; methods are preferred because
+	 * the feeder-source host name and message number are used for improved
 	 * message tracking.
 	 *
 	 * @param domain The domain name to use.
@@ -258,7 +259,7 @@ public class CorbaSender {
 	 * @return <code>true</code> after the message has been successfully stored
 	 * and processed; <code>false</code> if an error occurred.
 	 */
-	public boolean sendMessage(String domain, String type, String name, 
+	public boolean sendMessage(String domain, String type, String name,
 			String message, String feederSourceHost, long feederSrcHostMsgId) {
 		return getFeeder().sendSourcedDomainTypeNameMsg(domain, type, name, message,
 				feederSourceHost, feederSrcHostMsgId);

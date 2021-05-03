@@ -21,27 +21,44 @@ import java.util.logging.Logger;
  */
 public class WebSocketNotificationReceiver extends DefaultNotificationReceiver implements WebSocketListener {
 
+  /** Logger for use in the file */
   public static final Logger LOGGER = Logger
           .getLogger(WebSocketNotificationReceiver.class.getName());
 
+  /** Property for serverHost */
   public static final String SERVER_HOST_PROPERTY = "serverHost";
+  /** Property for serverPort */
   public static final String SERVER_PORT_PROPERTY = "serverPort";
+  /** Property for serverPath */
   public static final String SERVER_PATH_PROPERTY = "serverPath";
+  /** Property for sequence */
   public static final String SEQUENCE_PROPERTY = "sequence";
+  /** Property for timestamp */
   public static final String TIMESTAMP_PROPERTY = "timestamp";
+  /** Property for trackingFileName */
   public static final String TRACKING_FILE_NAME_PROPERTY = "trackingFileName";
+  /** Property for connectAttempts */
   public static final String CONNECT_ATTEMPTS_PROPERTY = "connectAttempts";
+  /** Property for connectTimeout */
   public static final String CONNECT_TIMEOUT_PROPERTY = "connectTimeout";
+  /** Property for retryOnClose */
   public static final String RETRY_ON_CLOSE_PROPERTY = "retryOnClose";
 
+  /** Default server host */
   public static final String DEFAULT_SERVER_HOST = "http://www.google.com";
+  /** Default server port */
   public static final String DEFAULT_SERVER_PORT = "4222";
+  /** Default server path */
   public static final String DEFAULT_SERVER_PATH = "/sequence/";
+  /** Default tracking file */
   public static final String DEFAULT_TRACKING_FILE_NAME = "data/WebSocketReceiverInfo";
+  /** Default number of connect attempts */
   public static final String DEFAULT_CONNECT_ATTEMPTS = "5";
+  /** Default timeout in ms */
   public static final String DEFAULT_CONNECT_TIMEOUT = "1000";
+  /** Default condiction for retry on close */
   public static final String DEFAULT_RETRY_ON_CLOSE = "true";
-
+  /** attribute for data */
   public static final String ATTRIBUTE_DATA = "data";
 
   private String serverHost;
@@ -70,7 +87,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   /**
    * Reads a sequence from a tracking file if it exists. Otherwise, starting sequence is 0.
    * Connects to web socket
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   @Override
   public void startup() throws Exception{
@@ -91,7 +108,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
 
   /**
    * Closes web socket
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   @Override
   public void shutdown() throws Exception{
@@ -102,7 +119,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
 
   /**
    * Writes tracking file to disc, storing latest sequence
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   public void writeTrackingFile() throws Exception {
     JsonObject json = Json.createObjectBuilder()
@@ -121,7 +138,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   /**
    * Reads tracking file from disc
    * @return  JsonObject tracking file
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   public JsonObject readTrackingFile() throws Exception {
     JsonObject json = null;
@@ -144,7 +161,7 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
   /**
    * Message handler function passed to WebSocketClient
    * Parses the message as JSON, receives the contained URL notification, and writes the tracking file.
-   * @param message
+   * @param message String
    */
   @Override
   public void onMessage(String message) {
@@ -188,58 +205,72 @@ public class WebSocketNotificationReceiver extends DefaultNotificationReceiver i
     // do nothing
   }
 
+  /** @return serverHost */
   public String getServerHost() {
     return serverHost;
   }
 
+  /** @param serverHost to set */
   public void setServerHost(String serverHost) {
     this.serverHost = serverHost;
   }
 
+  /** @return serverPort */
   public String getServerPort() {
     return serverPort;
   }
 
+  /** @param serverPort to set */
   public void setServerPort(String serverPort) {
     this.serverPort = serverPort;
   }
 
+  /** @return serverPath */
   public String getServerPath() {
     return serverPath;
   }
 
+  /** @param serverPath to set */
   public void setServerPath(String serverPath) {
     this.serverPath = serverPath;
   }
 
+  /** @return trackingFileName */
   public String getTrackingFileName() {
     return trackingFileName;
   }
 
+  /** @param trackingFileName to set */
   public void setTrackingFileName(String trackingFileName) {
     this.trackingFileName = trackingFileName;
   }
 
+  /** @return sequence */
   public String getSequence() {
     return sequence;
   }
 
+  /** @param sequence to set */
   public void setSequence(String sequence) {
     this.sequence = sequence;
   }
 
+  /** @return attempts */
   public int getAttempts() {
     return attempts;
   }
 
+  /** @param attempts to set */
   public void setAttempts(int attempts) {
     this.attempts = attempts;
   }
 
+  /** @return timeout */
   public long getTimeout() {
     return timeout;
   }
 
+  /** @param timeout to set */
   public void setTimeout(long timeout) {
     this.timeout = timeout;
   }

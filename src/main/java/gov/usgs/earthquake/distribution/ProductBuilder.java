@@ -61,10 +61,12 @@ public class ProductBuilder extends DefaultConfigurable {
 
 	/** Send in parallel. */
 	public static final String PARALLEL_SEND_PROPERTY = "parallelSend";
+	/** Bool for parallel send */
 	public static final String DEFAULT_PARALLEL_SEND = "true";
 
 	/** Timeout in seconds for parallel send. */
 	public static final String PARALLEL_SEND_TIMEOUT_PROPERTY = "parallelSendTimeout";
+	/** time in ms for parallel send timemout */
 	public static final String DEFAULT_PARALLEL_SEND_TIMEOUT = "300";
 
 	/** Default tracker url. */
@@ -98,6 +100,7 @@ public class ProductBuilder extends DefaultConfigurable {
 	/** How long to wait before parallel send timeout. */
 	protected long parallelSendTimeout = 300L;
 
+	/** Default product builder constructor */
 	public ProductBuilder() {
 		trackerURL = DEFAULT_TRACKER_URL;
 	}
@@ -167,7 +170,7 @@ public class ProductBuilder extends DefaultConfigurable {
 	/**
 	 * Add a ProductSender.
 	 *
-	 * @param sender
+	 * @param sender to add
 	 */
 	public void addProductSender(final ProductSender sender) {
 		senders.add(sender);
@@ -176,33 +179,38 @@ public class ProductBuilder extends DefaultConfigurable {
 	/**
 	 * Remove a previously added ProductSender.
 	 *
-	 * @param sender
+	 * @param sender to remove
 	 */
 	public void removeProductSender(final ProductSender sender) {
 		senders.remove(sender);
 	}
 
+	/** @return trackerURL */
 	public URL getTrackerURL() {
 		return trackerURL;
 	}
 
+	/** @param trackerURL to set */
 	public void setTrackerURL(URL trackerURL) {
 		this.trackerURL = trackerURL;
 	}
 
+	/** @return privateKey */
 	public PrivateKey getPrivateKey() {
 		return privateKey;
 	}
 
+	/** @param privateKey to set */
 	public void setPrivateKey(PrivateKey privateKey) {
 		this.privateKey = privateKey;
 	}
 
-
+	/** @return signatureVersion */
 	public Version getSignatureVersion() {
 		return signatureVersion;
 	}
 
+	/** @param signatureVersion to set */
 	public void setSignatureVersion(Version signatureVersion) {
 		this.signatureVersion = signatureVersion;
 	}

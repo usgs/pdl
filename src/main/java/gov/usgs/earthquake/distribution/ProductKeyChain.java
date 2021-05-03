@@ -26,14 +26,27 @@ public class ProductKeyChain {
 	/** List of candidate keys. */
 	private List<ProductKey> keychain = new LinkedList<ProductKey>();
 
+	/** Empty constructor */
 	public ProductKeyChain() {
 	}
 
+	/**
+	 * Constructor for a string of keys
+	 * @param keys String of keys, separated by commas
+	 * @param config Config file
+	 * @throws Exception if error occurs
+	 */
 	public ProductKeyChain(final String keys, final Config config)
 			throws Exception {
 		this(StringUtils.split(keys, ","), config);
 	}
 
+	/**
+	 * Constructor for list of keys
+	 * @param keys String list of keys
+	 * @param config Config file
+	 * @throws Exception if error occurs
+	 */
 	public ProductKeyChain(final List<String> keys, final Config config)
 			throws Exception {
 		Iterator<String> iter = keys.iterator();
@@ -56,8 +69,8 @@ public class ProductKeyChain {
 
 	/**
 	 * Find public keys based on configured Keys.
-	 * 
-	 * @param id
+	 *
+	 * @param id ID of product
 	 * @return an array of candidate keys used to verify a signature.
 	 */
 	public PublicKey[] getProductKeys(final ProductId id) {

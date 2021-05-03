@@ -16,9 +16,9 @@ import java.sql.SQLException;
 
 /**
  * JDBC Connection and Statement utility functions.
- * 
+ *
  * @author jmfee
- * 
+ *
  */
 public class JDBCUtils {
 
@@ -30,7 +30,7 @@ public class JDBCUtils {
 
 	/**
 	 * Create a new JDBC Connection.
-	 * 
+	 *
 	 * @param driver
 	 *            driver class name.
 	 * @param url
@@ -42,6 +42,10 @@ public class JDBCUtils {
 	 *             if driver empty constructor is not public.
 	 * @throws InstantiationException
 	 *             if an exception occurs while instantiating driver.
+	 * @throws InvocationTargetException
+	 *             if an exception occurs with invoked method
+	 * @throws NoSuchMethodException
+	 *             if method cannot be found
 	 * @throws SQLException
 	 *             if an error occurs while making connection.
 	 */
@@ -58,10 +62,10 @@ public class JDBCUtils {
 
 	/**
 	 * Set a JDBC prepared statement parameter.
-	 * 
+	 *
 	 * Either calls statement.setNull if object is null, or sets the appropriate
 	 * type based on the object. If the object is not null, type is ignored.
-	 * 
+	 *
 	 * @param statement
 	 *            statement with parameters to set.
 	 * @param index
@@ -71,6 +75,7 @@ public class JDBCUtils {
 	 * @param type
 	 *            java.sql.Types constant for column type.
 	 * @throws SQLException
+	 *             if an error occurs while making connection.
 	 */
 	public static void setParameter(final PreparedStatement statement,
 			final int index, final Object object, final int type)
@@ -106,12 +111,24 @@ public class JDBCUtils {
 
 	/**
 	 * Get a mysql connection from a URL.
-	 * 
+	 *
 	 * Calls getConnection(MYSQL_DRIVER_CLASSNAME, url).
-	 * 
+	 *
 	 * @param url
 	 *            a Mysql URL.
 	 * @return a Connection to a Mysql database.
+	 * @throws SQLException
+	 *             if an error occurs while making connection.
+	 * @throws ClassNotFoundException
+	 *             if driver class is not found.
+	 * @throws IllegalAccessException
+	 *             if driver empty constructor is not public.
+	 * @throws InstantiationException
+	 *             if an exception occurs while instantiating driver.
+	 * @throws InvocationTargetException
+	 *             if an exception occurs with invoked method
+	 * @throws NoSuchMethodException
+	 *             if method cannot be found
 	 */
 	public static Connection getMysqlConnection(final String url)
 			throws SQLException, ClassNotFoundException,
@@ -122,12 +139,24 @@ public class JDBCUtils {
 
 	/**
 	 * Get a sqlite connection from a file.
-	 * 
+	 *
 	 * Builds a sqlite file url and calls getSqliteConnection(url).
-	 * 
+	 *
 	 * @param file
 	 *            sqlite database file.
 	 * @return connection to sqlite database file.
+	 * @throws SQLException
+	 *             if an error occurs while making connection.
+	 * @throws ClassNotFoundException
+	 *             if driver class is not found.
+	 * @throws IllegalAccessException
+	 *             if driver empty constructor is not public.
+	 * @throws InstantiationException
+	 *             if an exception occurs while instantiating driver.
+	 * @throws InvocationTargetException
+	 *             if an exception occurs with invoked method
+	 * @throws NoSuchMethodException
+	 *             if method cannot be found
 	 */
 	public static Connection getSqliteConnection(final File file)
 			throws SQLException, ClassNotFoundException,
@@ -139,12 +168,24 @@ public class JDBCUtils {
 
 	/**
 	 * Get a sqlite connection from a URL.
-	 * 
+	 *
 	 * Calls getConnection(SQLITE_DRIVER_CLASSNAME, url).
-	 * 
+	 *
 	 * @param url
 	 *            sqlite database URL.
 	 * @return a Connection to a sqlite database.
+	 * @throws SQLException
+	 *             if an error occurs while making connection.
+	 * @throws ClassNotFoundException
+	 *             if driver class is not found.
+	 * @throws IllegalAccessException
+	 *             if driver empty constructor is not public.
+	 * @throws InstantiationException
+	 *             if an exception occurs while instantiating driver.
+	 * @throws InvocationTargetException
+	 *             if an exception occurs with invoked method
+	 * @throws NoSuchMethodException
+	 *             if method cannot be found
 	 */
 	public static Connection getSqliteConnection(final String url)
 			throws SQLException, ClassNotFoundException,

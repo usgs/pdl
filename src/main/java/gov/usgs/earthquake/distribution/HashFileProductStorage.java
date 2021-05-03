@@ -54,10 +54,18 @@ public class HashFileProductStorage extends FileProductStorage {
 	 */
 	public static final int DIRECTORY_NAME_LENGTH = 3;
 
+	/**
+	 * Basic Constructor
+	 * Sets baseDirectory to FileProductsStorage' DEFAULT_DIRECTORY of 'Storage'
+	 */
 	public HashFileProductStorage() {
 		super();
 	}
 
+	/**
+	 * Constructor taking in specific File directory
+	 * @param directory base directory for storage path
+	 */
 	public HashFileProductStorage(final File directory) {
 		super(directory);
 	}

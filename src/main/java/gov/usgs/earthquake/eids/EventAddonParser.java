@@ -21,7 +21,7 @@ import gov.usgs.util.XmlUtils;
 
 /**
  * Parser for event addon messages.
- * 
+ *
  * Maps these messages into an EQMessage with a
  * product link.
  */
@@ -34,6 +34,12 @@ public class EventAddonParser extends SAXAdapter {
 	/** The parsed addon object. */
 	private EventAddon addon;
 
+	/**
+	 * Takes a EIDSMessage event and returns the EQMessage
+	 * @param event EIDSMessageEvent to parse
+	 * @return an EQmessage
+	 * @throws Exception if error occurs
+	 */
 	public EQMessage parseMessage(EIDSMessageEvent event) throws Exception {
 		// create a parser object for this message
 		EventAddonParser parser = new EventAddonParser();
@@ -60,24 +66,36 @@ public class EventAddonParser extends SAXAdapter {
 	 */
 	public static class EventAddon {
 
+		/** fileName */
 		public String fileName;
+		/** Submitter */
 		public String submitter;
+		/** Submit time */
 		public Date submitTime;
+		/** email */
 		public String email;
+		/** event id */
 		public String eventid;
+		/** type */
 		public String type;
+		/** version */
 		public String version;
+		/** action */
 		public String action;
+		/** description */
 		public String description;
+		/** link */
 		public String link;
+		/** text */
 		public String text;
 
+		/** Constructor */
 		public EventAddon() {
 		}
 
 		/**
 		 * Parse eventaddon xml into a ProductLink.
-		 * 
+		 *
 		 * @return null, if there is no link.
 		 */
 		public ProductLink getProductLink() {
@@ -104,7 +122,7 @@ public class EventAddonParser extends SAXAdapter {
 
 		/**
 		 * Parse eventaddon xml into a Comment.
-		 * 
+		 *
 		 * @return null, if there is a link.
 		 */
 		public Comment getComment() {
@@ -127,6 +145,7 @@ public class EventAddonParser extends SAXAdapter {
 			return comment;
 		}
 
+		/** @return event */
 		public Event getEvent() {
 			Event event = new Event();
 			event.setDataSource(eventid.substring(0, 2));
@@ -143,6 +162,7 @@ public class EventAddonParser extends SAXAdapter {
 			return event;
 		}
 
+		/** @return EQMessage */
 		public EQMessage getEQMessage() {
 			EQMessage message = new EQMessage();
 			message.setSent(submitTime);
@@ -154,7 +174,7 @@ public class EventAddonParser extends SAXAdapter {
 
 	/**
 	 * Get parsed addon.
-	 * 
+	 *
 	 * @return parsed addon, or null if nothing parsed.
 	 */
 	public EventAddon getAddon() {
@@ -163,7 +183,7 @@ public class EventAddonParser extends SAXAdapter {
 
 	/**
 	 * SAXAdapter start element handler.
-	 * 
+	 *
 	 * @param uri
 	 *            element uri.
 	 * @param localName
@@ -189,7 +209,7 @@ public class EventAddonParser extends SAXAdapter {
 	/**
 	 * SAXAdapter end element handler. Content only includes characters that
 	 * were read from this element, NOT any characters from child elements.
-	 * 
+	 *
 	 * @param uri
 	 *            element uri.
 	 * @param localName

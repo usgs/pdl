@@ -14,12 +14,17 @@ import gov.usgs.util.StreamUtils;
  * Utility class to hold HttpURLConnection and parse JSON response data.
  */
 public class HttpResponse {
+  /** Variable to hold HttpURLConnection */
   public final HttpURLConnection connection;
+  /** Variable for holding IOExceptions */
   public final IOException readException;
+  /** Varialbe to hold URL response */
   public final byte[] response;
 
   /**
    * Reads response from HttpUrlConnection.
+   * @param connection HttpURLConnection to read
+   * @throws Exception exception if errors
    */
   public HttpResponse(final HttpURLConnection connection) throws Exception {
     this.connection = connection;

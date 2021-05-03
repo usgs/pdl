@@ -41,6 +41,11 @@ public class JDBCConnection extends DefaultConfigurable implements AutoCloseable
 		this.connection = null;
 	}
 
+	/**
+	 * Create a new JDBCConnection object with specific driver and URL
+	 * @param driver String of driver
+	 * @param url String of URL
+	 */
 	public JDBCConnection(final String driver, final String url) {
 		this.driver = driver;
 		this.url = url;
@@ -51,7 +56,7 @@ public class JDBCConnection extends DefaultConfigurable implements AutoCloseable
 	 *
 	 * Calls {@link #shutdown()}.
 	 *
-	 * @throws Exception
+	 * @throws Exception Exception
 	 */
 	@Override
 	public void close() throws Exception {
@@ -60,6 +65,8 @@ public class JDBCConnection extends DefaultConfigurable implements AutoCloseable
 
 	/**
 	 * Implement Configurable
+	 * @param config Config to set driver and URL in
+	 * @throws Exception Exception
 	 */
 	@Override
 	public void configure(final Config config) throws Exception {
@@ -87,6 +94,7 @@ public class JDBCConnection extends DefaultConfigurable implements AutoCloseable
 	 * Initialize the database connection.
 	 *
 	 * Sub-classes should call super.startup(), before preparing any statements.
+	 * @throws Exception if error occurs
 	 */
 	@Override
 	public void startup() throws Exception {
@@ -99,6 +107,7 @@ public class JDBCConnection extends DefaultConfigurable implements AutoCloseable
 	 * Sub-classes should close any prepared statements (catching any
 	 * exceptions), and then call super.shutdown() to close the database
 	 * connection.
+	 * @throws Exception if error occurs
 	 */
 	@Override
 	public void shutdown() throws Exception {
@@ -116,6 +125,7 @@ public class JDBCConnection extends DefaultConfigurable implements AutoCloseable
 
 	/**
 	 * Open a transaction on the database connection
+	 * @throws Exception if error occurs
 	 */
 	public synchronized void beginTransaction() throws Exception {
 		Connection conn = this.verifyConnection();
@@ -125,6 +135,7 @@ public class JDBCConnection extends DefaultConfigurable implements AutoCloseable
 	/**
 	 * Finalize the transaction by committing all the changes and closing the
 	 * transaction.
+	 * @throws Exception if error occurs
 	 */
 	public synchronized void commitTransaction() throws Exception {
 		getConnection().setAutoCommit(true);
@@ -132,6 +143,7 @@ public class JDBCConnection extends DefaultConfigurable implements AutoCloseable
 
 	/**
 	 * Undo all of the changes made during the current transaction
+	 * @throws Exception if error occurs
 	 */
 	public synchronized void rollbackTransaction() throws Exception {
 		getConnection().rollback();
@@ -210,10 +222,14 @@ public class JDBCConnection extends DefaultConfigurable implements AutoCloseable
 		return this.connection;
 	}
 
+	/** @return driver */
 	public String getDriver() { return this.driver; }
+	/** @param driver Driver to set */
 	public void setDriver(final String driver) { this.driver = driver; }
 
+	/** @return URL */
 	public String getUrl() { return this.url; }
+	/** @param url URL to set */
 	public void setUrl(final String url) { this.url = url; }
 
 }

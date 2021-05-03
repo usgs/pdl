@@ -35,11 +35,13 @@ public class ObjectProductHandler implements ProductHandler {
 	/** Whether onEndProduct has been called yet. */
 	private boolean complete = false;
 
+	/** Empty constructor */
 	public ObjectProductHandler() {
 	}
 
 	/**
 	 * @return the product object that was created.
+	 * @throws Exception if error occurs
 	 */
 	public Product getProduct() throws Exception {
 		if (product == null) {
@@ -181,6 +183,7 @@ public class ObjectProductHandler implements ProductHandler {
 	 * @param in
 	 *            the ProductInput to read.
 	 * @return the Product read, or null if errors occur.
+	 * @throws Exception if error occurs
 	 */
 	public static Product getProduct(final ProductSource in) throws Exception {
 		ObjectProductHandler out = new ObjectProductHandler();

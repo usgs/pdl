@@ -30,11 +30,16 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
   private static final Logger LOGGER = Logger
           .getLogger(DefaultNotificationReceiver.class.getName());
 
+  /** Property for tracking file name */
   public static String TRACKING_FILE_NAME_PROPERTY = "trackingFile";
+  /** Property on if update sequence should occur after exception */
   public static String UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY = "updateSequenceAfterException";
+  /** Property for sequence */
   public static String SEQUENCE_PROPERTY = "sequence";
 
+  /** Name of deafult tracking file */
   public static String DEFAULT_TRACKING_FILE_NAME_PROPERTY = "data/STANReceiverInfo.json";
+  /** Default state of update after exception */
   public static String DEFAULT_UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY = "true";
 
   private NATSClient client = new NATSClient();
@@ -74,8 +79,8 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
    * Does initial tracking file management and subscribes to server
    * With a tracking file, gets the last sequence
    *
-   * @throws InterruptedException
-   * @throws IOException
+   * @throws InterruptedException if interrupted
+   * @throws IOException if IO error occurs
    */
   @Override
   public void startup() throws Exception {
@@ -106,9 +111,9 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
    * Closes subscription/connection and writes state in tracking file
    * Wraps each statement in a try/catch to ensure each step still happens
    *
-   * @throws IOException
-   * @throws InterruptedException
-   * @throws TimeoutException
+   * @throws IOException if IO error occurs
+   * @throws InterruptedException if interrupted
+   * @throws TimeoutException if timeout
    */
   @Override
   public void shutdown() throws Exception {
@@ -129,6 +134,7 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
 
   /**
    * Writes pertinent configuration information to tracking file
+   * @throws Exception if error occurs
    */
   public void writeTrackingFile() throws Exception {
     JsonObject json = Json.createObjectBuilder()
@@ -150,6 +156,7 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
    * Reads contents of tracking file
    *
    * @return JsonObject containing tracking file contents, or null if file doesn't exist
+   * @throws Exception if error occurs
    */
   public JsonObject readTrackingFile() throws Exception {
     JsonObject json = null;
@@ -192,26 +199,32 @@ public class NATSStreamingNotificationReceiver extends DefaultNotificationReceiv
     }
   }
 
+  /** @return trackingFileName */
   public String getTrackingFileName() {
     return trackingFileName;
   }
 
+  /** @param trackingFileName to set */
   public void setTrackingFileName(String trackingFileName) {
     this.trackingFileName = trackingFileName;
   }
 
+  /** @return NATSClient */
   public NATSClient getClient() {
     return client;
   }
 
+  /** @param client NATSClient to set */
   public void setClient(NATSClient client) {
     this.client = client;
   }
 
+  /** @return subject */
   public String getSubject() {
     return subject;
   }
 
+  /** @param subject to set */
   public void setSubject(String subject) {
     this.subject = subject;
   }

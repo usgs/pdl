@@ -21,11 +21,12 @@ public interface IndexerModule {
 
 	/**
 	 * Determine the support level for a given product.
-	 * 
+	 *
 	 * The Indexer uses this method to determine which module will be used to
 	 * summarize a product as it is being processed. Usually, returning one of
 	 * the LEVEL_ constants will be sufficient.
-	 * 
+	 *
+	 * @param product The product to get the support level at
 	 * @return the support level. Should be greater than 0 if a product is
 	 *         supported, larger values indicate better support.
 	 */
@@ -33,11 +34,11 @@ public interface IndexerModule {
 
 	/**
 	 * Summarize a product.
-	 * 
+	 *
 	 * @param product
 	 *            the product to summarize
 	 * @return the ProductSummary
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductSummary getProductSummary(final Product product)
 			throws Exception;

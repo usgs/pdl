@@ -2,7 +2,7 @@ package gov.usgs.earthquake.indexer;
 
 /**
  * Description of a specific change to a {@link ProductIndex}.
- * 
+ *
  * Multiple IndexerChange objects may be created, and grouped
  * into an {@link IndexerEvent}, in response to one product
  * being processed.
@@ -11,21 +11,48 @@ public class IndexerChange {
 
 	/** Enumeration of indexer event types. */
 	public static enum IndexerChangeType {
-		EVENT_ADDED, EVENT_UPDATED, EVENT_DELETED, EVENT_ARCHIVED, EVENT_MERGED, EVENT_SPLIT,
+		/** Enum for IndexerChangeType Event Added */
+		EVENT_ADDED,
+		/** Enum for IndexerChangeType Event Updated */
+		EVENT_UPDATED,
+		/** Enum for IndexerChangeType Event Deleted */
+		EVENT_DELETED,
+		/** Enum for IndexerChangeType Event Archived */
+		EVENT_ARCHIVED,
+		/** Enum for IndexerChangeType Event Merged */
+		EVENT_MERGED,
+		/** Enum for IndexerChangeType Event Split */
+		EVENT_SPLIT,
 
-		PRODUCT_ADDED, PRODUCT_UPDATED, PRODUCT_DELETED, PRODUCT_ARCHIVED
+		/** Enum for IndexerChangeType Product Added */
+		PRODUCT_ADDED,
+		/** Enum for IndexerChangeType Product Updated */
+		PRODUCT_UPDATED,
+		/** Enum for IndexerChangeType Product Deleted */
+		PRODUCT_DELETED,
+		/** Enum for IndexerChangeType Product Archived */
+		PRODUCT_ARCHIVED
 	};
-
+	/** IndexerChangeType for Event Added */
 	public static final IndexerChangeType EVENT_ADDED = IndexerChangeType.EVENT_ADDED;
+	/** IndexerChangeType for Event Updated */
 	public static final IndexerChangeType EVENT_UPDATED = IndexerChangeType.EVENT_UPDATED;
+	/** IndexerChangeType for Event Deleted */
 	public static final IndexerChangeType EVENT_DELETED = IndexerChangeType.EVENT_DELETED;
+	/** IndexerChangeType for Event Archived */
 	public static final IndexerChangeType EVENT_ARCHIVED = IndexerChangeType.EVENT_ARCHIVED;
+	/** IndexerChangeType for Event Merged */
 	public static final IndexerChangeType EVENT_MERGED = IndexerChangeType.EVENT_MERGED;
+	/** IndexerChangeType for Event Split */
 	public static final IndexerChangeType EVENT_SPLIT = IndexerChangeType.EVENT_SPLIT;
 
+	/** IndexerChangeType for Product Added */
 	public static final IndexerChangeType PRODUCT_ADDED = IndexerChangeType.PRODUCT_ADDED;
+	/** IndexerChangeType for Product Updated */
 	public static final IndexerChangeType PRODUCT_UPDATED = IndexerChangeType.PRODUCT_UPDATED;
+	/** IndexerChangeType for Product Deleted */
 	public static final IndexerChangeType PRODUCT_DELETED = IndexerChangeType.PRODUCT_DELETED;
+	/** IndexerChangeType for Product Archived */
 	public static final IndexerChangeType PRODUCT_ARCHIVED = IndexerChangeType.PRODUCT_ARCHIVED;
 
 	/** Indicates the type of change that is occurring */
@@ -41,7 +68,7 @@ public class IndexerChange {
 	 * Note the <code>oldEvent</code> and <code>newEvent</code> will have
 	 * particular meanings depending on the given <code>type</code> of change
 	 * that occurred.
-	 * 
+	 *
 	 * @param type
 	 *            The type of change that occurred.
 	 * @param originalEvent
@@ -57,14 +84,17 @@ public class IndexerChange {
 		this.newEvent = newEvent;
 	}
 
+	/** @return IndexerChangeType */
 	public IndexerChangeType getType() {
 		return this.type;
 	}
 
+	/** @return originalEvent */
 	public Event getOriginalEvent() {
 		return this.originalEvent;
 	}
 
+	/** @return newEvent */
 	public Event getNewEvent() {
 		return this.newEvent;
 	}

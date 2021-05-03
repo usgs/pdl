@@ -23,13 +23,13 @@ public class DeflateComparison {
 
 	/**
 	 * Deflate an input stream.
-	 * 
+	 *
 	 * @param level
 	 *            deflate level.
 	 * @param in
 	 *            input stream to deflate.
 	 * @return output length in bytes.
-	 * @throws IOException
+	 * @throws IOException if IO error occurs
 	 */
 	public long deflateStream(final int level, final InputStream in)
 			throws IOException {
@@ -45,11 +45,11 @@ public class DeflateComparison {
 
 	/**
 	 * Transfer an input stream.
-	 * 
+	 *
 	 * @param in
 	 *            input stream to transfer.
 	 * @return output length in bytes.
-	 * @throws IOException
+	 * @throws IOException if IO error occurs
 	 */
 	public long transferStream(final InputStream in) throws IOException {
 		CountingOutputStream cos = new CountingOutputStream();
@@ -59,13 +59,13 @@ public class DeflateComparison {
 
 	/**
 	 * Test different compression levels and speeds for a file.
-	 * 
+	 *
 	 * Reads file into memory to avoid disk io overhead.
-	 * 
+	 *
 	 * @param file
 	 *            file to test.
-	 * @throws IllegalArgumentException
-	 * @throws IOException
+	 * @throws IllegalArgumentException if illegal arg
+	 * @throws IOException if IO error occurs
 	 */
 	public void testFile(final File file) throws IllegalArgumentException,
 			IOException {
@@ -77,11 +77,13 @@ public class DeflateComparison {
 
 	/**
 	 * Test different compression levels and speeds for a byte array.
-	 * 
+	 *
+	 * @param name
+	 *            given name
 	 * @param content
 	 *            content to test.
-	 * @throws IllegalArgumentException
-	 * @throws IOException
+	 * @throws IllegalArgumentException if illegal arg
+	 * @throws IOException if IO error occurs
 	 */
 	public void testByteArray(final String name, final byte[] content)
 			throws IOException {
@@ -120,6 +122,13 @@ public class DeflateComparison {
 				deflateBestCompressionTime);
 	}
 
+	/**
+	 * For calculating for properly formatting the results
+	 *
+	 * @param totalBytes totalBytes
+	 * @param transferredBytes Bytes transferred
+	 * @param elapsedTime total elapsed time
+	 */
 	protected void formatResult(final long totalBytes,
 			final long transferredBytes, final long elapsedTime) {
 		long savedBytes = totalBytes - transferredBytes;
@@ -159,11 +168,11 @@ public class DeflateComparison {
 
 	/**
 	 * A main method for accessing tests using custom files.
-	 * 
+	 *
 	 * @param args
 	 *            a list of files or directorys to include in compression
 	 *            comparison.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public static void main(final String[] args) throws Exception {
 		if (args.length == 0) {

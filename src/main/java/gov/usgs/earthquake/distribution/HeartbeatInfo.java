@@ -8,9 +8,9 @@ import javax.json.JsonObject;
 /**
  * HeartbeatInfo stores a single heartbeat key/value message, together with a
  * timestamp
- * 
+ *
  * @author tene
- * 
+ *
  */
 public class HeartbeatInfo {
 
@@ -19,9 +19,9 @@ public class HeartbeatInfo {
 
 	/**
 	 * Message constructor
-	 * 
-	 * @param message
-	 * @param date
+	 *
+	 * @param message string
+	 * @param date Date
 	 */
 	public HeartbeatInfo(String message, Date date) {
 		this.message = message;
@@ -44,8 +44,8 @@ public class HeartbeatInfo {
 
 	/**
 	 * Set message content
-	 * 
-	 * @param message
+	 *
+	 * @param message string to set
 	 */
 	public void setMessage(String message) {
 		this.message = message;
@@ -53,8 +53,8 @@ public class HeartbeatInfo {
 
 	/**
 	 * Set message timestamp
-	 * 
-	 * @param date
+	 *
+	 * @param date to set
 	 */
 	public void setDate(Date date) {
 		this.date = date;
@@ -62,8 +62,8 @@ public class HeartbeatInfo {
 
 	/**
 	 * Test if a message is older than a purgeDate
-	 * 
-	 * @param purgeDate
+	 *
+	 * @param purgeDate Date
 	 * @return true if {@link #getDate()} is before purgeDate
 	 */
 	public boolean isExpired(Date purgeDate) {

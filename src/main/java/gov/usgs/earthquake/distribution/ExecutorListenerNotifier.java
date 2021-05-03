@@ -57,6 +57,10 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	/** When throttling, wait this many milliseconds between queue size checks. */
 	protected long throttleWaitInterval = 5000L;
 
+	/**
+	 * Constructor
+	 * @param receiver DefaultNotificationReceiver
+	 */
 	public ExecutorListenerNotifier(final DefaultNotificationReceiver receiver) {
 		this.receiver = receiver;
 	}
@@ -120,13 +124,19 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	 *
 	 * @param event
 	 *            the notification being sent to listeners.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	@Override
 	public void notifyListeners(final NotificationEvent event) throws Exception {
 		this.notifyListeners(event, this.notificationListeners.keySet());
 	}
 
+	/**
+	 * Calls queueNotification with event and listener for each listener
+	 * @param event NotificationEvent
+	 * @param listeners Collection of NotificationListeners
+	 * @throws Exception if error occurs
+	 */
 	public void notifyListeners(final NotificationEvent event,
 			final Collection<NotificationListener> listeners) throws Exception {
 
@@ -138,6 +148,10 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 		}
 	}
 
+	/**
+	 * @param listener NotificationListener
+	 * @param event NotificationEvent
+	 */
 	protected void queueNotification(final NotificationListener listener,
 			final NotificationEvent event) {
 		if (acceptBeforeQueuing
@@ -261,14 +275,17 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 		AUTOLOADED_INDEXES.add(index.getName());
 	}
 
+	/** @return default notification receiver */
 	public DefaultNotificationReceiver getReceiver() {
 		return receiver;
 	}
 
+	/** @param receiver of the default notification variety */
 	public void setReceiver(DefaultNotificationReceiver receiver) {
 		this.receiver = receiver;
 	}
 
+	/** @return map of status */
 	public Map<String, Integer> getStatus() {
 		HashMap<String, Integer> status = new HashMap<String, Integer>();
 
@@ -308,12 +325,19 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	 * If longest queue has more than 50k notifications,
 	 * wait until longest queue has 25k notifications before returning.
 	 *
-	 * @throws InterruptedException
+	 * @throws InterruptedException if error occurs
 	 */
 	public void throttleQueues() throws InterruptedException {
 		throttleQueues(null);
 	}
 
+	/**
+	 * If longest queue has more than 50k notifications,
+	 * wait until longest queue has 25k notifications before returning.
+	 *
+	 * @param remaining integer
+	 * @throws InterruptedException if error occurs
+	 */
 	public void throttleQueues(Integer remaining) throws InterruptedException {
 		// try to keep queue size managable during restart
 		int limit = throttleStartThreshold;
@@ -356,13 +380,19 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 		return notificationListeners;
 	}
 
+	/** @return int throttle start threshold */
 	public int getThrottleStartThreshold() { return this.throttleStartThreshold; }
+	/** @param n int throttle start threshold */
 	public void setThrottleStartThreshold(final int n) { this.throttleStartThreshold = n; }
 
+	/** @return int throttle stop threshold */
 	public int getThrottleStopThreshold() { return this.throttleStopThreshold; }
+	/** @param n int throttle stop threshold */
 	public void setThrottleStopThreshold(final int n) { this.throttleStopThreshold = n; }
 
+	/** @return int throttle wait interval */
 	public long getThrottleWaitInterval() { return this.throttleWaitInterval; }
+	/** @param ms long throttle wait interval in ms */
 	public void setThrottleWaitInterval(final long ms) { this.throttleWaitInterval = ms; }
 
 }

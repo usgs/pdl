@@ -18,9 +18,12 @@ import java.util.ArrayList;
  */
 public class Regions {
 
-    public String defaultNetid; // Default network
-    public ArrayList<String> netids; // Array of network ids, e.g. nc, us, etc.
-    public ArrayList<Region> regions; // Array of regions
+    /** Default network */
+    public String defaultNetid;
+    /** Array of network ids, e.g. nc, us, etc. */
+    public ArrayList<String> netids;
+    /** Array of regions */
+    public ArrayList<Region> regions;
 
     /**
      * Create a new set of regions.
@@ -34,6 +37,9 @@ public class Regions {
     /**
      * Is this netid in the set of regions? The default net covers the whole world
      * so it is always valid since it has no finite boundaries.
+     *
+     * @param netid A netid (nc, us, etc.)
+     * @return boolean if netid is valid
      */
     public boolean isValidnetID(final String netid) {
         for (String i : this.netids) {

@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 
 /**
  * Utilities for associating events.
- * 
+ *
  * Based on the QDM EQEventsUtils class.
  */
 public class DefaultAssociator implements Associator {
@@ -38,10 +38,10 @@ public class DefaultAssociator implements Associator {
 
 	/**
 	 * Distance between related events latitude, in degrees.
-	 * 
+	 *
 	 * This is based on the max number of kilometers per degree, and provides
 	 * the maximum latitude separation (assuming events share a longitude).
-	 * 
+	 *
 	 * Used as a pre-filter before more expensive checks.
 	 */
 	public static final BigDecimal LOCATION_DIFF_DEGREES = new BigDecimal(
@@ -76,7 +76,7 @@ public class DefaultAssociator implements Associator {
 
 	/**
 	 * Choose and return the most closely associated event.
-	 * 
+	 *
 	 * @param events
 	 *            a list of candidate events.
 	 * @param summary
@@ -174,9 +174,9 @@ public class DefaultAssociator implements Associator {
 	 * parameter from the product parameter, normalizing between 1 and -1, then
 	 * calculating the Euclidean distance in the 3D space composed of the
 	 * normalized lat, lon, and time vectors.
-	 * 
-	 * @param summary
-	 * @param events
+	 *
+	 * @param summary ProductSummary to compare events with
+	 * @param events List of events
 	 * @return Event with lowest distance
 	 */
 	protected Event chooseMostSimilar(ProductSummary summary, List<Event> events) {
@@ -242,7 +242,7 @@ public class DefaultAssociator implements Associator {
 
 	/**
 	 * Check if two events are associated to each other.
-	 * 
+	 *
 	 * Reasons events may be considered disassociated:
 	 * <ol>
 	 * <li>Share a common EVENTSOURCE with different EVENTSOURCECODE.</li>
@@ -250,14 +250,14 @@ public class DefaultAssociator implements Associator {
 	 * <li>Preferred location in space and time is NOT nearby, and no other
 	 * reason to associate.</li>
 	 * </ol>
-	 * 
+	 *
 	 * Reasons events may be considered associated:
 	 * <ol>
 	 * <li>Share a common EVENTID</li>
 	 * <li>Either has an associate product for the other.</li>
 	 * <li>Their preferred location in space and time is nearby.</li>
 	 * </ol>
-	 * 
+	 *
 	 * @param event1
 	 *            candidate event to test.
 	 * @param event2
@@ -362,7 +362,7 @@ public class DefaultAssociator implements Associator {
 
 	/**
 	 * Build a ProductIndexQuery that searches based on event id.
-	 * 
+	 *
 	 * @param eventSource
 	 *            the eventSource to search
 	 * @param eventCode
@@ -395,8 +395,8 @@ public class DefaultAssociator implements Associator {
 
 	/**
 	 * Build a ProductIndexQuery that searches based on location.
-	 * 
-	 * 
+	 *
+	 *
 	 * @param time
 	 *            the time to search around.
 	 * @param latitude
@@ -468,7 +468,7 @@ public class DefaultAssociator implements Associator {
 
 	/**
 	 * Check if a location would be matched by a ProductIndexQuery.
-	 * 
+	 *
 	 * @param query
 	 *            location query
 	 * @param time

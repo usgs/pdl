@@ -9,12 +9,19 @@ import java.util.Date;
 
 /**
  * Compare io times of XML and Binary product formats.
- * 
+ *
  * All conversion is done in memory to try to balance the tests. All writes use
  * a BinaryProductSource to keep the playing field level.
  */
 public class BinaryXmlIOComparison {
 
+	/**
+	 * Serializes product by streaming it to a handler
+	 * @param source a productSource
+	 * @param handler a productHandler
+	 * @return Time it took to stream source to handler
+	 * @throws Exception if error occurs
+	 */
 	public static long timeSerializeProduct(final ProductSource source,
 			final ProductHandler handler) throws Exception {
 		Date start = new Date();
@@ -23,6 +30,11 @@ public class BinaryXmlIOComparison {
 		return end.getTime() - start.getTime();
 	}
 
+	/**
+	 * Testing for class
+	 * @param args CLI args
+	 * @throws Exception if error occurs
+	 */
 	public static void main(final String[] args) throws Exception {
 		int numRuns = 10;
 		testProductIO(
@@ -42,6 +54,12 @@ public class BinaryXmlIOComparison {
 				numRuns);
 	}
 
+	/**
+	 * Tests product IO
+	 * @param product Produc
+	 * @param numRuns int
+	 * @throws Exception if error occurs
+	 */
 	public static void testProductIO(final Product product, int numRuns)
 			throws Exception {
 		System.err.println(product.getId().toString());
@@ -52,6 +70,12 @@ public class BinaryXmlIOComparison {
 		System.err.println();
 	}
 
+	/**
+	 * Tests XML reading
+	 * @param product a product
+	 * @param numReads int
+	 * @throws Exception if error occurs
+	 */
 	public static void testXmlReads(final Product product, int numReads)
 			throws Exception {
 		// read product into memory
@@ -76,6 +100,12 @@ public class BinaryXmlIOComparison {
 				+ numReads + ",\tread average=" + ((double) time / numReads));
 	}
 
+	/**
+	 * Tests binary reading
+	 * @param product a product
+	 * @param numReads int
+	 * @throws Exception if error occurs
+	 */
 	public static void testBinaryReads(final Product product, int numReads)
 			throws Exception {
 		// read product into memory
@@ -101,6 +131,12 @@ public class BinaryXmlIOComparison {
 				+ numReads + ",\tread average=" + ((double) time / numReads));
 	}
 
+	/**
+	 * Tests binary writes
+	 * @param product a product
+	 * @param numWrites int
+	 * @throws Exception if error occurs
+	 */
 	public static void testBinaryWrites(final Product product, int numWrites)
 			throws Exception {
 		// read product into memory
@@ -128,6 +164,12 @@ public class BinaryXmlIOComparison {
 				+ ((double) time / numWrites));
 	}
 
+	/**
+	 * tests xml writes
+	 * @param product a product
+	 * @param numWrites int
+	 * @throws Exception if error occurs
+	 */
 	public static void testXmlWrites(final Product product, int numWrites)
 			throws Exception {
 		// read product into memory

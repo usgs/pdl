@@ -17,6 +17,11 @@ import java.util.List;
  */
 public class StringUtils {
 
+    /**
+     * @param value value to encode
+     * @return Utf8 encoded string
+     * @throws UnsupportedEncodingException if character encoding is not supported
+     */
     public static String encodeAsUtf8(final String value)
             throws UnsupportedEncodingException {
         byte[] utf8Bytes = value.getBytes(StandardCharsets.UTF_8);
@@ -26,7 +31,7 @@ public class StringUtils {
     /**
      * No Exception Double parsing method.
      *
-     * @param value
+     * @param value string to get double from
      * @return null on error, otherwise Double value.
      */
     public static Double getDouble(final String value) {
@@ -42,7 +47,7 @@ public class StringUtils {
     /**
      * No Exception Float parsing method.
      *
-     * @param value
+     * @param value string to get float from
      * @return null on error, otherwise Float value.
      */
     public static Float getFloat(final String value) {
@@ -58,7 +63,7 @@ public class StringUtils {
     /**
      * No Exception Integer parsing method.
      *
-     * @param value
+     * @param value string to get integer from
      * @return null on error, otherwise Integer value.
      */
     public static Integer getInteger(final String value) {
@@ -74,7 +79,7 @@ public class StringUtils {
     /**
      * No Exception Long parsing method.
      *
-     * @param value
+     * @param value string to get long from
      * @return null on error, otherwise Integer value.
      */
     public static Long getLong(final String value) {

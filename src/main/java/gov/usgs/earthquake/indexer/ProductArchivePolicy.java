@@ -8,7 +8,7 @@ import gov.usgs.util.Config;
 
 /**
  * An archive policy for products, instead of events.
- * 
+ *
  * Allows removal of superseded products, preserving latest versions. Also
  * allows targeting unassociated products.
  */
@@ -21,33 +21,53 @@ public class ProductArchivePolicy extends ArchivePolicy {
 	// Names of configurable parameters
 	// --------------------------------------------------------------------
 
+	/** Property for archive min product age */
 	public static final String ARCHIVE_MIN_PRODUCT_AGE_PROPERTY = "minProductAge";
+	/** Property for archive max product age */
 	public static final String ARCHIVE_MAX_PRODUCT_AGE_PROPERTY = "maxProductAge";
 
+	/** Property for archive min product time */
 	public static final String ARCHIVE_MIN_PRODUCT_TIME_PROPERTY = "minProductTime";
+	/** Property for archive max product time */
 	public static final String ARCHIVE_MAX_PRODUCT_TIME_PROPERTY = "maxProductTime";
 
+	/** Property for archive product type */
 	public static final String ARCHIVE_TYPE_PROPERTY = "productType";
+	/** Property for archive product source */
 	public static final String ARCHIVE_SOURCE_PROPERTY = "productSource";
+	/** Property for archive superseded */
 	public static final String ARCHIVE_SUPERSEDED_PROPERTY = "onlySuperseded";
+	/** Property for archive unassociated */
 	public static final String ARCHIVE_UNASSOCIATED_PROPERTY = "onlyUnassociated";
+	/** Property for archive product status */
 	public static final String ARCHIVE_STATUS_PROPERTY = "productStatus";
 
+	/** Default state for archive superseded */
 	public static final String DEFAULT_ARCHIVE_SUPERSEDED = "true";
+	/** Default state for archive unassociated */
 	public static final String DEFAULT_ARCHIVE_UNASSOCIATED = "false";
 	// --------------------------------------------------------------------
 	// Configured parameters.
 	// --------------------------------------------------------------------
 
+	/** Configured parameter for min product age  */
 	protected Long minProductAge = null;
+	/** Configured parameter for max product age */
 	protected Long maxProductAge = null;
+	/** Configured parameter for min product time */
 	protected Long minProductTime = null;
+	/** Configured parameter for max product time */
 	protected Long maxProductTime = null;
 
+	/** Configured parameter for product type */
 	protected String productType = null;
+	/** Configured parameter for product source */
 	protected String productSource = null;
+	/** Configured parameter for only superseded */
 	protected boolean onlySuperseded = true;
+	/** Configured parameter for only unassociated */
 	protected boolean onlyUnassociated = false;
+	/** Configured parameter for product status */
 	protected String productStatus = null;
 
 	@SuppressWarnings("deprecation")
@@ -97,7 +117,7 @@ public class ProductArchivePolicy extends ArchivePolicy {
 							"greater than maxProductAge.");
 			ce.fillInStackTrace();
 			throw ce;
-		}		
+		}
 
 		if ((minProductTime != null && maxProductTime != null) &&
 				(minProductTime  > maxProductTime)) {
@@ -107,8 +127,8 @@ public class ProductArchivePolicy extends ArchivePolicy {
 							"greater than maxProductTime.");
 			ce.fillInStackTrace();
 			throw ce;
-		}				
-		
+		}
+
 		productType = config.getProperty(ARCHIVE_TYPE_PROPERTY);
 		productSource = config.getProperty(ARCHIVE_SOURCE_PROPERTY);
 		onlySuperseded = Boolean.valueOf(config.getProperty(
@@ -196,74 +216,92 @@ public class ProductArchivePolicy extends ArchivePolicy {
 				|| productStatus != null);
 	}
 
+	/** @return minProductAge */
 	public Long getMinProductAge() {
 		return minProductAge;
 	}
 
+	/** @param minProductAge to set */
 	public void setMinProductAge(Long minProductAge) {
 		this.minProductAge = minProductAge;
 	}
 
+	/** @return maxProductAge */
 	public Long getMaxProductAge() {
 		return maxProductAge;
 	}
 
+	/** @param maxProductAge to set */
 	public void setMaxProductAge(Long maxProductAge) {
 		this.maxProductAge = maxProductAge;
 	}
 
+	/** @return minProductTime */
 	public Long getMinProductTime() {
 		return minProductTime;
 	}
 
+	/** @param minProductTime to set */
 	public void setMinProductTime(Long minProductTime) {
 		this.minProductTime = minProductTime;
 	}
 
+	/** @return maxProductTime */
 	public Long getMaxProductTime() {
 		return maxProductTime;
 	}
 
+	/** @param maxProductTime to set */
 	public void setMaxProductTime(Long maxProductTime) {
 		this.maxProductTime = maxProductTime;
 	}
 
+	/** @return productType */
 	public String getProductType() {
 		return productType;
 	}
 
+	/** @param productType to set */
 	public void setProductType(String productType) {
 		this.productType = productType;
 	}
 
+	/** @return productSource */
 	public String getProductSource() {
 		return productSource;
 	}
 
+	/** @param productSource to set */
 	public void setProductSource(String productSource) {
 		this.productSource = productSource;
 	}
 
+	/** @return onlySuperseded */
 	public boolean isOnlySuperseded() {
 		return onlySuperseded;
 	}
 
+	/** @param onlySuperseded to set */
 	public void setOnlySuperseded(boolean onlySuperseded) {
 		this.onlySuperseded = onlySuperseded;
 	}
 
+	/** @return onlyUnassociated */
 	public boolean isOnlyUnassociated() {
 		return onlyUnassociated;
 	}
 
+	/** @param onlyUnassociated to set */
 	public void setOnlyUnassociated(boolean onlyUnassociated) {
 		this.onlyUnassociated = onlyUnassociated;
 	}
 
+	/** @return productStatus */
 	public String getProductStatus() {
 		return productStatus;
 	}
 
+	/** @param productStatus to set */
 	public void setProductStatus(String productStatus) {
 		this.productStatus = productStatus;
 	}

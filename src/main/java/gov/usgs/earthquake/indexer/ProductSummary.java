@@ -19,7 +19,7 @@ import java.net.URI;
 
 /**
  * A ProductSummary is essentially a product without its contents.
- * 
+ *
  * These are usually created by {@link IndexerModule}s, which may
  * inspect Product Content to add additional summary properties.
  */
@@ -78,10 +78,10 @@ public class ProductSummary {
 
 	/**
 	 * Copy constructor for ProductSummary.
-	 * 
+	 *
 	 * Does a deep copy of properties and links maps. All other attributes are
 	 * copied by reference.
-	 * 
+	 *
 	 * @param copy
 	 *            product summary to copy.
 	 */
@@ -112,10 +112,10 @@ public class ProductSummary {
 
 	/**
 	 * Create a ProductSummary from a product.
-	 * 
+	 *
 	 * All attributes are copied from the product, and preferredWeight is set to
 	 * 1L.
-	 * 
+	 *
 	 * @param product
 	 *            the product to summarize.
 	 */
@@ -143,30 +143,37 @@ public class ProductSummary {
 		this.setPreferredWeight(1L);
 	}
 
+	/** @return indexId */
 	public Long getIndexId() {
 		return indexId;
 	}
 
+	/** @param indexId to set */
 	public void setIndexId(Long indexId) {
 		this.indexId = indexId;
 	}
 
+	/** @return product id */
 	public ProductId getId() {
 		return id;
 	}
 
+	/** @param id to set */
 	public void setId(ProductId id) {
 		this.id = id;
 	}
 
+	/** @return status */
 	public String getStatus() {
 		return status;
 	}
 
+	/** @param status to set */
 	public void setStatus(String status) {
 		this.status = status;
 	}
 
+	/** @return if product is deleted */
 	public boolean isDeleted() {
 		if (Product.STATUS_DELETE.equalsIgnoreCase(this.status)) {
 			return true;
@@ -175,18 +182,22 @@ public class ProductSummary {
 		}
 	}
 
+	/** @return trackerURL */
 	public URL getTrackerURL() {
 		return trackerURL;
 	}
 
+	/** @param trackerURL to set */
 	public void setTrackerURL(URL trackerURL) {
 		this.trackerURL = trackerURL;
 	}
 
+	/** @return preferredWeight */
 	public long getPreferredWeight() {
 		return preferredWeight;
 	}
 
+	/** @param weight to set */
 	public void setPreferredWeight(long weight) {
 		this.preferredWeight = weight;
 	}
@@ -208,7 +219,7 @@ public class ProductSummary {
 
 	/**
 	 * Returns a reference to the links map.
-	 * 
+	 *
 	 * @return the links
 	 */
 	public Map<String, List<URI>> getLinks() {
@@ -217,7 +228,7 @@ public class ProductSummary {
 
 	/**
 	 * Copies entries from provided map.
-	 * 
+	 *
 	 * @param links
 	 *            the links to set
 	 */
@@ -228,7 +239,7 @@ public class ProductSummary {
 
 	/**
 	 * Add a link to a product.
-	 * 
+	 *
 	 * @param relation
 	 *            how link is related to product.
 	 * @param href
@@ -243,6 +254,7 @@ public class ProductSummary {
 		relationLinks.add(href);
 	}
 
+	/** @return null or eventId */
 	public String getEventId() {
 		if (eventSource == null || eventSourceCode == null) {
 			return null;
@@ -250,10 +262,12 @@ public class ProductSummary {
 		return (eventSource + eventSourceCode).toLowerCase();
 	}
 
+	/** @return eventSource */
 	public String getEventSource() {
 		return eventSource;
 	}
 
+	/** @param eventSource to set */
 	public void setEventSource(String eventSource) {
 		this.eventSource = eventSource;
 
@@ -269,10 +283,12 @@ public class ProductSummary {
 		}
 	}
 
+	/** @return eventSourceCode */
 	public String getEventSourceCode() {
 		return eventSourceCode;
 	}
 
+	/** @param eventSourceCode to set */
 	public void setEventSourceCode(String eventSourceCode) {
 		this.eventSourceCode = eventSourceCode;
 
@@ -289,10 +305,12 @@ public class ProductSummary {
 		}
 	}
 
+	/** @return eventTime */
 	public Date getEventTime() {
 		return eventTime;
 	}
 
+	/** @param eventTime to set */
 	public void setEventTime(Date eventTime) {
 		this.eventTime = eventTime;
 		if (eventTime != null) {
@@ -304,10 +322,12 @@ public class ProductSummary {
 
 	}
 
+	/** @return eventLatitude */
 	public BigDecimal getEventLatitude() {
 		return eventLatitude;
 	}
 
+	/** @param eventLatitude to set */
 	public void setEventLatitude(BigDecimal eventLatitude) {
 		this.eventLatitude = eventLatitude;
 		if (eventLatitude != null) {
@@ -318,10 +338,12 @@ public class ProductSummary {
 		}
 	}
 
+	/** @return eventLongitude */
 	public BigDecimal getEventLongitude() {
 		return eventLongitude;
 	}
 
+	/** @param eventLongitude to set */
 	public void setEventLongitude(BigDecimal eventLongitude) {
 		this.eventLongitude = eventLongitude;
 		if (eventLongitude != null) {
@@ -332,10 +354,12 @@ public class ProductSummary {
 		}
 	}
 
+	/** @return eventDepth */
 	public BigDecimal getEventDepth() {
 		return eventDepth;
 	}
 
+	/** @param eventDepth to set */
 	public void setEventDepth(BigDecimal eventDepth) {
 		this.eventDepth = eventDepth;
 		if (eventDepth != null) {
@@ -345,10 +369,12 @@ public class ProductSummary {
 		}
 	}
 
+	/** @return eventMagnitude */
 	public BigDecimal getEventMagnitude() {
 		return eventMagnitude;
 	}
 
+	/** @param eventMagnitude to set */
 	public void setEventMagnitude(BigDecimal eventMagnitude) {
 		this.eventMagnitude = eventMagnitude;
 		if (eventMagnitude != null) {
@@ -359,10 +385,12 @@ public class ProductSummary {
 		}
 	}
 
+	/** @return version */
 	public String getVersion() {
 		return version;
 	}
 
+	/** @param version to set */
 	public void setVersion(String version) {
 		this.version = version;
 		if (version != null) {
@@ -372,25 +400,29 @@ public class ProductSummary {
 		}
 	}
 
+	/** @return type */
 	public String getType() {
 		return getId().getType();
 	}
 
+	/** @return source */
 	public String getSource() {
 		return getId().getSource();
 	}
 
+	/** @return code */
 	public String getCode() {
 		return getId().getCode();
 	}
 
+	/** @return updateTime */
 	public Date getUpdateTime() {
 		return getId().getUpdateTime();
 	}
 
 	/**
 	 * Compares two ProductSummaries to determine if they are equal.
-	 * 
+	 *
 	 * This first implementation just considers the ProductId of each summary.
 	 * This is probably not the best way to check for equality.
 	 */

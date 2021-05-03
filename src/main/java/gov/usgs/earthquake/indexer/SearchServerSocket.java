@@ -68,13 +68,13 @@ public class SearchServerSocket extends DefaultConfigurable implements
 
 	/**
 	 * Method to perform search.
-	 * 
+	 *
 	 * Calls Indexer.search(SearchRequest). Simplifies testing.
-	 * 
+	 *
 	 * @param request
 	 *            the search to execute.
 	 * @return the search response.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected SearchResponse search(final SearchRequest request)
 			throws Exception {
@@ -183,26 +183,32 @@ public class SearchServerSocket extends DefaultConfigurable implements
 		acceptor.start();
 	}
 
+	/** @return int port */
 	public int getPort() {
 		return port;
 	}
 
+	/** @param port int to set */
 	public void setPort(int port) {
 		this.port = port;
 	}
 
+	/** @return int threads */
 	public int getThreads() {
 		return threads;
 	}
 
+	/** @param threads into to set */
 	public void setThreads(int threads) {
 		this.threads = threads;
 	}
 
+	/** @return indexer */
 	public Indexer getIndexer() {
 		return indexer;
 	}
 
+	/** @param indexer to set */
 	public void setIndex(Indexer indexer) {
 		this.indexer = indexer;
 	}

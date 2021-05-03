@@ -15,19 +15,19 @@ import java.util.logging.Logger;
 
 /**
  * Criteria for finding events.
- * 
+ *
  * All properties are inclusive. When a property is null, it means any value.
- * 
+ *
  * Expected combinations:
- * 
+ *
  * 1) find events based on event parameters event time event latitude event
  * longitude
- * 
+ *
  * 2) find previously received update of product product source product type
  * product code
- * 
+ *
  * 3) find related products/events product ids
- * 
+ *
  * 4) find related products/events event ids
  */
 public class ProductIndexQuery implements Comparable<ProductIndexQuery> {
@@ -40,7 +40,7 @@ public class ProductIndexQuery implements Comparable<ProductIndexQuery> {
 	private static enum EventSearchTypes {
 		/**
 		 * Search preferred event attributes.
-		 * 
+		 *
 		 * NOTE: SEARCH_EVENT_PREFERRED should ONLY be used on event queries.
 		 * Using this on product queries will more than likely break.
 		 */
@@ -69,11 +69,16 @@ public class ProductIndexQuery implements Comparable<ProductIndexQuery> {
 		RESULT_TYPE_ALL;
 	};
 
+	/** EventSearchType for SEARCH_EVENT_PREFERRED */
 	public static EventSearchTypes SEARCH_EVENT_PREFERRED = EventSearchTypes.SEARCH_EVENT_PREFERRED;
+	/** EventSearchType for SEARCH_EVENT_PRODCUTS */
 	public static EventSearchTypes SEARCH_EVENT_PRODUCTS = EventSearchTypes.SEARCH_EVENT_PRODUCTS;
 
+	/** ResultType for RESULT_TYPE_CURRENT */
 	public static ResultTypes RESULT_TYPE_CURRENT = ResultTypes.RESULT_TYPE_CURRENT;
+	/** ResultType for RESULT_TYPE_SUPERSEDED */
 	public static ResultTypes RESULT_TYPE_SUPERSEDED = ResultTypes.RESULT_TYPE_SUPERSEDED;
+	/** ResultType for RESULT_TYPE_ALL */
 	public static ResultTypes RESULT_TYPE_ALL = ResultTypes.RESULT_TYPE_ALL;
 
 	/** Search preferred or all event attributes? */
@@ -157,205 +162,254 @@ public class ProductIndexQuery implements Comparable<ProductIndexQuery> {
 	public ProductIndexQuery() {
 	}
 
+	/** @param eventSearchType to set */
 	public void setEventSearchType(EventSearchTypes eventSearchType) {
 		this.eventSearchType = eventSearchType;
 	}
 
+	/** @return eventSearchType */
 	public EventSearchTypes getEventSearchType() {
 		return eventSearchType;
 	}
 
+	/** @param resultType to set */
 	public void setResultType(ResultTypes resultType) {
 		this.resultType = resultType;
 	}
 
+	/** @return resultType */
 	public ResultTypes getResultType() {
 		return resultType;
 	}
 
+	/** @param eventSource to set */
 	public void setEventSource(String eventSource) {
 		this.eventSource = (eventSource == null ? null : eventSource
 				.toLowerCase());
 	}
-
+	/** @return eventSource */
 	public String getEventSource() {
 		return eventSource;
 	}
 
+	/** @param eventSourceCode to set */
 	public void setEventSourceCode(String eventSourceCode) {
 		this.eventSourceCode = (eventSourceCode == null ? null
 				: eventSourceCode.toLowerCase());
 	}
 
+	/** @return eventSourceCode */
 	public String getEventSourceCode() {
 		return eventSourceCode;
 	}
 
+	/** @return minEventTime */
 	public Date getMinEventTime() {
 		return minEventTime;
 	}
 
+	/** @param minEventTime to set */
 	public void setMinEventTime(Date minEventTime) {
 		this.minEventTime = minEventTime;
 	}
 
+	/** @return maxEventTime */
 	public Date getMaxEventTime() {
 		return maxEventTime;
 	}
 
+	/** @param maxEventTime to set */
 	public void setMaxEventTime(Date maxEventTime) {
 		this.maxEventTime = maxEventTime;
 	}
 
+	/** @return minEventLatitude */
 	public BigDecimal getMinEventLatitude() {
 		return minEventLatitude;
 	}
 
+	/** @param minEventLatitude to set */
 	public void setMinEventLatitude(BigDecimal minEventLatitude) {
 		this.minEventLatitude = minEventLatitude;
 	}
 
+	/** @return maxEventLatitude */
 	public BigDecimal getMaxEventLatitude() {
 		return maxEventLatitude;
 	}
 
+	/** @param maxEventLatitude to set */
 	public void setMaxEventLatitude(BigDecimal maxEventLatitude) {
 		this.maxEventLatitude = maxEventLatitude;
 	}
 
+	/** @return minEventLongitude */
 	public BigDecimal getMinEventLongitude() {
 		return minEventLongitude;
 	}
 
+	/** @param minEventLongitude to set */
 	public void setMinEventLongitude(BigDecimal minEventLongitude) {
 		this.minEventLongitude = minEventLongitude;
 	}
 
+	/** @return maxEventLongitude */
 	public BigDecimal getMaxEventLongitude() {
 		return maxEventLongitude;
 	}
 
+	/** @param maxEventLongitude to set */
 	public void setMaxEventLongitude(BigDecimal maxEventLongitude) {
 		this.maxEventLongitude = maxEventLongitude;
 	}
 
+	/** @return minEventDepth */
 	public BigDecimal getMinEventDepth() {
 		return minEventDepth;
 	}
 
+	/** @param minEventDepth to set */
 	public void setMinEventDepth(BigDecimal minEventDepth) {
 		this.minEventDepth = minEventDepth;
 	}
 
+	/** @return maxEventDepth */
 	public BigDecimal getMaxEventDepth() {
 		return maxEventDepth;
 	}
 
+	/** @param maxEventDepth to set */
 	public void setMaxEventDepth(BigDecimal maxEventDepth) {
 		this.maxEventDepth = maxEventDepth;
 	}
 
+	/** @return minEventMagnitude */
 	public BigDecimal getMinEventMagnitude() {
 		return minEventMagnitude;
 	}
 
+	/** @param minEventMagnitude to set */
 	public void setMinEventMagnitude(BigDecimal minEventMagnitude) {
 		this.minEventMagnitude = minEventMagnitude;
 	}
 
+	/** @return maxEventMagnitude */
 	public BigDecimal getMaxEventMagnitude() {
 		return maxEventMagnitude;
 	}
 
+	/** @param maxEventMagnitude to set */
 	public void setMaxEventMagnitude(BigDecimal maxEventMagnitude) {
 		this.maxEventMagnitude = maxEventMagnitude;
 	}
 
+	/** @return list of product Ids */
 	public List<ProductId> getProductIds() {
 		return productIds;
 	}
 
+	/** @param productIds list to set */
 	public void setProductIds(List<ProductId> productIds) {
 		this.productIds.clear();
 		this.productIds.addAll(productIds);
 	}
 
+	/** @return minProductUpdateTime */
 	public Date getMinProductUpdateTime() {
 		return minProductUpdateTime;
 	}
 
+	/** @param minProductUpdateTime to set */
 	public void setMinProductUpdateTime(Date minProductUpdateTime) {
 		this.minProductUpdateTime = minProductUpdateTime;
 	}
 
+	/** @return maxProductUpdateTime */
 	public Date getMaxProductUpdateTime() {
 		return maxProductUpdateTime;
 	}
 
+	/** @param maxProductUpdateTime to set */
 	public void setMaxProductUpdateTime(Date maxProductUpdateTime) {
 		this.maxProductUpdateTime = maxProductUpdateTime;
 	}
 
+	/** @return productSource */
 	public String getProductSource() {
 		return productSource;
 	}
 
+	/** @param productSource to set */
 	public void setProductSource(String productSource) {
 		this.productSource = productSource;
 	}
 
+	/** @return productType */
 	public String getProductType() {
 		return productType;
 	}
 
+	/** @param productType to set */
 	public void setProductType(String productType) {
 		this.productType = productType;
 	}
 
+	/** @return productCode */
 	public String getProductCode() {
 		return productCode;
 	}
 
+	/** @param productCode to set */
 	public void setProductCode(String productCode) {
 		this.productCode = productCode;
 	}
 
+	/** @param productVersion to set */
 	public void setProductVersion(String productVersion) {
 		this.productVersion = productVersion;
 	}
 
+	/** @return productVersion */
 	public String getProductVersion() {
 		return productVersion;
 	}
 
+	/** @param productStatus to set */
 	public void setProductStatus(String productStatus) {
 		this.productStatus = productStatus;
 	}
 
+	/** @return productStatus */
 	public String getProductStatus() {
 		return productStatus;
 	}
 
+	/** @param minProductIndexId to set */
 	public void setMinProductIndexId(final Long minProductIndexId) {
 		this.minProductIndexId = minProductIndexId;
 	}
 
+	/** @return minProductIndexId */
 	public Long getMinProductIndexId() {
 		return this.minProductIndexId;
 	}
 
+	/** @param limit to set */
 	public void setLimit(final Integer limit) {
 		this.limit = limit;
 	}
 
+	/** @return limit */
 	public Integer getLimit() {
 		return this.limit;
 	}
 
+	/** @param orderBy to set */
 	public void setOrderBy(final String orderBy) {
 		this.orderBy = orderBy;
 	}
 
+	/** @return orderBy */
 	public String getOrderBy() {
 		return this.orderBy;
 	}
@@ -447,6 +501,13 @@ public class ProductIndexQuery implements Comparable<ProductIndexQuery> {
 		return 0;
 	}
 
+	/**
+	 * Compare function
+	 * @param <T> Type
+	 * @param o1 First item to compare
+	 * @param o2 Second to comoare
+	 * @return 0 if equal, 1 if o1 is null, -1 if o2 null, or the comparison
+	 */
 	protected <T extends Comparable<T>> int compare(T o1, T o2) {
 		if (o1 == null && o2 == null) {
 			return 0;
@@ -459,6 +520,10 @@ public class ProductIndexQuery implements Comparable<ProductIndexQuery> {
 		}
 	}
 
+	/**
+	 * Log function
+	 * @param logger logger object
+	 */
 	public void log(final Logger logger) {
 		if (!logger.isLoggable(Level.FINEST)) {
 			return;

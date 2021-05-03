@@ -89,34 +89,42 @@ public class SignatureVerifier extends DefaultConfigurable {
 		}
 	}
 
+	/** @return boolean RejectInvalidSignatures */
 	public boolean isRejectInvalidSignatures() {
 		return rejectInvalidSignatures;
 	}
 
+	/** @param rejectInvalidSignatures boolean to set */
 	public void setRejectInvalidSignatures(boolean rejectInvalidSignatures) {
 		this.rejectInvalidSignatures = rejectInvalidSignatures;
 	}
 
+	/** @return boolean TestSignatures */
 	public boolean isTestSignatures() {
 		return testSignatures;
 	}
 
+	/** @param testSignatures boolean to set */
 	public void setTestSignatures(boolean testSignatures) {
 		this.testSignatures = testSignatures;
 	}
 
+	/** @return Product keychain */
 	public ProductKeyChain getKeychain() {
 		return keychain;
 	}
 
+	/** @param keychain ProductKeyChain to set */
 	public void setKeychain(ProductKeyChain keychain) {
 		this.keychain = keychain;
 	}
 
+	/** @return boolean AllowUnknownSigner */
 	public boolean isAllowUnknownSigner() {
 		return allowUnknownSigner;
 	}
 
+	/** @param allowUnknownSigner boolean to set */
 	public void setAllowUnknownSigner(boolean allowUnknownSigner) {
 		this.allowUnknownSigner = allowUnknownSigner;
 	}
@@ -131,7 +139,7 @@ public class SignatureVerifier extends DefaultConfigurable {
 	 *             if rejectInvalidSignatures=true, and signature was not
 	 *             verified; allowUnknownSigner=true prevents this exception
 	 *             when no keys are found in the keychain for the product.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public boolean verifySignature(final Product product) throws Exception {
 		boolean verified = false;

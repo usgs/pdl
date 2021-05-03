@@ -15,15 +15,17 @@ import java.math.BigDecimal;
  */
 public class DYFIProduct extends Product {
 
-	// References the event_data.xml file in the Product
+	/** References the event_data.xml file in the Product */
 	public static final String DYFI_EVENT_XML_ATTACHMENT = "event_data.xml";
 
-	// These attributes are read from the XML file
+	/** Attribute for number of responses. Read from XML */
 	public static final String DYFI_NUM_RESP_ATTRIBUTE = "nresponses";
+	/** Attribute for max intensity. Read from XML */
 	public static final String DYFI_MAX_MMI_ATTRIBUTE = "max_intensity";
 
-	// These properties are what we set internally
+	/** Internally set number of responses property */
 	public static final String DYFI_NUM_RESP_PROPERTY = "numResp";
+	/** Internally set max intensity property */
 	public static final String DYFI_MAX_MMI_PROPERTY = "maxmmi";
 
 	/**
@@ -45,6 +47,7 @@ public class DYFIProduct extends Product {
 		}
 	}
 
+	/** Reads in DYFI Event EXL and parses it into a EventDataXMLHandler */
 	protected void loadEventXml() {
 		// Parse event_data.xml for more information about product
 		Content source = getContents().get(DYFI_EVENT_XML_ATTACHMENT);

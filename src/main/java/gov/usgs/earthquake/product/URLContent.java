@@ -30,7 +30,7 @@ public class URLContent extends AbstractContent {
 	 *
 	 * @param content
 	 *            the content available at a URL.
-	 * @throws URISyntaxException
+	 * @throws URISyntaxException on URI error
 	 */
 	public URLContent(final URL content) throws URISyntaxException {
 		this.setContentType(MIME_TYPES.getContentType(content.toURI()
@@ -43,6 +43,7 @@ public class URLContent extends AbstractContent {
 	 *
 	 * @param fc
 	 *            the file content.
+	 * @throws MalformedURLException if URL error
 	 */
 	public URLContent(final FileContent fc) throws MalformedURLException {
 		super(fc);
@@ -51,6 +52,7 @@ public class URLContent extends AbstractContent {
 
 	/**
 	 * @return an InputStream for the wrapped content.
+	 * @throws IOException on IO error
 	 */
 	public InputStream getInputStream() throws IOException {
 		return StreamUtils.getURLInputStream(content);

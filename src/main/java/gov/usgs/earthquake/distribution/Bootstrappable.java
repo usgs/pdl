@@ -10,9 +10,10 @@ public interface Bootstrappable {
 
 	/**
 	 * Called by Bootstrap after processing the Configurable interface.
-	 * 
+	 *
 	 * @param args
 	 *            array of command line arguments.
+	 * @throws Exception Exception
 	 */
 	public void run(final String[] args) throws Exception;
 
