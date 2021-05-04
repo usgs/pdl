@@ -740,15 +740,6 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 						totalFailures++;
 						LOGGER.severe("Total failure sending product "
 								+ sentId.toString());
-
-						//Iterator for specific Product Senders
-						Iterator<ProductSender> productSenders = sendExceptions.get(sentId)
-								.keySet().iterator();
-						while(productSenders.hasNext()) {
-							ProductSender productSender = productSenders.next();
-								LOGGER.fine("Total failure exception "
-									+ sendExceptions.get(sentId).get(productSender).toString());
-						}
 					} else {
 						// output built product id because it was sent at least
 						// once
@@ -760,14 +751,6 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 							partialFailures++;
 							LOGGER.warning("Partial failure sending product "
 									+ sentId.toString());
-
-							Iterator<ProductSender> productSenders = sendExceptions.get(sentId)
-									.keySet().iterator();
-							while(productSenders.hasNext()) {
-								ProductSender productSender = productSenders.next();
-									LOGGER.fine("Total failure exception "
-										+ sendExceptions.get(sentId).get(productSender).toString());
-							}
 						}
 					}
 				}
