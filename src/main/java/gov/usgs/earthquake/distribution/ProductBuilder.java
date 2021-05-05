@@ -295,7 +295,12 @@ public class ProductBuilder extends DefaultConfigurable {
 					sender.sendProduct(product);
 					sendComplete.put(sender, true);
 				} catch (Exception e) {
-					sendExceptions.put(sender, e);
+					if (e instanceof ProductAlreadyInStorageException) {
+						LOGGER.info("Product already in storage, id=" + product.getId().toString());
+					} else {
+						LOGGER.log(Level.WARNING, "[" + sender.getName() + "] error sending product", e);
+						sendExceptions.put(sender, e);
+					}
 				}
 				return null;
 			});
