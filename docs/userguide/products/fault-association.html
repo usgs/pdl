@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>faultl-association Product Documentation</title>
+<link rel="stylesheet" href="../userguide.css" />
+</head>
+
+<body>
+<h1>fault-association Product Documentation</h1>
+<p><a href="index.html">&laquo; Back to Products Documentation</a></p>
+
+<h2>Types</h2>
+<dl>
+	<dt>fault-association</dt>
+	<dd>This product contains data about probabilities that a fault in the SCEC Community Fault Model
+		is associated with an event.</a>.</dd>
+</dl>
+
+<!--
+<h2>Sources</h2>
+<dl>
+	<dt>SCEC Community Fault Model</dt>
+	<dd>Harvard University, Dept of Earth & Planetary Sciences</dd>
+	<dd>Public Key</dd>
+</dl>
+-->
+
+<h2>Properties</h2>
+<dl>
+    <dd>Not applicable</dd>
+</dl>
+
+
+<h2>Contents</h2>
+<dl>
+	<dt>faultassociations.json</dt>
+	<dd>
+		[application/json] Structured JSON string containing fault
+		association probabilities.
+	</dd>
+</dl>
+
+<h2>JSON Format</h2>
+<p>The JSON file is an extension of GEOJSON standard and contains an array of a metadata object, a result object, and
+a GEOJSON feature collection. The feature collection comprises of an event feature, and of one or more fault features and their association probabilites and distance from the event.
+
+<h3>Metadata Object</h3>
+<dl>   
+                <dt>process_time</dt>
+                <dd>The date time the fault association probabilties were created</dd>
+
+                <dt>software_version</dt>
+                <dd>The version of Eq2CFM that was used to compute the probabilites</dd>
+
+                <dt>cfm_version</dt>
+                <dd>The version of the SCEC Community Fault Model that was used to compute the probabilites</dd>
+                </dd>
+        </dl>
+
+<h3>Result Object</h3>
+<dl>    
+                <dt>probability</dt>
+                <dd>The probability in percent the earthquake is associated with this fault</dd>
+        
+                <dt>title</dt>
+                <dd>This could be the name of an individual fault or a group of faults</dd>
+        
+                </dd>
+        </dl>
+<h3>Event Feature</h3>
+<dl>
+                <dt>id</dt>
+                <dd>Event id - this is an id in ComCat</dd>
+
+</dl>
+<h4>Event Feature properties</h4>
+<dl>
+                <dt>class</dt>
+                <dd>Identifies what feature is being described. In this product there are 2 classes "Event" and "Fault"</dd>
+
+                <dt>mag</dt>
+                <dd>The magnitude of the earthquake</dd>
+
+                <dt>title</dt>
+                <dd>A string describing the earthquake - usually gives some geographical reference to users.</dd>
+
+                <dt>utctime</dt>
+                <dd>date string of origin time in UTC</dd>
+
+                <dt>version</dt>
+                <dd>event version given by the network operator</dd>
+
+
+                </dd>
+        </dl>
+
+<h3>Fault Feature</h3>
+<dl>    
+                <dt>id</dt>
+                <dd>SCEC CFM fault id</dd>
+  
+</dl>
+<h4>Fault Feature properties</h4>
+<dl>
+		<dt>distance</dt>
+		<dd>distance from epicenter in kilometers</dd>
+
+		<dt>probability</dt>
+		<dd>The probability in percent the earthquake is associated with this fault</dd>
+
+		<dt>name</dt>
+		<dd>SCEC CFM 5.0 Fault name and closest segment if available.</dd>
+
+		<dt>qfaultids</dt>
+		<dd>an array of corresponding faults ids in the QFault database.</dd>
+
+		</dd>
+	</dl>
+
+<h3>Example</h3>
+<div class="code"><pre> {
+  "metadata": {
+    "process_time": "2021-04-13T21:40:03Z",
+    "software_version": "NA",
+    "cfm_version": "5"
+    },
+  "result": [
+    {
+      "probability": 37,
+      "title": "Not in CFM"
+    },
+    {
+      "probability": 35,
+      "title": "Berdoo Canyon fault"
+    },
+    {
+      "probability": 28,
+      "title": "Other CFM faults"
+    }
+  ],
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "class": "event",
+        "mag": 3.4,
+        "utctime": "2021-04-13T21:35:03",
+        "title": "M 3.5 - 15km NE of Indio, CA",
+        "version": "5"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -116.09,
+          33.807,
+          2.7
+        ]
+      },
+     "id": "ci39849144"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "class": "fault",
+        "name": "Berdoo Canyon fault",
+        "qfaultids": [
+          "12"
+        ],
+        "distance": 7.12,
+        "probability": 35
+      },
+      "id": "213",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "class": "fault",
+        "name": "Mecca Hills; Hidden Springs fault segment",
+        "qfaultids": [
+          "97",
+          "265",
+          "313",
+          "316",
+          "314",
+          "297",
+          "265",
+          "313",
+          "316",
+          "314"
+        ],
+        "distance": 7.82,
+        "probability": 10
+      },
+      "id": "218",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "class": "fault",
+        "name": "Indio Hills fault",
+        "qfaultids": [
+          "297"
+        ],
+        "distance": 8.97,
+        "probability": 7
+      },
+      "id": "214",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "class": "fault",
+        "name": "Blue Cut fault ",
+        "qfaultids": [
+          "30"
+        ],
+        "distance": 10.65,
+        "probability": 6
+      },
+      "id": "30",
+      "geometry": null
+    }
+  ]
+}</pre></div>
+
+--------------------
+<h2>Contents</h2>
+<dl>
+	<dt>Input_Earthquakes_to_Eval.csv</dt>
+	<dd>This file contains the parametric information of the event for which this product this applies. This file is an input to calculate the association probabilities.</dd>
+        <dt>Input_Past_Earthquakes.csv</dt>
+        <dd>This file contains the parametric information of past events used to calculate the association probabilities of the event described in Input_Earthquakes_to_Eval.csv. </dd>
+</dl>
+
+</body>
+</html>
