@@ -42,7 +42,9 @@
 
 <h2>JSON Format</h2>
 <p>The JSON file is an extension of GEOJSON standard and contains an array of a metadata object, a result object, and
-a GEOJSON feature collection. The feature collection comprises of an event feature, and of one or more fault features and their association probabilites and distance from the event.
+a GEOJSON feature collection. The metadata object also contains an event feature for which the fault association
+probabilities apply.
+The feature collection comprises of one or more fault features and their association probabilites and distance from the event.
 
 <h3>Metadata Object</h3>
 <dl>   
@@ -55,6 +57,7 @@ a GEOJSON feature collection. The feature collection comprises of an event featu
                 <dt>cfm_version</dt>
                 <dd>The version of the SCEC Community Fault Model that was used to compute the probabilites</dd>
                 </dd>
+              
         </dl>
 
 <h3>Result Object</h3>
@@ -89,7 +92,6 @@ a GEOJSON feature collection. The feature collection comprises of an event featu
 
                 <dt>version</dt>
                 <dd>event version given by the network operator</dd>
-
 
                 </dd>
         </dl>
