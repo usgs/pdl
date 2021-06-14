@@ -95,7 +95,8 @@ public class QuakemlProductCreator implements ProductCreator {
 	private Converter formatConverter = new Converter();
 	private boolean validate = false;
 
-	private boolean padForBase64Bug = false;
+	// default to fixing padding issues
+	private boolean padForBase64Bug = true;
 
 	/** Default Constructor */
 	public QuakemlProductCreator() {
