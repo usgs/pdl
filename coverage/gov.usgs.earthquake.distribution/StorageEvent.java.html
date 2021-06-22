@@ -8,33 +8,49 @@ public class StorageEvent extends EventObject {
 
 	/** Enumeration of &lt;code&gt;StorageEventType&lt;/code&gt;s **/
 <span class="fc" id="L10">	public static enum StorageEventType {</span>
-<span class="fc" id="L11">		PRODUCT_STORED, PRODUCT_REMOVED</span>
+		/** StorageEventType enum for stored */
+<span class="fc" id="L12">		PRODUCT_STORED,</span>
+		/** StorageEventType enum for removed */
+<span class="fc" id="L14">		PRODUCT_REMOVED</span>
 	}
 
-<span class="fc" id="L14">	public static final StorageEventType PRODUCT_STORED = StorageEventType.PRODUCT_STORED;</span>
-<span class="fc" id="L15">	public static final StorageEventType PRODUCT_REMOVED = StorageEventType.PRODUCT_REMOVED;</span>
+	/** Variable of StorageEventType, for the PRODUCT_STORED enum */
+<span class="fc" id="L18">	public static final StorageEventType PRODUCT_STORED = StorageEventType.PRODUCT_STORED;</span>
+	/** Variable of StorageEventType, for the PRODUCT_REMOVED enum */
+<span class="fc" id="L20">	public static final StorageEventType PRODUCT_REMOVED = StorageEventType.PRODUCT_REMOVED;</span>
 
 	private static final long serialVersionUID = 0x019A1A8BL;
-<span class="fc" id="L18">	private ProductId id = null;</span>
-<span class="fc" id="L19">	private StorageEventType type = null;</span>
+	/** The product ID */
+<span class="fc" id="L24">	private ProductId id = null;</span>
+	/** The StorageEventType */
+<span class="fc" id="L26">	private StorageEventType type = null;</span>
 
+	/**
+	 * Construct a new StorageEvent
+	 * @param storage ProductStorage
+	 * @param id ProductId
+	 * @param type StorageEventType
+	 */
 	public StorageEvent(ProductStorage storage, ProductId id,
 			StorageEventType type) {
-<span class="fc" id="L23">		super(storage);</span>
-<span class="fc" id="L24">		this.id = id;</span>
-<span class="fc" id="L25">		this.type = type;</span>
-<span class="fc" id="L26">	}</span>
+<span class="fc" id="L36">		super(storage);</span>
+<span class="fc" id="L37">		this.id = id;</span>
+<span class="fc" id="L38">		this.type = type;</span>
+<span class="fc" id="L39">	}</span>
 
+	/** @return ProductStorage */
 	public ProductStorage getProductStorage() {
-<span class="nc" id="L29">		return (ProductStorage) getSource();</span>
+<span class="nc" id="L43">		return (ProductStorage) getSource();</span>
 	}
 
+	/** @return Product ID */
 	public ProductId getProductId() {
-<span class="nc" id="L33">		return id;</span>
+<span class="nc" id="L48">		return id;</span>
 	}
 
+	/** @return StorageEventType */
 	public StorageEventType getType() {
-<span class="nc" id="L37">		return type;</span>
+<span class="nc" id="L53">		return type;</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

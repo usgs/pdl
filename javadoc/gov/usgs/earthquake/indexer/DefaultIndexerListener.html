@@ -154,34 +154,34 @@ extends <a href="../product/AbstractListener.html" title="class in gov.usgs.eart
 implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquake.indexer">IndexerListener</a></pre>
 <div class="block">DefaultIndexerListener provides a starting point from which all
  IndexerListeners may extend.
- 
+
  As a child-class of the AbstractListener, this may be configured with all of
  the parent parameters and also accepts the following:
- 
+
  <dl>
  <dt>command</dt>
  <dd>(Required) The command to execute. This must be an executable command and
  may include arguments. Any product-specific arguments are appended at the end
  of command.</dd>
- 
+
  <dt>storage</dt>
  <dd>(Required) A directory used to store all products. Each product is
  extracted into a separate directory within this directory and is referenced
  by the --directory=/path/to/directory argument when command is executed.</dd>
- 
+
  <dt>processUnassociated</dt>
  <dd>(Optional, Default = false) Whether or not to process unassociated
  products. Valid values are "true" and "false".</dd>
- 
+
  <dt>processPreferredOnly</dt>
  <dd>(Optional, Default = false) Whether or not to process only preferred
  products of the type accepted by this listener. Valid values are "true" and
  "false".</dd>
- 
+
  <dt>ignoreArchive</dt>
  <dd>(Optional, Default = false) Whether or not to ignore EVENT_ARCHIVED and
  PRODUCT_ARCHIVED indexer events. Value values are "true" and "false".</dd>
- 
+
  </dl></div>
 </li>
 </ul>
@@ -206,42 +206,58 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#IGNORE_ARCHIVE_DEFAULT">IGNORE_ARCHIVE_DEFAULT</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Default state of ignore archive</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#IGNORE_ARCHIVE_PROPERTY">IGNORE_ARCHIVE_PROPERTY</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Property for Ignore archive</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#PROCESS_ONLY_WHEN_EVENT_CHANGE_DEFAULT">PROCESS_ONLY_WHEN_EVENT_CHANGE_DEFAULT</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Default state of process only when event change</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#PROCESS_ONLY_WHEN_EVENT_CHANGE_PROPERTY">PROCESS_ONLY_WHEN_EVENT_CHANGE_PROPERTY</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Property for process only when event change</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#PROCESS_PREFERRED_ONLY_DEFAULT">PROCESS_PREFERRED_ONLY_DEFAULT</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Default state of process preferred only</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#PROCESS_PREFERRED_ONLY_PROPERTY">PROCESS_PREFERRED_ONLY_PROPERTY</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Property for process preferred only</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#PROCESS_UNASSOCIATED_DEFAULT">PROCESS_UNASSOCIATED_DEFAULT</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Default state of process unassociated</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#PROCESS_UNASSOCIATED_PROPERTY">PROCESS_UNASSOCIATED_PROPERTY</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Property for process unassociated</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -298,7 +314,10 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <td class="colFirst"><code>boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#accept(gov.usgs.earthquake.indexer.IndexerEvent,gov.usgs.earthquake.indexer.IndexerChange)">accept</a></span>&#8203;(<a href="IndexerEvent.html" title="class in gov.usgs.earthquake.indexer">IndexerEvent</a>&nbsp;event,
       <a href="IndexerChange.html" title="class in gov.usgs.earthquake.indexer">IndexerChange</a>&nbsp;change)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Returns a boolean based on if the preferred event params have changed
+ Returns false if change is an archive indexer</div>
+</td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>void</code></td>
@@ -414,6 +433,7 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <li class="blockList">
 <h4>PROCESS_PREFERRED_ONLY_PROPERTY</h4>
 <pre>public static final&nbsp;java.lang.String PROCESS_PREFERRED_ONLY_PROPERTY</pre>
+<div class="block">Property for process preferred only</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.indexer.DefaultIndexerListener.PROCESS_PREFERRED_ONLY_PROPERTY">Constant Field Values</a></dd>
@@ -427,6 +447,7 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <li class="blockList">
 <h4>PROCESS_PREFERRED_ONLY_DEFAULT</h4>
 <pre>public static final&nbsp;java.lang.String PROCESS_PREFERRED_ONLY_DEFAULT</pre>
+<div class="block">Default state of process preferred only</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.indexer.DefaultIndexerListener.PROCESS_PREFERRED_ONLY_DEFAULT">Constant Field Values</a></dd>
@@ -440,6 +461,7 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <li class="blockList">
 <h4>PROCESS_UNASSOCIATED_PROPERTY</h4>
 <pre>public static final&nbsp;java.lang.String PROCESS_UNASSOCIATED_PROPERTY</pre>
+<div class="block">Property for process unassociated</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.indexer.DefaultIndexerListener.PROCESS_UNASSOCIATED_PROPERTY">Constant Field Values</a></dd>
@@ -453,6 +475,7 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <li class="blockList">
 <h4>PROCESS_UNASSOCIATED_DEFAULT</h4>
 <pre>public static final&nbsp;java.lang.String PROCESS_UNASSOCIATED_DEFAULT</pre>
+<div class="block">Default state of process unassociated</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.indexer.DefaultIndexerListener.PROCESS_UNASSOCIATED_DEFAULT">Constant Field Values</a></dd>
@@ -466,6 +489,7 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <li class="blockList">
 <h4>PROCESS_ONLY_WHEN_EVENT_CHANGE_PROPERTY</h4>
 <pre>public static final&nbsp;java.lang.String PROCESS_ONLY_WHEN_EVENT_CHANGE_PROPERTY</pre>
+<div class="block">Property for process only when event change</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.indexer.DefaultIndexerListener.PROCESS_ONLY_WHEN_EVENT_CHANGE_PROPERTY">Constant Field Values</a></dd>
@@ -479,6 +503,7 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <li class="blockList">
 <h4>PROCESS_ONLY_WHEN_EVENT_CHANGE_DEFAULT</h4>
 <pre>public static final&nbsp;java.lang.String PROCESS_ONLY_WHEN_EVENT_CHANGE_DEFAULT</pre>
+<div class="block">Default state of process only when event change</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.indexer.DefaultIndexerListener.PROCESS_ONLY_WHEN_EVENT_CHANGE_DEFAULT">Constant Field Values</a></dd>
@@ -492,6 +517,7 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <li class="blockList">
 <h4>IGNORE_ARCHIVE_PROPERTY</h4>
 <pre>public static final&nbsp;java.lang.String IGNORE_ARCHIVE_PROPERTY</pre>
+<div class="block">Property for Ignore archive</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.indexer.DefaultIndexerListener.IGNORE_ARCHIVE_PROPERTY">Constant Field Values</a></dd>
@@ -505,6 +531,7 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <li class="blockList">
 <h4>IGNORE_ARCHIVE_DEFAULT</h4>
 <pre>public static final&nbsp;java.lang.String IGNORE_ARCHIVE_DEFAULT</pre>
+<div class="block">Default state of ignore archive</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.indexer.DefaultIndexerListener.IGNORE_ARCHIVE_DEFAULT">Constant Field Values</a></dd>
@@ -557,7 +584,7 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>event</code> - description of the change.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -575,7 +602,7 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>whether this external indexer listener handles this product type</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -588,9 +615,16 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <pre class="methodSignature">public&nbsp;boolean&nbsp;accept&#8203;(<a href="IndexerEvent.html" title="class in gov.usgs.earthquake.indexer">IndexerEvent</a>&nbsp;event,
                       <a href="IndexerChange.html" title="class in gov.usgs.earthquake.indexer">IndexerChange</a>&nbsp;change)
                throws java.lang.Exception</pre>
+<div class="block">Returns a boolean based on if the preferred event params have changed
+ Returns false if change is an archive indexer</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>event</code> - an IndexerEvent</dd>
+<dd><code>change</code> - and IndexerChange</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>boolean</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -649,6 +683,10 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <li class="blockList">
 <h4>setProcessUnassociatedProducts</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setProcessUnassociatedProducts&#8203;(boolean&nbsp;processUnassociatedProducts)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>processUnassociatedProducts</code> - to set</dd>
+</dl>
 </li>
 </ul>
 <a id="getProcessUnassociatedProducts()">
@@ -658,6 +696,10 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <li class="blockList">
 <h4>getProcessUnassociatedProducts</h4>
 <pre class="methodSignature">public&nbsp;boolean&nbsp;getProcessUnassociatedProducts()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>boolean processUnassociatedProducts</dd>
+</dl>
 </li>
 </ul>
 <a id="isProcessOnlyWhenEventChanged()">
@@ -667,6 +709,10 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <li class="blockList">
 <h4>isProcessOnlyWhenEventChanged</h4>
 <pre class="methodSignature">public&nbsp;boolean&nbsp;isProcessOnlyWhenEventChanged()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>boolean processOnlyWhenEventChanged</dd>
+</dl>
 </li>
 </ul>
 <a id="setProcessOnlyWhenEventChanged(boolean)">
@@ -676,6 +722,10 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <li class="blockList">
 <h4>setProcessOnlyWhenEventChanged</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setProcessOnlyWhenEventChanged&#8203;(boolean&nbsp;processOnlyWhenEventChanged)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>processOnlyWhenEventChanged</code> - to set</dd>
+</dl>
 </li>
 </ul>
 <a id="isIgnoreArchive()">
@@ -685,6 +735,10 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <li class="blockList">
 <h4>isIgnoreArchive</h4>
 <pre class="methodSignature">public&nbsp;boolean&nbsp;isIgnoreArchive()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>ignoreArchive</dd>
+</dl>
 </li>
 </ul>
 <a id="setIgnoreArchive(boolean)">
@@ -694,6 +748,10 @@ implements <a href="IndexerListener.html" title="interface in gov.usgs.earthquak
 <li class="blockList">
 <h4>setIgnoreArchive</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setIgnoreArchive&#8203;(boolean&nbsp;ignoreArchive)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>ignoreArchive</code> - to set</dd>
+</dl>
 </li>
 </ul>
 </li>

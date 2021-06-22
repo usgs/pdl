@@ -41,31 +41,38 @@ public class JDBCConnection extends DefaultConfigurable implements AutoCloseable
 <span class="fc" id="L41">		this.connection = null;</span>
 <span class="fc" id="L42">	}</span>
 
-<span class="fc" id="L44">	public JDBCConnection(final String driver, final String url) {</span>
-<span class="fc" id="L45">		this.driver = driver;</span>
-<span class="fc" id="L46">		this.url = url;</span>
-<span class="fc" id="L47">	}</span>
+	/**
+	 * Create a new JDBCConnection object with specific driver and URL
+	 * @param driver String of driver
+	 * @param url String of URL
+	 */
+<span class="fc" id="L49">	public JDBCConnection(final String driver, final String url) {</span>
+<span class="fc" id="L50">		this.driver = driver;</span>
+<span class="fc" id="L51">		this.url = url;</span>
+<span class="fc" id="L52">	}</span>
 
 	/**
 	 * Implement autocloseable.
 	 *
 	 * Calls {@link #shutdown()}.
 	 *
-	 * @throws Exception
+	 * @throws Exception Exception
 	 */
 	@Override
 	public void close() throws Exception {
-<span class="fc" id="L58">		shutdown();</span>
-<span class="fc" id="L59">	}</span>
+<span class="fc" id="L63">		shutdown();</span>
+<span class="fc" id="L64">	}</span>
 
 	/**
 	 * Implement Configurable
+	 * @param config Config to set driver and URL in
+	 * @throws Exception Exception
 	 */
 	@Override
 	public void configure(final Config config) throws Exception {
-<span class="fc" id="L66">		setDriver(config.getProperty(&quot;driver&quot;));</span>
-<span class="fc" id="L67">		setUrl(config.getProperty(&quot;url&quot;));</span>
-<span class="fc" id="L68">	}</span>
+<span class="fc" id="L73">		setDriver(config.getProperty(&quot;driver&quot;));</span>
+<span class="fc" id="L74">		setUrl(config.getProperty(&quot;url&quot;));</span>
+<span class="fc" id="L75">	}</span>
 
 	/**
 	 * Connect to the database.
@@ -78,20 +85,21 @@ public class JDBCConnection extends DefaultConfigurable implements AutoCloseable
 	 */
 	protected Connection connect() throws Exception {
 		// load driver if needed
-<span class="fc" id="L81">		Class.forName(driver);</span>
-<span class="fc" id="L82">		final Connection conn = DriverManager.getConnection(url);</span>
-<span class="fc" id="L83">		return conn;</span>
+<span class="fc" id="L88">		Class.forName(driver);</span>
+<span class="fc" id="L89">		final Connection conn = DriverManager.getConnection(url);</span>
+<span class="fc" id="L90">		return conn;</span>
 	}
 
 	/**
 	 * Initialize the database connection.
 	 *
 	 * Sub-classes should call super.startup(), before preparing any statements.
+	 * @throws Exception if error occurs
 	 */
 	@Override
 	public void startup() throws Exception {
-<span class="fc" id="L93">		this.connection = connect();</span>
-<span class="fc" id="L94">	}</span>
+<span class="fc" id="L101">		this.connection = connect();</span>
+<span class="fc" id="L102">	}</span>
 
 	/**
 	 * Shutdown the database connection.
@@ -99,49 +107,53 @@ public class JDBCConnection extends DefaultConfigurable implements AutoCloseable
 	 * Sub-classes should close any prepared statements (catching any
 	 * exceptions), and then call super.shutdown() to close the database
 	 * connection.
+	 * @throws Exception if error occurs
 	 */
 	@Override
 	public void shutdown() throws Exception {
 		try {
-<span class="fc bfc" id="L106" title="All 2 branches covered.">			if (connection != null) {</span>
-<span class="fc" id="L107">				connection.close();</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">			if (connection != null) {</span>
+<span class="fc" id="L116">				connection.close();</span>
 			}
-<span class="nc" id="L109">		} catch (Exception e) {</span>
+<span class="nc" id="L118">		} catch (Exception e) {</span>
 			// log
-<span class="nc" id="L111">			e.printStackTrace();</span>
+<span class="nc" id="L120">			e.printStackTrace();</span>
 		} finally {
-<span class="fc" id="L113">			connection = null;</span>
+<span class="fc" id="L122">			connection = null;</span>
 		}
-<span class="fc" id="L115">	}</span>
+<span class="fc" id="L124">	}</span>
 
 	/**
 	 * Open a transaction on the database connection
+	 * @throws Exception if error occurs
 	 */
 	public synchronized void beginTransaction() throws Exception {
-<span class="fc" id="L121">		Connection conn = this.verifyConnection();</span>
-<span class="fc" id="L122">		conn.setAutoCommit(false);</span>
-<span class="fc" id="L123">	}</span>
+<span class="fc" id="L131">		Connection conn = this.verifyConnection();</span>
+<span class="fc" id="L132">		conn.setAutoCommit(false);</span>
+<span class="fc" id="L133">	}</span>
 
 	/**
 	 * Finalize the transaction by committing all the changes and closing the
 	 * transaction.
+	 * @throws Exception if error occurs
 	 */
 	public synchronized void commitTransaction() throws Exception {
-<span class="fc" id="L130">		getConnection().setAutoCommit(true);</span>
-<span class="fc" id="L131">	}</span>
+<span class="fc" id="L141">		getConnection().setAutoCommit(true);</span>
+<span class="fc" id="L142">	}</span>
 
 	/**
 	 * Undo all of the changes made during the current transaction
+	 * @throws Exception if error occurs
 	 */
 	public synchronized void rollbackTransaction() throws Exception {
-<span class="fc" id="L137">		getConnection().rollback();</span>
-<span class="fc" id="L138">	}</span>
+<span class="fc" id="L149">		getConnection().rollback();</span>
+<span class="fc" id="L150">	}</span>
 
 	/**
 	 * @return current connection object, or null if not connected.
 	 */
 	public Connection getConnection() {
-<span class="fc" id="L144">		return this.connection;</span>
+<span class="fc" id="L156">		return this.connection;</span>
 	}
 
 	/**
@@ -158,63 +170,67 @@ public class JDBCConnection extends DefaultConfigurable implements AutoCloseable
 	public synchronized Connection verifyConnection() throws Exception {
 		try {
 			// usually throws an exception when connection is closed
-<span class="pc bpc" id="L161" title="1 of 2 branches missed.">			if (connection.isClosed()) {</span>
-<span class="nc" id="L162">				shutdown();</span>
+<span class="pc bpc" id="L173" title="1 of 2 branches missed.">			if (connection.isClosed()) {</span>
+<span class="nc" id="L174">				shutdown();</span>
 			}
-<span class="fc" id="L164">		} catch (Exception e) {</span>
-<span class="fc" id="L165">			shutdown();</span>
-<span class="fc" id="L166">		}</span>
+<span class="fc" id="L176">		} catch (Exception e) {</span>
+<span class="fc" id="L177">			shutdown();</span>
+<span class="fc" id="L178">		}</span>
 
-<span class="fc bfc" id="L168" title="All 2 branches covered.">		if (connection == null) {</span>
+<span class="fc bfc" id="L180" title="All 2 branches covered.">		if (connection == null) {</span>
 			// connection is null after shutdown()
-<span class="fc" id="L170">			startup();</span>
+<span class="fc" id="L182">			startup();</span>
 		}
 
 		// isClosed() doesn't check if we can still communicate with the server.
 		// current mysql driver doesn't implement isValid(), so check manually.
-<span class="fc" id="L175">		String query_text = &quot;SELECT 1&quot;;</span>
+<span class="fc" id="L187">		String query_text = &quot;SELECT 1&quot;;</span>
 
 		try {
-<span class="fc" id="L178">			Statement statement = null;</span>
-<span class="fc" id="L179">			ResultSet results = null;</span>
+<span class="fc" id="L190">			Statement statement = null;</span>
+<span class="fc" id="L191">			ResultSet results = null;</span>
 			try {
-<span class="fc" id="L181">				statement = connection.createStatement();</span>
-<span class="fc" id="L182">				results = statement.executeQuery(query_text);</span>
-<span class="fc bfc" id="L183" title="All 2 branches covered.">				while (results.next()) {</span>
-<span class="pc bpc" id="L184" title="1 of 2 branches missed.">					if (results.getInt(1) != 1) {</span>
-<span class="nc" id="L185">						throw new Exception(&quot;[&quot; + getName()</span>
+<span class="fc" id="L193">				statement = connection.createStatement();</span>
+<span class="fc" id="L194">				results = statement.executeQuery(query_text);</span>
+<span class="fc bfc" id="L195" title="All 2 branches covered.">				while (results.next()) {</span>
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">					if (results.getInt(1) != 1) {</span>
+<span class="nc" id="L197">						throw new Exception(&quot;[&quot; + getName()</span>
 								+ &quot;] Problem checking database connection&quot;);
 					}
 				}
 			} finally {
 				// close result and statement no matter what
 				try {
-<span class="fc" id="L192">					results.close();</span>
-<span class="nc" id="L193">				} catch (Exception e2) {</span>
+<span class="fc" id="L204">					results.close();</span>
+<span class="nc" id="L205">				} catch (Exception e2) {</span>
 					// ignore
-<span class="fc" id="L195">				}</span>
+<span class="fc" id="L207">				}</span>
 				try {
-<span class="fc" id="L197">					statement.close();</span>
-<span class="nc" id="L198">				} catch (Exception e2) {</span>
+<span class="fc" id="L209">					statement.close();</span>
+<span class="nc" id="L210">				} catch (Exception e2) {</span>
 					// ignore
-<span class="fc" id="L200">				}</span>
+<span class="fc" id="L212">				}</span>
 			}
-<span class="nc" id="L202">		} catch (Exception e) {</span>
+<span class="nc" id="L214">		} catch (Exception e) {</span>
 			// The connection was dead, so lets try to restart it
-<span class="nc" id="L204">			LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
+<span class="nc" id="L216">			LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
 					+ &quot;] Restarting database connection&quot;);
-<span class="nc" id="L206">			shutdown();</span>
-<span class="nc" id="L207">			startup();</span>
-<span class="fc" id="L208">		}</span>
+<span class="nc" id="L218">			shutdown();</span>
+<span class="nc" id="L219">			startup();</span>
+<span class="fc" id="L220">		}</span>
 
-<span class="fc" id="L210">		return this.connection;</span>
+<span class="fc" id="L222">		return this.connection;</span>
 	}
 
-<span class="fc" id="L213">	public String getDriver() { return this.driver; }</span>
-<span class="fc" id="L214">	public void setDriver(final String driver) { this.driver = driver; }</span>
+	/** @return driver */
+<span class="fc" id="L226">	public String getDriver() { return this.driver; }</span>
+	/** @param driver Driver to set */
+<span class="fc" id="L228">	public void setDriver(final String driver) { this.driver = driver; }</span>
 
-<span class="fc" id="L216">	public String getUrl() { return this.url; }</span>
-<span class="fc" id="L217">	public void setUrl(final String url) { this.url = url; }</span>
+	/** @return URL */
+<span class="fc" id="L231">	public String getUrl() { return this.url; }</span>
+	/** @param url URL to set */
+<span class="fc" id="L233">	public void setUrl(final String url) { this.url = url; }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

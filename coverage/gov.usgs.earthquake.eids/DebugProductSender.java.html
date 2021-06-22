@@ -12,15 +12,16 @@ import gov.usgs.util.StreamUtils;
  */
 public class DebugProductSender extends DefaultConfigurable implements ProductSender {
 
-<span class="nc" id="L15">	public DebugProductSender() {</span>
-<span class="nc" id="L16">		setName(&quot;debug_sender&quot;);</span>
-<span class="nc" id="L17">	}</span>
+	/** Constructor */
+<span class="nc" id="L16">	public DebugProductSender() {</span>
+<span class="nc" id="L17">		setName(&quot;debug_sender&quot;);</span>
+<span class="nc" id="L18">	}</span>
 
 	@Override
 	public void sendProduct(Product product) throws Exception {
-<span class="nc" id="L21">		new ObjectProductSource(product).streamTo(new XmlProductHandler(</span>
+<span class="nc" id="L22">		new ObjectProductSource(product).streamTo(new XmlProductHandler(</span>
 				new StreamUtils.UnclosableOutputStream(System.err)));
-<span class="nc" id="L23">	}</span>
+<span class="nc" id="L24">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

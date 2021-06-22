@@ -279,11 +279,13 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <h4>getSupportLevel</h4>
 <pre class="methodSignature">int&nbsp;getSupportLevel&#8203;(<a href="../product/Product.html" title="class in gov.usgs.earthquake.product">Product</a>&nbsp;product)</pre>
 <div class="block">Determine the support level for a given product.
- 
+
  The Indexer uses this method to determine which module will be used to
  summarize a product as it is being processed. Usually, returning one of
  the LEVEL_ constants will be sufficient.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>product</code> - The product to get the support level at</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the support level. Should be greater than 0 if a product is
          supported, larger values indicate better support.</dd>
@@ -305,7 +307,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the ProductSummary</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

@@ -15,43 +15,47 @@ public class DataURLConnection extends URLConnection {
   private byte[] data;
   private String type;
 
+  /**
+   * @param url URL
+   * @throws Exception if error occurs
+   */
   public DataURLConnection(final URL url) throws Exception {
-<span class="fc" id="L19">    super(url);</span>
+<span class="fc" id="L23">    super(url);</span>
 
     // &quot;data:[&lt;mediatype&gt;][;base64],&lt;data&gt;&quot;
     // path is everything after &quot;data:&quot;
-<span class="fc" id="L23">    final String path = url.getPath();</span>
-<span class="fc" id="L24">    final int base64 = path.indexOf(&quot;;base64&quot;);</span>
-<span class="fc" id="L25">    final int comma = path.indexOf(&quot;,&quot;);</span>
+<span class="fc" id="L27">    final String path = url.getPath();</span>
+<span class="fc" id="L28">    final int base64 = path.indexOf(&quot;;base64&quot;);</span>
+<span class="fc" id="L29">    final int comma = path.indexOf(&quot;,&quot;);</span>
 
-<span class="fc bfc" id="L27" title="All 2 branches covered.">    type = path.substring(0, base64 &gt;= 0 ? base64 : comma);</span>
-<span class="fc bfc" id="L28" title="All 2 branches covered.">    if (&quot;&quot;.equals(type)) {</span>
-<span class="fc" id="L29">      type = null;</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">    type = path.substring(0, base64 &gt;= 0 ? base64 : comma);</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">    if (&quot;&quot;.equals(type)) {</span>
+<span class="fc" id="L33">      type = null;</span>
     }
-<span class="fc" id="L31">    data = path.substring(comma + 1).getBytes(&quot;UTF8&quot;);</span>
-<span class="fc bfc" id="L32" title="All 2 branches covered.">    if (base64 &gt;= 0) {</span>
-<span class="fc" id="L33">      data = Base64.getDecoder().decode(data);</span>
+<span class="fc" id="L35">    data = path.substring(comma + 1).getBytes(&quot;UTF8&quot;);</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">    if (base64 &gt;= 0) {</span>
+<span class="fc" id="L37">      data = Base64.getDecoder().decode(data);</span>
     }
-<span class="fc" id="L35">  }</span>
+<span class="fc" id="L39">  }</span>
 
   @Override
   public int getContentLength() {
-<span class="fc" id="L39">    return data.length;</span>
+<span class="fc" id="L43">    return data.length;</span>
   }
 
   @Override
   public String getContentType() {
-<span class="fc" id="L44">    return type;</span>
+<span class="fc" id="L48">    return type;</span>
   }
 
   @Override
   public void connect() throws IOException {
     // no connection needed
-<span class="fc" id="L50">  }</span>
+<span class="fc" id="L54">  }</span>
 
   @Override
   public InputStream getInputStream() throws IOException {
-<span class="fc" id="L54">    return new ByteArrayInputStream(data);</span>
+<span class="fc" id="L58">    return new ByteArrayInputStream(data);</span>
   }
 
 }

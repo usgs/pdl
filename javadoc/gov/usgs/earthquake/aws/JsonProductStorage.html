@@ -191,17 +191,23 @@ implements <a href="../distribution/ProductStorage.html" title="interface in gov
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#DEFAULT_DRIVER">DEFAULT_DRIVER</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Variable for the default driver</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#DEFAULT_TABLE">DEFAULT_TABLE</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Variable for the default table</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#DEFAULT_URL">DEFAULT_URL</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Variable for the default URL</div>
+</td>
 </tr>
 </table>
 </li>
@@ -415,6 +421,7 @@ implements <a href="../distribution/ProductStorage.html" title="interface in gov
 <li class="blockList">
 <h4>DEFAULT_DRIVER</h4>
 <pre>public static final&nbsp;java.lang.String DEFAULT_DRIVER</pre>
+<div class="block">Variable for the default driver</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.aws.JsonProductStorage.DEFAULT_DRIVER">Constant Field Values</a></dd>
@@ -428,6 +435,7 @@ implements <a href="../distribution/ProductStorage.html" title="interface in gov
 <li class="blockList">
 <h4>DEFAULT_TABLE</h4>
 <pre>public static final&nbsp;java.lang.String DEFAULT_TABLE</pre>
+<div class="block">Variable for the default table</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.aws.JsonProductStorage.DEFAULT_TABLE">Constant Field Values</a></dd>
@@ -441,6 +449,7 @@ implements <a href="../distribution/ProductStorage.html" title="interface in gov
 <li class="blockList">
 <h4>DEFAULT_URL</h4>
 <pre>public static final&nbsp;java.lang.String DEFAULT_URL</pre>
+<div class="block">Variable for the default URL</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.aws.JsonProductStorage.DEFAULT_URL">Constant Field Values</a></dd>
@@ -476,6 +485,11 @@ implements <a href="../distribution/ProductStorage.html" title="interface in gov
 <pre>public&nbsp;JsonProductStorage&#8203;(java.lang.String&nbsp;driver,
                           java.lang.String&nbsp;url)</pre>
 <div class="block">Create a JsonProductStorage with a default table.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>driver</code> - Driver to use</dd>
+<dd><code>url</code> - URL to use</dd>
+</dl>
 </li>
 </ul>
 <a id="&lt;init&gt;(java.lang.String,java.lang.String,java.lang.String)">
@@ -488,6 +502,12 @@ implements <a href="../distribution/ProductStorage.html" title="interface in gov
                           java.lang.String&nbsp;url,
                           java.lang.String&nbsp;table)</pre>
 <div class="block">Create a JsonProductStorage with a custom driver, url, and table.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>driver</code> - Driver to use</dd>
+<dd><code>url</code> - URL to use</dd>
+<dd><code>table</code> - Table to use</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -507,6 +527,10 @@ implements <a href="../distribution/ProductStorage.html" title="interface in gov
 <li class="blockList">
 <h4>getTable</h4>
 <pre class="methodSignature">public&nbsp;java.lang.String&nbsp;getTable()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>table</dd>
+</dl>
 </li>
 </ul>
 <a id="setTable(java.lang.String)">
@@ -516,6 +540,10 @@ implements <a href="../distribution/ProductStorage.html" title="interface in gov
 <li class="blockList">
 <h4>setTable</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setTable&#8203;(java.lang.String&nbsp;table)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>table</code> - Table to set</dd>
+</dl>
 </li>
 </ul>
 <a id="configure(gov.usgs.util.Config)">
@@ -534,9 +562,9 @@ implements <a href="../distribution/ProductStorage.html" title="interface in gov
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code><a href="../util/JDBCConnection.html#configure(gov.usgs.util.Config)">configure</a></code>&nbsp;in class&nbsp;<code><a href="../util/JDBCConnection.html" title="class in gov.usgs.earthquake.util">JDBCConnection</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>config</code> - the Config object with settings.</dd>
+<dd><code>config</code> - Config to set driver and URL in</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code> - if configuration exceptions occur.</dd>
+<dd><code>java.lang.Exception</code> - Exception</dd>
 </dl>
 </li>
 </ul>
@@ -555,7 +583,7 @@ implements <a href="../distribution/ProductStorage.html" title="interface in gov
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code><a href="../util/JDBCConnection.html#startup()">startup</a></code>&nbsp;in class&nbsp;<code><a href="../util/JDBCConnection.html" title="class in gov.usgs.earthquake.util">JDBCConnection</a></code></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code> - if exceptions occur while starting.</dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -570,8 +598,9 @@ implements <a href="../distribution/ProductStorage.html" title="interface in gov
 <div class="block">Check whether schema exists.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
+<dd>boolean</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -589,7 +618,7 @@ implements <a href="../distribution/ProductStorage.html" title="interface in gov
  method is only recommended for local development.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -734,6 +763,8 @@ implements <a href="../distribution/ProductStorage.html" title="interface in gov
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../distribution/ProductStorage.html#notifyListeners(gov.usgs.earthquake.distribution.StorageEvent)">notifyListeners</a></code>&nbsp;in interface&nbsp;<code><a href="../distribution/ProductStorage.html" title="interface in gov.usgs.earthquake.distribution">ProductStorage</a></code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>event</code> - StorageEvent</dd>
 </dl>
 </li>
 </ul>

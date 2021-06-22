@@ -145,33 +145,33 @@ implements java.lang.Comparable&lt;<a href="ProductId.html" title="class in gov.
  <dd>
    The organization <u>sending</u> the product;
    not necessarily the author of the product.
- 
+
    Typically a FDSN network code.
  </dd>
- 
+
  <dt>Type</dt>
  <dd>
    The type of product being sent.
  </dd>
- 
+
  <dt>Code</dt>
  <dd>
    A unique code assigned by the <code>source</code> and <code>type</code>.
    Source and Type are effectively a namespace for codes.
- 
+
    If the same <code>code</code> is re-used, it indicates a different
    version of the same product.
  </dd>
- 
+
  <dt>Update Time</dt>
  <dd>
    A timestamp representing when a product was created.
- 
+
    Update Time is also used as a <strong>version</strong>.
    Products from the same <code>source</code> and <code>type</code> with
    the same <code>code</code> are considered different versions of the
    same product.
- 
+
    More recent (newer) <code>updateTime</code>s
    supersede less recent (older) <code>updateTimes</code>.
  </dd>
@@ -346,8 +346,14 @@ implements java.lang.Comparable&lt;<a href="ProductId.html" title="class in gov.
                  java.lang.String&nbsp;type,
                  java.lang.String&nbsp;code)</pre>
 <div class="block">Create a new ProductId.
- 
+
  Same as new ProductId(type, code, source, new Date()).</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>source</code> - the product source.</dd>
+<dd><code>type</code> - the product type.</dd>
+<dd><code>code</code> - the product code.</dd>
+</dl>
 </li>
 </ul>
 <a id="&lt;init&gt;(java.lang.String,java.lang.String,java.lang.String,java.util.Date)">
@@ -571,7 +577,7 @@ implements java.lang.Comparable&lt;<a href="ProductId.html" title="class in gov.
 <h4>isSameProduct</h4>
 <pre class="methodSignature">public&nbsp;boolean&nbsp;isSameProduct&#8203;(<a href="ProductId.html" title="class in gov.usgs.earthquake.product">ProductId</a>&nbsp;that)</pre>
 <div class="block">Whether these are the same product, even if they are different versions.
- 
+
  It is possible for isSameProduct to return true if equals returns false,
  but if equals returns true isSameProduct will also return true.</div>
 <dl>

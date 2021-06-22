@@ -272,39 +272,42 @@ public class FileProductStorage extends DefaultConfigurable implements
 <span class="fc" id="L272">			return getNormalProductPath(id);</span>
 		}
 	}
-
+	/**
+	 * @param id Specific productID
+	 * @return string buffer of hashed product path
+	 */
 	protected String getHashedProductPath(final ProductId id) {
 		try {
 			MessageDigest digest;
-<span class="nc" id="L279">			synchronized (SHA_DIGEST) {</span>
-<span class="nc" id="L280">				digest = ((MessageDigest) SHA_DIGEST.clone());</span>
-<span class="nc" id="L281">			}</span>
+<span class="nc" id="L282">			synchronized (SHA_DIGEST) {</span>
+<span class="nc" id="L283">				digest = ((MessageDigest) SHA_DIGEST.clone());</span>
+<span class="nc" id="L284">			}</span>
 
-<span class="nc" id="L283">			String hexDigest = toHexString(digest.digest(id.toString()</span>
-<span class="nc" id="L284">					.getBytes()));</span>
+<span class="nc" id="L286">			String hexDigest = toHexString(digest.digest(id.toString()</span>
+<span class="nc" id="L287">					.getBytes()));</span>
 
-<span class="nc" id="L286">			StringBuffer buf = new StringBuffer();</span>
+<span class="nc" id="L289">			StringBuffer buf = new StringBuffer();</span>
 			// start with product type, to give idea of available products and
 			// disk usage when looking at filesystem
-<span class="nc" id="L289">			buf.append(id.getType());</span>
+<span class="nc" id="L292">			buf.append(id.getType());</span>
 
 			// sub directories based on hash
-<span class="nc" id="L292">			int length = hexDigest.length();</span>
-<span class="nc bnc" id="L293" title="All 2 branches missed.">			for (int i = 0; i &lt; length; i += DIRECTORY_NAME_LENGTH) {</span>
+<span class="nc" id="L295">			int length = hexDigest.length();</span>
+<span class="nc bnc" id="L296" title="All 2 branches missed.">			for (int i = 0; i &lt; length; i += DIRECTORY_NAME_LENGTH) {</span>
 				String part;
-<span class="nc bnc" id="L295" title="All 2 branches missed.">				if (i + DIRECTORY_NAME_LENGTH &lt; length) {</span>
-<span class="nc" id="L296">					part = hexDigest.substring(i, i + DIRECTORY_NAME_LENGTH);</span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">				if (i + DIRECTORY_NAME_LENGTH &lt; length) {</span>
+<span class="nc" id="L299">					part = hexDigest.substring(i, i + DIRECTORY_NAME_LENGTH);</span>
 				} else {
-<span class="nc" id="L298">					part = hexDigest.substring(i);</span>
+<span class="nc" id="L301">					part = hexDigest.substring(i);</span>
 				}
-<span class="nc" id="L300">				buf.append(File.separator);</span>
-<span class="nc" id="L301">				buf.append(part);</span>
+<span class="nc" id="L303">				buf.append(File.separator);</span>
+<span class="nc" id="L304">				buf.append(part);</span>
 			}
 
-<span class="nc" id="L304">			return buf.toString();</span>
-<span class="nc" id="L305">		} catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L307">			return buf.toString();</span>
+<span class="nc" id="L308">		} catch (CloneNotSupportedException e) {</span>
 			// fall back to parent class
-<span class="nc" id="L307">			return getNormalProductPath(id);</span>
+<span class="nc" id="L310">			return getNormalProductPath(id);</span>
 		}
 	}
 
@@ -318,28 +321,32 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 * @return hex string equivalent of input byte array.
 	 */
 	private String toHexString(final byte[] bytes) {
-<span class="nc" id="L321">		StringBuffer buf = new StringBuffer();</span>
-<span class="nc" id="L322">		int length = bytes.length;</span>
-<span class="nc bnc" id="L323" title="All 2 branches missed.">		for (int i = 0; i &lt; length; i++) {</span>
-<span class="nc" id="L324">			String hex = Integer.toHexString(0xFF &amp; bytes[i]);</span>
-<span class="nc bnc" id="L325" title="All 2 branches missed.">			if (hex.length() == 1) {</span>
-<span class="nc" id="L326">				buf.append('0');</span>
+<span class="nc" id="L324">		StringBuffer buf = new StringBuffer();</span>
+<span class="nc" id="L325">		int length = bytes.length;</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">		for (int i = 0; i &lt; length; i++) {</span>
+<span class="nc" id="L327">			String hex = Integer.toHexString(0xFF &amp; bytes[i]);</span>
+<span class="nc bnc" id="L328" title="All 2 branches missed.">			if (hex.length() == 1) {</span>
+<span class="nc" id="L329">				buf.append('0');</span>
 			}
-<span class="nc" id="L328">			buf.append(hex);</span>
+<span class="nc" id="L331">			buf.append(hex);</span>
 		}
-<span class="nc" id="L330">		return buf.toString();</span>
+<span class="nc" id="L333">		return buf.toString();</span>
 	}
 
+	/**
+	 * @param id ProductId
+	 * @return string buffer of normal product path
+	 */
 	public String getNormalProductPath(final ProductId id) {
-<span class="fc" id="L334">		StringBuffer buf = new StringBuffer();</span>
-<span class="fc" id="L335">		buf.append(id.getType());</span>
-<span class="fc" id="L336">		buf.append(File.separator);</span>
-<span class="fc" id="L337">		buf.append(id.getCode());</span>
-<span class="fc" id="L338">		buf.append(File.separator);</span>
-<span class="fc" id="L339">		buf.append(id.getSource());</span>
-<span class="fc" id="L340">		buf.append(File.separator);</span>
-<span class="fc" id="L341">		buf.append(id.getUpdateTime().getTime());</span>
-<span class="fc" id="L342">		return buf.toString();</span>
+<span class="fc" id="L341">		StringBuffer buf = new StringBuffer();</span>
+<span class="fc" id="L342">		buf.append(id.getType());</span>
+<span class="fc" id="L343">		buf.append(File.separator);</span>
+<span class="fc" id="L344">		buf.append(id.getCode());</span>
+<span class="fc" id="L345">		buf.append(File.separator);</span>
+<span class="fc" id="L346">		buf.append(id.getSource());</span>
+<span class="fc" id="L347">		buf.append(File.separator);</span>
+<span class="fc" id="L348">		buf.append(id.getUpdateTime().getTime());</span>
+<span class="fc" id="L349">		return buf.toString();</span>
 	}
 
 	/**
@@ -351,10 +358,11 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 * @param file
 	 *            a file that should be converted into a ProductHandler.
 	 * @return the ProductHandler.
+	 * @throws Exception if error occurs
 	 */
 	protected ProductHandler getProductHandlerFormat(final File file)
 			throws Exception {
-<span class="fc" id="L357">		return new DirectoryProductHandler(file);</span>
+<span class="fc" id="L365">		return new DirectoryProductHandler(file);</span>
 	}
 
 	/**
@@ -366,10 +374,11 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 * @param file
 	 *            a file that should be converted into a ProductSource.
 	 * @return the ProductSource.
+	 * @throws Exception if error occurs
 	 */
 	protected ProductSource getProductSourceFormat(final File file)
 			throws Exception {
-<span class="fc" id="L372">		return new DirectoryProductSource(file);</span>
+<span class="fc" id="L381">		return new DirectoryProductSource(file);</span>
 	}
 
 	/**
@@ -380,12 +389,12 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 * @return a file or directory where the product would be stored.
 	 */
 	public File getProductFile(final ProductId id) {
-<span class="fc" id="L383">		String path = getProductPath(id);</span>
+<span class="fc" id="L392">		String path = getProductPath(id);</span>
 		// remove any leading slash so path will always be within baseDirectory.
-<span class="pc bpc" id="L385" title="1 of 2 branches missed.">		if (path.startsWith(&quot;/&quot;)) {</span>
-<span class="nc" id="L386">			path = path.substring(1);</span>
+<span class="pc bpc" id="L394" title="1 of 2 branches missed.">		if (path.startsWith(&quot;/&quot;)) {</span>
+<span class="nc" id="L395">			path = path.substring(1);</span>
 		}
-<span class="fc" id="L388">		return new File(baseDirectory, path);</span>
+<span class="fc" id="L397">		return new File(baseDirectory, path);</span>
 	}
 
 	/**
@@ -399,11 +408,11 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 * @return the product, or null if not in this storage.
 	 */
 	public Product getProduct(ProductId id) throws Exception {
-<span class="fc" id="L402">		ProductSource source = getProductSource(id);</span>
-<span class="fc bfc" id="L403" title="All 2 branches covered.">		if (source == null) {</span>
-<span class="fc" id="L404">			return null;</span>
+<span class="fc" id="L411">		ProductSource source = getProductSource(id);</span>
+<span class="fc bfc" id="L412" title="All 2 branches covered.">		if (source == null) {</span>
+<span class="fc" id="L413">			return null;</span>
 		} else {
-<span class="fc" id="L406">			return ObjectProductHandler.getProduct(source);</span>
+<span class="fc" id="L415">			return ObjectProductHandler.getProduct(source);</span>
 		}
 	}
 
@@ -415,32 +424,32 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 * @param id
 	 *            the product to retrieve.
 	 * @return the loaded product.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public Product getInMemoryProduct(ProductId id) throws Exception {
-<span class="nc" id="L421">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] acquiring read lock for product id=&quot;</span>
-<span class="nc" id="L422">				+ id.toString());</span>
-<span class="nc" id="L423">		storageLocks.acquireReadLock(id);</span>
-<span class="nc" id="L424">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] acquired read lock for product id=&quot;</span>
-<span class="nc" id="L425">				+ id.toString());</span>
+<span class="nc" id="L430">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] acquiring read lock for product id=&quot;</span>
+<span class="nc" id="L431">				+ id.toString());</span>
+<span class="nc" id="L432">		storageLocks.acquireReadLock(id);</span>
+<span class="nc" id="L433">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] acquired read lock for product id=&quot;</span>
+<span class="nc" id="L434">				+ id.toString());</span>
 		try {
 			// load product
-<span class="nc" id="L428">			Product product = getProduct(id);</span>
+<span class="nc" id="L437">			Product product = getProduct(id);</span>
 			// convert all contents to ByteContent
-<span class="nc" id="L430">			Map&lt;String, Content&gt; contents = product.getContents();</span>
-<span class="nc" id="L431">			Iterator&lt;String&gt; iter = contents.keySet().iterator();</span>
-<span class="nc bnc" id="L432" title="All 2 branches missed.">			while (iter.hasNext()) {</span>
-<span class="nc" id="L433">				String path = iter.next();</span>
-<span class="nc" id="L434">				contents.put(path, new ByteContent(contents.get(path)));</span>
-<span class="nc" id="L435">			}</span>
+<span class="nc" id="L439">			Map&lt;String, Content&gt; contents = product.getContents();</span>
+<span class="nc" id="L440">			Iterator&lt;String&gt; iter = contents.keySet().iterator();</span>
+<span class="nc bnc" id="L441" title="All 2 branches missed.">			while (iter.hasNext()) {</span>
+<span class="nc" id="L442">				String path = iter.next();</span>
+<span class="nc" id="L443">				contents.put(path, new ByteContent(contents.get(path)));</span>
+<span class="nc" id="L444">			}</span>
 			// product content is all in memory
-<span class="nc" id="L437">			return product;</span>
+<span class="nc" id="L446">			return product;</span>
 		} finally {
-<span class="nc" id="L439">			LOGGER.finest(&quot;[&quot; + getName()</span>
-<span class="nc" id="L440">					+ &quot;] releasing read lock for product id=&quot; + id.toString());</span>
-<span class="nc" id="L441">			storageLocks.releaseReadLock(id);</span>
-<span class="nc" id="L442">			LOGGER.finest(&quot;[&quot; + getName()</span>
-<span class="nc" id="L443">					+ &quot;] released write lock for product id=&quot; + id.toString());</span>
+<span class="nc" id="L448">			LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="nc" id="L449">					+ &quot;] releasing read lock for product id=&quot; + id.toString());</span>
+<span class="nc" id="L450">			storageLocks.releaseReadLock(id);</span>
+<span class="nc" id="L451">			LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="nc" id="L452">					+ &quot;] released write lock for product id=&quot; + id.toString());</span>
 		}
 	}
 
@@ -452,44 +461,44 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 * @return a ProductSource for the product, or null if not in this storage.
 	 */
 	public ProductSource getProductSource(ProductId id) throws Exception {
-<span class="fc" id="L455">		ProductSource productSource = null;</span>
+<span class="fc" id="L464">		ProductSource productSource = null;</span>
 
-<span class="fc" id="L457">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] acquiring read lock for product id=&quot;</span>
-<span class="fc" id="L458">				+ id.toString());</span>
+<span class="fc" id="L466">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] acquiring read lock for product id=&quot;</span>
+<span class="fc" id="L467">				+ id.toString());</span>
 		// acquire lock in case storage operation in progress
-<span class="fc" id="L460">		storageLocks.acquireReadLock(id);</span>
-<span class="fc" id="L461">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] acquired read lock for product id=&quot;</span>
-<span class="fc" id="L462">				+ id.toString());</span>
+<span class="fc" id="L469">		storageLocks.acquireReadLock(id);</span>
+<span class="fc" id="L470">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] acquired read lock for product id=&quot;</span>
+<span class="fc" id="L471">				+ id.toString());</span>
 		try {
-<span class="fc" id="L464">			File productFile = getProductFile(id);</span>
-<span class="fc bfc" id="L465" title="All 2 branches covered.">			if (productFile.exists()) {</span>
-<span class="fc" id="L466">				productSource = getProductSourceFormat(productFile);</span>
+<span class="fc" id="L473">			File productFile = getProductFile(id);</span>
+<span class="fc bfc" id="L474" title="All 2 branches covered.">			if (productFile.exists()) {</span>
+<span class="fc" id="L475">				productSource = getProductSourceFormat(productFile);</span>
 			}
-<span class="fc bfc" id="L468" title="All 2 branches covered.">			if (productSource == null) {</span>
-<span class="fc" id="L469">				Iterator&lt;ProductStorage&gt; legacyIter = legacyStorages.iterator();</span>
-<span class="pc bpc" id="L470" title="1 of 2 branches missed.">				while (legacyIter.hasNext()) {</span>
-<span class="nc" id="L471">					ProductStorage next = legacyIter.next();</span>
+<span class="fc bfc" id="L477" title="All 2 branches covered.">			if (productSource == null) {</span>
+<span class="fc" id="L478">				Iterator&lt;ProductStorage&gt; legacyIter = legacyStorages.iterator();</span>
+<span class="pc bpc" id="L479" title="1 of 2 branches missed.">				while (legacyIter.hasNext()) {</span>
+<span class="nc" id="L480">					ProductStorage next = legacyIter.next();</span>
 					try {
-<span class="nc" id="L473">						productSource = next.getProductSource(id);</span>
-<span class="nc bnc" id="L474" title="All 2 branches missed.">						if (productSource != null) {</span>
-<span class="nc" id="L475">							break;</span>
+<span class="nc" id="L482">						productSource = next.getProductSource(id);</span>
+<span class="nc bnc" id="L483" title="All 2 branches missed.">						if (productSource != null) {</span>
+<span class="nc" id="L484">							break;</span>
 						}
-<span class="nc" id="L477">					} catch (Exception e) {</span>
-<span class="nc" id="L478">						LOGGER.log(Level.FINE, &quot;[&quot; + getName() + &quot;] &quot; +</span>
+<span class="nc" id="L486">					} catch (Exception e) {</span>
+<span class="nc" id="L487">						LOGGER.log(Level.FINE, &quot;[&quot; + getName() + &quot;] &quot; +</span>
 								&quot;legacy storage getProductSource exception &quot;, e);
-<span class="nc" id="L480">					}</span>
-<span class="nc" id="L481">				}</span>
+<span class="nc" id="L489">					}</span>
+<span class="nc" id="L490">				}</span>
 			}
 		} finally {
 			// release the lock no matter what
-<span class="fc" id="L485">			LOGGER.finest(&quot;[&quot; + getName()</span>
-<span class="fc" id="L486">					+ &quot;] releasing read lock for product id=&quot; + id.toString());</span>
-<span class="fc" id="L487">			storageLocks.releaseReadLock(id);</span>
-<span class="fc" id="L488">			LOGGER.finest(&quot;[&quot; + getName()</span>
-<span class="fc" id="L489">					+ &quot;] released read lock for product id=&quot; + id.toString());</span>
+<span class="fc" id="L494">			LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L495">					+ &quot;] releasing read lock for product id=&quot; + id.toString());</span>
+<span class="fc" id="L496">			storageLocks.releaseReadLock(id);</span>
+<span class="fc" id="L497">			LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L498">					+ &quot;] released read lock for product id=&quot; + id.toString());</span>
 		}
 
-<span class="fc" id="L492">		return productSource;</span>
+<span class="fc" id="L501">		return productSource;</span>
 	}
 
 	/**
@@ -500,59 +509,59 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 * @return true if the product exists, false otherwise.
 	 */
 	public boolean hasProduct(ProductId id) throws Exception {
-<span class="fc" id="L503">		boolean hasProduct = false;</span>
+<span class="fc" id="L512">		boolean hasProduct = false;</span>
 
-<span class="fc" id="L505">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] acquiring read lock for product id=&quot;</span>
-<span class="fc" id="L506">				+ id.toString());</span>
+<span class="fc" id="L514">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] acquiring read lock for product id=&quot;</span>
+<span class="fc" id="L515">				+ id.toString());</span>
 		// acquire lock in case storage operation in progress
-<span class="fc" id="L508">		storageLocks.acquireReadLock(id);</span>
-<span class="fc" id="L509">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] acquired read lock for product id=&quot;</span>
-<span class="fc" id="L510">				+ id.toString());</span>
+<span class="fc" id="L517">		storageLocks.acquireReadLock(id);</span>
+<span class="fc" id="L518">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] acquired read lock for product id=&quot;</span>
+<span class="fc" id="L519">				+ id.toString());</span>
 		try {
-<span class="fc" id="L512">			File productDirectory = getProductFile(id);</span>
-<span class="fc" id="L513">			hasProduct = productDirectory.exists();</span>
-<span class="fc bfc" id="L514" title="All 2 branches covered.">			if (hasProduct) {</span>
+<span class="fc" id="L521">			File productDirectory = getProductFile(id);</span>
+<span class="fc" id="L522">			hasProduct = productDirectory.exists();</span>
+<span class="fc bfc" id="L523" title="All 2 branches covered.">			if (hasProduct) {</span>
 				// be a little more detailed...
-<span class="fc" id="L516">				ProductSource source = getProductSource(id);</span>
-<span class="pc bpc" id="L517" title="1 of 2 branches missed.">				if (source == null) {</span>
-<span class="nc" id="L518">					hasProduct = false;</span>
-<span class="fc bfc" id="L519" title="All 2 branches covered.">				} else if (source instanceof DirectoryProductSource) {</span>
+<span class="fc" id="L525">				ProductSource source = getProductSource(id);</span>
+<span class="pc bpc" id="L526" title="1 of 2 branches missed.">				if (source == null) {</span>
+<span class="nc" id="L527">					hasProduct = false;</span>
+<span class="fc bfc" id="L528" title="All 2 branches covered.">				} else if (source instanceof DirectoryProductSource) {</span>
 					// not sure how we would get here
 					// FileNotFound exception appears in logs...
-<span class="fc" id="L522">					hasProduct = (new File(productDirectory,</span>
+<span class="fc" id="L531">					hasProduct = (new File(productDirectory,</span>
 							DirectoryProductHandler.PRODUCT_XML_FILENAME)
-<span class="fc" id="L524">							.exists());</span>
+<span class="fc" id="L533">							.exists());</span>
 				}
-<span class="pc bpc" id="L526" title="1 of 2 branches missed.">				if (source != null) {</span>
-<span class="fc" id="L527">					source.close();</span>
+<span class="pc bpc" id="L535" title="1 of 2 branches missed.">				if (source != null) {</span>
+<span class="fc" id="L536">					source.close();</span>
 				}
 			}
 
-<span class="fc bfc" id="L531" title="All 2 branches covered.">			if (!hasProduct) {</span>
+<span class="fc bfc" id="L540" title="All 2 branches covered.">			if (!hasProduct) {</span>
 				// primary storage doesn't have product, check legacy storages
-<span class="fc" id="L533">				Iterator&lt;ProductStorage&gt; legacyIter = legacyStorages.iterator();</span>
-<span class="fc bfc" id="L534" title="All 2 branches covered.">				while (legacyIter.hasNext()) {</span>
-<span class="fc" id="L535">					ProductStorage next = legacyIter.next();</span>
+<span class="fc" id="L542">				Iterator&lt;ProductStorage&gt; legacyIter = legacyStorages.iterator();</span>
+<span class="fc bfc" id="L543" title="All 2 branches covered.">				while (legacyIter.hasNext()) {</span>
+<span class="fc" id="L544">					ProductStorage next = legacyIter.next();</span>
 					try {
-<span class="fc bfc" id="L537" title="All 2 branches covered.">						if (next.hasProduct(id)) {</span>
-<span class="fc" id="L538">							return true;</span>
+<span class="fc bfc" id="L546" title="All 2 branches covered.">						if (next.hasProduct(id)) {</span>
+<span class="fc" id="L547">							return true;</span>
 						}
-<span class="nc" id="L540">					} catch (Exception e) {</span>
-<span class="nc" id="L541">						LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
+<span class="nc" id="L549">					} catch (Exception e) {</span>
+<span class="nc" id="L550">						LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
 								+ &quot;] legacy storage hasProduct exception &quot;, e);
-<span class="fc" id="L543">					}</span>
-<span class="fc" id="L544">				}</span>
+<span class="fc" id="L552">					}</span>
+<span class="fc" id="L553">				}</span>
 			}
 		} finally {
-<span class="fc" id="L547">			LOGGER.finest(&quot;[&quot; + getName()</span>
-<span class="fc" id="L548">					+ &quot;] releasing read lock for product id=&quot; + id.toString());</span>
+<span class="fc" id="L556">			LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L557">					+ &quot;] releasing read lock for product id=&quot; + id.toString());</span>
 			// release lock no matter what
-<span class="fc" id="L550">			storageLocks.releaseReadLock(id);</span>
-<span class="fc" id="L551">			LOGGER.finest(&quot;[&quot; + getName()</span>
-<span class="fc" id="L552">					+ &quot;] released read lock for product id=&quot; + id.toString());</span>
+<span class="fc" id="L559">			storageLocks.releaseReadLock(id);</span>
+<span class="fc" id="L560">			LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L561">					+ &quot;] released read lock for product id=&quot; + id.toString());</span>
 		}
 
-<span class="fc" id="L555">		return hasProduct;</span>
+<span class="fc" id="L564">		return hasProduct;</span>
 	}
 
 	/**
@@ -562,46 +571,46 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 *            product to remove.
 	 */
 	public void removeProduct(ProductId id) throws Exception {
-<span class="fc" id="L565">		String idString = id.toString();</span>
-<span class="fc" id="L566">		LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L574">		String idString = id.toString();</span>
+<span class="fc" id="L575">		LOGGER.finest(&quot;[&quot; + getName()</span>
 				+ &quot;] acquiring write lock for product id=&quot; + idString);
 		// acquire lock in case storage operation in progress
-<span class="fc" id="L569">		storageLocks.acquireWriteLock(id);</span>
-<span class="fc" id="L570">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] acquired write lock for product id=&quot;</span>
+<span class="fc" id="L578">		storageLocks.acquireWriteLock(id);</span>
+<span class="fc" id="L579">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] acquired write lock for product id=&quot;</span>
 				+ idString);
 		try {
-<span class="fc" id="L573">			File productFile = getProductFile(id);</span>
-<span class="fc bfc" id="L574" title="All 2 branches covered.">			if (productFile.exists()) {</span>
+<span class="fc" id="L582">			File productFile = getProductFile(id);</span>
+<span class="fc bfc" id="L583" title="All 2 branches covered.">			if (productFile.exists()) {</span>
 				// recursively delete the product directory
-<span class="fc" id="L576">				FileUtils.deleteTree(productFile);</span>
+<span class="fc" id="L585">				FileUtils.deleteTree(productFile);</span>
 				// remove any empty parent directories
-<span class="fc" id="L578">				FileUtils.deleteEmptyParents(productFile, baseDirectory);</span>
-<span class="fc" id="L579">				LOGGER.finer(&quot;[&quot; + getName() + &quot;] product removed, id=&quot; + idString);</span>
+<span class="fc" id="L587">				FileUtils.deleteEmptyParents(productFile, baseDirectory);</span>
+<span class="fc" id="L588">				LOGGER.finer(&quot;[&quot; + getName() + &quot;] product removed, id=&quot; + idString);</span>
 			}
-<span class="fc" id="L581">			productFile = null;</span>
+<span class="fc" id="L590">			productFile = null;</span>
 			// remove from any legacy storages
-<span class="fc" id="L583">			Iterator&lt;ProductStorage&gt; legacyIter = legacyStorages.iterator();</span>
-<span class="fc bfc" id="L584" title="All 2 branches covered.">			while (legacyIter.hasNext()) {</span>
-<span class="fc" id="L585">				ProductStorage next = legacyIter.next();</span>
+<span class="fc" id="L592">			Iterator&lt;ProductStorage&gt; legacyIter = legacyStorages.iterator();</span>
+<span class="fc bfc" id="L593" title="All 2 branches covered.">			while (legacyIter.hasNext()) {</span>
+<span class="fc" id="L594">				ProductStorage next = legacyIter.next();</span>
 				try {
-<span class="fc" id="L587">					next.removeProduct(id);</span>
-<span class="nc" id="L588">				} catch (Exception e) {</span>
-<span class="nc" id="L589">					LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
+<span class="fc" id="L596">					next.removeProduct(id);</span>
+<span class="nc" id="L597">				} catch (Exception e) {</span>
+<span class="nc" id="L598">					LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
 							+ &quot;] legacy storage remove exception &quot;, e);
-<span class="fc" id="L591">				}</span>
-<span class="fc" id="L592">			}</span>
+<span class="fc" id="L600">				}</span>
+<span class="fc" id="L601">			}</span>
 		} finally {
-<span class="fc" id="L594">			LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L603">			LOGGER.finest(&quot;[&quot; + getName()</span>
 					+ &quot;] releasing write lock for product id=&quot; + idString);
 			// release lock no matter what
-<span class="fc" id="L597">			storageLocks.releaseWriteLock(id);</span>
-<span class="fc" id="L598">			LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L606">			storageLocks.releaseWriteLock(id);</span>
+<span class="fc" id="L607">			LOGGER.finest(&quot;[&quot; + getName()</span>
 					+ &quot;] released write lock for product id=&quot; + idString);
 		}
 
 		// Notify listeners
-<span class="fc" id="L603">		notifyListeners(new StorageEvent(this, id, StorageEvent.PRODUCT_REMOVED));</span>
-<span class="fc" id="L604">	}</span>
+<span class="fc" id="L612">		notifyListeners(new StorageEvent(this, id, StorageEvent.PRODUCT_REMOVED));</span>
+<span class="fc" id="L613">	}</span>
 
 	/**
 	 * Store a product in storage.
@@ -613,7 +622,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 * @return the id of the stored product.
 	 */
 	public ProductId storeProduct(Product product) throws Exception {
-<span class="fc" id="L616">		return storeProductSource(new ObjectProductSource(product));</span>
+<span class="fc" id="L625">		return storeProductSource(new ObjectProductSource(product));</span>
 	}
 
 	/**
@@ -627,46 +636,46 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 * @return the id of the stored product.
 	 */
 	public ProductId storeProductSource(ProductSource source) throws Exception {
-<span class="fc" id="L630">		StorageProductOutput output = new StorageProductOutput();</span>
+<span class="fc" id="L639">		StorageProductOutput output = new StorageProductOutput();</span>
 		// output acquires the storageLock during onBeginProduct, once the
 		// product id is known.
 		try {
-<span class="fc" id="L634">			source.streamTo(output);</span>
+<span class="fc" id="L643">			source.streamTo(output);</span>
 			// close output so file(s) are written
-<span class="fc" id="L636">			output.close();</span>
+<span class="fc" id="L645">			output.close();</span>
 
-<span class="fc" id="L638">			ProductId id = output.getProductId();</span>
-<span class="fc" id="L639">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] product stored id=&quot; + id</span>
-<span class="fc" id="L640">					+ &quot;, status=&quot; + output.getStatus());</span>
+<span class="fc" id="L647">			ProductId id = output.getProductId();</span>
+<span class="fc" id="L648">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] product stored id=&quot; + id</span>
+<span class="fc" id="L649">					+ &quot;, status=&quot; + output.getStatus());</span>
 
-<span class="fc" id="L642">			verifier.verifySignature(getProduct(id));</span>
+<span class="fc" id="L651">			verifier.verifySignature(getProduct(id));</span>
 
-<span class="fc" id="L644">		} catch (Exception e) {</span>
-<span class="fc bfc" id="L645" title="All 2 branches covered.">			if (!(e instanceof ProductAlreadyInStorageException)</span>
-<span class="pc bpc" id="L646" title="1 of 2 branches missed.">					&amp;&amp; !(e.getCause() instanceof ProductAlreadyInStorageException)) {</span>
-<span class="pc bpc" id="L647" title="1 of 2 branches missed.">				if (e instanceof InvalidSignatureException) {</span>
+<span class="fc" id="L653">		} catch (Exception e) {</span>
+<span class="fc bfc" id="L654" title="All 2 branches covered.">			if (!(e instanceof ProductAlreadyInStorageException)</span>
+<span class="pc bpc" id="L655" title="1 of 2 branches missed.">					&amp;&amp; !(e.getCause() instanceof ProductAlreadyInStorageException)) {</span>
+<span class="pc bpc" id="L656" title="1 of 2 branches missed.">				if (e instanceof InvalidSignatureException) {</span>
 					// suppress stack trace for invalid signature
-<span class="fc" id="L649">					LOGGER.warning(e.getMessage()</span>
+<span class="fc" id="L658">					LOGGER.warning(e.getMessage()</span>
 							+ &quot;, removing incomplete product&quot;);
 				} else {
-<span class="nc" id="L652">					LOGGER.log(</span>
+<span class="nc" id="L661">					LOGGER.log(</span>
 							Level.WARNING,
 							&quot;[&quot;
-<span class="nc" id="L655">									+ getName()</span>
+<span class="nc" id="L664">									+ getName()</span>
 									+ &quot;] exception while storing product, removing incomplete product&quot;,
 							e);
 				}
 				try {
 					// remove incompletely stored product.
-<span class="fc" id="L661">					removeProduct(output.getProductId());</span>
-<span class="nc" id="L662">				} catch (Exception e2) {</span>
+<span class="fc" id="L670">					removeProduct(output.getProductId());</span>
+<span class="nc" id="L671">				} catch (Exception e2) {</span>
 					// ignore
-<span class="nc" id="L664">					LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+<span class="nc" id="L673">					LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 							+ &quot;] exception while removing incomplete product&quot;,
 							e2);
-<span class="fc" id="L667">				}</span>
+<span class="fc" id="L676">				}</span>
 			}
-<span class="fc" id="L669">			throw e;</span>
+<span class="fc" id="L678">			throw e;</span>
 		} finally {
 			// DO RELEASE THE WRITE LOCK HERE
 
@@ -679,33 +688,33 @@ public class FileProductStorage extends DefaultConfigurable implements
 			// However, not releasing the lock here leads to other problems when
 			// hubs are receiving products via multiple receivers.
 
-<span class="fc" id="L682">			ProductId id = output.getProductId();</span>
+<span class="fc" id="L691">			ProductId id = output.getProductId();</span>
 
-<span class="pc bpc" id="L684" title="1 of 2 branches missed.">			if (id != null) {</span>
+<span class="pc bpc" id="L693" title="1 of 2 branches missed.">			if (id != null) {</span>
 				// release the write lock
-<span class="fc" id="L686">				LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L695">				LOGGER.finest(&quot;[&quot; + getName()</span>
 						+ &quot;] releasing write lock for product id=&quot;
-<span class="fc" id="L688">						+ id.toString());</span>
-<span class="fc" id="L689">				storageLocks.releaseWriteLock(id);</span>
-<span class="fc" id="L690">				LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L697">						+ id.toString());</span>
+<span class="fc" id="L698">				storageLocks.releaseWriteLock(id);</span>
+<span class="fc" id="L699">				LOGGER.finest(&quot;[&quot; + getName()</span>
 						+ &quot;] released write lock for product id=&quot;
-<span class="fc" id="L692">						+ id.toString());</span>
+<span class="fc" id="L701">						+ id.toString());</span>
 			}
 
 			// close underlying handler
-<span class="fc" id="L696">			output.close();</span>
-<span class="fc" id="L697">			output.setProductOutput(null);</span>
+<span class="fc" id="L705">			output.close();</span>
+<span class="fc" id="L706">			output.setProductOutput(null);</span>
 
-<span class="fc" id="L699">			source.close();</span>
+<span class="fc" id="L708">			source.close();</span>
 		}
 
-<span class="fc" id="L702">		ProductId id = output.getProductId();</span>
+<span class="fc" id="L711">		ProductId id = output.getProductId();</span>
 		// Notify our storage listeners
-<span class="fc" id="L704">		StorageEvent event = new StorageEvent(this, id,</span>
+<span class="fc" id="L713">		StorageEvent event = new StorageEvent(this, id,</span>
 				StorageEvent.PRODUCT_STORED);
-<span class="fc" id="L706">		notifyListeners(event);</span>
+<span class="fc" id="L715">		notifyListeners(event);</span>
 
-<span class="fc" id="L708">		return id;</span>
+<span class="fc" id="L717">		return id;</span>
 	}
 
 	/**
@@ -725,21 +734,21 @@ public class FileProductStorage extends DefaultConfigurable implements
 		/**
 		 * Construct a new StorageProductOutput.
 		 */
-<span class="fc" id="L728">		public StorageProductOutput() {</span>
-<span class="fc" id="L729">		}</span>
+<span class="fc" id="L737">		public StorageProductOutput() {</span>
+<span class="fc" id="L738">		}</span>
 
 		/**
 		 * @return the product id that was stored.
 		 */
 		public ProductId getProductId() {
-<span class="fc" id="L735">			return id;</span>
+<span class="fc" id="L744">			return id;</span>
 		}
 
 		/**
 		 * @return the product status that was stored.
 		 */
 		public String getStatus() {
-<span class="fc" id="L742">			return status;</span>
+<span class="fc" id="L751">			return status;</span>
 		}
 
 		/**
@@ -748,32 +757,32 @@ public class FileProductStorage extends DefaultConfigurable implements
 		public void onBeginProduct(ProductId id, String status, URL trackerURL)
 				throws Exception {
 			// save the product id for later
-<span class="fc" id="L751">			this.id = id;</span>
-<span class="fc" id="L752">			this.status = status;</span>
+<span class="fc" id="L760">			this.id = id;</span>
+<span class="fc" id="L761">			this.status = status;</span>
 
 			// acquire write lock for product
-<span class="fc" id="L755">			LOGGER.finest(&quot;[&quot; + getName()</span>
-<span class="fc" id="L756">					+ &quot;] acquiring write lock for product id=&quot; + id.toString());</span>
-<span class="fc" id="L757">			storageLocks.acquireWriteLock(id);</span>
+<span class="fc" id="L764">			LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L765">					+ &quot;] acquiring write lock for product id=&quot; + id.toString());</span>
+<span class="fc" id="L766">			storageLocks.acquireWriteLock(id);</span>
 			// keep track that we have write lock
-<span class="fc" id="L759">			LOGGER.finest(&quot;[&quot; + getName()</span>
-<span class="fc" id="L760">					+ &quot;] acquired write lock for product id=&quot; + id.toString());</span>
-<span class="fc bfc" id="L761" title="All 2 branches covered.">			if (hasProduct(id)) {</span>
-<span class="fc" id="L762">				throw new ProductAlreadyInStorageException(&quot;[&quot; + getName()</span>
+<span class="fc" id="L768">			LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L769">					+ &quot;] acquired write lock for product id=&quot; + id.toString());</span>
+<span class="fc bfc" id="L770" title="All 2 branches covered.">			if (hasProduct(id)) {</span>
+<span class="fc" id="L771">				throw new ProductAlreadyInStorageException(&quot;[&quot; + getName()</span>
 						+ &quot;] product already in storage&quot;);
 			}
 
 			// set the wrapped product output
-<span class="fc" id="L767">			setProductOutput(getProductHandlerFormat(getProductFile(id)));</span>
+<span class="fc" id="L776">			setProductOutput(getProductHandlerFormat(getProductFile(id)));</span>
 			// call the directory product output onBeginProduct method to start
 			// writing the product
-<span class="fc" id="L770">			super.onBeginProduct(id, status, trackerURL);</span>
-<span class="fc" id="L771">		}</span>
+<span class="fc" id="L779">			super.onBeginProduct(id, status, trackerURL);</span>
+<span class="fc" id="L780">		}</span>
 
 		public void onEndProduct(ProductId id) throws Exception {
 			// call the directory product output onEndProduct method to finish
 			// writing the product
-<span class="fc" id="L776">			super.onEndProduct(id);</span>
+<span class="fc" id="L785">			super.onEndProduct(id);</span>
 
 			// DONT RELEASE THE LOCK HERE, this causes bigger problems on
 			// hubs...
@@ -786,7 +795,7 @@ public class FileProductStorage extends DefaultConfigurable implements
 			// this.haveWriteLock = false;
 			// LOGGER.finest(&quot;Released write lock for product id=&quot; +
 			// id.toString());
-<span class="fc" id="L789">		}</span>
+<span class="fc" id="L798">		}</span>
 	}
 
 	/**
@@ -795,47 +804,47 @@ public class FileProductStorage extends DefaultConfigurable implements
 	public void shutdown() throws Exception {
 		// Remove all our listeners. Doing this will also shut down the
 		// ExecutorServices
-<span class="fc" id="L798">		Iterator&lt;StorageListener&gt; listenerIter = listeners.keySet().iterator();</span>
-<span class="pc bpc" id="L799" title="1 of 2 branches missed.">		while (listenerIter.hasNext()) {</span>
-<span class="nc" id="L800">			removeStorageListener(listenerIter.next());</span>
+<span class="fc" id="L807">		Iterator&lt;StorageListener&gt; listenerIter = listeners.keySet().iterator();</span>
+<span class="pc bpc" id="L808" title="1 of 2 branches missed.">		while (listenerIter.hasNext()) {</span>
+<span class="nc" id="L809">			removeStorageListener(listenerIter.next());</span>
 			// Maybe we should call &quot;listener.shutdown()&quot; here as well?
 		}
 
 		// shutdown any legacy storages
-<span class="fc" id="L805">		Iterator&lt;ProductStorage&gt; legacyIter = legacyStorages.iterator();</span>
-<span class="pc bpc" id="L806" title="1 of 2 branches missed.">		while (legacyIter.hasNext()) {</span>
-<span class="nc" id="L807">			ProductStorage next = legacyIter.next();</span>
+<span class="fc" id="L814">		Iterator&lt;ProductStorage&gt; legacyIter = legacyStorages.iterator();</span>
+<span class="pc bpc" id="L815" title="1 of 2 branches missed.">		while (legacyIter.hasNext()) {</span>
+<span class="nc" id="L816">			ProductStorage next = legacyIter.next();</span>
 			try {
-<span class="nc" id="L809">				next.shutdown();</span>
-<span class="nc" id="L810">			} catch (Exception e) {</span>
-<span class="nc" id="L811">				LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
+<span class="nc" id="L818">				next.shutdown();</span>
+<span class="nc" id="L819">			} catch (Exception e) {</span>
+<span class="nc" id="L820">				LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
 						+ &quot;] legacy storage shutdown exception &quot;, e);
-<span class="nc" id="L813">			}</span>
-<span class="nc" id="L814">		}</span>
-<span class="fc" id="L815">	}</span>
+<span class="nc" id="L822">			}</span>
+<span class="nc" id="L823">		}</span>
+<span class="fc" id="L824">	}</span>
 
 	/**
 	 * Called after client configuration to begin processing.
 	 */
 	public void startup() throws Exception {
 		// startup any legacy storages
-<span class="fc" id="L822">		Iterator&lt;ProductStorage&gt; legacyIter = legacyStorages.iterator();</span>
-<span class="pc bpc" id="L823" title="1 of 2 branches missed.">		while (legacyIter.hasNext()) {</span>
-<span class="nc" id="L824">			ProductStorage next = legacyIter.next();</span>
+<span class="fc" id="L831">		Iterator&lt;ProductStorage&gt; legacyIter = legacyStorages.iterator();</span>
+<span class="pc bpc" id="L832" title="1 of 2 branches missed.">		while (legacyIter.hasNext()) {</span>
+<span class="nc" id="L833">			ProductStorage next = legacyIter.next();</span>
 			try {
-<span class="nc" id="L826">				next.startup();</span>
-<span class="nc" id="L827">			} catch (Exception e) {</span>
-<span class="nc" id="L828">				LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
+<span class="nc" id="L835">				next.startup();</span>
+<span class="nc" id="L836">			} catch (Exception e) {</span>
+<span class="nc" id="L837">				LOGGER.log(Level.FINE, &quot;[&quot; + getName()</span>
 						+ &quot;] legacy storage startup exception &quot;, e);
-<span class="nc" id="L830">			}</span>
-<span class="nc" id="L831">		}</span>
-<span class="fc" id="L832">	}</span>
+<span class="nc" id="L839">			}</span>
+<span class="nc" id="L840">		}</span>
+<span class="fc" id="L841">	}</span>
 
 	/**
 	 * @return the baseDirectory
 	 */
 	public File getBaseDirectory() {
-<span class="fc" id="L838">		return baseDirectory;</span>
+<span class="fc" id="L847">		return baseDirectory;</span>
 	}
 
 	/**
@@ -843,14 +852,14 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 *            the baseDirectory to set
 	 */
 	public void setBaseDirectory(File baseDirectory) {
-<span class="nc" id="L846">		this.baseDirectory = baseDirectory;</span>
-<span class="nc" id="L847">	}</span>
+<span class="nc" id="L855">		this.baseDirectory = baseDirectory;</span>
+<span class="nc" id="L856">	}</span>
 
 	/**
 	 * @return the rejectInvalidSignatures
 	 */
 	public boolean isRejectInvalidSignatures() {
-<span class="nc" id="L853">		return verifier.isRejectInvalidSignatures();</span>
+<span class="nc" id="L862">		return verifier.isRejectInvalidSignatures();</span>
 	}
 
 	/**
@@ -858,14 +867,14 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 *            the rejectInvalidSignatures to set
 	 */
 	public void setRejectInvalidSignatures(boolean rejectInvalidSignatures) {
-<span class="fc" id="L861">		verifier.setRejectInvalidSignatures(rejectInvalidSignatures);</span>
-<span class="fc" id="L862">	}</span>
+<span class="fc" id="L870">		verifier.setRejectInvalidSignatures(rejectInvalidSignatures);</span>
+<span class="fc" id="L871">	}</span>
 
 	/**
 	 * @return the testSignatures
 	 */
 	public boolean isTestSignatures() {
-<span class="nc" id="L868">		return verifier.isTestSignatures();</span>
+<span class="nc" id="L877">		return verifier.isTestSignatures();</span>
 	}
 
 	/**
@@ -873,14 +882,14 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 *            the testSignatures to set
 	 */
 	public void setTestSignatures(boolean testSignatures) {
-<span class="fc" id="L876">		verifier.setTestSignatures(testSignatures);</span>
-<span class="fc" id="L877">	}</span>
+<span class="fc" id="L885">		verifier.setTestSignatures(testSignatures);</span>
+<span class="fc" id="L886">	}</span>
 
 	/**
 	 * @return the keychain
 	 */
 	public ProductKeyChain getKeychain() {
-<span class="nc" id="L883">		return verifier.getKeychain();</span>
+<span class="nc" id="L892">		return verifier.getKeychain();</span>
 	}
 
 	/**
@@ -888,14 +897,14 @@ public class FileProductStorage extends DefaultConfigurable implements
 	 *            the keychain to set
 	 */
 	public void setKeychain(ProductKeyChain keychain) {
-<span class="fc" id="L891">		verifier.setKeychain(keychain);</span>
-<span class="fc" id="L892">	}</span>
+<span class="fc" id="L900">		verifier.setKeychain(keychain);</span>
+<span class="fc" id="L901">	}</span>
 
 	/**
 	 * @return the legacyStorages.
 	 */
 	public List&lt;ProductStorage&gt; getLegacyStorages() {
-<span class="fc" id="L898">		return legacyStorages;</span>
+<span class="fc" id="L907">		return legacyStorages;</span>
 	}
 
 }

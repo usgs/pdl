@@ -12,65 +12,95 @@ import javax.json.JsonReader;
 
 <span class="nc" id="L13">public class URLNotificationJSONConverter {</span>
 
+  /** attribute for product id */
   public static final String ATTRIBUTE_PRODUCT_ID = &quot;id&quot;;
+  /** attribute for source */
   public static final String ATTRIBUTE_SOURCE = &quot;source&quot;;
+  /** attribute for type */
   public static final String ATTRIBUTE_TYPE = &quot;type&quot;;
+  /** attribute for code */
   public static final String ATTRIBUTE_CODE = &quot;code&quot;;
+  /** attribute for updatetime */
   public static final String ATTRIBUTE_UPDATE_TIME = &quot;updatetime&quot;;
+  /** attribute for trackerURL */
   public static final String ATTRIBUTE_TRACKER_URL = &quot;trackerURL&quot;;
+  /** attribute for expires */
   public static final String ATTRIBUTE_EXPIRES = &quot;expires&quot;;
+  /** attribute for url */
   public static final String ATTRIBUTE_URL = &quot;url&quot;;
 
+  /**
+   * Converts a URLNotification into a JSON string
+   * @param notification URLNotification to convert
+   * @return JSON string
+   */
   public static String toJSON(final URLNotification notification) {
     //id
-<span class="fc" id="L26">    ProductId id = notification.getProductId();</span>
+<span class="fc" id="L39">    ProductId id = notification.getProductId();</span>
 
-<span class="fc" id="L28">    JsonObject json = Json.createObjectBuilder()</span>
-<span class="fc" id="L29">      .add(ATTRIBUTE_PRODUCT_ID,Json.createObjectBuilder()</span>
-<span class="fc" id="L30">        .add(ATTRIBUTE_SOURCE,id.getSource())</span>
-<span class="fc" id="L31">        .add(ATTRIBUTE_TYPE,id.getType())</span>
-<span class="fc" id="L32">        .add(ATTRIBUTE_CODE,id.getCode())</span>
-<span class="fc" id="L33">        .add(ATTRIBUTE_UPDATE_TIME, XmlUtils.formatDate(id.getUpdateTime())))</span>
-<span class="fc" id="L34">      .add(ATTRIBUTE_TRACKER_URL,notification.getTrackerURL().toString())</span>
-<span class="fc" id="L35">      .add(ATTRIBUTE_EXPIRES,XmlUtils.formatDate(notification.getExpirationDate()))</span>
-<span class="fc" id="L36">      .add(ATTRIBUTE_URL,notification.getProductURL().toString())</span>
-<span class="fc" id="L37">      .build();</span>
+<span class="fc" id="L41">    JsonObject json = Json.createObjectBuilder()</span>
+<span class="fc" id="L42">      .add(ATTRIBUTE_PRODUCT_ID,Json.createObjectBuilder()</span>
+<span class="fc" id="L43">        .add(ATTRIBUTE_SOURCE,id.getSource())</span>
+<span class="fc" id="L44">        .add(ATTRIBUTE_TYPE,id.getType())</span>
+<span class="fc" id="L45">        .add(ATTRIBUTE_CODE,id.getCode())</span>
+<span class="fc" id="L46">        .add(ATTRIBUTE_UPDATE_TIME, XmlUtils.formatDate(id.getUpdateTime())))</span>
+<span class="fc" id="L47">      .add(ATTRIBUTE_TRACKER_URL,notification.getTrackerURL().toString())</span>
+<span class="fc" id="L48">      .add(ATTRIBUTE_EXPIRES,XmlUtils.formatDate(notification.getExpirationDate()))</span>
+<span class="fc" id="L49">      .add(ATTRIBUTE_URL,notification.getProductURL().toString())</span>
+<span class="fc" id="L50">      .build();</span>
 
-<span class="fc" id="L39">    return json.toString();</span>
+<span class="fc" id="L52">    return json.toString();</span>
   }
 
+  /**
+   * parse a message from the input stream
+   * @param message InputStream message
+   * @return URLNotification
+   * @throws Exception if error occurs
+   */
   public static URLNotification parseJSON(final InputStream message) throws Exception{
-<span class="fc" id="L43">    JsonReader jsonReader = Json.createReader(message);</span>
-<span class="fc" id="L44">    JsonObject json = jsonReader.readObject();</span>
-<span class="fc" id="L45">    jsonReader.close();</span>
+<span class="fc" id="L62">    JsonReader jsonReader = Json.createReader(message);</span>
+<span class="fc" id="L63">    JsonObject json = jsonReader.readObject();</span>
+<span class="fc" id="L64">    jsonReader.close();</span>
 
-<span class="fc" id="L47">    return parseJSON(json);</span>
+<span class="fc" id="L66">    return parseJSON(json);</span>
   }
 
+  /**
+   * Parse a JsonObject
+   * @param json JsonObject
+   * @return URLNotification
+   * @throws Exception if error occurs
+   */
   public static URLNotification parseJSON(final JsonObject json) throws Exception{
-<span class="fc" id="L51">    JsonObject idJson = json.getJsonObject(ATTRIBUTE_PRODUCT_ID);</span>
+<span class="fc" id="L76">    JsonObject idJson = json.getJsonObject(ATTRIBUTE_PRODUCT_ID);</span>
 
-<span class="fc" id="L53">    ProductId id = new ProductId(</span>
-<span class="fc" id="L54">            idJson.getString(ATTRIBUTE_SOURCE),</span>
-<span class="fc" id="L55">            idJson.getString(ATTRIBUTE_TYPE),</span>
-<span class="fc" id="L56">            idJson.getString(ATTRIBUTE_CODE),</span>
-<span class="fc" id="L57">            XmlUtils.getDate(idJson.getString(ATTRIBUTE_UPDATE_TIME)));</span>
+<span class="fc" id="L78">    ProductId id = new ProductId(</span>
+<span class="fc" id="L79">            idJson.getString(ATTRIBUTE_SOURCE),</span>
+<span class="fc" id="L80">            idJson.getString(ATTRIBUTE_TYPE),</span>
+<span class="fc" id="L81">            idJson.getString(ATTRIBUTE_CODE),</span>
+<span class="fc" id="L82">            XmlUtils.getDate(idJson.getString(ATTRIBUTE_UPDATE_TIME)));</span>
 
-<span class="fc" id="L59">    return new URLNotification(</span>
+<span class="fc" id="L84">    return new URLNotification(</span>
             id,
-<span class="fc" id="L61">            XmlUtils.getDate(json.getString(ATTRIBUTE_EXPIRES)),</span>
-<span class="fc" id="L62">            new URL(json.getString(ATTRIBUTE_TRACKER_URL)),</span>
-<span class="fc" id="L63">            new URL(json.getString(ATTRIBUTE_URL)));</span>
+<span class="fc" id="L86">            XmlUtils.getDate(json.getString(ATTRIBUTE_EXPIRES)),</span>
+<span class="fc" id="L87">            new URL(json.getString(ATTRIBUTE_TRACKER_URL)),</span>
+<span class="fc" id="L88">            new URL(json.getString(ATTRIBUTE_URL)));</span>
   }
 
+  /**
+   * Main function to run a test JSON-ifying a URLnotification
+   * @param args arguments
+   * @throws Exception if error occurs
+   */
   public static void main(String[] args) throws Exception{
-<span class="nc" id="L67">    URLNotification testNotification = new URLNotification(new ProductId(&quot;testSource&quot;,&quot;testType&quot;,&quot;testCode&quot;), new Date(),</span>
+<span class="nc" id="L97">    URLNotification testNotification = new URLNotification(new ProductId(&quot;testSource&quot;,&quot;testType&quot;,&quot;testCode&quot;), new Date(),</span>
             new URL(&quot;http://localhost/tracker/&quot;), new URL(&quot;http://localhost/product/&quot;));
 
-<span class="nc" id="L70">    String JSON = toJSON(testNotification);</span>
+<span class="nc" id="L100">    String JSON = toJSON(testNotification);</span>
 
-<span class="nc" id="L72">    System.out.println(JSON);</span>
-<span class="nc" id="L73">  }</span>
+<span class="nc" id="L102">    System.out.println(JSON);</span>
+<span class="nc" id="L103">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

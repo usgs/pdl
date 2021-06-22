@@ -485,7 +485,7 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
  Sets up the includeTypes list to contain "heartbeat".</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -527,7 +527,7 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>product</code> - a product whose notification was accepted.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -543,9 +543,9 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <div class="block">Send heartbeat data to heartbeat listener</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>component</code> - </dd>
-<dd><code>key</code> - </dd>
-<dd><code>value</code> - </dd>
+<dd><code>component</code> - String component</dd>
+<dd><code>key</code> - Heartbeat key</dd>
+<dd><code>value</code> - Heartbeat value</dd>
 </dl>
 </li>
 </ul>
@@ -562,7 +562,7 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>true</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.io.IOException</code> - if IO error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -622,6 +622,10 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <li class="blockList">
 <h4>getHeartbeatFile</h4>
 <pre class="methodSignature">public&nbsp;java.io.File&nbsp;getHeartbeatFile()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>heartbeatFile</dd>
+</dl>
 </li>
 </ul>
 <a id="setHeartbeatFile(java.io.File)">
@@ -631,6 +635,10 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <li class="blockList">
 <h4>setHeartbeatFile</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setHeartbeatFile&#8203;(java.io.File&nbsp;heartbeatFile)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>heartbeatFile</code> - to set</dd>
+</dl>
 </li>
 </ul>
 <a id="getStorageTimeout()">
@@ -640,6 +648,10 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <li class="blockList">
 <h4>getStorageTimeout</h4>
 <pre class="methodSignature">public&nbsp;long&nbsp;getStorageTimeout()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>storageTimeout</dd>
+</dl>
 </li>
 </ul>
 <a id="setStorageTimeout(long)">
@@ -649,6 +661,10 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <li class="blockList">
 <h4>setStorageTimeout</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setStorageTimeout&#8203;(long&nbsp;storageTimeout)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>storageTimeout</code> - to set</dd>
+</dl>
 </li>
 </ul>
 </li>

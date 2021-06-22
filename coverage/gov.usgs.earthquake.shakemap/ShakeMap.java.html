@@ -21,20 +21,29 @@ import java.util.logging.Logger;
  */
 public class ShakeMap extends Product {
 
+	/** Property for event description */
 	public static final String EVENT_DESCRIPTION_PROPERTY = &quot;event-description&quot;;
+	/** Property for event type */
 	public static final String EVENT_TYPE_PROPERTY = &quot;event-type&quot;;
+	/** Property for map status */
 	public static final String MAP_STATUS_PROPERTY = &quot;map-status&quot;;
+	/** Property for max latitude */
 	public static final String MAXIMUM_LATITUDE_PROPERTY = &quot;maximum-latitude&quot;;
+	/** Property for max longitude */
 	public static final String MAXIMUM_LONGITUDE_PROPERTY = &quot;maximum-longitude&quot;;
+	/** Property for min latitude */
 	public static final String MINIMUM_LATITUDE_PROPERTY = &quot;minimum-latitude&quot;;
+	/** Property for min longitude */
 	public static final String MINIMUM_LONGITUDE_PROPERTY = &quot;minimum-longitude&quot;;
+	/** Property for process timestamp */
 	public static final String PROCESS_TIMESTAMP_PROPERTY = &quot;process-timestamp&quot;;
 
-<span class="fc" id="L33">	private static final Logger LOGGER = Logger.getLogger(ShakeMap.class</span>
-<span class="fc" id="L34">			.getName());</span>
+<span class="fc" id="L41">	private static final Logger LOGGER = Logger.getLogger(ShakeMap.class</span>
+<span class="fc" id="L42">			.getName());</span>
 
-	// References to file content in the Product
+	/** References to file content in the Product */
 	public static final String GRID_XML_ATTACHMENT = &quot;download/grid.xml&quot;;
+	/** References to file content in the Product */
 	public static final String INFO_XML_ATTACHMENT = &quot;download/info.xml&quot;;
 
 	// The files below have been decided to be unsupported at this time to
@@ -43,18 +52,23 @@ public class ShakeMap extends Product {
 	// public static final String GRID_XYZ_ATTACHMENT = &quot;download/grid.xyz.zip&quot;;
 	// public static final String STATIONLIST_XML_ATTACHMENT =
 	// &quot;download/stationlist.xml&quot;;
+	/** Invisible attachment */
 	public static final String INVISIBLE_ATTACHMENT = &quot;.invisible&quot;;
 
-	// A suffix added to all event codes for scenarios
+	/** A suffix added to all event codes for scenarios */
 	public static final String SCENARIO_ID_SUFFIX = &quot;_se&quot;;
 
 	// Map types
+	/** Map type - actual */
 	public static final String ACTUAL = &quot;ACTUAL&quot;;
+	/** Map type - scenario */
 	public static final String SCENARIO = &quot;SCENARIO&quot;;
+	/** Map type - test */
 	public static final String TEST = &quot;TEST&quot;;
 
-	// key in info.xml for maximum mmi
+	/** key in info.xml for maximum mmi */
 	public static final String MAXIMUM_MMI_INFO_KEY = &quot;mi_max&quot;;
+	/** Property for max MMI */
 	public static final String MAXIMUM_MMI_PROPERTY = &quot;maxmmi&quot;;
 
 	/**
@@ -62,41 +76,41 @@ public class ShakeMap extends Product {
 	 *            the base product to be converted to a ShakeMap product
 	 */
 	public ShakeMap(final Product product) {
-<span class="fc" id="L65">		super(product);</span>
+<span class="fc" id="L79">		super(product);</span>
 
 		// prefer grid attachment
-<span class="fc" id="L68">		Content gridxml = product.getContents().get(GRID_XML_ATTACHMENT);</span>
-<span class="pc bpc" id="L69" title="1 of 2 branches missed.">		if (gridxml != null) {</span>
-<span class="fc" id="L70">			InputStream gridXmlIn = null;</span>
+<span class="fc" id="L82">		Content gridxml = product.getContents().get(GRID_XML_ATTACHMENT);</span>
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">		if (gridxml != null) {</span>
+<span class="fc" id="L84">			InputStream gridXmlIn = null;</span>
 			try {
 				// parse grid.xml
-<span class="fc" id="L73">				GridXMLHandler gridxmlHandler = new GridXMLHandler();</span>
-<span class="fc" id="L74">				gridXmlIn = gridxml.getInputStream();</span>
-<span class="fc" id="L75">				HashMap&lt;String, String&gt; grid = gridxmlHandler.parse(gridXmlIn);</span>
+<span class="fc" id="L87">				GridXMLHandler gridxmlHandler = new GridXMLHandler();</span>
+<span class="fc" id="L88">				gridXmlIn = gridxml.getInputStream();</span>
+<span class="fc" id="L89">				HashMap&lt;String, String&gt; grid = gridxmlHandler.parse(gridXmlIn);</span>
 				// parse through hash maps to set shakemap properties
-<span class="fc" id="L77">				this.setGridXMLProperties(grid);</span>
-<span class="nc" id="L78">			} catch (Exception e) {</span>
+<span class="fc" id="L91">				this.setGridXMLProperties(grid);</span>
+<span class="nc" id="L92">			} catch (Exception e) {</span>
 				// error parsing grid
-<span class="nc" id="L80">				LOGGER.log(Level.WARNING, &quot;error parsing grid.xml&quot;, e);</span>
+<span class="nc" id="L94">				LOGGER.log(Level.WARNING, &quot;error parsing grid.xml&quot;, e);</span>
 			} finally {
-<span class="fc" id="L82">				StreamUtils.closeStream(gridXmlIn);</span>
+<span class="fc" id="L96">				StreamUtils.closeStream(gridXmlIn);</span>
 			}
 		}
 
-<span class="fc" id="L86">		Content infoxml = product.getContents().get(INFO_XML_ATTACHMENT);</span>
-<span class="fc bfc" id="L87" title="All 2 branches covered.">		if (infoxml != null) {</span>
-<span class="fc" id="L88">			InputStream infoXmlIn = null;</span>
+<span class="fc" id="L100">		Content infoxml = product.getContents().get(INFO_XML_ATTACHMENT);</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">		if (infoxml != null) {</span>
+<span class="fc" id="L102">			InputStream infoXmlIn = null;</span>
 			try {
 				// parse info.xml
-<span class="fc" id="L91">				InfoXMLHandler infoxmlHandler = new InfoXMLHandler();</span>
-<span class="fc" id="L92">				infoXmlIn = infoxml.getInputStream();</span>
-<span class="fc" id="L93">				HashMap&lt;String, String&gt; info = infoxmlHandler.parse(infoXmlIn);</span>
+<span class="fc" id="L105">				InfoXMLHandler infoxmlHandler = new InfoXMLHandler();</span>
+<span class="fc" id="L106">				infoXmlIn = infoxml.getInputStream();</span>
+<span class="fc" id="L107">				HashMap&lt;String, String&gt; info = infoxmlHandler.parse(infoXmlIn);</span>
 				// parse through hash maps to set shakemap properties
-<span class="fc" id="L95">				this.setInfoXMLProperties(info);</span>
-<span class="nc" id="L96">			} catch (Exception e) {</span>
-<span class="nc" id="L97">				LOGGER.log(Level.WARNING, &quot;error parsing info.xml&quot;, e);</span>
+<span class="fc" id="L109">				this.setInfoXMLProperties(info);</span>
+<span class="nc" id="L110">			} catch (Exception e) {</span>
+<span class="nc" id="L111">				LOGGER.log(Level.WARNING, &quot;error parsing info.xml&quot;, e);</span>
 			} finally {
-<span class="fc" id="L99">				StreamUtils.closeStream(infoXmlIn);</span>
+<span class="fc" id="L113">				StreamUtils.closeStream(infoXmlIn);</span>
 			}
 		}
 
@@ -119,7 +133,7 @@ public class ShakeMap extends Product {
 		 * //error parsing stationlist throw new IllegalArgumentException(e); }
 		 * } }
 		 */
-<span class="fc" id="L122">	}</span>
+<span class="fc" id="L136">	}</span>
 
 	/**
 	 * @param gridXML
@@ -146,102 +160,102 @@ public class ShakeMap extends Product {
 
 
 		// eventId
-<span class="fc" id="L149">		eventSource = gridXML.get(GridXMLHandler.EVENT_NETWORK_XML);</span>
-<span class="fc" id="L150">		eventSourceCode = gridXML.get(GridXMLHandler.EVENT_ID_XML);</span>
-<span class="fc" id="L151">		eventId = eventSource + eventSourceCode;</span>
+<span class="fc" id="L163">		eventSource = gridXML.get(GridXMLHandler.EVENT_NETWORK_XML);</span>
+<span class="fc" id="L164">		eventSourceCode = gridXML.get(GridXMLHandler.EVENT_ID_XML);</span>
+<span class="fc" id="L165">		eventId = eventSource + eventSourceCode;</span>
 
-<span class="fc bfc" id="L153" title="All 2 branches covered.">		if (valueIsEmpty(getEventId(), eventId))  {</span>
-<span class="fc" id="L154">			setEventId(eventSource, eventSourceCode);</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">		if (valueIsEmpty(getEventId(), eventId))  {</span>
+<span class="fc" id="L168">			setEventId(eventSource, eventSourceCode);</span>
 		}
 
 		// less preferred eventId (if not already set)
-<span class="fc" id="L158">		eventSource = gridXML.get(GridXMLHandler.SHAKEMAPGRID_ORIGINATOR_XML);</span>
-<span class="fc" id="L159">		eventSourceCode = gridXML.get(GridXMLHandler.SHAKEMAPGRID_ID_XML);</span>
-<span class="fc" id="L160">		eventId = eventSource + eventSourceCode;</span>
+<span class="fc" id="L172">		eventSource = gridXML.get(GridXMLHandler.SHAKEMAPGRID_ORIGINATOR_XML);</span>
+<span class="fc" id="L173">		eventSourceCode = gridXML.get(GridXMLHandler.SHAKEMAPGRID_ID_XML);</span>
+<span class="fc" id="L174">		eventId = eventSource + eventSourceCode;</span>
 
-<span class="fc bfc" id="L162" title="All 2 branches covered.">		if (valueIsEmpty(getEventId(), eventId))  {</span>
-<span class="fc" id="L163">			setEventId(eventSource, eventSourceCode);</span>
+<span class="fc bfc" id="L176" title="All 2 branches covered.">		if (valueIsEmpty(getEventId(), eventId))  {</span>
+<span class="fc" id="L177">			setEventId(eventSource, eventSourceCode);</span>
 		}
 
 
 		// ShakeMap Metadata
-<span class="fc" id="L168">		processTimestamp = gridXML.get(GridXMLHandler.SHAKEMAPGRID_TIMESTAMP_XML);</span>
-<span class="fc bfc" id="L169" title="All 2 branches covered.">		if (valueIsEmpty(XmlUtils.formatDate(getProcessTimestamp()), processTimestamp)) {</span>
-<span class="fc" id="L170">			setProcessTimestamp(XmlUtils.getDate(processTimestamp));</span>
+<span class="fc" id="L182">		processTimestamp = gridXML.get(GridXMLHandler.SHAKEMAPGRID_TIMESTAMP_XML);</span>
+<span class="fc bfc" id="L183" title="All 2 branches covered.">		if (valueIsEmpty(XmlUtils.formatDate(getProcessTimestamp()), processTimestamp)) {</span>
+<span class="fc" id="L184">			setProcessTimestamp(XmlUtils.getDate(processTimestamp));</span>
 		}
 
-<span class="fc" id="L173">		version = gridXML.get(GridXMLHandler.SHAKEMAPGRID_VERSION_XML);</span>
-<span class="fc bfc" id="L174" title="All 2 branches covered.">		if (valueIsEmpty(getVersion(), version)) {</span>
-<span class="fc" id="L175">			setVersion(version);</span>
+<span class="fc" id="L187">		version = gridXML.get(GridXMLHandler.SHAKEMAPGRID_VERSION_XML);</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">		if (valueIsEmpty(getVersion(), version)) {</span>
+<span class="fc" id="L189">			setVersion(version);</span>
 		}
 
-<span class="fc" id="L178">		eventType = gridXML.get(GridXMLHandler.SHAKEMAPGRID_EVENT_TYPE_XML);</span>
-<span class="fc bfc" id="L179" title="All 2 branches covered.">		if (valueIsEmpty(getEventType(), eventType)) {</span>
-<span class="fc" id="L180">			setEventType(eventType);</span>
+<span class="fc" id="L192">		eventType = gridXML.get(GridXMLHandler.SHAKEMAPGRID_EVENT_TYPE_XML);</span>
+<span class="fc bfc" id="L193" title="All 2 branches covered.">		if (valueIsEmpty(getEventType(), eventType)) {</span>
+<span class="fc" id="L194">			setEventType(eventType);</span>
 		}
 
-<span class="fc" id="L183">		mapStatus = gridXML.get(GridXMLHandler.SHAKEMAPGRID_EVENT_STATUS_XML);</span>
-<span class="fc bfc" id="L184" title="All 2 branches covered.">		if (valueIsEmpty(getMapStatus(), mapStatus)) {</span>
-<span class="fc" id="L185">			setMapStatus(mapStatus);</span>
+<span class="fc" id="L197">		mapStatus = gridXML.get(GridXMLHandler.SHAKEMAPGRID_EVENT_STATUS_XML);</span>
+<span class="fc bfc" id="L198" title="All 2 branches covered.">		if (valueIsEmpty(getMapStatus(), mapStatus)) {</span>
+<span class="fc" id="L199">			setMapStatus(mapStatus);</span>
 		}
 
 
 		// ShakeMap Grid
-<span class="fc" id="L190">		minimumLongitude = gridXML.get(GridXMLHandler.GRIDSPEC_LONMIN_XML);</span>
-<span class="fc bfc" id="L191" title="All 2 branches covered.">		if (valueIsEmpty(getString(getMinimumLongitude()), minimumLongitude)) {</span>
-<span class="fc" id="L192">			setMinimumLongitude(getBigDecimal(minimumLongitude));</span>
+<span class="fc" id="L204">		minimumLongitude = gridXML.get(GridXMLHandler.GRIDSPEC_LONMIN_XML);</span>
+<span class="fc bfc" id="L205" title="All 2 branches covered.">		if (valueIsEmpty(getString(getMinimumLongitude()), minimumLongitude)) {</span>
+<span class="fc" id="L206">			setMinimumLongitude(getBigDecimal(minimumLongitude));</span>
 		}
 
-<span class="fc" id="L195">		maximumLongitude = gridXML.get(GridXMLHandler.GRIDSPEC_LONMAX_XML);</span>
-<span class="fc bfc" id="L196" title="All 2 branches covered.">		if (valueIsEmpty(getString(getMaximumLongitude()), maximumLongitude)) {</span>
-<span class="fc" id="L197">			setMaximumLongitude(getBigDecimal(maximumLongitude));</span>
+<span class="fc" id="L209">		maximumLongitude = gridXML.get(GridXMLHandler.GRIDSPEC_LONMAX_XML);</span>
+<span class="fc bfc" id="L210" title="All 2 branches covered.">		if (valueIsEmpty(getString(getMaximumLongitude()), maximumLongitude)) {</span>
+<span class="fc" id="L211">			setMaximumLongitude(getBigDecimal(maximumLongitude));</span>
 		}
 
-<span class="fc" id="L200">		minimumLatitude = gridXML.get(GridXMLHandler.GRIDSPEC_LATMIN_XML);</span>
-<span class="fc bfc" id="L201" title="All 2 branches covered.">		if (valueIsEmpty(getString(getMinimumLatitude()), minimumLatitude)) {</span>
-<span class="fc" id="L202">			setMinimumLatitude(getBigDecimal(minimumLatitude));</span>
+<span class="fc" id="L214">		minimumLatitude = gridXML.get(GridXMLHandler.GRIDSPEC_LATMIN_XML);</span>
+<span class="fc bfc" id="L215" title="All 2 branches covered.">		if (valueIsEmpty(getString(getMinimumLatitude()), minimumLatitude)) {</span>
+<span class="fc" id="L216">			setMinimumLatitude(getBigDecimal(minimumLatitude));</span>
 		}
 
-<span class="fc" id="L205">		maximumLatitude = gridXML.get(GridXMLHandler.GRIDSPEC_LATMAX_XML);</span>
-<span class="fc bfc" id="L206" title="All 2 branches covered.">		if (valueIsEmpty(getString(getMaximumLatitude()), maximumLatitude)) {</span>
-<span class="fc" id="L207">			setMaximumLatitude(getBigDecimal(maximumLatitude));</span>
+<span class="fc" id="L219">		maximumLatitude = gridXML.get(GridXMLHandler.GRIDSPEC_LATMAX_XML);</span>
+<span class="fc bfc" id="L220" title="All 2 branches covered.">		if (valueIsEmpty(getString(getMaximumLatitude()), maximumLatitude)) {</span>
+<span class="fc" id="L221">			setMaximumLatitude(getBigDecimal(maximumLatitude));</span>
 		}
 
 
 		// Event
-<span class="fc" id="L212">		latitude = gridXML.get(GridXMLHandler.EVENT_LATITUDE_XML);</span>
-<span class="fc bfc" id="L213" title="All 2 branches covered.">		if (valueIsEmpty(getString(getLatitude()), latitude)) {</span>
-<span class="fc" id="L214">			setLatitude(getBigDecimal(latitude));</span>
+<span class="fc" id="L226">		latitude = gridXML.get(GridXMLHandler.EVENT_LATITUDE_XML);</span>
+<span class="fc bfc" id="L227" title="All 2 branches covered.">		if (valueIsEmpty(getString(getLatitude()), latitude)) {</span>
+<span class="fc" id="L228">			setLatitude(getBigDecimal(latitude));</span>
 		}
 
-<span class="fc" id="L217">		longitude = gridXML.get(GridXMLHandler.EVENT_LONGITUDE_XML);</span>
-<span class="fc bfc" id="L218" title="All 2 branches covered.">		if (valueIsEmpty(getString(getLongitude()), longitude)) {</span>
-<span class="fc" id="L219">			setLongitude(getBigDecimal(longitude));</span>
+<span class="fc" id="L231">		longitude = gridXML.get(GridXMLHandler.EVENT_LONGITUDE_XML);</span>
+<span class="fc bfc" id="L232" title="All 2 branches covered.">		if (valueIsEmpty(getString(getLongitude()), longitude)) {</span>
+<span class="fc" id="L233">			setLongitude(getBigDecimal(longitude));</span>
 		}
 
-<span class="fc" id="L222">		magnitude = gridXML.get(GridXMLHandler.EVENT_MAGNITUDE_XML);</span>
-<span class="fc bfc" id="L223" title="All 2 branches covered.">		if (valueIsEmpty(getString(getMagnitude()), magnitude)) {</span>
-<span class="fc" id="L224">			setMagnitude(getBigDecimal(magnitude));</span>
+<span class="fc" id="L236">		magnitude = gridXML.get(GridXMLHandler.EVENT_MAGNITUDE_XML);</span>
+<span class="fc bfc" id="L237" title="All 2 branches covered.">		if (valueIsEmpty(getString(getMagnitude()), magnitude)) {</span>
+<span class="fc" id="L238">			setMagnitude(getBigDecimal(magnitude));</span>
 		}
 
-<span class="fc" id="L227">		depth = gridXML.get(GridXMLHandler.EVENT_DEPTH_XML);</span>
-<span class="fc bfc" id="L228" title="All 2 branches covered.">		if (valueIsEmpty(getString(getDepth()), depth)) {</span>
-<span class="fc" id="L229">			setDepth(getBigDecimal(depth));</span>
+<span class="fc" id="L241">		depth = gridXML.get(GridXMLHandler.EVENT_DEPTH_XML);</span>
+<span class="fc bfc" id="L242" title="All 2 branches covered.">		if (valueIsEmpty(getString(getDepth()), depth)) {</span>
+<span class="fc" id="L243">			setDepth(getBigDecimal(depth));</span>
 		}
 
-<span class="fc" id="L232">		eventTime = gridXML.get(GridXMLHandler.EVENT_TIMESTAMP_XML)</span>
-<span class="fc" id="L233">				.replace(&quot;GMT&quot;, &quot;Z&quot;)</span>
-<span class="fc" id="L234">				.replace(&quot;UTC&quot;,&quot;Z&quot;);</span>
-<span class="fc bfc" id="L235" title="All 2 branches covered.">		if (valueIsEmpty(XmlUtils.formatDate(getEventTime()), eventTime)) {</span>
-<span class="fc" id="L236">			setEventTime(XmlUtils.getDate(eventTime));</span>
+<span class="fc" id="L246">		eventTime = gridXML.get(GridXMLHandler.EVENT_TIMESTAMP_XML)</span>
+<span class="fc" id="L247">				.replace(&quot;GMT&quot;, &quot;Z&quot;)</span>
+<span class="fc" id="L248">				.replace(&quot;UTC&quot;,&quot;Z&quot;);</span>
+<span class="fc bfc" id="L249" title="All 2 branches covered.">		if (valueIsEmpty(XmlUtils.formatDate(getEventTime()), eventTime)) {</span>
+<span class="fc" id="L250">			setEventTime(XmlUtils.getDate(eventTime));</span>
 		}
 
-<span class="fc" id="L239">		eventDescription = gridXML.get(GridXMLHandler.EVENT_DESCRIPTION_XML);</span>
-<span class="fc bfc" id="L240" title="All 2 branches covered.">		if (valueIsEmpty(getEventDescription(), eventDescription)) {</span>
-<span class="fc" id="L241">			setEventDescription(eventDescription);</span>
+<span class="fc" id="L253">		eventDescription = gridXML.get(GridXMLHandler.EVENT_DESCRIPTION_XML);</span>
+<span class="fc bfc" id="L254" title="All 2 branches covered.">		if (valueIsEmpty(getEventDescription(), eventDescription)) {</span>
+<span class="fc" id="L255">			setEventDescription(eventDescription);</span>
 		}
 
-<span class="fc" id="L244">	};</span>
+<span class="fc" id="L258">	};</span>
 
 	/**
 	 * @param infoXML
@@ -249,11 +263,11 @@ public class ShakeMap extends Product {
 	 */
 	public void setInfoXMLProperties (HashMap&lt;String, String&gt; infoXML) {
 		// read maxmmi from info.xml
-<span class="pc bpc" id="L252" title="1 of 2 branches missed.">		if (infoXML.containsKey(MAXIMUM_MMI_INFO_KEY)) {</span>
-<span class="nc" id="L253">			this.getProperties().put(MAXIMUM_MMI_PROPERTY,</span>
-<span class="nc" id="L254">					infoXML.get(MAXIMUM_MMI_INFO_KEY));</span>
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">		if (infoXML.containsKey(MAXIMUM_MMI_INFO_KEY)) {</span>
+<span class="nc" id="L267">			this.getProperties().put(MAXIMUM_MMI_PROPERTY,</span>
+<span class="nc" id="L268">					infoXML.get(MAXIMUM_MMI_INFO_KEY));</span>
 		}
-<span class="fc" id="L256">	};</span>
+<span class="fc" id="L270">	};</span>
 
 	/**
 	 * @param productValue
@@ -264,20 +278,20 @@ public class ShakeMap extends Product {
 	 */
 	public boolean valueIsEmpty (String productValue, String xmlValue) {
 		// nothing to be set
-<span class="pc bpc" id="L267" title="1 of 2 branches missed.">		if (xmlValue == null) {</span>
-<span class="nc" id="L268">			return false;</span>
+<span class="pc bpc" id="L281" title="1 of 2 branches missed.">		if (xmlValue == null) {</span>
+<span class="nc" id="L282">			return false;</span>
 		}
 		// no value has been set
-<span class="fc bfc" id="L271" title="All 2 branches covered.">		if (productValue == null) {</span>
-<span class="fc" id="L272">			return true;</span>
+<span class="fc bfc" id="L285" title="All 2 branches covered.">		if (productValue == null) {</span>
+<span class="fc" id="L286">			return true;</span>
 		}
 		// value is set and values are different, log warning
-<span class="fc bfc" id="L275" title="All 2 branches covered.">		if (!productValue.equals(xmlValue)) {</span>
-<span class="fc" id="L276">			LOGGER.log(Level.FINE,</span>
+<span class="fc bfc" id="L289" title="All 2 branches covered.">		if (!productValue.equals(xmlValue)) {</span>
+<span class="fc" id="L290">			LOGGER.log(Level.FINE,</span>
 					&quot;The ShakeMap property value: \&quot;&quot; + xmlValue + &quot;\&quot;&quot; +
 					&quot; does not match the product value: \&quot;&quot; + productValue + &quot;\&quot;.&quot;);
 		}
-<span class="fc" id="L280">		return false;</span>
+<span class="fc" id="L294">		return false;</span>
 	}
 
 	/**
@@ -285,14 +299,14 @@ public class ShakeMap extends Product {
 	 *            the map status to set
 	 */
 	public void setMapStatus(String mapStatus) {
-<span class="fc" id="L288">		getProperties().put(MAP_STATUS_PROPERTY, mapStatus);</span>
-<span class="fc" id="L289">	}</span>
+<span class="fc" id="L302">		getProperties().put(MAP_STATUS_PROPERTY, mapStatus);</span>
+<span class="fc" id="L303">	}</span>
 
 	/**
 	 * @return the status of this map
 	 */
 	public String getMapStatus() {
-<span class="fc" id="L295">		return getProperties().get(MAP_STATUS_PROPERTY);</span>
+<span class="fc" id="L309">		return getProperties().get(MAP_STATUS_PROPERTY);</span>
 	}
 
 	/**
@@ -300,14 +314,14 @@ public class ShakeMap extends Product {
 	 *            the event type to set
 	 */
 	public void setEventType(String eventType) {
-<span class="fc" id="L303">		getProperties().put(EVENT_TYPE_PROPERTY, eventType);</span>
-<span class="fc" id="L304">	}</span>
+<span class="fc" id="L317">		getProperties().put(EVENT_TYPE_PROPERTY, eventType);</span>
+<span class="fc" id="L318">	}</span>
 
 	/**
 	 * @return the event type of this product as defined in ShakeMap
 	 */
 	public String getEventType() {
-<span class="fc" id="L310">		return getProperties().get(EVENT_TYPE_PROPERTY);</span>
+<span class="fc" id="L324">		return getProperties().get(EVENT_TYPE_PROPERTY);</span>
 	}
 
 	/**
@@ -315,23 +329,23 @@ public class ShakeMap extends Product {
 	 *            the process timestamp to set
 	 */
 	public void setProcessTimestamp(Date processTimestamp) {
-<span class="fc" id="L318">		getProperties().put(PROCESS_TIMESTAMP_PROPERTY,</span>
-<span class="fc" id="L319">				XmlUtils.formatDate(processTimestamp));</span>
-<span class="fc" id="L320">	}</span>
+<span class="fc" id="L332">		getProperties().put(PROCESS_TIMESTAMP_PROPERTY,</span>
+<span class="fc" id="L333">				XmlUtils.formatDate(processTimestamp));</span>
+<span class="fc" id="L334">	}</span>
 
 	/**
 	 * @return the process timestamp of this ShakeMap
 	 */
 	public Date getProcessTimestamp() {
-<span class="fc" id="L326">		return XmlUtils</span>
-<span class="fc" id="L327">				.getDate(getProperties().get(PROCESS_TIMESTAMP_PROPERTY));</span>
+<span class="fc" id="L340">		return XmlUtils</span>
+<span class="fc" id="L341">				.getDate(getProperties().get(PROCESS_TIMESTAMP_PROPERTY));</span>
 	}
 
 	/**
 	 * @return the event description text for this ShakeMap
 	 */
 	public String getEventDescription() {
-<span class="fc" id="L334">		return getProperties().get(EVENT_DESCRIPTION_PROPERTY);</span>
+<span class="fc" id="L348">		return getProperties().get(EVENT_DESCRIPTION_PROPERTY);</span>
 	}
 
 	/**
@@ -339,14 +353,14 @@ public class ShakeMap extends Product {
 	 *            the event description to set
 	 */
 	public void setEventDescription(String eventDescription) {
-<span class="fc" id="L342">		getProperties().put(EVENT_DESCRIPTION_PROPERTY, eventDescription);</span>
-<span class="fc" id="L343">	}</span>
+<span class="fc" id="L356">		getProperties().put(EVENT_DESCRIPTION_PROPERTY, eventDescription);</span>
+<span class="fc" id="L357">	}</span>
 
 	/**
 	 * @return the minimum longitude boundary of this ShakeMap
 	 */
 	public BigDecimal getMinimumLongitude() {
-<span class="fc" id="L349">		return getBigDecimal(getProperties().get(MINIMUM_LONGITUDE_PROPERTY));</span>
+<span class="fc" id="L363">		return getBigDecimal(getProperties().get(MINIMUM_LONGITUDE_PROPERTY));</span>
 	}
 
 	/**
@@ -354,15 +368,15 @@ public class ShakeMap extends Product {
 	 *            the minimum longitude to set
 	 */
 	public void setMinimumLongitude(BigDecimal minimumLongitude) {
-<span class="fc" id="L357">		getProperties().put(MINIMUM_LONGITUDE_PROPERTY,</span>
-<span class="fc" id="L358">				minimumLongitude.toPlainString());</span>
-<span class="fc" id="L359">	}</span>
+<span class="fc" id="L371">		getProperties().put(MINIMUM_LONGITUDE_PROPERTY,</span>
+<span class="fc" id="L372">				minimumLongitude.toPlainString());</span>
+<span class="fc" id="L373">	}</span>
 
 	/**
 	 * @return the maximum longitude boundary of this ShakeMap
 	 */
 	public BigDecimal getMaximumLongitude() {
-<span class="fc" id="L365">		return getBigDecimal(getProperties().get(MAXIMUM_LONGITUDE_PROPERTY));</span>
+<span class="fc" id="L379">		return getBigDecimal(getProperties().get(MAXIMUM_LONGITUDE_PROPERTY));</span>
 	}
 
 	/**
@@ -370,15 +384,15 @@ public class ShakeMap extends Product {
 	 *            the maximum longitude to set
 	 */
 	public void setMaximumLongitude(BigDecimal maximumLongitude) {
-<span class="fc" id="L373">		getProperties().put(MAXIMUM_LONGITUDE_PROPERTY,</span>
-<span class="fc" id="L374">				maximumLongitude.toPlainString());</span>
-<span class="fc" id="L375">	}</span>
+<span class="fc" id="L387">		getProperties().put(MAXIMUM_LONGITUDE_PROPERTY,</span>
+<span class="fc" id="L388">				maximumLongitude.toPlainString());</span>
+<span class="fc" id="L389">	}</span>
 
 	/**
 	 * @return the minimum latitude boundary of this ShakeMap
 	 */
 	public BigDecimal getMinimumLatitude() {
-<span class="fc" id="L381">		return getBigDecimal(getProperties().get(MINIMUM_LATITUDE_PROPERTY));</span>
+<span class="fc" id="L395">		return getBigDecimal(getProperties().get(MINIMUM_LATITUDE_PROPERTY));</span>
 	}
 
 	/**
@@ -386,15 +400,15 @@ public class ShakeMap extends Product {
 	 *            the minimum latitude to set
 	 */
 	public void setMinimumLatitude(BigDecimal minimumLatitude) {
-<span class="fc" id="L389">		getProperties().put(MINIMUM_LATITUDE_PROPERTY,</span>
-<span class="fc" id="L390">				minimumLatitude.toPlainString());</span>
-<span class="fc" id="L391">	}</span>
+<span class="fc" id="L403">		getProperties().put(MINIMUM_LATITUDE_PROPERTY,</span>
+<span class="fc" id="L404">				minimumLatitude.toPlainString());</span>
+<span class="fc" id="L405">	}</span>
 
 	/**
 	 * @return the maximum latitude boundary of this ShakeMap
 	 */
 	public BigDecimal getMaximumLatitude() {
-<span class="fc" id="L397">		return getBigDecimal(getProperties().get(MAXIMUM_LATITUDE_PROPERTY));</span>
+<span class="fc" id="L411">		return getBigDecimal(getProperties().get(MAXIMUM_LATITUDE_PROPERTY));</span>
 	}
 
 	/**
@@ -402,28 +416,32 @@ public class ShakeMap extends Product {
 	 *            the maximum latitude to set
 	 */
 	public void setMaximumLatitude(BigDecimal maximumLatitude) {
-<span class="fc" id="L405">		getProperties().put(MAXIMUM_LATITUDE_PROPERTY,</span>
-<span class="fc" id="L406">				maximumLatitude.toPlainString());</span>
-<span class="fc" id="L407">	}</span>
+<span class="fc" id="L419">		getProperties().put(MAXIMUM_LATITUDE_PROPERTY,</span>
+<span class="fc" id="L420">				maximumLatitude.toPlainString());</span>
+<span class="fc" id="L421">	}</span>
 
 	/**
 	 * Returns String value as BigDecimal
+	 * @param value to return as BigDecimal
+	 * @return a BigDecimal
 	 */
 	protected BigDecimal getBigDecimal (String value) {
-<span class="fc bfc" id="L413" title="All 2 branches covered.">		if (value == null) {</span>
-<span class="fc" id="L414">			return null;</span>
+<span class="fc bfc" id="L429" title="All 2 branches covered.">		if (value == null) {</span>
+<span class="fc" id="L430">			return null;</span>
 		}
-<span class="fc" id="L416">		return new BigDecimal(value);</span>
+<span class="fc" id="L432">		return new BigDecimal(value);</span>
 	}
 
 	/**
 	 * Returns BigDecimal value as String
+	 * @param value a BigDecimal
+	 * @return a string
 	 */
 	protected String getString (BigDecimal value) {
-<span class="fc bfc" id="L423" title="All 2 branches covered.">		if (value == null) {</span>
-<span class="fc" id="L424">			return null;</span>
+<span class="fc bfc" id="L441" title="All 2 branches covered.">		if (value == null) {</span>
+<span class="fc" id="L442">			return null;</span>
 		}
-<span class="fc" id="L426">		return value.toString();</span>
+<span class="fc" id="L444">		return value.toString();</span>
 	}
 
 }

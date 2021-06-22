@@ -4,19 +4,33 @@ public class InvalidProductException extends Exception {
 
 	private static final long serialVersionUID = 0x2943A1B7;
 
+	/** Generic Invalid Product exception constructor */
 	public InvalidProductException() {
-<span class="nc" id="L8">		super();</span>
-<span class="nc" id="L9">	}</span>
-	
+<span class="nc" id="L9">		super();</span>
+<span class="nc" id="L10">	}</span>
+
+	/**
+	 * Exception taking in a message
+	 * @param message Message relating to exception
+	 */
 	public InvalidProductException(String message) {
-<span class="nc" id="L12">		super(message);</span>
-<span class="nc" id="L13">	}</span>
-	
+<span class="nc" id="L17">		super(message);</span>
+<span class="nc" id="L18">	}</span>
+
+	/**
+	 * Exception taking in a message, cause
+	 * @param message Message relating to exception
+	 * @param cause throwable relating to exception
+	 */
 	public InvalidProductException(String message, Throwable cause) {
-<span class="nc" id="L16">		super(message, cause);</span>
-<span class="nc" id="L17">	}</span>
-	
-<span class="nc" id="L19">	public InvalidProductException(Throwable cause) {</span>
-<span class="nc" id="L20">	}</span>
+<span class="nc" id="L26">		super(message, cause);</span>
+<span class="nc" id="L27">	}</span>
+
+	/**
+	 * Exception taking in a cause
+	 * @param cause throwable relating to exception
+	 */
+<span class="nc" id="L33">	public InvalidProductException(Throwable cause) {</span>
+<span class="nc" id="L34">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

@@ -31,8 +31,8 @@ import org.quakeml_1_2.EventParameters;
 	 * If a quakeml event object does not exist, check for the first internal or
 	 * scenario event.
 	 *
-	 * @param eventParameters
-	 * @return
+	 * @param eventParameters to find event from
+	 * @return first event
 	 */
 	public static Event getFirstEvent(final EventParameters eventParameters) {
 		// only process first event
@@ -61,7 +61,7 @@ import org.quakeml_1_2.EventParameters;
 	/**
 	 * Find the preferred Origin in an Event.
 	 *
-	 * @param event
+	 * @param event event
 	 * @return Origin with publicID equal to event.getPreferredOriginID(), or null
 	 *         if not found.
 	 */
@@ -147,7 +147,7 @@ import org.quakeml_1_2.EventParameters;
 	 * Flatten multiple creation info objects, but using the most specific (at end
 	 * of list) value that is not null.
 	 *
-	 * @param infos
+	 * @param infos to flatten
 	 * @return a CreationInfo object with the most specific properties (later in
 	 *         arguments list), which may be null.
 	 */
@@ -185,7 +185,7 @@ import org.quakeml_1_2.EventParameters;
 	}
 
 	/**
-	 * @param value
+	 * @param value RealQuantity
 	 * @return value.getValue(), or null if value == null.
 	 */
 	public static BigDecimal getValue(final RealQuantity value) {
@@ -197,7 +197,7 @@ import org.quakeml_1_2.EventParameters;
 	}
 
 	/**
-	 * @param value
+	 * @param value IntegerQuantity
 	 * @return value.getValue(), or null if value == null.
 	 */
 	public static BigInteger getValue(final IntegerQuantity value) {
@@ -209,7 +209,7 @@ import org.quakeml_1_2.EventParameters;
 	}
 
 	/**
-	 * @param value
+	 * @param value TimeQuantity
 	 * @return value.getValue(), or null if value == null.
 	 */
 	public static Date getValue(final TimeQuantity value) {
@@ -220,32 +220,35 @@ import org.quakeml_1_2.EventParameters;
 		}
 	}
 
+	/**
+	 * @param magnitudeType to return
+	 * @return MagntitudeType string */
 	public static String getMagnitudeType(final String magnitudeType) {
-<span class="pc bpc" id="L224" title="1 of 2 branches missed.">		if (magnitudeType == null) {</span>
-<span class="nc" id="L225">			return null;</span>
+<span class="pc bpc" id="L227" title="1 of 2 branches missed.">		if (magnitudeType == null) {</span>
+<span class="nc" id="L228">			return null;</span>
 		}
 
-<span class="fc" id="L228">		return magnitudeType.toLowerCase();</span>
+<span class="fc" id="L231">		return magnitudeType.toLowerCase();</span>
 	}
 
 	/**
 	 * @return true if list is not null and not empty.
 	 */
 	private static boolean listHasData(final List&lt;?&gt; list) {
-<span class="pc bpc" id="L235" title="1 of 4 branches missed.">		if (list != null &amp;&amp; list.size() &gt; 0) {</span>
-<span class="fc" id="L236">			return true;</span>
+<span class="pc bpc" id="L238" title="1 of 4 branches missed.">		if (list != null &amp;&amp; list.size() &gt; 0) {</span>
+<span class="fc" id="L239">			return true;</span>
 		}
-<span class="fc" id="L238">		return false;</span>
+<span class="fc" id="L241">		return false;</span>
 	}
 
 	/**
 	 * Clear a list if it is not null and not empty.
 	 */
 	private static void listRemoveData(final List&lt;?&gt; list) {
-<span class="nc bnc" id="L245" title="All 4 branches missed.">		if (list != null &amp;&amp; list.size() &gt; 0) {</span>
-<span class="nc" id="L246">			list.clear();</span>
+<span class="nc bnc" id="L248" title="All 4 branches missed.">		if (list != null &amp;&amp; list.size() &gt; 0) {</span>
+<span class="nc" id="L249">			list.clear();</span>
 		}
-<span class="nc" id="L248">	}</span>
+<span class="nc" id="L251">	}</span>
 
 	/**
 	 * Check if an event has phase data.
@@ -271,35 +274,35 @@ import org.quakeml_1_2.EventParameters;
 	 */
 	public static boolean hasPhaseData(final Event event) {
 		// event level phase data
-<span class="pc bpc" id="L274" title="1 of 4 branches missed.">		if (listHasData(event.getPicks()) || listHasData(event.getAmplitudes())</span>
-<span class="pc bpc" id="L275" title="1 of 2 branches missed.">				|| listHasData(event.getStationMagnitudes())) {</span>
-<span class="fc" id="L276">			return true;</span>
+<span class="pc bpc" id="L277" title="1 of 4 branches missed.">		if (listHasData(event.getPicks()) || listHasData(event.getAmplitudes())</span>
+<span class="pc bpc" id="L278" title="1 of 2 branches missed.">				|| listHasData(event.getStationMagnitudes())) {</span>
+<span class="fc" id="L279">			return true;</span>
 		}
 
 		// origin level phase data
-<span class="pc bpc" id="L280" title="1 of 2 branches missed.">		if (event.getOrigins() != null) {</span>
-<span class="fc" id="L281">			Iterator&lt;Origin&gt; iter = event.getOrigins().iterator();</span>
-<span class="fc bfc" id="L282" title="All 2 branches covered.">			while (iter.hasNext()) {</span>
-<span class="fc" id="L283">				Origin next = iter.next();</span>
-<span class="pc bpc" id="L284" title="1 of 2 branches missed.">				if (listHasData(next.getArrivals())) {</span>
-<span class="nc" id="L285">					return true;</span>
+<span class="pc bpc" id="L283" title="1 of 2 branches missed.">		if (event.getOrigins() != null) {</span>
+<span class="fc" id="L284">			Iterator&lt;Origin&gt; iter = event.getOrigins().iterator();</span>
+<span class="fc bfc" id="L285" title="All 2 branches covered.">			while (iter.hasNext()) {</span>
+<span class="fc" id="L286">				Origin next = iter.next();</span>
+<span class="pc bpc" id="L287" title="1 of 2 branches missed.">				if (listHasData(next.getArrivals())) {</span>
+<span class="nc" id="L288">					return true;</span>
 				}
-<span class="fc" id="L287">			}</span>
+<span class="fc" id="L290">			}</span>
 		}
 
 		// magnitude level phase data
-<span class="pc bpc" id="L291" title="1 of 2 branches missed.">		if (event.getMagnitudes() != null) {</span>
-<span class="fc" id="L292">			Iterator&lt;Magnitude&gt; iter = event.getMagnitudes().iterator();</span>
-<span class="fc bfc" id="L293" title="All 2 branches covered.">			while (iter.hasNext()) {</span>
-<span class="fc" id="L294">				Magnitude next = iter.next();</span>
-<span class="pc bpc" id="L295" title="1 of 2 branches missed.">				if (listHasData(next.getStationMagnitudeContributions())) {</span>
-<span class="nc" id="L296">					return true;</span>
+<span class="pc bpc" id="L294" title="1 of 2 branches missed.">		if (event.getMagnitudes() != null) {</span>
+<span class="fc" id="L295">			Iterator&lt;Magnitude&gt; iter = event.getMagnitudes().iterator();</span>
+<span class="fc bfc" id="L296" title="All 2 branches covered.">			while (iter.hasNext()) {</span>
+<span class="fc" id="L297">				Magnitude next = iter.next();</span>
+<span class="pc bpc" id="L298" title="1 of 2 branches missed.">				if (listHasData(next.getStationMagnitudeContributions())) {</span>
+<span class="nc" id="L299">					return true;</span>
 				}
-<span class="fc" id="L298">			}</span>
+<span class="fc" id="L301">			}</span>
 		}
 
 		// haven't found phase data
-<span class="fc" id="L302">		return false;</span>
+<span class="fc" id="L305">		return false;</span>
 	}
 
 	/**
@@ -310,37 +313,37 @@ import org.quakeml_1_2.EventParameters;
 	 */
 	public static void removePhaseData(final Event event) {
 		// event level phase data
-<span class="nc" id="L313">		listRemoveData(event.getPicks());</span>
-<span class="nc" id="L314">		listRemoveData(event.getAmplitudes());</span>
-<span class="nc" id="L315">		listRemoveData(event.getStationMagnitudes());</span>
+<span class="nc" id="L316">		listRemoveData(event.getPicks());</span>
+<span class="nc" id="L317">		listRemoveData(event.getAmplitudes());</span>
+<span class="nc" id="L318">		listRemoveData(event.getStationMagnitudes());</span>
 
 		// origin level phase data
-<span class="nc bnc" id="L318" title="All 2 branches missed.">		if (event.getOrigins() != null) {</span>
-<span class="nc" id="L319">			Iterator&lt;Origin&gt; iter = event.getOrigins().iterator();</span>
-<span class="nc bnc" id="L320" title="All 2 branches missed.">			while (iter.hasNext()) {</span>
-<span class="nc" id="L321">				Origin next = iter.next();</span>
-<span class="nc" id="L322">				listRemoveData(next.getArrivals());</span>
-<span class="nc" id="L323">			}</span>
+<span class="nc bnc" id="L321" title="All 2 branches missed.">		if (event.getOrigins() != null) {</span>
+<span class="nc" id="L322">			Iterator&lt;Origin&gt; iter = event.getOrigins().iterator();</span>
+<span class="nc bnc" id="L323" title="All 2 branches missed.">			while (iter.hasNext()) {</span>
+<span class="nc" id="L324">				Origin next = iter.next();</span>
+<span class="nc" id="L325">				listRemoveData(next.getArrivals());</span>
+<span class="nc" id="L326">			}</span>
 		}
 
 		// magnitude level phase data
-<span class="nc bnc" id="L327" title="All 2 branches missed.">		if (event.getMagnitudes() != null) {</span>
-<span class="nc" id="L328">			Iterator&lt;Magnitude&gt; iter = event.getMagnitudes().iterator();</span>
-<span class="nc bnc" id="L329" title="All 2 branches missed.">			while (iter.hasNext()) {</span>
-<span class="nc" id="L330">				Magnitude next = iter.next();</span>
-<span class="nc" id="L331">				listRemoveData(next.getStationMagnitudeContributions());</span>
-<span class="nc" id="L332">			}</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">		if (event.getMagnitudes() != null) {</span>
+<span class="nc" id="L331">			Iterator&lt;Magnitude&gt; iter = event.getMagnitudes().iterator();</span>
+<span class="nc bnc" id="L332" title="All 2 branches missed.">			while (iter.hasNext()) {</span>
+<span class="nc" id="L333">				Magnitude next = iter.next();</span>
+<span class="nc" id="L334">				listRemoveData(next.getStationMagnitudeContributions());</span>
+<span class="nc" id="L335">			}</span>
 		}
 
 		// additionally, remove waveformIDs from focal mechanisms
-<span class="nc bnc" id="L336" title="All 2 branches missed.">		if (event.getFocalMechanisms() != null) {</span>
-<span class="nc" id="L337">			Iterator&lt;FocalMechanism&gt; iter = event.getFocalMechanisms().iterator();</span>
-<span class="nc bnc" id="L338" title="All 2 branches missed.">			while (iter.hasNext()) {</span>
-<span class="nc" id="L339">				FocalMechanism next = iter.next();</span>
-<span class="nc" id="L340">				listRemoveData(next.getWaveformIDs());</span>
-<span class="nc" id="L341">			}</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">		if (event.getFocalMechanisms() != null) {</span>
+<span class="nc" id="L340">			Iterator&lt;FocalMechanism&gt; iter = event.getFocalMechanisms().iterator();</span>
+<span class="nc bnc" id="L341" title="All 2 branches missed.">			while (iter.hasNext()) {</span>
+<span class="nc" id="L342">				FocalMechanism next = iter.next();</span>
+<span class="nc" id="L343">				listRemoveData(next.getWaveformIDs());</span>
+<span class="nc" id="L344">			}</span>
 		}
-<span class="nc" id="L343">	}</span>
+<span class="nc" id="L346">	}</span>
 
 	/**
 	 * Extract the preferred origin and magnitude from the first event in a quakeml
@@ -350,33 +353,33 @@ import org.quakeml_1_2.EventParameters;
 	 * @return a new Quakeml object.
 	 */
 	public static Quakeml getLightweightOrigin(final Quakeml q) {
-<span class="fc" id="L353">		Quakeml quakeml = new Quakeml();</span>
+<span class="fc" id="L356">		Quakeml quakeml = new Quakeml();</span>
 
-<span class="fc" id="L355">		EventParameters oldEventParameters = q.getEventParameters();</span>
-<span class="fc" id="L356">		EventParameters eventParameters = shallowClone(oldEventParameters);</span>
-<span class="fc" id="L357">		quakeml.setEventParameters(eventParameters);</span>
+<span class="fc" id="L358">		EventParameters oldEventParameters = q.getEventParameters();</span>
+<span class="fc" id="L359">		EventParameters eventParameters = shallowClone(oldEventParameters);</span>
+<span class="fc" id="L360">		quakeml.setEventParameters(eventParameters);</span>
 
-<span class="fc" id="L359">		Event oldEvent = getFirstEvent(q.getEventParameters());</span>
-<span class="fc" id="L360">		Event event = shallowClone(oldEvent);</span>
-<span class="fc" id="L361">		eventParameters.getEvents().add(event);</span>
+<span class="fc" id="L362">		Event oldEvent = getFirstEvent(q.getEventParameters());</span>
+<span class="fc" id="L363">		Event event = shallowClone(oldEvent);</span>
+<span class="fc" id="L364">		eventParameters.getEvents().add(event);</span>
 
-<span class="fc" id="L363">		Origin oldOrigin = getPreferredOrigin(oldEvent);</span>
-<span class="pc bpc" id="L364" title="1 of 2 branches missed.">		if (oldOrigin == null) {</span>
-<span class="nc" id="L365">			return null;</span>
+<span class="fc" id="L366">		Origin oldOrigin = getPreferredOrigin(oldEvent);</span>
+<span class="pc bpc" id="L367" title="1 of 2 branches missed.">		if (oldOrigin == null) {</span>
+<span class="nc" id="L368">			return null;</span>
 		}
-<span class="fc" id="L367">		Origin origin = shallowClone(oldOrigin);</span>
-<span class="fc" id="L368">		event.getOrigins().add(origin);</span>
-<span class="fc" id="L369">		event.setPreferredOriginID(origin.getPublicID());</span>
+<span class="fc" id="L370">		Origin origin = shallowClone(oldOrigin);</span>
+<span class="fc" id="L371">		event.getOrigins().add(origin);</span>
+<span class="fc" id="L372">		event.setPreferredOriginID(origin.getPublicID());</span>
 
-<span class="fc" id="L371">		Magnitude oldMagnitude = getPreferredMagnitude(oldEvent);</span>
-<span class="pc bpc" id="L372" title="1 of 2 branches missed.">		if (oldMagnitude != null) {</span>
+<span class="fc" id="L374">		Magnitude oldMagnitude = getPreferredMagnitude(oldEvent);</span>
+<span class="pc bpc" id="L375" title="1 of 2 branches missed.">		if (oldMagnitude != null) {</span>
 			// magnitude is not required for origin
-<span class="nc" id="L374">			Magnitude magnitude = shallowClone(oldMagnitude);</span>
-<span class="nc" id="L375">			event.getMagnitudes().add(magnitude);</span>
-<span class="nc" id="L376">			event.setPreferredMagnitudeID(magnitude.getPublicID());</span>
+<span class="nc" id="L377">			Magnitude magnitude = shallowClone(oldMagnitude);</span>
+<span class="nc" id="L378">			event.getMagnitudes().add(magnitude);</span>
+<span class="nc" id="L379">			event.setPreferredMagnitudeID(magnitude.getPublicID());</span>
 		}
 
-<span class="fc" id="L379">		return quakeml;</span>
+<span class="fc" id="L382">		return quakeml;</span>
 	}
 
 	/**
@@ -388,39 +391,39 @@ import org.quakeml_1_2.EventParameters;
 	 * @return a new Quakeml object.
 	 */
 	public static Quakeml getLightweightFocalMechanism(final Quakeml q, final String focalMechanismId) {
-<span class="nc" id="L391">		Quakeml quakeml = new Quakeml();</span>
+<span class="nc" id="L394">		Quakeml quakeml = new Quakeml();</span>
 
-<span class="nc" id="L393">		EventParameters oldEventParameters = q.getEventParameters();</span>
-<span class="nc" id="L394">		EventParameters eventParameters = shallowClone(oldEventParameters);</span>
-<span class="nc" id="L395">		quakeml.setEventParameters(eventParameters);</span>
+<span class="nc" id="L396">		EventParameters oldEventParameters = q.getEventParameters();</span>
+<span class="nc" id="L397">		EventParameters eventParameters = shallowClone(oldEventParameters);</span>
+<span class="nc" id="L398">		quakeml.setEventParameters(eventParameters);</span>
 
-<span class="nc" id="L397">		Event oldEvent = getFirstEvent(q.getEventParameters());</span>
-<span class="nc" id="L398">		Event event = shallowClone(oldEvent);</span>
-<span class="nc" id="L399">		eventParameters.getEvents().add(event);</span>
+<span class="nc" id="L400">		Event oldEvent = getFirstEvent(q.getEventParameters());</span>
+<span class="nc" id="L401">		Event event = shallowClone(oldEvent);</span>
+<span class="nc" id="L402">		eventParameters.getEvents().add(event);</span>
 
-<span class="nc" id="L401">		FocalMechanism oldMech = getFocalMechanism(oldEvent, focalMechanismId);</span>
-<span class="nc" id="L402">		event.getFocalMechanisms().add(shallowClone(oldMech));</span>
+<span class="nc" id="L404">		FocalMechanism oldMech = getFocalMechanism(oldEvent, focalMechanismId);</span>
+<span class="nc" id="L405">		event.getFocalMechanisms().add(shallowClone(oldMech));</span>
 
 		// add triggering origin
-<span class="nc" id="L405">		Origin triggeringOrigin = getOrigin(oldEvent, oldMech.getTriggeringOriginID());</span>
-<span class="nc bnc" id="L406" title="All 2 branches missed.">		if (triggeringOrigin != null) {</span>
-<span class="nc" id="L407">			event.getOrigins().add(shallowClone(triggeringOrigin));</span>
+<span class="nc" id="L408">		Origin triggeringOrigin = getOrigin(oldEvent, oldMech.getTriggeringOriginID());</span>
+<span class="nc bnc" id="L409" title="All 2 branches missed.">		if (triggeringOrigin != null) {</span>
+<span class="nc" id="L410">			event.getOrigins().add(shallowClone(triggeringOrigin));</span>
 		}
 
 		// pull in derived origin and magnitude if present
-<span class="nc" id="L411">		MomentTensor tensor = oldMech.getMomentTensor();</span>
-<span class="nc bnc" id="L412" title="All 2 branches missed.">		if (tensor != null) {</span>
-<span class="nc" id="L413">			Origin derivedOrigin = getOrigin(oldEvent, tensor.getDerivedOriginID());</span>
-<span class="nc bnc" id="L414" title="All 2 branches missed.">			if (derivedOrigin != null) {</span>
-<span class="nc" id="L415">				event.getOrigins().add(shallowClone(derivedOrigin));</span>
+<span class="nc" id="L414">		MomentTensor tensor = oldMech.getMomentTensor();</span>
+<span class="nc bnc" id="L415" title="All 2 branches missed.">		if (tensor != null) {</span>
+<span class="nc" id="L416">			Origin derivedOrigin = getOrigin(oldEvent, tensor.getDerivedOriginID());</span>
+<span class="nc bnc" id="L417" title="All 2 branches missed.">			if (derivedOrigin != null) {</span>
+<span class="nc" id="L418">				event.getOrigins().add(shallowClone(derivedOrigin));</span>
 			}
-<span class="nc" id="L417">			Magnitude momentMagnitude = getMagnitude(oldEvent, tensor.getMomentMagnitudeID());</span>
-<span class="nc bnc" id="L418" title="All 2 branches missed.">			if (momentMagnitude != null) {</span>
-<span class="nc" id="L419">				event.getMagnitudes().add(shallowClone(momentMagnitude));</span>
+<span class="nc" id="L420">			Magnitude momentMagnitude = getMagnitude(oldEvent, tensor.getMomentMagnitudeID());</span>
+<span class="nc bnc" id="L421" title="All 2 branches missed.">			if (momentMagnitude != null) {</span>
+<span class="nc" id="L422">				event.getMagnitudes().add(shallowClone(momentMagnitude));</span>
 			}
 		}
 
-<span class="nc" id="L423">		return quakeml;</span>
+<span class="nc" id="L426">		return quakeml;</span>
 	}
 
 	/**
@@ -428,16 +431,16 @@ import org.quakeml_1_2.EventParameters;
 	 *
 	 * omits anies, events, and other attributes.
 	 *
-	 * @param oldEventParameters
+	 * @param oldEventParameters to copy
 	 * @return a new EventParameters object.
 	 */
 	public static EventParameters shallowClone(final EventParameters oldEventParameters) {
-<span class="fc" id="L435">		EventParameters eventParameters = new EventParameters();</span>
-<span class="fc" id="L436">		eventParameters.getComments().addAll(oldEventParameters.getComments());</span>
-<span class="fc" id="L437">		eventParameters.setCreationInfo(oldEventParameters.getCreationInfo());</span>
-<span class="fc" id="L438">		eventParameters.setDescription(oldEventParameters.getDescription());</span>
-<span class="fc" id="L439">		eventParameters.setPublicID(oldEventParameters.getPublicID());</span>
-<span class="fc" id="L440">		return eventParameters;</span>
+<span class="fc" id="L438">		EventParameters eventParameters = new EventParameters();</span>
+<span class="fc" id="L439">		eventParameters.getComments().addAll(oldEventParameters.getComments());</span>
+<span class="fc" id="L440">		eventParameters.setCreationInfo(oldEventParameters.getCreationInfo());</span>
+<span class="fc" id="L441">		eventParameters.setDescription(oldEventParameters.getDescription());</span>
+<span class="fc" id="L442">		eventParameters.setPublicID(oldEventParameters.getPublicID());</span>
+<span class="fc" id="L443">		return eventParameters;</span>
 	}
 
 	/**
@@ -446,21 +449,21 @@ import org.quakeml_1_2.EventParameters;
 	 * omits amplitudes, anies, event descriptions, mechanisms, magnitudes, origins,
 	 * other attributes, picks, preferred*ID, and station magnitudes.
 	 *
-	 * @param oldEvent
+	 * @param oldEvent to copy
 	 * @return a new Event object.
 	 */
 	public static Event shallowClone(final Event oldEvent) {
-<span class="fc" id="L453">		Event event = new Event();</span>
-<span class="fc" id="L454">		event.getComments().addAll(oldEvent.getComments());</span>
-<span class="fc" id="L455">		event.setCreationInfo(oldEvent.getCreationInfo());</span>
-<span class="fc" id="L456">		event.setDataid(oldEvent.getDataid());</span>
-<span class="fc" id="L457">		event.setDatasource(oldEvent.getDatasource());</span>
-<span class="fc" id="L458">		event.setEventid(oldEvent.getEventid());</span>
-<span class="fc" id="L459">		event.setEventsource(oldEvent.getEventsource());</span>
-<span class="fc" id="L460">		event.setPublicID(oldEvent.getPublicID());</span>
-<span class="fc" id="L461">		event.setType(oldEvent.getType());</span>
-<span class="fc" id="L462">		event.setTypeCertainty(oldEvent.getTypeCertainty());</span>
-<span class="fc" id="L463">		return event;</span>
+<span class="fc" id="L456">		Event event = new Event();</span>
+<span class="fc" id="L457">		event.getComments().addAll(oldEvent.getComments());</span>
+<span class="fc" id="L458">		event.setCreationInfo(oldEvent.getCreationInfo());</span>
+<span class="fc" id="L459">		event.setDataid(oldEvent.getDataid());</span>
+<span class="fc" id="L460">		event.setDatasource(oldEvent.getDatasource());</span>
+<span class="fc" id="L461">		event.setEventid(oldEvent.getEventid());</span>
+<span class="fc" id="L462">		event.setEventsource(oldEvent.getEventsource());</span>
+<span class="fc" id="L463">		event.setPublicID(oldEvent.getPublicID());</span>
+<span class="fc" id="L464">		event.setType(oldEvent.getType());</span>
+<span class="fc" id="L465">		event.setTypeCertainty(oldEvent.getTypeCertainty());</span>
+<span class="fc" id="L466">		return event;</span>
 	}
 
 	/**
@@ -468,36 +471,36 @@ import org.quakeml_1_2.EventParameters;
 	 *
 	 * omits anies, arrivals, and other attributes.
 	 *
-	 * @param oldOrigin
+	 * @param oldOrigin to copy
 	 * @return a new Origin object.
 	 */
 	public static Origin shallowClone(final Origin oldOrigin) {
-<span class="fc" id="L475">		Origin origin = new Origin();</span>
-<span class="fc" id="L476">		origin.getComments().addAll(oldOrigin.getComments());</span>
-<span class="fc" id="L477">		origin.getCompositeTimes().addAll(oldOrigin.getCompositeTimes());</span>
-<span class="fc" id="L478">		origin.setCreationInfo(oldOrigin.getCreationInfo());</span>
-<span class="fc" id="L479">		origin.setDataid(oldOrigin.getDataid());</span>
-<span class="fc" id="L480">		origin.setDatasource(oldOrigin.getDatasource());</span>
-<span class="fc" id="L481">		origin.setDepth(oldOrigin.getDepth());</span>
-<span class="fc" id="L482">		origin.setDepthType(oldOrigin.getDepthType());</span>
-<span class="fc" id="L483">		origin.setEarthModelID(oldOrigin.getEarthModelID());</span>
-<span class="fc" id="L484">		origin.setEpicenterFixed(oldOrigin.getEpicenterFixed());</span>
-<span class="fc" id="L485">		origin.setEvaluationMode(oldOrigin.getEvaluationMode());</span>
-<span class="fc" id="L486">		origin.setEvaluationStatus(oldOrigin.getEvaluationStatus());</span>
-<span class="fc" id="L487">		origin.setEventid(oldOrigin.getEventid());</span>
-<span class="fc" id="L488">		origin.setEventsource(oldOrigin.getEventsource());</span>
-<span class="fc" id="L489">		origin.setLatitude(oldOrigin.getLatitude());</span>
-<span class="fc" id="L490">		origin.setLongitude(oldOrigin.getLongitude());</span>
-<span class="fc" id="L491">		origin.setMethodID(oldOrigin.getMethodID());</span>
-<span class="fc" id="L492">		origin.setOriginUncertainty(oldOrigin.getOriginUncertainty());</span>
-<span class="fc" id="L493">		origin.setPublicID(oldOrigin.getPublicID());</span>
-<span class="fc" id="L494">		origin.setQuality(oldOrigin.getQuality());</span>
-<span class="fc" id="L495">		origin.setReferenceSystemID(oldOrigin.getReferenceSystemID());</span>
-<span class="fc" id="L496">		origin.setRegion(oldOrigin.getRegion());</span>
-<span class="fc" id="L497">		origin.setTime(oldOrigin.getTime());</span>
-<span class="fc" id="L498">		origin.setTimeFixed(oldOrigin.getTimeFixed());</span>
-<span class="fc" id="L499">		origin.setType(oldOrigin.getType());</span>
-<span class="fc" id="L500">		return origin;</span>
+<span class="fc" id="L478">		Origin origin = new Origin();</span>
+<span class="fc" id="L479">		origin.getComments().addAll(oldOrigin.getComments());</span>
+<span class="fc" id="L480">		origin.getCompositeTimes().addAll(oldOrigin.getCompositeTimes());</span>
+<span class="fc" id="L481">		origin.setCreationInfo(oldOrigin.getCreationInfo());</span>
+<span class="fc" id="L482">		origin.setDataid(oldOrigin.getDataid());</span>
+<span class="fc" id="L483">		origin.setDatasource(oldOrigin.getDatasource());</span>
+<span class="fc" id="L484">		origin.setDepth(oldOrigin.getDepth());</span>
+<span class="fc" id="L485">		origin.setDepthType(oldOrigin.getDepthType());</span>
+<span class="fc" id="L486">		origin.setEarthModelID(oldOrigin.getEarthModelID());</span>
+<span class="fc" id="L487">		origin.setEpicenterFixed(oldOrigin.getEpicenterFixed());</span>
+<span class="fc" id="L488">		origin.setEvaluationMode(oldOrigin.getEvaluationMode());</span>
+<span class="fc" id="L489">		origin.setEvaluationStatus(oldOrigin.getEvaluationStatus());</span>
+<span class="fc" id="L490">		origin.setEventid(oldOrigin.getEventid());</span>
+<span class="fc" id="L491">		origin.setEventsource(oldOrigin.getEventsource());</span>
+<span class="fc" id="L492">		origin.setLatitude(oldOrigin.getLatitude());</span>
+<span class="fc" id="L493">		origin.setLongitude(oldOrigin.getLongitude());</span>
+<span class="fc" id="L494">		origin.setMethodID(oldOrigin.getMethodID());</span>
+<span class="fc" id="L495">		origin.setOriginUncertainty(oldOrigin.getOriginUncertainty());</span>
+<span class="fc" id="L496">		origin.setPublicID(oldOrigin.getPublicID());</span>
+<span class="fc" id="L497">		origin.setQuality(oldOrigin.getQuality());</span>
+<span class="fc" id="L498">		origin.setReferenceSystemID(oldOrigin.getReferenceSystemID());</span>
+<span class="fc" id="L499">		origin.setRegion(oldOrigin.getRegion());</span>
+<span class="fc" id="L500">		origin.setTime(oldOrigin.getTime());</span>
+<span class="fc" id="L501">		origin.setTimeFixed(oldOrigin.getTimeFixed());</span>
+<span class="fc" id="L502">		origin.setType(oldOrigin.getType());</span>
+<span class="fc" id="L503">		return origin;</span>
 	}
 
 	/**
@@ -505,27 +508,27 @@ import org.quakeml_1_2.EventParameters;
 	 *
 	 * omits anies, other attributes, and station magnitude contributions.
 	 *
-	 * @param oldMagnitude
+	 * @param oldMagnitude to copy
 	 * @return a new Magnitude object.
 	 */
 	public static Magnitude shallowClone(final Magnitude oldMagnitude) {
-<span class="nc" id="L512">		Magnitude magnitude = new Magnitude();</span>
-<span class="nc" id="L513">		magnitude.setAzimuthalGap(oldMagnitude.getAzimuthalGap());</span>
-<span class="nc" id="L514">		magnitude.getComments().addAll(oldMagnitude.getComments());</span>
-<span class="nc" id="L515">		magnitude.setCreationInfo(getCreationInfo(oldMagnitude.getCreationInfo()));</span>
-<span class="nc" id="L516">		magnitude.setDataid(oldMagnitude.getDataid());</span>
-<span class="nc" id="L517">		magnitude.setDatasource(oldMagnitude.getDatasource());</span>
-<span class="nc" id="L518">		magnitude.setEvaluationMode(oldMagnitude.getEvaluationMode());</span>
-<span class="nc" id="L519">		magnitude.setEvaluationStatus(oldMagnitude.getEvaluationStatus());</span>
-<span class="nc" id="L520">		magnitude.setEventid(oldMagnitude.getEventid());</span>
-<span class="nc" id="L521">		magnitude.setEventsource(oldMagnitude.getEventsource());</span>
-<span class="nc" id="L522">		magnitude.setMag(oldMagnitude.getMag());</span>
-<span class="nc" id="L523">		magnitude.setMethodID(oldMagnitude.getMethodID());</span>
-<span class="nc" id="L524">		magnitude.setOriginID(oldMagnitude.getOriginID());</span>
-<span class="nc" id="L525">		magnitude.setPublicID(oldMagnitude.getPublicID());</span>
-<span class="nc" id="L526">		magnitude.setStationCount(oldMagnitude.getStationCount());</span>
-<span class="nc" id="L527">		magnitude.setType(oldMagnitude.getType());</span>
-<span class="nc" id="L528">		return magnitude;</span>
+<span class="nc" id="L515">		Magnitude magnitude = new Magnitude();</span>
+<span class="nc" id="L516">		magnitude.setAzimuthalGap(oldMagnitude.getAzimuthalGap());</span>
+<span class="nc" id="L517">		magnitude.getComments().addAll(oldMagnitude.getComments());</span>
+<span class="nc" id="L518">		magnitude.setCreationInfo(getCreationInfo(oldMagnitude.getCreationInfo()));</span>
+<span class="nc" id="L519">		magnitude.setDataid(oldMagnitude.getDataid());</span>
+<span class="nc" id="L520">		magnitude.setDatasource(oldMagnitude.getDatasource());</span>
+<span class="nc" id="L521">		magnitude.setEvaluationMode(oldMagnitude.getEvaluationMode());</span>
+<span class="nc" id="L522">		magnitude.setEvaluationStatus(oldMagnitude.getEvaluationStatus());</span>
+<span class="nc" id="L523">		magnitude.setEventid(oldMagnitude.getEventid());</span>
+<span class="nc" id="L524">		magnitude.setEventsource(oldMagnitude.getEventsource());</span>
+<span class="nc" id="L525">		magnitude.setMag(oldMagnitude.getMag());</span>
+<span class="nc" id="L526">		magnitude.setMethodID(oldMagnitude.getMethodID());</span>
+<span class="nc" id="L527">		magnitude.setOriginID(oldMagnitude.getOriginID());</span>
+<span class="nc" id="L528">		magnitude.setPublicID(oldMagnitude.getPublicID());</span>
+<span class="nc" id="L529">		magnitude.setStationCount(oldMagnitude.getStationCount());</span>
+<span class="nc" id="L530">		magnitude.setType(oldMagnitude.getType());</span>
+<span class="nc" id="L531">		return magnitude;</span>
 	}
 
 	/**
@@ -533,31 +536,31 @@ import org.quakeml_1_2.EventParameters;
 	 *
 	 * omits anies, other attributes.
 	 *
-	 * @param oldMech
+	 * @param oldMech to copy
 	 * @return a new FocalMechanism object.
 	 */
 	public static FocalMechanism shallowClone(final FocalMechanism oldMech) {
-<span class="nc" id="L540">		FocalMechanism mech = new FocalMechanism();</span>
-<span class="nc" id="L541">		mech.setAzimuthalGap(oldMech.getAzimuthalGap());</span>
-<span class="nc" id="L542">		mech.getComments().addAll(oldMech.getComments());</span>
-<span class="nc" id="L543">		mech.setCreationInfo(oldMech.getCreationInfo());</span>
-<span class="nc" id="L544">		mech.setDataid(oldMech.getDataid());</span>
-<span class="nc" id="L545">		mech.setDatasource(oldMech.getDatasource());</span>
-<span class="nc" id="L546">		mech.setEvaluationMode(oldMech.getEvaluationMode());</span>
-<span class="nc" id="L547">		mech.setEvaluationStatus(oldMech.getEvaluationStatus());</span>
-<span class="nc" id="L548">		mech.setEventid(oldMech.getEventid());</span>
-<span class="nc" id="L549">		mech.setEventsource(oldMech.getEventsource());</span>
-<span class="nc" id="L550">		mech.setMethodID(oldMech.getMethodID());</span>
-<span class="nc" id="L551">		mech.setMisfit(oldMech.getMisfit());</span>
-<span class="nc" id="L552">		mech.setMomentTensor(oldMech.getMomentTensor());</span>
-<span class="nc" id="L553">		mech.setNodalPlanes(oldMech.getNodalPlanes());</span>
-<span class="nc" id="L554">		mech.setPrincipalAxes(oldMech.getPrincipalAxes());</span>
-<span class="nc" id="L555">		mech.setPublicID(oldMech.getPublicID());</span>
-<span class="nc" id="L556">		mech.setStationDistributionRatio(oldMech.getStationDistributionRatio());</span>
-<span class="nc" id="L557">		mech.setStationPolarityCount(oldMech.getStationPolarityCount());</span>
-<span class="nc" id="L558">		mech.setTriggeringOriginID(oldMech.getTriggeringOriginID());</span>
-<span class="nc" id="L559">		mech.getWaveformIDs().addAll(oldMech.getWaveformIDs());</span>
-<span class="nc" id="L560">		return mech;</span>
+<span class="nc" id="L543">		FocalMechanism mech = new FocalMechanism();</span>
+<span class="nc" id="L544">		mech.setAzimuthalGap(oldMech.getAzimuthalGap());</span>
+<span class="nc" id="L545">		mech.getComments().addAll(oldMech.getComments());</span>
+<span class="nc" id="L546">		mech.setCreationInfo(oldMech.getCreationInfo());</span>
+<span class="nc" id="L547">		mech.setDataid(oldMech.getDataid());</span>
+<span class="nc" id="L548">		mech.setDatasource(oldMech.getDatasource());</span>
+<span class="nc" id="L549">		mech.setEvaluationMode(oldMech.getEvaluationMode());</span>
+<span class="nc" id="L550">		mech.setEvaluationStatus(oldMech.getEvaluationStatus());</span>
+<span class="nc" id="L551">		mech.setEventid(oldMech.getEventid());</span>
+<span class="nc" id="L552">		mech.setEventsource(oldMech.getEventsource());</span>
+<span class="nc" id="L553">		mech.setMethodID(oldMech.getMethodID());</span>
+<span class="nc" id="L554">		mech.setMisfit(oldMech.getMisfit());</span>
+<span class="nc" id="L555">		mech.setMomentTensor(oldMech.getMomentTensor());</span>
+<span class="nc" id="L556">		mech.setNodalPlanes(oldMech.getNodalPlanes());</span>
+<span class="nc" id="L557">		mech.setPrincipalAxes(oldMech.getPrincipalAxes());</span>
+<span class="nc" id="L558">		mech.setPublicID(oldMech.getPublicID());</span>
+<span class="nc" id="L559">		mech.setStationDistributionRatio(oldMech.getStationDistributionRatio());</span>
+<span class="nc" id="L560">		mech.setStationPolarityCount(oldMech.getStationPolarityCount());</span>
+<span class="nc" id="L561">		mech.setTriggeringOriginID(oldMech.getTriggeringOriginID());</span>
+<span class="nc" id="L562">		mech.getWaveformIDs().addAll(oldMech.getWaveformIDs());</span>
+<span class="nc" id="L563">		return mech;</span>
 	}
 
 }

@@ -262,8 +262,8 @@ extends java.lang.Object</pre>
 <div class="block">Add or update a Heartbeat's key/value pair</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>key</code> - </dd>
-<dd><code>value</code> - </dd>
+<dd><code>key</code> - String key</dd>
+<dd><code>value</code> - String value of heartbeat info</dd>
 </dl>
 </li>
 </ul>
@@ -274,6 +274,10 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getStatuses</h4>
 <pre class="methodSignature">public&nbsp;java.util.Map&lt;java.lang.String,&#8203;<a href="HeartbeatInfo.html" title="class in gov.usgs.earthquake.distribution">HeartbeatInfo</a>&gt;&nbsp;getStatuses()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>statuses - map of string, heartbeatInfo</dd>
+</dl>
 </li>
 </ul>
 <a id="isEmpty()">
@@ -283,6 +287,10 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>isEmpty</h4>
 <pre class="methodSignature">public&nbsp;boolean&nbsp;isEmpty()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>boolean - checking statuses</dd>
+</dl>
 </li>
 </ul>
 <a id="clearDataOlderThanDate(java.util.Date)">
@@ -295,7 +303,7 @@ extends java.lang.Object</pre>
 <div class="block">Purge all heartbeatStatus data for this component older than given date</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>purgeDate</code> - </dd>
+<dd><code>purgeDate</code> - purge data until this date</dd>
 </dl>
 </li>
 </ul>

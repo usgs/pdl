@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 
 <span class="fc" id="L31">	private static final Logger LOGGER = Logger.getLogger(DefaultIndexerModule.class.getName());</span>
 
+	/** Property for ignoreRegions */
 	public static final String IGNORE_REGIONS_PROPERTY = &quot;ignoreRegions&quot;;
 
 	/** Initial preferred weight. */
@@ -51,18 +52,18 @@ import java.util.logging.Logger;
 	public static final long NEIC_CONTRIBUTOR_WEIGHT = 2;
 
 	/** Signature verifier, configured by indexer. */
-<span class="fc" id="L54">	private SignatureVerifier signatureVerifier = new SignatureVerifier();</span>
+<span class="fc" id="L55">	private SignatureVerifier signatureVerifier = new SignatureVerifier();</span>
 
-<span class="fc" id="L56">	private List&lt;String&gt; ignoreRegions = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L57">	private List&lt;String&gt; ignoreRegions = new ArrayList&lt;String&gt;();</span>
 
 	@Override
 	public void configure(final Config config) throws Exception {
-<span class="nc" id="L60">		final String ignore = config.getProperty(IGNORE_REGIONS_PROPERTY);</span>
-<span class="nc bnc" id="L61" title="All 2 branches missed.">		if (ignore != null) {</span>
-<span class="nc" id="L62">			ignoreRegions.addAll(StringUtils.split(ignore, &quot;,&quot;));</span>
-<span class="nc" id="L63">			LOGGER.config(&quot;[&quot; + getName() + &quot;] ignore regions = &quot; + ignore);</span>
+<span class="nc" id="L61">		final String ignore = config.getProperty(IGNORE_REGIONS_PROPERTY);</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">		if (ignore != null) {</span>
+<span class="nc" id="L63">			ignoreRegions.addAll(StringUtils.split(ignore, &quot;,&quot;));</span>
+<span class="nc" id="L64">			LOGGER.config(&quot;[&quot; + getName() + &quot;] ignore regions = &quot; + ignore);</span>
 		}
-<span class="nc" id="L65">	}</span>
+<span class="nc" id="L66">	}</span>
 
 	/**
 	 * Create a ProductSummary from a Product.
@@ -75,17 +76,17 @@ import java.util.logging.Logger;
 	 * @return ProductSummary for Product object.
 	 */
 	public ProductSummary getProductSummary(final Product product) throws Exception {
-<span class="fc" id="L78">		ProductSummary summary = new ProductSummary(product);</span>
+<span class="fc" id="L79">		ProductSummary summary = new ProductSummary(product);</span>
 
 		// allow sender to assign preferredWeight if we add them to the keychain
-<span class="fc" id="L81">		String preferredWeight = product.getProperties().get(&quot;preferredWeight&quot;);</span>
-<span class="pc bpc" id="L82" title="3 of 4 branches missed.">		if (preferredWeight != null &amp;&amp; signatureVerifier.verifySignature(product)) {</span>
-<span class="nc" id="L83">			LOGGER.fine(&quot;Signature verified, using sender assigned preferredWeight &quot; + preferredWeight);</span>
-<span class="nc" id="L84">			summary.setPreferredWeight(Long.valueOf(preferredWeight));</span>
+<span class="fc" id="L82">		String preferredWeight = product.getProperties().get(&quot;preferredWeight&quot;);</span>
+<span class="pc bpc" id="L83" title="3 of 4 branches missed.">		if (preferredWeight != null &amp;&amp; signatureVerifier.verifySignature(product)) {</span>
+<span class="nc" id="L84">			LOGGER.fine(&quot;Signature verified, using sender assigned preferredWeight &quot; + preferredWeight);</span>
+<span class="nc" id="L85">			summary.setPreferredWeight(Long.valueOf(preferredWeight));</span>
 		} else {
-<span class="fc" id="L86">			summary.setPreferredWeight(getPreferredWeight(summary));</span>
+<span class="fc" id="L87">			summary.setPreferredWeight(getPreferredWeight(summary));</span>
 		}
-<span class="fc" id="L88">		return summary;</span>
+<span class="fc" id="L89">		return summary;</span>
 	}
 
 	/**
@@ -100,59 +101,60 @@ import java.util.logging.Logger;
 	 *
 	 * @param summary the summary to calculate a preferred weight.
 	 * @return the absolute preferred weight.
+	 * @throws Exception if error occurs
 	 */
 	protected long getPreferredWeight(final ProductSummary summary) throws Exception {
-<span class="fc" id="L105">		long preferredWeight = DEFAULT_PREFERRED_WEIGHT;</span>
+<span class="fc" id="L107">		long preferredWeight = DEFAULT_PREFERRED_WEIGHT;</span>
 
-<span class="fc" id="L107">		final String source = summary.getId().getSource();</span>
-<span class="fc" id="L108">		final String eventSource = summary.getEventSource();</span>
+<span class="fc" id="L109">		final String source = summary.getId().getSource();</span>
+<span class="fc" id="L110">		final String eventSource = summary.getEventSource();</span>
 
 		// check ignore regions here for subclasses that use this method.
-<span class="fc bfc" id="L111" title="All 2 branches covered.">		if (ignoreRegions.contains(source)) {</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">		if (ignoreRegions.contains(source)) {</span>
 			// source gets no region boost
-<span class="fc" id="L113">			return preferredWeight;</span>
+<span class="fc" id="L115">			return preferredWeight;</span>
 		}
 
-<span class="fc" id="L116">		final Regions regions = ANSSRegionsFactory.getFactory().getRegions();</span>
-<span class="pc bpc" id="L117" title="1 of 2 branches missed.">		if (regions == null) {</span>
-<span class="nc" id="L118">			throw new ContinuableListenerException(&quot;Unable to load ANSS Authoritative Regions&quot;);</span>
+<span class="fc" id="L118">		final Regions regions = ANSSRegionsFactory.getFactory().getRegions();</span>
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">		if (regions == null) {</span>
+<span class="nc" id="L120">			throw new ContinuableListenerException(&quot;Unable to load ANSS Authoritative Regions&quot;);</span>
 		}
 
-<span class="fc" id="L121">		final BigDecimal latitude = summary.getEventLatitude();</span>
-<span class="fc" id="L122">		final BigDecimal longitude = summary.getEventLongitude();</span>
-<span class="fc" id="L123">		Point location = null;</span>
-<span class="pc bpc" id="L124" title="1 of 4 branches missed.">		if (latitude != null &amp;&amp; longitude != null) {</span>
-<span class="fc" id="L125">			location = new Point(longitude.doubleValue(), latitude.doubleValue());</span>
+<span class="fc" id="L123">		final BigDecimal latitude = summary.getEventLatitude();</span>
+<span class="fc" id="L124">		final BigDecimal longitude = summary.getEventLongitude();</span>
+<span class="fc" id="L125">		Point location = null;</span>
+<span class="pc bpc" id="L126" title="1 of 4 branches missed.">		if (latitude != null &amp;&amp; longitude != null) {</span>
+<span class="fc" id="L127">			location = new Point(longitude.doubleValue(), latitude.doubleValue());</span>
 		}
 
 		// authoritative check
-<span class="fc bfc" id="L129" title="All 2 branches covered.">		if (location != null) {</span>
-<span class="fc bfc" id="L130" title="All 2 branches covered.">			if (regions.isAuthor(source, location)) {</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">		if (location != null) {</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">			if (regions.isAuthor(source, location)) {</span>
 				// based on product source, who authored this product.
-<span class="fc" id="L132">				preferredWeight += AUTHORITATIVE_WEIGHT;</span>
+<span class="fc" id="L134">				preferredWeight += AUTHORITATIVE_WEIGHT;</span>
 			}
-<span class="fc bfc" id="L134" title="All 4 branches covered.">			if (eventSource != null &amp;&amp; regions.isAuthor(eventSource, location)) {</span>
+<span class="fc bfc" id="L136" title="All 4 branches covered.">			if (eventSource != null &amp;&amp; regions.isAuthor(eventSource, location)) {</span>
 				// based on event source, which event this product is about
-<span class="fc" id="L136">				preferredWeight += AUTHORITATIVE_EVENT_WEIGHT;</span>
+<span class="fc" id="L138">				preferredWeight += AUTHORITATIVE_EVENT_WEIGHT;</span>
 			}
 		}
 
 		// anss source check
-<span class="fc bfc" id="L141" title="All 2 branches covered.">		if (regions.isValidnetID(source)) {</span>
-<span class="fc" id="L142">			preferredWeight += ANSS_CONTRIBUTOR_WEIGHT;</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">		if (regions.isValidnetID(source)) {</span>
+<span class="fc" id="L144">			preferredWeight += ANSS_CONTRIBUTOR_WEIGHT;</span>
 		}
 
 		// neic source check
-<span class="fc bfc" id="L146" title="All 2 branches covered.">		if (regions.isDefaultNetID(source)) {</span>
-<span class="fc" id="L147">			preferredWeight += NEIC_CONTRIBUTOR_WEIGHT;</span>
+<span class="fc bfc" id="L148" title="All 2 branches covered.">		if (regions.isDefaultNetID(source)) {</span>
+<span class="fc" id="L149">			preferredWeight += NEIC_CONTRIBUTOR_WEIGHT;</span>
 		}
 
 		// same source check
-<span class="fc bfc" id="L151" title="All 4 branches covered.">		if (eventSource != null &amp;&amp; eventSource.equalsIgnoreCase(source)) {</span>
-<span class="fc" id="L152">			preferredWeight += SAME_SOURCE_WEIGHT;</span>
+<span class="fc bfc" id="L153" title="All 4 branches covered.">		if (eventSource != null &amp;&amp; eventSource.equalsIgnoreCase(source)) {</span>
+<span class="fc" id="L154">			preferredWeight += SAME_SOURCE_WEIGHT;</span>
 		}
 
-<span class="fc" id="L155">		return preferredWeight;</span>
+<span class="fc" id="L157">		return preferredWeight;</span>
 	}
 
 	/**
@@ -162,19 +164,20 @@ import java.util.logging.Logger;
 	 * @return base product type (without any known prefix or suffix).
 	 */
 	public String getBaseProductType(String type) {
-<span class="fc bfc" id="L165" title="All 2 branches covered.">		if (type.startsWith(&quot;internal-&quot;)) {</span>
-<span class="fc" id="L166">			type = type.replace(&quot;internal-&quot;, &quot;&quot;);</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">		if (type.startsWith(&quot;internal-&quot;)) {</span>
+<span class="fc" id="L168">			type = type.replace(&quot;internal-&quot;, &quot;&quot;);</span>
 		}
 
-<span class="fc bfc" id="L169" title="All 2 branches covered.">		if (type.endsWith(&quot;-scenario&quot;)) {</span>
-<span class="fc" id="L170">			type = type.replace(&quot;-scenario&quot;, &quot;&quot;);</span>
+<span class="fc bfc" id="L171" title="All 2 branches covered.">		if (type.endsWith(&quot;-scenario&quot;)) {</span>
+<span class="fc" id="L172">			type = type.replace(&quot;-scenario&quot;, &quot;&quot;);</span>
 		}
 
-<span class="fc" id="L173">		return type;</span>
+<span class="fc" id="L175">		return type;</span>
 	}
 
+	/** @return ignoreRegions */
 	public List&lt;String&gt; getIgnoreRegions() {
-<span class="fc" id="L177">		return ignoreRegions;</span>
+<span class="fc" id="L180">		return ignoreRegions;</span>
 	}
 
 	/**
@@ -184,16 +187,18 @@ import java.util.logging.Logger;
 	 * @return IndexerModule.LEVEL_DEFAULT.
 	 */
 	public int getSupportLevel(final Product product) {
-<span class="fc" id="L187">		return IndexerModule.LEVEL_DEFAULT;</span>
+<span class="fc" id="L190">		return IndexerModule.LEVEL_DEFAULT;</span>
 	}
 
+	/** @return signatureVerifier */
 	public SignatureVerifier getSignatureVerifier() {
-<span class="fc" id="L191">		return signatureVerifier;</span>
+<span class="fc" id="L195">		return signatureVerifier;</span>
 	}
 
+	/** @param signatureVerifier to set */
 	public void setSignatureVerifier(SignatureVerifier signatureVerifier) {
-<span class="nc" id="L195">		this.signatureVerifier = signatureVerifier;</span>
-<span class="nc" id="L196">	}</span>
+<span class="nc" id="L200">		this.signatureVerifier = signatureVerifier;</span>
+<span class="nc" id="L201">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

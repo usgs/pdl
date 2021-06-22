@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 	/**
 	 * Simple dispatch method for listeners who are only interested in certain
 	 * types of &lt;code&gt;StorageEvent&lt;/code&gt;s.
-	 * 
+	 *
 	 * @param event
 	 *            The event that triggered the call
 	 */
@@ -51,22 +51,24 @@ import java.util.logging.Logger;
 	/**
 	 * Dispatched method called when the type of event is
 	 * &lt;code&gt;StorageEvent.StorageEventType.PRODUCT_STORED&lt;/code&gt;.
-	 * 
-	 * @param event
+	 *
+	 * @param event The event that triggered the call
+	 * @throws Exception if error occurs
 	 */
 	public void onProductStored(StorageEvent event) throws Exception {
-<span class="nc" id="L58">		LOGGER.info(&quot;onProductStored::&quot; + event.getProductId().toString());</span>
-<span class="nc" id="L59">	}</span>
+<span class="nc" id="L59">		LOGGER.info(&quot;onProductStored::&quot; + event.getProductId().toString());</span>
+<span class="nc" id="L60">	}</span>
 
 	/**
 	 * Dispatched method called when the type of event is
 	 * &lt;code&gt;StorageEvent.StorageEventType.PRODUCT_REMOVED&lt;/code&gt;.
-	 * 
-	 * @param event
+	 *
+	 * @param event The event that triggered the call
+	 * @throws Exception if error occurs
 	 */
 	public void onProductRemoved(StorageEvent event) throws Exception {
-<span class="nc" id="L68">		LOGGER.info(&quot;onProductRemoved::&quot; + event.getProductId().toString());</span>
-<span class="nc" id="L69">	}</span>
+<span class="nc" id="L70">		LOGGER.info(&quot;onProductRemoved::&quot; + event.getProductId().toString());</span>
+<span class="nc" id="L71">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

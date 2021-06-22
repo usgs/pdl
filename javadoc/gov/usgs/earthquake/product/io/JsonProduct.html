@@ -305,10 +305,11 @@ extends java.lang.Object</pre>
 <div class="block">Convert product object to json.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>product</code> - </dd>
+<dd><code>product</code> - a product</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
+<dd>a json object</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -322,8 +323,12 @@ extends java.lang.Object</pre>
                    throws java.lang.Exception</pre>
 <div class="block">Convert json object to product.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>json</code> - a json object</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a product</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -338,10 +343,11 @@ extends java.lang.Object</pre>
 <div class="block">Convert contents map to json.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>contents</code> - </dd>
+<dd><code>contents</code> - contents map</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
+<dd>JSOnArrayBuilder</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -356,10 +362,11 @@ extends java.lang.Object</pre>
 <div class="block">Convert contents json to map.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>json</code> - </dd>
+<dd><code>json</code> - JsonArray</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
+<dd>Contents map</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -374,10 +381,11 @@ extends java.lang.Object</pre>
 <div class="block">Create json geometry from product properties.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>product</code> - </dd>
+<dd><code>product</code> - a product</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
+<dd>JSON geometry via JsonObjectBuilder</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -392,10 +400,11 @@ extends java.lang.Object</pre>
 <div class="block">Convert json id to ProductId object.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>json</code> - </dd>
+<dd><code>json</code> - A JsonObject ID</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
+<dd>a productId</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -410,10 +419,11 @@ extends java.lang.Object</pre>
 <div class="block">Convert ProductId to json object.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>id</code> - </dd>
+<dd><code>id</code> - A ProductId</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
+<dd>JsonObjectBuilder</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -428,10 +438,11 @@ extends java.lang.Object</pre>
 <div class="block">Convert json links to map.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>json</code> - </dd>
+<dd><code>json</code> - a Jsonarray</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
+<dd>a Map of links</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -446,10 +457,11 @@ extends java.lang.Object</pre>
 <div class="block">Convert links map to json.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>links</code> - </dd>
+<dd><code>links</code> - map</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
+<dd>JsonArray of JsonArrayBuilder</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -464,10 +476,11 @@ extends java.lang.Object</pre>
 <div class="block">Convert properties json to map.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>json</code> - </dd>
+<dd><code>json</code> - JsonObject properties</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
+<dd>A map</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -482,10 +495,11 @@ extends java.lang.Object</pre>
 <div class="block">Convert properties map to json.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>properties</code> - </dd>
+<dd><code>properties</code> - Map of properties</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
+<dd>JsonObjectBuilder</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

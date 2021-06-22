@@ -68,13 +68,13 @@ public class SearchServerSocket extends DefaultConfigurable implements
 
 	/**
 	 * Method to perform search.
-	 * 
+	 *
 	 * Calls Indexer.search(SearchRequest). Simplifies testing.
-	 * 
+	 *
 	 * @param request
 	 *            the search to execute.
 	 * @return the search response.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	protected SearchResponse search(final SearchRequest request)
 			throws Exception {
@@ -183,29 +183,35 @@ public class SearchServerSocket extends DefaultConfigurable implements
 <span class="fc" id="L183">		acceptor.start();</span>
 <span class="fc" id="L184">	}</span>
 
+	/** @return int port */
 	public int getPort() {
-<span class="nc" id="L187">		return port;</span>
+<span class="nc" id="L188">		return port;</span>
 	}
 
+	/** @param port int to set */
 	public void setPort(int port) {
-<span class="fc" id="L191">		this.port = port;</span>
-<span class="fc" id="L192">	}</span>
+<span class="fc" id="L193">		this.port = port;</span>
+<span class="fc" id="L194">	}</span>
 
+	/** @return int threads */
 	public int getThreads() {
-<span class="nc" id="L195">		return threads;</span>
+<span class="nc" id="L198">		return threads;</span>
 	}
 
+	/** @param threads into to set */
 	public void setThreads(int threads) {
-<span class="nc" id="L199">		this.threads = threads;</span>
-<span class="nc" id="L200">	}</span>
+<span class="nc" id="L203">		this.threads = threads;</span>
+<span class="nc" id="L204">	}</span>
 
+	/** @return indexer */
 	public Indexer getIndexer() {
-<span class="nc" id="L203">		return indexer;</span>
+<span class="nc" id="L208">		return indexer;</span>
 	}
 
+	/** @param indexer to set */
 	public void setIndex(Indexer indexer) {
-<span class="nc" id="L207">		this.indexer = indexer;</span>
-<span class="nc" id="L208">	}</span>
+<span class="nc" id="L213">		this.indexer = indexer;</span>
+<span class="nc" id="L214">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

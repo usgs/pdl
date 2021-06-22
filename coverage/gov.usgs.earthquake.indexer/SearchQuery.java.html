@@ -13,13 +13,13 @@ public abstract class SearchQuery implements Comparable&lt;SearchQuery&gt; {
 
 	/** The search parameters. */
 	private final ProductIndexQuery query;
-	
+
 	/** Contains an error returned in a SearchResult if one occurred **/
 	private String error;
 
 	/**
 	 * Construct a new SearchQuery object.
-	 * 
+	 *
 	 * @param type
 	 *            the type of search.
 	 * @param query
@@ -31,24 +31,26 @@ public abstract class SearchQuery implements Comparable&lt;SearchQuery&gt; {
 <span class="fc" id="L31">		this.error = null;</span>
 <span class="fc" id="L32">	}</span>
 
+	/** @return type */
 	public SearchMethod getType() {
-<span class="fc" id="L35">		return this.type;</span>
+<span class="fc" id="L36">		return this.type;</span>
 	}
 
+	/** @return ProductIndexQuery */
 	public ProductIndexQuery getProductIndexQuery() {
-<span class="fc" id="L39">		return this.query;</span>
+<span class="fc" id="L41">		return this.query;</span>
 	}
 
 	/**
 	 * Get the result associated with a specific query type.
-	 * 
+	 *
 	 * @return the result, or null if the search has not yet executed.
 	 */
 	public abstract Object getResult();
 
 	/**
 	 * Create a SearchQuery object based on a SearchType.
-	 * 
+	 *
 	 * @param type
 	 *            the search type to create
 	 * @param query
@@ -57,64 +59,64 @@ public abstract class SearchQuery implements Comparable&lt;SearchQuery&gt; {
 	 */
 	public static SearchQuery getSearchQuery(final SearchMethod type,
 			final ProductIndexQuery query) {
-<span class="pc bpc" id="L60" title="1 of 2 branches missed.">		if (type == null) {</span>
-<span class="nc" id="L61">			return null;</span>
-<span class="fc bfc" id="L62" title="All 2 branches covered.">		} else if (type.equals(SearchMethod.EVENTS_SUMMARY)) {</span>
-<span class="fc" id="L63">			return new EventsSummaryQuery(query);</span>
-<span class="fc bfc" id="L64" title="All 2 branches covered.">		} else if (type.equals(SearchMethod.EVENT_DETAIL)) {</span>
-<span class="fc" id="L65">			return new EventDetailQuery(query);</span>
-<span class="fc bfc" id="L66" title="All 2 branches covered.">		} else if (type.equals(SearchMethod.PRODUCTS_SUMMARY)) {</span>
-<span class="fc" id="L67">			return new ProductsSummaryQuery(query);</span>
-<span class="pc bpc" id="L68" title="1 of 2 branches missed.">		} else if (type.equals(SearchMethod.PRODUCT_DETAIL)) {</span>
-<span class="fc" id="L69">			return new ProductDetailQuery(query);</span>
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">		if (type == null) {</span>
+<span class="nc" id="L63">			return null;</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">		} else if (type.equals(SearchMethod.EVENTS_SUMMARY)) {</span>
+<span class="fc" id="L65">			return new EventsSummaryQuery(query);</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">		} else if (type.equals(SearchMethod.EVENT_DETAIL)) {</span>
+<span class="fc" id="L67">			return new EventDetailQuery(query);</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">		} else if (type.equals(SearchMethod.PRODUCTS_SUMMARY)) {</span>
+<span class="fc" id="L69">			return new ProductsSummaryQuery(query);</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">		} else if (type.equals(SearchMethod.PRODUCT_DETAIL)) {</span>
+<span class="fc" id="L71">			return new ProductDetailQuery(query);</span>
 		} else {
-<span class="nc" id="L71">			return null;</span>
+<span class="nc" id="L73">			return null;</span>
 		}
 	}
 
 	@Override
 	public boolean equals(Object that) {
-<span class="pc bpc" id="L77" title="1 of 2 branches missed.">		return (this.compareTo((SearchQuery) that)) == 0;</span>
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">		return (this.compareTo((SearchQuery) that)) == 0;</span>
 	}
 
 	@Override
 	public int compareTo(SearchQuery that) {
 		int r;
 
-<span class="pc bpc" id="L84" title="1 of 2 branches missed.">		if ((r = this.type.compareTo(that.type)) != 0) {</span>
-<span class="nc" id="L85">			return r;</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">		if ((r = this.type.compareTo(that.type)) != 0) {</span>
+<span class="nc" id="L87">			return r;</span>
 		}
 
-<span class="pc bpc" id="L88" title="1 of 2 branches missed.">		if ((r = this.query.compareTo(that.query)) != 0) {</span>
-<span class="nc" id="L89">			return r;</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">		if ((r = this.query.compareTo(that.query)) != 0) {</span>
+<span class="nc" id="L91">			return r;</span>
 		}
 
 		//both have results
-<span class="fc" id="L93">		Object thatResult = that.getResult();</span>
-<span class="fc" id="L94">		Object thisResult = this.getResult();</span>
-<span class="pc bpc" id="L95" title="1 of 4 branches missed.">		if (thisResult == null &amp;&amp; thatResult == null) {</span>
-<span class="fc" id="L96">			return 0;</span>
-<span class="pc bpc" id="L97" title="2 of 4 branches missed.">		} else if (thisResult != null &amp;&amp; thatResult == null) {</span>
-<span class="nc" id="L98">			return -1;</span>
-<span class="pc bpc" id="L99" title="3 of 4 branches missed.">		} else if (thisResult == null &amp;&amp; thatResult != null) {</span>
-<span class="nc" id="L100">			return 1;</span>
+<span class="fc" id="L95">		Object thatResult = that.getResult();</span>
+<span class="fc" id="L96">		Object thisResult = this.getResult();</span>
+<span class="pc bpc" id="L97" title="1 of 4 branches missed.">		if (thisResult == null &amp;&amp; thatResult == null) {</span>
+<span class="fc" id="L98">			return 0;</span>
+<span class="pc bpc" id="L99" title="2 of 4 branches missed.">		} else if (thisResult != null &amp;&amp; thatResult == null) {</span>
+<span class="nc" id="L100">			return -1;</span>
+<span class="pc bpc" id="L101" title="3 of 4 branches missed.">		} else if (thisResult == null &amp;&amp; thatResult != null) {</span>
+<span class="nc" id="L102">			return 1;</span>
 		}
 
-<span class="fc" id="L103">		return 0;</span>
+<span class="fc" id="L105">		return 0;</span>
 	}
 
 	/**
 	 * @param error the error to set
 	 */
 	public void setError(String error) {
-<span class="nc" id="L110">		this.error = error;</span>
-<span class="nc" id="L111">	}</span>
+<span class="nc" id="L112">		this.error = error;</span>
+<span class="nc" id="L113">	}</span>
 
 	/**
 	 * @return the error or null if no error occurred.
 	 */
 	public String getError() {
-<span class="nc" id="L117">		return error;</span>
+<span class="nc" id="L119">		return error;</span>
 	}
 
 }

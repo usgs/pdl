@@ -182,7 +182,10 @@ implements <a href="NotificationIndex.html" title="interface in gov.usgs.earthqu
 <tr class="altColor">
 <td class="colFirst"><code>protected static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#JDBC_FILE_PROPERTY">JDBC_FILE_PROPERTY</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">This is the property key used in the configuration file to specify a
+ different SQLite database file.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -216,7 +219,10 @@ implements <a href="NotificationIndex.html" title="interface in gov.usgs.earthqu
 </tr>
 <tr class="altColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(java.lang.String)">JDBCNotificationIndex</a></span>&#8203;(java.lang.String&nbsp;filename)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Constructor call from filename, where filename is jdbc index file
+ If null, then index file defaults</div>
+</td>
 </tr>
 </table>
 </li>
@@ -394,6 +400,9 @@ implements <a href="NotificationIndex.html" title="interface in gov.usgs.earthqu
 <li class="blockList">
 <h4>JDBC_FILE_PROPERTY</h4>
 <pre>protected static final&nbsp;java.lang.String JDBC_FILE_PROPERTY</pre>
+<div class="block">This is the property key used in the configuration file to specify a
+ different SQLite database file. If this file doesn't exist it will be
+ created at startup time</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.distribution.JDBCNotificationIndex.JDBC_FILE_PROPERTY">Constant Field Values</a></dd>
@@ -438,9 +447,13 @@ implements <a href="NotificationIndex.html" title="interface in gov.usgs.earthqu
 <h4>JDBCNotificationIndex</h4>
 <pre>public&nbsp;JDBCNotificationIndex&#8203;(java.lang.String&nbsp;filename)
                       throws java.lang.Exception</pre>
+<div class="block">Constructor call from filename, where filename is jdbc index file
+ If null, then index file defaults</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>filename</code> - String - What will be the index file</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -493,7 +506,7 @@ implements <a href="NotificationIndex.html" title="interface in gov.usgs.earthqu
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>config</code> - The config object from which this instance will be configured.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code> - if configuration exceptions occur.</dd>
+<dd><code>java.lang.Exception</code> - Exception</dd>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../util/Configurable.html" title="interface in gov.usgs.util"><code>Configurable</code></a></dd>
 </dl>
@@ -538,7 +551,7 @@ implements <a href="NotificationIndex.html" title="interface in gov.usgs.earthqu
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code><a href="../util/JDBCConnection.html#startup()">startup</a></code>&nbsp;in class&nbsp;<code><a href="../util/JDBCConnection.html" title="class in gov.usgs.earthquake.util">JDBCConnection</a></code></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code> - if exceptions occur while starting.</dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../util/Configurable.html" title="interface in gov.usgs.util"><code>Configurable</code></a></dd>
 </dl>
@@ -559,7 +572,7 @@ implements <a href="NotificationIndex.html" title="interface in gov.usgs.earthqu
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code><a href="../util/JDBCConnection.html#shutdown()">shutdown</a></code>&nbsp;in class&nbsp;<code><a href="../util/JDBCConnection.html" title="class in gov.usgs.earthquake.util">JDBCConnection</a></code></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code> - if exceptions occur while starting.</dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../util/Configurable.html" title="interface in gov.usgs.util"><code>Configurable</code></a></dd>
 </dl>
@@ -810,8 +823,14 @@ implements <a href="NotificationIndex.html" title="interface in gov.usgs.earthqu
                                                          java.util.List&lt;java.lang.String&gt;&nbsp;codes)
                                                   throws java.lang.Exception</pre>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>sources</code> - List string of sources</dd>
+<dd><code>types</code> - List string of types</dd>
+<dd><code>codes</code> - List string of codes</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>prepared query based on what is/is not null</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

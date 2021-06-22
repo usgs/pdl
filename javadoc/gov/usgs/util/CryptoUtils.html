@@ -712,10 +712,10 @@ extends java.lang.Object</pre>
 <dd><code>in</code> - the data to encrypt.</dd>
 <dd><code>out</code> - where encrypted data is written.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
-<dd><code>javax.crypto.NoSuchPaddingException</code></dd>
-<dd><code>java.security.InvalidKeyException</code></dd>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - if invalid encrypt/decrypt algorithm</dd>
+<dd><code>javax.crypto.NoSuchPaddingException</code> - on padding error</dd>
+<dd><code>java.security.InvalidKeyException</code> - if key is not RSA or DSA.</dd>
+<dd><code>java.io.IOException</code> - if IO error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -737,9 +737,9 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a cipher used to encrypt.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
-<dd><code>javax.crypto.NoSuchPaddingException</code></dd>
-<dd><code>java.security.InvalidKeyException</code></dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - on invalid algorithm</dd>
+<dd><code>javax.crypto.NoSuchPaddingException</code> - on invalid padding</dd>
+<dd><code>java.security.InvalidKeyException</code> - if key is not RSA or DSA.</dd>
 </dl>
 </li>
 </ul>
@@ -761,9 +761,9 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a cipher used to decrypt.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
-<dd><code>javax.crypto.NoSuchPaddingException</code></dd>
-<dd><code>java.security.InvalidKeyException</code></dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - on invalid algorithm</dd>
+<dd><code>javax.crypto.NoSuchPaddingException</code> - on invalid padding</dd>
+<dd><code>java.security.InvalidKeyException</code> - if key is not RSA or DSA.</dd>
 </dl>
 </li>
 </ul>
@@ -787,8 +787,8 @@ extends java.lang.Object</pre>
 <dd>Configured Signature object</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.security.InvalidKeyException</code> - if key is not RSA or DSA.</dd>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
-<dd><code>java.security.SignatureException</code></dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - on invalid algorithm</dd>
+<dd><code>java.security.SignatureException</code> - on signature error</dd>
 </dl>
 </li>
 </ul>
@@ -803,8 +803,12 @@ extends java.lang.Object</pre>
                                       java.security.Signature&nbsp;signature)
                                throws java.security.InvalidAlgorithmParameterException</pre>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>key</code> - Key used to sign/verify.</dd>
+<dd><code>version</code> - SIGNATURE_V1 or SIGNATURE_V2</dd>
+<dd><code>signature</code> - A signature</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.security.InvalidAlgorithmParameterException</code></dd>
+<dd><code>java.security.InvalidAlgorithmParameterException</code> - on invalid or inappropriate algorithm parameters</dd>
 </dl>
 </li>
 </ul>
@@ -823,11 +827,16 @@ extends java.lang.Object</pre>
 <div class="block">A convenience method that chooses a signature algorithm based on the key
  type. Works with DSA and RSA keys.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>privateKey</code> - a private key</dd>
+<dd><code>data</code> - data to sign</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>signature as hex encoded string</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.security.InvalidAlgorithmParameterException</code></dd>
-<dd><code>java.security.InvalidKeyException</code></dd>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
-<dd><code>java.security.SignatureException</code></dd>
+<dd><code>java.security.InvalidAlgorithmParameterException</code> - on invalid or inappropriate algorithm parameters</dd>
+<dd><code>java.security.InvalidKeyException</code> - if key is not RSA or DSA.</dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - on invalid algorithm</dd>
+<dd><code>java.security.SignatureException</code> - on signature error</dd>
 </dl>
 </li>
 </ul>
@@ -854,10 +863,10 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>signature as hex encoded string.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
-<dd><code>java.security.InvalidKeyException</code></dd>
-<dd><code>java.security.SignatureException</code></dd>
-<dd><code>java.security.InvalidAlgorithmParameterException</code></dd>
+<dd><code>java.security.InvalidAlgorithmParameterException</code> - on invalid or inappropriate algorithm parameters</dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - on invalid algorithm</dd>
+<dd><code>java.security.InvalidKeyException</code> - if key is not RSA or DSA.</dd>
+<dd><code>java.security.SignatureException</code> - on signature error</dd>
 </dl>
 </li>
 </ul>
@@ -877,11 +886,18 @@ extends java.lang.Object</pre>
 <div class="block">A convenience method that chooses a signature algorithm based on the key
  type. Works with DSA and RSA keys.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>publicKey</code> - public key corresponding to private key that generated
+            signature.</dd>
+<dd><code>data</code> - data/hash to verify</dd>
+<dd><code>allegedSignature</code> - to try and verify with</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>boolean</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.security.InvalidAlgorithmParameterException</code></dd>
-<dd><code>java.security.InvalidKeyException</code></dd>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
-<dd><code>java.security.SignatureException</code></dd>
+<dd><code>java.security.InvalidAlgorithmParameterException</code> - on invalid or inappropriate algorithm parameters</dd>
+<dd><code>java.security.InvalidKeyException</code> - if key is not RSA or DSA.</dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - on invalid algorithm</dd>
+<dd><code>java.security.SignatureException</code> - on signature error</dd>
 </dl>
 </li>
 </ul>
@@ -910,10 +926,10 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>true if computed signature matches allegedSignature.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
-<dd><code>java.security.InvalidKeyException</code></dd>
-<dd><code>java.security.SignatureException</code></dd>
-<dd><code>java.security.InvalidAlgorithmParameterException</code></dd>
+<dd><code>java.security.InvalidAlgorithmParameterException</code> - on invalid or inappropriate algorithm parameters</dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - on invalid algorithm</dd>
+<dd><code>java.security.InvalidKeyException</code> - if key is not RSA or DSA.</dd>
+<dd><code>java.security.SignatureException</code> - on signature error</dd>
 </dl>
 </li>
 </ul>
@@ -938,11 +954,11 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>encrypted byte array.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.security.InvalidKeyException</code></dd>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
-<dd><code>javax.crypto.NoSuchPaddingException</code></dd>
-<dd><code>java.lang.IllegalArgumentException</code></dd>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.security.InvalidKeyException</code> - if key is not RSA or DSA.</dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - on invalid algorithm</dd>
+<dd><code>javax.crypto.NoSuchPaddingException</code> - on invalid padding</dd>
+<dd><code>java.lang.IllegalArgumentException</code> - on illegal args passed to function</dd>
+<dd><code>java.io.IOException</code> - on IO error</dd>
 </dl>
 </li>
 </ul>
@@ -967,11 +983,11 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>decrypted byte array.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.security.InvalidKeyException</code></dd>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
-<dd><code>javax.crypto.NoSuchPaddingException</code></dd>
-<dd><code>java.lang.IllegalArgumentException</code></dd>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.security.InvalidKeyException</code> - if key is not RSA or DSA.</dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - on invalid algorithm</dd>
+<dd><code>javax.crypto.NoSuchPaddingException</code> - on invalid padding</dd>
+<dd><code>java.lang.IllegalArgumentException</code> - on illegal args passed to function</dd>
+<dd><code>java.io.IOException</code> - on IO error</dd>
 </dl>
 </li>
 </ul>
@@ -990,7 +1006,7 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>generated AES key.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - on invalid algorithm</dd>
 </dl>
 </li>
 </ul>
@@ -1009,7 +1025,7 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>generated RSA key pair.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - on invalid algorithm</dd>
 </dl>
 </li>
 </ul>
@@ -1028,7 +1044,7 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>generated DSA key pair.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - on invalid algorithm</dd>
 </dl>
 </li>
 </ul>
@@ -1048,8 +1064,8 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>parsed certificate.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.security.cert.CertificateException</code></dd>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.security.cert.CertificateException</code> - on certificate issue</dd>
+<dd><code>java.io.IOException</code> - on IO error</dd>
 </dl>
 </li>
 </ul>
@@ -1069,8 +1085,8 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>parsed public key.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
+<dd><code>java.io.IOException</code> - on IO error</dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - on invalid algorithm</dd>
 </dl>
 </li>
 </ul>
@@ -1090,8 +1106,8 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>parsed private key.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
+<dd><code>java.io.IOException</code> - on IO error</dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - on invalid algorithm</dd>
 </dl>
 </li>
 </ul>
@@ -1114,9 +1130,9 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>decoded PrivateKey.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
-<dd><code>java.security.spec.InvalidKeySpecException</code></dd>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
+<dd><code>java.io.IOException</code> - on IO error</dd>
+<dd><code>java.security.spec.InvalidKeySpecException</code> - when key has invalid specifications</dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - on invalid algorithm</dd>
 </dl>
 </li>
 </ul>
@@ -1134,10 +1150,12 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>bytes</code> - bytes to read.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a publicKey</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
-<dd><code>java.security.spec.InvalidKeySpecException</code></dd>
+<dd><code>java.io.IOException</code> - on IO error</dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - on invalid algorithm</dd>
+<dd><code>java.security.spec.InvalidKeySpecException</code> - when key has invalid specifications</dd>
 </dl>
 </li>
 </ul>
@@ -1179,7 +1197,7 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>DER formatted data.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.io.IOException</code> - on IO error</dd>
 </dl>
 </li>
 </ul>

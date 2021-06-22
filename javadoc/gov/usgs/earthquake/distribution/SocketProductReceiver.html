@@ -149,21 +149,21 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 extends <a href="DefaultNotificationReceiver.html" title="class in gov.usgs.earthquake.distribution">DefaultNotificationReceiver</a>
 implements <a href="../../util/SocketListenerInterface.html" title="interface in gov.usgs.util">SocketListenerInterface</a></pre>
 <div class="block">Receive Products directly via a Socket.
- 
+
  The received products are sent using a SocketProductSender.
- 
+
  A SocketProductReceiver receives products directly and notifies listeners of
  received notifications.
- 
+
  These are typically used on hubs with an EIDSNotificationSender or
  RelayProductReceiver.
- 
+
  The NotificationReceiver uses a NotificationIndex to track received
  notifications, and a ProductStorage to store retrieved products.
- 
+
  The DefaultNotificationReceiver implements the Configurable interface and
  uses the following configuration parameters:
- 
+
  Each listener has a separate queue of notifications. Each listener is
  allocated one thread to process notifications from this queue.</div>
 </li>
@@ -204,11 +204,15 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 </tr>
 <tr class="altColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E()">SocketProductReceiver</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Default constructor setting port, threads, and sizeLimit to default</div>
+</td>
 </tr>
 <tr class="rowColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(gov.usgs.util.Config)">SocketProductReceiver</a></span>&#8203;(<a href="../../util/Config.html" title="class in gov.usgs.util">Config</a>&nbsp;config)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Constructor based on config file</div>
+</td>
 </tr>
 </table>
 </li>
@@ -289,7 +293,9 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <tr id="i10" class="altColor">
 <td class="colFirst"><code>protected java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#storeAndNotify(gov.usgs.earthquake.product.io.ProductSource)">storeAndNotify</a></span>&#8203;(<a href="../product/io/ProductSource.html" title="interface in gov.usgs.earthquake.product.io">ProductSource</a>&nbsp;source)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Stores ProductSource as a notification, tracks it, and notifies Listeners</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -344,9 +350,10 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <h4>SocketProductReceiver</h4>
 <pre>public&nbsp;SocketProductReceiver()
                       throws java.lang.Exception</pre>
+<div class="block">Default constructor setting port, threads, and sizeLimit to default</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -358,9 +365,12 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <h4>SocketProductReceiver</h4>
 <pre>public&nbsp;SocketProductReceiver&#8203;(<a href="../../util/Config.html" title="class in gov.usgs.util">Config</a>&nbsp;config)
                       throws java.lang.Exception</pre>
+<div class="block">Constructor based on config file</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>config</code> - Configuration file</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -463,9 +473,14 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <h4>storeAndNotify</h4>
 <pre class="methodSignature">protected&nbsp;java.lang.String&nbsp;storeAndNotify&#8203;(<a href="../product/io/ProductSource.html" title="interface in gov.usgs.earthquake.product.io">ProductSource</a>&nbsp;source)
                                    throws java.lang.Exception</pre>
+<div class="block">Stores ProductSource as a notification, tracks it, and notifies Listeners</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>source</code> - ProductSource</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String note for log file</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -476,6 +491,10 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <li class="blockList">
 <h4>getPort</h4>
 <pre class="methodSignature">public&nbsp;int&nbsp;getPort()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>port</dd>
+</dl>
 </li>
 </ul>
 <a id="setPort(int)">
@@ -485,6 +504,10 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <li class="blockList">
 <h4>setPort</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setPort&#8203;(int&nbsp;port)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>port</code> - int to set</dd>
+</dl>
 </li>
 </ul>
 <a id="getSizeLimit()">
@@ -494,6 +517,10 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <li class="blockList">
 <h4>getSizeLimit</h4>
 <pre class="methodSignature">public&nbsp;long&nbsp;getSizeLimit()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>sizeLimit</dd>
+</dl>
 </li>
 </ul>
 <a id="setSizeLimit(long)">
@@ -503,6 +530,10 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <li class="blockList">
 <h4>setSizeLimit</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setSizeLimit&#8203;(long&nbsp;sizeLimit)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>sizeLimit</code> - long to set</dd>
+</dl>
 </li>
 </ul>
 <a id="getThreads()">
@@ -512,6 +543,10 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <li class="blockList">
 <h4>getThreads</h4>
 <pre class="methodSignature">public&nbsp;int&nbsp;getThreads()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>threads</dd>
+</dl>
 </li>
 </ul>
 <a id="setThreads(int)">
@@ -521,6 +556,10 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <li class="blockList">
 <h4>setThreads</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setThreads&#8203;(int&nbsp;threads)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>threads</code> - int to set</dd>
+</dl>
 </li>
 </ul>
 </li>

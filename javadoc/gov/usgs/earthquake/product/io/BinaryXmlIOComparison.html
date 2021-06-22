@@ -134,7 +134,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <pre>public class <span class="typeNameLabel">BinaryXmlIOComparison</span>
 extends java.lang.Object</pre>
 <div class="block">Compare io times of XML and Binary product formats.
- 
+
  All conversion is done in memory to try to balance the tests. All writes use
  a BinaryProductSource to keep the playing field level.</div>
 </li>
@@ -181,43 +181,57 @@ extends java.lang.Object</pre>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>static void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#main(java.lang.String%5B%5D)">main</a></span>&#8203;(java.lang.String[]&nbsp;args)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Testing for class</div>
+</td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>static void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#testBinaryReads(gov.usgs.earthquake.product.Product,int)">testBinaryReads</a></span>&#8203;(<a href="../Product.html" title="class in gov.usgs.earthquake.product">Product</a>&nbsp;product,
                int&nbsp;numReads)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Tests binary reading</div>
+</td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>static void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#testBinaryWrites(gov.usgs.earthquake.product.Product,int)">testBinaryWrites</a></span>&#8203;(<a href="../Product.html" title="class in gov.usgs.earthquake.product">Product</a>&nbsp;product,
                 int&nbsp;numWrites)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Tests binary writes</div>
+</td>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>static void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#testProductIO(gov.usgs.earthquake.product.Product,int)">testProductIO</a></span>&#8203;(<a href="../Product.html" title="class in gov.usgs.earthquake.product">Product</a>&nbsp;product,
              int&nbsp;numRuns)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Tests product IO</div>
+</td>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>static void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#testXmlReads(gov.usgs.earthquake.product.Product,int)">testXmlReads</a></span>&#8203;(<a href="../Product.html" title="class in gov.usgs.earthquake.product">Product</a>&nbsp;product,
             int&nbsp;numReads)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Tests XML reading</div>
+</td>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>static void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#testXmlWrites(gov.usgs.earthquake.product.Product,int)">testXmlWrites</a></span>&#8203;(<a href="../Product.html" title="class in gov.usgs.earthquake.product">Product</a>&nbsp;product,
              int&nbsp;numWrites)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">tests xml writes</div>
+</td>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>static long</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#timeSerializeProduct(gov.usgs.earthquake.product.io.ProductSource,gov.usgs.earthquake.product.io.ProductHandler)">timeSerializeProduct</a></span>&#8203;(<a href="ProductSource.html" title="interface in gov.usgs.earthquake.product.io">ProductSource</a>&nbsp;source,
                     <a href="ProductHandler.html" title="interface in gov.usgs.earthquake.product.io">ProductHandler</a>&nbsp;handler)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Serializes product by streaming it to a handler</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -271,9 +285,15 @@ extends java.lang.Object</pre>
 <pre class="methodSignature">public static&nbsp;long&nbsp;timeSerializeProduct&#8203;(<a href="ProductSource.html" title="interface in gov.usgs.earthquake.product.io">ProductSource</a>&nbsp;source,
                                         <a href="ProductHandler.html" title="interface in gov.usgs.earthquake.product.io">ProductHandler</a>&nbsp;handler)
                                  throws java.lang.Exception</pre>
+<div class="block">Serializes product by streaming it to a handler</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>source</code> - a productSource</dd>
+<dd><code>handler</code> - a productHandler</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Time it took to stream source to handler</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -285,9 +305,12 @@ extends java.lang.Object</pre>
 <h4>main</h4>
 <pre class="methodSignature">public static&nbsp;void&nbsp;main&#8203;(java.lang.String[]&nbsp;args)
                  throws java.lang.Exception</pre>
+<div class="block">Testing for class</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>args</code> - CLI args</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -300,9 +323,13 @@ extends java.lang.Object</pre>
 <pre class="methodSignature">public static&nbsp;void&nbsp;testProductIO&#8203;(<a href="../Product.html" title="class in gov.usgs.earthquake.product">Product</a>&nbsp;product,
                                  int&nbsp;numRuns)
                           throws java.lang.Exception</pre>
+<div class="block">Tests product IO</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>product</code> - Produc</dd>
+<dd><code>numRuns</code> - int</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -315,9 +342,13 @@ extends java.lang.Object</pre>
 <pre class="methodSignature">public static&nbsp;void&nbsp;testXmlReads&#8203;(<a href="../Product.html" title="class in gov.usgs.earthquake.product">Product</a>&nbsp;product,
                                 int&nbsp;numReads)
                          throws java.lang.Exception</pre>
+<div class="block">Tests XML reading</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>product</code> - a product</dd>
+<dd><code>numReads</code> - int</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -330,9 +361,13 @@ extends java.lang.Object</pre>
 <pre class="methodSignature">public static&nbsp;void&nbsp;testBinaryReads&#8203;(<a href="../Product.html" title="class in gov.usgs.earthquake.product">Product</a>&nbsp;product,
                                    int&nbsp;numReads)
                             throws java.lang.Exception</pre>
+<div class="block">Tests binary reading</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>product</code> - a product</dd>
+<dd><code>numReads</code> - int</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -345,9 +380,13 @@ extends java.lang.Object</pre>
 <pre class="methodSignature">public static&nbsp;void&nbsp;testBinaryWrites&#8203;(<a href="../Product.html" title="class in gov.usgs.earthquake.product">Product</a>&nbsp;product,
                                     int&nbsp;numWrites)
                              throws java.lang.Exception</pre>
+<div class="block">Tests binary writes</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>product</code> - a product</dd>
+<dd><code>numWrites</code> - int</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -360,9 +399,13 @@ extends java.lang.Object</pre>
 <pre class="methodSignature">public static&nbsp;void&nbsp;testXmlWrites&#8203;(<a href="../Product.html" title="class in gov.usgs.earthquake.product">Product</a>&nbsp;product,
                                  int&nbsp;numWrites)
                           throws java.lang.Exception</pre>
+<div class="block">tests xml writes</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>product</code> - a product</dd>
+<dd><code>numWrites</code> - int</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

@@ -321,6 +321,10 @@ extends java.lang.Object</pre>
 <h4>getEndpointURL</h4>
 <pre class="methodSignature">public&nbsp;java.lang.String&nbsp;getEndpointURL()</pre>
 <div class="block">Get the endpoint URL.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>endpoint URL</dd>
+</dl>
 </li>
 </ul>
 <a id="setEndpointURL(java.lang.String)">
@@ -331,6 +335,10 @@ extends java.lang.Object</pre>
 <h4>setEndpointURL</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setEndpointURL&#8203;(java.lang.String&nbsp;url)</pre>
 <div class="block">Set the endpoint URL.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>url</code> - endpoint URL to set</dd>
+</dl>
 </li>
 </ul>
 <a id="getLayer(java.lang.String)">
@@ -344,9 +352,13 @@ extends java.lang.Object</pre>
                                       java.net.MalformedURLException</pre>
 <div class="block">Fetch and parse a JSON response from the Geoserve layers service.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>type</code> - type of response to fetch</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>JSONObject response</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
-<dd><code>java.net.MalformedURLException</code></dd>
+<dd><code>java.io.IOException</code> - on IO error</dd>
+<dd><code>java.net.MalformedURLException</code> - Error on URL failure</dd>
 </dl>
 </li>
 </ul>

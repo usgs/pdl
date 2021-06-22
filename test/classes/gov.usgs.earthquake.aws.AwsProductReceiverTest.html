@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">1.445s</div>
+<div class="counter">1.325s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,27 +79,27 @@
 </thead>
 <tr>
 <td class="success">testBroadcastOutOfOrder()</td>
-<td class="success">0.030s</td>
+<td class="success">0.011s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testStartCatchUpWhenConnected()</td>
-<td class="success">0.009s</td>
+<td class="success">0.003s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testStartCatchUpWhenReconnected()</td>
-<td class="success">1.010s</td>
+<td class="success">1.008s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testSwitchToBroadcast()</td>
-<td class="success">0.286s</td>
+<td class="success">0.196s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testThrottleQueue()</td>
-<td class="success">0.110s</td>
+<td class="success">0.107s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -107,57 +107,57 @@
 <div id="tab1" class="tab">
 <h2>Standard error</h2>
 <span class="code">
-<pre>Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+<pre>Jun 21, 2021 4:53:27 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] onOpen connection_id=test session
-Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+Jun 21, 2021 4:53:27 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] Starting catch up
-Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.TestBasicRemote sendText
-INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-02-10T18:33:33.581157600Z&quot;}
-Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver onProductsCreatedAfter
+Jun 21, 2021 4:53:27 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-06-14T22:53:27.243410800Z&quot;}
+Jun 21, 2021 4:53:27 PM gov.usgs.earthquake.aws.AwsProductReceiver onProductsCreatedAfter
 INFO: [null] Caught up, switching to broadcast
-Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+Jun 21, 2021 4:53:27 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] onOpen connection_id=test session
-Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+Jun 21, 2021 4:53:27 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] Starting catch up
-Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.distribution.ExecutorListenerNotifier throttleQueues
+Jun 21, 2021 4:53:27 PM gov.usgs.earthquake.distribution.ExecutorListenerNotifier throttleQueues
 INFO: [null] queueing throttled until below 2500 (size=5001, remaining=?)
-Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.distribution.ExecutorListenerNotifier throttleQueues
+Jun 21, 2021 4:53:27 PM gov.usgs.earthquake.distribution.ExecutorListenerNotifier throttleQueues
 INFO: [null] done throttling (size = 2499)
-Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.TestBasicRemote sendText
-INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-02-10T18:33:33.865086500Z&quot;}
-Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver run
+Jun 21, 2021 4:53:27 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-06-14T22:53:27.474446200Z&quot;}
+Jun 21, 2021 4:53:27 PM gov.usgs.earthquake.aws.AwsProductReceiver run
 WARNING: Exception sending products_created_after
 java.lang.NullPointerException
-	at gov.usgs.earthquake.aws.AwsProductReceiver.sendProductsCreatedAfter(AwsProductReceiver.java:379)
-	at gov.usgs.earthquake.aws.AwsProductReceiver.run(AwsProductReceiver.java:341)
+	at gov.usgs.earthquake.aws.AwsProductReceiver.sendProductsCreatedAfter(AwsProductReceiver.java:393)
+	at gov.usgs.earthquake.aws.AwsProductReceiver.run(AwsProductReceiver.java:353)
 	at java.base/java.lang.Thread.run(Thread.java:834)
 
-Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver onClose
+Jun 21, 2021 4:53:27 PM gov.usgs.earthquake.aws.AwsProductReceiver onClose
 INFO: [null] onClose CloseReason[1001,test going away]
-Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+Jun 21, 2021 4:53:27 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] onOpen connection_id=test session
-Feb 17, 2021 11:33:33 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+Jun 21, 2021 4:53:27 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] Starting catch up
-Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.TestBasicRemote sendText
-INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-02-10T18:33:33.871424400Z&quot;}
-Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+Jun 21, 2021 4:53:28 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-06-14T22:53:27.479415700Z&quot;}
+Jun 21, 2021 4:53:28 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] onOpen connection_id=test session
-Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+Jun 21, 2021 4:53:28 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] Starting catch up
-Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.TestBasicRemote sendText
-INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-02-10T18:33:34.884452100Z&quot;}
-Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.AwsProductReceiver onProductsCreatedAfter
+Jun 21, 2021 4:53:28 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-06-14T22:53:28.488933700Z&quot;}
+Jun 21, 2021 4:53:28 PM gov.usgs.earthquake.aws.AwsProductReceiver onProductsCreatedAfter
 INFO: [null] Caught up, switching to broadcast
-Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.AwsProductReceiver onBroadcast
+Jun 21, 2021 4:53:28 PM gov.usgs.earthquake.aws.AwsProductReceiver onBroadcast
 INFO: [null] broadcast ids out of sequence (at 11, received 13), switching to catch up mode
-Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.TestBasicRemote sendText
-INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-02-17T18:33:34.887462Z&quot;}
-Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+Jun 21, 2021 4:53:28 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-06-21T22:53:28.489897700Z&quot;}
+Jun 21, 2021 4:53:28 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] onOpen connection_id=test session
-Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+Jun 21, 2021 4:53:28 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] Starting catch up
-Feb 17, 2021 11:33:34 AM gov.usgs.earthquake.aws.TestBasicRemote sendText
-INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-02-10T18:33:34.917918100Z&quot;}
+Jun 21, 2021 4:53:28 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2021-06-14T22:53:28.498900Z&quot;}
 </pre>
 </span>
 </div>
@@ -169,7 +169,7 @@ INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 6.7.1</a> at Feb 17, 2021, 11:35:07 AM</p>
+<a href="http://www.gradle.org">Gradle 7.0</a> at Jun 21, 2021, 4:54:38 PM</p>
 </div>
 </div>
 </body>

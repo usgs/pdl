@@ -231,7 +231,9 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 </tr>
 <tr class="altColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(gov.usgs.earthquake.distribution.DefaultNotificationReceiver)">ExecutorListenerNotifier</a></span>&#8203;(<a href="DefaultNotificationReceiver.html" title="class in gov.usgs.earthquake.distribution">DefaultNotificationReceiver</a>&nbsp;receiver)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Constructor</div>
+</td>
 </tr>
 </table>
 </li>
@@ -308,7 +310,9 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#notifyListeners(gov.usgs.earthquake.distribution.NotificationEvent,java.util.Collection)">notifyListeners</a></span>&#8203;(<a href="NotificationEvent.html" title="class in gov.usgs.earthquake.distribution">NotificationEvent</a>&nbsp;event,
                java.util.Collection&lt;<a href="NotificationListener.html" title="interface in gov.usgs.earthquake.distribution">NotificationListener</a>&gt;&nbsp;listeners)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Calls queueNotification with event and listener for each listener</div>
+</td>
 </tr>
 <tr id="i10" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
@@ -368,7 +372,10 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <tr id="i19" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#throttleQueues(java.lang.Integer)">throttleQueues</a></span>&#8203;(java.lang.Integer&nbsp;remaining)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">If longest queue has more than 50k notifications,
+ wait until longest queue has 25k notifications before returning.</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -488,6 +495,11 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <li class="blockList">
 <h4>ExecutorListenerNotifier</h4>
 <pre>public&nbsp;ExecutorListenerNotifier&#8203;(<a href="DefaultNotificationReceiver.html" title="class in gov.usgs.earthquake.distribution">DefaultNotificationReceiver</a>&nbsp;receiver)</pre>
+<div class="block">Constructor</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>receiver</code> - DefaultNotificationReceiver</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -516,7 +528,7 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <dd><code>listener</code> - the listener to add. When notifications are received, this
             listener will be notified.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -538,7 +550,7 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <dd><code>listener</code> - the listener to remove. When notifications are receive, this
             listener will no longer be notified.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -563,7 +575,7 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>event</code> - the notification being sent to listeners.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -576,9 +588,13 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <pre class="methodSignature">public&nbsp;void&nbsp;notifyListeners&#8203;(<a href="NotificationEvent.html" title="class in gov.usgs.earthquake.distribution">NotificationEvent</a>&nbsp;event,
                             java.util.Collection&lt;<a href="NotificationListener.html" title="interface in gov.usgs.earthquake.distribution">NotificationListener</a>&gt;&nbsp;listeners)
                      throws java.lang.Exception</pre>
+<div class="block">Calls queueNotification with event and listener for each listener</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>event</code> - NotificationEvent</dd>
+<dd><code>listeners</code> - Collection of NotificationListeners</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -590,6 +606,11 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <h4>queueNotification</h4>
 <pre class="methodSignature">protected&nbsp;void&nbsp;queueNotification&#8203;(<a href="NotificationListener.html" title="interface in gov.usgs.earthquake.distribution">NotificationListener</a>&nbsp;listener,
                                  <a href="NotificationEvent.html" title="class in gov.usgs.earthquake.distribution">NotificationEvent</a>&nbsp;event)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>listener</code> - NotificationListener</dd>
+<dd><code>event</code> - NotificationEvent</dd>
+</dl>
 </li>
 </ul>
 <a id="shutdown()">
@@ -639,6 +660,10 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <li class="blockList">
 <h4>getReceiver</h4>
 <pre class="methodSignature">public&nbsp;<a href="DefaultNotificationReceiver.html" title="class in gov.usgs.earthquake.distribution">DefaultNotificationReceiver</a>&nbsp;getReceiver()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>default notification receiver</dd>
+</dl>
 </li>
 </ul>
 <a id="setReceiver(gov.usgs.earthquake.distribution.DefaultNotificationReceiver)">
@@ -648,6 +673,10 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <li class="blockList">
 <h4>setReceiver</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setReceiver&#8203;(<a href="DefaultNotificationReceiver.html" title="class in gov.usgs.earthquake.distribution">DefaultNotificationReceiver</a>&nbsp;receiver)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>receiver</code> - of the default notification variety</dd>
+</dl>
 </li>
 </ul>
 <a id="getStatus()">
@@ -657,6 +686,10 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <li class="blockList">
 <h4>getStatus</h4>
 <pre class="methodSignature">public&nbsp;java.util.Map&lt;java.lang.String,&#8203;java.lang.Integer&gt;&nbsp;getStatus()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>map of status</dd>
+</dl>
 </li>
 </ul>
 <a id="getMaxQueueSize()">
@@ -685,7 +718,7 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
  wait until longest queue has 25k notifications before returning.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.InterruptedException</code></dd>
+<dd><code>java.lang.InterruptedException</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -697,9 +730,13 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <h4>throttleQueues</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;throttleQueues&#8203;(java.lang.Integer&nbsp;remaining)
                     throws java.lang.InterruptedException</pre>
+<div class="block">If longest queue has more than 50k notifications,
+ wait until longest queue has 25k notifications before returning.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>remaining</code> - integer</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.InterruptedException</code></dd>
+<dd><code>java.lang.InterruptedException</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -724,6 +761,10 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <li class="blockList">
 <h4>getThrottleStartThreshold</h4>
 <pre class="methodSignature">public&nbsp;int&nbsp;getThrottleStartThreshold()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>int throttle start threshold</dd>
+</dl>
 </li>
 </ul>
 <a id="setThrottleStartThreshold(int)">
@@ -733,6 +774,10 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <li class="blockList">
 <h4>setThrottleStartThreshold</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setThrottleStartThreshold&#8203;(int&nbsp;n)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>n</code> - int throttle start threshold</dd>
+</dl>
 </li>
 </ul>
 <a id="getThrottleStopThreshold()">
@@ -742,6 +787,10 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <li class="blockList">
 <h4>getThrottleStopThreshold</h4>
 <pre class="methodSignature">public&nbsp;int&nbsp;getThrottleStopThreshold()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>int throttle stop threshold</dd>
+</dl>
 </li>
 </ul>
 <a id="setThrottleStopThreshold(int)">
@@ -751,6 +800,10 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <li class="blockList">
 <h4>setThrottleStopThreshold</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setThrottleStopThreshold&#8203;(int&nbsp;n)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>n</code> - int throttle stop threshold</dd>
+</dl>
 </li>
 </ul>
 <a id="getThrottleWaitInterval()">
@@ -760,6 +813,10 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <li class="blockList">
 <h4>getThrottleWaitInterval</h4>
 <pre class="methodSignature">public&nbsp;long&nbsp;getThrottleWaitInterval()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>int throttle wait interval</dd>
+</dl>
 </li>
 </ul>
 <a id="setThrottleWaitInterval(long)">
@@ -769,6 +826,10 @@ implements <a href="ListenerNotifier.html" title="interface in gov.usgs.earthqua
 <li class="blockList">
 <h4>setThrottleWaitInterval</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setThrottleWaitInterval&#8203;(long&nbsp;ms)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>ms</code> - long throttle wait interval in ms</dd>
+</dl>
 </li>
 </ul>
 </li>

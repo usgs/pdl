@@ -7,61 +7,96 @@ import java.net.URL;
 
 <span class="nc" id="L8">public class Factory {</span>
 
+	/**
+	 * Creates EIDS Client using given params
+	 * @param serverHost host
+	 * @param serverPort port
+	 * @param alternateServers for list of alternate servers
+	 * @param trackingFileName tracking file name
+	 * @return EIDSClient
+	 */
 	public EIDSClient createEIDSClient(final String serverHost,
 			final Integer serverPort, final String alternateServers,
 			final String trackingFileName) {
-<span class="nc" id="L13">		EIDSClient client = new EIDSClient();</span>
+<span class="nc" id="L21">		EIDSClient client = new EIDSClient();</span>
 
-<span class="nc" id="L15">		client.setServerHost(serverHost);</span>
-<span class="nc" id="L16">		client.setServerPort(serverPort);</span>
-<span class="nc" id="L17">		client.setAlternateServersList(alternateServers);</span>
-<span class="nc" id="L18">		client.setTrackingFileName(trackingFileName);</span>
+<span class="nc" id="L23">		client.setServerHost(serverHost);</span>
+<span class="nc" id="L24">		client.setServerPort(serverPort);</span>
+<span class="nc" id="L25">		client.setAlternateServersList(alternateServers);</span>
+<span class="nc" id="L26">		client.setTrackingFileName(trackingFileName);</span>
 
-<span class="nc" id="L20">		return client;</span>
+<span class="nc" id="L28">		return client;</span>
 	}
 
+	/**
+	 * Creates EIDS Notification Receiver
+	 * @param serverList serverlist
+	 * @param receiverStorageDirectory file of storage directory
+	 * @param receiverIndexFile file of receiver index
+	 * @param client EIDSClient
+	 * @return new EIDSNotificationReceiver
+	 * @throws Exception if error occurs
+	 */
 	public EIDSNotificationReceiver createEIDSNotificationReceiver(
 			final String serverList, final File receiverStorageDirectory,
 			final File receiverIndexFile, final EIDSClient client)
 			throws Exception {
-<span class="nc" id="L27">		EIDSNotificationReceiver receiver = new EIDSNotificationReceiver();</span>
+<span class="nc" id="L44">		EIDSNotificationReceiver receiver = new EIDSNotificationReceiver();</span>
 
-<span class="nc" id="L29">		receiver.setName(&quot;eids&quot;);</span>
+<span class="nc" id="L46">		receiver.setName(&quot;eids&quot;);</span>
 
-<span class="nc" id="L31">		receiver.setProductStorage(new FileProductStorage(</span>
+<span class="nc" id="L48">		receiver.setProductStorage(new FileProductStorage(</span>
 				receiverStorageDirectory));
-<span class="nc" id="L33">		receiver.setNotificationIndex(new JDBCNotificationIndex(</span>
-<span class="nc" id="L34">				receiverIndexFile.getCanonicalPath()));</span>
+<span class="nc" id="L50">		receiver.setNotificationIndex(new JDBCNotificationIndex(</span>
+<span class="nc" id="L51">				receiverIndexFile.getCanonicalPath()));</span>
 
-<span class="nc" id="L36">		return receiver;</span>
+<span class="nc" id="L53">		return receiver;</span>
 	}
 
+	/**
+	 * Create new socket product receiver
+	 * @param port int of port
+	 * @param numThreads int of threads
+	 * @param receiverStorageDirectory file of storage directory
+	 * @param receiverIndexFile file of receiver index
+	 * @return new SocketProductReceiver
+	 * @throws Exception if error occurs
+	 */
 	public SocketProductReceiver createSocketProductReceiver(final int port,
 			final int numThreads, final File receiverStorageDirectory,
 			final File receiverIndexFile) throws Exception {
-<span class="nc" id="L42">		SocketProductReceiver receiver = new SocketProductReceiver();</span>
+<span class="nc" id="L68">		SocketProductReceiver receiver = new SocketProductReceiver();</span>
 
-<span class="nc" id="L44">		receiver.setName(&quot;socket&quot;);</span>
-<span class="nc" id="L45">		receiver.setProductStorage(new FileProductStorage(</span>
+<span class="nc" id="L70">		receiver.setName(&quot;socket&quot;);</span>
+<span class="nc" id="L71">		receiver.setProductStorage(new FileProductStorage(</span>
 				receiverStorageDirectory));
-<span class="nc" id="L47">		receiver.setNotificationIndex(new JDBCNotificationIndex(</span>
-<span class="nc" id="L48">				receiverIndexFile.getCanonicalPath()));</span>
+<span class="nc" id="L73">		receiver.setNotificationIndex(new JDBCNotificationIndex(</span>
+<span class="nc" id="L74">				receiverIndexFile.getCanonicalPath()));</span>
 
-<span class="nc" id="L50">		return receiver;</span>
+<span class="nc" id="L76">		return receiver;</span>
 	}
 
+	/**
+	 * create new EIDS Notification Sender
+	 * @param corbaHost String of host
+	 * @param corbaPort String of port
+	 * @param eidsPolldir file of eidsPoll directory
+	 * @param htdocs file of htdocs
+	 * @param htdocsURL URL of htdocs
+	 * @return new EIDSNotificationSender
+	 */
 	public EIDSNotificationSender createEIDSNotificationSender(
 			final String corbaHost, final String corbaPort,
 			final File eidsPolldir, final File htdocs, final URL htdocsURL) {
-<span class="nc" id="L56">		EIDSNotificationSender sender = new EIDSNotificationSender();</span>
+<span class="nc" id="L91">		EIDSNotificationSender sender = new EIDSNotificationSender();</span>
 
-<span class="nc" id="L58">		sender.setName(&quot;eids&quot;);</span>
-<span class="nc" id="L59">		sender.setServerHost(corbaHost);</span>
-<span class="nc" id="L60">		sender.setServerPort(corbaPort);</span>
-<span class="nc" id="L61">		sender.setServerPolldir(eidsPolldir);</span>
-<span class="nc" id="L62">		sender.setProductStorage(new URLProductStorage(htdocs, htdocsURL));</span>
+<span class="nc" id="L93">		sender.setName(&quot;eids&quot;);</span>
+<span class="nc" id="L94">		sender.setServerHost(corbaHost);</span>
+<span class="nc" id="L95">		sender.setServerPort(corbaPort);</span>
+<span class="nc" id="L96">		sender.setServerPolldir(eidsPolldir);</span>
+<span class="nc" id="L97">		sender.setProductStorage(new URLProductStorage(htdocs, htdocsURL));</span>
 
-<span class="nc" id="L64">		return sender;</span>
+<span class="nc" id="L99">		return sender;</span>
 	}
 
 }

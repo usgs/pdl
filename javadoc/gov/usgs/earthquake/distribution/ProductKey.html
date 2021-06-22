@@ -143,7 +143,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <pre>public class <span class="typeNameLabel">ProductKey</span>
 extends <a href="../../util/DefaultConfigurable.html" title="class in gov.usgs.util">DefaultConfigurable</a></pre>
 <div class="block">This represents a public key used to verify product signatures.
- 
+
  A key should have at least one source and/or one type.</div>
 </li>
 </ul>
@@ -175,7 +175,9 @@ extends <a href="../../util/DefaultConfigurable.html" title="class in gov.usgs.u
 <tr class="rowColor">
 <td class="colFirst"><code>java.util.logging.Logger</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#LOGGER">LOGGER</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Logger for use in file</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
@@ -326,6 +328,7 @@ extends <a href="../../util/DefaultConfigurable.html" title="class in gov.usgs.u
 <li class="blockList">
 <h4>LOGGER</h4>
 <pre>public final&nbsp;java.util.logging.Logger LOGGER</pre>
+<div class="block">Logger for use in file</div>
 </li>
 </ul>
 <a id="SOURCES_PROPERTY_NAME">
@@ -400,7 +403,7 @@ extends <a href="../../util/DefaultConfigurable.html" title="class in gov.usgs.u
                   java.util.List&lt;java.lang.String&gt;&nbsp;sources,
                   java.util.List&lt;java.lang.String&gt;&nbsp;types)</pre>
 <div class="block">Construct a new ProductPublicKey.
- 
+
  Sources</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -428,7 +431,7 @@ extends <a href="../../util/DefaultConfigurable.html" title="class in gov.usgs.u
 <h4>isForProduct</h4>
 <pre class="methodSignature">public&nbsp;boolean&nbsp;isForProduct&#8203;(<a href="../product/ProductId.html" title="class in gov.usgs.earthquake.product">ProductId</a>&nbsp;id)</pre>
 <div class="block">Check whether this key is a candidate for verifying a signature.
- 
+
  If any sources, product source must be in list. If any types, product
  type must be in list.</div>
 <dl>

@@ -3,165 +3,205 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.security.PrivateKey;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import gov.usgs.earthquake.aws.AwsProductSender;
 import gov.usgs.earthquake.product.Product;
 import gov.usgs.earthquake.product.io.IOUtil;
 import gov.usgs.earthquake.product.io.ObjectProductHandler;
 import gov.usgs.earthquake.product.io.ProductSource;
+import gov.usgs.util.CryptoUtils;
+import gov.usgs.util.FileUtils;
 
 /**
  * A utility class to (re)send an existing product to pdl hubs.
- * 
+ *
  * Mainly used when one server has not received a product, in order to
  * redistribute the product.
  */
-<span class="nc" id="L22">public class ProductResender {</span>
+<span class="nc" id="L26">public class ProductResender {</span>
 
-<span class="nc" id="L24">	private static final Logger LOGGER = Logger.getLogger(ProductResender.class</span>
-<span class="nc" id="L25">			.getName());</span>
+<span class="nc" id="L28">	private static final Logger LOGGER = Logger.getLogger(ProductResender.class</span>
+<span class="nc" id="L29">			.getName());</span>
 
+	/** Servers arguments */
 	public static final String SERVERS_ARGUMENT = &quot;--servers=&quot;;
+	/** Batch arguments */
 	public static final String BATCH_ARGUMENT = &quot;--batch&quot;;
+	/** Private Key Argument */
+	public static final String PRIVATE_KEY_ARGUMENT = &quot;--privateKey=&quot;;
 
+	/**
+	 * Command Line Interface to ProductResender.
+	 *
+	 * @param args CLI arguments
+	 * @throws Exception if error occurs
+	 */
 	public static void main(final String[] args) throws Exception {
 		// disable tracker
-<span class="nc" id="L32">		ProductTracker.setTrackerEnabled(false);</span>
+<span class="nc" id="L46">		ProductTracker.setTrackerEnabled(false);</span>
 
-<span class="nc" id="L34">		File inFile = null;</span>
-<span class="nc" id="L35">		String inFormat = null;</span>
-<span class="nc" id="L36">		String servers = null;</span>
-<span class="nc" id="L37">		boolean binaryFormat = false;</span>
-<span class="nc" id="L38">		boolean enableDeflate = true;</span>
-<span class="nc" id="L39">		boolean batchMode = false;</span>
+<span class="nc" id="L48">		File inFile = null;</span>
+<span class="nc" id="L49">		String inFormat = null;</span>
+<span class="nc" id="L50">		String servers = null;</span>
+<span class="nc" id="L51">		boolean binaryFormat = false;</span>
+<span class="nc" id="L52">		boolean enableDeflate = true;</span>
+<span class="nc" id="L53">		boolean batchMode = false;</span>
+<span class="nc" id="L54">		PrivateKey privateKey = null;</span>
 
-<span class="nc bnc" id="L41" title="All 2 branches missed.">		for (String arg : args) {</span>
-<span class="nc bnc" id="L42" title="All 2 branches missed.">			if (arg.startsWith(IOUtil.INFILE_ARGUMENT)) {</span>
-<span class="nc" id="L43">				inFile = new File(arg.replace(IOUtil.INFILE_ARGUMENT, &quot;&quot;));</span>
-<span class="nc bnc" id="L44" title="All 2 branches missed.">			} else if (arg.startsWith(IOUtil.INFORMAT_ARGUMENT)) {</span>
-<span class="nc" id="L45">				inFormat = arg.replace(IOUtil.INFORMAT_ARGUMENT, &quot;&quot;);</span>
-<span class="nc bnc" id="L46" title="All 2 branches missed.">			} else if (arg.startsWith(SERVERS_ARGUMENT)) {</span>
-<span class="nc" id="L47">				servers = arg.replace(SERVERS_ARGUMENT, &quot;&quot;);</span>
-<span class="nc bnc" id="L48" title="All 2 branches missed.">			} else if (arg.equals(CLIProductBuilder.BINARY_FORMAT_ARGUMENT)) {</span>
-<span class="nc" id="L49">				binaryFormat = true;</span>
-<span class="nc bnc" id="L50" title="All 2 branches missed.">			} else if (arg.equals(CLIProductBuilder.DISABLE_DEFLATE)) {</span>
-<span class="nc" id="L51">				enableDeflate = false;</span>
-<span class="nc bnc" id="L52" title="All 2 branches missed.">			} else if (arg.equals(BATCH_ARGUMENT)) {</span>
-<span class="nc" id="L53">				batchMode = true;</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">		for (String arg : args) {</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">			if (arg.startsWith(IOUtil.INFILE_ARGUMENT)) {</span>
+<span class="nc" id="L58">				inFile = new File(arg.replace(IOUtil.INFILE_ARGUMENT, &quot;&quot;));</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">			} else if (arg.startsWith(IOUtil.INFORMAT_ARGUMENT)) {</span>
+<span class="nc" id="L60">				inFormat = arg.replace(IOUtil.INFORMAT_ARGUMENT, &quot;&quot;);</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">			} else if (arg.startsWith(SERVERS_ARGUMENT)) {</span>
+<span class="nc" id="L62">				servers = arg.replace(SERVERS_ARGUMENT, &quot;&quot;);</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">			} else if (arg.equals(CLIProductBuilder.BINARY_FORMAT_ARGUMENT)) {</span>
+<span class="nc" id="L64">				binaryFormat = true;</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">			} else if (arg.equals(CLIProductBuilder.DISABLE_DEFLATE)) {</span>
+<span class="nc" id="L66">				enableDeflate = false;</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">			} else if (arg.equals(BATCH_ARGUMENT)) {</span>
+<span class="nc" id="L68">				batchMode = true;</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">			} else if (arg.startsWith(PRIVATE_KEY_ARGUMENT)) {</span>
+<span class="nc" id="L70">				privateKey = CryptoUtils.readOpenSSHPrivateKey(</span>
+<span class="nc" id="L71">						FileUtils.readFile(new File(arg.replace(PRIVATE_KEY_ARGUMENT, &quot;&quot;))),</span>
+						null);
+<span class="nc bnc" id="L73" title="All 2 branches missed.">				if (privateKey == null) {</span>
+<span class="nc" id="L74">					LOGGER.warning(&quot;Unable to parse private key &quot; + arg);</span>
+<span class="nc" id="L75">					System.exit(1);</span>
+				}
 			}
 		}
 
 		// read product
-<span class="nc" id="L58">		Product product = null;</span>
-<span class="nc bnc" id="L59" title="All 2 branches missed.">		if (!batchMode) {</span>
-<span class="nc" id="L60">			ProductSource source = IOUtil.getProductSource(inFormat, inFile);</span>
-<span class="nc bnc" id="L61" title="All 2 branches missed.">			if (source != null) {</span>
-<span class="nc" id="L62">				product = ObjectProductHandler.getProduct(source);</span>
+<span class="nc" id="L81">		Product product = null;</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">		if (!batchMode) {</span>
+<span class="nc" id="L83">			ProductSource source = IOUtil.getProductSource(inFormat, inFile);</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">			if (source != null) {</span>
+<span class="nc" id="L85">				product = ObjectProductHandler.getProduct(source);</span>
 			}
 		}
 
-<span class="nc" id="L66">		ProductBuilder builder = new ProductBuilder();</span>
-<span class="nc" id="L67">		builder.getProductSenders().addAll(</span>
-<span class="nc" id="L68">				CLIProductBuilder.parseServers(servers, 15000, binaryFormat,</span>
+<span class="nc" id="L89">		ProductBuilder builder = new ProductBuilder();</span>
+<span class="nc" id="L90">		builder.getProductSenders().addAll(</span>
+<span class="nc" id="L91">				CLIProductBuilder.parseServers(servers, 15000, binaryFormat,</span>
 						enableDeflate));
-
-<span class="nc bnc" id="L71" title="All 6 branches missed.">		if ((!batchMode &amp;&amp; product == null) || builder.getProductSenders().size() == 0) {</span>
-<span class="nc" id="L72">			System.err.println(&quot;Usage: ProductResender --servers=SERVERLIST&quot;</span>
-					+ &quot; --informat=(zip|directory|xml) --infile=FILE&quot;
-					+ &quot; [--binaryFormat] [--disableDeflate] [--batch]&quot;);
-<span class="nc" id="L75">			System.err.println(&quot;When using batch mode (--batch), the --infile argument is ignored.&quot;);</span>
-<span class="nc" id="L76">			System.err.println(&quot;Files to send are read one per line from stdin.&quot;);</span>
-<span class="nc" id="L77">			System.exit(CLIProductBuilder.EXIT_INVALID_ARGUMENTS);</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">		if (privateKey != null) {</span>
+			// resign products
+<span class="nc bnc" id="L95" title="All 2 branches missed.">			for (ProductSender sender : builder.getProductSenders()) {</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">				if (sender instanceof AwsProductSender) {</span>
+<span class="nc" id="L97">					AwsProductSender awsSender = (AwsProductSender) sender;</span>
+<span class="nc" id="L98">					awsSender.setPrivateKey(privateKey);</span>
+<span class="nc" id="L99">					awsSender.setSignProducts(true);;</span>
+				}
+<span class="nc" id="L101">			}</span>
 		}
 
-<span class="nc" id="L80">		builder.startup();</span>
+<span class="nc bnc" id="L104" title="All 6 branches missed.">		if ((!batchMode &amp;&amp; product == null) || builder.getProductSenders().size() == 0) {</span>
+<span class="nc" id="L105">			System.err.println(&quot;Usage: ProductResender --servers=SERVERLIST&quot;</span>
+					+ &quot; --informat=(zip|directory|xml) --infile=FILE&quot;
+					+ &quot; [--binaryFormat] [--disableDeflate] [--batch]&quot;);
+<span class="nc" id="L108">			System.err.println(&quot;When using batch mode (--batch), the --infile argument is ignored.&quot;);</span>
+<span class="nc" id="L109">			System.err.println(&quot;Files to send are read one per line from stdin.&quot;);</span>
+<span class="nc" id="L110">			System.exit(CLIProductBuilder.EXIT_INVALID_ARGUMENTS);</span>
+		}
 
-<span class="nc bnc" id="L82" title="All 2 branches missed.">		if (!batchMode) {</span>
-<span class="nc" id="L83">			sendProduct(builder, product, batchMode);</span>
+<span class="nc" id="L113">		builder.startup();</span>
+
+<span class="nc bnc" id="L115" title="All 2 branches missed.">		if (!batchMode) {</span>
+<span class="nc" id="L116">			sendProduct(builder, product, batchMode);</span>
 		} else {
 			// send batch
-<span class="nc" id="L86">			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));</span>
-<span class="nc" id="L87">			String line = null;</span>
-<span class="nc bnc" id="L88" title="All 2 branches missed.">			while ((line = br.readLine()) != null) {</span>
-<span class="nc" id="L89">				inFile = new File(line);</span>
-<span class="nc" id="L90">				ProductSource source = IOUtil.getProductSource(inFormat, inFile);</span>
-<span class="nc bnc" id="L91" title="All 2 branches missed.">				if (source != null) {</span>
-<span class="nc" id="L92">					product = ObjectProductHandler.getProduct(source);</span>
+<span class="nc" id="L119">			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));</span>
+<span class="nc" id="L120">			String line = null;</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">			while ((line = br.readLine()) != null) {</span>
+<span class="nc" id="L122">				inFile = new File(line);</span>
+<span class="nc" id="L123">				ProductSource source = IOUtil.getProductSource(inFormat, inFile);</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">				if (source != null) {</span>
+<span class="nc" id="L125">					product = ObjectProductHandler.getProduct(source);</span>
 				} else {
-<span class="nc" id="L94">					System.err.println(&quot;ERROR: unable to load product from '&quot; +</span>
-<span class="nc" id="L95">							inFile.getCanonicalPath() + &quot;'&quot;);</span>
-<span class="nc" id="L96">					continue;</span>
+<span class="nc" id="L127">					System.err.println(&quot;ERROR: unable to load product from '&quot; +</span>
+<span class="nc" id="L128">							inFile.getCanonicalPath() + &quot;'&quot;);</span>
+<span class="nc" id="L129">					continue;</span>
 				}
-<span class="nc" id="L98">				sendProduct(builder, product, batchMode);</span>
-<span class="nc" id="L99">			}</span>
+<span class="nc" id="L131">				sendProduct(builder, product, batchMode);</span>
+<span class="nc" id="L132">			}</span>
 		}
 
 		// normal exit
-<span class="nc" id="L103">		builder.shutdown();</span>
-<span class="nc" id="L104">		System.exit(0);</span>
-<span class="nc" id="L105">	}</span>
+<span class="nc" id="L136">		builder.shutdown();</span>
+<span class="nc" id="L137">		System.exit(0);</span>
+<span class="nc" id="L138">	}</span>
 
+	/**
+	 * Sends product to builder
+	 * @param builder ProductBuilder
+	 * @param product Product
+	 * @param batchMode bool
+	 * @throws Exception if error occurs
+	 */
 	protected static void sendProduct(final ProductBuilder builder,
 			final Product product, final boolean batchMode) throws Exception {
 		// extracted from CLIProductBuilder
 
 		// send the product
-<span class="nc" id="L112">		Map&lt;ProductSender, Exception&gt; sendExceptions = builder</span>
-<span class="nc" id="L113">				.sendProduct(product);</span>
+<span class="nc" id="L152">		Map&lt;ProductSender, Exception&gt; sendExceptions = builder</span>
+<span class="nc" id="L153">				.sendProduct(product);</span>
 
 		// handle any send exceptions
-<span class="nc bnc" id="L116" title="All 2 branches missed.">		if (sendExceptions.size() != 0) {</span>
-<span class="nc" id="L117">			Iterator&lt;ProductSender&gt; senders = sendExceptions.keySet()</span>
-<span class="nc" id="L118">					.iterator();</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">		if (sendExceptions.size() != 0) {</span>
+<span class="nc" id="L157">			Iterator&lt;ProductSender&gt; senders = sendExceptions.keySet()</span>
+<span class="nc" id="L158">					.iterator();</span>
 			// log the exceptions
-<span class="nc bnc" id="L120" title="All 2 branches missed.">			while (senders.hasNext()) {</span>
-<span class="nc" id="L121">				ProductSender sender = senders.next();</span>
-<span class="nc bnc" id="L122" title="All 2 branches missed.">				if (sender instanceof SocketProductSender) {</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">			while (senders.hasNext()) {</span>
+<span class="nc" id="L161">				ProductSender sender = senders.next();</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">				if (sender instanceof SocketProductSender) {</span>
 					// put more specific information about socket senders
-<span class="nc" id="L124">					SocketProductSender socketSender = (SocketProductSender) sender;</span>
-<span class="nc" id="L125">					LOGGER.log(</span>
+<span class="nc" id="L164">					SocketProductSender socketSender = (SocketProductSender) sender;</span>
+<span class="nc" id="L165">					LOGGER.log(</span>
 							Level.WARNING,
 							&quot;Exception sending product to &quot;
-<span class="nc" id="L128">									+ socketSender.getHost() + &quot;:&quot;</span>
-<span class="nc" id="L129">									+ socketSender.getPort(),</span>
-<span class="nc" id="L130">							sendExceptions.get(sender));</span>
-<span class="nc" id="L131">				} else {</span>
-<span class="nc" id="L132">					LOGGER.log(Level.WARNING, &quot;Exception sending product &quot;</span>
-<span class="nc" id="L133">							+ sendExceptions.get(sender));</span>
+<span class="nc" id="L168">									+ socketSender.getHost() + &quot;:&quot;</span>
+<span class="nc" id="L169">									+ socketSender.getPort(),</span>
+<span class="nc" id="L170">							sendExceptions.get(sender));</span>
+<span class="nc" id="L171">				} else {</span>
+<span class="nc" id="L172">					LOGGER.log(Level.WARNING, &quot;Exception sending product &quot;</span>
+<span class="nc" id="L173">							+ sendExceptions.get(sender));</span>
 				}
-<span class="nc" id="L135">			}</span>
+<span class="nc" id="L175">			}</span>
 
-<span class="nc bnc" id="L137" title="All 2 branches missed.">			if (sendExceptions.size() &lt; builder.getProductSenders().size()) {</span>
-<span class="nc" id="L138">				LOGGER.warning(&quot;Partial failure sending product,&quot;</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">			if (sendExceptions.size() &lt; builder.getProductSenders().size()) {</span>
+<span class="nc" id="L178">				LOGGER.warning(&quot;Partial failure sending product,&quot;</span>
 						+ &quot; at least one sender accepted product.&quot;
 						+ &quot; Check the tracker for more information.&quot;);
 				// still output built product id
-<span class="nc" id="L142">				System.out.println(product.getId().toString());</span>
-<span class="nc bnc" id="L143" title="All 2 branches missed.">				if (batchMode) {</span>
+<span class="nc" id="L182">				System.out.println(product.getId().toString());</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">				if (batchMode) {</span>
 					// don't interrupt the batch
-<span class="nc" id="L145">					return;</span>
+<span class="nc" id="L185">					return;</span>
 				}
 				// but exit with partial failure
-<span class="nc" id="L148">				System.exit(CLIProductBuilder.EXIT_PARTIALLY_SENT);</span>
+<span class="nc" id="L188">				System.exit(CLIProductBuilder.EXIT_PARTIALLY_SENT);</span>
 			} else {
-<span class="nc" id="L150">				LOGGER.severe(&quot;Total failure sending product&quot;);</span>
+<span class="nc" id="L190">				LOGGER.severe(&quot;Total failure sending product&quot;);</span>
 				// still output built product id
-<span class="nc" id="L152">				System.err.println(&quot;ERROR: &quot; + product.getId().toString());</span>
-<span class="nc bnc" id="L153" title="All 2 branches missed.">				if (batchMode) {</span>
+<span class="nc" id="L192">				System.err.println(&quot;ERROR: &quot; + product.getId().toString());</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">				if (batchMode) {</span>
 					// don't interrupt the batch
-<span class="nc" id="L155">					return;</span>
+<span class="nc" id="L195">					return;</span>
 				}
-<span class="nc" id="L157">				System.exit(CLIProductBuilder.EXIT_UNABLE_TO_SEND);</span>
+<span class="nc" id="L197">				System.exit(CLIProductBuilder.EXIT_UNABLE_TO_SEND);</span>
 			}
 
 		}
 
 		// otherwise output built product id
-<span class="nc" id="L163">		System.out.println(product.getId().toString());</span>
-<span class="nc" id="L164">	}</span>
+<span class="nc" id="L203">		System.out.println(product.getId().toString());</span>
+<span class="nc" id="L204">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

@@ -11,7 +11,7 @@ import javax.json.JsonObjectBuilder;
 
 /**
  * Heartbeat status information for a single component
- * 
+ *
  */
 public class HeartbeatStatus {
 
@@ -19,7 +19,7 @@ public class HeartbeatStatus {
 
 	/**
 	 * Create a new HeartbeatStatus.
-	 * 
+	 *
 	 */
 <span class="fc" id="L24">	public HeartbeatStatus() {</span>
 <span class="fc" id="L25">		statuses = new HashMap&lt;String, HeartbeatInfo&gt;();</span>
@@ -27,50 +27,52 @@ public class HeartbeatStatus {
 
 	/**
 	 * Add or update a Heartbeat's key/value pair
-	 * 
-	 * @param key
-	 * @param value
+	 *
+	 * @param key String key
+	 * @param value String value of heartbeat info
 	 */
 	public void updateStatus(String key, String value) {
 <span class="fc" id="L35">		statuses.put(key, new HeartbeatInfo(value, new Date()));</span>
 <span class="fc" id="L36">	}</span>
 
+	/** @return statuses - map of string, heartbeatInfo */
 	public Map&lt;String, HeartbeatInfo&gt; getStatuses() {
-<span class="fc" id="L39">		return statuses;</span>
+<span class="fc" id="L40">		return statuses;</span>
 	}
 
+	/** @return boolean - checking statuses */
 	public boolean isEmpty() {
-<span class="fc bfc" id="L43" title="All 2 branches covered.">		return (statuses.size() == 0);</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">		return (statuses.size() == 0);</span>
 	}
 
 	/**
 	 * Purge all heartbeatStatus data for this component older than given date
-	 * 
-	 * @param purgeDate
+	 *
+	 * @param purgeDate purge data until this date
 	 */
 	public void clearDataOlderThanDate(Date purgeDate) {
-<span class="fc" id="L52">		Iterator&lt;String&gt; iterator = statuses.keySet().iterator();</span>
-<span class="fc" id="L53">		String key = &quot;&quot;;</span>
+<span class="fc" id="L54">		Iterator&lt;String&gt; iterator = statuses.keySet().iterator();</span>
+<span class="fc" id="L55">		String key = &quot;&quot;;</span>
 
 		// find and purge data older than given purgeDate
-<span class="fc bfc" id="L56" title="All 2 branches covered.">		while (iterator.hasNext()) {</span>
-<span class="fc" id="L57">			key = iterator.next();</span>
-<span class="fc bfc" id="L58" title="All 2 branches covered.">			if (statuses.get(key).isExpired(purgeDate)) {</span>
-<span class="fc" id="L59">				iterator.remove();</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">		while (iterator.hasNext()) {</span>
+<span class="fc" id="L59">			key = iterator.next();</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">			if (statuses.get(key).isExpired(purgeDate)) {</span>
+<span class="fc" id="L61">				iterator.remove();</span>
 			}
 		}
 
-<span class="fc" id="L63">	}</span>
+<span class="fc" id="L65">	}</span>
 
 	/**
 	 * @return a JsonObject for output.
 	 */
 	public JsonObject toJsonObject() {
-<span class="fc" id="L69">		JsonObjectBuilder builder = Json.createObjectBuilder();</span>
-<span class="fc bfc" id="L70" title="All 2 branches covered.">		for (String key : statuses.keySet()) {</span>
-<span class="fc" id="L71">			builder.add(key, statuses.get(key).toJsonObject());</span>
-<span class="fc" id="L72">		}</span>
-<span class="fc" id="L73">		return builder.build();</span>
+<span class="fc" id="L71">		JsonObjectBuilder builder = Json.createObjectBuilder();</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">		for (String key : statuses.keySet()) {</span>
+<span class="fc" id="L73">			builder.add(key, statuses.get(key).toJsonObject());</span>
+<span class="fc" id="L74">		}</span>
+<span class="fc" id="L75">		return builder.build();</span>
 	}
 
 }

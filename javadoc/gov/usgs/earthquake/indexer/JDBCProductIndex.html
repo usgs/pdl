@@ -183,7 +183,9 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#SUMMARY_PRODUCT_INDEX_ID">SUMMARY_PRODUCT_INDEX_ID</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Public var for summary product index IDs</div>
+</td>
 </tr>
 </table>
 </li>
@@ -210,7 +212,9 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 </tr>
 <tr class="rowColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(java.lang.String)">JDBCProductIndex</a></span>&#8203;(java.lang.String&nbsp;sqliteFileName)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Constructor.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -485,6 +489,7 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <li class="blockList">
 <h4>SUMMARY_PRODUCT_INDEX_ID</h4>
 <pre>public static final&nbsp;java.lang.String SUMMARY_PRODUCT_INDEX_ID</pre>
+<div class="block">Public var for summary product index IDs</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.indexer.JDBCProductIndex.SUMMARY_PRODUCT_INDEX_ID">Constant Field Values</a></dd>
@@ -512,7 +517,7 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <div class="block">Constructor. Sets index_file to the default value JDBC_DEFAULT_FILE</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -524,9 +529,12 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <h4>JDBCProductIndex</h4>
 <pre>public&nbsp;JDBCProductIndex&#8203;(java.lang.String&nbsp;sqliteFileName)
                  throws java.lang.Exception</pre>
+<div class="block">Constructor. Uses custom index_file</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>sqliteFileName</code> - String for sqlite file name</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -557,7 +565,7 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>config</code> - Configuration for the product index</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code> - if configuration exceptions occur.</dd>
+<dd><code>java.lang.Exception</code> - Exception</dd>
 </dl>
 </li>
 </ul>
@@ -576,7 +584,7 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Connection object</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -598,7 +606,7 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>List of Event objects</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -619,7 +627,7 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Event object with eventId set to the database id</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -663,7 +671,7 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <dd>List of unassociated Products</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.lang.IllegalArgumentException</code> - when query event search type is SEARCH_EVENT_PREFERRED.</dd>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -686,7 +694,7 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <dd>List of ProductSummary objects</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.lang.IllegalArgumentException</code> - when query event search type is SEARCH_EVENT_PREFERRED.</dd>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -705,8 +713,10 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <dd><code>query</code> - product query</dd>
 <dd><code>loadDetails</code> - whether to call <a href="#loadProductSummaries(java.util.List)"><code>loadProductSummaries(List)</code></a>,
      which loads links and properties with additional queries.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>A list of loaded product summaries</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -724,8 +734,10 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <dd><code><a href="ProductIndex.html#hasProduct(gov.usgs.earthquake.product.ProductId)">hasProduct</a></code>&nbsp;in interface&nbsp;<code><a href="ProductIndex.html" title="interface in gov.usgs.earthquake.indexer">ProductIndex</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>id</code> - product to search.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>boolean if index has product</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -747,7 +759,7 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <dd>Copy of the product summary object with the indexId set to the
          newly inserted id.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -769,7 +781,7 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>id of removed summary.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -789,12 +801,12 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="ProductIndex.html#addAssociation(gov.usgs.earthquake.indexer.Event,gov.usgs.earthquake.indexer.ProductSummary)">addAssociation</a></code>&nbsp;in interface&nbsp;<code><a href="ProductIndex.html" title="interface in gov.usgs.earthquake.indexer">ProductIndex</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>event</code> - </dd>
-<dd><code>summary</code> - </dd>
+<dd><code>event</code> - Event to add association to</dd>
+<dd><code>summary</code> - ProductSummary to add association to</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Copy of event with summary added to the event's products list</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -815,12 +827,12 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="ProductIndex.html#removeAssociation(gov.usgs.earthquake.indexer.Event,gov.usgs.earthquake.indexer.ProductSummary)">removeAssociation</a></code>&nbsp;in interface&nbsp;<code><a href="ProductIndex.html" title="interface in gov.usgs.earthquake.indexer">ProductIndex</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>event</code> - </dd>
-<dd><code>summary</code> - </dd>
+<dd><code>event</code> - An event to remove an association with</dd>
+<dd><code>summary</code> - A ProductSummary to remove an association with</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Copy of event with summary removed from the products list</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -837,7 +849,7 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
  check if the clause list is empty when they build their WHERE clause.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>query</code> - </dd>
+<dd><code>query</code> - ProductIndexQuery</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>list containing clauses in the form: column="value"</dd>
 </dl>
@@ -875,7 +887,7 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
  orderby string</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>clauseList</code> - </dd>
+<dd><code>clauseList</code> - List of clauses for WHERE</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String containing the full SELECT query</dd>
 </dl>
@@ -892,9 +904,9 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <div class="block">Populate links and properties for provided product summaries.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>summaries</code> - </dd>
+<dd><code>summaries</code> - List of ProductSummaries</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -909,11 +921,11 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <div class="block">Parse ProductSummary without loading links or properties.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>results</code> - </dd>
+<dd><code>results</code> - ResultSet to parse</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>ProductSummary object without links or properties.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -926,8 +938,12 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <pre class="methodSignature">public&nbsp;java.util.List&lt;<a href="../product/ProductId.html" title="class in gov.usgs.earthquake.product">ProductId</a>&gt;&nbsp;removeProductSummaries&#8203;(java.util.List&lt;<a href="ProductSummary.html" title="class in gov.usgs.earthquake.indexer">ProductSummary</a>&gt;&nbsp;summaries)
                                                  throws java.lang.Exception</pre>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>summaries</code> - List of product summaries to remove</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>List of ProductIds that were removed</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -944,10 +960,10 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
  productId</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>productId</code> - </dd>
-<dd><code>properties</code> - </dd>
+<dd><code>productId</code> - long product ID to associate to</dd>
+<dd><code>properties</code> - Map of properties to save</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.sql.SQLException</code></dd>
+<dd><code>java.sql.SQLException</code> - if SQL error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -966,7 +982,7 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <dd><code>productId</code> - Index id of the product to select</dd>
 <dd><code>links</code> - Map of relations to URIs</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.sql.SQLException</code></dd>
+<dd><code>java.sql.SQLException</code> - if sql error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -981,7 +997,7 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
  value is already in the range, this method just returns the value.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>lon</code> - </dd>
+<dd><code>lon</code> - Double longitude</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>double normalized between -180 and 180</dd>
 </dl>
@@ -997,7 +1013,7 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <div class="block">Wrapper to normalize BigDecimal longitudes</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>lon</code> - </dd>
+<dd><code>lon</code> - BigDecimal Longitude</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Normalized BigDecimal latitude</dd>
 </dl>
@@ -1019,7 +1035,7 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>events</code> - the events that have been updated.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

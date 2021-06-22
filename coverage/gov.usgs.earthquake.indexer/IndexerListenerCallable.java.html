@@ -11,49 +11,50 @@ import java.util.logging.Logger;
  */
 public class IndexerListenerCallable implements Callable&lt;Void&gt; {
 
-<span class="fc" id="L14">	public static final Logger LOGGER = Logger</span>
-<span class="fc" id="L15">			.getLogger(IndexerListenerCallable.class.getName());</span>
+	/** Logger object */
+<span class="fc" id="L15">	public static final Logger LOGGER = Logger</span>
+<span class="fc" id="L16">			.getLogger(IndexerListenerCallable.class.getName());</span>
 
 	private final IndexerListener listener;
 	private final IndexerEvent event;
 
 	/**
 	 * Get a callable object for deferred listener notification.
-	 * 
+	 *
 	 * @param listener
 	 *            the listener to notify
 	 * @param event
 	 *            the notification to send
 	 */
 	public IndexerListenerCallable(final IndexerListener listener,
-<span class="fc" id="L29">			final IndexerEvent event) {</span>
-<span class="fc" id="L30">		this.listener = listener;</span>
-<span class="fc" id="L31">		this.event = event;</span>
-<span class="fc" id="L32">	}</span>
+<span class="fc" id="L30">			final IndexerEvent event) {</span>
+<span class="fc" id="L31">		this.listener = listener;</span>
+<span class="fc" id="L32">		this.event = event;</span>
+<span class="fc" id="L33">	}</span>
 
 	public Void call() throws Exception {
 		try {
-<span class="fc" id="L36">			listener.onIndexerEvent(event);</span>
-<span class="fc" id="L37">			return null;</span>
-<span class="nc" id="L38">		} catch (Exception e) {</span>
-<span class="nc" id="L39">			ProductSummary summary = event.getSummary();</span>
+<span class="fc" id="L37">			listener.onIndexerEvent(event);</span>
+<span class="fc" id="L38">			return null;</span>
+<span class="nc" id="L39">		} catch (Exception e) {</span>
+<span class="nc" id="L40">			ProductSummary summary = event.getSummary();</span>
 
-<span class="nc" id="L41">			LOGGER.log(Level.WARNING, &quot;[&quot;</span>
-<span class="nc" id="L42">					+ event.getIndexer().getName()</span>
+<span class="nc" id="L42">			LOGGER.log(Level.WARNING, &quot;[&quot;</span>
+<span class="nc" id="L43">					+ event.getIndexer().getName()</span>
 					+ &quot;] listener (&quot;
-<span class="nc" id="L44">					+ listener.getName()</span>
+<span class="nc" id="L45">					+ listener.getName()</span>
 					+ &quot;) threw exception&quot;
-<span class="nc bnc" id="L46" title="All 2 branches missed.">					+ (summary != null ? &quot;, for product id=&quot;</span>
-<span class="nc" id="L47">							+ summary.getId().toString() : &quot;&quot;), e);</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">					+ (summary != null ? &quot;, for product id=&quot;</span>
+<span class="nc" id="L48">							+ summary.getId().toString() : &quot;&quot;), e);</span>
 
 			// track exception
-<span class="nc bnc" id="L50" title="All 2 branches missed.">			if (summary != null) {</span>
-<span class="nc" id="L51">				new ProductTracker(summary.getTrackerURL()).exception(listener</span>
-<span class="nc" id="L52">						.getClass().getCanonicalName(), summary.getId(), e);</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">			if (summary != null) {</span>
+<span class="nc" id="L52">				new ProductTracker(summary.getTrackerURL()).exception(listener</span>
+<span class="nc" id="L53">						.getClass().getCanonicalName(), summary.getId(), e);</span>
 			}
 
 			// but rethrow for outside handling
-<span class="nc" id="L56">			throw e;</span>
+<span class="nc" id="L57">			throw e;</span>
 		}
 	}
 

@@ -45,28 +45,34 @@ public class TimeoutProcess {
 <span class="nc" id="L45">		this.process = process;</span>
 <span class="nc" id="L46">	}</span>
 
+	/** Destroys a process */
 	public void destroy() {
-<span class="nc" id="L49">		process.destroy();</span>
-<span class="nc" id="L50">	}</span>
+<span class="nc" id="L50">		process.destroy();</span>
+<span class="nc" id="L51">	}</span>
 
+	/** @return errorOutput byte array */
 	public byte[] errorOutput() {
-<span class="nc" id="L53">		return errorOutput;</span>
+<span class="nc" id="L55">		return errorOutput;</span>
 	}
 
+	/** @return exit value */
 	public int exitValue() {
-<span class="nc" id="L57">		return process.exitValue();</span>
+<span class="nc" id="L60">		return process.exitValue();</span>
 	}
 
+	/** @return InputStream of error stream */
 	public InputStream getErrorStream() {
-<span class="nc" id="L61">		return process.getErrorStream();</span>
+<span class="nc" id="L65">		return process.getErrorStream();</span>
 	}
 
+	/** @return InputStream */
 	public InputStream getInputStream() {
-<span class="nc" id="L65">		return process.getInputStream();</span>
+<span class="nc" id="L70">		return process.getInputStream();</span>
 	}
 
+	/** @return OutputStream */
 	public OutputStream getOutputStream() {
-<span class="nc" id="L69">		return process.getOutputStream();</span>
+<span class="nc" id="L75">		return process.getOutputStream();</span>
 	}
 
 	/**
@@ -75,47 +81,53 @@ public class TimeoutProcess {
 	 *
 	 * @return exitStatus.
 	 * @throws InterruptedException
+	 *             if thread interruption occurs
+	 * @throws IOException
+	 *             if IO error occurs
 	 * @throws ProcessTimeoutException
 	 *             if the process timed out before exiting.
 	 */
 	public int waitFor() throws InterruptedException, IOException, ProcessTimeoutException {
-<span class="nc" id="L82">		int status = -1;</span>
+<span class="nc" id="L91">		int status = -1;</span>
 		try {
-<span class="nc" id="L84">			status = process.waitFor();</span>
+<span class="nc" id="L93">			status = process.waitFor();</span>
 
-<span class="nc bnc" id="L86" title="All 2 branches missed.">			if (timeoutElapsed()) {</span>
-<span class="nc" id="L87">				throw new ProcessTimeoutException(&quot;The process has timed out.&quot;);</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">			if (timeoutElapsed()) {</span>
+<span class="nc" id="L96">				throw new ProcessTimeoutException(&quot;The process has timed out.&quot;);</span>
 			}
 		} finally {
-<span class="nc bnc" id="L90" title="All 2 branches missed.">			if (timer != null) {</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">			if (timer != null) {</span>
 				// the timer hasn't destroyed this process already, cancel it.
-<span class="nc" id="L92">				timer.cancel();</span>
+<span class="nc" id="L101">				timer.cancel();</span>
 			}
 		}
 
 		try {
-<span class="nc" id="L97">			errorOutput = StreamUtils.readStream(getErrorStream());</span>
+<span class="nc" id="L106">			errorOutput = StreamUtils.readStream(getErrorStream());</span>
 		} finally {
 			// close streams
-<span class="nc" id="L100">			StreamUtils.closeStream(getErrorStream());</span>
-<span class="nc" id="L101">			StreamUtils.closeStream(getInputStream());</span>
-<span class="nc" id="L102">			StreamUtils.closeStream(getOutputStream());</span>
+<span class="nc" id="L109">			StreamUtils.closeStream(getErrorStream());</span>
+<span class="nc" id="L110">			StreamUtils.closeStream(getInputStream());</span>
+<span class="nc" id="L111">			StreamUtils.closeStream(getOutputStream());</span>
 		}
 
-<span class="nc" id="L105">		return status;</span>
+<span class="nc" id="L114">		return status;</span>
 	}
 
+	/** @param timeoutElapsed to set */
 	protected void setTimeoutElapsed(boolean timeoutElapsed) {
-<span class="nc" id="L109">		this.timeoutElapsed = timeoutElapsed;</span>
-<span class="nc" id="L110">	}</span>
+<span class="nc" id="L119">		this.timeoutElapsed = timeoutElapsed;</span>
+<span class="nc" id="L120">	}</span>
 
+	/** @return timeoutElapsed boolean */
 	protected boolean timeoutElapsed() {
-<span class="nc" id="L113">		return timeoutElapsed;</span>
+<span class="nc" id="L124">		return timeoutElapsed;</span>
 	}
 
+	/** @param timer to set */
 	protected void setTimer(final Timer timer) {
-<span class="nc" id="L117">		this.timer = timer;</span>
-<span class="nc" id="L118">	}</span>
+<span class="nc" id="L129">		this.timer = timer;</span>
+<span class="nc" id="L130">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

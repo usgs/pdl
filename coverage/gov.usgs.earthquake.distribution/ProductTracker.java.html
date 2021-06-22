@@ -80,16 +80,17 @@ public class ProductTracker {
 
 	/**
 	 * Create a new ProductTracker object.
+	 * @param trackerURL location of tracker
 	 */
-<span class="fc" id="L84">	public ProductTracker(final URL trackerURL) {</span>
-<span class="fc" id="L85">		this.trackerURL = trackerURL;</span>
-<span class="fc" id="L86">	}</span>
+<span class="fc" id="L85">	public ProductTracker(final URL trackerURL) {</span>
+<span class="fc" id="L86">		this.trackerURL = trackerURL;</span>
+<span class="fc" id="L87">	}</span>
 
 	/**
 	 * @return the trackerURL
 	 */
 	public URL getTrackerURL() {
-<span class="nc" id="L92">		return trackerURL;</span>
+<span class="nc" id="L93">		return trackerURL;</span>
 	}
 
 	/**
@@ -97,8 +98,8 @@ public class ProductTracker {
 	 *            the trackerURL to set
 	 */
 	public void setTrackerURL(URL trackerURL) {
-<span class="nc" id="L100">		this.trackerURL = trackerURL;</span>
-<span class="nc" id="L101">	}</span>
+<span class="nc" id="L101">		this.trackerURL = trackerURL;</span>
+<span class="nc" id="L102">	}</span>
 
 	/**
 	 * Send an update to this ProductTracker.
@@ -107,28 +108,28 @@ public class ProductTracker {
 	 *            the update to send to the tracker.
 	 * @return the update object processed by the tracker, including sequence
 	 *         number, or null if unable to send.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate sendUpdate(final ProductTrackerUpdate update)
 			throws Exception {
 
-<span class="fc" id="L115">		HeartbeatListener.sendHeartbeatMessage(update.getClassName(), // component</span>
-<span class="fc" id="L116">				update.getMessage(), // key</span>
-<span class="fc" id="L117">				update.getId().toString() // value</span>
+<span class="fc" id="L116">		HeartbeatListener.sendHeartbeatMessage(update.getClassName(), // component</span>
+<span class="fc" id="L117">				update.getMessage(), // key</span>
+<span class="fc" id="L118">				update.getId().toString() // value</span>
 				);
-<span class="fc" id="L119">		String response = sendUpdateXML(update);</span>
+<span class="fc" id="L120">		String response = sendUpdateXML(update);</span>
 		try {
-<span class="pc" id="L121">			List&lt;ProductTrackerUpdate&gt; updates = parseTrackerResponse(</span>
-<span class="fc" id="L122">					update.getTrackerURL(),</span>
-<span class="nc" id="L123">					StreamUtils.getInputStream(response));</span>
+<span class="pc" id="L122">			List&lt;ProductTrackerUpdate&gt; updates = parseTrackerResponse(</span>
+<span class="fc" id="L123">					update.getTrackerURL(),</span>
+<span class="nc" id="L124">					StreamUtils.getInputStream(response));</span>
 			// should receive one update (the one that was sent)
-<span class="nc bnc" id="L125" title="All 2 branches missed.">			if (updates.size() == 1) {</span>
-<span class="nc" id="L126">				return updates.get(0);</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">			if (updates.size() == 1) {</span>
+<span class="nc" id="L127">				return updates.get(0);</span>
 			}
-<span class="fc" id="L128">		} catch (Exception e) {</span>
+<span class="fc" id="L129">		} catch (Exception e) {</span>
 			// ignore
-<span class="nc" id="L130">		}</span>
-<span class="fc" id="L131">		return null;</span>
+<span class="nc" id="L131">		}</span>
+<span class="fc" id="L132">		return null;</span>
 	}
 
 	/**
@@ -137,57 +138,71 @@ public class ProductTracker {
 	 * @param update
 	 *            the update to send to the tracker.
 	 * @return the raw XML returned by the tracker, or null if unable to send.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public String sendUpdateXML(final ProductTrackerUpdate update)
 			throws Exception {
 
 		// make sure this update hasn't already been sent
-<span class="fc" id="L146">		Long sequenceNumber = update.getSequenceNumber();</span>
-<span class="pc bpc" id="L147" title="3 of 4 branches missed.">		if (sequenceNumber != null &amp;&amp; sequenceNumber &gt; 0) {</span>
-<span class="nc" id="L148">			throw new IllegalArgumentException(</span>
+<span class="fc" id="L147">		Long sequenceNumber = update.getSequenceNumber();</span>
+<span class="pc bpc" id="L148" title="3 of 4 branches missed.">		if (sequenceNumber != null &amp;&amp; sequenceNumber &gt; 0) {</span>
+<span class="nc" id="L149">			throw new IllegalArgumentException(</span>
 					&quot;ProductTrackerUpdate already has a sequence number.&quot;);
 		}
 
-<span class="fc" id="L152">		ProductId id = update.getId();</span>
+<span class="fc" id="L153">		ProductId id = update.getId();</span>
 
 		// log the update no matter what
-<span class="fc" id="L155">		LOGGER.fine(new StringBuffer().append(update.getMessage())</span>
-<span class="fc" id="L156">				.append(&quot; source=&quot;).append(id.getSource()).append(&quot;, type=&quot;)</span>
-<span class="fc" id="L157">				.append(id.getType()).append(&quot;, code=&quot;).append(id.getCode())</span>
-<span class="fc" id="L158">				.append(&quot;, updateTime=&quot;).append(id.getUpdateTime().toString())</span>
-<span class="fc" id="L159">				.toString());</span>
+<span class="fc" id="L156">		LOGGER.fine(new StringBuffer().append(update.getMessage())</span>
+<span class="fc" id="L157">				.append(&quot; source=&quot;).append(id.getSource()).append(&quot;, type=&quot;)</span>
+<span class="fc" id="L158">				.append(id.getType()).append(&quot;, code=&quot;).append(id.getCode())</span>
+<span class="fc" id="L159">				.append(&quot;, updateTime=&quot;).append(id.getUpdateTime().toString())</span>
+<span class="fc" id="L160">				.toString());</span>
 
-<span class="pc bpc" id="L161" title="1 of 2 branches missed.">		if (!TRACKER_ENABLED) {</span>
-<span class="fc" id="L162">			LOGGER.finest(&quot;Tracker updates disabled, not sent&quot;);</span>
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">		if (!TRACKER_ENABLED) {</span>
+<span class="fc" id="L163">			LOGGER.finest(&quot;Tracker updates disabled, not sent&quot;);</span>
 			// didn't send update
-<span class="fc" id="L164">			return null;</span>
+<span class="fc" id="L165">			return null;</span>
 		}
 
 		// build update request
-<span class="nc" id="L168">		Map&lt;String, String&gt; request = new HashMap&lt;String, String&gt;();</span>
-<span class="nc" id="L169">		request.put(&quot;action&quot;, &quot;update&quot;);</span>
-<span class="nc" id="L170">		request.put(&quot;source&quot;, id.getSource());</span>
-<span class="nc" id="L171">		request.put(&quot;type&quot;, id.getType());</span>
-<span class="nc" id="L172">		request.put(&quot;code&quot;, id.getCode());</span>
-<span class="nc" id="L173">		request.put(&quot;updateTime&quot;, Long.toString(id.getUpdateTime().getTime()));</span>
-<span class="nc" id="L174">		request.put(&quot;className&quot;, update.getClassName());</span>
-<span class="nc" id="L175">		request.put(&quot;message&quot;, update.getMessage());</span>
+<span class="nc" id="L169">		Map&lt;String, String&gt; request = new HashMap&lt;String, String&gt;();</span>
+<span class="nc" id="L170">		request.put(&quot;action&quot;, &quot;update&quot;);</span>
+<span class="nc" id="L171">		request.put(&quot;source&quot;, id.getSource());</span>
+<span class="nc" id="L172">		request.put(&quot;type&quot;, id.getType());</span>
+<span class="nc" id="L173">		request.put(&quot;code&quot;, id.getCode());</span>
+<span class="nc" id="L174">		request.put(&quot;updateTime&quot;, Long.toString(id.getUpdateTime().getTime()));</span>
+<span class="nc" id="L175">		request.put(&quot;className&quot;, update.getClassName());</span>
+<span class="nc" id="L176">		request.put(&quot;message&quot;, update.getMessage());</span>
 
 		try {
-<span class="nc" id="L178">			String response = post(update.getTrackerURL(), request);</span>
-<span class="nc" id="L179">			return response;</span>
-<span class="nc" id="L180">		} catch (Exception e) {</span>
-<span class="nc" id="L181">			LOGGER.log(Level.INFO, &quot;Unable to post to tracker&quot;, e);</span>
+<span class="nc" id="L179">			String response = post(update.getTrackerURL(), request);</span>
+<span class="nc" id="L180">			return response;</span>
+<span class="nc" id="L181">		} catch (Exception e) {</span>
+<span class="nc" id="L182">			LOGGER.log(Level.INFO, &quot;Unable to post to tracker&quot;, e);</span>
 		}
-<span class="nc" id="L183">		return null;</span>
+<span class="nc" id="L184">		return null;</span>
 	}
 
-	/** Same as getUpdates with 0 for startid. */
+	/**
+	 * Same as getUpdates with 0 for startid
+	 * @param source
+	 *            product source.
+	 * @param type
+	 *            product type.
+	 * @param code
+	 *            product code.
+	 * @param updateTime
+	 *            product update time.
+	 * @param className
+	 *            module name.
+	 * @return updates matching the provided fields.
+	 * @throws Exception if error occurs
+	 */
 	public List&lt;ProductTrackerUpdate&gt; getUpdates(final String source,
 			final String type, final String code, final Date updateTime,
 			final String className) throws Exception {
-<span class="nc" id="L190">		return getUpdates(source, type, code, updateTime, className, 0L);</span>
+<span class="nc" id="L205">		return getUpdates(source, type, code, updateTime, className, 0L);</span>
 	}
 
 	/**
@@ -206,61 +221,69 @@ public class ProductTracker {
 	 *            product update time.
 	 * @param className
 	 *            module name.
+	 * @param startid
+	 *            starting ID
 	 * @return updates matching the provided fields.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public List&lt;ProductTrackerUpdate&gt; getUpdates(final String source,
 			final String type, final String code, final Date updateTime,
 			final String className, final Long startid) throws Exception {
-<span class="nc" id="L215">		String response = getUpdateXML(source, type, code, updateTime,</span>
+<span class="nc" id="L232">		String response = getUpdateXML(source, type, code, updateTime,</span>
 				className, startid);
-<span class="nc" id="L217">		List&lt;ProductTrackerUpdate&gt; updates = parseTrackerResponse(trackerURL,</span>
-<span class="nc" id="L218">				StreamUtils.getInputStream(response));</span>
-<span class="nc" id="L219">		return updates;</span>
+<span class="nc" id="L234">		List&lt;ProductTrackerUpdate&gt; updates = parseTrackerResponse(trackerURL,</span>
+<span class="nc" id="L235">				StreamUtils.getInputStream(response));</span>
+<span class="nc" id="L236">		return updates;</span>
 	}
 
 	/**
 	 * Search for updates on this tracker, returning raw xml.
 	 *
 	 * @param source
+	 *            product source.
 	 * @param type
+	 *            product type.
 	 * @param code
+	 *            product code.
 	 * @param updateTime
+	 *            product update time.
 	 * @param className
+	 *            module name.
 	 * @param startid
+	 *            start id
 	 * @return the raw xml response from the tracker.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public String getUpdateXML(final String source, final String type,
 			final String code, final Date updateTime, final String className,
 			final Long startid) throws Exception {
 
-<span class="nc" id="L238">		Map&lt;String, String&gt; request = new HashMap&lt;String, String&gt;();</span>
-<span class="nc" id="L239">		request.put(&quot;action&quot;, &quot;search&quot;);</span>
+<span class="nc" id="L261">		Map&lt;String, String&gt; request = new HashMap&lt;String, String&gt;();</span>
+<span class="nc" id="L262">		request.put(&quot;action&quot;, &quot;search&quot;);</span>
 
-<span class="nc bnc" id="L241" title="All 2 branches missed.">		if (source != null) {</span>
-<span class="nc" id="L242">			request.put(&quot;source&quot;, source);</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">		if (source != null) {</span>
+<span class="nc" id="L265">			request.put(&quot;source&quot;, source);</span>
 		}
-<span class="nc bnc" id="L244" title="All 2 branches missed.">		if (type != null) {</span>
-<span class="nc" id="L245">			request.put(&quot;type&quot;, type);</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">		if (type != null) {</span>
+<span class="nc" id="L268">			request.put(&quot;type&quot;, type);</span>
 		}
-<span class="nc bnc" id="L247" title="All 2 branches missed.">		if (code != null) {</span>
-<span class="nc" id="L248">			request.put(&quot;code&quot;, code);</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">		if (code != null) {</span>
+<span class="nc" id="L271">			request.put(&quot;code&quot;, code);</span>
 		}
-<span class="nc bnc" id="L250" title="All 2 branches missed.">		if (updateTime != null) {</span>
-<span class="nc" id="L251">			request.put(&quot;updateTime&quot;, Long.toString(updateTime.getTime()));</span>
-		}
-
-<span class="nc bnc" id="L254" title="All 2 branches missed.">		if (className != null) {</span>
-<span class="nc" id="L255">			request.put(&quot;className&quot;, className);</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">		if (updateTime != null) {</span>
+<span class="nc" id="L274">			request.put(&quot;updateTime&quot;, Long.toString(updateTime.getTime()));</span>
 		}
 
-<span class="nc bnc" id="L258" title="All 2 branches missed.">		if (startid != null) {</span>
-<span class="nc" id="L259">			request.put(&quot;startid&quot;, Long.toString(startid));</span>
+<span class="nc bnc" id="L277" title="All 2 branches missed.">		if (className != null) {</span>
+<span class="nc" id="L278">			request.put(&quot;className&quot;, className);</span>
 		}
 
-<span class="nc" id="L262">		String response = post(trackerURL, request);</span>
-<span class="nc" id="L263">		return response;</span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">		if (startid != null) {</span>
+<span class="nc" id="L282">			request.put(&quot;startid&quot;, Long.toString(startid));</span>
+		}
+
+<span class="nc" id="L285">		String response = post(trackerURL, request);</span>
+<span class="nc" id="L286">		return response;</span>
 	}
 
 	/**
@@ -273,13 +296,13 @@ public class ProductTracker {
 	 * @param message
 	 *            the message about the product.
 	 * @return the sent update.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate sendUpdate(final String className,
 			final ProductId id, final String message) throws Exception {
-<span class="nc" id="L280">		ProductTrackerUpdate update = new ProductTrackerUpdate(trackerURL, id,</span>
+<span class="nc" id="L303">		ProductTrackerUpdate update = new ProductTrackerUpdate(trackerURL, id,</span>
 				className, message);
-<span class="nc" id="L282">		return sendUpdate(update);</span>
+<span class="nc" id="L305">		return sendUpdate(update);</span>
 	}
 
 	/**
@@ -290,13 +313,13 @@ public class ProductTracker {
 	 * @param id
 	 *            the product that was created.
 	 * @return the sent update.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate productCreated(final String className,
 			final ProductId id) throws Exception {
-<span class="fc" id="L297">		ProductTrackerUpdate createdUpdate = new ProductTrackerUpdate(</span>
+<span class="fc" id="L320">		ProductTrackerUpdate createdUpdate = new ProductTrackerUpdate(</span>
 				trackerURL, id, className, ProductTrackerUpdate.PRODUCT_CREATED);
-<span class="fc" id="L299">		return sendUpdate(createdUpdate);</span>
+<span class="fc" id="L322">		return sendUpdate(createdUpdate);</span>
 	}
 
 	/**
@@ -307,13 +330,13 @@ public class ProductTracker {
 	 * @param id
 	 *            the product that was indexed.
 	 * @return the sent update.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate productIndexed(final String className,
 			final ProductId id) throws Exception {
-<span class="nc" id="L314">		ProductTrackerUpdate indexedUpdate = new ProductTrackerUpdate(</span>
+<span class="nc" id="L337">		ProductTrackerUpdate indexedUpdate = new ProductTrackerUpdate(</span>
 				trackerURL, id, className, ProductTrackerUpdate.PRODUCT_INDEXED);
-<span class="nc" id="L316">		return sendUpdate(indexedUpdate);</span>
+<span class="nc" id="L339">		return sendUpdate(indexedUpdate);</span>
 	}
 
 	/**
@@ -324,14 +347,14 @@ public class ProductTracker {
 	 * @param notification
 	 *            the notification that was sent.
 	 * @return the sent update.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate notificationSent(final String className,
 			final Notification notification) throws Exception {
-<span class="fc" id="L331">		ProductTrackerUpdate notifiedUpdate = new ProductTrackerUpdate(</span>
-<span class="fc" id="L332">				trackerURL, notification.getProductId(), className,</span>
+<span class="fc" id="L354">		ProductTrackerUpdate notifiedUpdate = new ProductTrackerUpdate(</span>
+<span class="fc" id="L355">				trackerURL, notification.getProductId(), className,</span>
 				ProductTrackerUpdate.NOTIFICATION_SENT);
-<span class="fc" id="L334">		return sendUpdate(notifiedUpdate);</span>
+<span class="fc" id="L357">		return sendUpdate(notifiedUpdate);</span>
 	}
 
 	/**
@@ -342,14 +365,14 @@ public class ProductTracker {
 	 * @param notification
 	 *            the notification that was received.
 	 * @return the sent update.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate notificationReceived(final String className,
 			final Notification notification) throws Exception {
-<span class="fc" id="L349">		ProductTrackerUpdate notifiedUpdate = new ProductTrackerUpdate(</span>
-<span class="fc" id="L350">				trackerURL, notification.getProductId(), className,</span>
+<span class="fc" id="L372">		ProductTrackerUpdate notifiedUpdate = new ProductTrackerUpdate(</span>
+<span class="fc" id="L373">				trackerURL, notification.getProductId(), className,</span>
 				ProductTrackerUpdate.NOTIFICATION_RECEIVED);
-<span class="fc" id="L352">		return sendUpdate(notifiedUpdate);</span>
+<span class="fc" id="L375">		return sendUpdate(notifiedUpdate);</span>
 	}
 
 	/**
@@ -360,14 +383,14 @@ public class ProductTracker {
 	 * @param id
 	 *            the product that was downloaded.
 	 * @return the sent update.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate productDownloaded(final String className,
 			final ProductId id) throws Exception {
-<span class="fc" id="L367">		ProductTrackerUpdate downloadedUpdate = new ProductTrackerUpdate(</span>
+<span class="fc" id="L390">		ProductTrackerUpdate downloadedUpdate = new ProductTrackerUpdate(</span>
 				trackerURL, id, className,
 				ProductTrackerUpdate.PRODUCT_DOWNLOADED);
-<span class="fc" id="L370">		return sendUpdate(downloadedUpdate);</span>
+<span class="fc" id="L393">		return sendUpdate(downloadedUpdate);</span>
 	}
 
 	/**
@@ -378,14 +401,14 @@ public class ProductTracker {
 	 * @param id
 	 *            the product that was received.
 	 * @return the sent update.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate productReceived(final String className,
 			final ProductId id) throws Exception {
-<span class="fc" id="L385">		ProductTrackerUpdate receivedUpdate = new ProductTrackerUpdate(</span>
+<span class="fc" id="L408">		ProductTrackerUpdate receivedUpdate = new ProductTrackerUpdate(</span>
 				trackerURL, id, className,
 				ProductTrackerUpdate.PRODUCT_RECEIVED);
-<span class="fc" id="L388">		return sendUpdate(receivedUpdate);</span>
+<span class="fc" id="L411">		return sendUpdate(receivedUpdate);</span>
 	}
 
 	/**
@@ -398,14 +421,14 @@ public class ProductTracker {
 	 * @param e
 	 *            the exception that was caught.
 	 * @return the sent update.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public ProductTrackerUpdate exception(final String className,
 			final ProductId id, final Exception e) throws Exception {
-<span class="fc" id="L405">		ProductTrackerUpdate exceptionUpdate = new ProductTrackerUpdate(</span>
+<span class="fc" id="L428">		ProductTrackerUpdate exceptionUpdate = new ProductTrackerUpdate(</span>
 				trackerURL, id, className,
-<span class="fc" id="L407">				ProductTrackerUpdate.PRODUCT_EXCEPTION + &quot;: &quot; + e.getMessage());</span>
-<span class="fc" id="L408">		return sendUpdate(exceptionUpdate);</span>
+<span class="fc" id="L430">				ProductTrackerUpdate.PRODUCT_EXCEPTION + &quot;: &quot; + e.getMessage());</span>
+<span class="fc" id="L431">		return sendUpdate(exceptionUpdate);</span>
 	}
 
 	/**
@@ -414,22 +437,22 @@ public class ProductTracker {
 	 * @param data
 	 *            a map containing name value pairs for encoding.
 	 * @return a string of encoded data.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public static String encodeURLData(final Map&lt;String, String&gt; data)
 			throws Exception {
-<span class="nc" id="L421">		StringBuffer buf = new StringBuffer();</span>
-<span class="nc" id="L422">		Iterator&lt;String&gt; iter = data.keySet().iterator();</span>
-<span class="nc bnc" id="L423" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
-<span class="nc" id="L424">			String key = iter.next();</span>
-<span class="nc" id="L425">			buf.append(URLEncoder.encode(key, StandardCharsets.UTF_8.toString()))</span>
-<span class="nc" id="L426">					.append(&quot;=&quot;)</span>
-<span class="nc" id="L427">					.append(URLEncoder.encode(data.get(key), StandardCharsets.UTF_8.toString()));</span>
-<span class="nc bnc" id="L428" title="All 2 branches missed.">			if (iter.hasNext()) {</span>
-<span class="nc" id="L429">				buf.append(&quot;&amp;&quot;);</span>
+<span class="nc" id="L444">		StringBuffer buf = new StringBuffer();</span>
+<span class="nc" id="L445">		Iterator&lt;String&gt; iter = data.keySet().iterator();</span>
+<span class="nc bnc" id="L446" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L447">			String key = iter.next();</span>
+<span class="nc" id="L448">			buf.append(URLEncoder.encode(key, StandardCharsets.UTF_8.toString()))</span>
+<span class="nc" id="L449">					.append(&quot;=&quot;)</span>
+<span class="nc" id="L450">					.append(URLEncoder.encode(data.get(key), StandardCharsets.UTF_8.toString()));</span>
+<span class="nc bnc" id="L451" title="All 2 branches missed.">			if (iter.hasNext()) {</span>
+<span class="nc" id="L452">				buf.append(&quot;&amp;&quot;);</span>
 			}
-<span class="nc" id="L431">		}</span>
-<span class="nc" id="L432">		return buf.toString();</span>
+<span class="nc" id="L454">		}</span>
+<span class="nc" id="L455">		return buf.toString();</span>
 	}
 
 	/**
@@ -440,31 +463,31 @@ public class ProductTracker {
 	 * @param data
 	 *            the data to send.
 	 * @return the response text.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public static String post(final URL url, final Map&lt;String, String&gt; data)
 			throws Exception {
-<span class="nc" id="L447">		InputStream in = null;</span>
-<span class="nc" id="L448">		OutputStream out = null;</span>
-<span class="nc" id="L449">		String response = null;</span>
+<span class="nc" id="L470">		InputStream in = null;</span>
+<span class="nc" id="L471">		OutputStream out = null;</span>
+<span class="nc" id="L472">		String response = null;</span>
 
 		try {
-<span class="nc" id="L452">			URLConnection connection = url.openConnection();</span>
-<span class="nc bnc" id="L453" title="All 2 branches missed.">			if (data != null) {</span>
-<span class="nc" id="L454">				String encodedData = encodeURLData(data);</span>
-<span class="nc" id="L455">				connection.setDoOutput(true);</span>
-<span class="nc" id="L456">				out = connection.getOutputStream();</span>
-<span class="nc" id="L457">				StreamUtils.transferStream(encodedData, out);</span>
+<span class="nc" id="L475">			URLConnection connection = url.openConnection();</span>
+<span class="nc bnc" id="L476" title="All 2 branches missed.">			if (data != null) {</span>
+<span class="nc" id="L477">				String encodedData = encodeURLData(data);</span>
+<span class="nc" id="L478">				connection.setDoOutput(true);</span>
+<span class="nc" id="L479">				out = connection.getOutputStream();</span>
+<span class="nc" id="L480">				StreamUtils.transferStream(encodedData, out);</span>
 			}
 
-<span class="nc" id="L460">			in = connection.getInputStream();</span>
-<span class="nc" id="L461">			response = new String(StreamUtils.readStream(in));</span>
+<span class="nc" id="L483">			in = connection.getInputStream();</span>
+<span class="nc" id="L484">			response = new String(StreamUtils.readStream(in));</span>
 		} finally {
-<span class="nc" id="L463">			StreamUtils.closeStream(out);</span>
-<span class="nc" id="L464">			StreamUtils.closeStream(in);</span>
+<span class="nc" id="L486">			StreamUtils.closeStream(out);</span>
+<span class="nc" id="L487">			StreamUtils.closeStream(in);</span>
 		}
 
-<span class="nc" id="L467">		return response;</span>
+<span class="nc" id="L490">		return response;</span>
 	}
 
 	/**
@@ -479,9 +502,9 @@ public class ProductTracker {
 	 */
 	public List&lt;ProductTrackerUpdate&gt; parseTrackerResponse(
 			final URL trackerURL, final InputStream updateStream) {
-<span class="nc" id="L482">		ProductTrackerParser parser = new ProductTrackerParser(trackerURL);</span>
-<span class="nc" id="L483">		parser.parse(updateStream);</span>
-<span class="nc" id="L484">		return parser.getUpdates();</span>
+<span class="nc" id="L505">		ProductTrackerParser parser = new ProductTrackerParser(trackerURL);</span>
+<span class="nc" id="L506">		parser.parse(updateStream);</span>
+<span class="nc" id="L507">		return parser.getUpdates();</span>
 	}
 
 	/** Search a product tracker. */
@@ -498,91 +521,91 @@ public class ProductTracker {
 	/**
 	 * Command Line Interface to ProductTracker.
 	 *
-	 * @param args
-	 * @throws Exception
+	 * @param args CLI arguments
+	 * @throws Exception if error occurs
 	 */
 	public static void main(final String[] args) throws Exception {
 		// whether we are sending an update (true)
-<span class="nc" id="L506">		boolean isUpdate = false;</span>
+<span class="nc" id="L529">		boolean isUpdate = false;</span>
 		// whether we are searching (true)
-<span class="nc" id="L508">		boolean isSearch = false;</span>
+<span class="nc" id="L531">		boolean isSearch = false;</span>
 		// The update message being sent to the tracker (updates only)
-<span class="nc" id="L510">		String updateMessage = null;</span>
+<span class="nc" id="L533">		String updateMessage = null;</span>
 		// The tracker to communicate with
-<span class="nc" id="L512">		URL trackerURL = null;</span>
+<span class="nc" id="L535">		URL trackerURL = null;</span>
 		// The module that sent an update
-<span class="nc" id="L514">		String className = null;</span>
+<span class="nc" id="L537">		String className = null;</span>
 		// The product id, an alternate to source+type+code+updateTime
-<span class="nc" id="L516">		ProductId id = null;</span>
+<span class="nc" id="L539">		ProductId id = null;</span>
 		// The product source
-<span class="nc" id="L518">		String source = null;</span>
+<span class="nc" id="L541">		String source = null;</span>
 		// The product type
-<span class="nc" id="L520">		String type = null;</span>
+<span class="nc" id="L543">		String type = null;</span>
 		// The product code
-<span class="nc" id="L522">		String code = null;</span>
+<span class="nc" id="L545">		String code = null;</span>
 		// The product update time
-<span class="nc" id="L524">		Date updateTime = null;</span>
+<span class="nc" id="L547">		Date updateTime = null;</span>
 		// The starting sequence number (searches only)
-<span class="nc" id="L526">		Long startid = 0L;</span>
+<span class="nc" id="L549">		Long startid = 0L;</span>
 
 		// use the default tracker url unless overridden by arguments
-<span class="nc" id="L529">		String defaultTrackerURL = Config.getConfig().getProperty(</span>
+<span class="nc" id="L552">		String defaultTrackerURL = Config.getConfig().getProperty(</span>
 				CLIProductBuilder.TRACKER_URL_CONFIG_PROPERTY);
-<span class="nc bnc" id="L531" title="All 2 branches missed.">		if (defaultTrackerURL != null) {</span>
-<span class="nc" id="L532">			trackerURL = new URL(defaultTrackerURL);</span>
+<span class="nc bnc" id="L554" title="All 2 branches missed.">		if (defaultTrackerURL != null) {</span>
+<span class="nc" id="L555">			trackerURL = new URL(defaultTrackerURL);</span>
 		}
 
 		// parse the arguments
-<span class="nc bnc" id="L536" title="All 2 branches missed.">		for (String arg : args) {</span>
-<span class="nc bnc" id="L537" title="All 2 branches missed.">			if (arg.equals(ACTION_UPDATE)) {</span>
-<span class="nc" id="L538">				isUpdate = true;</span>
-<span class="nc bnc" id="L539" title="All 2 branches missed.">			} else if (arg.equals(ACTION_SEARCH)) {</span>
-<span class="nc" id="L540">				isSearch = true;</span>
-<span class="nc bnc" id="L541" title="All 2 branches missed.">			} else if (arg.startsWith(ARGUMENT_CLASSNAME)) {</span>
-<span class="nc" id="L542">				className = arg.replace(ARGUMENT_CLASSNAME, &quot;&quot;);</span>
-<span class="nc bnc" id="L543" title="All 2 branches missed.">			} else if (arg.startsWith(ARGUMENT_PRODUCT_ID)) {</span>
-<span class="nc" id="L544">				id = ProductId.parse(arg.replace(ARGUMENT_PRODUCT_ID, &quot;&quot;));</span>
-<span class="nc" id="L545">				source = id.getSource();</span>
-<span class="nc" id="L546">				type = id.getType();</span>
-<span class="nc" id="L547">				code = id.getCode();</span>
-<span class="nc" id="L548">				updateTime = id.getUpdateTime();</span>
-<span class="nc bnc" id="L549" title="All 2 branches missed.">			} else if (arg.startsWith(CLIProductBuilder.TRACKER_URL_ARGUMENT)) {</span>
-<span class="nc" id="L550">				trackerURL = new URL(arg.replace(</span>
+<span class="nc bnc" id="L559" title="All 2 branches missed.">		for (String arg : args) {</span>
+<span class="nc bnc" id="L560" title="All 2 branches missed.">			if (arg.equals(ACTION_UPDATE)) {</span>
+<span class="nc" id="L561">				isUpdate = true;</span>
+<span class="nc bnc" id="L562" title="All 2 branches missed.">			} else if (arg.equals(ACTION_SEARCH)) {</span>
+<span class="nc" id="L563">				isSearch = true;</span>
+<span class="nc bnc" id="L564" title="All 2 branches missed.">			} else if (arg.startsWith(ARGUMENT_CLASSNAME)) {</span>
+<span class="nc" id="L565">				className = arg.replace(ARGUMENT_CLASSNAME, &quot;&quot;);</span>
+<span class="nc bnc" id="L566" title="All 2 branches missed.">			} else if (arg.startsWith(ARGUMENT_PRODUCT_ID)) {</span>
+<span class="nc" id="L567">				id = ProductId.parse(arg.replace(ARGUMENT_PRODUCT_ID, &quot;&quot;));</span>
+<span class="nc" id="L568">				source = id.getSource();</span>
+<span class="nc" id="L569">				type = id.getType();</span>
+<span class="nc" id="L570">				code = id.getCode();</span>
+<span class="nc" id="L571">				updateTime = id.getUpdateTime();</span>
+<span class="nc bnc" id="L572" title="All 2 branches missed.">			} else if (arg.startsWith(CLIProductBuilder.TRACKER_URL_ARGUMENT)) {</span>
+<span class="nc" id="L573">				trackerURL = new URL(arg.replace(</span>
 						CLIProductBuilder.TRACKER_URL_ARGUMENT, &quot;&quot;));
-<span class="nc bnc" id="L552" title="All 2 branches missed.">			} else if (arg.startsWith(CLIProductBuilder.SOURCE_ARGUMENT)) {</span>
-<span class="nc" id="L553">				source = arg.replace(CLIProductBuilder.SOURCE_ARGUMENT, &quot;&quot;);</span>
-<span class="nc bnc" id="L554" title="All 2 branches missed.">			} else if (arg.startsWith(CLIProductBuilder.TYPE_ARGUMENT)) {</span>
-<span class="nc" id="L555">				type = arg.replace(CLIProductBuilder.TYPE_ARGUMENT, &quot;&quot;);</span>
-<span class="nc bnc" id="L556" title="All 2 branches missed.">			} else if (arg.startsWith(CLIProductBuilder.CODE_ARGUMENT)) {</span>
-<span class="nc" id="L557">				code = arg.replace(CLIProductBuilder.CODE_ARGUMENT, &quot;&quot;);</span>
-<span class="nc bnc" id="L558" title="All 2 branches missed.">			} else if (arg.startsWith(CLIProductBuilder.UPDATE_TIME_ARGUMENT)) {</span>
-<span class="nc" id="L559">				updateTime = XmlUtils.getDate(arg.replace(</span>
+<span class="nc bnc" id="L575" title="All 2 branches missed.">			} else if (arg.startsWith(CLIProductBuilder.SOURCE_ARGUMENT)) {</span>
+<span class="nc" id="L576">				source = arg.replace(CLIProductBuilder.SOURCE_ARGUMENT, &quot;&quot;);</span>
+<span class="nc bnc" id="L577" title="All 2 branches missed.">			} else if (arg.startsWith(CLIProductBuilder.TYPE_ARGUMENT)) {</span>
+<span class="nc" id="L578">				type = arg.replace(CLIProductBuilder.TYPE_ARGUMENT, &quot;&quot;);</span>
+<span class="nc bnc" id="L579" title="All 2 branches missed.">			} else if (arg.startsWith(CLIProductBuilder.CODE_ARGUMENT)) {</span>
+<span class="nc" id="L580">				code = arg.replace(CLIProductBuilder.CODE_ARGUMENT, &quot;&quot;);</span>
+<span class="nc bnc" id="L581" title="All 2 branches missed.">			} else if (arg.startsWith(CLIProductBuilder.UPDATE_TIME_ARGUMENT)) {</span>
+<span class="nc" id="L582">				updateTime = XmlUtils.getDate(arg.replace(</span>
 						CLIProductBuilder.UPDATE_TIME_ARGUMENT, &quot;&quot;));
-<span class="nc bnc" id="L561" title="All 2 branches missed.">			} else if (arg.startsWith(ARGUMENT_START_ID)) {</span>
-<span class="nc" id="L562">				startid = Long.valueOf(arg.replace(ARGUMENT_START_ID, &quot;&quot;));</span>
+<span class="nc bnc" id="L584" title="All 2 branches missed.">			} else if (arg.startsWith(ARGUMENT_START_ID)) {</span>
+<span class="nc" id="L585">				startid = Long.valueOf(arg.replace(ARGUMENT_START_ID, &quot;&quot;));</span>
 			}
 		}
 
 		// run the search or update
-<span class="nc" id="L567">		ProductTracker tracker = new ProductTracker(trackerURL);</span>
-<span class="nc bnc" id="L568" title="All 4 branches missed.">		if (isUpdate &amp;&amp; isSearch) {</span>
-<span class="nc" id="L569">			LOGGER.severe(&quot;Both &quot; + ACTION_UPDATE + &quot; and &quot; + ACTION_SEARCH</span>
+<span class="nc" id="L590">		ProductTracker tracker = new ProductTracker(trackerURL);</span>
+<span class="nc bnc" id="L591" title="All 4 branches missed.">		if (isUpdate &amp;&amp; isSearch) {</span>
+<span class="nc" id="L592">			LOGGER.severe(&quot;Both &quot; + ACTION_UPDATE + &quot; and &quot; + ACTION_SEARCH</span>
 					+ &quot; present, only one allowed&quot;);
-<span class="nc" id="L571">			System.exit(1);</span>
-<span class="nc bnc" id="L572" title="All 4 branches missed.">		} else if (!isUpdate &amp;&amp; !isSearch) {</span>
-<span class="nc" id="L573">			LOGGER.severe(&quot;Neither &quot; + ACTION_UPDATE + &quot; nor &quot; + ACTION_SEARCH</span>
+<span class="nc" id="L594">			System.exit(1);</span>
+<span class="nc bnc" id="L595" title="All 4 branches missed.">		} else if (!isUpdate &amp;&amp; !isSearch) {</span>
+<span class="nc" id="L596">			LOGGER.severe(&quot;Neither &quot; + ACTION_UPDATE + &quot; nor &quot; + ACTION_SEARCH</span>
 					+ &quot; present, one is required&quot;);
-<span class="nc" id="L575">			System.exit(1);</span>
-<span class="nc bnc" id="L576" title="All 2 branches missed.">		} else if (isUpdate) {</span>
-<span class="nc" id="L577">			LOGGER.info(&quot;Reading update message from STDIN...&quot;);</span>
-<span class="nc" id="L578">			updateMessage = new String(StreamUtils.readStream(System.in));</span>
-<span class="nc bnc" id="L579" title="All 2 branches missed.">			if (id == null) {</span>
-<span class="nc" id="L580">				id = new ProductId(source, type, code, updateTime);</span>
+<span class="nc" id="L598">			System.exit(1);</span>
+<span class="nc bnc" id="L599" title="All 2 branches missed.">		} else if (isUpdate) {</span>
+<span class="nc" id="L600">			LOGGER.info(&quot;Reading update message from STDIN...&quot;);</span>
+<span class="nc" id="L601">			updateMessage = new String(StreamUtils.readStream(System.in));</span>
+<span class="nc bnc" id="L602" title="All 2 branches missed.">			if (id == null) {</span>
+<span class="nc" id="L603">				id = new ProductId(source, type, code, updateTime);</span>
 			}
-<span class="nc" id="L582">			System.out.println(tracker.sendUpdateXML(new ProductTrackerUpdate(</span>
+<span class="nc" id="L605">			System.out.println(tracker.sendUpdateXML(new ProductTrackerUpdate(</span>
 					trackerURL, id, className, updateMessage)));
 			// LOGGER.info(&quot;Update id=&quot; + update.getSequenceNumber());
-<span class="nc bnc" id="L585" title="All 2 branches missed.">		} else if (isSearch) {</span>
+<span class="nc bnc" id="L608" title="All 2 branches missed.">		} else if (isSearch) {</span>
 			// default to search action
 
 			/*
@@ -590,32 +613,35 @@ public class ProductTracker {
 			 * &quot;, code=&quot; + code + &quot;, updateTime=&quot; + updateTime + &quot;, className=&quot;
 			 * + className + &quot;, startid=&quot; + startid);
 			 */
-<span class="nc" id="L593">			System.out.println(tracker.getUpdateXML(source, type, code,</span>
+<span class="nc" id="L616">			System.out.println(tracker.getUpdateXML(source, type, code,</span>
 					updateTime, className, startid));
 		}
-<span class="nc" id="L596">	}</span>
+<span class="nc" id="L619">	}</span>
 
+	/** Usage for ProductTracker
+	 * @return CLI usage
+	 */
 	public static String getUsage() {
-<span class="nc" id="L599">		StringBuffer buf = new StringBuffer();</span>
+<span class="nc" id="L625">		StringBuffer buf = new StringBuffer();</span>
 
-<span class="nc" id="L601">		buf.append(&quot;[--search]               search a tracker (default)\n&quot;);</span>
-<span class="nc" id="L602">		buf.append(&quot;                         when searching, include at least one parameter\n&quot;);</span>
-<span class="nc" id="L603">		buf.append(&quot;[--update]               send an update to a tracker\n&quot;);</span>
-<span class="nc" id="L604">		buf.append(&quot;                         when updating, productid and class are required\n&quot;);</span>
-<span class="nc" id="L605">		buf.append(&quot;                         the update message is read from STDIN\n&quot;);</span>
-<span class="nc" id="L606">		buf.append(&quot;\n&quot;);</span>
+<span class="nc" id="L627">		buf.append(&quot;[--search]               search a tracker (default)\n&quot;);</span>
+<span class="nc" id="L628">		buf.append(&quot;                         when searching, include at least one parameter\n&quot;);</span>
+<span class="nc" id="L629">		buf.append(&quot;[--update]               send an update to a tracker\n&quot;);</span>
+<span class="nc" id="L630">		buf.append(&quot;                         when updating, productid and class are required\n&quot;);</span>
+<span class="nc" id="L631">		buf.append(&quot;                         the update message is read from STDIN\n&quot;);</span>
+<span class="nc" id="L632">		buf.append(&quot;\n&quot;);</span>
 
-<span class="nc" id="L608">		buf.append(&quot;--trackerURL=URL         which tracker to search or update\n&quot;);</span>
-<span class="nc" id="L609">		buf.append(&quot;[--productid=URN]        the product to search or update\n&quot;);</span>
-<span class="nc" id="L610">		buf.append(&quot;[--source=SOURCE]        a product source to search\n&quot;);</span>
-<span class="nc" id="L611">		buf.append(&quot;[--type=TYPE]            a product type to search\n&quot;);</span>
-<span class="nc" id="L612">		buf.append(&quot;[--code=CODE]            a product code to search\n&quot;);</span>
-<span class="nc" id="L613">		buf.append(&quot;[--updateTime=TIME]      a product update time to search\n&quot;);</span>
-<span class="nc" id="L614">		buf.append(&quot;[--class=MODULE]         a module to search or send an update\n&quot;);</span>
-<span class="nc" id="L615">		buf.append(&quot;[--startid=SEQ]          only return updates with sequence number &gt; SEQ\n&quot;);</span>
-<span class="nc" id="L616">		buf.append(&quot;\n&quot;);</span>
+<span class="nc" id="L634">		buf.append(&quot;--trackerURL=URL         which tracker to search or update\n&quot;);</span>
+<span class="nc" id="L635">		buf.append(&quot;[--productid=URN]        the product to search or update\n&quot;);</span>
+<span class="nc" id="L636">		buf.append(&quot;[--source=SOURCE]        a product source to search\n&quot;);</span>
+<span class="nc" id="L637">		buf.append(&quot;[--type=TYPE]            a product type to search\n&quot;);</span>
+<span class="nc" id="L638">		buf.append(&quot;[--code=CODE]            a product code to search\n&quot;);</span>
+<span class="nc" id="L639">		buf.append(&quot;[--updateTime=TIME]      a product update time to search\n&quot;);</span>
+<span class="nc" id="L640">		buf.append(&quot;[--class=MODULE]         a module to search or send an update\n&quot;);</span>
+<span class="nc" id="L641">		buf.append(&quot;[--startid=SEQ]          only return updates with sequence number &gt; SEQ\n&quot;);</span>
+<span class="nc" id="L642">		buf.append(&quot;\n&quot;);</span>
 
-<span class="nc" id="L618">		return buf.toString();</span>
+<span class="nc" id="L644">		return buf.toString();</span>
 	}
 
 }

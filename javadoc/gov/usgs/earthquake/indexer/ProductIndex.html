@@ -299,7 +299,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <div class="block">If the index supports transactions, begin a transaction.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -315,7 +315,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
  called, commit the pending transaction.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -331,7 +331,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
  called, rollback the pending transaction.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -350,7 +350,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a list of matching events.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -369,7 +369,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a list of matching products.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -385,8 +385,12 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 
  May be more efficient than <a href="#getProducts(gov.usgs.earthquake.indexer.ProductIndexQuery)"><code>getProducts(ProductIndexQuery)</code></a>.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>id</code> - a ProductId</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>boolean if index has product</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -405,7 +409,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a list of unassociated products</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -425,7 +429,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <dd>Copy of event with the eventId attribute set to the id in the
          database</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -464,7 +468,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <dd>Copy of the product summary object with the indexId set to the
          newly inserted id.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -483,7 +487,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>id of removed summary.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -504,7 +508,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Copy of event with summary added to the products list</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -525,7 +529,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Copy of event with summary removed from the products list</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -546,7 +550,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>events</code> - events that may have new preferred attributes.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

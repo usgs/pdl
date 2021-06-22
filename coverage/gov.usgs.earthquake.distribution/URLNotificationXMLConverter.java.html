@@ -6,13 +6,20 @@ import java.io.InputStream;
 
 <span class="nc" id="L7">public class URLNotificationXMLConverter {</span>
 
+  /** Namespace for product XML */
   public static final String PRODUCT_XML_NAMESPACE = &quot;http://earthquake.usgs.gov/distribution/product&quot;;
 
+  /** static var for notification element */
   public static final String NOTIFICATION_ELEMENT = &quot;notification&quot;;
+  /** attribute for product id */
   public static final String ATTRIBUTE_PRODUCT_ID = &quot;id&quot;;
+  /** attribute for updated */
   public static final String ATTRIBUTE_PRODUCT_UPDATED = &quot;updated&quot;;
+  /** attribute for trackerURL */
   public static final String ATTRIBUTE_TRACKER_URL = &quot;trackerURL&quot;;
+  /** attribute for expires */
   public static final String ATTRIBUTE_EXPIRES = &quot;expires&quot;;
+  /** attribute for url */
   public static final String ATTRIBUTE_URL = &quot;url&quot;;
 
   /**
@@ -23,39 +30,39 @@ import java.io.InputStream;
    * @return an XML-formatted string
    */
   public static String toXML(final URLNotification notification) {
-<span class="fc" id="L26">    StringBuffer buf = new StringBuffer();</span>
+<span class="fc" id="L33">    StringBuffer buf = new StringBuffer();</span>
 
-<span class="fc" id="L28">    buf.append(&quot;&lt;?xml version=\&quot;1.0\&quot;?&gt;\n&quot;);</span>
+<span class="fc" id="L35">    buf.append(&quot;&lt;?xml version=\&quot;1.0\&quot;?&gt;\n&quot;);</span>
     // start element
-<span class="fc" id="L30">    buf.append(&quot;&lt;&quot;).append(NOTIFICATION_ELEMENT);</span>
-<span class="fc" id="L31">    buf.append(&quot; xmlns=\&quot;&quot;).append(</span>
-<span class="fc" id="L32">            PRODUCT_XML_NAMESPACE).append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L37">    buf.append(&quot;&lt;&quot;).append(NOTIFICATION_ELEMENT);</span>
+<span class="fc" id="L38">    buf.append(&quot; xmlns=\&quot;&quot;).append(</span>
+<span class="fc" id="L39">            PRODUCT_XML_NAMESPACE).append(&quot;\&quot;&quot;);</span>
 
     // add attributes
-<span class="fc" id="L35">    buf.append(&quot; &quot;).append(ATTRIBUTE_PRODUCT_ID)</span>
-<span class="fc" id="L36">            .append(&quot;=\&quot;&quot;).append(notification.getProductId().toString()).append(</span>
+<span class="fc" id="L42">    buf.append(&quot; &quot;).append(ATTRIBUTE_PRODUCT_ID)</span>
+<span class="fc" id="L43">            .append(&quot;=\&quot;&quot;).append(notification.getProductId().toString()).append(</span>
             &quot;\&quot;&quot;);
-<span class="fc" id="L38">    buf</span>
-<span class="fc" id="L39">            .append(&quot; &quot;)</span>
-<span class="fc" id="L40">            .append(ATTRIBUTE_PRODUCT_UPDATED)</span>
-<span class="fc" id="L41">            .append(&quot;=\&quot;&quot;)</span>
-<span class="fc" id="L42">            .append(</span>
+<span class="fc" id="L45">    buf</span>
+<span class="fc" id="L46">            .append(&quot; &quot;)</span>
+<span class="fc" id="L47">            .append(ATTRIBUTE_PRODUCT_UPDATED)</span>
+<span class="fc" id="L48">            .append(&quot;=\&quot;&quot;)</span>
+<span class="fc" id="L49">            .append(</span>
                     XmlUtils
-<span class="fc" id="L44">                            .formatDate(notification.getProductId().getUpdateTime()))</span>
-<span class="fc" id="L45">            .append(&quot;\&quot;&quot;);</span>
-<span class="fc" id="L46">    buf.append(&quot; &quot;).append(ATTRIBUTE_TRACKER_URL)</span>
-<span class="fc" id="L47">            .append(&quot;=\&quot;&quot;).append(notification.getTrackerURL().toString()).append(</span>
+<span class="fc" id="L51">                            .formatDate(notification.getProductId().getUpdateTime()))</span>
+<span class="fc" id="L52">            .append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L53">    buf.append(&quot; &quot;).append(ATTRIBUTE_TRACKER_URL)</span>
+<span class="fc" id="L54">            .append(&quot;=\&quot;&quot;).append(notification.getTrackerURL().toString()).append(</span>
             &quot;\&quot;&quot;);
-<span class="fc" id="L49">    buf.append(&quot; &quot;).append(ATTRIBUTE_EXPIRES).append(</span>
-<span class="fc" id="L50">            &quot;=\&quot;&quot;).append(XmlUtils.formatDate(notification.getExpirationDate()))</span>
-<span class="fc" id="L51">            .append(&quot;\&quot;&quot;);</span>
-<span class="fc" id="L52">    buf.append(&quot; &quot;).append(ATTRIBUTE_URL).append(</span>
-<span class="fc" id="L53">            &quot;=\&quot;&quot;).append(notification.getProductURL().toString()).append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L56">    buf.append(&quot; &quot;).append(ATTRIBUTE_EXPIRES).append(</span>
+<span class="fc" id="L57">            &quot;=\&quot;&quot;).append(XmlUtils.formatDate(notification.getExpirationDate()))</span>
+<span class="fc" id="L58">            .append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L59">    buf.append(&quot; &quot;).append(ATTRIBUTE_URL).append(</span>
+<span class="fc" id="L60">            &quot;=\&quot;&quot;).append(notification.getProductURL().toString()).append(&quot;\&quot;&quot;);</span>
 
     // end element
-<span class="fc" id="L56">    buf.append(&quot;/&gt;&quot;);</span>
+<span class="fc" id="L63">    buf.append(&quot;/&gt;&quot;);</span>
 
-<span class="fc" id="L58">    return buf.toString();</span>
+<span class="fc" id="L65">    return buf.toString();</span>
   }
 
   /**
@@ -68,9 +75,9 @@ import java.io.InputStream;
    * @throws Exception If parse goes wrong
    */
   public static URLNotification parseXML(final InputStream message) throws Exception{
-<span class="fc" id="L71">    URLNotificationParser parser = new URLNotificationParser();</span>
-<span class="fc" id="L72">    parser.parse(message);</span>
-<span class="fc" id="L73">    return parser.getNotification();</span>
+<span class="fc" id="L78">    URLNotificationParser parser = new URLNotificationParser();</span>
+<span class="fc" id="L79">    parser.parse(message);</span>
+<span class="fc" id="L80">    return parser.getNotification();</span>
   }
 
 }

@@ -148,7 +148,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <pre>public class <span class="typeNameLabel">EventAddonParser</span>
 extends <a href="../../util/SAXAdapter.html" title="class in gov.usgs.util">SAXAdapter</a></pre>
 <div class="block">Parser for event addon messages.
- 
+
  Maps these messages into an EQMessage with a
  product link.</div>
 </li>
@@ -272,7 +272,9 @@ extends <a href="../../util/SAXAdapter.html" title="class in gov.usgs.util">SAXA
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>gov.usgs.ansseqmsg.EQMessage</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseMessage(gov.usgs.earthquake.eidsutil.EIDSMessageEvent)">parseMessage</a></span>&#8203;(<a href="../eidsutil/EIDSMessageEvent.html" title="class in gov.usgs.earthquake.eidsutil">EIDSMessageEvent</a>&nbsp;event)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Takes a EIDSMessage event and returns the EQMessage</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -359,9 +361,14 @@ extends <a href="../../util/SAXAdapter.html" title="class in gov.usgs.util">SAXA
 <h4>parseMessage</h4>
 <pre class="methodSignature">public&nbsp;gov.usgs.ansseqmsg.EQMessage&nbsp;parseMessage&#8203;(<a href="../eidsutil/EIDSMessageEvent.html" title="class in gov.usgs.earthquake.eidsutil">EIDSMessageEvent</a>&nbsp;event)
                                           throws java.lang.Exception</pre>
+<div class="block">Takes a EIDSMessage event and returns the EQMessage</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>event</code> - EIDSMessageEvent to parse</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>an EQmessage</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

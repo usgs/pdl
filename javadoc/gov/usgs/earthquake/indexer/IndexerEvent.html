@@ -143,7 +143,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <pre>public class <span class="typeNameLabel">IndexerEvent</span>
 extends java.util.EventObject</pre>
 <div class="block">A description of a change to a ProductIndex.
- 
+
  IndexerEvents are created by the Indexer, and sent to IndexerListeners.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
@@ -326,6 +326,10 @@ extends java.util.EventObject</pre>
 <li class="blockList">
 <h4>getIndexer</h4>
 <pre class="methodSignature">public&nbsp;<a href="Indexer.html" title="class in gov.usgs.earthquake.indexer">Indexer</a>&nbsp;getIndexer()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Indexer</dd>
+</dl>
 </li>
 </ul>
 <a id="getIndex()">
@@ -335,6 +339,10 @@ extends java.util.EventObject</pre>
 <li class="blockList">
 <h4>getIndex</h4>
 <pre class="methodSignature">public&nbsp;<a href="ProductIndex.html" title="interface in gov.usgs.earthquake.indexer">ProductIndex</a>&nbsp;getIndex()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Product Index</dd>
+</dl>
 </li>
 </ul>
 <a id="setIndex(gov.usgs.earthquake.indexer.ProductIndex)">
@@ -344,6 +352,10 @@ extends java.util.EventObject</pre>
 <li class="blockList">
 <h4>setIndex</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setIndex&#8203;(<a href="ProductIndex.html" title="interface in gov.usgs.earthquake.indexer">ProductIndex</a>&nbsp;index)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>index</code> - to set</dd>
+</dl>
 </li>
 </ul>
 <a id="getSummary()">
@@ -353,6 +365,10 @@ extends java.util.EventObject</pre>
 <li class="blockList">
 <h4>getSummary</h4>
 <pre class="methodSignature">public&nbsp;<a href="ProductSummary.html" title="class in gov.usgs.earthquake.indexer">ProductSummary</a>&nbsp;getSummary()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>product summary</dd>
+</dl>
 </li>
 </ul>
 <a id="setSummary(gov.usgs.earthquake.indexer.ProductSummary)">
@@ -362,6 +378,10 @@ extends java.util.EventObject</pre>
 <li class="blockList">
 <h4>setSummary</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setSummary&#8203;(<a href="ProductSummary.html" title="class in gov.usgs.earthquake.indexer">ProductSummary</a>&nbsp;summary)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>summary</code> - to add</dd>
+</dl>
 </li>
 </ul>
 <a id="addIndexerChange(gov.usgs.earthquake.indexer.IndexerChange)">
@@ -371,6 +391,10 @@ extends java.util.EventObject</pre>
 <li class="blockList">
 <h4>addIndexerChange</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;addIndexerChange&#8203;(<a href="IndexerChange.html" title="class in gov.usgs.earthquake.indexer">IndexerChange</a>&nbsp;change)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>change</code> - to add</dd>
+</dl>
 </li>
 </ul>
 <a id="addIndexerChanges(java.util.List)">
@@ -380,6 +404,10 @@ extends java.util.EventObject</pre>
 <li class="blockList">
 <h4>addIndexerChanges</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;addIndexerChanges&#8203;(java.util.List&lt;<a href="IndexerChange.html" title="class in gov.usgs.earthquake.indexer">IndexerChange</a>&gt;&nbsp;changes)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>changes</code> - list of changes to add</dd>
+</dl>
 </li>
 </ul>
 <a id="getIndexerChanges()">
@@ -389,6 +417,10 @@ extends java.util.EventObject</pre>
 <li class="blockList">
 <h4>getIndexerChanges</h4>
 <pre class="methodSignature">public&nbsp;java.util.Vector&lt;<a href="IndexerChange.html" title="class in gov.usgs.earthquake.indexer">IndexerChange</a>&gt;&nbsp;getIndexerChanges()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>vector of Indexer Changes</dd>
+</dl>
 </li>
 </ul>
 <a id="getProduct()">
@@ -404,7 +436,7 @@ extends java.util.EventObject</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Product object corresponding to ProductSummary.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

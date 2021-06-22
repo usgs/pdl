@@ -14,66 +14,82 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class EventDataXMLHandler extends DefaultHandler {
 
-	// XML Element Names
+	/** XML Element Name for event_data */
 	public static final String DYFI_EVENTDATA_ELEMENT = &quot;event_data&quot;;
+	/** XML Element Name  for event */
 	public static final String DYFI_EVENT_ELEMENT = &quot;event&quot;;
+	/** XML Element Name for cdi_summary */
 	public static final String DYFI_CDI_SUMMARY_ELEMENT = &quot;cdi_summary&quot;;
+	/** XML Element Name for products */
 	public static final String DYFI_PRODUCTS_ELEMENT = &quot;products&quot;;
 
+	/** Static string to stop parsing before list of products */
 	public static final String DYFI_STOP_PARSING_BEFORE_PRODUCTS = &quot;Stop parsing before list of product files.&quot;;
 
-	// XML Attributes
-<span class="fc" id="L26">	public static final Map&lt;String, String[]&gt; DYFI_ELEMENT_ATTRIBUTES = new HashMap&lt;String, String[]&gt;();</span>
+	/** Map of XML attributes */
+<span class="fc" id="L30">	public static final Map&lt;String, String[]&gt; DYFI_ELEMENT_ATTRIBUTES = new HashMap&lt;String, String[]&gt;();</span>
 	static {
 		// Statically add all these attributes and associate them to their
 		// corresponding elements
 
 		// Currently we only care about the max MMI and number of responses.
-<span class="fc" id="L32">		DYFI_ELEMENT_ATTRIBUTES.put(DYFI_CDI_SUMMARY_ELEMENT, new String[] {</span>
+<span class="fc" id="L36">		DYFI_ELEMENT_ATTRIBUTES.put(DYFI_CDI_SUMMARY_ELEMENT, new String[] {</span>
 				DYFIProduct.DYFI_NUM_RESP_PROPERTY,
 				DYFIProduct.DYFI_MAX_MMI_PROPERTY });
-<span class="fc" id="L35">	}</span>
+<span class="fc" id="L39">	}</span>
 
-<span class="fc" id="L37">	private DYFIProduct dyfi = null;</span>
+<span class="fc" id="L41">	private DYFIProduct dyfi = null;</span>
 
-<span class="fc" id="L39">	public EventDataXMLHandler(final DYFIProduct dyfi) {</span>
-<span class="fc" id="L40">		this.dyfi = dyfi;</span>
-<span class="fc" id="L41">	}</span>
+	/**
+	 * Constructor
+	 * @param dyfi takes in DYFIProduct
+	 */
+<span class="fc" id="L47">	public EventDataXMLHandler(final DYFIProduct dyfi) {</span>
+<span class="fc" id="L48">		this.dyfi = dyfi;</span>
+<span class="fc" id="L49">	}</span>
 
+	/** @return DYFIProduct */
 	public DYFIProduct getDYFI() {
-<span class="fc" id="L44">		return this.dyfi;</span>
+<span class="fc" id="L53">		return this.dyfi;</span>
 	}
 
+	/** @param dyfi Product to set */
 	public void setDYFI(final DYFIProduct dyfi) {
-<span class="nc" id="L48">		this.dyfi = dyfi;</span>
-<span class="nc" id="L49">	}</span>
+<span class="nc" id="L58">		this.dyfi = dyfi;</span>
+<span class="nc" id="L59">	}</span>
 
+	/**
+	 *
+	 * @param in XML object to parse
+	 * @return DYFIProduct
+	 * @throws Exception if exception message equals stop_parsing string
+	 */
 	public DYFIProduct parse(final Object in) throws Exception {
 		try {
-<span class="nc" id="L53">			XmlUtils.parse(in, this);</span>
-<span class="fc" id="L54">		} catch (Exception e) {</span>
-<span class="pc bpc" id="L55" title="1 of 2 branches missed.">			if (!DYFI_STOP_PARSING_BEFORE_PRODUCTS.equals(e.getMessage())) {</span>
-<span class="nc" id="L56">				throw e;</span>
+<span class="nc" id="L69">			XmlUtils.parse(in, this);</span>
+<span class="fc" id="L70">		} catch (Exception e) {</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">			if (!DYFI_STOP_PARSING_BEFORE_PRODUCTS.equals(e.getMessage())) {</span>
+<span class="nc" id="L72">				throw e;</span>
 			}
-<span class="nc" id="L58">		}</span>
-<span class="fc" id="L59">		return getDYFI();</span>
+<span class="nc" id="L74">		}</span>
+<span class="fc" id="L75">		return getDYFI();</span>
 	}
 
 	public final void startElement(final String uri, final String localName,
 			final String qName, final Attributes attributes)
 			throws SAXException {
 
-<span class="pc bpc" id="L66" title="1 of 4 branches missed.">		if (localName != null &amp;&amp; DYFI_PRODUCTS_ELEMENT.equals(localName)) {</span>
+<span class="pc bpc" id="L82" title="1 of 4 branches missed.">		if (localName != null &amp;&amp; DYFI_PRODUCTS_ELEMENT.equals(localName)) {</span>
 			// We don't need the list of product files at this time.
-<span class="fc" id="L68">			throw new SAXException(DYFI_STOP_PARSING_BEFORE_PRODUCTS);</span>
+<span class="fc" id="L84">			throw new SAXException(DYFI_STOP_PARSING_BEFORE_PRODUCTS);</span>
 		}
 
-<span class="fc bfc" id="L71" title="All 2 branches covered.">		if (DYFI_CDI_SUMMARY_ELEMENT.equals(localName)) {</span>
-<span class="fc" id="L72">			dyfi.setNumResponses(attributes</span>
-<span class="fc" id="L73">					.getValue(DYFIProduct.DYFI_NUM_RESP_ATTRIBUTE));</span>
-<span class="fc" id="L74">			dyfi.setMaxMMI(attributes</span>
-<span class="fc" id="L75">					.getValue(DYFIProduct.DYFI_MAX_MMI_ATTRIBUTE));</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">		if (DYFI_CDI_SUMMARY_ELEMENT.equals(localName)) {</span>
+<span class="fc" id="L88">			dyfi.setNumResponses(attributes</span>
+<span class="fc" id="L89">					.getValue(DYFIProduct.DYFI_NUM_RESP_ATTRIBUTE));</span>
+<span class="fc" id="L90">			dyfi.setMaxMMI(attributes</span>
+<span class="fc" id="L91">					.getValue(DYFIProduct.DYFI_MAX_MMI_ATTRIBUTE));</span>
 		}
-<span class="fc" id="L77">	}</span>
+<span class="fc" id="L93">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

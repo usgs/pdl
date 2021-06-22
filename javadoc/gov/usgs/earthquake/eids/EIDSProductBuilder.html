@@ -149,7 +149,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 extends <a href="../distribution/ProductBuilder.html" title="class in gov.usgs.earthquake.distribution">ProductBuilder</a>
 implements <a href="../eidsutil/EIDSListener.html" title="interface in gov.usgs.earthquake.eidsutil">EIDSListener</a></pre>
 <div class="block">Convert messages from EIDS into products.
- 
+
  Listens to messages from an EIDSClient. Uses EQXMLProductParser and
  EventAddonParser to build products. Any built products are sent to all
  configured productSenders.</div>
@@ -290,7 +290,7 @@ implements <a href="../eidsutil/EIDSListener.html" title="interface in gov.usgs.
 <h4>onEIDSMessage</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;onEIDSMessage&#8203;(<a href="../eidsutil/EIDSMessageEvent.html" title="class in gov.usgs.earthquake.eidsutil">EIDSMessageEvent</a>&nbsp;event)</pre>
 <div class="block">Receive EIDS messages from an EIDSClient.
- 
+
  Any received messages are parsed and sent to any ProductSenders. If the
  message is not EQXML, this method returns immediately.</div>
 <dl>
@@ -309,12 +309,12 @@ implements <a href="../eidsutil/EIDSListener.html" title="interface in gov.usgs.
 <h4>main</h4>
 <pre class="methodSignature">public static&nbsp;void&nbsp;main&#8203;(java.lang.String[]&nbsp;args)</pre>
 <div class="block">Main method to test EQXMLProductBuilder.
- 
+
  Connects an eids client to the product builder, and uses a dummy product
  sender that outputs to stderr.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>args</code> - </dd>
+<dd><code>args</code> - arguments included in the running of main</dd>
 </dl>
 </li>
 </ul>

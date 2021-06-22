@@ -8,18 +8,31 @@ public class NotificationListenerException extends Exception {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * NotificationListener exception only taking a message
+	 * @param message String
+	 */
 	public NotificationListenerException(final String message) {
-<span class="nc" id="L12">		super(message);</span>
-<span class="nc" id="L13">	}</span>
+<span class="nc" id="L16">		super(message);</span>
+<span class="nc" id="L17">	}</span>
 
+	/**
+	 * NotificationListener exception taking a message and cause
+	 * @param message String
+	 * @param cause Exception that occured
+	 */
 	public NotificationListenerException(final String message,
 			final Exception cause) {
-<span class="nc" id="L17">		super(message, cause);</span>
-<span class="nc" id="L18">	}</span>
+<span class="nc" id="L26">		super(message, cause);</span>
+<span class="nc" id="L27">	}</span>
 
+		/**
+	 * NotificationListener exception only taking a throwable cause
+	 * @param cause Throwable
+	 */
 	public NotificationListenerException(final Throwable cause) {
-<span class="nc" id="L21">		super(cause);</span>
-<span class="nc" id="L22">	}</span>
+<span class="nc" id="L34">		super(cause);</span>
+<span class="nc" id="L35">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

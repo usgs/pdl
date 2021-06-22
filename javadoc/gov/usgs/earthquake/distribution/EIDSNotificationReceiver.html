@@ -153,8 +153,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 extends <a href="DefaultNotificationReceiver.html" title="class in gov.usgs.earthquake.distribution">DefaultNotificationReceiver</a>
 implements <a href="../eidsutil/EIDSListener.html" title="interface in gov.usgs.earthquake.eidsutil">EIDSListener</a></pre>
 <div class="block">Receive XML notifications using EIDS.
- 
- 
+
+
  This class implements the Configurable interface, and has the following
  options:
  <dl>
@@ -482,7 +482,7 @@ implements <a href="../eidsutil/EIDSListener.html" title="interface in gov.usgs.
 <h4>onEIDSMessage</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;onEIDSMessage&#8203;(<a href="../eidsutil/EIDSMessageEvent.html" title="class in gov.usgs.earthquake.eidsutil">EIDSMessageEvent</a>&nbsp;event)</pre>
 <div class="block">Implement the EIDSListener interface to process messages from EIDS.
- 
+
  Checks to make sure message has Correct namespace and root element before
  parsing.</div>
 <dl>
@@ -564,6 +564,10 @@ implements <a href="../eidsutil/EIDSListener.html" title="interface in gov.usgs.
 <li class="blockList">
 <h4>getClient</h4>
 <pre class="methodSignature">public&nbsp;<a href="../eidsutil/EIDSClient.html" title="class in gov.usgs.earthquake.eidsutil">EIDSClient</a>&nbsp;getClient()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>EIDSClient</dd>
+</dl>
 </li>
 </ul>
 <a id="setClient(gov.usgs.earthquake.eidsutil.EIDSClient)">
@@ -573,6 +577,10 @@ implements <a href="../eidsutil/EIDSListener.html" title="interface in gov.usgs.
 <li class="blockList">
 <h4>setClient</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setClient&#8203;(<a href="../eidsutil/EIDSClient.html" title="class in gov.usgs.earthquake.eidsutil">EIDSClient</a>&nbsp;client)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>client</code> - set EIDSClient</dd>
+</dl>
 </li>
 </ul>
 </li>

@@ -16,21 +16,21 @@ import gov.usgs.util.SocketListenerInterface;
 
 /**
  * Receive Products directly via a Socket.
- * 
+ *
  * The received products are sent using a SocketProductSender.
- * 
+ *
  * A SocketProductReceiver receives products directly and notifies listeners of
  * received notifications.
- * 
+ *
  * These are typically used on hubs with an EIDSNotificationSender or
  * RelayProductReceiver.
- * 
+ *
  * The NotificationReceiver uses a NotificationIndex to track received
  * notifications, and a ProductStorage to store retrieved products.
- * 
+ *
  * The DefaultNotificationReceiver implements the Configurable interface and
  * uses the following configuration parameters:
- * 
+ *
  * Each listener has a separate queue of notifications. Each listener is
  * allocated one thread to process notifications from this queue.
  */
@@ -44,9 +44,9 @@ public class SocketProductReceiver extends DefaultNotificationReceiver
 	private static final String PRODUCT_PORT_PROPERTY = &quot;port&quot;;
 
 	private static final String DEFAULT_PRODUCT_PORT = &quot;11235&quot;;
-	
+
 	private static final String SIZE_LIMIT_PROPERTY = &quot;sizeLimit&quot;;
-	
+
 	private static final String DEFAULT_SIZE_LIMIT = &quot;-1&quot;;
 
 
@@ -59,133 +59,154 @@ public class SocketProductReceiver extends DefaultNotificationReceiver
 
 <span class="fc" id="L60">	private SocketAcceptor acceptor = null;</span>
 
+	/**
+	 * Default constructor setting port, threads, and sizeLimit to default
+	 * @throws Exception if error occurs
+	 */
 	public SocketProductReceiver() throws Exception {
-<span class="fc" id="L63">		super();</span>
-<span class="fc" id="L64">		this.port = Integer.parseInt(DEFAULT_PRODUCT_PORT);</span>
-<span class="fc" id="L65">		this.threads = Integer.parseInt(DEFAULT_THREAD_POOL_SIZE);</span>
-<span class="fc" id="L66">		this.sizeLimit = Long.parseLong(DEFAULT_SIZE_LIMIT);</span>
-<span class="fc" id="L67">	}</span>
+<span class="fc" id="L67">		super();</span>
+<span class="fc" id="L68">		this.port = Integer.parseInt(DEFAULT_PRODUCT_PORT);</span>
+<span class="fc" id="L69">		this.threads = Integer.parseInt(DEFAULT_THREAD_POOL_SIZE);</span>
+<span class="fc" id="L70">		this.sizeLimit = Long.parseLong(DEFAULT_SIZE_LIMIT);</span>
+<span class="fc" id="L71">	}</span>
 
+	/**
+	 * Constructor based on config file
+	 * @param config Configuration file
+	 * @throws Exception if error occurs
+	 */
 	public SocketProductReceiver(Config config) throws Exception {
-<span class="nc" id="L70">		this();</span>
-<span class="nc" id="L71">		configure(config);</span>
-<span class="nc" id="L72">	}</span>
+<span class="nc" id="L79">		this();</span>
+<span class="nc" id="L80">		configure(config);</span>
+<span class="nc" id="L81">	}</span>
 
 	public void configure(Config config) throws Exception {
-<span class="fc" id="L75">		super.configure(config);</span>
-<span class="fc" id="L76">		this.port = Integer.parseInt(config.getProperty(PRODUCT_PORT_PROPERTY,</span>
+<span class="fc" id="L84">		super.configure(config);</span>
+<span class="fc" id="L85">		this.port = Integer.parseInt(config.getProperty(PRODUCT_PORT_PROPERTY,</span>
 				DEFAULT_PRODUCT_PORT));
-<span class="fc" id="L78">		LOGGER.config(&quot;[&quot; + getName() + &quot;]  port is '&quot; + this.port + &quot;'&quot;);</span>
+<span class="fc" id="L87">		LOGGER.config(&quot;[&quot; + getName() + &quot;]  port is '&quot; + this.port + &quot;'&quot;);</span>
 
-<span class="fc" id="L80">		this.threads = Integer.parseInt(config.getProperty(</span>
+<span class="fc" id="L89">		this.threads = Integer.parseInt(config.getProperty(</span>
 				THREAD_POOL_SIZE_PROPERTY, DEFAULT_THREAD_POOL_SIZE));
-<span class="fc" id="L82">		LOGGER.config(&quot;[&quot; + getName() + &quot;]  number of threads is '&quot;</span>
+<span class="fc" id="L91">		LOGGER.config(&quot;[&quot; + getName() + &quot;]  number of threads is '&quot;</span>
 				+ this.threads + &quot;'&quot;);
 
-<span class="fc" id="L85">		this.sizeLimit = Long.parseLong(config.getProperty(</span>
+<span class="fc" id="L94">		this.sizeLimit = Long.parseLong(config.getProperty(</span>
 				SIZE_LIMIT_PROPERTY, DEFAULT_SIZE_LIMIT));
-<span class="fc" id="L87">		LOGGER.config(&quot;[&quot; + getName() + &quot;] size limite is '&quot;</span>
+<span class="fc" id="L96">		LOGGER.config(&quot;[&quot; + getName() + &quot;] size limite is '&quot;</span>
 				+ this.sizeLimit + &quot;'&quot;);
-<span class="fc" id="L89">	}</span>
+<span class="fc" id="L98">	}</span>
 
 	public void startup() throws Exception {
 		// call DefaultNotificationReceiver startup first
-<span class="fc" id="L93">		super.startup();</span>
+<span class="fc" id="L102">		super.startup();</span>
 
-<span class="fc" id="L95">		ServerSocket socket = new ServerSocket(port);</span>
-<span class="fc" id="L96">		socket.setReuseAddress(true);</span>
-<span class="fc" id="L97">		acceptor = new SocketAcceptor(socket, this,</span>
-<span class="fc" id="L98">				Executors.newFixedThreadPool(threads));</span>
+<span class="fc" id="L104">		ServerSocket socket = new ServerSocket(port);</span>
+<span class="fc" id="L105">		socket.setReuseAddress(true);</span>
+<span class="fc" id="L106">		acceptor = new SocketAcceptor(socket, this,</span>
+<span class="fc" id="L107">				Executors.newFixedThreadPool(threads));</span>
 		// start accepting connections via socket
-<span class="fc" id="L100">		acceptor.start();</span>
-<span class="fc" id="L101">	}</span>
+<span class="fc" id="L109">		acceptor.start();</span>
+<span class="fc" id="L110">	}</span>
 
 	public void shutdown() throws Exception {
 		// stop accepting connections
-<span class="fc" id="L105">		acceptor.stop();</span>
+<span class="fc" id="L114">		acceptor.stop();</span>
 
 		// call DefaultNotificationReceiver shutdown last
-<span class="fc" id="L108">		super.shutdown();</span>
-<span class="fc" id="L109">	}</span>
+<span class="fc" id="L117">		super.shutdown();</span>
+<span class="fc" id="L118">	}</span>
 
 	public void onSocket(Socket socket) {
-<span class="fc" id="L112">		LOGGER.info(&quot;[&quot; + getName() + &quot;] accepted connection &quot;</span>
-<span class="fc" id="L113">				+ socket.toString());</span>
+<span class="fc" id="L121">		LOGGER.info(&quot;[&quot; + getName() + &quot;] accepted connection &quot;</span>
+<span class="fc" id="L122">				+ socket.toString());</span>
 
 		try {
-<span class="fc" id="L116">			new SocketProductReceiverHandler(this, socket).run();</span>
-<span class="nc" id="L117">		} catch (Exception e) {</span>
-<span class="nc" id="L118">			LOGGER.log(Level.WARNING,</span>
-<span class="nc" id="L119">					&quot;[&quot; + getName() + &quot;] uncaught exception processing &quot;</span>
-<span class="nc" id="L120">					+ socket.toString(), e);</span>
+<span class="fc" id="L125">			new SocketProductReceiverHandler(this, socket).run();</span>
+<span class="nc" id="L126">		} catch (Exception e) {</span>
+<span class="nc" id="L127">			LOGGER.log(Level.WARNING,</span>
+<span class="nc" id="L128">					&quot;[&quot; + getName() + &quot;] uncaught exception processing &quot;</span>
+<span class="nc" id="L129">					+ socket.toString(), e);</span>
 		} finally {
 			try {
-<span class="nc" id="L123">				socket.shutdownInput();</span>
-<span class="fc" id="L124">			} catch (Exception e) {</span>
+<span class="nc" id="L132">				socket.shutdownInput();</span>
+<span class="fc" id="L133">			} catch (Exception e) {</span>
 				// ignore
-<span class="nc" id="L126">			}</span>
+<span class="nc" id="L135">			}</span>
 			try {
-<span class="nc" id="L128">				socket.shutdownOutput();</span>
-<span class="fc" id="L129">			} catch (Exception e) {</span>
+<span class="nc" id="L137">				socket.shutdownOutput();</span>
+<span class="fc" id="L138">			} catch (Exception e) {</span>
 				// ignore
-<span class="nc" id="L131">			}</span>
+<span class="nc" id="L140">			}</span>
 
 			try {
-<span class="fc" id="L134">				socket.close();</span>
-<span class="nc" id="L135">			} catch (Exception e) {</span>
+<span class="fc" id="L143">				socket.close();</span>
+<span class="nc" id="L144">			} catch (Exception e) {</span>
 				// ignore
-<span class="fc" id="L137">			}</span>
+<span class="fc" id="L146">			}</span>
 		}
 
-<span class="fc" id="L140">		LOGGER.info(&quot;[&quot; + getName() + &quot;] closed connection &quot;</span>
-<span class="fc" id="L141">				+ socket.toString());</span>
-<span class="fc" id="L142">	}</span>
+<span class="fc" id="L149">		LOGGER.info(&quot;[&quot; + getName() + &quot;] closed connection &quot;</span>
+<span class="fc" id="L150">				+ socket.toString());</span>
+<span class="fc" id="L151">	}</span>
 
+	/**
+	 * Stores ProductSource as a notification, tracks it, and notifies Listeners
+	 * @param source ProductSource
+	 * @return String note for log file
+	 * @throws Exception if error occurs
+	 */
 	protected String storeAndNotify(final ProductSource source)
 			throws Exception {
-<span class="fc" id="L146">		Notification notification = storeProductSource(source);</span>
-<span class="pc bpc" id="L147" title="1 of 2 branches missed.">		if (notification != null) {</span>
+<span class="fc" id="L161">		Notification notification = storeProductSource(source);</span>
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">		if (notification != null) {</span>
 			// note in log file
-<span class="fc" id="L149">			String message = &quot;[&quot; + getName() + &quot;] received product '&quot;</span>
-<span class="fc" id="L150">					+ notification.getProductId().toString() + &quot;'\n&quot;;</span>
+<span class="fc" id="L164">			String message = &quot;[&quot; + getName() + &quot;] received product '&quot;</span>
+<span class="fc" id="L165">					+ notification.getProductId().toString() + &quot;'\n&quot;;</span>
 
 			// product successfully stored, and notification index updated.
-<span class="fc" id="L153">			new ProductTracker(notification.getTrackerURL()).productReceived(</span>
-<span class="fc" id="L154">					this.getName(), notification.getProductId());</span>
+<span class="fc" id="L168">			new ProductTracker(notification.getTrackerURL()).productReceived(</span>
+<span class="fc" id="L169">					this.getName(), notification.getProductId());</span>
 
 			// notify listeners of newly available product.
-<span class="fc" id="L157">			notifyListeners(notification);</span>
+<span class="fc" id="L172">			notifyListeners(notification);</span>
 
-<span class="fc" id="L159">			return message;</span>
+<span class="fc" id="L174">			return message;</span>
 		} else {
-<span class="nc" id="L161">			throw new Exception(&quot;[&quot; + getName()</span>
+<span class="nc" id="L176">			throw new Exception(&quot;[&quot; + getName()</span>
 					+ &quot;] unknown error, no notification generated&quot;);
 		}
 	}
 
+	/** @return port */
 	public int getPort() {
-<span class="nc" id="L167">		return port;</span>
+<span class="nc" id="L183">		return port;</span>
 	}
 
+	/** @param port int to set */
 	public void setPort(int port) {
-<span class="nc" id="L171">		this.port = port;</span>
-<span class="nc" id="L172">	}</span>
+<span class="nc" id="L188">		this.port = port;</span>
+<span class="nc" id="L189">	}</span>
 
+	/** @return sizeLimit */
 	public long getSizeLimit() {
-<span class="fc" id="L175">		return sizeLimit;</span>
+<span class="fc" id="L193">		return sizeLimit;</span>
 	}
 
+	/** @param sizeLimit long to set */
 	public void setSizeLimit(long sizeLimit) {
-<span class="nc" id="L179">		this.sizeLimit = sizeLimit;</span>
-<span class="nc" id="L180">	}</span>
+<span class="nc" id="L198">		this.sizeLimit = sizeLimit;</span>
+<span class="nc" id="L199">	}</span>
 
+	/** @return threads */
 	public int getThreads() {
-<span class="nc" id="L183">		return threads;</span>
+<span class="nc" id="L203">		return threads;</span>
 	}
 
+	/** @param threads int to set */
 	public void setThreads(int threads) {
-<span class="nc" id="L187">		this.threads = threads;</span>
-<span class="nc" id="L188">	}</span>
+<span class="nc" id="L208">		this.threads = threads;</span>
+<span class="nc" id="L209">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

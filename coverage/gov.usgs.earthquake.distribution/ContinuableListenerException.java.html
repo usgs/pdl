@@ -5,25 +5,38 @@
  * &lt;code&gt;onNotification&lt;/code&gt; method. This exception exists only so we can
  * identify the type of exception and attempt to resubmit a failed notification
  * for indexing.
- * 
+ *
  * @author emartinez
- * 
+ *
  */
 public class ContinuableListenerException extends Exception {
 
 	private static final long serialVersionUID = 0x256D2BEL;
 
+	/**
+	 * Wrapper for exception. Takes message
+	 * @param message string
+	 */
 	public ContinuableListenerException(String message) {
-<span class="nc" id="L17">		super(message);</span>
-<span class="nc" id="L18">	}</span>
-
-	public ContinuableListenerException(Throwable cause) {
-<span class="nc" id="L21">		super(cause);</span>
+<span class="nc" id="L21">		super(message);</span>
 <span class="nc" id="L22">	}</span>
 
+	/**
+	 * Wrapper for exception. Takes cause
+	 * @param cause throwable
+	 */
+	public ContinuableListenerException(Throwable cause) {
+<span class="nc" id="L29">		super(cause);</span>
+<span class="nc" id="L30">	}</span>
+
+	/**
+	 * Wrapper for exception. Takes message and cause
+	 * @param message string
+	 * @param cause throwable
+	 */
 	public ContinuableListenerException(String message, Throwable cause) {
-<span class="nc" id="L25">		super(message, cause);</span>
-<span class="nc" id="L26">	}</span>
+<span class="nc" id="L38">		super(message, cause);</span>
+<span class="nc" id="L39">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

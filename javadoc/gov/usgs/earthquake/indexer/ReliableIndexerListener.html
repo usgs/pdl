@@ -198,12 +198,16 @@ implements java.lang.Runnable</pre>
 <tr class="altColor">
 <td class="colFirst"><code>protected static java.util.logging.Logger</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#LOGGER">LOGGER</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Logger object</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.indexer">ProductIndex</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#productIndex">productIndex</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Product Index</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -421,6 +425,7 @@ implements java.lang.Runnable</pre>
 <li class="blockList">
 <h4>LOGGER</h4>
 <pre>protected static final&nbsp;java.util.logging.Logger LOGGER</pre>
+<div class="block">Logger object</div>
 </li>
 </ul>
 <a id="productIndex">
@@ -430,6 +435,7 @@ implements java.lang.Runnable</pre>
 <li class="blockList">
 <h4>productIndex</h4>
 <pre>protected&nbsp;<a href="ProductIndex.html" title="interface in gov.usgs.earthquake.indexer">ProductIndex</a> productIndex</pre>
+<div class="block">Product Index</div>
 </li>
 </ul>
 </li>
@@ -565,6 +571,10 @@ implements java.lang.Runnable</pre>
 <li class="blockList">
 <h4>getProductIndex</h4>
 <pre class="methodSignature">public&nbsp;<a href="ProductIndex.html" title="interface in gov.usgs.earthquake.indexer">ProductIndex</a>&nbsp;getProductIndex()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>ProductIndex</dd>
+</dl>
 </li>
 </ul>
 <a id="setProductIndex(gov.usgs.earthquake.indexer.ProductIndex)">
@@ -574,6 +584,10 @@ implements java.lang.Runnable</pre>
 <li class="blockList">
 <h4>setProductIndex</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setProductIndex&#8203;(<a href="ProductIndex.html" title="interface in gov.usgs.earthquake.indexer">ProductIndex</a>&nbsp;productIndex)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>productIndex</code> - to set</dd>
+</dl>
 </li>
 </ul>
 <a id="getLastIndexId()">
@@ -584,6 +598,10 @@ implements java.lang.Runnable</pre>
 <h4>getLastIndexId</h4>
 <pre class="methodSignature">public&nbsp;long&nbsp;getLastIndexId()</pre>
 <div class="block">Gets index ID of last processed product</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>lastIndexId</dd>
+</dl>
 </li>
 </ul>
 <a id="setLastIndexId(long)">
@@ -594,6 +612,10 @@ implements java.lang.Runnable</pre>
 <h4>setLastIndexId</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setLastIndexId&#8203;(long&nbsp;lastIndexId)</pre>
 <div class="block">Sets index ID of last processed product</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>lastIndexId</code> - to set</dd>
+</dl>
 </li>
 </ul>
 <a id="onBeforeProcessThreadStart()">
@@ -657,6 +679,8 @@ implements java.lang.Runnable</pre>
                                                throws java.lang.Exception</pre>
 <div class="block">Gets the next products using the index provided in Config</div>
 <dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>List of product summaries</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.lang.Exception</code> - if we have a database issue</dd>
 </dl>
@@ -672,6 +696,8 @@ implements java.lang.Runnable</pre>
                     throws java.lang.Exception</pre>
 <div class="block">Does a task with each product</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>product</code> - ProductSummary  to process</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.lang.Exception</code> - available for subclasses</dd>
 </dl>

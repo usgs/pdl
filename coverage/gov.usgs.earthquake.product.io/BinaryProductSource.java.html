@@ -24,96 +24,100 @@ public class BinaryProductSource implements ProductSource {
 	/** binary io utility. */
 	private BinaryIO io;
 
-<span class="fc" id="L27">	public BinaryProductSource(final InputStream in) {</span>
-<span class="fc" id="L28">		this.in = in;</span>
-<span class="fc" id="L29">		this.io = new BinaryIO();</span>
-<span class="fc" id="L30">	}</span>
+	/**
+	 * Constructor. Sets up a new BinaryIO
+	 * @param in an InputStream
+	 */
+<span class="fc" id="L31">	public BinaryProductSource(final InputStream in) {</span>
+<span class="fc" id="L32">		this.in = in;</span>
+<span class="fc" id="L33">		this.io = new BinaryIO();</span>
+<span class="fc" id="L34">	}</span>
 
 	@Override
 	public void streamTo(ProductHandler out) throws Exception {
 		try {
 			while (true) {
-<span class="fc" id="L36">				String next = io.readString(in);</span>
+<span class="fc" id="L40">				String next = io.readString(in);</span>
 
-<span class="fc bfc" id="L38" title="All 2 branches covered.">				if (next.equals(BinaryProductHandler.HEADER)) {</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">				if (next.equals(BinaryProductHandler.HEADER)) {</span>
 					// begin product
-<span class="fc" id="L40">					id = ProductId.parse(io.readString(in));</span>
-<span class="fc" id="L41">					String status = io.readString(in);</span>
+<span class="fc" id="L44">					id = ProductId.parse(io.readString(in));</span>
+<span class="fc" id="L45">					String status = io.readString(in);</span>
 					// allow tracker url to be null
-<span class="fc" id="L43">					URL trackerURL = null;</span>
-<span class="fc" id="L44">					String trackerURLString = io.readString(in);</span>
-<span class="fc bfc" id="L45" title="All 2 branches covered.">					if (!trackerURLString.equalsIgnoreCase(&quot;null&quot;)) {</span>
-<span class="fc" id="L46">						trackerURL = new URL(trackerURLString);</span>
+<span class="fc" id="L47">					URL trackerURL = null;</span>
+<span class="fc" id="L48">					String trackerURLString = io.readString(in);</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">					if (!trackerURLString.equalsIgnoreCase(&quot;null&quot;)) {</span>
+<span class="fc" id="L50">						trackerURL = new URL(trackerURLString);</span>
 					}
-<span class="fc" id="L48">					out.onBeginProduct(id, status, trackerURL);</span>
-<span class="fc bfc" id="L49" title="All 2 branches covered.">				} else if (next.equals(BinaryProductHandler.PROPERTY)) {</span>
-<span class="fc" id="L50">					String name = io.readString(in);</span>
-<span class="fc" id="L51">					String value = io.readString(in);</span>
-<span class="fc" id="L52">					out.onProperty(id, name, value);</span>
-<span class="fc bfc" id="L53" title="All 2 branches covered.">				} else if (next.equals(BinaryProductHandler.LINK)) {</span>
-<span class="fc" id="L54">					String relation = io.readString(in);</span>
-<span class="fc" id="L55">					URI href = new URI(io.readString(in));</span>
-<span class="fc" id="L56">					out.onLink(id, relation, href);</span>
-<span class="fc bfc" id="L57" title="All 2 branches covered.">				} else if (next.equals(BinaryProductHandler.CONTENT)) {</span>
-<span class="fc" id="L58">					String path = io.readString(in);</span>
-<span class="fc" id="L59">					String contentType = io.readString(in);</span>
-<span class="fc" id="L60">					Date lastModified = io.readDate(in);</span>
-<span class="fc" id="L61">					Long length = io.readLong(in);</span>
+<span class="fc" id="L52">					out.onBeginProduct(id, status, trackerURL);</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">				} else if (next.equals(BinaryProductHandler.PROPERTY)) {</span>
+<span class="fc" id="L54">					String name = io.readString(in);</span>
+<span class="fc" id="L55">					String value = io.readString(in);</span>
+<span class="fc" id="L56">					out.onProperty(id, name, value);</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">				} else if (next.equals(BinaryProductHandler.LINK)) {</span>
+<span class="fc" id="L58">					String relation = io.readString(in);</span>
+<span class="fc" id="L59">					URI href = new URI(io.readString(in));</span>
+<span class="fc" id="L60">					out.onLink(id, relation, href);</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">				} else if (next.equals(BinaryProductHandler.CONTENT)) {</span>
+<span class="fc" id="L62">					String path = io.readString(in);</span>
+<span class="fc" id="L63">					String contentType = io.readString(in);</span>
+<span class="fc" id="L64">					Date lastModified = io.readDate(in);</span>
+<span class="fc" id="L65">					Long length = io.readLong(in);</span>
 
 					// use a piped output stream to deliver content to separate
 					// processing thread. this thread will continue to read
 					// InputStream, transfer content to pipedOutputStream.
 					// Background thread calls onContent, and reads from
 					// pipedInputStream.
-<span class="fc" id="L68">					PipedOutputStream pipedOut = new PipedOutputStream();</span>
-<span class="fc" id="L69">					PipedInputStream pipedIn = new PipedInputStream(pipedOut);</span>
+<span class="fc" id="L72">					PipedOutputStream pipedOut = new PipedOutputStream();</span>
+<span class="fc" id="L73">					PipedInputStream pipedIn = new PipedInputStream(pipedOut);</span>
 
-<span class="fc" id="L71">					final InputStreamContent content = new InputStreamContent(</span>
+<span class="fc" id="L75">					final InputStreamContent content = new InputStreamContent(</span>
 							pipedIn);
-<span class="fc" id="L73">					content.setContentType(contentType);</span>
-<span class="fc" id="L74">					content.setLastModified(lastModified);</span>
-<span class="fc" id="L75">					content.setLength(length);</span>
+<span class="fc" id="L77">					content.setContentType(contentType);</span>
+<span class="fc" id="L78">					content.setLastModified(lastModified);</span>
+<span class="fc" id="L79">					content.setLength(length);</span>
 
 					// background thread delivers content object to product handler
-<span class="fc" id="L78">					ContentOutputThread outputThread = new ContentOutputThread(out, id, path, content);</span>
+<span class="fc" id="L82">					ContentOutputThread outputThread = new ContentOutputThread(out, id, path, content);</span>
 
 					try {
-<span class="fc" id="L81">						outputThread.start();</span>
+<span class="fc" id="L85">						outputThread.start();</span>
 
 						// read stream content
-<span class="fc" id="L84">						io.readStream(length, in, pipedOut);</span>
+<span class="fc" id="L88">						io.readStream(length, in, pipedOut);</span>
 					} finally {
 						// done reading content, close piped stream to signal EOF.
-<span class="fc" id="L87">						StreamUtils.closeStream(pipedOut);</span>
-<span class="fc" id="L88">						pipedOut = null;</span>
+<span class="fc" id="L91">						StreamUtils.closeStream(pipedOut);</span>
+<span class="fc" id="L92">						pipedOut = null;</span>
 						try {
 							// wait for background thread to complete
-<span class="fc" id="L91">							outputThread.join();</span>
-<span class="nc" id="L92">						} catch (Exception e) {</span>
+<span class="fc" id="L95">							outputThread.join();</span>
+<span class="nc" id="L96">						} catch (Exception e) {</span>
 							// ignore
-<span class="fc" id="L94">						}</span>
-<span class="fc" id="L95">						outputThread = null;</span>
-<span class="fc" id="L96">						content.close();</span>
+<span class="fc" id="L98">						}</span>
+<span class="fc" id="L99">						outputThread = null;</span>
+<span class="fc" id="L100">						content.close();</span>
 					}
 
-<span class="pc bpc" id="L99" title="1 of 2 branches missed.">				} else if (next.equals(BinaryProductHandler.SIGNATUREVERSION)) {</span>
-<span class="nc" id="L100">					Version version = Version.fromString(io.readString(in));</span>
-<span class="nc" id="L101">					out.onSignatureVersion(id, version);</span>
-<span class="pc bfc" id="L102" title="All 2 branches covered.">				} else if (next.equals(BinaryProductHandler.SIGNATURE)) {</span>
-<span class="fc" id="L103">					String signature = io.readString(in);</span>
-<span class="fc" id="L104">					out.onSignature(id, signature);</span>
-<span class="pc bpc" id="L105" title="1 of 2 branches missed.">				} else if (next.equals(BinaryProductHandler.FOOTER)) {</span>
-<span class="fc" id="L106">					out.onEndProduct(id);</span>
-<span class="fc" id="L107">					id = null;</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">				} else if (next.equals(BinaryProductHandler.SIGNATUREVERSION)) {</span>
+<span class="nc" id="L104">					Version version = Version.fromString(io.readString(in));</span>
+<span class="nc" id="L105">					out.onSignatureVersion(id, version);</span>
+<span class="pc bfc" id="L106" title="All 2 branches covered.">				} else if (next.equals(BinaryProductHandler.SIGNATURE)) {</span>
+<span class="fc" id="L107">					String signature = io.readString(in);</span>
+<span class="fc" id="L108">					out.onSignature(id, signature);</span>
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">				} else if (next.equals(BinaryProductHandler.FOOTER)) {</span>
+<span class="fc" id="L110">					out.onEndProduct(id);</span>
+<span class="fc" id="L111">					id = null;</span>
 
 					// end of product stream
-<span class="fc" id="L110">					break;</span>
+<span class="fc" id="L114">					break;</span>
 				}
-<span class="fc" id="L112">			}</span>
+<span class="fc" id="L116">			}</span>
 		} finally {
-<span class="fc" id="L114">			StreamUtils.closeStream(in);</span>
+<span class="fc" id="L118">			StreamUtils.closeStream(in);</span>
 		}
-<span class="fc" id="L116">	}</span>
+<span class="fc" id="L120">	}</span>
 
 
 	/**
@@ -121,9 +125,9 @@ public class BinaryProductSource implements ProductSource {
 	 */
 	@Override
 	public void close() {
-<span class="fc" id="L124">		StreamUtils.closeStream(in);</span>
-<span class="fc" id="L125">		in = null;</span>
-<span class="fc" id="L126">	}</span>
+<span class="fc" id="L128">		StreamUtils.closeStream(in);</span>
+<span class="fc" id="L129">		in = null;</span>
+<span class="fc" id="L130">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

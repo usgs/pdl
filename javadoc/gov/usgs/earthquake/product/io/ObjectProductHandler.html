@@ -171,7 +171,9 @@ implements <a href="ProductHandler.html" title="interface in gov.usgs.earthquake
 </tr>
 <tr class="altColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E()">ObjectProductHandler</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Empty constructor</div>
+</td>
 </tr>
 </table>
 </li>
@@ -300,6 +302,7 @@ implements <a href="ProductHandler.html" title="interface in gov.usgs.earthquake
 <li class="blockList">
 <h4>ObjectProductHandler</h4>
 <pre>public&nbsp;ObjectProductHandler()</pre>
+<div class="block">Empty constructor</div>
 </li>
 </ul>
 </li>
@@ -324,7 +327,7 @@ implements <a href="ProductHandler.html" title="interface in gov.usgs.earthquake
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the product object that was created.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -350,7 +353,7 @@ implements <a href="ProductHandler.html" title="interface in gov.usgs.earthquake
 <dd><code>status</code> - the product's status.</dd>
 <dd><code>trackerURL</code> - a location to send status updates.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -374,7 +377,7 @@ implements <a href="ProductHandler.html" title="interface in gov.usgs.earthquake
 <dd><code>path</code> - path to content within product.</dd>
 <dd><code>content</code> - the product content.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -396,7 +399,7 @@ implements <a href="ProductHandler.html" title="interface in gov.usgs.earthquake
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>id</code> - which product.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -420,7 +423,7 @@ implements <a href="ProductHandler.html" title="interface in gov.usgs.earthquake
 <dd><code>relation</code> - how the URI is related to this product.</dd>
 <dd><code>href</code> - the URI that is related to this product.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -444,7 +447,7 @@ implements <a href="ProductHandler.html" title="interface in gov.usgs.earthquake
 <dd><code>name</code> - the property name.</dd>
 <dd><code>value</code> - the property value.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -462,8 +465,11 @@ implements <a href="ProductHandler.html" title="interface in gov.usgs.earthquake
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="ProductHandler.html#onSignatureVersion(gov.usgs.earthquake.product.ProductId,gov.usgs.util.CryptoUtils.Version)">onSignatureVersion</a></code>&nbsp;in interface&nbsp;<code><a href="ProductHandler.html" title="interface in gov.usgs.earthquake.product.io">ProductHandler</a></code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>id</code> - which product.</dd>
+<dd><code>version</code> - product version</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -487,7 +493,7 @@ implements <a href="ProductHandler.html" title="interface in gov.usgs.earthquake
 <dd><code>signature</code> - the product signature, which can be verified using the
             ProductSigner class.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -506,7 +512,7 @@ implements <a href="ProductHandler.html" title="interface in gov.usgs.earthquake
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the Product read, or null if errors occur.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

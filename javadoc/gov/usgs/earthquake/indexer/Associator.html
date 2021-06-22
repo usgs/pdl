@@ -129,10 +129,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <hr>
 <pre>public interface <span class="typeNameLabel">Associator</span></pre>
 <div class="block">Implement event association logic used by the indexer.
- 
+
  It is the associators job to describe how to find matching events, and then
  choose the best matching event that was found.
- 
+
  The indexer uses the Associator to build a query used to search the
  ProductIndex. After querying the ProductIndex, the indexer then calls the
  chooseEvent method with any found events.</div>
@@ -278,8 +278,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <div class="block">Get a ProductIndexQuery that searches by eventid.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>eventSource</code> - </dd>
-<dd><code>eventCode</code> - </dd>
+<dd><code>eventSource</code> - relevant to event</dd>
+<dd><code>eventCode</code> - relevant to event</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a ProductIndexQuery that searches by eventid.</dd>
 </dl>
@@ -297,9 +297,9 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <div class="block">Get a ProductIndexQuery that searches by location.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>time</code> - </dd>
-<dd><code>latitude</code> - </dd>
-<dd><code>longitude</code> - </dd>
+<dd><code>time</code> - of event</dd>
+<dd><code>latitude</code> - of event</dd>
+<dd><code>longitude</code> - of event</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a ProductIndexQuery that searches by location.</dd>
 </dl>

@@ -248,6 +248,12 @@ extends java.lang.Object</pre>
 <h4>formatXML</h4>
 <pre class="methodSignature">public&nbsp;java.lang.String&nbsp;formatXML&#8203;(<a href="../qdm/Regions.html" title="class in gov.usgs.earthquake.qdm">Regions</a>&nbsp;regions)</pre>
 <div class="block">Output ANSS Authoritative Regions in the legacy Regions XML format.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>regions</code> - ANSS Authoritative regions</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String on regions in an XML format</dd>
+</dl>
 </li>
 </ul>
 <a id="getRegions(java.io.InputStream)">
@@ -260,8 +266,12 @@ extends java.lang.Object</pre>
                           throws java.lang.Exception</pre>
 <div class="block">Parse regions from an XML input stream.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>in</code> - input stream</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Regions</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -276,8 +286,10 @@ extends java.lang.Object</pre>
 <div class="block">Download ANSS Authoritative regions from Geoserve,
  and print to the screen in Regions XML format.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>args</code> - console arguments</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

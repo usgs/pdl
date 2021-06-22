@@ -208,11 +208,12 @@ import java.util.zip.GZIPInputStream;
 	 * @param to
 	 *            streamable target.
 	 * @throws IOException
+	 *            if IO error occurs
 	 */
 	public static void transferStream(final Object from, final Object to)
 			throws IOException {
-<span class="fc" id="L214">		transferStream(from, to, DEFAULT_BUFFER_SIZE);</span>
-<span class="fc" id="L215">	}</span>
+<span class="fc" id="L215">		transferStream(from, to, DEFAULT_BUFFER_SIZE);</span>
+<span class="fc" id="L216">	}</span>
 
 	/**
 	 * Transfer contents of Object from to Object to. Uses getInputStream and
@@ -222,32 +223,34 @@ import java.util.zip.GZIPInputStream;
 	 *            streamable source.
 	 * @param to
 	 *            streamable target.
+	 * @param bufferSize
+	 *            size of buffer
 	 * @throws IOException
 	 *             if thrown by calls to read/write on streams.
 	 */
 	public static void transferStream(final Object from, final Object to,
 			final int bufferSize) throws IOException {
-<span class="fc" id="L230">		InputStream in = null;</span>
-<span class="fc" id="L231">		OutputStream out = null;</span>
+<span class="fc" id="L233">		InputStream in = null;</span>
+<span class="fc" id="L234">		OutputStream out = null;</span>
 
 		try {
-<span class="fc" id="L234">			in = getInputStream(from);</span>
-<span class="fc" id="L235">			out = getOutputStream(to);</span>
-<span class="fc" id="L236">			byte[] buffer = new byte[bufferSize];</span>
+<span class="fc" id="L237">			in = getInputStream(from);</span>
+<span class="fc" id="L238">			out = getOutputStream(to);</span>
+<span class="fc" id="L239">			byte[] buffer = new byte[bufferSize];</span>
 			int read;
-<span class="fc bfc" id="L238" title="All 2 branches covered.">			while ((read = in.read(buffer, 0, bufferSize)) != -1) {</span>
-<span class="fc" id="L239">				out.write(buffer, 0, read);</span>
+<span class="fc bfc" id="L241" title="All 2 branches covered.">			while ((read = in.read(buffer, 0, bufferSize)) != -1) {</span>
+<span class="fc" id="L242">				out.write(buffer, 0, read);</span>
 			}
-<span class="fc" id="L241">			closeStream(in);</span>
-<span class="fc" id="L242">			closeStream(out);</span>
-<span class="fc" id="L243">		} catch (Exception e) {</span>
 <span class="fc" id="L244">			closeStream(in);</span>
 <span class="fc" id="L245">			closeStream(out);</span>
-<span class="pc bpc" id="L246" title="1 of 2 branches missed.">			if (e instanceof IOException) {</span>
-<span class="fc" id="L247">				throw (IOException) e;</span>
+<span class="fc" id="L246">		} catch (Exception e) {</span>
+<span class="fc" id="L247">			closeStream(in);</span>
+<span class="fc" id="L248">			closeStream(out);</span>
+<span class="pc bpc" id="L249" title="1 of 2 branches missed.">			if (e instanceof IOException) {</span>
+<span class="fc" id="L250">				throw (IOException) e;</span>
 			}
-<span class="fc" id="L249">		}</span>
-<span class="fc" id="L250">	}</span>
+<span class="fc" id="L252">		}</span>
+<span class="fc" id="L253">	}</span>
 
 	/**
 	 * Close an InputStream or OutputStream.
@@ -257,20 +260,20 @@ import java.util.zip.GZIPInputStream;
 	 */
 	public static void closeStream(final Object stream) {
 		try {
-<span class="fc bfc" id="L260" title="All 2 branches covered.">			if (stream instanceof OutputStream) {</span>
-<span class="fc" id="L261">				OutputStream out = (OutputStream) stream;</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">			if (stream instanceof OutputStream) {</span>
+<span class="fc" id="L264">				OutputStream out = (OutputStream) stream;</span>
 				try {
-<span class="fc" id="L263">					out.flush();</span>
+<span class="fc" id="L266">					out.flush();</span>
 				} finally {
-<span class="fc" id="L265">					out.close();</span>
+<span class="fc" id="L268">					out.close();</span>
 				}
-<span class="fc bfc" id="L267" title="All 2 branches covered.">			} else if (stream instanceof InputStream) {</span>
-<span class="fc" id="L268">				((InputStream) stream).close();</span>
+<span class="fc bfc" id="L270" title="All 2 branches covered.">			} else if (stream instanceof InputStream) {</span>
+<span class="fc" id="L271">				((InputStream) stream).close();</span>
 			}
-<span class="nc" id="L270">		} catch (Exception e) {</span>
+<span class="nc" id="L273">		} catch (Exception e) {</span>
 			// ignore
-<span class="fc" id="L272">		}</span>
-<span class="fc" id="L273">	}</span>
+<span class="fc" id="L275">		}</span>
+<span class="fc" id="L276">	}</span>
 
 	/**
 	 * An InputStream that ignores calls to close.
@@ -291,15 +294,15 @@ import java.util.zip.GZIPInputStream;
 		 *            the InputStream to wrap.
 		 */
 		public UnclosableInputStream(final InputStream in) {
-<span class="fc" id="L294">			super(in);</span>
-<span class="fc" id="L295">		}</span>
+<span class="fc" id="L297">			super(in);</span>
+<span class="fc" id="L298">		}</span>
 
 		/**
 		 * Does not close stream.
 		 */
 		public void close() {
 			// ignore
-<span class="fc" id="L302">		}</span>
+<span class="fc" id="L305">		}</span>
 	}
 
 	/**
@@ -321,16 +324,16 @@ import java.util.zip.GZIPInputStream;
 		 *            the OutputStream to wrap.
 		 */
 		public UnclosableOutputStream(final OutputStream out) {
-<span class="fc" id="L324">			super(out);</span>
-<span class="fc" id="L325">		}</span>
+<span class="fc" id="L327">			super(out);</span>
+<span class="fc" id="L328">		}</span>
 
 		/**
 		 * Flush written content, but does not close stream.
 		 */
 		public void close() throws IOException {
-<span class="fc" id="L331">			out.flush();</span>
+<span class="fc" id="L334">			out.flush();</span>
 			// otherwise ignore
-<span class="fc" id="L333">		}</span>
+<span class="fc" id="L336">		}</span>
 	}
 
 }

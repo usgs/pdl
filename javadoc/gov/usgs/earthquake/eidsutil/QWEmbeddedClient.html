@@ -254,7 +254,9 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 </tr>
 <tr class="altColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E()">QWEmbeddedClient</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Constructor using the default host and port</div>
+</td>
 </tr>
 <tr class="rowColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(java.lang.String,java.lang.Integer)">QWEmbeddedClient</a></span>&#8203;(java.lang.String&nbsp;serverHost,
@@ -555,6 +557,7 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <li class="blockList">
 <h4>QWEmbeddedClient</h4>
 <pre>public&nbsp;QWEmbeddedClient()</pre>
+<div class="block">Constructor using the default host and port</div>
 </li>
 </ul>
 <a id="&lt;init&gt;(java.lang.String,java.lang.Integer)">
@@ -566,12 +569,12 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <pre>public&nbsp;QWEmbeddedClient&#8203;(java.lang.String&nbsp;serverHost,
                         java.lang.Integer&nbsp;serverPort)</pre>
 <div class="block">Construct an EIDSClient using only server host and port.
- 
+
  Calls other constructor with null values for other parameters.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>serverHost</code> - </dd>
-<dd><code>serverPort</code> - </dd>
+<dd><code>serverHost</code> - host of EIDS client</dd>
+<dd><code>serverPort</code> - port of EIDS client</dd>
 </dl>
 </li>
 </ul>
@@ -588,9 +591,10 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
  alternateServersList.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>serverHost</code> - </dd>
-<dd><code>serverPort</code> - </dd>
-<dd><code>alternateServersList</code> - </dd>
+<dd><code>serverHost</code> - host of EIDS client</dd>
+<dd><code>serverPort</code> - port of EIDS client</dd>
+<dd><code>alternateServersList</code> - a comma delimited list of host:port that are used when unable
+            to connect to the primary serverHost and serverPort.</dd>
 </dl>
 </li>
 </ul>
@@ -652,7 +656,7 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <h4>startup</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;startup()</pre>
 <div class="block">Runs the client.
- 
+
  Any listeners should be added before calling this method.</div>
 </li>
 </ul>
@@ -664,7 +668,7 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <h4>shutdown</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;shutdown()</pre>
 <div class="block">Shuts down a running client.
- 
+
  Does not call system.exit.</div>
 </li>
 </ul>
@@ -850,6 +854,10 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <li class="blockList">
 <h4>getConsoleLogLevel</h4>
 <pre class="methodSignature">public&nbsp;java.lang.String&nbsp;getConsoleLogLevel()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>console Log level</dd>
+</dl>
 </li>
 </ul>
 <a id="setConsoleLogLevel(java.lang.String)">
@@ -859,6 +867,10 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <li class="blockList">
 <h4>setConsoleLogLevel</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setConsoleLogLevel&#8203;(java.lang.String&nbsp;consoleLogLevel)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>consoleLogLevel</code> - to set</dd>
+</dl>
 </li>
 </ul>
 <a id="main(java.lang.String[])">
@@ -872,9 +884,9 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <div class="block">A method to test the EIDSClient.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>args</code> - </dd>
+<dd><code>args</code> - arguments</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

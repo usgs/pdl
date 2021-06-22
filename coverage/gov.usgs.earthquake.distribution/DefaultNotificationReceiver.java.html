@@ -86,14 +86,22 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 */
 	public static final String DEFAULT_RECEIVER_CLEANUP = &quot;900000&quot;;
 
+	/** Property for connection Timeout */
 	public static final String CONNECT_TIMEOUT_PROPERTY = &quot;connectTimeout&quot;;
+	/** Default connection timeout. 15 seconds */
 	public static final String DEFAULT_CONNECT_TIMEOUT = &quot;15000&quot;;
+	/** Property for read timeout */
 	public static final String READ_TIMEOUT_PROPERTY = &quot;readTimeout&quot;;
+	/** default read timeout. 15 seconds */
 	public static final String DEFAULT_READ_TIMEOUT = &quot;15000&quot;;
 
+	/** Property for listener notifier */
 	public static final String LISTENER_NOTIFIER_PROPERTY = &quot;listenerNotifier&quot;;
+	/** Property for listener notifier to set to executor*/
 	public static final String EXECUTOR_LISTENER_NOTIFIER = &quot;executor&quot;;
+	/** Property to listener notifier to set to future */
 	public static final String FUTURE_LISTENER_NOTIFIER = &quot;future&quot;;
+	/** Property to listener notifier to set to roundrobin */
 	public static final String ROUNDROBIN_LISTENER_NOTIFIER = &quot;roundrobin&quot;;
 
 	/** The notification index where received notifications are stored. */
@@ -103,25 +111,26 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	private ProductStorage productStorage;
 
 	/** How long to store retrieved product, in milliseconds. */
-<span class="fc" id="L106">	private Long productStorageMaxAge = 0L;</span>
+<span class="fc" id="L114">	private Long productStorageMaxAge = 0L;</span>
 
 	/** How long to wait until checking for expired notifications/products. */
-<span class="fc" id="L109">	private Long receiverCleanupInterval = 0L;</span>
+<span class="fc" id="L117">	private Long receiverCleanupInterval = 0L;</span>
 
 	/** Timer that schedules receiver cleanup task. */
-<span class="fc" id="L112">	private Timer receiverCleanupTimer = new Timer();</span>
+<span class="fc" id="L120">	private Timer receiverCleanupTimer = new Timer();</span>
 
-<span class="fc" id="L114">	private int connectTimeout = Integer.parseInt(DEFAULT_CONNECT_TIMEOUT);</span>
-<span class="fc" id="L115">	private int readTimeout = Integer.parseInt(DEFAULT_READ_TIMEOUT);</span>
+<span class="fc" id="L122">	private int connectTimeout = Integer.parseInt(DEFAULT_CONNECT_TIMEOUT);</span>
+<span class="fc" id="L123">	private int readTimeout = Integer.parseInt(DEFAULT_READ_TIMEOUT);</span>
 
 	private ListenerNotifier notifier;
 
 	/** A lock that is acquired when a product is being retrieved. */
-<span class="fc" id="L120">	private ObjectLock&lt;ProductId&gt; retrieveLocks = new ObjectLock&lt;ProductId&gt;();</span>
+<span class="fc" id="L128">	private ObjectLock&lt;ProductId&gt; retrieveLocks = new ObjectLock&lt;ProductId&gt;();</span>
 
-<span class="fc" id="L122">	public DefaultNotificationReceiver() {</span>
-<span class="fc" id="L123">		notifier = new ExecutorListenerNotifier(this);</span>
-<span class="fc" id="L124">	}</span>
+	/** Creates new ExecutorListenerNotifier to var notifier */
+<span class="fc" id="L131">	public DefaultNotificationReceiver() {</span>
+<span class="fc" id="L132">		notifier = new ExecutorListenerNotifier(this);</span>
+<span class="fc" id="L133">	}</span>
 
 	/**
 	 * Add a new notification listener.
@@ -129,11 +138,12 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 * @param listener
 	 *            the listener to add. When notifications are received, this
 	 *            listener will be notified.
+	 * @throws Exception exception
 	 */
 	public void addNotificationListener(NotificationListener listener)
 			throws Exception {
-<span class="fc" id="L135">		notifier.addNotificationListener(listener);</span>
-<span class="fc" id="L136">	}</span>
+<span class="fc" id="L145">		notifier.addNotificationListener(listener);</span>
+<span class="fc" id="L146">	}</span>
 
 	/**
 	 * Remove an existing notification listener.
@@ -143,11 +153,12 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 * @param listener
 	 *            the listener to remove. When notifications are receive, this
 	 *            listener will no longer be notified.
+	 * @throws Exception exception
 	 */
 	public void removeNotificationListener(NotificationListener listener)
 			throws Exception {
-<span class="nc" id="L149">		notifier.removeNotificationListener(listener);</span>
-<span class="nc" id="L150">	}</span>
+<span class="nc" id="L160">		notifier.removeNotificationListener(listener);</span>
+<span class="nc" id="L161">	}</span>
 
 	/**
 	 * Store a notification and notify listeners.
@@ -162,32 +173,32 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 */
 	public void receiveNotification(Notification notification) throws Exception {
 		// notification processed
-<span class="fc" id="L165">		new ProductTracker(notification.getTrackerURL()).notificationReceived(</span>
-<span class="fc" id="L166">				this.getName(), notification);</span>
+<span class="fc" id="L176">		new ProductTracker(notification.getTrackerURL()).notificationReceived(</span>
+<span class="fc" id="L177">				this.getName(), notification);</span>
 
-<span class="pc bpc" id="L168" title="1 of 2 branches missed.">		if (notification.getExpirationDate().before(new Date())) {</span>
-<span class="nc" id="L169">			LOGGER.finer(&quot;[&quot; + getName()</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">		if (notification.getExpirationDate().before(new Date())) {</span>
+<span class="nc" id="L180">			LOGGER.finer(&quot;[&quot; + getName()</span>
 					+ &quot;] skipping already expired notification for product id=&quot;
-<span class="nc" id="L171">					+ notification.getProductId().toString() + &quot;, expiration=&quot;</span>
-<span class="nc" id="L172">					+ notification.getExpirationDate().toString());</span>
+<span class="nc" id="L182">					+ notification.getProductId().toString() + &quot;, expiration=&quot;</span>
+<span class="nc" id="L183">					+ notification.getExpirationDate().toString());</span>
 		} else {
 			// add notification to index
-<span class="fc" id="L175">			notificationIndex.addNotification(notification);</span>
+<span class="fc" id="L186">			notificationIndex.addNotification(notification);</span>
 
-<span class="pc bpc" id="L177" title="1 of 2 branches missed.">			if (notification instanceof JsonNotification) {</span>
-<span class="nc" id="L178">				LOGGER.finer(&quot;[&quot; + getName() + &quot;] json notification &quot; +</span>
-<span class="nc" id="L179">						notification.getProductId());</span>
-<span class="fc bfc" id="L180" title="All 2 branches covered.">			} else if (notification instanceof URLNotification) {</span>
-<span class="fc" id="L181">				LOGGER.finer(&quot;[&quot;</span>
-<span class="fc" id="L182">						+ getName()</span>
+<span class="pc bpc" id="L188" title="1 of 2 branches missed.">			if (notification instanceof JsonNotification) {</span>
+<span class="nc" id="L189">				LOGGER.finer(&quot;[&quot; + getName() + &quot;] json notification &quot; +</span>
+<span class="nc" id="L190">						notification.getProductId());</span>
+<span class="fc bfc" id="L191" title="All 2 branches covered.">			} else if (notification instanceof URLNotification) {</span>
+<span class="fc" id="L192">				LOGGER.finer(&quot;[&quot;</span>
+<span class="fc" id="L193">						+ getName()</span>
 						+ &quot;] notification URL=&quot;
-<span class="fc" id="L184">						+ ((URLNotification) notification).getProductURL()</span>
-<span class="fc" id="L185">								.toString());</span>
+<span class="fc" id="L195">						+ ((URLNotification) notification).getProductURL()</span>
+<span class="fc" id="L196">								.toString());</span>
 			}
 
-<span class="fc" id="L188">			notifyListeners(notification);</span>
+<span class="fc" id="L199">			notifyListeners(notification);</span>
 		}
-<span class="fc" id="L190">	}</span>
+<span class="fc" id="L201">	}</span>
 
 	/**
 	 * Send a notification to all registered NotificationListeners.
@@ -200,21 +211,21 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 *
 	 * @param notification
 	 *            the notification being sent to listeners.
-	 * @throws Exception
+	 * @throws Exception exception
 	 */
 	protected void notifyListeners(final Notification notification)
 			throws Exception {
 
-<span class="fc" id="L208">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] notifying listeners for product id=&quot;</span>
-<span class="fc" id="L209">				+ notification.getProductId().toString());</span>
+<span class="fc" id="L219">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] notifying listeners for product id=&quot;</span>
+<span class="fc" id="L220">				+ notification.getProductId().toString());</span>
 
 		// queue notification for listeners
-<span class="fc" id="L212">		NotificationEvent event = new NotificationEvent(this, notification);</span>
-<span class="fc" id="L213">		notifier.notifyListeners(event);</span>
-<span class="fc" id="L214">	}</span>
-
+<span class="fc" id="L223">		NotificationEvent event = new NotificationEvent(this, notification);</span>
+<span class="fc" id="L224">		notifier.notifyListeners(event);</span>
+<span class="fc" id="L225">	}</span>
+	/** @return &quot;Using notifier&quot; */
 	public String getListenerQueueStatus() {
-<span class="nc" id="L217">		return &quot;Using notifier&quot;;</span>
+<span class="nc" id="L228">		return &quot;Using notifier&quot;;</span>
 	}
 
 	/**
@@ -227,30 +238,30 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 *             if productStorage or notificationIndex throw an Exception.
 	 */
 	public void removeExpiredNotifications() throws Exception {
-<span class="fc" id="L230">		LOGGER.fine(&quot;[&quot; + getName() + &quot;] running receiver cleanup&quot;);</span>
-<span class="fc" id="L231">		Iterator&lt;Notification&gt; iter = notificationIndex</span>
-<span class="fc" id="L232">				.findExpiredNotifications().iterator();</span>
-<span class="pc bpc" id="L233" title="1 of 2 branches missed.">		while (iter.hasNext()) {</span>
-<span class="nc" id="L234">			Notification notification = iter.next();</span>
-<span class="nc bnc" id="L235" title="All 2 branches missed.">			if (!(notification instanceof URLNotification)) {</span>
+<span class="fc" id="L241">		LOGGER.fine(&quot;[&quot; + getName() + &quot;] running receiver cleanup&quot;);</span>
+<span class="fc" id="L242">		Iterator&lt;Notification&gt; iter = notificationIndex</span>
+<span class="fc" id="L243">				.findExpiredNotifications().iterator();</span>
+<span class="pc bpc" id="L244" title="1 of 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L245">			Notification notification = iter.next();</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">			if (!(notification instanceof URLNotification)) {</span>
 				// if it isn't a url notification, it's also in storage
-<span class="nc" id="L237">				productStorage.removeProduct(notification.getProductId());</span>
-<span class="nc bnc" id="L238" title="All 2 branches missed.">				if (LOGGER.isLoggable(Level.FINEST)) {</span>
-<span class="nc" id="L239">					LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="nc" id="L248">				productStorage.removeProduct(notification.getProductId());</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">				if (LOGGER.isLoggable(Level.FINEST)) {</span>
+<span class="nc" id="L250">					LOGGER.finest(&quot;[&quot; + getName()</span>
 							+ &quot;] removed expired product from receiver cache &quot;
-<span class="nc" id="L241">							+ notification.getProductId().toString());</span>
+<span class="nc" id="L252">							+ notification.getProductId().toString());</span>
 				}
 			}
 
 			// remove expired notification from index
-<span class="nc" id="L246">			notificationIndex.removeNotification(notification);</span>
-<span class="nc bnc" id="L247" title="All 2 branches missed.">			if (LOGGER.isLoggable(Level.FINEST)) {</span>
-<span class="nc" id="L248">				LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="nc" id="L257">			notificationIndex.removeNotification(notification);</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">			if (LOGGER.isLoggable(Level.FINEST)) {</span>
+<span class="nc" id="L259">				LOGGER.finest(&quot;[&quot; + getName()</span>
 						+ &quot;] removed expired notification from receiver index &quot;
-<span class="nc" id="L250">						+ notification.getProductId().toString());</span>
+<span class="nc" id="L261">						+ notification.getProductId().toString());</span>
 			}
-<span class="nc" id="L252">		}</span>
-<span class="fc" id="L253">	}</span>
+<span class="nc" id="L263">		}</span>
+<span class="fc" id="L264">	}</span>
 
 	/**
 	 * Retrieve a product by id.
@@ -262,167 +273,168 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 * @param id
 	 *            the product to retrieve
 	 * @return the retrieved product, or null if not available.
+	 * @throws Exception exception
 	 */
 	public Product retrieveProduct(ProductId id) throws Exception {
-<span class="fc" id="L267">		Product product = null;</span>
-<span class="fc" id="L268">		String productIdString = id.toString();</span>
+<span class="fc" id="L279">		Product product = null;</span>
+<span class="fc" id="L280">		String productIdString = id.toString();</span>
 
-<span class="fc" id="L270">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] acquiring retrieve lock id=&quot;</span>
+<span class="fc" id="L282">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] acquiring retrieve lock id=&quot;</span>
 				+ productIdString);
-<span class="fc" id="L272">		retrieveLocks.acquireLock(id);</span>
-<span class="fc" id="L273">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] retrieve lock acquired id=&quot;</span>
+<span class="fc" id="L284">		retrieveLocks.acquireLock(id);</span>
+<span class="fc" id="L285">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] retrieve lock acquired id=&quot;</span>
 				+ productIdString);
 		try {
-<span class="fc bfc" id="L276" title="All 2 branches covered.">			if (productStorage.hasProduct(id)) {</span>
+<span class="fc bfc" id="L288" title="All 2 branches covered.">			if (productStorage.hasProduct(id)) {</span>
 				try {
-<span class="fc" id="L278">					LOGGER.finest(&quot;[&quot; + getName() + &quot;] storing product id=&quot;</span>
+<span class="fc" id="L290">					LOGGER.finest(&quot;[&quot; + getName() + &quot;] storing product id=&quot;</span>
 							+ productIdString);
-<span class="fc" id="L280">					product = productStorage.getProduct(id);</span>
-<span class="fc" id="L281">					LOGGER.finest(&quot;[&quot; + getName() + &quot;] product stored id=&quot;</span>
+<span class="fc" id="L292">					product = productStorage.getProduct(id);</span>
+<span class="fc" id="L293">					LOGGER.finest(&quot;[&quot; + getName() + &quot;] product stored id=&quot;</span>
 							+ productIdString);
-<span class="nc" id="L283">				} catch (Exception e) {</span>
-<span class="nc" id="L284">					LOGGER.log(</span>
+<span class="nc" id="L295">				} catch (Exception e) {</span>
+<span class="nc" id="L296">					LOGGER.log(</span>
 							Level.FINE,
 							&quot;[&quot;
-<span class="nc" id="L287">									+ getName()</span>
+<span class="nc" id="L299">									+ getName()</span>
 									+ &quot;] storage claims hasProduct, but threw exception&quot;,
 							e);
-<span class="nc" id="L290">					product = null;</span>
-<span class="fc" id="L291">				}</span>
+<span class="nc" id="L302">					product = null;</span>
+<span class="fc" id="L303">				}</span>
 			}
 
-<span class="fc bfc" id="L294" title="All 2 branches covered.">			if (product == null) {</span>
-<span class="fc" id="L295">				LOGGER.finer(&quot;[&quot; + getName()</span>
+<span class="fc bfc" id="L306" title="All 2 branches covered.">			if (product == null) {</span>
+<span class="fc" id="L307">				LOGGER.finer(&quot;[&quot; + getName()</span>
 						+ &quot;] don't have product yet, searching notifications&quot;);
 				// don't have product yet, search notifications
-<span class="fc" id="L298">				Iterator&lt;Notification&gt; iter = notificationIndex</span>
-<span class="fc" id="L299">						.findNotifications(id).iterator();</span>
-<span class="pc bpc" id="L300" title="1 of 4 branches missed.">				while (product == null &amp;&amp; iter.hasNext()) {</span>
-<span class="fc" id="L301">					Notification notification = iter.next();</span>
-<span class="fc bfc" id="L302" title="All 2 branches covered.">					if (!(notification instanceof URLNotification)) {</span>
+<span class="fc" id="L310">				Iterator&lt;Notification&gt; iter = notificationIndex</span>
+<span class="fc" id="L311">						.findNotifications(id).iterator();</span>
+<span class="pc bpc" id="L312" title="1 of 4 branches missed.">				while (product == null &amp;&amp; iter.hasNext()) {</span>
+<span class="fc" id="L313">					Notification notification = iter.next();</span>
+<span class="fc bfc" id="L314" title="All 2 branches covered.">					if (!(notification instanceof URLNotification)) {</span>
 						// only URL notifications include location info
-<span class="fc" id="L304">						continue;</span>
+<span class="fc" id="L316">						continue;</span>
 					}
 
-<span class="fc" id="L307">					InputStream in = null;</span>
+<span class="fc" id="L319">					InputStream in = null;</span>
 					try {
-<span class="fc" id="L309">						URL productURL = ((URLNotification) notification)</span>
-<span class="fc" id="L310">								.getProductURL();</span>
+<span class="fc" id="L321">						URL productURL = ((URLNotification) notification)</span>
+<span class="fc" id="L322">								.getProductURL();</span>
 
-<span class="fc" id="L312">						ProductSource productSource = null;</span>
-<span class="fc" id="L313">						SizeLimitInputStream sizeIn = null;</span>
+<span class="fc" id="L324">						ProductSource productSource = null;</span>
+<span class="fc" id="L325">						SizeLimitInputStream sizeIn = null;</span>
 
-<span class="fc" id="L315">						final Date beginConnect = new Date();</span>
-<span class="fc" id="L316">						Date beginDownload = new Date();</span>
-<span class="pc bpc" id="L317" title="1 of 2 branches missed.">						if (productURL.getProtocol().equals(&quot;data&quot;)) {</span>
-<span class="nc" id="L318">							product = new JsonProduct().getProduct(Json.createReader(</span>
-<span class="nc" id="L319">									StreamUtils.getInputStream(productURL)).readObject());</span>
+<span class="fc" id="L327">						final Date beginConnect = new Date();</span>
+<span class="fc" id="L328">						Date beginDownload = new Date();</span>
+<span class="pc bpc" id="L329" title="1 of 2 branches missed.">						if (productURL.getProtocol().equals(&quot;data&quot;)) {</span>
+<span class="nc" id="L330">							product = new JsonProduct().getProduct(Json.createReader(</span>
+<span class="nc" id="L331">									StreamUtils.getInputStream(productURL)).readObject());</span>
 							// JSON notification with embedded product
-<span class="nc" id="L321">							LOGGER.finer(&quot;[&quot; + getName() + &quot;] parsed json notification for &quot;</span>
-<span class="nc" id="L322">									+ product.getId().toString());</span>
-<span class="nc" id="L323">							productSource = new ObjectProductSource(product);</span>
+<span class="nc" id="L333">							LOGGER.finer(&quot;[&quot; + getName() + &quot;] parsed json notification for &quot;</span>
+<span class="nc" id="L334">									+ product.getId().toString());</span>
+<span class="nc" id="L335">							productSource = new ObjectProductSource(product);</span>
 						} else {
 							// URL notification
-<span class="fc" id="L326">							LOGGER.finer(&quot;[&quot; + getName() + &quot;] notification url &quot;</span>
-<span class="fc" id="L327">									+ productURL.toString());</span>
+<span class="fc" id="L338">							LOGGER.finer(&quot;[&quot; + getName() + &quot;] notification url &quot;</span>
+<span class="fc" id="L339">									+ productURL.toString());</span>
 
-<span class="fc" id="L329">							in = StreamUtils.getURLInputStream(productURL,</span>
+<span class="fc" id="L341">							in = StreamUtils.getURLInputStream(productURL,</span>
 									connectTimeout, readTimeout);
-<span class="fc" id="L331">							beginDownload = new Date();</span>
+<span class="fc" id="L343">							beginDownload = new Date();</span>
 							// use size limit with negative limit to count transfer size
-<span class="fc" id="L333">							sizeIn = new SizeLimitInputStream(in, -1);</span>
-<span class="fc" id="L334">							productSource = IOUtil.autoDetectProductSource(sizeIn);</span>
+<span class="fc" id="L345">							sizeIn = new SizeLimitInputStream(in, -1);</span>
+<span class="fc" id="L346">							productSource = IOUtil.autoDetectProductSource(sizeIn);</span>
 						}
 
-<span class="fc" id="L337">						Notification storedNotification = storeProductSource(productSource);</span>
+<span class="fc" id="L349">						Notification storedNotification = storeProductSource(productSource);</span>
 
-<span class="fc" id="L339">						final Date endDownload = new Date();</span>
-<span class="fc" id="L340">						final long connectTime = beginDownload.getTime() - beginConnect.getTime();</span>
-<span class="fc" id="L341">						final long downloadTime = endDownload.getTime() - beginDownload.getTime();</span>
-<span class="pc bpc" id="L342" title="1 of 2 branches missed.">						final long downloadSize = sizeIn != null ? sizeIn.getRead() : 0;</span>
-<span class="fc" id="L343">						final long downloadRate = Math.round(downloadSize /</span>
-<span class="fc" id="L344">								(Math.max(downloadTime, 1L) / 1000.0));</span>
+<span class="fc" id="L351">						final Date endDownload = new Date();</span>
+<span class="fc" id="L352">						final long connectTime = beginDownload.getTime() - beginConnect.getTime();</span>
+<span class="fc" id="L353">						final long downloadTime = endDownload.getTime() - beginDownload.getTime();</span>
+<span class="pc bpc" id="L354" title="1 of 2 branches missed.">						final long downloadSize = sizeIn != null ? sizeIn.getRead() : 0;</span>
+<span class="fc" id="L355">						final long downloadRate = Math.round(downloadSize /</span>
+<span class="fc" id="L356">								(Math.max(downloadTime, 1L) / 1000.0));</span>
 
-<span class="fc" id="L346">						LOGGER.fine(&quot;[&quot; + getName() + &quot;] receiver retrieved product&quot;</span>
-<span class="fc" id="L347">								+ &quot; id=&quot; + id.toString()</span>
+<span class="fc" id="L358">						LOGGER.fine(&quot;[&quot; + getName() + &quot;] receiver retrieved product&quot;</span>
+<span class="fc" id="L359">								+ &quot; id=&quot; + id.toString()</span>
 								+ &quot; (connect = &quot; + connectTime + &quot; ms)&quot;
 								+ &quot; (rate = &quot; + downloadRate +  &quot; bytes/s)&quot;
 								+ &quot; (size = &quot; + downloadSize + &quot; bytes)&quot;
 								+ &quot; (time = &quot; + downloadTime + &quot; ms)&quot;
 								+ &quot; from &quot;
-<span class="pc bpc" id="L353" title="1 of 2 branches missed.">								+ (productURL.getProtocol().equals(&quot;data&quot;)</span>
-<span class="nc" id="L354">										? &quot;data url&quot;</span>
-<span class="fc" id="L355">										: productURL.toString()));</span>
+<span class="pc bpc" id="L365" title="1 of 2 branches missed.">								+ (productURL.getProtocol().equals(&quot;data&quot;)</span>
+<span class="nc" id="L366">										? &quot;data url&quot;</span>
+<span class="fc" id="L367">										: productURL.toString()));</span>
 
-<span class="fc" id="L357">						LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L369">						LOGGER.finest(&quot;[&quot; + getName()</span>
 								+ &quot;] after store product, notification=&quot;
 								+ storedNotification);
 
-<span class="pc bpc" id="L361" title="1 of 2 branches missed.">						if (productStorage.hasProduct(id)) {</span>
-<span class="fc" id="L362">							LOGGER.finer(&quot;[&quot; + getName()</span>
+<span class="pc bpc" id="L373" title="1 of 2 branches missed.">						if (productStorage.hasProduct(id)) {</span>
+<span class="fc" id="L374">							LOGGER.finer(&quot;[&quot; + getName()</span>
 									+ &quot;] getting product from storage&quot;);
-<span class="fc" id="L364">							product = productStorage.getProduct(id);</span>
-<span class="fc" id="L365">							LOGGER.finest(&quot;[&quot; + getName()</span>
+<span class="fc" id="L376">							product = productStorage.getProduct(id);</span>
+<span class="fc" id="L377">							LOGGER.finest(&quot;[&quot; + getName()</span>
 									+ &quot;] after getProduct, product=&quot; + product);
 
 							try {
-<span class="fc" id="L369">								new ProductTracker(notification.getTrackerURL())</span>
-<span class="fc" id="L370">										.productDownloaded(this.getName(), id);</span>
-<span class="fc" id="L371">								LOGGER.fine(&quot;[&quot; + getName()</span>
+<span class="fc" id="L381">								new ProductTracker(notification.getTrackerURL())</span>
+<span class="fc" id="L382">										.productDownloaded(this.getName(), id);</span>
+<span class="fc" id="L383">								LOGGER.fine(&quot;[&quot; + getName()</span>
 										+ &quot;] product downloaded from &quot;
-<span class="pc bpc" id="L373" title="1 of 2 branches missed.">										+ (productURL.getProtocol().equals(&quot;data&quot;)</span>
-<span class="nc" id="L374">												? &quot;data url&quot;</span>
-<span class="fc" id="L375">												: productURL.toString()));</span>
-<span class="nc" id="L376">							} catch (Exception e) {</span>
-<span class="nc" id="L377">								LOGGER.log(</span>
+<span class="pc bpc" id="L385" title="1 of 2 branches missed.">										+ (productURL.getProtocol().equals(&quot;data&quot;)</span>
+<span class="nc" id="L386">												? &quot;data url&quot;</span>
+<span class="fc" id="L387">												: productURL.toString()));</span>
+<span class="nc" id="L388">							} catch (Exception e) {</span>
+<span class="nc" id="L389">								LOGGER.log(</span>
 										Level.WARNING,
 										&quot;[&quot;
-<span class="nc" id="L380">												+ getName()</span>
+<span class="nc" id="L392">												+ getName()</span>
 												+ &quot;] exception notifying tracker about downloaded product&quot;,
 										e);
-<span class="pc" id="L383">							}</span>
+<span class="pc" id="L395">							}</span>
 						} else {
-<span class="nc" id="L385">							LOGGER.finer(&quot;[&quot; + getName()</span>
+<span class="nc" id="L397">							LOGGER.finer(&quot;[&quot; + getName()</span>
 									+ &quot;] product not in storage id=&quot;
 									+ productIdString);
 						}
-<span class="fc" id="L389">					} catch (Exception e) {</span>
-<span class="fc bfc" id="L390" title="All 2 branches covered.">						if (e instanceof ProductAlreadyInStorageException</span>
-<span class="pc bpc" id="L391" title="1 of 2 branches missed.">								|| e.getCause() instanceof ProductAlreadyInStorageException) {</span>
-<span class="fc" id="L392">							LOGGER.finer(&quot;[&quot; + getName()</span>
+<span class="fc" id="L401">					} catch (Exception e) {</span>
+<span class="fc bfc" id="L402" title="All 2 branches covered.">						if (e instanceof ProductAlreadyInStorageException</span>
+<span class="pc bpc" id="L403" title="1 of 2 branches missed.">								|| e.getCause() instanceof ProductAlreadyInStorageException) {</span>
+<span class="fc" id="L404">							LOGGER.finer(&quot;[&quot; + getName()</span>
 									+ &quot;] product already in storage id=&quot;
 									+ productIdString);
-<span class="fc" id="L395">							product = productStorage.getProduct(id);</span>
+<span class="fc" id="L407">							product = productStorage.getProduct(id);</span>
 							continue;
 						}
 
 						// log any exception that happened while retrieving
 						// product
-<span class="pc bpc" id="L401" title="1 of 2 branches missed.">						if (e instanceof FileNotFoundException) {</span>
-<span class="nc" id="L402">							LOGGER.warning(&quot;[&quot;</span>
-<span class="nc" id="L403">									+ getName()</span>
+<span class="pc bpc" id="L413" title="1 of 2 branches missed.">						if (e instanceof FileNotFoundException) {</span>
+<span class="nc" id="L414">							LOGGER.warning(&quot;[&quot;</span>
+<span class="nc" id="L415">									+ getName()</span>
 									+ &quot;] exception while retrieving product, file not found&quot;);
 						} else {
-<span class="fc" id="L406">							LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+<span class="fc" id="L418">							LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 									+ &quot;] exception while retrieving product&quot;, e);
-<span class="fc" id="L408">							new ProductTracker(notification.getTrackerURL())</span>
-<span class="fc" id="L409">									.exception(this.getName(), id, e);</span>
+<span class="fc" id="L420">							new ProductTracker(notification.getTrackerURL())</span>
+<span class="fc" id="L421">									.exception(this.getName(), id, e);</span>
 						}
 					} finally {
-<span class="fc" id="L412">						StreamUtils.closeStream(in);</span>
+<span class="fc" id="L424">						StreamUtils.closeStream(in);</span>
 					}
-<span class="fc" id="L414">				}</span>
+<span class="fc" id="L426">				}</span>
 			}
 		} finally {
-<span class="fc" id="L417">			LOGGER.finest(&quot;[&quot; + getName() + &quot;] releasing retrieve lock id=&quot;</span>
+<span class="fc" id="L429">			LOGGER.finest(&quot;[&quot; + getName() + &quot;] releasing retrieve lock id=&quot;</span>
 					+ productIdString);
-<span class="fc" id="L419">			retrieveLocks.releaseLock(id);</span>
-<span class="fc" id="L420">			LOGGER.finest(&quot;[&quot; + getName() + &quot;] retrieve lock released id=&quot;</span>
+<span class="fc" id="L431">			retrieveLocks.releaseLock(id);</span>
+<span class="fc" id="L432">			LOGGER.finest(&quot;[&quot; + getName() + &quot;] retrieve lock released id=&quot;</span>
 					+ productIdString);
 		}
 
 		// return product
-<span class="fc" id="L425">		return product;</span>
+<span class="fc" id="L437">		return product;</span>
 	}
 
 	/**
@@ -432,31 +444,31 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 *            The &lt;code&gt;ProductSource&lt;/code&gt; to store.
 	 * @return The &lt;code&gt;ProductId&lt;/code&gt; of the product referenced by the given
 	 *         &lt;code&gt;ProductSource&lt;/code&gt;.
-	 * @throws Exception
+	 * @throws Exception exception
 	 * @see gov.usgs.earthquake.distribution.ProductStorage
 	 */
 	protected Notification storeProductSource(ProductSource source)
 			throws Exception {
-<span class="fc" id="L440">		Notification notification = null;</span>
+<span class="fc" id="L452">		Notification notification = null;</span>
 
 		// store product input
-<span class="fc" id="L443">		ProductId id = productStorage.storeProductSource(source);</span>
+<span class="fc" id="L455">		ProductId id = productStorage.storeProductSource(source);</span>
 
 		// check if stored
-<span class="pc bpc" id="L446" title="1 of 2 branches missed.">		if (productStorage.hasProduct(id)) {</span>
-<span class="fc" id="L447">			Product product = productStorage.getProduct(id);</span>
+<span class="pc bpc" id="L458" title="1 of 2 branches missed.">		if (productStorage.hasProduct(id)) {</span>
+<span class="fc" id="L459">			Product product = productStorage.getProduct(id);</span>
 
 			// calculate storage expiration date
-<span class="fc" id="L450">			Date expirationDate = new Date(new Date().getTime()</span>
-<span class="fc" id="L451">					+ productStorageMaxAge);</span>
+<span class="fc" id="L462">			Date expirationDate = new Date(new Date().getTime()</span>
+<span class="fc" id="L463">					+ productStorageMaxAge);</span>
 
 			// update notification index
-<span class="fc" id="L454">			notification = new DefaultNotification(id, expirationDate,</span>
-<span class="fc" id="L455">					product.getTrackerURL());</span>
-<span class="fc" id="L456">			notificationIndex.addNotification(notification);</span>
+<span class="fc" id="L466">			notification = new DefaultNotification(id, expirationDate,</span>
+<span class="fc" id="L467">					product.getTrackerURL());</span>
+<span class="fc" id="L468">			notificationIndex.addNotification(notification);</span>
 		}
 
-<span class="fc" id="L459">		return notification;</span>
+<span class="fc" id="L471">		return notification;</span>
 	}
 
 	/**
@@ -481,149 +493,149 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	public void sendNotifications(NotificationListener listener,
 			List&lt;String&gt; sources, List&lt;String&gt; types, List&lt;String&gt; codes)
 			throws Exception {
-<span class="nc" id="L484">		List&lt;Notification&gt; notifications = notificationIndex.findNotifications(</span>
+<span class="nc" id="L496">		List&lt;Notification&gt; notifications = notificationIndex.findNotifications(</span>
 				sources, types, codes);
-<span class="nc" id="L486">		Iterator&lt;Notification&gt; iter = notifications.iterator();</span>
-<span class="nc bnc" id="L487" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
-<span class="nc" id="L488">			listener.onNotification(new NotificationEvent(this, iter.next()));</span>
+<span class="nc" id="L498">		Iterator&lt;Notification&gt; iter = notifications.iterator();</span>
+<span class="nc bnc" id="L499" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L500">			listener.onNotification(new NotificationEvent(this, iter.next()));</span>
 		}
-<span class="nc" id="L490">	}</span>
+<span class="nc" id="L502">	}</span>
 
 	public void configure(Config config) throws Exception {
-<span class="fc" id="L493">		String notificationIndexName = config</span>
-<span class="fc" id="L494">				.getProperty(NOTIFICATION_INDEX_PROPERTY);</span>
-<span class="fc" id="L495">		String notificationIndexFile = config.getProperty(INDEX_FILE_PROPERTY);</span>
-<span class="pc bpc" id="L496" title="3 of 4 branches missed.">		if (notificationIndexName == null &amp;&amp; notificationIndexFile == null) {</span>
-<span class="nc" id="L497">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+<span class="fc" id="L505">		String notificationIndexName = config</span>
+<span class="fc" id="L506">				.getProperty(NOTIFICATION_INDEX_PROPERTY);</span>
+<span class="fc" id="L507">		String notificationIndexFile = config.getProperty(INDEX_FILE_PROPERTY);</span>
+<span class="pc bpc" id="L508" title="3 of 4 branches missed.">		if (notificationIndexName == null &amp;&amp; notificationIndexFile == null) {</span>
+<span class="nc" id="L509">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
 					+ &quot;] 'index' is a required configuration property&quot;);
 		}
-<span class="pc bpc" id="L500" title="1 of 2 branches missed.">		if (notificationIndexName != null) {</span>
-<span class="fc" id="L501">			LOGGER.config(&quot;[&quot; + getName() + &quot;] loading notification index '&quot;</span>
+<span class="pc bpc" id="L512" title="1 of 2 branches missed.">		if (notificationIndexName != null) {</span>
+<span class="fc" id="L513">			LOGGER.config(&quot;[&quot; + getName() + &quot;] loading notification index '&quot;</span>
 					+ notificationIndexName + &quot;'&quot;);
-<span class="fc" id="L503">			notificationIndex = (NotificationIndex) Config.getConfig()</span>
-<span class="fc" id="L504">					.getObject(notificationIndexName);</span>
-<span class="pc bpc" id="L505" title="1 of 2 branches missed.">			if (notificationIndex == null) {</span>
-<span class="nc" id="L506">				throw new ConfigurationException(&quot;[&quot; + getName() + &quot;] index '&quot;</span>
+<span class="fc" id="L515">			notificationIndex = (NotificationIndex) Config.getConfig()</span>
+<span class="fc" id="L516">					.getObject(notificationIndexName);</span>
+<span class="pc bpc" id="L517" title="1 of 2 branches missed.">			if (notificationIndex == null) {</span>
+<span class="nc" id="L518">				throw new ConfigurationException(&quot;[&quot; + getName() + &quot;] index '&quot;</span>
 						+ notificationIndexName
 						+ &quot;' is not properly configured&quot;);
 			}
 		} else {
-<span class="nc" id="L511">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using notification index '&quot;</span>
+<span class="nc" id="L523">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using notification index '&quot;</span>
 					+ notificationIndexFile + &quot;'&quot;);
-<span class="nc" id="L513">			notificationIndex = new JDBCNotificationIndex(notificationIndexFile);</span>
+<span class="nc" id="L525">			notificationIndex = new JDBCNotificationIndex(notificationIndexFile);</span>
 		}
 
-<span class="fc" id="L516">		String productStorageName = config</span>
-<span class="fc" id="L517">				.getProperty(PRODUCT_STORAGE_PROPERTY);</span>
-<span class="fc" id="L518">		String storageDirectory = config</span>
-<span class="fc" id="L519">				.getProperty(STORAGE_DIRECTORY_PROPERTY);</span>
-<span class="pc bpc" id="L520" title="3 of 4 branches missed.">		if (productStorageName == null &amp;&amp; storageDirectory == null) {</span>
-<span class="nc" id="L521">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+<span class="fc" id="L528">		String productStorageName = config</span>
+<span class="fc" id="L529">				.getProperty(PRODUCT_STORAGE_PROPERTY);</span>
+<span class="fc" id="L530">		String storageDirectory = config</span>
+<span class="fc" id="L531">				.getProperty(STORAGE_DIRECTORY_PROPERTY);</span>
+<span class="pc bpc" id="L532" title="3 of 4 branches missed.">		if (productStorageName == null &amp;&amp; storageDirectory == null) {</span>
+<span class="nc" id="L533">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
 					+ &quot;] 'storage' is a required configuration property&quot;);
 		}
-<span class="pc bpc" id="L524" title="1 of 2 branches missed.">		if (productStorageName != null) {</span>
-<span class="fc" id="L525">			LOGGER.config(&quot;[&quot; + getName() + &quot;] loading product storage '&quot;</span>
+<span class="pc bpc" id="L536" title="1 of 2 branches missed.">		if (productStorageName != null) {</span>
+<span class="fc" id="L537">			LOGGER.config(&quot;[&quot; + getName() + &quot;] loading product storage '&quot;</span>
 					+ productStorageName + &quot;'&quot;);
-<span class="fc" id="L527">			productStorage = (ProductStorage) Config.getConfig().getObject(</span>
+<span class="fc" id="L539">			productStorage = (ProductStorage) Config.getConfig().getObject(</span>
 					productStorageName);
-<span class="pc bpc" id="L529" title="1 of 2 branches missed.">			if (productStorage == null) {</span>
-<span class="nc" id="L530">				throw new ConfigurationException(&quot;[&quot; + getName()</span>
+<span class="pc bpc" id="L541" title="1 of 2 branches missed.">			if (productStorage == null) {</span>
+<span class="nc" id="L542">				throw new ConfigurationException(&quot;[&quot; + getName()</span>
 						+ &quot;] storage '&quot; + productStorageName
 						+ &quot;' is not properly configured&quot;);
 			}
 		} else {
-<span class="nc" id="L535">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using storage directory '&quot;</span>
+<span class="nc" id="L547">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using storage directory '&quot;</span>
 					+ storageDirectory + &quot;'&quot;);
-<span class="nc" id="L537">			productStorage = new FileProductStorage(new File(storageDirectory));</span>
+<span class="nc" id="L549">			productStorage = new FileProductStorage(new File(storageDirectory));</span>
 		}
 
-<span class="fc" id="L540">		productStorageMaxAge = Long.parseLong(config.getProperty(</span>
+<span class="fc" id="L552">		productStorageMaxAge = Long.parseLong(config.getProperty(</span>
 				PRODUCT_STORAGE_MAX_AGE_PROPERTY,
 				// previously all lower-case
-<span class="fc" id="L543">				config.getProperty(PRODUCT_STORAGE_MAX_AGE_PROPERTY.toLowerCase(),</span>
+<span class="fc" id="L555">				config.getProperty(PRODUCT_STORAGE_MAX_AGE_PROPERTY.toLowerCase(),</span>
 						DEFAULT_PRODUCT_STORAGE_MAX_AGE)));
-<span class="fc" id="L545">		LOGGER.config(&quot;[&quot; + getName() + &quot;] storage max age &quot;</span>
+<span class="fc" id="L557">		LOGGER.config(&quot;[&quot; + getName() + &quot;] storage max age &quot;</span>
 				+ productStorageMaxAge + &quot; ms&quot;);
 
-<span class="fc" id="L548">		receiverCleanupInterval = Long.parseLong(config.getProperty(</span>
+<span class="fc" id="L560">		receiverCleanupInterval = Long.parseLong(config.getProperty(</span>
 				RECEIVER_CLEANUP_PROPERTY, DEFAULT_RECEIVER_CLEANUP));
-<span class="fc" id="L550">		LOGGER.config(&quot;[&quot; + getName() + &quot;] receiver cleanup interval &quot;</span>
+<span class="fc" id="L562">		LOGGER.config(&quot;[&quot; + getName() + &quot;] receiver cleanup interval &quot;</span>
 				+ receiverCleanupInterval + &quot; ms&quot;);
 
-<span class="fc" id="L553">		connectTimeout = Integer.parseInt(config.getProperty(</span>
+<span class="fc" id="L565">		connectTimeout = Integer.parseInt(config.getProperty(</span>
 				CONNECT_TIMEOUT_PROPERTY, DEFAULT_CONNECT_TIMEOUT));
-<span class="fc" id="L555">		LOGGER.config(&quot;[&quot; + getName() + &quot;] receiver connect timeout &quot;</span>
+<span class="fc" id="L567">		LOGGER.config(&quot;[&quot; + getName() + &quot;] receiver connect timeout &quot;</span>
 				+ connectTimeout + &quot; ms&quot;);
 
-<span class="fc" id="L558">		readTimeout = Integer.parseInt(config.getProperty(</span>
+<span class="fc" id="L570">		readTimeout = Integer.parseInt(config.getProperty(</span>
 				READ_TIMEOUT_PROPERTY, DEFAULT_READ_TIMEOUT));
-<span class="fc" id="L560">		LOGGER.config(&quot;[&quot; + getName() + &quot;] receiver read timeout &quot;</span>
+<span class="fc" id="L572">		LOGGER.config(&quot;[&quot; + getName() + &quot;] receiver read timeout &quot;</span>
 				+ readTimeout + &quot; ms&quot;);
 
-<span class="fc" id="L563">		String notifierType = config.getProperty(LISTENER_NOTIFIER_PROPERTY);</span>
-<span class="pc bpc" id="L564" title="1 of 2 branches missed.">		if (notifierType != null) {</span>
-<span class="nc bnc" id="L565" title="All 2 branches missed.">			if (notifierType.equals(EXECUTOR_LISTENER_NOTIFIER)) {</span>
-<span class="nc" id="L566">				notifier = new ExecutorListenerNotifier(this);</span>
-<span class="nc" id="L567">				LOGGER.config(&quot;[&quot; + getName()</span>
+<span class="fc" id="L575">		String notifierType = config.getProperty(LISTENER_NOTIFIER_PROPERTY);</span>
+<span class="pc bpc" id="L576" title="1 of 2 branches missed.">		if (notifierType != null) {</span>
+<span class="nc bnc" id="L577" title="All 2 branches missed.">			if (notifierType.equals(EXECUTOR_LISTENER_NOTIFIER)) {</span>
+<span class="nc" id="L578">				notifier = new ExecutorListenerNotifier(this);</span>
+<span class="nc" id="L579">				LOGGER.config(&quot;[&quot; + getName()</span>
 						+ &quot;] using executor listener notifier&quot;);
-<span class="nc bnc" id="L569" title="All 2 branches missed.">			} else if (notifierType.equals(FUTURE_LISTENER_NOTIFIER)) {</span>
-<span class="nc" id="L570">				notifier = new FutureListenerNotifier(this);</span>
-<span class="nc bnc" id="L571" title="All 2 branches missed.">			} else if (notifierType.equals(ROUNDROBIN_LISTENER_NOTIFIER)) {</span>
-<span class="nc" id="L572">				notifier = new RoundRobinListenerNotifier(this);</span>
-<span class="nc" id="L573">				LOGGER.config(&quot;[&quot; + getName()</span>
+<span class="nc bnc" id="L581" title="All 2 branches missed.">			} else if (notifierType.equals(FUTURE_LISTENER_NOTIFIER)) {</span>
+<span class="nc" id="L582">				notifier = new FutureListenerNotifier(this);</span>
+<span class="nc bnc" id="L583" title="All 2 branches missed.">			} else if (notifierType.equals(ROUNDROBIN_LISTENER_NOTIFIER)) {</span>
+<span class="nc" id="L584">				notifier = new RoundRobinListenerNotifier(this);</span>
+<span class="nc" id="L585">				LOGGER.config(&quot;[&quot; + getName()</span>
 						+ &quot;] using round-robin listener notifier&quot;);
 			} else {
-<span class="nc" id="L576">				throw new ConfigurationException(&quot;Unknown notifier type &quot;</span>
+<span class="nc" id="L588">				throw new ConfigurationException(&quot;Unknown notifier type &quot;</span>
 						+ notifierType);
 			}
 		}
-<span class="fc" id="L580">	}</span>
+<span class="fc" id="L592">	}</span>
 
 	public void shutdown() throws Exception {
-<span class="fc" id="L583">		receiverCleanupTimer.cancel();</span>
+<span class="fc" id="L595">		receiverCleanupTimer.cancel();</span>
 
 		try {
-<span class="fc" id="L586">			notifier.shutdown();</span>
-<span class="nc" id="L587">		} catch (Exception ignore) {</span>
-<span class="fc" id="L588">		}</span>
+<span class="fc" id="L598">			notifier.shutdown();</span>
+<span class="nc" id="L599">		} catch (Exception ignore) {</span>
+<span class="fc" id="L600">		}</span>
 		try {
-<span class="fc" id="L590">			notificationIndex.shutdown();</span>
-<span class="nc" id="L591">		} catch (Exception ignore) {</span>
-<span class="fc" id="L592">		}</span>
+<span class="fc" id="L602">			notificationIndex.shutdown();</span>
+<span class="nc" id="L603">		} catch (Exception ignore) {</span>
+<span class="fc" id="L604">		}</span>
 		try {
-<span class="fc" id="L594">			productStorage.shutdown();</span>
-<span class="nc" id="L595">		} catch (Exception ignore) {</span>
-<span class="fc" id="L596">		}</span>
-<span class="fc" id="L597">	}</span>
+<span class="fc" id="L606">			productStorage.shutdown();</span>
+<span class="nc" id="L607">		} catch (Exception ignore) {</span>
+<span class="fc" id="L608">		}</span>
+<span class="fc" id="L609">	}</span>
 
 	public void startup() throws Exception {
-<span class="pc bpc" id="L600" title="1 of 2 branches missed.">		if (productStorage == null) {</span>
-<span class="nc" id="L601">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+<span class="pc bpc" id="L612" title="1 of 2 branches missed.">		if (productStorage == null) {</span>
+<span class="nc" id="L613">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
 					+ &quot;] storage has not been configured properly&quot;);
 		}
-<span class="pc bpc" id="L604" title="1 of 2 branches missed.">		if (notificationIndex == null) {</span>
-<span class="nc" id="L605">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+<span class="pc bpc" id="L616" title="1 of 2 branches missed.">		if (notificationIndex == null) {</span>
+<span class="nc" id="L617">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
 					+ &quot;] index has not been configured properly&quot;);
 		}
-<span class="fc" id="L608">		productStorage.startup();</span>
-<span class="fc" id="L609">		notificationIndex.startup();</span>
+<span class="fc" id="L620">		productStorage.startup();</span>
+<span class="fc" id="L621">		notificationIndex.startup();</span>
 
 		// only schedule cleanup if interval is non-zero
-<span class="fc bfc" id="L612" title="All 2 branches covered.">		if (receiverCleanupInterval &gt; 0) {</span>
-<span class="fc" id="L613">			receiverCleanupTimer.scheduleAtFixedRate(new TimerTask() {</span>
+<span class="fc bfc" id="L624" title="All 2 branches covered.">		if (receiverCleanupInterval &gt; 0) {</span>
+<span class="fc" id="L625">			receiverCleanupTimer.scheduleAtFixedRate(new TimerTask() {</span>
 				public void run() {
 					try {
-<span class="fc" id="L616">						removeExpiredNotifications();</span>
-<span class="nc" id="L617">					} catch (Exception e) {</span>
-<span class="nc" id="L618">						LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+<span class="fc" id="L628">						removeExpiredNotifications();</span>
+<span class="nc" id="L629">					} catch (Exception e) {</span>
+<span class="nc" id="L630">						LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 								+ &quot;] exception during receiver cleanup&quot;, e);
-<span class="fc" id="L620">					}</span>
-<span class="fc" id="L621">				}</span>
-<span class="fc" id="L622">			}, 0, receiverCleanupInterval);</span>
+<span class="fc" id="L632">					}</span>
+<span class="fc" id="L633">				}</span>
+<span class="fc" id="L634">			}, 0, receiverCleanupInterval);</span>
 		}
 
 		// do this last since it may start processing
-<span class="fc" id="L626">		notifier.startup();</span>
+<span class="fc" id="L638">		notifier.startup();</span>
 
 		// ProductClient already started these listeners...
 		// Iterator&lt;NotificationListener&gt; iter = notificationListeners.keySet()
@@ -631,13 +643,13 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 		// while (iter.hasNext()) {
 		// iter.next().startup();
 		// }
-<span class="fc" id="L634">	}</span>
+<span class="fc" id="L646">	}</span>
 
 	/**
 	 * @return the notificationIndex
 	 */
 	public NotificationIndex getNotificationIndex() {
-<span class="fc" id="L640">		return notificationIndex;</span>
+<span class="fc" id="L652">		return notificationIndex;</span>
 	}
 
 	/**
@@ -645,14 +657,14 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 *            the notificationIndex to set
 	 */
 	public void setNotificationIndex(NotificationIndex notificationIndex) {
-<span class="fc" id="L648">		this.notificationIndex = notificationIndex;</span>
-<span class="fc" id="L649">	}</span>
+<span class="fc" id="L660">		this.notificationIndex = notificationIndex;</span>
+<span class="fc" id="L661">	}</span>
 
 	/**
 	 * @return the productStorage
 	 */
 	public ProductStorage getProductStorage() {
-<span class="fc" id="L655">		return productStorage;</span>
+<span class="fc" id="L667">		return productStorage;</span>
 	}
 
 	/**
@@ -660,14 +672,14 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 *            the productStorage to set
 	 */
 	public void setProductStorage(ProductStorage productStorage) {
-<span class="fc" id="L663">		this.productStorage = productStorage;</span>
-<span class="fc" id="L664">	}</span>
+<span class="fc" id="L675">		this.productStorage = productStorage;</span>
+<span class="fc" id="L676">	}</span>
 
 	/**
 	 * @return the productStorageMaxAge
 	 */
 	public Long getProductStorageMaxAge() {
-<span class="nc" id="L670">		return productStorageMaxAge;</span>
+<span class="nc" id="L682">		return productStorageMaxAge;</span>
 	}
 
 	/**
@@ -675,53 +687,84 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 *            the productStorageMaxAge to set
 	 */
 	public void setProductStorageMaxAge(Long productStorageMaxAge) {
-<span class="fc" id="L678">		this.productStorageMaxAge = productStorageMaxAge;</span>
-<span class="fc" id="L679">	}</span>
+<span class="fc" id="L690">		this.productStorageMaxAge = productStorageMaxAge;</span>
+<span class="fc" id="L691">	}</span>
 
+	/**
+	 * @return the QueueStatus or null if ExecutorListenerNotifier doesn't exist
+	 */
 	public Map&lt;String, Integer&gt; getQueueStatus() {
-<span class="nc bnc" id="L682" title="All 2 branches missed.">		if (notifier instanceof ExecutorListenerNotifier) {</span>
-<span class="nc" id="L683">			return ((ExecutorListenerNotifier) notifier).getStatus();</span>
+<span class="nc bnc" id="L697" title="All 2 branches missed.">		if (notifier instanceof ExecutorListenerNotifier) {</span>
+<span class="nc" id="L698">			return ((ExecutorListenerNotifier) notifier).getStatus();</span>
 		}
-<span class="nc" id="L685">		return null;</span>
+<span class="nc" id="L700">		return null;</span>
 	}
 
+	/**
+	 * Throttle notifier queues
+	 * @throws InterruptedException InterruptedException
+	 */
 	public void throttleQueues() throws InterruptedException {
-<span class="pc bpc" id="L689" title="1 of 2 branches missed.">		if (notifier instanceof ExecutorListenerNotifier) {</span>
-<span class="fc" id="L690">			((ExecutorListenerNotifier) notifier).throttleQueues();</span>
+<span class="pc bpc" id="L708" title="1 of 2 branches missed.">		if (notifier instanceof ExecutorListenerNotifier) {</span>
+<span class="fc" id="L709">			((ExecutorListenerNotifier) notifier).throttleQueues();</span>
 		}
-<span class="fc" id="L692">	}</span>
+<span class="fc" id="L711">	}</span>
 
+	/**
+	 * @return receiverCleanupInterval
+	 */
 	public Long getReceiverCleanupInterval() {
-<span class="nc" id="L695">		return receiverCleanupInterval;</span>
+<span class="nc" id="L717">		return receiverCleanupInterval;</span>
 	}
 
+	/**
+	 * @param receiverCleanupInterval the receiverCleanupInterval to set
+	 */
 	public void setReceiverCleanupInterval(Long receiverCleanupInterval) {
-<span class="nc" id="L699">		this.receiverCleanupInterval = receiverCleanupInterval;</span>
-<span class="nc" id="L700">	}</span>
+<span class="nc" id="L724">		this.receiverCleanupInterval = receiverCleanupInterval;</span>
+<span class="nc" id="L725">	}</span>
 
+	/**
+	 * @return connectionTimeout
+	 */
 	public int getConnectTimeout() {
-<span class="nc" id="L703">		return connectTimeout;</span>
+<span class="nc" id="L731">		return connectTimeout;</span>
 	}
 
+	/**
+	 * @param connectTimeout int connectionTimeout to set
+	 */
 	public void setConnectTimeout(int connectTimeout) {
-<span class="nc" id="L707">		this.connectTimeout = connectTimeout;</span>
-<span class="nc" id="L708">	}</span>
+<span class="nc" id="L738">		this.connectTimeout = connectTimeout;</span>
+<span class="nc" id="L739">	}</span>
 
+	/**
+	 * @return ListenerNotifier
+	 */
 	public ListenerNotifier getNotifier() {
-<span class="nc" id="L711">		return this.notifier;</span>
+<span class="nc" id="L745">		return this.notifier;</span>
 	}
 
+	/**
+	 * @param notifier ListenerNotifier to set
+	 */
 	public void setNotifier(final ListenerNotifier notifier) {
-<span class="fc" id="L715">		this.notifier = notifier;</span>
-<span class="fc" id="L716">	}</span>
+<span class="fc" id="L752">		this.notifier = notifier;</span>
+<span class="fc" id="L753">	}</span>
 
+	/**
+	 * @return readTimeout
+	 */
 	public int getReadTimeout() {
-<span class="fc" id="L719">		return readTimeout;</span>
+<span class="fc" id="L759">		return readTimeout;</span>
 	}
 
+	/**
+	 * @param readTimeout int readTimeout to set
+	 */
 	public void setReadTimeout(int readTimeout) {
-<span class="nc" id="L723">		this.readTimeout = readTimeout;</span>
-<span class="nc" id="L724">	}</span>
+<span class="nc" id="L766">		this.readTimeout = readTimeout;</span>
+<span class="nc" id="L767">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

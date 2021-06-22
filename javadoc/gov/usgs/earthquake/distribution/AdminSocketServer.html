@@ -165,13 +165,17 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 </tr>
 <tr class="altColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E()">AdminSocketServer</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Initializes socket with default thread pool size and port</div>
+</td>
 </tr>
 <tr class="rowColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(int,int,gov.usgs.earthquake.distribution.ProductClient)">AdminSocketServer</a></span>&#8203;(int&nbsp;port,
                  int&nbsp;threads,
                  <a href="ProductClient.html" title="class in gov.usgs.earthquake.distribution">ProductClient</a>&nbsp;client)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Initializes socket with custom port, threads, and client</div>
+</td>
 </tr>
 </table>
 </li>
@@ -288,6 +292,7 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <li class="blockList">
 <h4>AdminSocketServer</h4>
 <pre>public&nbsp;AdminSocketServer()</pre>
+<div class="block">Initializes socket with default thread pool size and port</div>
 </li>
 </ul>
 <a id="&lt;init&gt;(int,int,gov.usgs.earthquake.distribution.ProductClient)">
@@ -299,6 +304,13 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <pre>public&nbsp;AdminSocketServer&#8203;(int&nbsp;port,
                          int&nbsp;threads,
                          <a href="ProductClient.html" title="class in gov.usgs.earthquake.distribution">ProductClient</a>&nbsp;client)</pre>
+<div class="block">Initializes socket with custom port, threads, and client</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>port</code> - Admind port</dd>
+<dd><code>threads</code> - Thread pool size</dd>
+<dd><code>client</code> - Product Client</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -394,6 +406,10 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <li class="blockList">
 <h4>getPort</h4>
 <pre class="methodSignature">public&nbsp;int&nbsp;getPort()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>port</dd>
+</dl>
 </li>
 </ul>
 <a id="setPort(int)">
@@ -403,6 +419,10 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <li class="blockList">
 <h4>setPort</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setPort&#8203;(int&nbsp;port)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>port</code> - port number</dd>
+</dl>
 </li>
 </ul>
 <a id="getThreads()">
@@ -412,6 +432,10 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <li class="blockList">
 <h4>getThreads</h4>
 <pre class="methodSignature">public&nbsp;int&nbsp;getThreads()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>threads</dd>
+</dl>
 </li>
 </ul>
 <a id="setThreads(int)">
@@ -421,6 +445,10 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <li class="blockList">
 <h4>setThreads</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setThreads&#8203;(int&nbsp;threads)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>threads</code> - set number of threads</dd>
+</dl>
 </li>
 </ul>
 <a id="getClient()">
@@ -430,6 +458,10 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <li class="blockList">
 <h4>getClient</h4>
 <pre class="methodSignature">public&nbsp;<a href="ProductClient.html" title="class in gov.usgs.earthquake.distribution">ProductClient</a>&nbsp;getClient()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>product client</dd>
+</dl>
 </li>
 </ul>
 <a id="setClient(gov.usgs.earthquake.distribution.ProductClient)">
@@ -439,6 +471,10 @@ implements <a href="../../util/SocketListenerInterface.html" title="interface in
 <li class="blockList">
 <h4>setClient</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setClient&#8203;(<a href="ProductClient.html" title="class in gov.usgs.earthquake.distribution">ProductClient</a>&nbsp;client)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>client</code> - set product client</dd>
+</dl>
 </li>
 </ul>
 </li>

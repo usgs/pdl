@@ -15,7 +15,7 @@ import java.util.Vector;
 
 /**
  * A description of a change to a ProductIndex.
- * 
+ *
  * IndexerEvents are created by the Indexer, and sent to IndexerListeners.
  */
 public class IndexerEvent extends EventObject {
@@ -38,7 +38,7 @@ public class IndexerEvent extends EventObject {
 
 	/**
 	 * Construct a new IndexerEvent.
-	 * 
+	 *
 	 * @param source
 	 *            the indexer that made the change.
 	 */
@@ -48,88 +48,96 @@ public class IndexerEvent extends EventObject {
 <span class="fc" id="L48">		this.indexerChanges = new Vector&lt;IndexerChange&gt;(5, 5);</span>
 <span class="fc" id="L49">	}</span>
 
+	/** @return Indexer */
 	public Indexer getIndexer() {
-<span class="fc" id="L52">		return (Indexer) getSource();</span>
+<span class="fc" id="L53">		return (Indexer) getSource();</span>
 	}
 
+	/** @return Product Index */
 	public ProductIndex getIndex() {
-<span class="nc" id="L56">		return this.index;</span>
+<span class="nc" id="L58">		return this.index;</span>
 	}
 
+	/** @param index to set */
 	public void setIndex(ProductIndex index) {
-<span class="fc" id="L60">		this.index = index;</span>
-<span class="fc" id="L61">	}</span>
+<span class="fc" id="L63">		this.index = index;</span>
+<span class="fc" id="L64">	}</span>
 
+	/** @return product summary */
 	public ProductSummary getSummary() {
-<span class="fc" id="L64">		return this.summary;</span>
+<span class="fc" id="L68">		return this.summary;</span>
 	}
 
+	/** @param summary to add */
 	public void setSummary(ProductSummary summary) {
-<span class="fc" id="L68">		this.summary = summary;</span>
-<span class="fc" id="L69">	}</span>
+<span class="fc" id="L73">		this.summary = summary;</span>
+<span class="fc" id="L74">	}</span>
 
+	/** @param change to add */
 	public void addIndexerChange(IndexerChange change) {
-<span class="pc bpc" id="L72" title="1 of 2 branches missed.">		if (change != null) {</span>
-<span class="fc" id="L73">			this.indexerChanges.add(change);</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">		if (change != null) {</span>
+<span class="fc" id="L79">			this.indexerChanges.add(change);</span>
 		}
-<span class="fc" id="L75">	}</span>
+<span class="fc" id="L81">	}</span>
 
+	/** @param changes list of changes to add */
 	public void addIndexerChanges(List&lt;IndexerChange&gt; changes) {
-<span class="pc bpc" id="L78" title="1 of 2 branches missed.">		if (changes == null) {</span>
-<span class="nc" id="L79">			return;</span>
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">		if (changes == null) {</span>
+<span class="nc" id="L86">			return;</span>
 		}
 
-<span class="fc" id="L82">		Iterator&lt;IndexerChange&gt; iterator = changes.iterator();</span>
-<span class="fc bfc" id="L83" title="All 2 branches covered.">		while (iterator.hasNext()) {</span>
-<span class="fc" id="L84">			addIndexerChange(iterator.next());</span>
+<span class="fc" id="L89">		Iterator&lt;IndexerChange&gt; iterator = changes.iterator();</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">		while (iterator.hasNext()) {</span>
+<span class="fc" id="L91">			addIndexerChange(iterator.next());</span>
 		}
-<span class="fc" id="L86">	}</span>
+<span class="fc" id="L93">	}</span>
 
+	/** @return vector of Indexer Changes */
 	public Vector&lt;IndexerChange&gt; getIndexerChanges() {
-<span class="fc" id="L89">		return this.indexerChanges;</span>
+<span class="fc" id="L97">		return this.indexerChanges;</span>
 	}
 
 	/**
 	 * Convenience method to retrieve Product from Indexer storage.
-	 * 
+	 *
 	 * @return Product object corresponding to ProductSummary.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public Product getProduct() throws Exception {
-<span class="fc bfc" id="L99" title="All 2 branches covered.">		if (summary == null) {</span>
-<span class="fc" id="L100">			return null;</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">		if (summary == null) {</span>
+<span class="fc" id="L108">			return null;</span>
 		}
-<span class="fc" id="L102">		return getIndexer().getProductStorage().getProduct(summary.getId());</span>
+<span class="fc" id="L110">		return getIndexer().getProductStorage().getProduct(summary.getId());</span>
 	}
 
 	/**
 	 * Retrieve a distinct list of events that were changed as part of this
 	 * IndexerEvent.
-	 * 
+	 *
 	 * @return list of events
 	 */
 	public List&lt;Event&gt; getEvents() {
 		// map from eventid to event
-<span class="fc" id="L113">		Map&lt;Long, Event&gt; events = new HashMap&lt;Long, Event&gt;();</span>
+<span class="fc" id="L121">		Map&lt;Long, Event&gt; events = new HashMap&lt;Long, Event&gt;();</span>
 
 		// iterate over all changes, and place new event into map.
 
 		// more recent changes occur later in list, and thus only the
 		// latest update to an event will appear (if the event was
 		// changed more than once).
-<span class="fc" id="L120">		Iterator&lt;IndexerChange&gt; iter = indexerChanges.iterator();</span>
-<span class="fc bfc" id="L121" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
-<span class="fc" id="L122">			IndexerChange change = iter.next();</span>
-<span class="fc" id="L123">			Event event = change.getNewEvent();</span>
-<span class="fc bfc" id="L124" title="All 2 branches covered.">			if (event != null) {</span>
+<span class="fc" id="L128">		Iterator&lt;IndexerChange&gt; iter = indexerChanges.iterator();</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L130">			IndexerChange change = iter.next();</span>
+<span class="fc" id="L131">			Event event = change.getNewEvent();</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">			if (event != null) {</span>
 				// not an UNASSOCIATED_PRODUCT, which doesn't have an associated
 				// event
-<span class="fc" id="L127">				events.put(event.getIndexId(), event);</span>
+<span class="fc" id="L135">				events.put(event.getIndexId(), event);</span>
 			}
-<span class="fc" id="L129">		}</span>
+<span class="fc" id="L137">		}</span>
 
 		// extract distinct events from map
-<span class="fc" id="L132">		return new LinkedList&lt;Event&gt;(events.values());</span>
+<span class="fc" id="L140">		return new LinkedList&lt;Event&gt;(events.values());</span>
 	}
 
 }

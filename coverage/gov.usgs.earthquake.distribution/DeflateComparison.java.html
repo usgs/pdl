@@ -23,13 +23,13 @@ import java.util.zip.DeflaterOutputStream;
 
 	/**
 	 * Deflate an input stream.
-	 * 
+	 *
 	 * @param level
 	 *            deflate level.
 	 * @param in
 	 *            input stream to deflate.
 	 * @return output length in bytes.
-	 * @throws IOException
+	 * @throws IOException if IO error occurs
 	 */
 	public long deflateStream(final int level, final InputStream in)
 			throws IOException {
@@ -45,11 +45,11 @@ import java.util.zip.DeflaterOutputStream;
 
 	/**
 	 * Transfer an input stream.
-	 * 
+	 *
 	 * @param in
 	 *            input stream to transfer.
 	 * @return output length in bytes.
-	 * @throws IOException
+	 * @throws IOException if IO error occurs
 	 */
 	public long transferStream(final InputStream in) throws IOException {
 <span class="fc" id="L55">		CountingOutputStream cos = new CountingOutputStream();</span>
@@ -59,13 +59,13 @@ import java.util.zip.DeflaterOutputStream;
 
 	/**
 	 * Test different compression levels and speeds for a file.
-	 * 
+	 *
 	 * Reads file into memory to avoid disk io overhead.
-	 * 
+	 *
 	 * @param file
 	 *            file to test.
-	 * @throws IllegalArgumentException
-	 * @throws IOException
+	 * @throws IllegalArgumentException if illegal arg
+	 * @throws IOException if IO error occurs
 	 */
 	public void testFile(final File file) throws IllegalArgumentException,
 			IOException {
@@ -77,134 +77,143 @@ import java.util.zip.DeflaterOutputStream;
 
 	/**
 	 * Test different compression levels and speeds for a byte array.
-	 * 
+	 *
+	 * @param name
+	 *            given name
 	 * @param content
 	 *            content to test.
-	 * @throws IllegalArgumentException
-	 * @throws IOException
+	 * @throws IllegalArgumentException if illegal arg
+	 * @throws IOException if IO error occurs
 	 */
 	public void testByteArray(final String name, final byte[] content)
 			throws IOException {
 		Date start;
-<span class="fc" id="L89">		long totalBytes = content.length;</span>
+<span class="fc" id="L91">		long totalBytes = content.length;</span>
 
-<span class="fc" id="L91">		System.err.println(name + &quot;, length = &quot; + totalBytes + &quot; bytes&quot;);</span>
+<span class="fc" id="L93">		System.err.println(name + &quot;, length = &quot; + totalBytes + &quot; bytes&quot;);</span>
 
-<span class="fc" id="L93">		System.err.println(&quot;no compression&quot;);</span>
-<span class="fc" id="L94">		start = new Date();</span>
-<span class="fc" id="L95">		long noCompression = transferStream(new ByteArrayInputStream(content));</span>
-<span class="fc" id="L96">		long noCompressionTime = new Date().getTime() - start.getTime();</span>
-<span class="fc" id="L97">		formatResult(totalBytes, noCompression, noCompressionTime);</span>
+<span class="fc" id="L95">		System.err.println(&quot;no compression&quot;);</span>
+<span class="fc" id="L96">		start = new Date();</span>
+<span class="fc" id="L97">		long noCompression = transferStream(new ByteArrayInputStream(content));</span>
+<span class="fc" id="L98">		long noCompressionTime = new Date().getTime() - start.getTime();</span>
+<span class="fc" id="L99">		formatResult(totalBytes, noCompression, noCompressionTime);</span>
 
-<span class="fc" id="L99">		System.err.println(&quot;default compression (-1)&quot;);</span>
-<span class="fc" id="L100">		start = new Date();</span>
-<span class="fc" id="L101">		long deflateDefault = deflateStream(Deflater.DEFAULT_COMPRESSION,</span>
+<span class="fc" id="L101">		System.err.println(&quot;default compression (-1)&quot;);</span>
+<span class="fc" id="L102">		start = new Date();</span>
+<span class="fc" id="L103">		long deflateDefault = deflateStream(Deflater.DEFAULT_COMPRESSION,</span>
 				new ByteArrayInputStream(content));
-<span class="fc" id="L103">		long deflateDefaultTime = new Date().getTime() - start.getTime();</span>
-<span class="fc" id="L104">		formatResult(totalBytes, deflateDefault, deflateDefaultTime);</span>
+<span class="fc" id="L105">		long deflateDefaultTime = new Date().getTime() - start.getTime();</span>
+<span class="fc" id="L106">		formatResult(totalBytes, deflateDefault, deflateDefaultTime);</span>
 
-<span class="fc" id="L106">		System.err.println(&quot;best speed (1)&quot;);</span>
-<span class="fc" id="L107">		start = new Date();</span>
-<span class="fc" id="L108">		long deflateBestSpeed = deflateStream(Deflater.BEST_SPEED,</span>
+<span class="fc" id="L108">		System.err.println(&quot;best speed (1)&quot;);</span>
+<span class="fc" id="L109">		start = new Date();</span>
+<span class="fc" id="L110">		long deflateBestSpeed = deflateStream(Deflater.BEST_SPEED,</span>
 				new ByteArrayInputStream(content));
-<span class="fc" id="L110">		long deflateBestSpeedTime = new Date().getTime() - start.getTime();</span>
-<span class="fc" id="L111">		formatResult(totalBytes, deflateBestSpeed, deflateBestSpeedTime);</span>
+<span class="fc" id="L112">		long deflateBestSpeedTime = new Date().getTime() - start.getTime();</span>
+<span class="fc" id="L113">		formatResult(totalBytes, deflateBestSpeed, deflateBestSpeedTime);</span>
 
-<span class="fc" id="L113">		System.err.println(&quot;best compression (9)&quot;);</span>
-<span class="fc" id="L114">		start = new Date();</span>
-<span class="fc" id="L115">		long deflateBestCompression = deflateStream(Deflater.BEST_COMPRESSION,</span>
+<span class="fc" id="L115">		System.err.println(&quot;best compression (9)&quot;);</span>
+<span class="fc" id="L116">		start = new Date();</span>
+<span class="fc" id="L117">		long deflateBestCompression = deflateStream(Deflater.BEST_COMPRESSION,</span>
 				new ByteArrayInputStream(content));
-<span class="fc" id="L117">		long deflateBestCompressionTime = new Date().getTime()</span>
-<span class="fc" id="L118">				- start.getTime();</span>
-<span class="fc" id="L119">		formatResult(totalBytes, deflateBestCompression,</span>
+<span class="fc" id="L119">		long deflateBestCompressionTime = new Date().getTime()</span>
+<span class="fc" id="L120">				- start.getTime();</span>
+<span class="fc" id="L121">		formatResult(totalBytes, deflateBestCompression,</span>
 				deflateBestCompressionTime);
-<span class="fc" id="L121">	}</span>
+<span class="fc" id="L123">	}</span>
 
+	/**
+	 * For calculating for properly formatting the results
+	 *
+	 * @param totalBytes totalBytes
+	 * @param transferredBytes Bytes transferred
+	 * @param elapsedTime total elapsed time
+	 */
 	protected void formatResult(final long totalBytes,
 			final long transferredBytes, final long elapsedTime) {
-<span class="fc" id="L125">		long savedBytes = totalBytes - transferredBytes;</span>
-<span class="fc" id="L126">		System.err.printf(&quot;\t%.3fs, %.1f%% reduction (%d fewer bytes)%n&quot;,</span>
-<span class="fc" id="L127">				elapsedTime / 1000.0,</span>
-<span class="fc" id="L128">				100 * (savedBytes / ((double) totalBytes)), savedBytes);</span>
-<span class="fc" id="L129">	}</span>
+<span class="fc" id="L134">		long savedBytes = totalBytes - transferredBytes;</span>
+<span class="fc" id="L135">		System.err.printf(&quot;\t%.3fs, %.1f%% reduction (%d fewer bytes)%n&quot;,</span>
+<span class="fc" id="L136">				elapsedTime / 1000.0,</span>
+<span class="fc" id="L137">				100 * (savedBytes / ((double) totalBytes)), savedBytes);</span>
+<span class="fc" id="L138">	}</span>
 
 	/**
 	 * An output stream that counts how many bytes are written, and otherwise
 	 * ignores output.
 	 */
-<span class="fc" id="L135">	private static class CountingOutputStream extends OutputStream {</span>
+<span class="fc" id="L144">	private static class CountingOutputStream extends OutputStream {</span>
 		// number of bytes output
-<span class="fc" id="L137">		private long totalBytes = 0L;</span>
+<span class="fc" id="L146">		private long totalBytes = 0L;</span>
 
 		public long getTotalBytes() {
-<span class="fc" id="L140">			return totalBytes;</span>
+<span class="fc" id="L149">			return totalBytes;</span>
 		}
 
 		@Override
 		public void write(byte[] b) {
-<span class="nc" id="L145">			totalBytes += b.length;</span>
-<span class="nc" id="L146">		}</span>
+<span class="nc" id="L154">			totalBytes += b.length;</span>
+<span class="nc" id="L155">		}</span>
 
 		@Override
 		public void write(byte[] b, int offset, int length) {
-<span class="fc" id="L150">			totalBytes += length;</span>
-<span class="fc" id="L151">		}</span>
+<span class="fc" id="L159">			totalBytes += length;</span>
+<span class="fc" id="L160">		}</span>
 
 		@Override
 		public void write(int arg0) throws IOException {
-<span class="nc" id="L155">			totalBytes++;</span>
-<span class="nc" id="L156">		}</span>
+<span class="nc" id="L164">			totalBytes++;</span>
+<span class="nc" id="L165">		}</span>
 
 	}
 
 	/**
 	 * A main method for accessing tests using custom files.
-	 * 
+	 *
 	 * @param args
 	 *            a list of files or directorys to include in compression
 	 *            comparison.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public static void main(final String[] args) throws Exception {
-<span class="nc bnc" id="L169" title="All 2 branches missed.">		if (args.length == 0) {</span>
-<span class="nc" id="L170">			System.err.println(&quot;Usage: DeflateComparison FILE [FILE ...]&quot;);</span>
-<span class="nc" id="L171">			System.err</span>
-<span class="nc" id="L172">					.println(&quot;where FILE is a file or directory to include in comparison&quot;);</span>
-<span class="nc" id="L173">			System.exit(1);</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">		if (args.length == 0) {</span>
+<span class="nc" id="L179">			System.err.println(&quot;Usage: DeflateComparison FILE [FILE ...]&quot;);</span>
+<span class="nc" id="L180">			System.err</span>
+<span class="nc" id="L181">					.println(&quot;where FILE is a file or directory to include in comparison&quot;);</span>
+<span class="nc" id="L182">			System.exit(1);</span>
 		}
 
-<span class="nc" id="L176">		Product product = new Product(new ProductId(&quot;test&quot;, &quot;test&quot;, &quot;test&quot;));</span>
+<span class="nc" id="L185">		Product product = new Product(new ProductId(&quot;test&quot;, &quot;test&quot;, &quot;test&quot;));</span>
 		try {
-<span class="nc" id="L178">			product.setTrackerURL(new URL(&quot;http://localhost/tracker&quot;));</span>
-<span class="nc" id="L179">		} catch (Exception e) {</span>
+<span class="nc" id="L187">			product.setTrackerURL(new URL(&quot;http://localhost/tracker&quot;));</span>
+<span class="nc" id="L188">		} catch (Exception e) {</span>
 			// ignore
-<span class="nc" id="L181">		}</span>
+<span class="nc" id="L190">		}</span>
 
 		// treat all arguments as files or directories to be added as content
-<span class="nc bnc" id="L184" title="All 2 branches missed.">		for (String arg : args) {</span>
-<span class="nc" id="L185">			File file = new File(arg);</span>
-<span class="nc bnc" id="L186" title="All 2 branches missed.">			if (!file.exists()) {</span>
-<span class="nc" id="L187">				System.err.println(file.getCanonicalPath() + &quot; does not exist&quot;);</span>
-<span class="nc" id="L188">				System.exit(1);</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">		for (String arg : args) {</span>
+<span class="nc" id="L194">			File file = new File(arg);</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">			if (!file.exists()) {</span>
+<span class="nc" id="L196">				System.err.println(file.getCanonicalPath() + &quot; does not exist&quot;);</span>
+<span class="nc" id="L197">				System.exit(1);</span>
 			}
 
-<span class="nc bnc" id="L191" title="All 2 branches missed.">			if (file.isDirectory()) {</span>
-<span class="nc" id="L192">				product.getContents().putAll(</span>
-<span class="nc" id="L193">						FileContent.getDirectoryContents(file));</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">			if (file.isDirectory()) {</span>
+<span class="nc" id="L201">				product.getContents().putAll(</span>
+<span class="nc" id="L202">						FileContent.getDirectoryContents(file));</span>
 			} else {
-<span class="nc" id="L195">				product.getContents()</span>
-<span class="nc" id="L196">						.put(file.getName(), new FileContent(file));</span>
+<span class="nc" id="L204">				product.getContents()</span>
+<span class="nc" id="L205">						.put(file.getName(), new FileContent(file));</span>
 			}
 		}
 
 		// convert product to byte array in binary format
-<span class="nc" id="L201">		System.err.println(&quot;Reading files into memory&quot;);</span>
-<span class="nc" id="L202">		ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
-<span class="nc" id="L203">		new ObjectProductSource(product)</span>
-<span class="nc" id="L204">				.streamTo(new BinaryProductHandler(baos));</span>
-<span class="nc" id="L205">		new DeflateComparison().testByteArray(&quot;product contents&quot;,</span>
-<span class="nc" id="L206">				baos.toByteArray());</span>
-<span class="nc" id="L207">	}</span>
+<span class="nc" id="L210">		System.err.println(&quot;Reading files into memory&quot;);</span>
+<span class="nc" id="L211">		ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="nc" id="L212">		new ObjectProductSource(product)</span>
+<span class="nc" id="L213">				.streamTo(new BinaryProductHandler(baos));</span>
+<span class="nc" id="L214">		new DeflateComparison().testByteArray(&quot;product contents&quot;,</span>
+<span class="nc" id="L215">				baos.toByteArray());</span>
+<span class="nc" id="L216">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

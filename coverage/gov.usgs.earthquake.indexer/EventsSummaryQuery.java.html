@@ -12,8 +12,8 @@ public class EventsSummaryQuery extends SearchQuery {
 
 	/**
 	 * Construct an EventsSummaryQuery.
-	 * 
-	 * @param query
+	 *
+	 * @param query ProductIndexQuery
 	 */
 	public EventsSummaryQuery(final ProductIndexQuery query) {
 <span class="fc" id="L19">		super(SearchMethod.EVENTS_SUMMARY, query);</span>
@@ -24,36 +24,37 @@ public class EventsSummaryQuery extends SearchQuery {
 <span class="fc" id="L24">		return result;</span>
 	}
 
+	/** @param events list of EventSummarys to set as result */
 	public void setResult(List&lt;EventSummary&gt; events) {
-<span class="fc" id="L28">		this.result = events;</span>
-<span class="fc" id="L29">	}</span>
+<span class="fc" id="L29">		this.result = events;</span>
+<span class="fc" id="L30">	}</span>
 
 	@Override
 	public int compareTo(SearchQuery that) {
 		int r;
 
-<span class="pc bpc" id="L35" title="1 of 2 branches missed.">		if ((r = super.compareTo(that)) != 0) {</span>
-<span class="nc" id="L36">			return r;</span>
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">		if ((r = super.compareTo(that)) != 0) {</span>
+<span class="nc" id="L37">			return r;</span>
 		}
 
-<span class="pc bpc" id="L39" title="1 of 2 branches missed.">		if (this.result != null) {</span>
-<span class="fc" id="L40">			List&lt;EventSummary&gt; thatResult = ((EventsSummaryQuery) that).result;</span>
-<span class="pc bpc" id="L41" title="1 of 2 branches missed.">			if ((r = (thatResult.size() - this.result.size())) != 0) {</span>
-<span class="nc" id="L42">				return r;</span>
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">		if (this.result != null) {</span>
+<span class="fc" id="L41">			List&lt;EventSummary&gt; thatResult = ((EventsSummaryQuery) that).result;</span>
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">			if ((r = (thatResult.size() - this.result.size())) != 0) {</span>
+<span class="nc" id="L43">				return r;</span>
 			}
 
-<span class="fc" id="L45">			Iterator&lt;EventSummary&gt; thisIter = this.result.iterator();</span>
-<span class="fc" id="L46">			Iterator&lt;EventSummary&gt; thatIter = thatResult.iterator();</span>
-<span class="pc bpc" id="L47" title="1 of 4 branches missed.">			while (thisIter.hasNext() &amp;&amp; thatIter.hasNext()) {</span>
+<span class="fc" id="L46">			Iterator&lt;EventSummary&gt; thisIter = this.result.iterator();</span>
+<span class="fc" id="L47">			Iterator&lt;EventSummary&gt; thatIter = thatResult.iterator();</span>
+<span class="pc bpc" id="L48" title="1 of 4 branches missed.">			while (thisIter.hasNext() &amp;&amp; thatIter.hasNext()) {</span>
 				// just compare product ids for now
-<span class="fc" id="L49">				r = thisIter.next().compareTo(thatIter.next());</span>
-<span class="pc bpc" id="L50" title="1 of 2 branches missed.">				if (r != 0) {</span>
-<span class="nc" id="L51">					return r;</span>
+<span class="fc" id="L50">				r = thisIter.next().compareTo(thatIter.next());</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">				if (r != 0) {</span>
+<span class="nc" id="L52">					return r;</span>
 				}
 			}
 		}
 
-<span class="fc" id="L56">		return 0;</span>
+<span class="fc" id="L57">		return 0;</span>
 	}
 
 }

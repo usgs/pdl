@@ -216,7 +216,9 @@ implements <a href="ProductSource.html" title="interface in gov.usgs.earthquake.
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#closeContent()">closeContent</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Closes an open output stream</div>
+</td>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>void</code></td>
@@ -345,7 +347,7 @@ implements <a href="ProductSource.html" title="interface in gov.usgs.earthquake.
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>out</code> - the receiving ProductOutput.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -436,6 +438,10 @@ implements <a href="ProductSource.html" title="interface in gov.usgs.earthquake.
 <li class="blockList">
 <h4>getHandler</h4>
 <pre class="methodSignature">protected&nbsp;<a href="ProductHandler.html" title="interface in gov.usgs.earthquake.product.io">ProductHandler</a>&nbsp;getHandler()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>ProductHandler</dd>
+</dl>
 </li>
 </ul>
 <a id="setHandler(gov.usgs.earthquake.product.io.ProductHandler)">
@@ -445,6 +451,10 @@ implements <a href="ProductSource.html" title="interface in gov.usgs.earthquake.
 <li class="blockList">
 <h4>setHandler</h4>
 <pre class="methodSignature">protected&nbsp;void&nbsp;setHandler&#8203;(<a href="ProductHandler.html" title="interface in gov.usgs.earthquake.product.io">ProductHandler</a>&nbsp;out)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>out</code> - ProductHandler to set</dd>
+</dl>
 </li>
 </ul>
 <a id="close()">
@@ -480,8 +490,12 @@ implements <a href="ProductSource.html" title="interface in gov.usgs.earthquake.
  errors occur, the objects handling the product source object
  call closeContent to ensure the resource is closed.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>encoded</code> - if it needs to decode base 64 content</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a input stream of the Piped output stream</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.io.IOException</code> - if io error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -492,6 +506,7 @@ implements <a href="ProductSource.html" title="interface in gov.usgs.earthquake.
 <li class="blockList">
 <h4>closeContent</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;closeContent()</pre>
+<div class="block">Closes an open output stream</div>
 </li>
 </ul>
 </li>

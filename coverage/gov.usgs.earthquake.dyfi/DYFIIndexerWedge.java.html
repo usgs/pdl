@@ -16,44 +16,46 @@ public class DYFIIndexerWedge extends ExternalNotificationListener {
 <span class="fc" id="L16">	private static final Logger LOGGER = Logger</span>
 <span class="fc" id="L17">			.getLogger(&quot;gov.usgs.earthquake.dyfi.DYFIIndexerWedge&quot;);</span>
 
+	/** Property for baseDirectory */
 	public static final String BASE_DIRECTORY_PROPERTY = &quot;baseDirectory&quot;;
-<span class="fc" id="L20">	private String baseDirectory = null;</span>
+<span class="fc" id="L21">	private String baseDirectory = null;</span>
 
-<span class="fc" id="L22">	public DYFIIndexerWedge() {</span>
-<span class="fc" id="L23">		getIncludeTypes().add(&quot;dyfi&quot;);</span>
-<span class="fc" id="L24">	}</span>
+	/** Constructor */
+<span class="fc" id="L24">	public DYFIIndexerWedge() {</span>
+<span class="fc" id="L25">		getIncludeTypes().add(&quot;dyfi&quot;);</span>
+<span class="fc" id="L26">	}</span>
 
 	/**
 	 * Builds the command to index the product. Just appends the relative
 	 * product directory (from the DYFILegacyStorage) to the configured index
 	 * command.
-	 * 
+	 *
 	 * @param product
 	 *            the Product used to build the indexing command.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	@Override
 	public String getProductCommand(final Product product) throws Exception {
-<span class="fc" id="L37">		StringBuffer pc = new StringBuffer(getCommand());</span>
+<span class="fc" id="L39">		StringBuffer pc = new StringBuffer(getCommand());</span>
 
-<span class="fc" id="L39">		pc.append(&quot; &quot;).append(&quot;--directory=&quot;).append(baseDirectory)</span>
-<span class="fc" id="L40">				.append(getStorage().getProductPath(product.getId()));</span>
+<span class="fc" id="L41">		pc.append(&quot; &quot;).append(&quot;--directory=&quot;).append(baseDirectory)</span>
+<span class="fc" id="L42">				.append(getStorage().getProductPath(product.getId()));</span>
 
-<span class="fc" id="L42">		return pc.toString();</span>
+<span class="fc" id="L44">		return pc.toString();</span>
 	}
 
 	@Override
 	public void configure(Config config) throws Exception {
-<span class="fc" id="L47">		super.configure(config);</span>
+<span class="fc" id="L49">		super.configure(config);</span>
 
 		// Base directory
-<span class="fc" id="L50">		baseDirectory = config.getProperty(BASE_DIRECTORY_PROPERTY);</span>
-<span class="pc bpc" id="L51" title="1 of 2 branches missed.">		if (baseDirectory == null) {</span>
-<span class="nc" id="L52">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+<span class="fc" id="L52">		baseDirectory = config.getProperty(BASE_DIRECTORY_PROPERTY);</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">		if (baseDirectory == null) {</span>
+<span class="nc" id="L54">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
 					+ &quot;] 'baseDirectory' is a required configuration property&quot;);
 		}
-<span class="fc" id="L55">		LOGGER.config(&quot;[&quot; + getName() + &quot;] baseDirectory is '&quot; + baseDirectory</span>
+<span class="fc" id="L57">		LOGGER.config(&quot;[&quot; + getName() + &quot;] baseDirectory is '&quot; + baseDirectory</span>
 				+ &quot;'&quot;);
-<span class="fc" id="L57">	}</span>
+<span class="fc" id="L59">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

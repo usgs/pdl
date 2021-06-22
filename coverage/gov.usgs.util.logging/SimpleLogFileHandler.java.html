@@ -33,10 +33,10 @@ public class SimpleLogFileHandler extends Handler {
 
 	/**
 	 * Create a default SimpleLogHandler.
-	 * 
+	 *
 	 * Uses the system locale to roll log files once a day, and default filename
 	 * format &quot;log_YYYYMMDD.log&quot;.
-	 * 
+	 *
 	 * @param logDirectory
 	 *            the directory to write log files.
 	 */
@@ -46,7 +46,7 @@ public class SimpleLogFileHandler extends Handler {
 
 	/**
 	 * Create a SimpleLogHandler with a custom filename format.
-	 * 
+	 *
 	 * @param logDirectory
 	 *            the directory to write log files.
 	 * @param filenameFormat
@@ -96,7 +96,7 @@ public class SimpleLogFileHandler extends Handler {
 
 	/**
 	 * Retrieve the outputstream for the current log file.
-	 * 
+	 *
 	 * @param date
 	 *            the date of the message about to be logged.
 	 * @return and OutputStream where the log message may be written.
@@ -146,29 +146,34 @@ public class SimpleLogFileHandler extends Handler {
 <span class="nc" id="L146">	private static final Logger LOGGER = Logger</span>
 <span class="nc" id="L147">			.getLogger(SimpleLogFileHandler.class.getName());</span>
 
-	public static void main(final String[] args) throws Exception {
-<span class="nc" id="L150">		SimpleDateFormat ridiculouslyShortLogs = new SimpleDateFormat(</span>
+		/**
+		 * Testing for handler
+		 * @param args CLI args
+		 * @throws Exception if error occurs
+		 */
+			public static void main(final String[] args) throws Exception {
+<span class="nc" id="L155">		SimpleDateFormat ridiculouslyShortLogs = new SimpleDateFormat(</span>
 				&quot;'log_'yyyyMMddHHmmss'.log'&quot;);
-<span class="nc" id="L152">		File logDirectory = new File(&quot;log&quot;);</span>
+<span class="nc" id="L157">		File logDirectory = new File(&quot;log&quot;);</span>
 
-<span class="nc" id="L154">		SimpleLogFileHandler handler = new SimpleLogFileHandler(logDirectory,</span>
+<span class="nc" id="L159">		SimpleLogFileHandler handler = new SimpleLogFileHandler(logDirectory,</span>
 				ridiculouslyShortLogs);
-<span class="nc" id="L156">		handler.setFormatter(new SimpleLogFormatter());</span>
-<span class="nc" id="L157">		LOGGER.addHandler(handler);</span>
+<span class="nc" id="L161">		handler.setFormatter(new SimpleLogFormatter());</span>
+<span class="nc" id="L162">		LOGGER.addHandler(handler);</span>
 
 		// there should be at least 2 log files created, and more likely 3
-<span class="nc" id="L160">		LOGGER.info(&quot;message to log&quot;);</span>
-<span class="nc" id="L161">		handler.close();</span>
-<span class="nc" id="L162">		LOGGER.info(&quot;message to log&quot;);</span>
-<span class="nc" id="L163">		Thread.sleep(1000);</span>
-<span class="nc" id="L164">		LOGGER.info(&quot;another message to log&quot;);</span>
-<span class="nc" id="L165">		Thread.sleep(250);</span>
-<span class="nc" id="L166">		LOGGER.info(&quot;another message to log&quot;);</span>
-<span class="nc" id="L167">		Thread.sleep(1000);</span>
-<span class="nc" id="L168">		LOGGER.info(&quot;yet another message to log&quot;);</span>
-<span class="nc" id="L169">		Thread.sleep(250);</span>
-<span class="nc" id="L170">		LOGGER.info(&quot;yet another message to log&quot;);</span>
-<span class="nc" id="L171">	}</span>
+<span class="nc" id="L165">		LOGGER.info(&quot;message to log&quot;);</span>
+<span class="nc" id="L166">		handler.close();</span>
+<span class="nc" id="L167">		LOGGER.info(&quot;message to log&quot;);</span>
+<span class="nc" id="L168">		Thread.sleep(1000);</span>
+<span class="nc" id="L169">		LOGGER.info(&quot;another message to log&quot;);</span>
+<span class="nc" id="L170">		Thread.sleep(250);</span>
+<span class="nc" id="L171">		LOGGER.info(&quot;another message to log&quot;);</span>
+<span class="nc" id="L172">		Thread.sleep(1000);</span>
+<span class="nc" id="L173">		LOGGER.info(&quot;yet another message to log&quot;);</span>
+<span class="nc" id="L174">		Thread.sleep(250);</span>
+<span class="nc" id="L175">		LOGGER.info(&quot;yet another message to log&quot;);</span>
+<span class="nc" id="L176">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

@@ -18,7 +18,7 @@ import gov.usgs.earthquake.product.io.XmlProductSource;
 
 /**
  * Used by SearchResponseParser to store products during parsing.
- * 
+ *
  * Creates a &quot;background&quot; storage thread for storing, while this classes
  * startElement, characters, and endElement methods are called by the
  * &quot;foreground&quot; xml parsing thread.
@@ -53,7 +53,7 @@ public class SearchResponseXmlProductSource extends XmlProductSource {
 
 	/**
 	 * Construct a SearchResponseXmlProductSource.
-	 * 
+	 *
 	 * @param storage
 	 *            the storage where the parsed product is stored.
 	 */
@@ -64,7 +64,7 @@ public class SearchResponseXmlProductSource extends XmlProductSource {
 
 	/**
 	 * Called by the underlying product storage as part os storeProductSource.
-	 * 
+	 *
 	 * This method notifies the XML parsing thread that parsing may continue,
 	 * since the handler is now setup.
 	 */
@@ -189,29 +189,31 @@ public class SearchResponseXmlProductSource extends XmlProductSource {
 		}
 <span class="fc" id="L190">	}</span>
 
+	/** @param storage FileProductStorage to set */
 	public void setStorage(FileProductStorage storage) {
-<span class="fc" id="L193">		this.storage = storage;</span>
-<span class="fc" id="L194">	}</span>
+<span class="fc" id="L194">		this.storage = storage;</span>
+<span class="fc" id="L195">	}</span>
 
+	/** @return FileProductStorage */
 	public FileProductStorage getStorage() {
-<span class="nc" id="L197">		return storage;</span>
+<span class="nc" id="L199">		return storage;</span>
 	}
 
 	/**
 	 * @return the parsed, stored product.
 	 */
 	public Product getProduct() {
-<span class="fc" id="L204">		return this.storedProduct;</span>
+<span class="fc" id="L206">		return this.storedProduct;</span>
 	}
 
 	/**
 	 * Method used by storage to provide the parsed product.
-	 * 
-	 * @param product
+	 *
+	 * @param product to set
 	 */
 	protected void setProduct(final Product product) {
-<span class="fc" id="L213">		this.storedProduct = product;</span>
-<span class="fc" id="L214">	}</span>
+<span class="fc" id="L215">		this.storedProduct = product;</span>
+<span class="fc" id="L216">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

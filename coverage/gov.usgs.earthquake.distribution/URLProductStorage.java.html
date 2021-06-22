@@ -28,36 +28,45 @@ import java.util.logging.Logger;
  */
 public class URLProductStorage extends FileProductStorage {
 
-<span class="fc" id="L31">	public enum Format {</span>
-<span class="fc" id="L32">		BINARY(&quot;bin&quot;),</span>
-<span class="fc" id="L33">		JSON(&quot;json&quot;),</span>
-<span class="fc" id="L34">		XML(&quot;xml&quot;);</span>
+	/** Different types of formats */
+<span class="fc" id="L32">	public enum Format {</span>
+		/** Enum for BINARY/bin format */
+<span class="fc" id="L34">		BINARY(&quot;bin&quot;),</span>
+		/** Enum for JSON format */
+<span class="fc" id="L36">		JSON(&quot;json&quot;),</span>
+		/** Enum for XML format */
+<span class="fc" id="L38">		XML(&quot;xml&quot;);</span>
 
 		private String value;
 
-<span class="fc" id="L38">		private Format(final String value) {</span>
-<span class="fc" id="L39">			this.value = value;</span>
-<span class="fc" id="L40">		}</span>
+<span class="fc" id="L42">		private Format(final String value) {</span>
+<span class="fc" id="L43">			this.value = value;</span>
+<span class="fc" id="L44">		}</span>
 
 		public String toString() {
-<span class="fc" id="L43">			return this.value;</span>
+<span class="fc" id="L47">			return this.value;</span>
 		}
 
+		/**
+		 * Takes a string value and returns ENUM of its format
+		 * @param value String
+		 * @return Format ENUM
+		 */
 		public static Format fromString(final String value) {
-<span class="nc bnc" id="L47" title="All 2 branches missed.">			if (BINARY.value.equals(value)) {</span>
-<span class="nc" id="L48">				return BINARY;</span>
-<span class="nc bnc" id="L49" title="All 2 branches missed.">			} else if (JSON.value.equals(value)) {</span>
-<span class="nc" id="L50">				return JSON;</span>
-<span class="nc bnc" id="L51" title="All 2 branches missed.">			} else if (XML.value.equals(value)) {</span>
-<span class="nc" id="L52">				return XML;</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">			if (BINARY.value.equals(value)) {</span>
+<span class="nc" id="L57">				return BINARY;</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">			} else if (JSON.value.equals(value)) {</span>
+<span class="nc" id="L59">				return JSON;</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">			} else if (XML.value.equals(value)) {</span>
+<span class="nc" id="L61">				return XML;</span>
 			} else {
-<span class="nc" id="L54">				throw new IllegalArgumentException(&quot;Invalid format&quot;);</span>
+<span class="nc" id="L63">				throw new IllegalArgumentException(&quot;Invalid format&quot;);</span>
 			}
 		}
 	};
 
-<span class="fc" id="L59">	private static final Logger LOGGER = Logger</span>
-<span class="fc" id="L60">			.getLogger(URLProductStorage.class.getName());</span>
+<span class="fc" id="L68">	private static final Logger LOGGER = Logger</span>
+<span class="fc" id="L69">			.getLogger(URLProductStorage.class.getName());</span>
 
 	/** Property name representing base URL. */
 	public static final String URL_PROPERTY_NAME = &quot;url&quot;;
@@ -65,9 +74,12 @@ public class URLProductStorage extends FileProductStorage {
 	/** The URL which corresponds to baseDirectory. */
 	private URL baseURL;
 
+	/** Property for storageFormat */
 	public static final String STORAGE_FORMAT_PROPERTY = &quot;storageFormat&quot;;
 
+	/** Property for storagePath */
 	public static final String STORAGE_PATH_PROPERTY = &quot;storagePath&quot;;
+	/** Sets up default storage path */
 	public static final String DEFAULT_STORAGE_PATH = &quot;{source}_{type}_{code}_{updateTime}.{format}&quot;;
 
 	/** (Deprecated, use STORAGE_PATH) Property name to configure binary or xml format. */
@@ -75,14 +87,14 @@ public class URLProductStorage extends FileProductStorage {
 	/** Default value for whether to use binary format. */
 	public static final String BINARY_FORMAT_DEFAULT = &quot;false&quot;;
 
-<span class="fc" id="L78">	private Format storageFormat = Format.XML;</span>
-<span class="fc" id="L79">	private String storagePath = DEFAULT_STORAGE_PATH;</span>
+<span class="fc" id="L90">	private Format storageFormat = Format.XML;</span>
+<span class="fc" id="L91">	private String storagePath = DEFAULT_STORAGE_PATH;</span>
 
 	/**
 	 * Constructor for the Configurable interface.
 	 */
-<span class="fc" id="L84">	public URLProductStorage() {</span>
-<span class="fc" id="L85">	}</span>
+<span class="fc" id="L96">	public URLProductStorage() {</span>
+<span class="fc" id="L97">	}</span>
 
 	/**
 	 * Construct a new ProductStorage object
@@ -93,9 +105,9 @@ public class URLProductStorage extends FileProductStorage {
 	 *            the url where storage directory is available.
 	 */
 	public URLProductStorage(final File baseDirectory, final URL baseURL) {
-<span class="fc" id="L96">		super(baseDirectory);</span>
-<span class="fc" id="L97">		this.baseURL = baseURL;</span>
-<span class="fc" id="L98">	}</span>
+<span class="fc" id="L108">		super(baseDirectory);</span>
+<span class="fc" id="L109">		this.baseURL = baseURL;</span>
+<span class="fc" id="L110">	}</span>
 
 	/**
 	 * Load the baseURL from configuration.
@@ -104,34 +116,34 @@ public class URLProductStorage extends FileProductStorage {
 	 *            the configuration object.
 	 */
 	public void configure(final Config config) throws Exception {
-<span class="fc" id="L107">		super.configure(config);</span>
+<span class="fc" id="L119">		super.configure(config);</span>
 
-<span class="fc" id="L109">		String urlString = config.getProperty(URL_PROPERTY_NAME);</span>
-<span class="pc bpc" id="L110" title="1 of 2 branches missed.">		if (urlString == null) {</span>
-<span class="nc" id="L111">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+<span class="fc" id="L121">		String urlString = config.getProperty(URL_PROPERTY_NAME);</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">		if (urlString == null) {</span>
+<span class="nc" id="L123">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
 					+ &quot;] 'url' is a required configuration property&quot;);
 		}
-<span class="fc" id="L114">		baseURL = new URL(urlString);</span>
-<span class="fc" id="L115">		LOGGER.config(&quot;[&quot; + getName() + &quot;] base url is '&quot; + baseURL.toString()</span>
+<span class="fc" id="L126">		baseURL = new URL(urlString);</span>
+<span class="fc" id="L127">		LOGGER.config(&quot;[&quot; + getName() + &quot;] base url is '&quot; + baseURL.toString()</span>
 				+ &quot;'&quot;);
 
-<span class="fc" id="L118">		String format = config.getProperty(STORAGE_FORMAT_PROPERTY);</span>
-<span class="pc bpc" id="L119" title="1 of 2 branches missed.">		if (format != null) {</span>
-<span class="nc" id="L120">			storageFormat = Format.fromString(format);</span>
+<span class="fc" id="L130">		String format = config.getProperty(STORAGE_FORMAT_PROPERTY);</span>
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">		if (format != null) {</span>
+<span class="nc" id="L132">			storageFormat = Format.fromString(format);</span>
 		} else {
-<span class="pc bpc" id="L122" title="1 of 2 branches missed.">			if (Boolean.valueOf(config.getProperty(</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">			if (Boolean.valueOf(config.getProperty(</span>
 					BINARY_FORMAT_PROPERTY,
 					BINARY_FORMAT_DEFAULT))) {
-<span class="nc" id="L125">				storageFormat = Format.BINARY;</span>
+<span class="nc" id="L137">				storageFormat = Format.BINARY;</span>
 			} else {
-<span class="fc" id="L127">				storageFormat = Format.XML;</span>
+<span class="fc" id="L139">				storageFormat = Format.XML;</span>
 			}
 		}
-<span class="fc" id="L130">		LOGGER.config(&quot;[&quot; + getName() + &quot;] using format &quot; + storageFormat);</span>
+<span class="fc" id="L142">		LOGGER.config(&quot;[&quot; + getName() + &quot;] using format &quot; + storageFormat);</span>
 
-<span class="fc" id="L132">		storagePath = config.getProperty(STORAGE_PATH_PROPERTY, DEFAULT_STORAGE_PATH);</span>
-<span class="fc" id="L133">		LOGGER.config(&quot;[&quot; + getName() + &quot;] using path &quot; + storagePath);</span>
-<span class="fc" id="L134">	}</span>
+<span class="fc" id="L144">		storagePath = config.getProperty(STORAGE_PATH_PROPERTY, DEFAULT_STORAGE_PATH);</span>
+<span class="fc" id="L145">		LOGGER.config(&quot;[&quot; + getName() + &quot;] using path &quot; + storagePath);</span>
+<span class="fc" id="L146">	}</span>
 
 	/**
 	 * Compute the URL to a product.
@@ -139,10 +151,10 @@ public class URLProductStorage extends FileProductStorage {
 	 * @param id
 	 *            which product.
 	 * @return the URL to a product.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public URL getProductURL(final ProductId id) throws Exception {
-<span class="fc" id="L145">		return new URL(baseURL, getProductPath(id));</span>
+<span class="fc" id="L157">		return new URL(baseURL, getProductPath(id));</span>
 	}
 
 	/**
@@ -157,13 +169,13 @@ public class URLProductStorage extends FileProductStorage {
 	 */
 	@Override
 	public String getProductPath(final ProductId id) {
-<span class="fc" id="L160">		String path = storagePath;</span>
-<span class="fc" id="L161">		path = path.replace(&quot;{source}&quot;, id.getSource());</span>
-<span class="fc" id="L162">		path = path.replace(&quot;{type}&quot;, id.getType());</span>
-<span class="fc" id="L163">		path = path.replace(&quot;{code}&quot;, id.getCode());</span>
-<span class="fc" id="L164">		path = path.replace(&quot;{updateTime}&quot;, Long.toString(id.getUpdateTime().getTime()));</span>
-<span class="fc" id="L165">		path = path.replace(&quot;{format}&quot;, storageFormat.toString());</span>
-<span class="fc" id="L166">		return path;</span>
+<span class="fc" id="L172">		String path = storagePath;</span>
+<span class="fc" id="L173">		path = path.replace(&quot;{source}&quot;, id.getSource());</span>
+<span class="fc" id="L174">		path = path.replace(&quot;{type}&quot;, id.getType());</span>
+<span class="fc" id="L175">		path = path.replace(&quot;{code}&quot;, id.getCode());</span>
+<span class="fc" id="L176">		path = path.replace(&quot;{updateTime}&quot;, Long.toString(id.getUpdateTime().getTime()));</span>
+<span class="fc" id="L177">		path = path.replace(&quot;{format}&quot;, storageFormat.toString());</span>
+<span class="fc" id="L178">		return path;</span>
 	}
 
 	/**
@@ -178,13 +190,13 @@ public class URLProductStorage extends FileProductStorage {
 	 */
 	protected ProductHandler getProductHandlerFormat(final File file)
 			throws Exception {
-<span class="fc" id="L181">		OutputStream out = StreamUtils.getOutputStream(file);</span>
-<span class="pc bpc" id="L182" title="1 of 2 branches missed.">		if (storageFormat == Format.BINARY) {</span>
-<span class="nc" id="L183">			return new BinaryProductHandler(out);</span>
-<span class="pc bpc" id="L184" title="1 of 2 branches missed.">		} else if (storageFormat == Format.JSON) {</span>
-<span class="nc" id="L185">			return new JsonProductHandler(out);</span>
+<span class="fc" id="L193">		OutputStream out = StreamUtils.getOutputStream(file);</span>
+<span class="pc bpc" id="L194" title="1 of 2 branches missed.">		if (storageFormat == Format.BINARY) {</span>
+<span class="nc" id="L195">			return new BinaryProductHandler(out);</span>
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">		} else if (storageFormat == Format.JSON) {</span>
+<span class="nc" id="L197">			return new JsonProductHandler(out);</span>
 		} else {
-<span class="fc" id="L187">			return new XmlProductHandler(out);</span>
+<span class="fc" id="L199">			return new XmlProductHandler(out);</span>
 		}
 	}
 
@@ -200,31 +212,35 @@ public class URLProductStorage extends FileProductStorage {
 	 */
 	protected ProductSource getProductSourceFormat(final File file)
 			throws Exception {
-<span class="fc" id="L203">		InputStream in = StreamUtils.getInputStream(file);</span>
-<span class="pc bpc" id="L204" title="1 of 2 branches missed.">		if (storageFormat == Format.BINARY) {</span>
-<span class="nc" id="L205">			return new BinaryProductSource(in);</span>
-<span class="pc bpc" id="L206" title="1 of 2 branches missed.">		} else if (storageFormat == Format.JSON) {</span>
-<span class="nc" id="L207">			return new JsonProductSource(in);</span>
+<span class="fc" id="L215">		InputStream in = StreamUtils.getInputStream(file);</span>
+<span class="pc bpc" id="L216" title="1 of 2 branches missed.">		if (storageFormat == Format.BINARY) {</span>
+<span class="nc" id="L217">			return new BinaryProductSource(in);</span>
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">		} else if (storageFormat == Format.JSON) {</span>
+<span class="nc" id="L219">			return new JsonProductSource(in);</span>
 		} else {
-<span class="fc" id="L209">			return new XmlProductSource(in);</span>
+<span class="fc" id="L221">			return new XmlProductSource(in);</span>
 		}
 	}
 
+	/** @return storageFormat */
 	public Format getStorageFormat() {
-<span class="nc" id="L214">		return this.storageFormat;</span>
+<span class="nc" id="L227">		return this.storageFormat;</span>
 	}
 
+	/** @param format set a storageFormat */
 	public void setStorageFormat(final Format format) {
-<span class="nc" id="L218">		this.storageFormat = format;</span>
-<span class="nc" id="L219">	}</span>
+<span class="nc" id="L232">		this.storageFormat = format;</span>
+<span class="nc" id="L233">	}</span>
 
+	/** @return storagePath */
 	public String getStoragePath() {
-<span class="nc" id="L222">		return this.storagePath;</span>
+<span class="nc" id="L237">		return this.storagePath;</span>
 	}
 
+	/** @param path set a string as the storagePath */
 	public void setStoragePath(final String path) {
-<span class="nc" id="L226">		this.storagePath = path;</span>
-<span class="nc" id="L227">	}</span>
+<span class="nc" id="L242">		this.storagePath = path;</span>
+<span class="nc" id="L243">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

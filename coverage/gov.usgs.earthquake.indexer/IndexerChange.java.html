@@ -2,7 +2,7 @@
 
 /**
  * Description of a specific change to a {@link ProductIndex}.
- * 
+ *
  * Multiple IndexerChange objects may be created, and grouped
  * into an {@link IndexerEvent}, in response to one product
  * being processed.
@@ -11,22 +11,49 @@ public class IndexerChange {
 
 	/** Enumeration of indexer event types. */
 <span class="fc" id="L13">	public static enum IndexerChangeType {</span>
-<span class="fc" id="L14">		EVENT_ADDED, EVENT_UPDATED, EVENT_DELETED, EVENT_ARCHIVED, EVENT_MERGED, EVENT_SPLIT,</span>
+		/** Enum for IndexerChangeType Event Added */
+<span class="fc" id="L15">		EVENT_ADDED,</span>
+		/** Enum for IndexerChangeType Event Updated */
+<span class="fc" id="L17">		EVENT_UPDATED,</span>
+		/** Enum for IndexerChangeType Event Deleted */
+<span class="fc" id="L19">		EVENT_DELETED,</span>
+		/** Enum for IndexerChangeType Event Archived */
+<span class="fc" id="L21">		EVENT_ARCHIVED,</span>
+		/** Enum for IndexerChangeType Event Merged */
+<span class="fc" id="L23">		EVENT_MERGED,</span>
+		/** Enum for IndexerChangeType Event Split */
+<span class="fc" id="L25">		EVENT_SPLIT,</span>
 
-<span class="fc" id="L16">		PRODUCT_ADDED, PRODUCT_UPDATED, PRODUCT_DELETED, PRODUCT_ARCHIVED</span>
+		/** Enum for IndexerChangeType Product Added */
+<span class="fc" id="L28">		PRODUCT_ADDED,</span>
+		/** Enum for IndexerChangeType Product Updated */
+<span class="fc" id="L30">		PRODUCT_UPDATED,</span>
+		/** Enum for IndexerChangeType Product Deleted */
+<span class="fc" id="L32">		PRODUCT_DELETED,</span>
+		/** Enum for IndexerChangeType Product Archived */
+<span class="fc" id="L34">		PRODUCT_ARCHIVED</span>
 	};
+	/** IndexerChangeType for Event Added */
+<span class="fc" id="L37">	public static final IndexerChangeType EVENT_ADDED = IndexerChangeType.EVENT_ADDED;</span>
+	/** IndexerChangeType for Event Updated */
+<span class="fc" id="L39">	public static final IndexerChangeType EVENT_UPDATED = IndexerChangeType.EVENT_UPDATED;</span>
+	/** IndexerChangeType for Event Deleted */
+<span class="fc" id="L41">	public static final IndexerChangeType EVENT_DELETED = IndexerChangeType.EVENT_DELETED;</span>
+	/** IndexerChangeType for Event Archived */
+<span class="fc" id="L43">	public static final IndexerChangeType EVENT_ARCHIVED = IndexerChangeType.EVENT_ARCHIVED;</span>
+	/** IndexerChangeType for Event Merged */
+<span class="fc" id="L45">	public static final IndexerChangeType EVENT_MERGED = IndexerChangeType.EVENT_MERGED;</span>
+	/** IndexerChangeType for Event Split */
+<span class="fc" id="L47">	public static final IndexerChangeType EVENT_SPLIT = IndexerChangeType.EVENT_SPLIT;</span>
 
-<span class="fc" id="L19">	public static final IndexerChangeType EVENT_ADDED = IndexerChangeType.EVENT_ADDED;</span>
-<span class="fc" id="L20">	public static final IndexerChangeType EVENT_UPDATED = IndexerChangeType.EVENT_UPDATED;</span>
-<span class="fc" id="L21">	public static final IndexerChangeType EVENT_DELETED = IndexerChangeType.EVENT_DELETED;</span>
-<span class="fc" id="L22">	public static final IndexerChangeType EVENT_ARCHIVED = IndexerChangeType.EVENT_ARCHIVED;</span>
-<span class="fc" id="L23">	public static final IndexerChangeType EVENT_MERGED = IndexerChangeType.EVENT_MERGED;</span>
-<span class="fc" id="L24">	public static final IndexerChangeType EVENT_SPLIT = IndexerChangeType.EVENT_SPLIT;</span>
-
-<span class="fc" id="L26">	public static final IndexerChangeType PRODUCT_ADDED = IndexerChangeType.PRODUCT_ADDED;</span>
-<span class="fc" id="L27">	public static final IndexerChangeType PRODUCT_UPDATED = IndexerChangeType.PRODUCT_UPDATED;</span>
-<span class="fc" id="L28">	public static final IndexerChangeType PRODUCT_DELETED = IndexerChangeType.PRODUCT_DELETED;</span>
-<span class="fc" id="L29">	public static final IndexerChangeType PRODUCT_ARCHIVED = IndexerChangeType.PRODUCT_ARCHIVED;</span>
+	/** IndexerChangeType for Product Added */
+<span class="fc" id="L50">	public static final IndexerChangeType PRODUCT_ADDED = IndexerChangeType.PRODUCT_ADDED;</span>
+	/** IndexerChangeType for Product Updated */
+<span class="fc" id="L52">	public static final IndexerChangeType PRODUCT_UPDATED = IndexerChangeType.PRODUCT_UPDATED;</span>
+	/** IndexerChangeType for Product Deleted */
+<span class="fc" id="L54">	public static final IndexerChangeType PRODUCT_DELETED = IndexerChangeType.PRODUCT_DELETED;</span>
+	/** IndexerChangeType for Product Archived */
+<span class="fc" id="L56">	public static final IndexerChangeType PRODUCT_ARCHIVED = IndexerChangeType.PRODUCT_ARCHIVED;</span>
 
 	/** Indicates the type of change that is occurring */
 	private IndexerChangeType type;
@@ -41,7 +68,7 @@ public class IndexerChange {
 	 * Note the &lt;code&gt;oldEvent&lt;/code&gt; and &lt;code&gt;newEvent&lt;/code&gt; will have
 	 * particular meanings depending on the given &lt;code&gt;type&lt;/code&gt; of change
 	 * that occurred.
-	 * 
+	 *
 	 * @param type
 	 *            The type of change that occurred.
 	 * @param originalEvent
@@ -51,42 +78,45 @@ public class IndexerChange {
 	 * @see IndexerEvent
 	 */
 	public IndexerChange(IndexerChangeType type, Event originalEvent,
-<span class="fc" id="L54">			Event newEvent) {</span>
-<span class="fc" id="L55">		this.type = type;</span>
-<span class="fc" id="L56">		this.originalEvent = originalEvent;</span>
-<span class="fc" id="L57">		this.newEvent = newEvent;</span>
-<span class="fc" id="L58">	}</span>
+<span class="fc" id="L81">			Event newEvent) {</span>
+<span class="fc" id="L82">		this.type = type;</span>
+<span class="fc" id="L83">		this.originalEvent = originalEvent;</span>
+<span class="fc" id="L84">		this.newEvent = newEvent;</span>
+<span class="fc" id="L85">	}</span>
 
+	/** @return IndexerChangeType */
 	public IndexerChangeType getType() {
-<span class="fc" id="L61">		return this.type;</span>
+<span class="fc" id="L89">		return this.type;</span>
 	}
 
+	/** @return originalEvent */
 	public Event getOriginalEvent() {
-<span class="fc" id="L65">		return this.originalEvent;</span>
+<span class="fc" id="L94">		return this.originalEvent;</span>
 	}
 
+	/** @return newEvent */
 	public Event getNewEvent() {
-<span class="fc" id="L69">		return this.newEvent;</span>
+<span class="fc" id="L99">		return this.newEvent;</span>
 	}
 
 	@Override
 	public String toString() {
-<span class="fc" id="L74">		StringBuffer b = new StringBuffer();</span>
-<span class="fc" id="L75">		b.append(getType().toString() + &quot; :: &quot;);</span>
+<span class="fc" id="L104">		StringBuffer b = new StringBuffer();</span>
+<span class="fc" id="L105">		b.append(getType().toString() + &quot; :: &quot;);</span>
 
-<span class="fc bfc" id="L77" title="All 2 branches covered.">		if (getOriginalEvent() != null) {</span>
-<span class="fc" id="L78">			b.append(getOriginalEvent().getEventId() + &quot; --&gt; &quot;);</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">		if (getOriginalEvent() != null) {</span>
+<span class="fc" id="L108">			b.append(getOriginalEvent().getEventId() + &quot; --&gt; &quot;);</span>
 		} else {
-<span class="fc" id="L80">			b.append(&quot;null --&gt; &quot;);</span>
+<span class="fc" id="L110">			b.append(&quot;null --&gt; &quot;);</span>
 		}
 
-<span class="fc bfc" id="L83" title="All 2 branches covered.">		if (getNewEvent() != null) {</span>
-<span class="fc" id="L84">			b.append(getNewEvent().getEventId());</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">		if (getNewEvent() != null) {</span>
+<span class="fc" id="L114">			b.append(getNewEvent().getEventId());</span>
 		} else {
-<span class="fc" id="L86">			b.append(&quot;null&quot;);</span>
+<span class="fc" id="L116">			b.append(&quot;null&quot;);</span>
 		}
 
-<span class="fc" id="L89">		return b.toString();</span>
+<span class="fc" id="L119">		return b.toString();</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

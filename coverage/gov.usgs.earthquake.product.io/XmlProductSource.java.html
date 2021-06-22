@@ -304,13 +304,15 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 		}
 <span class="fc" id="L305">	}</span>
 
+	/** @return ProductHandler */
 	protected synchronized ProductHandler getHandler() {
-<span class="nc" id="L308">		return out;</span>
+<span class="nc" id="L309">		return out;</span>
 	}
 
+	/** @param out ProductHandler to set */
 	protected synchronized void setHandler(ProductHandler out) {
-<span class="fc" id="L312">		this.out = out;</span>
-<span class="fc" id="L313">	}</span>
+<span class="fc" id="L314">		this.out = out;</span>
+<span class="fc" id="L315">	}</span>
 
 
 	/**
@@ -318,13 +320,13 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 	 */
 	@Override
 	public void close() {
-<span class="fc" id="L321">		closeContent();</span>
+<span class="fc" id="L323">		closeContent();</span>
 
-<span class="fc" id="L323">		StreamUtils.closeStream(in);</span>
-<span class="fc bfc" id="L324" title="All 2 branches covered.">		if (out != null) {</span>
-<span class="fc" id="L325">			out.close();</span>
+<span class="fc" id="L325">		StreamUtils.closeStream(in);</span>
+<span class="fc bfc" id="L326" title="All 2 branches covered.">		if (out != null) {</span>
+<span class="fc" id="L327">			out.close();</span>
 		}
-<span class="fc" id="L327">	}</span>
+<span class="fc" id="L329">	}</span>
 
 	/**
 	 * Set up a piped output stream used during parsing.
@@ -337,41 +339,48 @@ public class XmlProductSource extends DefaultHandler implements ProductSource {
 	 * will close the connection in {@link #closeContent()}.  If
 	 * errors occur, the objects handling the product source object
 	 * call closeContent to ensure the resource is closed.
+	 *
+	 * @param encoded if it needs to decode base 64 content
+	 * @return a input stream of the Piped output stream
+	 * @throws IOException if io error occurs
 	 */
 	@SuppressWarnings(&quot;resource&quot;)
 	public InputStream openContentStream(boolean encoded) throws IOException {
 		// EMBEDDED CONTENT
-<span class="fc" id="L344">		contentOutputStream = new PipedOutputStream();</span>
-<span class="fc" id="L345">		InputStream contentInputStream = new PipedInputStream(</span>
+<span class="fc" id="L350">		contentOutputStream = new PipedOutputStream();</span>
+<span class="fc" id="L351">		InputStream contentInputStream = new PipedInputStream(</span>
 				contentOutputStream);
 
 		// decode base 64 encoded content
-<span class="pc bpc" id="L349" title="1 of 2 branches missed.">		if (encoded) {</span>
+<span class="pc bpc" id="L355" title="1 of 2 branches missed.">		if (encoded) {</span>
 			// this stream is closed by closeContent()
 			// either in this thread if everything succeeds,
 			// or by the objects using the ProductSource.
-<span class="fc" id="L353">			contentInputStream = Base64.getDecoder()</span>
-<span class="fc" id="L354">					.wrap(contentInputStream);</span>
+<span class="fc" id="L359">			contentInputStream = Base64.getDecoder()</span>
+<span class="fc" id="L360">					.wrap(contentInputStream);</span>
 		}
 
-<span class="fc" id="L357">		return contentInputStream;</span>
+<span class="fc" id="L363">		return contentInputStream;</span>
 	}
 
+	/**
+	 * Closes an open output stream
+	 */
 	public void closeContent() {
-<span class="fc" id="L361">		StreamUtils.closeStream(contentOutputStream);</span>
-<span class="fc" id="L362">		contentOutputStream = null;</span>
-<span class="fc bfc" id="L363" title="All 2 branches covered.">		if (contentOutputThread != null) {</span>
+<span class="fc" id="L370">		StreamUtils.closeStream(contentOutputStream);</span>
+<span class="fc" id="L371">		contentOutputStream = null;</span>
+<span class="fc bfc" id="L372" title="All 2 branches covered.">		if (contentOutputThread != null) {</span>
 			try {
-<span class="fc" id="L365">				contentOutputThread.join();</span>
-<span class="nc" id="L366">			} catch (Exception e) {</span>
+<span class="fc" id="L374">				contentOutputThread.join();</span>
+<span class="nc" id="L375">			} catch (Exception e) {</span>
 				// ignore
-<span class="fc" id="L368">			}</span>
+<span class="fc" id="L377">			}</span>
 		}
-<span class="fc" id="L370">		contentOutputThread = null;</span>
-<span class="fc bfc" id="L371" title="All 2 branches covered.">		if (content != null) {</span>
-<span class="fc" id="L372">			content.close();</span>
+<span class="fc" id="L379">		contentOutputThread = null;</span>
+<span class="fc bfc" id="L380" title="All 2 branches covered.">		if (content != null) {</span>
+<span class="fc" id="L381">			content.close();</span>
 		}
-<span class="fc" id="L374">	}</span>
+<span class="fc" id="L383">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

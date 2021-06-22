@@ -8,10 +8,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Round Robin Blocking Queue.
- * 
+ *
  * {@link #put(Object)} and {@link #take()} are recommended, as other methods
  * internally call these methods.
- * 
+ *
  * @param &lt;T&gt; queue item type.
  */
 public class RoundRobinBlockingQueue&lt;T&gt; extends RoundRobinQueue&lt;T&gt; implements
@@ -20,10 +20,11 @@ public class RoundRobinBlockingQueue&lt;T&gt; extends RoundRobinQueue&lt;T&gt; i
 	private final ReentrantLock changeLock;
 	private final Condition notEmptyCondition;
 
-<span class="fc" id="L23">	public RoundRobinBlockingQueue() {</span>
-<span class="fc" id="L24">		changeLock = new ReentrantLock();</span>
-<span class="fc" id="L25">		notEmptyCondition = changeLock.newCondition();</span>
-<span class="fc" id="L26">	}</span>
+	/** Constructor */
+<span class="fc" id="L24">	public RoundRobinBlockingQueue() {</span>
+<span class="fc" id="L25">		changeLock = new ReentrantLock();</span>
+<span class="fc" id="L26">		notEmptyCondition = changeLock.newCondition();</span>
+<span class="fc" id="L27">	}</span>
 
 	/**
 	 * Add an item to the queue.
@@ -31,17 +32,17 @@ public class RoundRobinBlockingQueue&lt;T&gt; extends RoundRobinQueue&lt;T&gt; i
 	@Override
 	public boolean add(T e) {
 		try {
-<span class="nc" id="L34">			changeLock.lockInterruptibly();</span>
-<span class="nc" id="L35">		} catch (InterruptedException ie) {</span>
-<span class="nc" id="L36">			throw new RuntimeException(ie);</span>
-<span class="nc" id="L37">		}</span>
+<span class="nc" id="L35">			changeLock.lockInterruptibly();</span>
+<span class="nc" id="L36">		} catch (InterruptedException ie) {</span>
+<span class="nc" id="L37">			throw new RuntimeException(ie);</span>
+<span class="nc" id="L38">		}</span>
 		try {
-<span class="nc" id="L39">			super.add(e);</span>
-<span class="nc" id="L40">			notEmptyCondition.signal();</span>
+<span class="nc" id="L40">			super.add(e);</span>
+<span class="nc" id="L41">			notEmptyCondition.signal();</span>
 		} finally {
-<span class="nc" id="L42">			changeLock.unlock();</span>
+<span class="nc" id="L43">			changeLock.unlock();</span>
 		}
-<span class="nc" id="L44">		return true;</span>
+<span class="nc" id="L45">		return true;</span>
 	}
 
 	/**
@@ -50,47 +51,47 @@ public class RoundRobinBlockingQueue&lt;T&gt; extends RoundRobinQueue&lt;T&gt; i
 	@Override
 	public boolean contains(Object e) {
 		try {
-<span class="nc" id="L53">			changeLock.lockInterruptibly();</span>
-<span class="nc" id="L54">		} catch (InterruptedException ie) {</span>
-<span class="nc" id="L55">			throw new RuntimeException(ie);</span>
-<span class="nc" id="L56">		}</span>
+<span class="nc" id="L54">			changeLock.lockInterruptibly();</span>
+<span class="nc" id="L55">		} catch (InterruptedException ie) {</span>
+<span class="nc" id="L56">			throw new RuntimeException(ie);</span>
+<span class="nc" id="L57">		}</span>
 		try {
-<span class="nc" id="L58">			return super.contains(e);</span>
+<span class="nc" id="L59">			return super.contains(e);</span>
 		} finally {
-<span class="nc" id="L60">			changeLock.unlock();</span>
+<span class="nc" id="L61">			changeLock.unlock();</span>
 		}
 	}
 
 	/**
 	 * Offer an item to the queue.
-	 * 
+	 *
 	 * Calls {@link #add(Object)}, but returns false if any exceptions thrown.
 	 */
 	@Override
 	public boolean offer(T e) {
 		try {
-<span class="nc" id="L72">			return add(e);</span>
-<span class="nc" id="L73">		} catch (Exception ex) {</span>
-<span class="nc" id="L74">			return false;</span>
+<span class="nc" id="L73">			return add(e);</span>
+<span class="nc" id="L74">		} catch (Exception ex) {</span>
+<span class="nc" id="L75">			return false;</span>
 		}
 	}
 
 	/**
 	 * Offer an item to the queue.
-	 * 
+	 *
 	 * Same as {@link #offer(Object)}, this is an unbounded queue.
 	 */
 	@Override
 	public boolean offer(T e, long timeout, TimeUnit unit)
 			throws InterruptedException {
-<span class="nc" id="L86">		changeLock.tryLock(timeout, unit);</span>
+<span class="nc" id="L87">		changeLock.tryLock(timeout, unit);</span>
 		try {
-<span class="nc" id="L88">			super.add(e);</span>
-<span class="nc" id="L89">			notEmptyCondition.signal();</span>
+<span class="nc" id="L89">			super.add(e);</span>
+<span class="nc" id="L90">			notEmptyCondition.signal();</span>
 		} finally {
-<span class="nc" id="L91">			changeLock.unlock();</span>
+<span class="nc" id="L92">			changeLock.unlock();</span>
 		}
-<span class="nc" id="L93">		return true;</span>
+<span class="nc" id="L94">		return true;</span>
 	}
 
 	/**
@@ -99,51 +100,51 @@ public class RoundRobinBlockingQueue&lt;T&gt; extends RoundRobinQueue&lt;T&gt; i
 	 */
 	@Override
 	public T poll(long timeout, TimeUnit unit) throws InterruptedException {
-<span class="fc" id="L102">		changeLock.lockInterruptibly();</span>
+<span class="fc" id="L103">		changeLock.lockInterruptibly();</span>
 		try {
-<span class="pc bpc" id="L104" title="1 of 2 branches missed.">			if (isEmpty()) {</span>
-<span class="fc" id="L105">				notEmptyCondition.await(timeout, unit);</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">			if (isEmpty()) {</span>
+<span class="fc" id="L106">				notEmptyCondition.await(timeout, unit);</span>
 			}
 			try {
-<span class="fc" id="L108">				return remove();</span>
-<span class="fc" id="L109">			} catch (Exception e) {</span>
-<span class="fc" id="L110">				return null;</span>
+<span class="fc" id="L109">				return remove();</span>
+<span class="fc" id="L110">			} catch (Exception e) {</span>
+<span class="fc" id="L111">				return null;</span>
 			}
 		} finally {
-<span class="fc" id="L113">			changeLock.unlock();</span>
+<span class="fc" id="L114">			changeLock.unlock();</span>
 		}
 	}
 
 	/**
 	 * Put an item in the queue.
-	 * 
+	 *
 	 * @throws InterruptedException
 	 *             if interrupted while acquiring lock.
 	 */
 	@Override
 	public void put(T e) throws InterruptedException {
-<span class="fc" id="L125">		changeLock.lockInterruptibly();</span>
+<span class="fc" id="L126">		changeLock.lockInterruptibly();</span>
 		try {
-<span class="fc" id="L127">			super.add(e);</span>
-<span class="fc" id="L128">			notEmptyCondition.signal();</span>
-<span class="nc" id="L129">		} catch (RuntimeException re) {</span>
+<span class="fc" id="L128">			super.add(e);</span>
+<span class="fc" id="L129">			notEmptyCondition.signal();</span>
+<span class="nc" id="L130">		} catch (RuntimeException re) {</span>
 			// may be thrown by add if interrupted
-<span class="nc bnc" id="L131" title="All 2 branches missed.">			if (re.getCause() instanceof InterruptedException) {</span>
-<span class="nc" id="L132">				throw (InterruptedException) re.getCause();</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">			if (re.getCause() instanceof InterruptedException) {</span>
+<span class="nc" id="L133">				throw (InterruptedException) re.getCause();</span>
 			}
 		} finally {
-<span class="fc" id="L135">			changeLock.unlock();</span>
+<span class="fc" id="L136">			changeLock.unlock();</span>
 		}
-<span class="fc" id="L137">	}</span>
+<span class="fc" id="L138">	}</span>
 
 	/**
 	 * Unbounded queues return Integer.MAX_VALUE.
-	 * 
+	 *
 	 * @return Integer.MAX_VALUE;
 	 */
 	@Override
 	public int remainingCapacity() {
-<span class="nc" id="L146">		return Integer.MAX_VALUE;</span>
+<span class="nc" id="L147">		return Integer.MAX_VALUE;</span>
 	}
 
 	/**
@@ -152,14 +153,14 @@ public class RoundRobinBlockingQueue&lt;T&gt; extends RoundRobinQueue&lt;T&gt; i
 	@Override
 	public boolean remove(Object e) {
 		try {
-<span class="nc" id="L155">			changeLock.lockInterruptibly();</span>
-<span class="nc" id="L156">		} catch (InterruptedException ie) {</span>
-<span class="nc" id="L157">			throw new RuntimeException(ie);</span>
-<span class="nc" id="L158">		}</span>
+<span class="nc" id="L156">			changeLock.lockInterruptibly();</span>
+<span class="nc" id="L157">		} catch (InterruptedException ie) {</span>
+<span class="nc" id="L158">			throw new RuntimeException(ie);</span>
+<span class="nc" id="L159">		}</span>
 		try {
-<span class="nc" id="L160">			return super.remove(e);</span>
+<span class="nc" id="L161">			return super.remove(e);</span>
 		} finally {
-<span class="nc" id="L162">			changeLock.unlock();</span>
+<span class="nc" id="L163">			changeLock.unlock();</span>
 		}
 	}
 
@@ -168,14 +169,14 @@ public class RoundRobinBlockingQueue&lt;T&gt; extends RoundRobinQueue&lt;T&gt; i
 	 */
 	@Override
 	public T take() throws InterruptedException {
-<span class="fc" id="L171">		changeLock.lockInterruptibly();</span>
+<span class="fc" id="L172">		changeLock.lockInterruptibly();</span>
 		try {
-<span class="fc bfc" id="L173" title="All 2 branches covered.">			while (isEmpty()) {</span>
-<span class="fc" id="L174">				notEmptyCondition.await();</span>
+<span class="fc bfc" id="L174" title="All 2 branches covered.">			while (isEmpty()) {</span>
+<span class="fc" id="L175">				notEmptyCondition.await();</span>
 			}
-<span class="fc" id="L176">			return super.remove();</span>
+<span class="fc" id="L177">			return super.remove();</span>
 		} finally {
-<span class="fc" id="L178">			changeLock.unlock();</span>
+<span class="fc" id="L179">			changeLock.unlock();</span>
 		}
 	}
 
@@ -184,7 +185,7 @@ public class RoundRobinBlockingQueue&lt;T&gt; extends RoundRobinQueue&lt;T&gt; i
 	 */
 	@Override
 	public int drainTo(Collection&lt;? super T&gt; c) {
-<span class="nc" id="L187">		return drainTo(c, -1);</span>
+<span class="nc" id="L188">		return drainTo(c, -1);</span>
 	}
 
 	/**
@@ -193,20 +194,20 @@ public class RoundRobinBlockingQueue&lt;T&gt; extends RoundRobinQueue&lt;T&gt; i
 	@Override
 	public int drainTo(Collection&lt;? super T&gt; c, int max) {
 		try {
-<span class="nc" id="L196">			changeLock.lockInterruptibly();</span>
-<span class="nc" id="L197">		} catch (InterruptedException e) {</span>
+<span class="nc" id="L197">			changeLock.lockInterruptibly();</span>
+<span class="nc" id="L198">		} catch (InterruptedException e) {</span>
 			// none drained
-<span class="nc" id="L199">			return 0;</span>
-<span class="nc" id="L200">		}</span>
+<span class="nc" id="L200">			return 0;</span>
+<span class="nc" id="L201">		}</span>
 		try {
-<span class="nc" id="L202">			int count = 0;</span>
-<span class="nc bnc" id="L203" title="All 6 branches missed.">			while (!isEmpty() &amp;&amp; (max &lt; 0 || count &lt; max)) {</span>
-<span class="nc" id="L204">				c.add(remove());</span>
-<span class="nc" id="L205">				count++;</span>
+<span class="nc" id="L203">			int count = 0;</span>
+<span class="nc bnc" id="L204" title="All 6 branches missed.">			while (!isEmpty() &amp;&amp; (max &lt; 0 || count &lt; max)) {</span>
+<span class="nc" id="L205">				c.add(remove());</span>
+<span class="nc" id="L206">				count++;</span>
 			}
-<span class="nc" id="L207">			return count;</span>
+<span class="nc" id="L208">			return count;</span>
 		} finally {
-<span class="nc" id="L209">			changeLock.unlock();</span>
+<span class="nc" id="L210">			changeLock.unlock();</span>
 		}
 	}
 

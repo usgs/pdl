@@ -61,11 +61,11 @@ public class CorbaSender {
 	 * messages using this &lt;code&gt;CorbaSender&lt;/code&gt;.
 	 * @param port The port number to send messages to on the host.
 	 *
-	 * @throws InvalidName If the RootPOA is not aware of the type of object we 
+	 * @throws InvalidName If the RootPOA is not aware of the type of object we
 	 * request from it.
 	 * @throws AdapterInactive If the poaManager is not active.
 	 */
-	public CorbaSender(String host, String port) 
+	public CorbaSender(String host, String port)
 <span class="nc" id="L69">			throws InvalidName, AdapterInactive {</span>
 
 		// Create the corbaloc url
@@ -89,47 +89,48 @@ public class CorbaSender {
 
 <span class="nc" id="L90">	} // END: constructor CorbaSender</span>
 
+	/** Cleanup */
 	public void destroy() {
-<span class="nc" id="L93">		try { feeder._release(); } catch (Exception ex) { /* ignore */ }</span>
-<span class="nc" id="L94">		try { object._release(); } catch (Exception ex) { /* ignore */ }</span>
-<span class="nc" id="L95">		try { orb.shutdown(true); } catch (Exception ex) { /* ignore */ }</span>
-<span class="nc" id="L96">		try { orb.destroy(); } catch (Exception ex) { /* ignore */ }</span>
-		
-<span class="nc" id="L98">		feeder = null;</span>
-<span class="nc" id="L99">		object = null;</span>
-<span class="nc" id="L100">		poaManager = null;</span>
-<span class="nc" id="L101">		poa = null;</span>
-<span class="nc" id="L102">		orb = null;</span>
-<span class="nc" id="L103">	}</span>
+<span class="nc" id="L94">		try { feeder._release(); } catch (Exception ex) { /* ignore */ }</span>
+<span class="nc" id="L95">		try { object._release(); } catch (Exception ex) { /* ignore */ }</span>
+<span class="nc" id="L96">		try { orb.shutdown(true); } catch (Exception ex) { /* ignore */ }</span>
+<span class="nc" id="L97">		try { orb.destroy(); } catch (Exception ex) { /* ignore */ }</span>
+
+<span class="nc" id="L99">		feeder = null;</span>
+<span class="nc" id="L100">		object = null;</span>
+<span class="nc" id="L101">		poaManager = null;</span>
+<span class="nc" id="L102">		poa = null;</span>
+<span class="nc" id="L103">		orb = null;</span>
+<span class="nc" id="L104">	}</span>
 
 	/**
 	 * Retrieve a QWFeeder object associated with this CorbaSender.
-	 * 
+	 *
 	 * First checks if the object is &quot;non_existent&quot;, and if so re-narrows the object.
 	 * @return QWFeeder object, or null if unable to narrow.
 	 */
 	protected QWFeeder getFeeder() {
-<span class="nc bnc" id="L112" title="All 2 branches missed.">		if (feeder != null) {</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">		if (feeder != null) {</span>
 			try {
-<span class="nc bnc" id="L114" title="All 2 branches missed.">				if (feeder._non_existent()) {</span>
-<span class="nc" id="L115">					feeder = null;</span>
-<span class="nc" id="L116">					object = null;</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">				if (feeder._non_existent()) {</span>
+<span class="nc" id="L116">					feeder = null;</span>
+<span class="nc" id="L117">					object = null;</span>
 				}
-<span class="nc" id="L118">			} catch (org.omg.CORBA.OBJECT_NOT_EXIST e) {</span>
-				// feeder._non_existent throws the OBJECT_NOT_EXIST exception 
+<span class="nc" id="L119">			} catch (org.omg.CORBA.OBJECT_NOT_EXIST e) {</span>
+				// feeder._non_existent throws the OBJECT_NOT_EXIST exception
 				// instead of returning true...
-<span class="nc" id="L121">				feeder = null;</span>
-<span class="nc" id="L122">				object = null;</span>
-<span class="nc" id="L123">			}</span>
+<span class="nc" id="L122">				feeder = null;</span>
+<span class="nc" id="L123">				object = null;</span>
+<span class="nc" id="L124">			}</span>
 		}
 
-<span class="nc bnc" id="L126" title="All 2 branches missed.">		if (feeder == null) {</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">		if (feeder == null) {</span>
 			//recreate the object, must string_to_object AND narrow
-<span class="nc" id="L128">			object = orb.string_to_object(url);</span>
-<span class="nc" id="L129">			feeder = QWFeederHelper.narrow(object);</span>
+<span class="nc" id="L129">			object = orb.string_to_object(url);</span>
+<span class="nc" id="L130">			feeder = QWFeederHelper.narrow(object);</span>
 		}
 
-<span class="nc" id="L132">		return feeder;</span>
+<span class="nc" id="L133">		return feeder;</span>
 	}
 
 	//---------------------------------------------------------------------------
@@ -144,9 +145,9 @@ public class CorbaSender {
 
 	/**
 	 * Sends a data event message. If the event data does not begin with a
-	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded 
-	 * with one. The &amp;ldquo;sendSourced...&amp;rdquo; methods are preferred because 
-	 * the feeder-source host name and message number are used for improved 
+	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded
+	 * with one. The &amp;ldquo;sendSourced...&amp;rdquo; methods are preferred because
+	 * the feeder-source host name and message number are used for improved
 	 * message tracking.
 	 *
 	 * @param message The data event message string.
@@ -154,14 +155,14 @@ public class CorbaSender {
 	 * and processed; &lt;code&gt;false&lt;/code&gt; if an error occurred.
 	 */
 	public boolean sendMessage(String message) {
-<span class="nc" id="L157">		return getFeeder().sendMessage(message);</span>
+<span class="nc" id="L158">		return getFeeder().sendMessage(message);</span>
 	}
-	
+
 	/**
 	 * Sends a data event message. If the event data does not begin with a
-	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded 
-	 * with one. The &amp;ldquo;sendSourced...&amp;rdquo; methods are preferred because 
-	 * the feeder-source host name and message number are used for improved 
+	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded
+	 * with one. The &amp;ldquo;sendSourced...&amp;rdquo; methods are preferred because
+	 * the feeder-source host name and message number are used for improved
 	 * message tracking.
 	 *
 	 * @param domain The domain name to use.
@@ -172,15 +173,15 @@ public class CorbaSender {
 	 * and processed; &lt;code&gt;false&lt;/code&gt; if an error occurred.
 	 */
 	public boolean sendMessage(String domain, String type, String message) {
-<span class="nc" id="L175">		return getFeeder().sendDomainTypeMessage(domain, type, message);</span>
+<span class="nc" id="L176">		return getFeeder().sendDomainTypeMessage(domain, type, message);</span>
 	}
 
 
 	/**
 	 * Sends a data event message. If the event data does not begin with a
-	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded 
-	 * with one. The &amp;ldquo;sendSourced...&amp;rdquo; methods are preferred because 
-	 * the feeder-source host name and message number are used for improved 
+	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded
+	 * with one. The &amp;ldquo;sendSourced...&amp;rdquo; methods are preferred because
+	 * the feeder-source host name and message number are used for improved
 	 * message tracking.
 	 *
 	 * @param domain The domain name to use.
@@ -193,9 +194,9 @@ public class CorbaSender {
 	 */
 	public boolean sendMessage(String domain, String type, String name,
 			String message) {
-<span class="nc" id="L196">		return getFeeder().sendDomainTypeNameMessage(domain, type, name, message);</span>
+<span class="nc" id="L197">		return getFeeder().sendDomainTypeNameMessage(domain, type, name, message);</span>
 	}
-	
+
 	/**
 	 * Sends a data event message. If the event data does not begin with a
 	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded
@@ -211,17 +212,17 @@ public class CorbaSender {
 	 * @return &lt;code&gt;true&lt;/code&gt; after the message has been successfully stored
 	 * and processed; &lt;code&gt;false&lt;/code&gt; if an error occurred.
 	 */
-	public boolean sendMessage(String message, String feederSourceHost, 
+	public boolean sendMessage(String message, String feederSourceHost,
 			long feederSrcHostMsgId) {
-<span class="nc" id="L216">		return getFeeder().sendSourcedMsg(message, feederSourceHost, </span>
+<span class="nc" id="L217">		return getFeeder().sendSourcedMsg(message, feederSourceHost,</span>
 				feederSrcHostMsgId);
 	}
 
 	/**
 	 * Sends a data event message. If the event data does not begin with a
-	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded 
-	 * with one. The &amp;ldquo;sendSourced...&amp;rdquo; methods are preferred because 
-	 * the feeder-source host name and message number are used for improved 
+	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded
+	 * with one. The &amp;ldquo;sendSourced...&amp;rdquo; methods are preferred because
+	 * the feeder-source host name and message number are used for improved
 	 * message tracking.
 	 *
 	 * @param domain The domain name to use.
@@ -234,17 +235,17 @@ public class CorbaSender {
 	 * @return &lt;code&gt;true&lt;/code&gt; after the message has been successfully stored
 	 * and processed; &lt;code&gt;false&lt;/code&gt; if an error occurred.
 	 */
-	public boolean sendMessage(String domain, String type, String message, 
+	public boolean sendMessage(String domain, String type, String message,
 			String feederSourceHost, long feederSrcHostMsgId) {
-<span class="nc" id="L239">		return getFeeder().sendSourcedDomainTypeMsg(domain, type, message,</span>
+<span class="nc" id="L240">		return getFeeder().sendSourcedDomainTypeMsg(domain, type, message,</span>
 				feederSourceHost, feederSrcHostMsgId);
 	}
 
 	/**
 	 * Sends a data event message. If the event data does not begin with a
-	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded 
-	 * with one. The &amp;ldquo;sendSourced...&amp;rdquo; methods are preferred because 
-	 * the feeder-source host name and message number are used for improved 
+	 * &amp;ldquo;DataMessage&amp;rdquo; XML element then the data will be surrounded
+	 * with one. The &amp;ldquo;sendSourced...&amp;rdquo; methods are preferred because
+	 * the feeder-source host name and message number are used for improved
 	 * message tracking.
 	 *
 	 * @param domain The domain name to use.
@@ -258,9 +259,9 @@ public class CorbaSender {
 	 * @return &lt;code&gt;true&lt;/code&gt; after the message has been successfully stored
 	 * and processed; &lt;code&gt;false&lt;/code&gt; if an error occurred.
 	 */
-	public boolean sendMessage(String domain, String type, String name, 
+	public boolean sendMessage(String domain, String type, String name,
 			String message, String feederSourceHost, long feederSrcHostMsgId) {
-<span class="nc" id="L263">		return getFeeder().sendSourcedDomainTypeNameMsg(domain, type, name, message,</span>
+<span class="nc" id="L264">		return getFeeder().sendSourcedDomainTypeNameMsg(domain, type, name, message,</span>
 				feederSourceHost, feederSrcHostMsgId);
 	}
 

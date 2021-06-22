@@ -19,14 +19,20 @@ import java.util.logging.Logger;
  */
 public class NATSClient implements Configurable {
 
-<span class="nc" id="L22">  public static Logger LOGGER  = Logger</span>
-<span class="nc" id="L23">          .getLogger(NATSClient.class.getName());</span>
+  /** Logger object */
+<span class="nc" id="L23">  public static Logger LOGGER  = Logger</span>
+<span class="nc" id="L24">          .getLogger(NATSClient.class.getName());</span>
 
-<span class="nc" id="L25">  public static String SERVER_HOST_PROPERTY = &quot;serverHost&quot;;</span>
-<span class="nc" id="L26">  public static String SERVER_PORT_PROPERTY = &quot;serverPort&quot;;</span>
-<span class="nc" id="L27">  public static String CLUSTER_ID_PROPERTY = &quot;clusterId&quot;;</span>
-<span class="nc" id="L28">  public static String CLIENT_ID_PROPERTY = &quot;clientId&quot;;</span>
-<span class="nc" id="L29">  public static String SUBJECT_PROPERTY = &quot;subject&quot;;</span>
+  /** Property for server host */
+<span class="nc" id="L27">  public static String SERVER_HOST_PROPERTY = &quot;serverHost&quot;;</span>
+  /** Property for server port */
+<span class="nc" id="L29">  public static String SERVER_PORT_PROPERTY = &quot;serverPort&quot;;</span>
+  /** Property for cluster id */
+<span class="nc" id="L31">  public static String CLUSTER_ID_PROPERTY = &quot;clusterId&quot;;</span>
+  /** Property for client id */
+<span class="nc" id="L33">  public static String CLIENT_ID_PROPERTY = &quot;clientId&quot;;</span>
+  /** Property for subject */
+<span class="nc" id="L35">  public static String SUBJECT_PROPERTY = &quot;subject&quot;;</span>
 
   private String serverHost;
   private String serverPort;
@@ -36,45 +42,53 @@ public class NATSClient implements Configurable {
 
   private StreamingConnection connection;
 
+  /** Constructor for testing*/
   public NATSClient() {
-<span class="nc" id="L40">    this(&quot;localhost&quot;,&quot;4222&quot;,&quot;test-cluster&quot;,Long.toString(Thread.currentThread().getId()));</span>
-<span class="nc" id="L41">  }</span>
+<span class="nc" id="L47">    this(&quot;localhost&quot;,&quot;4222&quot;,&quot;test-cluster&quot;,Long.toString(Thread.currentThread().getId()));</span>
+<span class="nc" id="L48">  }</span>
 
-<span class="nc" id="L43">  public NATSClient(String serverHost, String serverPort, String clusterId, String clientIdSuffix) {</span>
+  /**
+   * Custom constructor
+   * @param serverHost String of host
+   * @param serverPort String of port
+   * @param clusterId String of clusterID
+   * @param clientIdSuffix String of idSuffix
+   */
+<span class="nc" id="L57">  public NATSClient(String serverHost, String serverPort, String clusterId, String clientIdSuffix) {</span>
     // try to generate a unique ID; use suffix only if fail
-<span class="nc" id="L45">    this.serverHost = serverHost;</span>
-<span class="nc" id="L46">    this.serverPort = serverPort;</span>
-<span class="nc" id="L47">    this.clusterId = clusterId;</span>
-<span class="nc" id="L48">    this.clientIdSuffix = clientIdSuffix;</span>
-<span class="nc" id="L49">  }</span>
+<span class="nc" id="L59">    this.serverHost = serverHost;</span>
+<span class="nc" id="L60">    this.serverPort = serverPort;</span>
+<span class="nc" id="L61">    this.clusterId = clusterId;</span>
+<span class="nc" id="L62">    this.clientIdSuffix = clientIdSuffix;</span>
+<span class="nc" id="L63">  }</span>
 
   /**
    * Configures the required and optional parameters to connect to NATS Streaming server
    *
    * @param config
    *            the Config to load.
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   @Override
   public void configure(Config config) throws Exception {
     // required parameters
-<span class="nc" id="L61">    serverHost = config.getProperty(SERVER_HOST_PROPERTY);</span>
-<span class="nc bnc" id="L62" title="All 2 branches missed.">    if (serverHost == null) {</span>
-<span class="nc" id="L63">      throw new ConfigurationException(SERVER_HOST_PROPERTY + &quot; is a required parameter&quot;);</span>
+<span class="nc" id="L75">    serverHost = config.getProperty(SERVER_HOST_PROPERTY);</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">    if (serverHost == null) {</span>
+<span class="nc" id="L77">      throw new ConfigurationException(SERVER_HOST_PROPERTY + &quot; is a required parameter&quot;);</span>
     }
 
-<span class="nc" id="L66">    serverPort = config.getProperty(SERVER_PORT_PROPERTY);</span>
-<span class="nc bnc" id="L67" title="All 2 branches missed.">    if (serverHost == null) {</span>
-<span class="nc" id="L68">      throw new ConfigurationException(SERVER_PORT_PROPERTY + &quot; is a required parameter&quot;);</span>
+<span class="nc" id="L80">    serverPort = config.getProperty(SERVER_PORT_PROPERTY);</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">    if (serverHost == null) {</span>
+<span class="nc" id="L82">      throw new ConfigurationException(SERVER_PORT_PROPERTY + &quot; is a required parameter&quot;);</span>
     }
 
-<span class="nc" id="L71">    clusterId = config.getProperty(CLUSTER_ID_PROPERTY);</span>
-<span class="nc bnc" id="L72" title="All 2 branches missed.">    if (serverHost == null) {</span>
-<span class="nc" id="L73">      throw new ConfigurationException(CLUSTER_ID_PROPERTY + &quot; is a required parameter&quot;);</span>
+<span class="nc" id="L85">    clusterId = config.getProperty(CLUSTER_ID_PROPERTY);</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">    if (serverHost == null) {</span>
+<span class="nc" id="L87">      throw new ConfigurationException(CLUSTER_ID_PROPERTY + &quot; is a required parameter&quot;);</span>
     }
 
-<span class="nc" id="L76">    clientId = config.getProperty(CLIENT_ID_PROPERTY);</span>
-<span class="nc" id="L77">  }</span>
+<span class="nc" id="L90">    clientId = config.getProperty(CLIENT_ID_PROPERTY);</span>
+<span class="nc" id="L91">  }</span>
 
   /**
    * Starts connection to NATS streaming server
@@ -83,15 +97,15 @@ public class NATSClient implements Configurable {
   @Override
   public void startup() throws Exception {
     // generate client ID if we don't have one
-<span class="nc bnc" id="L86" title="All 2 branches missed.">    if (clientId == null) {</span>
-<span class="nc" id="L87">      clientId = generateClientId(clientIdSuffix);</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">    if (clientId == null) {</span>
+<span class="nc" id="L101">      clientId = generateClientId(clientIdSuffix);</span>
     }
 
     // create connection
-<span class="nc" id="L91">    StreamingConnectionFactory factory = new StreamingConnectionFactory(clusterId,clientId);</span>
-<span class="nc" id="L92">    factory.setNatsUrl(&quot;nats://&quot; + serverHost + &quot;:&quot; + serverPort);</span>
-<span class="nc" id="L93">    connection = factory.createConnection();</span>
-<span class="nc" id="L94">  }</span>
+<span class="nc" id="L105">    StreamingConnectionFactory factory = new StreamingConnectionFactory(clusterId,clientId);</span>
+<span class="nc" id="L106">    factory.setNatsUrl(&quot;nats://&quot; + serverHost + &quot;:&quot; + serverPort);</span>
+<span class="nc" id="L107">    connection = factory.createConnection();</span>
+<span class="nc" id="L108">  }</span>
 
   /**
    * Safely closes connection to NATS Streaming server
@@ -99,12 +113,12 @@ public class NATSClient implements Configurable {
   @Override
   public void shutdown() {
     try {
-<span class="nc" id="L102">      connection.close();</span>
-<span class="nc" id="L103">    } catch (Exception e) {</span>
-<span class="nc" id="L104">      LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] failed to close NATS connection&quot;);</span>
-<span class="nc" id="L105">    }</span>
-<span class="nc" id="L106">    connection = null;</span>
-<span class="nc" id="L107">  }</span>
+<span class="nc" id="L116">      connection.close();</span>
+<span class="nc" id="L117">    } catch (Exception e) {</span>
+<span class="nc" id="L118">      LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] failed to close NATS connection&quot;);</span>
+<span class="nc" id="L119">    }</span>
+<span class="nc" id="L120">    connection = null;</span>
+<span class="nc" id="L121">  }</span>
 
   /**
    * Creates a client ID based on the host IP and MAC address
@@ -116,70 +130,80 @@ public class NATSClient implements Configurable {
    */
   private static String generateClientId(String suffix) throws Exception{
     // get mac address
-<span class="nc" id="L119">    InetAddress host = InetAddress.getLocalHost();</span>
-<span class="nc" id="L120">    NetworkInterface net = NetworkInterface.getByInetAddress(host);</span>
-<span class="nc" id="L121">    byte[] macRaw =  net.getHardwareAddress();</span>
+<span class="nc" id="L133">    InetAddress host = InetAddress.getLocalHost();</span>
+<span class="nc" id="L134">    NetworkInterface net = NetworkInterface.getByInetAddress(host);</span>
+<span class="nc" id="L135">    byte[] macRaw =  net.getHardwareAddress();</span>
 
     // do a sha1 hash
-<span class="nc" id="L124">    MessageDigest digest = MessageDigest.getInstance(&quot;SHA-1&quot;);</span>
-<span class="nc" id="L125">    digest.reset();</span>
-<span class="nc" id="L126">    digest.update(macRaw);</span>
-<span class="nc" id="L127">    String sha1 = Base64.getEncoder().encodeToString(digest.digest());</span>
+<span class="nc" id="L138">    MessageDigest digest = MessageDigest.getInstance(&quot;SHA-1&quot;);</span>
+<span class="nc" id="L139">    digest.reset();</span>
+<span class="nc" id="L140">    digest.update(macRaw);</span>
+<span class="nc" id="L141">    String sha1 = Base64.getEncoder().encodeToString(digest.digest());</span>
 
     // create client id
-<span class="nc" id="L130">    String clientId = host.getHostAddress().replace('.','-') + '_' + sha1+ '_' + suffix;</span>
+<span class="nc" id="L144">    String clientId = host.getHostAddress().replace('.','-') + '_' + sha1+ '_' + suffix;</span>
 
-<span class="nc" id="L132">    return clientId;</span>
+<span class="nc" id="L146">    return clientId;</span>
   }
 
   @Override
   public String getName() {
-<span class="nc" id="L137">    return NATSClient.class.getName();</span>
+<span class="nc" id="L151">    return NATSClient.class.getName();</span>
   }
 
   @Override
   public void setName(String string) {
 
-<span class="nc" id="L143">  }</span>
+<span class="nc" id="L157">  }</span>
 
+  /** @return serverHost */
   public String getServerHost() {
-<span class="nc" id="L146">    return serverHost;</span>
+<span class="nc" id="L161">    return serverHost;</span>
   }
 
+  /** @param serverHost to set */
   public void setServerHost(String serverHost) {
-<span class="nc" id="L150">    this.serverHost = serverHost;</span>
-<span class="nc" id="L151">  }</span>
-
-  public String getServerPort() {
-<span class="nc" id="L154">    return serverPort;</span>
-  }
-
-  public void setServerPort(String serverPort) {
-<span class="nc" id="L158">    this.serverPort = serverPort;</span>
-<span class="nc" id="L159">  }</span>
-
-  public String getClusterId() {
-<span class="nc" id="L162">    return clusterId;</span>
-  }
-
-  public void setClusterId(String clusterId) {
-<span class="nc" id="L166">    this.clusterId = clusterId;</span>
+<span class="nc" id="L166">    this.serverHost = serverHost;</span>
 <span class="nc" id="L167">  }</span>
 
+  /** @return serverPort */
+  public String getServerPort() {
+<span class="nc" id="L171">    return serverPort;</span>
+  }
+
+  /** @param serverPort to set */
+  public void setServerPort(String serverPort) {
+<span class="nc" id="L176">    this.serverPort = serverPort;</span>
+<span class="nc" id="L177">  }</span>
+
+  /** @return clusterID */
+  public String getClusterId() {
+<span class="nc" id="L181">    return clusterId;</span>
+  }
+
+  /** @param clusterId to set */
+  public void setClusterId(String clusterId) {
+<span class="nc" id="L186">    this.clusterId = clusterId;</span>
+<span class="nc" id="L187">  }</span>
+
+  /** @return clientID */
   public String getClientId() {
-<span class="nc" id="L170">    return clientId;</span>
+<span class="nc" id="L191">    return clientId;</span>
   }
 
+  /** @param clientId to set */
   public void setClientId(String clientId) {
-<span class="nc" id="L174">    this.clientId = clientId;</span>
-<span class="nc" id="L175">  }</span>
+<span class="nc" id="L196">    this.clientId = clientId;</span>
+<span class="nc" id="L197">  }</span>
 
+  /** @return StreamingConnection */
   public StreamingConnection getConnection() {
-<span class="nc" id="L178">    return connection;</span>
+<span class="nc" id="L201">    return connection;</span>
   }
 
+  /** @param connection StreamingConnection to set */
   public void setConnection(StreamingConnection connection) {
-<span class="nc" id="L182">    this.connection = connection;</span>
-<span class="nc" id="L183">  }</span>
+<span class="nc" id="L206">    this.connection = connection;</span>
+<span class="nc" id="L207">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

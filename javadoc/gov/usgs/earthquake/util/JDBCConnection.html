@@ -181,7 +181,9 @@ implements java.lang.AutoCloseable</pre>
 <tr class="rowColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(java.lang.String,java.lang.String)">JDBCConnection</a></span>&#8203;(java.lang.String&nbsp;driver,
               java.lang.String&nbsp;url)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Create a new JDBCConnection object with specific driver and URL</div>
+</td>
 </tr>
 </table>
 </li>
@@ -339,6 +341,12 @@ implements java.lang.AutoCloseable</pre>
 <h4>JDBCConnection</h4>
 <pre>public&nbsp;JDBCConnection&#8203;(java.lang.String&nbsp;driver,
                       java.lang.String&nbsp;url)</pre>
+<div class="block">Create a new JDBCConnection object with specific driver and URL</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>driver</code> - String of driver</dd>
+<dd><code>url</code> - String of URL</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -366,7 +374,7 @@ implements java.lang.AutoCloseable</pre>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code>close</code>&nbsp;in interface&nbsp;<code>java.lang.AutoCloseable</code></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - Exception</dd>
 </dl>
 </li>
 </ul>
@@ -385,9 +393,9 @@ implements java.lang.AutoCloseable</pre>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code><a href="../../util/DefaultConfigurable.html#configure(gov.usgs.util.Config)">configure</a></code>&nbsp;in class&nbsp;<code><a href="../../util/DefaultConfigurable.html" title="class in gov.usgs.util">DefaultConfigurable</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>config</code> - the Config object with settings.</dd>
+<dd><code>config</code> - Config to set driver and URL in</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code> - if configuration exceptions occur.</dd>
+<dd><code>java.lang.Exception</code> - Exception</dd>
 </dl>
 </li>
 </ul>
@@ -427,7 +435,7 @@ implements java.lang.AutoCloseable</pre>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code><a href="../../util/DefaultConfigurable.html#startup()">startup</a></code>&nbsp;in class&nbsp;<code><a href="../../util/DefaultConfigurable.html" title="class in gov.usgs.util">DefaultConfigurable</a></code></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code> - if exceptions occur while starting.</dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -450,7 +458,7 @@ implements java.lang.AutoCloseable</pre>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code><a href="../../util/DefaultConfigurable.html#shutdown()">shutdown</a></code>&nbsp;in class&nbsp;<code><a href="../../util/DefaultConfigurable.html" title="class in gov.usgs.util">DefaultConfigurable</a></code></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code> - if exceptions occur while starting.</dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -465,7 +473,7 @@ implements java.lang.AutoCloseable</pre>
 <div class="block">Open a transaction on the database connection</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -481,7 +489,7 @@ implements java.lang.AutoCloseable</pre>
  transaction.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -496,7 +504,7 @@ implements java.lang.AutoCloseable</pre>
 <div class="block">Undo all of the changes made during the current transaction</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -541,6 +549,10 @@ implements java.lang.AutoCloseable</pre>
 <li class="blockList">
 <h4>getDriver</h4>
 <pre class="methodSignature">public&nbsp;java.lang.String&nbsp;getDriver()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>driver</dd>
+</dl>
 </li>
 </ul>
 <a id="setDriver(java.lang.String)">
@@ -550,6 +562,10 @@ implements java.lang.AutoCloseable</pre>
 <li class="blockList">
 <h4>setDriver</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setDriver&#8203;(java.lang.String&nbsp;driver)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>driver</code> - Driver to set</dd>
+</dl>
 </li>
 </ul>
 <a id="getUrl()">
@@ -559,6 +575,10 @@ implements java.lang.AutoCloseable</pre>
 <li class="blockList">
 <h4>getUrl</h4>
 <pre class="methodSignature">public&nbsp;java.lang.String&nbsp;getUrl()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>URL</dd>
+</dl>
 </li>
 </ul>
 <a id="setUrl(java.lang.String)">
@@ -568,6 +588,10 @@ implements java.lang.AutoCloseable</pre>
 <li class="blockList">
 <h4>setUrl</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setUrl&#8203;(java.lang.String&nbsp;url)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>url</code> - URL to set</dd>
+</dl>
 </li>
 </ul>
 </li>

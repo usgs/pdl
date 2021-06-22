@@ -148,7 +148,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <pre>public class <span class="typeNameLabel">SearchResponseXmlProductSource</span>
 extends <a href="../product/io/XmlProductSource.html" title="class in gov.usgs.earthquake.product.io">XmlProductSource</a></pre>
 <div class="block">Used by SearchResponseParser to store products during parsing.
- 
+
  Creates a "background" storage thread for storing, while this classes
  startElement, characters, and endElement methods are called by the
  "foreground" xml parsing thread.</div>
@@ -313,7 +313,7 @@ extends <a href="../product/io/XmlProductSource.html" title="class in gov.usgs.e
 <h4>streamTo</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;streamTo&#8203;(<a href="../product/io/ProductHandler.html" title="interface in gov.usgs.earthquake.product.io">ProductHandler</a>&nbsp;handler)</pre>
 <div class="block">Called by the underlying product storage as part os storeProductSource.
- 
+
  This method notifies the XML parsing thread that parsing may continue,
  since the handler is now setup.</div>
 <dl>
@@ -389,6 +389,10 @@ extends <a href="../product/io/XmlProductSource.html" title="class in gov.usgs.e
 <li class="blockList">
 <h4>setStorage</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setStorage&#8203;(<a href="../distribution/FileProductStorage.html" title="class in gov.usgs.earthquake.distribution">FileProductStorage</a>&nbsp;storage)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>storage</code> - FileProductStorage to set</dd>
+</dl>
 </li>
 </ul>
 <a id="getStorage()">
@@ -398,6 +402,10 @@ extends <a href="../product/io/XmlProductSource.html" title="class in gov.usgs.e
 <li class="blockList">
 <h4>getStorage</h4>
 <pre class="methodSignature">public&nbsp;<a href="../distribution/FileProductStorage.html" title="class in gov.usgs.earthquake.distribution">FileProductStorage</a>&nbsp;getStorage()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>FileProductStorage</dd>
+</dl>
 </li>
 </ul>
 <a id="getProduct()">
@@ -423,7 +431,7 @@ extends <a href="../product/io/XmlProductSource.html" title="class in gov.usgs.e
 <div class="block">Method used by storage to provide the parsed product.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>product</code> - </dd>
+<dd><code>product</code> - to set</dd>
 </dl>
 </li>
 </ul>

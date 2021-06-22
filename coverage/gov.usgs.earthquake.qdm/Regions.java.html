@@ -18,30 +18,36 @@ import java.util.ArrayList;
  */
 public class Regions {
 
-    public String defaultNetid; // Default network
-    public ArrayList&lt;String&gt; netids; // Array of network ids, e.g. nc, us, etc.
-    public ArrayList&lt;Region&gt; regions; // Array of regions
+    /** Default network */
+    public String defaultNetid;
+    /** Array of network ids, e.g. nc, us, etc. */
+    public ArrayList&lt;String&gt; netids;
+    /** Array of regions */
+    public ArrayList&lt;Region&gt; regions;
 
     /**
      * Create a new set of regions.
      */
-<span class="fc" id="L28">    public Regions() {</span>
-<span class="fc" id="L29">        this.defaultNetid = &quot;&quot;;</span>
-<span class="fc" id="L30">        this.netids = new ArrayList&lt;String&gt;();</span>
-<span class="fc" id="L31">        this.regions = new ArrayList&lt;Region&gt;();</span>
-<span class="fc" id="L32">    }</span>
+<span class="fc" id="L31">    public Regions() {</span>
+<span class="fc" id="L32">        this.defaultNetid = &quot;&quot;;</span>
+<span class="fc" id="L33">        this.netids = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L34">        this.regions = new ArrayList&lt;Region&gt;();</span>
+<span class="fc" id="L35">    }</span>
 
     /**
      * Is this netid in the set of regions? The default net covers the whole world
      * so it is always valid since it has no finite boundaries.
+     *
+     * @param netid A netid (nc, us, etc.)
+     * @return boolean if netid is valid
      */
     public boolean isValidnetID(final String netid) {
-<span class="fc bfc" id="L39" title="All 2 branches covered.">        for (String i : this.netids) {</span>
-<span class="fc bfc" id="L40" title="All 2 branches covered.">            if (netid.equalsIgnoreCase(i)) {</span>
-<span class="fc" id="L41">                return true;</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        for (String i : this.netids) {</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">            if (netid.equalsIgnoreCase(i)) {</span>
+<span class="fc" id="L47">                return true;</span>
             }
-<span class="fc" id="L43">        }</span>
-<span class="fc" id="L44">        return false;</span>
+<span class="fc" id="L49">        }</span>
+<span class="fc" id="L50">        return false;</span>
     }
 
     //
@@ -55,7 +61,7 @@ public class Regions {
      * @return true if default network.
      */
     public boolean isDefaultNetID(final String netid) {
-<span class="fc" id="L58">        return this.defaultNetid.equalsIgnoreCase(netid);</span>
+<span class="fc" id="L64">        return this.defaultNetid.equalsIgnoreCase(netid);</span>
     }
 
     /**
@@ -65,7 +71,7 @@ public class Regions {
      * @return true if default network.
      */
     public boolean isDefaultNetID(final EQEvent eq) {
-<span class="nc" id="L68">        return this.isDefaultNetID(eq.getNetID());</span>
+<span class="nc" id="L74">        return this.isDefaultNetID(eq.getNetID());</span>
     }
 
     //
@@ -81,29 +87,29 @@ public class Regions {
      * @return true if event is authoritative
      */
     public boolean isAuthor(final String netid, final Point p) {
-<span class="fc bfc" id="L84" title="All 2 branches covered.">        if (this.isDefaultNetID(netid)) {</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        if (this.isDefaultNetID(netid)) {</span>
             // if any non-default regions match, default is not authoritative
-<span class="fc bfc" id="L86" title="All 2 branches covered.">            for (Region region : this.regions) {</span>
-<span class="pc bpc" id="L87" title="1 of 2 branches missed.">                if (region.netid.equalsIgnoreCase(netid)) {</span>
-<span class="nc" id="L88">                    continue;</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">            for (Region region : this.regions) {</span>
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">                if (region.netid.equalsIgnoreCase(netid)) {</span>
+<span class="nc" id="L94">                    continue;</span>
                 }
-<span class="fc bfc" id="L90" title="All 2 branches covered.">                if (region.inpoly(p)) {</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">                if (region.inpoly(p)) {</span>
                     // another region is authoritative
-<span class="fc" id="L92">                    return false;</span>
+<span class="fc" id="L98">                    return false;</span>
                 }
-<span class="fc" id="L94">            }</span>
+<span class="fc" id="L100">            }</span>
             // no other regions authoritative
-<span class="fc" id="L96">            return true;</span>
+<span class="fc" id="L102">            return true;</span>
         } else {
             // if any network regions match, network is authoritative
-<span class="fc bfc" id="L99" title="All 2 branches covered.">            for (Region region : regions) {</span>
-<span class="fc bfc" id="L100" title="All 4 branches covered.">                if (region.netid.equalsIgnoreCase(netid) &amp;&amp; region.inpoly(p)) {</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">            for (Region region : regions) {</span>
+<span class="fc bfc" id="L106" title="All 4 branches covered.">                if (region.netid.equalsIgnoreCase(netid) &amp;&amp; region.inpoly(p)) {</span>
                     // network is authoritative
-<span class="fc" id="L102">                    return true;</span>
+<span class="fc" id="L108">                    return true;</span>
                 }
-<span class="fc" id="L104">            }</span>
+<span class="fc" id="L110">            }</span>
             // network is not authoritative
-<span class="fc" id="L106">            return false;</span>
+<span class="fc" id="L112">            return false;</span>
         }
     }
 
@@ -114,7 +120,7 @@ public class Regions {
      * @return true if event is authoritative
      */
     public boolean isAuthor(final EQEvent eq) {
-<span class="nc" id="L117">        return this.isAuthor(eq.getNetID(), eq.getPoint());</span>
+<span class="nc" id="L123">        return this.isAuthor(eq.getNetID(), eq.getPoint());</span>
     }
 
 }

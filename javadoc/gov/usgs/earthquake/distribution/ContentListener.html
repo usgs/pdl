@@ -153,7 +153,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <pre>public class <span class="typeNameLabel">ContentListener</span>
 extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.earthquake.distribution">DefaultNotificationListener</a></pre>
 <div class="block">A listener that listens for a specific content path.
- 
+
  This is intended for users who wish to output specific pieces of product
  content, such as "quakeml.xml", for products that otherwise meet their
  configured NotificationListener criteria.</div>
@@ -180,24 +180,30 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#DEFAULT_OUTPUT_FORMAT">DEFAULT_OUTPUT_FORMAT</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">property for default output format</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#OUTPUT_DIRECTORY_PROPERTY">OUTPUT_DIRECTORY_PROPERTY</a></span></code></th>
 <td class="colLast">
-<div class="block">configuration property for includePaths.</div>
+<div class="block">configuration property for includePaths - output directory.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#OUTPUT_FORMAT_PROPERTY">OUTPUT_FORMAT_PROPERTY</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">property for output format</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#TEMP_DIRECTORY_PROPERTY">TEMP_DIRECTORY_PROPERTY</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">property for temporary directory</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -232,7 +238,9 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 </tr>
 <tr class="altColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E()">ContentListener</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">empty constructor for ContentListener</div>
+</td>
 </tr>
 </table>
 </li>
@@ -379,7 +387,7 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <li class="blockList">
 <h4>OUTPUT_DIRECTORY_PROPERTY</h4>
 <pre>public static final&nbsp;java.lang.String OUTPUT_DIRECTORY_PROPERTY</pre>
-<div class="block">configuration property for includePaths.</div>
+<div class="block">configuration property for includePaths - output directory.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.distribution.ContentListener.OUTPUT_DIRECTORY_PROPERTY">Constant Field Values</a></dd>
@@ -393,6 +401,7 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <li class="blockList">
 <h4>TEMP_DIRECTORY_PROPERTY</h4>
 <pre>public static final&nbsp;java.lang.String TEMP_DIRECTORY_PROPERTY</pre>
+<div class="block">property for temporary directory</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.distribution.ContentListener.TEMP_DIRECTORY_PROPERTY">Constant Field Values</a></dd>
@@ -406,6 +415,7 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <li class="blockList">
 <h4>OUTPUT_FORMAT_PROPERTY</h4>
 <pre>public static final&nbsp;java.lang.String OUTPUT_FORMAT_PROPERTY</pre>
+<div class="block">property for output format</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.distribution.ContentListener.OUTPUT_FORMAT_PROPERTY">Constant Field Values</a></dd>
@@ -419,6 +429,7 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <li class="blockList">
 <h4>DEFAULT_OUTPUT_FORMAT</h4>
 <pre>public static final&nbsp;java.lang.String DEFAULT_OUTPUT_FORMAT</pre>
+<div class="block">property for default output format</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.distribution.ContentListener.DEFAULT_OUTPUT_FORMAT">Constant Field Values</a></dd>
@@ -442,6 +453,7 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <li class="blockList">
 <h4>ContentListener</h4>
 <pre>public&nbsp;ContentListener()</pre>
+<div class="block">empty constructor for ContentListener</div>
 </li>
 </ul>
 </li>
@@ -492,7 +504,7 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>product</code> - a product whose notification was accepted.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

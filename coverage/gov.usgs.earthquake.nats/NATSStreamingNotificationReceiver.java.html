@@ -30,21 +30,26 @@ import java.util.logging.Logger;
 <span class="nc" id="L30">  private static final Logger LOGGER = Logger</span>
 <span class="nc" id="L31">          .getLogger(DefaultNotificationReceiver.class.getName());</span>
 
-<span class="nc" id="L33">  public static String TRACKING_FILE_NAME_PROPERTY = &quot;trackingFile&quot;;</span>
-<span class="nc" id="L34">  public static String UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY = &quot;updateSequenceAfterException&quot;;</span>
-<span class="nc" id="L35">  public static String SEQUENCE_PROPERTY = &quot;sequence&quot;;</span>
+  /** Property for tracking file name */
+<span class="nc" id="L34">  public static String TRACKING_FILE_NAME_PROPERTY = &quot;trackingFile&quot;;</span>
+  /** Property on if update sequence should occur after exception */
+<span class="nc" id="L36">  public static String UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY = &quot;updateSequenceAfterException&quot;;</span>
+  /** Property for sequence */
+<span class="nc" id="L38">  public static String SEQUENCE_PROPERTY = &quot;sequence&quot;;</span>
 
-<span class="nc" id="L37">  public static String DEFAULT_TRACKING_FILE_NAME_PROPERTY = &quot;data/STANReceiverInfo.json&quot;;</span>
-<span class="nc" id="L38">  public static String DEFAULT_UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY = &quot;true&quot;;</span>
+  /** Name of deafult tracking file */
+<span class="nc" id="L41">  public static String DEFAULT_TRACKING_FILE_NAME_PROPERTY = &quot;data/STANReceiverInfo.json&quot;;</span>
+  /** Default state of update after exception */
+<span class="nc" id="L43">  public static String DEFAULT_UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY = &quot;true&quot;;</span>
 
-<span class="nc" id="L40">  private NATSClient client = new NATSClient();</span>
+<span class="nc" id="L45">  private NATSClient client = new NATSClient();</span>
   private Subscription subscription;
 
   private String subject;
-<span class="nc" id="L44">  private long sequence = 0;</span>
+<span class="nc" id="L49">  private long sequence = 0;</span>
   private String trackingFileName;
   private boolean updateSequenceAfterException;
-<span class="nc" id="L47">  private boolean exceptionThrown = false;</span>
+<span class="nc" id="L52">  private boolean exceptionThrown = false;</span>
 
   /**
    * Configures receiver based on included properties
@@ -56,112 +61,114 @@ import java.util.logging.Logger;
    */
   @Override
   public void configure(Config config) throws Exception {
-<span class="nc" id="L59">    super.configure(config);</span>
-<span class="nc" id="L60">    client.configure(config);</span>
+<span class="nc" id="L64">    super.configure(config);</span>
+<span class="nc" id="L65">    client.configure(config);</span>
 
-<span class="nc" id="L62">    subject = config.getProperty(NATSClient.SUBJECT_PROPERTY);</span>
-<span class="nc bnc" id="L63" title="All 2 branches missed.">    if (subject == null) {</span>
-<span class="nc" id="L64">      throw new ConfigurationException(NATSClient.SUBJECT_PROPERTY + &quot; is a required parameter&quot;);</span>
+<span class="nc" id="L67">    subject = config.getProperty(NATSClient.SUBJECT_PROPERTY);</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">    if (subject == null) {</span>
+<span class="nc" id="L69">      throw new ConfigurationException(NATSClient.SUBJECT_PROPERTY + &quot; is a required parameter&quot;);</span>
     }
 
-<span class="nc" id="L67">    trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME_PROPERTY);</span>
-<span class="nc" id="L68">    updateSequenceAfterException = Boolean.parseBoolean(config.getProperty(</span>
+<span class="nc" id="L72">    trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME_PROPERTY);</span>
+<span class="nc" id="L73">    updateSequenceAfterException = Boolean.parseBoolean(config.getProperty(</span>
       UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY,
       DEFAULT_UPDATE_SEQUENCE_AFTER_EXCEPTION_PROPERTY));
-<span class="nc" id="L71">  }</span>
+<span class="nc" id="L76">  }</span>
 
   /**
    * Does initial tracking file management and subscribes to server
    * With a tracking file, gets the last sequence
    *
-   * @throws InterruptedException
-   * @throws IOException
+   * @throws InterruptedException if interrupted
+   * @throws IOException if IO error occurs
    */
   @Override
   public void startup() throws Exception {
-<span class="nc" id="L82">    super.startup();</span>
+<span class="nc" id="L87">    super.startup();</span>
 
     //Start client
-<span class="nc" id="L85">    client.startup();</span>
+<span class="nc" id="L90">    client.startup();</span>
 
     //Check properties if tracking file exists
-<span class="nc" id="L88">    JsonObject properties = readTrackingFile();</span>
-<span class="nc bnc" id="L89" title="All 2 branches missed.">    if (properties != null &amp;&amp;</span>
-<span class="nc bnc" id="L90" title="All 2 branches missed.">        properties.getString(NATSClient.SERVER_HOST_PROPERTY).equals(client.getServerHost()) &amp;&amp;</span>
-<span class="nc bnc" id="L91" title="All 2 branches missed.">        properties.getString(NATSClient.SERVER_PORT_PROPERTY).equals(client.getServerPort()) &amp;&amp;</span>
-<span class="nc bnc" id="L92" title="All 2 branches missed.">        properties.getString(NATSClient.CLUSTER_ID_PROPERTY).equals(client.getClusterId()) &amp;&amp;</span>
-<span class="nc bnc" id="L93" title="All 2 branches missed.">        properties.getString(NATSClient.CLIENT_ID_PROPERTY).equals(client.getClientId()) &amp;&amp;</span>
-<span class="nc bnc" id="L94" title="All 2 branches missed.">        properties.getString(NATSClient.SUBJECT_PROPERTY).equals(subject)) {</span>
-<span class="nc" id="L95">      sequence = Long.parseLong(properties.get(SEQUENCE_PROPERTY).toString());</span>
+<span class="nc" id="L93">    JsonObject properties = readTrackingFile();</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">    if (properties != null &amp;&amp;</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        properties.getString(NATSClient.SERVER_HOST_PROPERTY).equals(client.getServerHost()) &amp;&amp;</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        properties.getString(NATSClient.SERVER_PORT_PROPERTY).equals(client.getServerPort()) &amp;&amp;</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        properties.getString(NATSClient.CLUSTER_ID_PROPERTY).equals(client.getClusterId()) &amp;&amp;</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        properties.getString(NATSClient.CLIENT_ID_PROPERTY).equals(client.getClientId()) &amp;&amp;</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        properties.getString(NATSClient.SUBJECT_PROPERTY).equals(subject)) {</span>
+<span class="nc" id="L100">      sequence = Long.parseLong(properties.get(SEQUENCE_PROPERTY).toString());</span>
     }
 
-<span class="nc" id="L98">    subscription = client.getConnection().subscribe(</span>
+<span class="nc" id="L103">    subscription = client.getConnection().subscribe(</span>
       subject,
       this,
-<span class="nc" id="L101">      new SubscriptionOptions.Builder().startAtSequence(sequence).build());</span>
+<span class="nc" id="L106">      new SubscriptionOptions.Builder().startAtSequence(sequence).build());</span>
     // Always starts at stored sequence; initialized to 0 and overwritten by storage
-<span class="nc" id="L103">  }</span>
+<span class="nc" id="L108">  }</span>
 
   /**
    * Closes subscription/connection and writes state in tracking file
    * Wraps each statement in a try/catch to ensure each step still happens
    *
-   * @throws IOException
-   * @throws InterruptedException
-   * @throws TimeoutException
+   * @throws IOException if IO error occurs
+   * @throws InterruptedException if interrupted
+   * @throws TimeoutException if timeout
    */
   @Override
   public void shutdown() throws Exception {
     try {
-<span class="nc" id="L116">      writeTrackingFile();</span>
-<span class="nc" id="L117">    } catch (Exception e) {</span>
-<span class="nc" id="L118">      LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] failed to write to tracking file&quot;);</span>
-<span class="nc" id="L119">    }</span>
-    try {
-<span class="nc" id="L121">      subscription.unsubscribe();</span>
+<span class="nc" id="L121">      writeTrackingFile();</span>
 <span class="nc" id="L122">    } catch (Exception e) {</span>
-<span class="nc" id="L123">      LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] failed to unsubscribe from NATS channel&quot;);</span>
+<span class="nc" id="L123">      LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] failed to write to tracking file&quot;);</span>
 <span class="nc" id="L124">    }</span>
-<span class="nc" id="L125">    subscription = null;</span>
-<span class="nc" id="L126">    client.shutdown();</span>
-<span class="nc" id="L127">    super.shutdown();</span>
-<span class="nc" id="L128">  }</span>
+    try {
+<span class="nc" id="L126">      subscription.unsubscribe();</span>
+<span class="nc" id="L127">    } catch (Exception e) {</span>
+<span class="nc" id="L128">      LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] failed to unsubscribe from NATS channel&quot;);</span>
+<span class="nc" id="L129">    }</span>
+<span class="nc" id="L130">    subscription = null;</span>
+<span class="nc" id="L131">    client.shutdown();</span>
+<span class="nc" id="L132">    super.shutdown();</span>
+<span class="nc" id="L133">  }</span>
 
   /**
    * Writes pertinent configuration information to tracking file
+   * @throws Exception if error occurs
    */
   public void writeTrackingFile() throws Exception {
-<span class="nc" id="L134">    JsonObject json = Json.createObjectBuilder()</span>
-<span class="nc" id="L135">      .add(NATSClient.SERVER_HOST_PROPERTY,client.getServerHost())</span>
-<span class="nc" id="L136">      .add(NATSClient.SERVER_PORT_PROPERTY,client.getServerPort())</span>
-<span class="nc" id="L137">      .add(NATSClient.CLUSTER_ID_PROPERTY,client.getClusterId())</span>
-<span class="nc" id="L138">      .add(NATSClient.CLIENT_ID_PROPERTY,client.getClientId())</span>
-<span class="nc" id="L139">      .add(NATSClient.SUBJECT_PROPERTY,subject)</span>
-<span class="nc" id="L140">      .add(SEQUENCE_PROPERTY,sequence)</span>
-<span class="nc" id="L141">    .build();</span>
+<span class="nc" id="L140">    JsonObject json = Json.createObjectBuilder()</span>
+<span class="nc" id="L141">      .add(NATSClient.SERVER_HOST_PROPERTY,client.getServerHost())</span>
+<span class="nc" id="L142">      .add(NATSClient.SERVER_PORT_PROPERTY,client.getServerPort())</span>
+<span class="nc" id="L143">      .add(NATSClient.CLUSTER_ID_PROPERTY,client.getClusterId())</span>
+<span class="nc" id="L144">      .add(NATSClient.CLIENT_ID_PROPERTY,client.getClientId())</span>
+<span class="nc" id="L145">      .add(NATSClient.SUBJECT_PROPERTY,subject)</span>
+<span class="nc" id="L146">      .add(SEQUENCE_PROPERTY,sequence)</span>
+<span class="nc" id="L147">    .build();</span>
 
-<span class="nc" id="L143">    FileUtils.writeFileThenMove(</span>
+<span class="nc" id="L149">    FileUtils.writeFileThenMove(</span>
       new File(trackingFileName + &quot;_tmp&quot;),
       new File(trackingFileName),
-<span class="nc" id="L146">      json.toString().getBytes());</span>
-<span class="nc" id="L147">  }</span>
+<span class="nc" id="L152">      json.toString().getBytes());</span>
+<span class="nc" id="L153">  }</span>
 
   /**
    * Reads contents of tracking file
    *
    * @return JsonObject containing tracking file contents, or null if file doesn't exist
+   * @throws Exception if error occurs
    */
   public JsonObject readTrackingFile() throws Exception {
-<span class="nc" id="L155">    JsonObject json = null;</span>
+<span class="nc" id="L162">    JsonObject json = null;</span>
 
-<span class="nc" id="L157">    File trackingFile = new File(trackingFileName);</span>
-<span class="nc bnc" id="L158" title="All 2 branches missed.">    if (trackingFile.exists()) {</span>
-<span class="nc" id="L159">      InputStream contents = new ByteArrayInputStream(FileUtils.readFile(trackingFile));</span>
-<span class="nc" id="L160">      JsonReader jsonReader = Json.createReader(contents);</span>
-<span class="nc" id="L161">      json = jsonReader.readObject();</span>
-<span class="nc" id="L162">      jsonReader.close();</span>
+<span class="nc" id="L164">    File trackingFile = new File(trackingFileName);</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">    if (trackingFile.exists()) {</span>
+<span class="nc" id="L166">      InputStream contents = new ByteArrayInputStream(FileUtils.readFile(trackingFile));</span>
+<span class="nc" id="L167">      JsonReader jsonReader = Json.createReader(contents);</span>
+<span class="nc" id="L168">      json = jsonReader.readObject();</span>
+<span class="nc" id="L169">      jsonReader.close();</span>
     }
-<span class="nc" id="L164">    return json;</span>
+<span class="nc" id="L171">    return json;</span>
   }
 
   /**
@@ -175,46 +182,52 @@ import java.util.logging.Logger;
   public void onMessage(Message message) {
     try {
       // parse message, send to listeners
-<span class="nc" id="L178">      URLNotification notification = URLNotificationJSONConverter.parseJSON(new ByteArrayInputStream(message.getData()));</span>
-<span class="nc" id="L179">      receiveNotification(notification);</span>
+<span class="nc" id="L185">      URLNotification notification = URLNotificationJSONConverter.parseJSON(new ByteArrayInputStream(message.getData()));</span>
+<span class="nc" id="L186">      receiveNotification(notification);</span>
       // update sequence and tracking file if exception not thrown or we still want to update sequence anyway
-<span class="nc bnc" id="L181" title="All 4 branches missed.">      if (!exceptionThrown || updateSequenceAfterException) {</span>
-<span class="nc" id="L182">        sequence = message.getSequence();</span>
-<span class="nc" id="L183">        writeTrackingFile();</span>
+<span class="nc bnc" id="L188" title="All 4 branches missed.">      if (!exceptionThrown || updateSequenceAfterException) {</span>
+<span class="nc" id="L189">        sequence = message.getSequence();</span>
+<span class="nc" id="L190">        writeTrackingFile();</span>
       }
-<span class="nc" id="L185">    } catch (Exception e) {</span>
-<span class="nc" id="L186">      exceptionThrown = true;</span>
-<span class="nc" id="L187">      LOGGER.log(Level.WARNING,</span>
-<span class="nc" id="L188">        &quot;[&quot; + getName() + &quot;] exception handling NATSStreaming message.&quot; +</span>
-<span class="nc bnc" id="L189" title="All 2 branches missed.">        (!updateSequenceAfterException ? &quot; Will no longer update sequence; restart PDL to reprocess.&quot;:&quot;&quot;) +</span>
+<span class="nc" id="L192">    } catch (Exception e) {</span>
+<span class="nc" id="L193">      exceptionThrown = true;</span>
+<span class="nc" id="L194">      LOGGER.log(Level.WARNING,</span>
+<span class="nc" id="L195">        &quot;[&quot; + getName() + &quot;] exception handling NATSStreaming message.&quot; +</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        (!updateSequenceAfterException ? &quot; Will no longer update sequence; restart PDL to reprocess.&quot;:&quot;&quot;) +</span>
         &quot; Stack Trace: &quot; + e);
-<span class="nc" id="L191">      LOGGER.log(Level.FINE, &quot;[&quot; + getName() + &quot;] Message: &quot; + message.getData());</span>
-<span class="nc" id="L192">    }</span>
-<span class="nc" id="L193">  }</span>
+<span class="nc" id="L198">      LOGGER.log(Level.FINE, &quot;[&quot; + getName() + &quot;] Message: &quot; + message.getData());</span>
+<span class="nc" id="L199">    }</span>
+<span class="nc" id="L200">  }</span>
 
+  /** @return trackingFileName */
   public String getTrackingFileName() {
-<span class="nc" id="L196">    return trackingFileName;</span>
+<span class="nc" id="L204">    return trackingFileName;</span>
   }
 
+  /** @param trackingFileName to set */
   public void setTrackingFileName(String trackingFileName) {
-<span class="nc" id="L200">    this.trackingFileName = trackingFileName;</span>
-<span class="nc" id="L201">  }</span>
+<span class="nc" id="L209">    this.trackingFileName = trackingFileName;</span>
+<span class="nc" id="L210">  }</span>
 
+  /** @return NATSClient */
   public NATSClient getClient() {
-<span class="nc" id="L204">    return client;</span>
+<span class="nc" id="L214">    return client;</span>
   }
 
+  /** @param client NATSClient to set */
   public void setClient(NATSClient client) {
-<span class="nc" id="L208">    this.client = client;</span>
-<span class="nc" id="L209">  }</span>
+<span class="nc" id="L219">    this.client = client;</span>
+<span class="nc" id="L220">  }</span>
 
+  /** @return subject */
   public String getSubject() {
-<span class="nc" id="L212">    return subject;</span>
+<span class="nc" id="L224">    return subject;</span>
   }
 
+  /** @param subject to set */
   public void setSubject(String subject) {
-<span class="nc" id="L216">    this.subject = subject;</span>
-<span class="nc" id="L217">  }</span>
+<span class="nc" id="L229">    this.subject = subject;</span>
+<span class="nc" id="L230">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

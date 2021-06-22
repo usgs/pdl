@@ -161,27 +161,37 @@ implements java.lang.Runnable</pre>
 <tr class="altColor">
 <td class="colFirst"><code>protected <a href="../product/io/BinaryIO.html" title="class in gov.usgs.earthquake.product.io">BinaryIO</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#io">io</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Protected Variable for BinaryIO</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#PDL_PROTOCOL_BUFFER">PDL_PROTOCOL_BUFFER</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">buffer for PDL protocol.</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>protected java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#protocolVersion">protocolVersion</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Protected Variable for a string of protocolVersion</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected <a href="SocketProductReceiver.html" title="class in gov.usgs.earthquake.distribution">SocketProductReceiver</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#receiver">receiver</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Protected Variable for SocketProductReceiver</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>protected java.net.Socket</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#socket">socket</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Protected Variable for Socket</div>
+</td>
 </tr>
 </table>
 </li>
@@ -203,7 +213,9 @@ implements java.lang.Runnable</pre>
 <tr class="altColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(gov.usgs.earthquake.distribution.SocketProductReceiver,java.net.Socket)">SocketProductReceiverHandler</a></span>&#8203;(<a href="SocketProductReceiver.html" title="class in gov.usgs.earthquake.distribution">SocketProductReceiver</a>&nbsp;receiver,
                             java.net.Socket&nbsp;socket)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Constructor</div>
+</td>
 </tr>
 </table>
 </li>
@@ -298,6 +310,7 @@ implements java.lang.Runnable</pre>
 <li class="blockList">
 <h4>PDL_PROTOCOL_BUFFER</h4>
 <pre>public static final&nbsp;int PDL_PROTOCOL_BUFFER</pre>
+<div class="block">buffer for PDL protocol. Set to 1024</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.distribution.SocketProductReceiverHandler.PDL_PROTOCOL_BUFFER">Constant Field Values</a></dd>
@@ -311,6 +324,7 @@ implements java.lang.Runnable</pre>
 <li class="blockList">
 <h4>io</h4>
 <pre>protected final&nbsp;<a href="../product/io/BinaryIO.html" title="class in gov.usgs.earthquake.product.io">BinaryIO</a> io</pre>
+<div class="block">Protected Variable for BinaryIO</div>
 </li>
 </ul>
 <a id="receiver">
@@ -320,6 +334,7 @@ implements java.lang.Runnable</pre>
 <li class="blockList">
 <h4>receiver</h4>
 <pre>protected final&nbsp;<a href="SocketProductReceiver.html" title="class in gov.usgs.earthquake.distribution">SocketProductReceiver</a> receiver</pre>
+<div class="block">Protected Variable for SocketProductReceiver</div>
 </li>
 </ul>
 <a id="socket">
@@ -329,6 +344,7 @@ implements java.lang.Runnable</pre>
 <li class="blockList">
 <h4>socket</h4>
 <pre>protected final&nbsp;java.net.Socket socket</pre>
+<div class="block">Protected Variable for Socket</div>
 </li>
 </ul>
 <a id="protocolVersion">
@@ -338,6 +354,7 @@ implements java.lang.Runnable</pre>
 <li class="blockList">
 <h4>protocolVersion</h4>
 <pre>protected&nbsp;java.lang.String protocolVersion</pre>
+<div class="block">Protected Variable for a string of protocolVersion</div>
 </li>
 </ul>
 </li>
@@ -358,6 +375,12 @@ implements java.lang.Runnable</pre>
 <h4>SocketProductReceiverHandler</h4>
 <pre>public&nbsp;SocketProductReceiverHandler&#8203;(<a href="SocketProductReceiver.html" title="class in gov.usgs.earthquake.distribution">SocketProductReceiver</a>&nbsp;receiver,
                                     java.net.Socket&nbsp;socket)</pre>
+<div class="block">Constructor</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>receiver</code> - SocketProductReceiver</dd>
+<dd><code>socket</code> - Socket</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -413,7 +436,7 @@ implements java.lang.Runnable</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>version, or null if not the PDL protocol.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.io.IOException</code> - if IO error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -462,7 +485,7 @@ implements java.lang.Runnable</pre>
 <dd><code>out</code> - output stream where exception message is written</dd>
 <dd><code>str</code> - string to write</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.io.IOException</code> - if IO error occurs</dd>
 </dl>
 </li>
 </ul>

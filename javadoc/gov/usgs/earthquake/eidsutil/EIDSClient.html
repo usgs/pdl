@@ -255,7 +255,9 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 </tr>
 <tr class="altColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E()">EIDSClient</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Constructor using default host and port</div>
+</td>
 </tr>
 <tr class="rowColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(java.lang.String,java.lang.Integer)">EIDSClient</a></span>&#8203;(java.lang.String&nbsp;serverHost,
@@ -602,6 +604,7 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <li class="blockList">
 <h4>EIDSClient</h4>
 <pre>public&nbsp;EIDSClient()</pre>
+<div class="block">Constructor using default host and port</div>
 </li>
 </ul>
 <a id="&lt;init&gt;(java.lang.String,java.lang.Integer)">
@@ -613,12 +616,12 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <pre>public&nbsp;EIDSClient&#8203;(java.lang.String&nbsp;serverHost,
                   java.lang.Integer&nbsp;serverPort)</pre>
 <div class="block">Construct an EIDSClient using only server host and port.
- 
+
  Calls other constructor with null values for other parameters.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>serverHost</code> - </dd>
-<dd><code>serverPort</code> - </dd>
+<dd><code>serverHost</code> - Specific host</dd>
+<dd><code>serverPort</code> - Specific port</dd>
 </dl>
 </li>
 </ul>
@@ -635,9 +638,10 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
  alternateServersList.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>serverHost</code> - </dd>
-<dd><code>serverPort</code> - </dd>
-<dd><code>alternateServersList</code> - </dd>
+<dd><code>serverHost</code> - Host</dd>
+<dd><code>serverPort</code> - Port</dd>
+<dd><code>alternateServersList</code> - a comma delimited list of host:port that are used when unable
+            to connect to the primary serverHost and serverPort.</dd>
 </dl>
 </li>
 </ul>
@@ -663,6 +667,7 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <dd><code>maxServerEventAgeDays</code> - number of days worth of messages to retrieve on first connect.</dd>
 <dd><code>trackingFileName</code> - location where tracking file is stored. This file is used to
             track which messages have been received.</dd>
+<dd><code>clientRestartInterval</code> - How often to periodically restart the client, in milliseconds</dd>
 </dl>
 </li>
 </ul>
@@ -684,7 +689,7 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <h4>startup</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;startup()</pre>
 <div class="block">Runs the client.
- 
+
  Any listeners should be added before calling this method.</div>
 </li>
 </ul>
@@ -696,7 +701,7 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <h4>shutdown</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;shutdown()</pre>
 <div class="block">Shuts down a running client.
- 
+
  Does not call system.exit.</div>
 </li>
 </ul>
@@ -882,6 +887,10 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <li class="blockList">
 <h4>getClientRestartInterval</h4>
 <pre class="methodSignature">public&nbsp;java.lang.Long&nbsp;getClientRestartInterval()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>clientRestartInterval</dd>
+</dl>
 </li>
 </ul>
 <a id="setClientRestartInterval(java.lang.Long)">
@@ -891,6 +900,10 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <li class="blockList">
 <h4>setClientRestartInterval</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setClientRestartInterval&#8203;(java.lang.Long&nbsp;clientRestartInterval)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>clientRestartInterval</code> - the clientRestartInterval to set</dd>
+</dl>
 </li>
 </ul>
 <a id="setDebug(boolean)">
@@ -900,6 +913,10 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <li class="blockList">
 <h4>setDebug</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setDebug&#8203;(boolean&nbsp;debug)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>debug</code> - to set</dd>
+</dl>
 </li>
 </ul>
 <a id="isDebug()">
@@ -909,6 +926,10 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <li class="blockList">
 <h4>isDebug</h4>
 <pre class="methodSignature">public&nbsp;boolean&nbsp;isDebug()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>debug boolean</dd>
+</dl>
 </li>
 </ul>
 <a id="reinitConnection()">
@@ -918,6 +939,10 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <li class="blockList">
 <h4>reinitConnection</h4>
 <pre class="methodSignature">public&nbsp;boolean&nbsp;reinitConnection()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>result of reinitialzing the client connection</dd>
+</dl>
 </li>
 </ul>
 <a id="main(java.lang.String[])">
@@ -931,9 +956,9 @@ implements <a href="EIDSListener.html" title="interface in gov.usgs.earthquake.e
 <div class="block">A method to test the EIDSClient.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>args</code> - </dd>
+<dd><code>args</code> - arguments</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

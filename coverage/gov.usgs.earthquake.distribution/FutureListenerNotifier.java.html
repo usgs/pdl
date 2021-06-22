@@ -28,56 +28,60 @@ public class FutureListenerNotifier extends ExecutorListenerNotifier {
   /** Service where tasks execute using futures for timeouts. */
   private ExecutorService backgroundService;
 
+  /**
+   * Constructor
+   * @param receiver DefaultNotificationReceiver
+   */
   public FutureListenerNotifier(final DefaultNotificationReceiver receiver) {
-<span class="nc" id="L32">    super(receiver);</span>
-<span class="nc" id="L33">  }</span>
+<span class="nc" id="L36">    super(receiver);</span>
+<span class="nc" id="L37">  }</span>
 
   @Override
   protected void queueNotification(final NotificationListener listener,
       final NotificationEvent event) {
-<span class="nc bnc" id="L38" title="All 4 branches missed.">    if (acceptBeforeQueuing</span>
+<span class="nc bnc" id="L42" title="All 4 branches missed.">    if (acceptBeforeQueuing</span>
         &amp;&amp; listener instanceof DefaultNotificationListener) {
-<span class="nc" id="L40">      DefaultNotificationListener defaultListener = (DefaultNotificationListener) listener;</span>
-<span class="nc bnc" id="L41" title="All 2 branches missed.">      if (!defaultListener.accept(event.getNotification().getProductId())) {</span>
-<span class="nc" id="L42">        return;</span>
+<span class="nc" id="L44">      DefaultNotificationListener defaultListener = (DefaultNotificationListener) listener;</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">      if (!defaultListener.accept(event.getNotification().getProductId())) {</span>
+<span class="nc" id="L46">        return;</span>
       }
     }
 
     // determine retry delay
-<span class="nc" id="L47">    long retryDelay = 0L;</span>
-<span class="nc bnc" id="L48" title="All 2 branches missed.">    if (listener instanceof AbstractListener) {</span>
-<span class="nc" id="L49">      retryDelay = ((AbstractListener) listener).getRetryDelay();</span>
+<span class="nc" id="L51">    long retryDelay = 0L;</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">    if (listener instanceof AbstractListener) {</span>
+<span class="nc" id="L53">      retryDelay = ((AbstractListener) listener).getRetryDelay();</span>
     }
 
-<span class="nc" id="L52">    ExecutorService listenerExecutor = notificationListeners.get(listener);</span>
-<span class="nc" id="L53">    FutureExecutorTask&lt;Void&gt; listenerTask = new FutureExecutorTask&lt;Void&gt;(</span>
-<span class="nc" id="L54">        backgroundService, listenerExecutor, listener.getMaxTries(),</span>
-<span class="nc" id="L55">        listener.getTimeout(), new NotificationListenerCallable(</span>
+<span class="nc" id="L56">    ExecutorService listenerExecutor = notificationListeners.get(listener);</span>
+<span class="nc" id="L57">    FutureExecutorTask&lt;Void&gt; listenerTask = new FutureExecutorTask&lt;Void&gt;(</span>
+<span class="nc" id="L58">        backgroundService, listenerExecutor, listener.getMaxTries(),</span>
+<span class="nc" id="L59">        listener.getTimeout(), new NotificationListenerCallable(</span>
             listener, event), retryTimer, retryDelay);
-<span class="nc" id="L57">    listenerExecutor.submit(listenerTask);</span>
+<span class="nc" id="L61">    listenerExecutor.submit(listenerTask);</span>
 
     // log how many notifications are pending
-<span class="nc bnc" id="L60" title="All 2 branches missed.">    if (listenerExecutor instanceof ThreadPoolExecutor) {</span>
-<span class="nc" id="L61">      BlockingQueue&lt;Runnable&gt; pending = ((ThreadPoolExecutor) listenerExecutor)</span>
-<span class="nc" id="L62">          .getQueue();</span>
-<span class="nc" id="L63">      LOGGER.fine(&quot;[&quot; + event.getNotificationReceiver().getName()</span>
-<span class="nc" id="L64">          + &quot;] listener (&quot; + listener.getName() + &quot;) has &quot;</span>
-<span class="nc" id="L65">          + pending.size() + &quot; queued notifications&quot;);</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">    if (listenerExecutor instanceof ThreadPoolExecutor) {</span>
+<span class="nc" id="L65">      BlockingQueue&lt;Runnable&gt; pending = ((ThreadPoolExecutor) listenerExecutor)</span>
+<span class="nc" id="L66">          .getQueue();</span>
+<span class="nc" id="L67">      LOGGER.fine(&quot;[&quot; + event.getNotificationReceiver().getName()</span>
+<span class="nc" id="L68">          + &quot;] listener (&quot; + listener.getName() + &quot;) has &quot;</span>
+<span class="nc" id="L69">          + pending.size() + &quot; queued notifications&quot;);</span>
     }
-<span class="nc" id="L67">  }</span>
+<span class="nc" id="L71">  }</span>
 
   @Override
   public void shutdown() throws Exception {
-<span class="nc" id="L71">    super.shutdown();</span>
-<span class="nc" id="L72">    backgroundService.shutdown();</span>
-<span class="nc" id="L73">    backgroundService = null;</span>
-<span class="nc" id="L74">  }</span>
+<span class="nc" id="L75">    super.shutdown();</span>
+<span class="nc" id="L76">    backgroundService.shutdown();</span>
+<span class="nc" id="L77">    backgroundService = null;</span>
+<span class="nc" id="L78">  }</span>
 
   @Override
   public void startup() throws Exception {
-<span class="nc" id="L78">    backgroundService = Executors.newCachedThreadPool();</span>
-<span class="nc" id="L79">    super.startup();</span>
-<span class="nc" id="L80">  }</span>
+<span class="nc" id="L82">    backgroundService = Executors.newCachedThreadPool();</span>
+<span class="nc" id="L83">    super.startup();</span>
+<span class="nc" id="L84">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

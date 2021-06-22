@@ -152,7 +152,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 extends <a href="RoundRobinQueue.html" title="class in gov.usgs.earthquake.util">RoundRobinQueue</a>&lt;T&gt;
 implements java.util.concurrent.BlockingQueue&lt;T&gt;</pre>
 <div class="block">Round Robin Blocking Queue.
- 
+
  <a href="#put(T)"><code>put(Object)</code></a> and <a href="#take()"><code>take()</code></a> are recommended, as other methods
  internally call these methods.</div>
 </li>
@@ -176,7 +176,9 @@ implements java.util.concurrent.BlockingQueue&lt;T&gt;</pre>
 </tr>
 <tr class="altColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E()">RoundRobinBlockingQueue</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Constructor</div>
+</td>
 </tr>
 </table>
 </li>
@@ -337,6 +339,7 @@ implements java.util.concurrent.BlockingQueue&lt;T&gt;</pre>
 <li class="blockList">
 <h4>RoundRobinBlockingQueue</h4>
 <pre>public&nbsp;RoundRobinBlockingQueue()</pre>
+<div class="block">Constructor</div>
 </li>
 </ul>
 </li>
@@ -403,7 +406,7 @@ implements java.util.concurrent.BlockingQueue&lt;T&gt;</pre>
 <h4>offer</h4>
 <pre class="methodSignature">public&nbsp;boolean&nbsp;offer&#8203;(<a href="RoundRobinBlockingQueue.html" title="type parameter in RoundRobinBlockingQueue">T</a>&nbsp;e)</pre>
 <div class="block">Offer an item to the queue.
- 
+
  Calls <a href="#add(T)"><code>add(Object)</code></a>, but returns false if any exceptions thrown.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
@@ -432,7 +435,7 @@ implements java.util.concurrent.BlockingQueue&lt;T&gt;</pre>
                      java.util.concurrent.TimeUnit&nbsp;unit)
               throws java.lang.InterruptedException</pre>
 <div class="block">Offer an item to the queue.
- 
+
  Same as <a href="#offer(T)"><code>offer(Object)</code></a>, this is an unbounded queue.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>

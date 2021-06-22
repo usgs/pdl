@@ -191,7 +191,9 @@ extends java.lang.Object</pre>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#destroy()">destroy</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Destroys a process</div>
+</td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>byte[]</code></td>
@@ -296,6 +298,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>destroy</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;destroy()</pre>
+<div class="block">Destroys a process</div>
 </li>
 </ul>
 <a id="errorOutput()">
@@ -305,6 +308,10 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>errorOutput</h4>
 <pre class="methodSignature">public&nbsp;byte[]&nbsp;errorOutput()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>errorOutput byte array</dd>
+</dl>
 </li>
 </ul>
 <a id="exitValue()">
@@ -314,6 +321,10 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>exitValue</h4>
 <pre class="methodSignature">public&nbsp;int&nbsp;exitValue()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>exit value</dd>
+</dl>
 </li>
 </ul>
 <a id="getErrorStream()">
@@ -323,6 +334,10 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getErrorStream</h4>
 <pre class="methodSignature">public&nbsp;java.io.InputStream&nbsp;getErrorStream()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>InputStream of error stream</dd>
+</dl>
 </li>
 </ul>
 <a id="getInputStream()">
@@ -332,6 +347,10 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getInputStream</h4>
 <pre class="methodSignature">public&nbsp;java.io.InputStream&nbsp;getInputStream()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>InputStream</dd>
+</dl>
 </li>
 </ul>
 <a id="getOutputStream()">
@@ -341,6 +360,10 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getOutputStream</h4>
 <pre class="methodSignature">public&nbsp;java.io.OutputStream&nbsp;getOutputStream()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>OutputStream</dd>
+</dl>
 </li>
 </ul>
 <a id="waitFor()">
@@ -359,9 +382,9 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>exitStatus.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.InterruptedException</code></dd>
+<dd><code>java.lang.InterruptedException</code> - if thread interruption occurs</dd>
+<dd><code>java.io.IOException</code> - if IO error occurs</dd>
 <dd><code><a href="ProcessTimeoutException.html" title="class in gov.usgs.util">ProcessTimeoutException</a></code> - if the process timed out before exiting.</dd>
-<dd><code>java.io.IOException</code></dd>
 </dl>
 </li>
 </ul>
@@ -372,6 +395,10 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setTimeoutElapsed</h4>
 <pre class="methodSignature">protected&nbsp;void&nbsp;setTimeoutElapsed&#8203;(boolean&nbsp;timeoutElapsed)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>timeoutElapsed</code> - to set</dd>
+</dl>
 </li>
 </ul>
 <a id="timeoutElapsed()">
@@ -381,6 +408,10 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>timeoutElapsed</h4>
 <pre class="methodSignature">protected&nbsp;boolean&nbsp;timeoutElapsed()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>timeoutElapsed boolean</dd>
+</dl>
 </li>
 </ul>
 <a id="setTimer(java.util.Timer)">
@@ -390,6 +421,10 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setTimer</h4>
 <pre class="methodSignature">protected&nbsp;void&nbsp;setTimer&#8203;(java.util.Timer&nbsp;timer)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>timer</code> - to set</dd>
+</dl>
 </li>
 </ul>
 </li>

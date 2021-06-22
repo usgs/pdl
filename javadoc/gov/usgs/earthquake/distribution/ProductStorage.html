@@ -134,7 +134,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <pre>public interface <span class="typeNameLabel">ProductStorage</span>
 extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util">Configurable</a></pre>
 <div class="block">Stores and retrieves Products.
- 
+
  This is typically used by a NotificationReceiver to store downloaded
  products.</div>
 </li>
@@ -256,7 +256,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <pre class="methodSignature">boolean&nbsp;hasProduct&#8203;(<a href="../product/ProductId.html" title="class in gov.usgs.earthquake.product">ProductId</a>&nbsp;id)
             throws java.lang.Exception</pre>
 <div class="block">A method to check whether a product is already in storage.
- 
+
  Implementers should define this method as more than
  "getProduct(id) != null" when it is significantly less expensive to check
  whether a product exists, compared to loading a product from storage.</div>
@@ -279,9 +279,9 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <pre class="methodSignature"><a href="../product/Product.html" title="class in gov.usgs.earthquake.product">Product</a>&nbsp;getProduct&#8203;(<a href="../product/ProductId.html" title="class in gov.usgs.earthquake.product">ProductId</a>&nbsp;id)
             throws java.lang.Exception</pre>
 <div class="block">Retrieve a stored product.
- 
+
  May be implemented as
- 
+
  <pre>
  return ObjectProductHandler.getProduct(getProductInput(id));
  </pre></div>
@@ -304,9 +304,9 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <pre class="methodSignature"><a href="../product/ProductId.html" title="class in gov.usgs.earthquake.product">ProductId</a>&nbsp;storeProduct&#8203;(<a href="../product/Product.html" title="class in gov.usgs.earthquake.product">Product</a>&nbsp;product)
                 throws java.lang.Exception</pre>
 <div class="block">Store a product.
- 
+
  May be implemented as
- 
+
  <pre>
  return storeProductSource(new ObjectProductInput(product));
  </pre></div>
@@ -386,7 +386,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
  <code>ProductStorage</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>event</code> - </dd>
+<dd><code>event</code> - StorageEvent</dd>
 </dl>
 </li>
 </ul>

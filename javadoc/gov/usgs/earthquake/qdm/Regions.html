@@ -157,17 +157,23 @@ extends java.lang.Object</pre>
 <tr class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#defaultNetid">defaultNetid</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Default network</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>java.util.ArrayList&lt;java.lang.String&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#netids">netids</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Array of network ids, e.g.</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>java.util.ArrayList&lt;<a href="Region.html" title="class in gov.usgs.earthquake.qdm">Region</a>&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#regions">regions</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Array of regions</div>
+</td>
 </tr>
 </table>
 </li>
@@ -278,6 +284,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>defaultNetid</h4>
 <pre>public&nbsp;java.lang.String defaultNetid</pre>
+<div class="block">Default network</div>
 </li>
 </ul>
 <a id="netids">
@@ -287,6 +294,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>netids</h4>
 <pre>public&nbsp;java.util.ArrayList&lt;java.lang.String&gt; netids</pre>
+<div class="block">Array of network ids, e.g. nc, us, etc.</div>
 </li>
 </ul>
 <a id="regions">
@@ -296,6 +304,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>regions</h4>
 <pre>public&nbsp;java.util.ArrayList&lt;<a href="Region.html" title="class in gov.usgs.earthquake.qdm">Region</a>&gt; regions</pre>
+<div class="block">Array of regions</div>
 </li>
 </ul>
 </li>
@@ -337,6 +346,12 @@ extends java.lang.Object</pre>
 <pre class="methodSignature">public&nbsp;boolean&nbsp;isValidnetID&#8203;(java.lang.String&nbsp;netid)</pre>
 <div class="block">Is this netid in the set of regions? The default net covers the whole world
  so it is always valid since it has no finite boundaries.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>netid</code> - A netid (nc, us, etc.)</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>boolean if netid is valid</dd>
+</dl>
 </li>
 </ul>
 <a id="isDefaultNetID(java.lang.String)">

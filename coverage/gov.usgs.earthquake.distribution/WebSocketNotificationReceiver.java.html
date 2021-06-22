@@ -21,27 +21,44 @@ import java.util.logging.Logger;
  */
 <span class="fc" id="L22">public class WebSocketNotificationReceiver extends DefaultNotificationReceiver implements WebSocketListener {</span>
 
-<span class="fc" id="L24">  public static final Logger LOGGER = Logger</span>
-<span class="fc" id="L25">          .getLogger(WebSocketNotificationReceiver.class.getName());</span>
+  /** Logger for use in the file */
+<span class="fc" id="L25">  public static final Logger LOGGER = Logger</span>
+<span class="fc" id="L26">          .getLogger(WebSocketNotificationReceiver.class.getName());</span>
 
+  /** Property for serverHost */
   public static final String SERVER_HOST_PROPERTY = &quot;serverHost&quot;;
+  /** Property for serverPort */
   public static final String SERVER_PORT_PROPERTY = &quot;serverPort&quot;;
+  /** Property for serverPath */
   public static final String SERVER_PATH_PROPERTY = &quot;serverPath&quot;;
+  /** Property for sequence */
   public static final String SEQUENCE_PROPERTY = &quot;sequence&quot;;
+  /** Property for timestamp */
   public static final String TIMESTAMP_PROPERTY = &quot;timestamp&quot;;
+  /** Property for trackingFileName */
   public static final String TRACKING_FILE_NAME_PROPERTY = &quot;trackingFileName&quot;;
+  /** Property for connectAttempts */
   public static final String CONNECT_ATTEMPTS_PROPERTY = &quot;connectAttempts&quot;;
+  /** Property for connectTimeout */
   public static final String CONNECT_TIMEOUT_PROPERTY = &quot;connectTimeout&quot;;
+  /** Property for retryOnClose */
   public static final String RETRY_ON_CLOSE_PROPERTY = &quot;retryOnClose&quot;;
 
+  /** Default server host */
   public static final String DEFAULT_SERVER_HOST = &quot;http://www.google.com&quot;;
+  /** Default server port */
   public static final String DEFAULT_SERVER_PORT = &quot;4222&quot;;
+  /** Default server path */
   public static final String DEFAULT_SERVER_PATH = &quot;/sequence/&quot;;
+  /** Default tracking file */
   public static final String DEFAULT_TRACKING_FILE_NAME = &quot;data/WebSocketReceiverInfo&quot;;
+  /** Default number of connect attempts */
   public static final String DEFAULT_CONNECT_ATTEMPTS = &quot;5&quot;;
+  /** Default timeout in ms */
   public static final String DEFAULT_CONNECT_TIMEOUT = &quot;1000&quot;;
+  /** Default condiction for retry on close */
   public static final String DEFAULT_RETRY_ON_CLOSE = &quot;true&quot;;
-
+  /** attribute for data */
   public static final String ATTRIBUTE_DATA = &quot;data&quot;;
 
   private String serverHost;
@@ -52,196 +69,210 @@ import java.util.logging.Logger;
   private long timeout;
 
   private WebSocketClient client;
-<span class="fc" id="L55">  private String sequence = &quot;0&quot;;</span>
+<span class="fc" id="L72">  private String sequence = &quot;0&quot;;</span>
 
 
   @Override
   public void configure(Config config) throws Exception {
-<span class="nc" id="L60">    super.configure(config);</span>
+<span class="nc" id="L77">    super.configure(config);</span>
 
-<span class="nc" id="L62">    serverHost = config.getProperty(SERVER_HOST_PROPERTY, DEFAULT_SERVER_HOST);</span>
-<span class="nc" id="L63">    serverPort = config.getProperty(SERVER_PORT_PROPERTY, DEFAULT_SERVER_PORT);</span>
-<span class="nc" id="L64">    serverPath = config.getProperty(SERVER_PATH_PROPERTY, DEFAULT_SERVER_PATH);</span>
-<span class="nc" id="L65">    attempts = Integer.parseInt(config.getProperty(CONNECT_ATTEMPTS_PROPERTY, DEFAULT_CONNECT_ATTEMPTS));</span>
-<span class="nc" id="L66">    timeout = Long.parseLong(config.getProperty(CONNECT_TIMEOUT_PROPERTY, DEFAULT_CONNECT_TIMEOUT));</span>
-<span class="nc" id="L67">    trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME);</span>
-<span class="nc" id="L68">  }</span>
+<span class="nc" id="L79">    serverHost = config.getProperty(SERVER_HOST_PROPERTY, DEFAULT_SERVER_HOST);</span>
+<span class="nc" id="L80">    serverPort = config.getProperty(SERVER_PORT_PROPERTY, DEFAULT_SERVER_PORT);</span>
+<span class="nc" id="L81">    serverPath = config.getProperty(SERVER_PATH_PROPERTY, DEFAULT_SERVER_PATH);</span>
+<span class="nc" id="L82">    attempts = Integer.parseInt(config.getProperty(CONNECT_ATTEMPTS_PROPERTY, DEFAULT_CONNECT_ATTEMPTS));</span>
+<span class="nc" id="L83">    timeout = Long.parseLong(config.getProperty(CONNECT_TIMEOUT_PROPERTY, DEFAULT_CONNECT_TIMEOUT));</span>
+<span class="nc" id="L84">    trackingFileName = config.getProperty(TRACKING_FILE_NAME_PROPERTY, DEFAULT_TRACKING_FILE_NAME);</span>
+<span class="nc" id="L85">  }</span>
 
   /**
    * Reads a sequence from a tracking file if it exists. Otherwise, starting sequence is 0.
    * Connects to web socket
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   @Override
   public void startup() throws Exception{
-<span class="nc" id="L77">    super.startup();</span>
+<span class="nc" id="L94">    super.startup();</span>
 
     //read sequence from tracking file if other parameters agree
-<span class="nc" id="L80">    JsonObject json = readTrackingFile();</span>
-<span class="nc bnc" id="L81" title="All 2 branches missed.">    if (json != null &amp;&amp;</span>
-<span class="nc bnc" id="L82" title="All 2 branches missed.">            json.getString(SERVER_HOST_PROPERTY).equals(serverHost) &amp;&amp;</span>
-<span class="nc bnc" id="L83" title="All 2 branches missed.">            json.getString(SERVER_PORT_PROPERTY).equals(serverPort) &amp;&amp;</span>
-<span class="nc bnc" id="L84" title="All 2 branches missed.">            json.getString(SERVER_PATH_PROPERTY).equals(serverPath)) {</span>
-<span class="nc" id="L85">      sequence = json.getString(SEQUENCE_PROPERTY);</span>
+<span class="nc" id="L97">    JsonObject json = readTrackingFile();</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">    if (json != null &amp;&amp;</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">            json.getString(SERVER_HOST_PROPERTY).equals(serverHost) &amp;&amp;</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">            json.getString(SERVER_PORT_PROPERTY).equals(serverPort) &amp;&amp;</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">            json.getString(SERVER_PATH_PROPERTY).equals(serverPath)) {</span>
+<span class="nc" id="L102">      sequence = json.getString(SEQUENCE_PROPERTY);</span>
     }
 
     //open websocket
-<span class="nc" id="L89">    client = new WebSocketClient(new URI(serverHost + &quot;:&quot; + serverPort + serverPath + sequence), this, attempts, timeout, true);</span>
-<span class="nc" id="L90">  }</span>
+<span class="nc" id="L106">    client = new WebSocketClient(new URI(serverHost + &quot;:&quot; + serverPort + serverPath + sequence), this, attempts, timeout, true);</span>
+<span class="nc" id="L107">  }</span>
 
   /**
    * Closes web socket
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   @Override
   public void shutdown() throws Exception{
     //close socket
-<span class="nc" id="L99">    client.shutdown();</span>
-<span class="nc" id="L100">    super.shutdown();</span>
-<span class="nc" id="L101">  }</span>
+<span class="nc" id="L116">    client.shutdown();</span>
+<span class="nc" id="L117">    super.shutdown();</span>
+<span class="nc" id="L118">  }</span>
 
   /**
    * Writes tracking file to disc, storing latest sequence
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   public void writeTrackingFile() throws Exception {
-<span class="fc" id="L108">    JsonObject json = Json.createObjectBuilder()</span>
-<span class="fc" id="L109">            .add(SERVER_HOST_PROPERTY,serverHost)</span>
-<span class="fc" id="L110">            .add(SERVER_PATH_PROPERTY,serverPath)</span>
-<span class="fc" id="L111">            .add(SERVER_PORT_PROPERTY,serverPort)</span>
-<span class="fc" id="L112">            .add(SEQUENCE_PROPERTY,sequence)</span>
-<span class="fc" id="L113">            .build();</span>
+<span class="fc" id="L125">    JsonObject json = Json.createObjectBuilder()</span>
+<span class="fc" id="L126">            .add(SERVER_HOST_PROPERTY,serverHost)</span>
+<span class="fc" id="L127">            .add(SERVER_PATH_PROPERTY,serverPath)</span>
+<span class="fc" id="L128">            .add(SERVER_PORT_PROPERTY,serverPort)</span>
+<span class="fc" id="L129">            .add(SEQUENCE_PROPERTY,sequence)</span>
+<span class="fc" id="L130">            .build();</span>
 
-<span class="fc" id="L115">    FileUtils.writeFileThenMove(</span>
+<span class="fc" id="L132">    FileUtils.writeFileThenMove(</span>
             new File(trackingFileName + &quot;_tmp.json&quot;),
             new File(trackingFileName + &quot;.json&quot;),
-<span class="fc" id="L118">            json.toString().getBytes());</span>
-<span class="fc" id="L119">  }</span>
+<span class="fc" id="L135">            json.toString().getBytes());</span>
+<span class="fc" id="L136">  }</span>
 
   /**
    * Reads tracking file from disc
    * @return  JsonObject tracking file
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   public JsonObject readTrackingFile() throws Exception {
-<span class="fc" id="L127">    JsonObject json = null;</span>
+<span class="fc" id="L144">    JsonObject json = null;</span>
 
-<span class="fc" id="L129">    File trackingFile = new File(trackingFileName + &quot;.json&quot;);</span>
-<span class="pc bpc" id="L130" title="1 of 2 branches missed.">    if (trackingFile.exists()) {</span>
-<span class="fc" id="L131">      InputStream contents = new ByteArrayInputStream(FileUtils.readFile(trackingFile));</span>
-<span class="fc" id="L132">      JsonReader jsonReader = Json.createReader(contents);</span>
-<span class="fc" id="L133">      json = jsonReader.readObject();</span>
-<span class="fc" id="L134">      jsonReader.close();</span>
+<span class="fc" id="L146">    File trackingFile = new File(trackingFileName + &quot;.json&quot;);</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">    if (trackingFile.exists()) {</span>
+<span class="fc" id="L148">      InputStream contents = new ByteArrayInputStream(FileUtils.readFile(trackingFile));</span>
+<span class="fc" id="L149">      JsonReader jsonReader = Json.createReader(contents);</span>
+<span class="fc" id="L150">      json = jsonReader.readObject();</span>
+<span class="fc" id="L151">      jsonReader.close();</span>
     }
-<span class="fc" id="L136">    return json;</span>
+<span class="fc" id="L153">    return json;</span>
   }
 
   @Override
   public void onOpen(Session session) {
     // do nothing
-<span class="nc" id="L142">  }</span>
+<span class="nc" id="L159">  }</span>
 
   /**
    * Message handler function passed to WebSocketClient
    * Parses the message as JSON, receives the contained URL notification, and writes the tracking file.
-   * @param message
+   * @param message String
    */
   @Override
   public void onMessage(String message) {
     JsonObject json;
-<span class="fc" id="L152">    try (InputStream in = StreamUtils.getInputStream(message); JsonReader reader = Json.createReader(in)) {</span>
+<span class="fc" id="L169">    try (InputStream in = StreamUtils.getInputStream(message); JsonReader reader = Json.createReader(in)) {</span>
       //parse input as json
-<span class="fc" id="L154">      json = reader.readObject();</span>
-<span class="nc" id="L155">    } catch (Exception e) {</span>
-<span class="nc" id="L156">      LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] exception while receiving notification; is it encoded as JSON? &quot;, e);</span>
-<span class="nc" id="L157">      return;</span>
-<span class="fc" id="L158">    }</span>
+<span class="fc" id="L171">      json = reader.readObject();</span>
+<span class="nc" id="L172">    } catch (Exception e) {</span>
+<span class="nc" id="L173">      LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] exception while receiving notification; is it encoded as JSON? &quot;, e);</span>
+<span class="nc" id="L174">      return;</span>
+<span class="fc" id="L175">    }</span>
     try {
       //convert to URLNotification and receive
-<span class="fc" id="L161">      JsonObject dataJson = json.getJsonObject(ATTRIBUTE_DATA);</span>
-<span class="fc" id="L162">      URLNotification notification = URLNotificationJSONConverter.parseJSON(dataJson);</span>
-<span class="fc" id="L163">      receiveNotification(notification);</span>
+<span class="fc" id="L178">      JsonObject dataJson = json.getJsonObject(ATTRIBUTE_DATA);</span>
+<span class="fc" id="L179">      URLNotification notification = URLNotificationJSONConverter.parseJSON(dataJson);</span>
+<span class="fc" id="L180">      receiveNotification(notification);</span>
 
       //send heartbeat
-<span class="nc" id="L166">      HeartbeatListener.sendHeartbeatMessage(getName(), &quot;nats notification timestamp&quot;, json.getString(TIMESTAMP_PROPERTY));</span>
+<span class="nc" id="L183">      HeartbeatListener.sendHeartbeatMessage(getName(), &quot;nats notification timestamp&quot;, json.getString(TIMESTAMP_PROPERTY));</span>
 
       //write tracking file
-<span class="nc" id="L169">      sequence = json.getJsonNumber(SEQUENCE_PROPERTY).toString();</span>
-<span class="nc" id="L170">      writeTrackingFile();</span>
-<span class="fc" id="L171">    } catch (Exception e) {</span>
-<span class="fc" id="L172">      LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] exception while processing URLNotification &quot;, e);</span>
-<span class="nc" id="L173">    }</span>
-<span class="fc" id="L174">  }</span>
+<span class="nc" id="L186">      sequence = json.getJsonNumber(SEQUENCE_PROPERTY).toString();</span>
+<span class="nc" id="L187">      writeTrackingFile();</span>
+<span class="fc" id="L188">    } catch (Exception e) {</span>
+<span class="fc" id="L189">      LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] exception while processing URLNotification &quot;, e);</span>
+<span class="nc" id="L190">    }</span>
+<span class="fc" id="L191">  }</span>
 
   @Override
   public void onClose(Session session, CloseReason closeReason) {
     // do nothing
-<span class="nc" id="L179">  }</span>
+<span class="nc" id="L196">  }</span>
 
   @Override
   public void onConnectFail() {
     // do nothing
-<span class="nc" id="L184">  }</span>
+<span class="nc" id="L201">  }</span>
 
   @Override
   public void onReconnectFail() {
     // do nothing
-<span class="nc" id="L189">  }</span>
+<span class="nc" id="L206">  }</span>
 
+  /** @return serverHost */
   public String getServerHost() {
-<span class="nc" id="L192">    return serverHost;</span>
+<span class="nc" id="L210">    return serverHost;</span>
   }
 
+  /** @param serverHost to set */
   public void setServerHost(String serverHost) {
-<span class="fc" id="L196">    this.serverHost = serverHost;</span>
-<span class="fc" id="L197">  }</span>
+<span class="fc" id="L215">    this.serverHost = serverHost;</span>
+<span class="fc" id="L216">  }</span>
 
+  /** @return serverPort */
   public String getServerPort() {
-<span class="nc" id="L200">    return serverPort;</span>
+<span class="nc" id="L220">    return serverPort;</span>
   }
 
+  /** @param serverPort to set */
   public void setServerPort(String serverPort) {
-<span class="fc" id="L204">    this.serverPort = serverPort;</span>
-<span class="fc" id="L205">  }</span>
+<span class="fc" id="L225">    this.serverPort = serverPort;</span>
+<span class="fc" id="L226">  }</span>
 
+  /** @return serverPath */
   public String getServerPath() {
-<span class="nc" id="L208">    return serverPath;</span>
+<span class="nc" id="L230">    return serverPath;</span>
   }
 
+  /** @param serverPath to set */
   public void setServerPath(String serverPath) {
-<span class="fc" id="L212">    this.serverPath = serverPath;</span>
-<span class="fc" id="L213">  }</span>
+<span class="fc" id="L235">    this.serverPath = serverPath;</span>
+<span class="fc" id="L236">  }</span>
 
+  /** @return trackingFileName */
   public String getTrackingFileName() {
-<span class="nc" id="L216">    return trackingFileName;</span>
+<span class="nc" id="L240">    return trackingFileName;</span>
   }
 
+  /** @param trackingFileName to set */
   public void setTrackingFileName(String trackingFileName) {
-<span class="fc" id="L220">    this.trackingFileName = trackingFileName;</span>
-<span class="fc" id="L221">  }</span>
+<span class="fc" id="L245">    this.trackingFileName = trackingFileName;</span>
+<span class="fc" id="L246">  }</span>
 
+  /** @return sequence */
   public String getSequence() {
-<span class="nc" id="L224">    return sequence;</span>
+<span class="nc" id="L250">    return sequence;</span>
   }
 
+  /** @param sequence to set */
   public void setSequence(String sequence) {
-<span class="fc" id="L228">    this.sequence = sequence;</span>
-<span class="fc" id="L229">  }</span>
+<span class="fc" id="L255">    this.sequence = sequence;</span>
+<span class="fc" id="L256">  }</span>
 
+  /** @return attempts */
   public int getAttempts() {
-<span class="nc" id="L232">    return attempts;</span>
+<span class="nc" id="L260">    return attempts;</span>
   }
 
+  /** @param attempts to set */
   public void setAttempts(int attempts) {
-<span class="nc" id="L236">    this.attempts = attempts;</span>
-<span class="nc" id="L237">  }</span>
+<span class="nc" id="L265">    this.attempts = attempts;</span>
+<span class="nc" id="L266">  }</span>
 
+  /** @return timeout */
   public long getTimeout() {
-<span class="nc" id="L240">    return timeout;</span>
+<span class="nc" id="L270">    return timeout;</span>
   }
 
+  /** @param timeout to set */
   public void setTimeout(long timeout) {
-<span class="nc" id="L244">    this.timeout = timeout;</span>
-<span class="nc" id="L245">  }</span>
+<span class="nc" id="L275">    this.timeout = timeout;</span>
+<span class="nc" id="L276">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

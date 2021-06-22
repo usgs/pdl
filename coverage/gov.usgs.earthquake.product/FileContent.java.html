@@ -53,7 +53,7 @@ public class FileContent extends AbstractContent {
 	/**
 	 * Construct a new FileContent that does not use a nested path. same as new
 	 * FileContent(file, file.getParentFile());
-	 * 
+	 *
 	 * @param file
 	 *            the source of content.
 	 */
@@ -66,10 +66,10 @@ public class FileContent extends AbstractContent {
 
 	/**
 	 * Construct a new FileContent from a URLContent for legacy products
-	 * 
+	 *
 	 * @param urlc
 	 *            the source of content.
-	 * @throws URISyntaxException
+	 * @throws URISyntaxException if error in URI
 	 */
 	public FileContent(final URLContent urlc) throws URISyntaxException {
 <span class="nc" id="L75">		super(urlc);</span>
@@ -78,150 +78,152 @@ public class FileContent extends AbstractContent {
 
 	/**
 	 * Convert a Content to a file backed content.
-	 * 
+	 *
 	 * The file written is new File(baseDirectory, content.getPath()).
-	 * 
+	 *
 	 * @param content
 	 *            the content that will be converted to a file.
 	 * @param toWrite
 	 *            the file where content is written.
+	 * @throws IOException
+	 *            if IO error occurs
 	 */
 	public FileContent(final Content content, final File toWrite)
 			throws IOException {
-<span class="fc" id="L91">		super(content);</span>
+<span class="fc" id="L93">		super(content);</span>
 
 		// this file content object will use the newly created file
-<span class="fc" id="L94">		this.content = toWrite;</span>
+<span class="fc" id="L96">		this.content = toWrite;</span>
 
 		// make sure the parent directory exists
-<span class="fc" id="L97">		File parent = toWrite.getCanonicalFile().getParentFile();</span>
-<span class="fc bfc" id="L98" title="All 2 branches covered.">		if (!parent.isDirectory()) {</span>
-<span class="fc" id="L99">			parent.mkdirs();</span>
+<span class="fc" id="L99">		File parent = toWrite.getCanonicalFile().getParentFile();</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">		if (!parent.isDirectory()) {</span>
+<span class="fc" id="L101">			parent.mkdirs();</span>
 		}
 
 		// save handle to stream to force it closed
-<span class="fc" id="L103">		OutputStream out = null;</span>
-<span class="fc" id="L104">		InputStream in = null;</span>
+<span class="fc" id="L105">		OutputStream out = null;</span>
+<span class="fc" id="L106">		InputStream in = null;</span>
 		try {
-<span class="fc" id="L106">			in = content.getInputStream();</span>
-<span class="fc" id="L107">			out = StreamUtils.getOutputStream(toWrite);</span>
+<span class="fc" id="L108">			in = content.getInputStream();</span>
+<span class="fc" id="L109">			out = StreamUtils.getOutputStream(toWrite);</span>
 			// write the file
-<span class="fc" id="L109">			StreamUtils.transferStream(in, out);</span>
+<span class="fc" id="L111">			StreamUtils.transferStream(in, out);</span>
 		} finally {
 			// force the stream closed
-<span class="fc" id="L112">			StreamUtils.closeStream(in);</span>
-<span class="fc" id="L113">			StreamUtils.closeStream(out);</span>
+<span class="fc" id="L114">			StreamUtils.closeStream(in);</span>
+<span class="fc" id="L115">			StreamUtils.closeStream(out);</span>
 		}
 
 		// update modification date in filesystem
-<span class="fc" id="L117">		toWrite.setLastModified(content.getLastModified().getTime());</span>
+<span class="fc" id="L119">		toWrite.setLastModified(content.getLastModified().getTime());</span>
 
 		// verify file length
-<span class="fc" id="L120">		Long length = getLength();</span>
-<span class="pc bpc" id="L121" title="1 of 4 branches missed.">		if (length &gt; 0 &amp;&amp; !length.equals(toWrite.length())) {</span>
-<span class="nc" id="L122">			throw new IOException(&quot;Written file length (&quot;</span>
-<span class="nc" id="L123">					+ toWrite.length()</span>
+<span class="fc" id="L122">		Long length = getLength();</span>
+<span class="pc bpc" id="L123" title="1 of 4 branches missed.">		if (length &gt; 0 &amp;&amp; !length.equals(toWrite.length())) {</span>
+<span class="nc" id="L124">			throw new IOException(&quot;Written file length (&quot;</span>
+<span class="nc" id="L125">					+ toWrite.length()</span>
 					+ &quot;) does not match non-zero content length (&quot; + length
 					+ &quot;)&quot;);
 		}
 
 		// length may still be &lt;= 0 if content was input stream.
-<span class="fc" id="L129">		setLength(toWrite.length());</span>
-<span class="fc" id="L130">	}</span>
+<span class="fc" id="L131">		setLength(toWrite.length());</span>
+<span class="fc" id="L132">	}</span>
 
 	/**
 	 * @return an InputStream for the wrapped content.
 	 */
 	public InputStream getInputStream() throws IOException {
-<span class="fc" id="L136">		return StreamUtils.getInputStream(content);</span>
+<span class="fc" id="L138">		return StreamUtils.getInputStream(content);</span>
 	}
 
 	/**
 	 * @return the wrapped file.
 	 */
 	public File getFile() {
-<span class="fc" id="L143">		return content;</span>
+<span class="fc" id="L145">		return content;</span>
 	}
 
 	/**
 	 * Search a directory for files. This is equivalent to
 	 * getDirectoryContents(directory, directory).
-	 * 
+	 *
 	 * @param directory
 	 *            the directory to search.
 	 * @return a map of relative paths to FileContent objects.
-	 * @throws IOException
+	 * @throws IOException if IO error occurs
 	 */
 	public static Map&lt;String, FileContent&gt; getDirectoryContents(
 			final File directory) throws IOException {
-<span class="fc" id="L157">		File absDirectory = directory.getCanonicalFile();</span>
-<span class="fc" id="L158">		return getDirectoryContents(absDirectory, absDirectory);</span>
+<span class="fc" id="L159">		File absDirectory = directory.getCanonicalFile();</span>
+<span class="fc" id="L160">		return getDirectoryContents(absDirectory, absDirectory);</span>
 	}
 
 	/**
 	 * Search a directory for files. The path to files relative to baseDirectory
 	 * is used as a key in the returned map.
-	 * 
+	 *
 	 * @param directory
 	 *            the directory to search.
 	 * @param baseDirectory
 	 *            the directory used to compute relative paths.
 	 * @return a map of relative paths to FileContent objects.
-	 * @throws IOException
+	 * @throws IOException if IO error occurs
 	 */
 	public static Map&lt;String, FileContent&gt; getDirectoryContents(
 			final File directory, final File baseDirectory) throws IOException {
-<span class="fc" id="L174">		Map&lt;String, FileContent&gt; contents = new HashMap&lt;String, FileContent&gt;();</span>
+<span class="fc" id="L176">		Map&lt;String, FileContent&gt; contents = new HashMap&lt;String, FileContent&gt;();</span>
 
 		// compute the base path once, and escape the pattern being matched
-<span class="fc" id="L177">		String basePath = Pattern.quote(baseDirectory.getCanonicalPath()</span>
+<span class="fc" id="L179">		String basePath = Pattern.quote(baseDirectory.getCanonicalPath()</span>
 				+ File.separator);
 
-<span class="fc" id="L180">		File[] files = directory.listFiles();</span>
-<span class="fc bfc" id="L181" title="All 2 branches covered.">		for (File file : files) {</span>
-<span class="pc bpc" id="L182" title="1 of 2 branches missed.">			if (file.isDirectory()) {</span>
+<span class="fc" id="L182">		File[] files = directory.listFiles();</span>
+<span class="fc bfc" id="L183" title="All 2 branches covered.">		for (File file : files) {</span>
+<span class="pc bpc" id="L184" title="1 of 2 branches missed.">			if (file.isDirectory()) {</span>
 				// recurse into sub directory
-<span class="nc" id="L184">				contents.putAll(getDirectoryContents(file.getCanonicalFile(),</span>
-<span class="nc" id="L185">						baseDirectory.getCanonicalFile()));</span>
+<span class="nc" id="L186">				contents.putAll(getDirectoryContents(file.getCanonicalFile(),</span>
+<span class="nc" id="L187">						baseDirectory.getCanonicalFile()));</span>
 			} else {
-<span class="fc" id="L187">				String path = file.getCanonicalPath().replaceAll(basePath, &quot;&quot;);</span>
-<span class="fc" id="L188">				contents.put(path, new FileContent(file));</span>
+<span class="fc" id="L189">				String path = file.getCanonicalPath().replaceAll(basePath, &quot;&quot;);</span>
+<span class="fc" id="L190">				contents.put(path, new FileContent(file));</span>
 			}
 		}
 
-<span class="fc" id="L192">		return contents;</span>
+<span class="fc" id="L194">		return contents;</span>
 	}
 
 	/**
 	 * This implementation calls defaultGetMimeType, and exists so subclasses
 	 * can override.
-	 * 
+	 *
 	 * @param file
 	 *            file to check.
 	 * @return corresponding mime type.
 	 */
 	public String getMimeType(final File file) {
-<span class="fc" id="L204">		return defaultGetMimeType(file);</span>
+<span class="fc" id="L206">		return defaultGetMimeType(file);</span>
 	}
 
 	/**
 	 * Check a local list of mime types, and fall back to MimetypeFileTypesMap
 	 * if not specified.
-	 * 
+	 *
 	 * @param file
 	 *            file to check.
 	 * @return corresponding mime type.
 	 */
 	protected static String defaultGetMimeType(final File file) {
-<span class="fc" id="L216">		String name = file.getName();</span>
-<span class="fc" id="L217">		int index = name.lastIndexOf('.');</span>
-<span class="pc bpc" id="L218" title="1 of 2 branches missed.">		if (index != -1) {</span>
-<span class="fc" id="L219">			String extension = name.substring(index + 1);</span>
-<span class="fc bfc" id="L220" title="All 2 branches covered.">			if (MIME_TYPES.containsKey(extension)) {</span>
-<span class="fc" id="L221">				return MIME_TYPES.get(extension);</span>
+<span class="fc" id="L218">		String name = file.getName();</span>
+<span class="fc" id="L219">		int index = name.lastIndexOf('.');</span>
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">		if (index != -1) {</span>
+<span class="fc" id="L221">			String extension = name.substring(index + 1);</span>
+<span class="fc bfc" id="L222" title="All 2 branches covered.">			if (MIME_TYPES.containsKey(extension)) {</span>
+<span class="fc" id="L223">				return MIME_TYPES.get(extension);</span>
 			}
 		}
-<span class="fc" id="L224">		return SYSTEM_MIME_TYPES.getContentType(file);</span>
+<span class="fc" id="L226">		return SYSTEM_MIME_TYPES.getContentType(file);</span>
 	}
 
 	/**
@@ -229,7 +231,7 @@ public class FileContent extends AbstractContent {
 	 */
 	public void close() {
 		// nothing to free
-<span class="nc" id="L232">	}</span>
+<span class="nc" id="L234">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

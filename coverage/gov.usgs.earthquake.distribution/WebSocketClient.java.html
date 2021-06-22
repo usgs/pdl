@@ -19,8 +19,11 @@ public class WebSocketClient {
   private long timeoutMillis;
   private boolean retryOnClose;
 
+  /** Default number of attempts */
   public static final int DEFAULT_ATTEMPTS = 3;
+  /** Default timeout in ms */
   public static final long DEFAULT_TIMEOUT_MILLIS = 100;
+  /** Default for trying to retry on close */
   public static final boolean DEFAULT_RETRY_ON_CLOSE = true;
 
   /**
@@ -30,82 +33,120 @@ public class WebSocketClient {
    * @param listener a WebSocketListener to handle incoming messages
    * @param attempts an integer number of times to try the connection
    * @param timeoutMillis a long for the wait time between attempts
+   * @param retryOnClose boolean for if the connection should retry when closed
    * @throws Exception on thread interrupt or connection failure
    */
-<span class="nc" id="L35">  public WebSocketClient(URI endpoint, WebSocketListener listener, int attempts, long timeoutMillis, boolean retryOnClose) throws Exception {</span>
-<span class="nc" id="L36">    this.listener = listener;</span>
-<span class="nc" id="L37">    this.endpoint = endpoint;</span>
-<span class="nc" id="L38">    this.attempts = attempts;</span>
-<span class="nc" id="L39">    this.timeoutMillis = timeoutMillis;</span>
-<span class="nc" id="L40">    this.retryOnClose = retryOnClose;</span>
+<span class="nc" id="L39">  public WebSocketClient(URI endpoint, WebSocketListener listener, int attempts, long timeoutMillis, boolean retryOnClose) throws Exception {</span>
+<span class="nc" id="L40">    this.listener = listener;</span>
+<span class="nc" id="L41">    this.endpoint = endpoint;</span>
+<span class="nc" id="L42">    this.attempts = attempts;</span>
+<span class="nc" id="L43">    this.timeoutMillis = timeoutMillis;</span>
+<span class="nc" id="L44">    this.retryOnClose = retryOnClose;</span>
 
-<span class="nc" id="L42">    connect();</span>
-<span class="nc" id="L43">  }</span>
-
-  public WebSocketClient(URI endpoint, WebSocketListener listener) throws Exception {
-<span class="nc" id="L46">    this(endpoint, listener, DEFAULT_ATTEMPTS, DEFAULT_TIMEOUT_MILLIS, DEFAULT_RETRY_ON_CLOSE);</span>
+<span class="nc" id="L46">    connect();</span>
 <span class="nc" id="L47">  }</span>
 
+  /**
+   * Constructs the client
+   * @param endpoint the URI to connect to
+   * @param listener a WebSocketListener to handle incoming messages
+   * @throws Exception thread interrupt or connection failure
+   */
+  public WebSocketClient(URI endpoint, WebSocketListener listener) throws Exception {
+<span class="nc" id="L56">    this(endpoint, listener, DEFAULT_ATTEMPTS, DEFAULT_TIMEOUT_MILLIS, DEFAULT_RETRY_ON_CLOSE);</span>
+<span class="nc" id="L57">  }</span>
+
+  /**
+   * Connect to server
+   * @throws Exception if error occurs
+   */
   public void connect() throws Exception {
     // try to connect to server
-<span class="nc" id="L51">    WebSocketContainer container = ContainerProvider.getWebSocketContainer();</span>
-<span class="nc" id="L52">    int failedAttempts = 0;</span>
-<span class="nc" id="L53">    Exception lastExcept = null;</span>
-<span class="nc bnc" id="L54" title="All 2 branches missed.">    for (int i = 0; i &lt; attempts; i++) {</span>
+<span class="nc" id="L65">    WebSocketContainer container = ContainerProvider.getWebSocketContainer();</span>
+<span class="nc" id="L66">    int failedAttempts = 0;</span>
+<span class="nc" id="L67">    Exception lastExcept = null;</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">    for (int i = 0; i &lt; attempts; i++) {</span>
       try {
-<span class="nc" id="L56">        container.connectToServer(this, endpoint);</span>
-<span class="nc" id="L57">        break;</span>
-<span class="nc" id="L58">      } catch (Exception e) {</span>
+<span class="nc" id="L70">        container.connectToServer(this, endpoint);</span>
+<span class="nc" id="L71">        break;</span>
+<span class="nc" id="L72">      } catch (Exception e) {</span>
         // increment failed attempts, sleep
-<span class="nc" id="L60">        failedAttempts++;</span>
-<span class="nc" id="L61">        lastExcept = e;</span>
-<span class="nc" id="L62">        Thread.sleep(timeoutMillis);</span>
+<span class="nc" id="L74">        failedAttempts++;</span>
+<span class="nc" id="L75">        lastExcept = e;</span>
+<span class="nc" id="L76">        Thread.sleep(timeoutMillis);</span>
       }
     }
 
     // throw connect exception if all attempts fail
-<span class="nc bnc" id="L67" title="All 2 branches missed.">    if (failedAttempts == attempts) {</span>
-<span class="nc" id="L68">      this.listener.onConnectFail();</span>
-<span class="nc" id="L69">      throw lastExcept;</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">    if (failedAttempts == attempts) {</span>
+<span class="nc" id="L82">      this.listener.onConnectFail();</span>
+<span class="nc" id="L83">      throw lastExcept;</span>
     }
-<span class="nc" id="L71">  }</span>
+<span class="nc" id="L85">  }</span>
 
+  /**
+   * Sets the session and listener
+   * @param session Session
+   * @throws IOException if IO error occurs
+   */
   @OnOpen
   public void onOpen(Session session) throws IOException {
-<span class="nc" id="L75">    this.session = session;</span>
-<span class="nc" id="L76">    this.listener.onOpen(session);</span>
-<span class="nc" id="L77">  }</span>
-
-  @OnClose
-  public void onClose(Session session, CloseReason reason) throws IOException {
-<span class="nc" id="L81">    this.listener.onClose(session, reason);</span>
-<span class="nc" id="L82">    this.session = null;</span>
-<span class="nc bnc" id="L83" title="All 2 branches missed.">    if (retryOnClose) {</span>
-      try {
-<span class="nc" id="L85">        this.connect();</span>
-<span class="nc" id="L86">      } catch (Exception e) {</span>
-        // failed to reconnect
-<span class="nc" id="L88">        this.listener.onReconnectFail();</span>
-<span class="nc" id="L89">      }</span>
-    }
-<span class="nc" id="L91">  }</span>
-
-  @OnMessage
-  public void onMessage(String message) throws IOException {
-<span class="nc" id="L95">    this.listener.onMessage(message);</span>
+<span class="nc" id="L94">    this.session = session;</span>
+<span class="nc" id="L95">    this.listener.onOpen(session);</span>
 <span class="nc" id="L96">  }</span>
 
+  /**
+   * Closes the session on the lister, sets constructor session to null
+   * Check if should be retryed
+   * @param session Session
+   * @param reason for close
+   * @throws IOException if IO error occurs
+   */
+  @OnClose
+  public void onClose(Session session, CloseReason reason) throws IOException {
+<span class="nc" id="L107">    this.listener.onClose(session, reason);</span>
+<span class="nc" id="L108">    this.session = null;</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">    if (retryOnClose) {</span>
+      try {
+<span class="nc" id="L111">        this.connect();</span>
+<span class="nc" id="L112">      } catch (Exception e) {</span>
+        // failed to reconnect
+<span class="nc" id="L114">        this.listener.onReconnectFail();</span>
+<span class="nc" id="L115">      }</span>
+    }
+<span class="nc" id="L117">  }</span>
+
+  /**
+   * Gives listener the message
+   * @param message String
+   * @throws IOException if IO error occurs
+   */
+  @OnMessage
+  public void onMessage(String message) throws IOException {
+<span class="nc" id="L126">    this.listener.onMessage(message);</span>
+<span class="nc" id="L127">  }</span>
+
+  /**
+   * Sets retry to false, then closes session
+   * @throws Exception if error occurs
+   */
   public void shutdown() throws Exception {
-<span class="nc" id="L99">    this.retryOnClose = false;</span>
-<span class="nc" id="L100">    this.session.close();</span>
-<span class="nc" id="L101">  }</span>
+<span class="nc" id="L134">    this.retryOnClose = false;</span>
+<span class="nc" id="L135">    this.session.close();</span>
+<span class="nc" id="L136">  }</span>
 
+  /** @param listener set WebSocketListener */
   public void setListener(WebSocketListener listener) {
-<span class="nc" id="L104">    this.listener = listener;</span>
-<span class="nc" id="L105">  }</span>
+<span class="nc" id="L140">    this.listener = listener;</span>
+<span class="nc" id="L141">  }</span>
 
+  /**
+   * Checks if there is an open session
+   * @return boolean
+   * @throws IOException if IO error occurs
+   */
   public boolean isConnected() throws IOException {
-<span class="nc bnc" id="L108" title="All 4 branches missed.">    return this.session != null &amp;&amp; this.session.isOpen();</span>
+<span class="nc bnc" id="L149" title="All 4 branches missed.">    return this.session != null &amp;&amp; this.session.isOpen();</span>
   }
 
 }

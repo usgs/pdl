@@ -134,7 +134,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <pre>public interface <span class="typeNameLabel">NotificationReceiver</span>
 extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util">Configurable</a></pre>
 <div class="block">Receives and processes notifications.
- 
+
  A NotificationReceiver receives and processes notifications, alerting
  NotificationListeners after they are processed.</div>
 </li>
@@ -269,7 +269,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <pre class="methodSignature"><a href="../product/Product.html" title="class in gov.usgs.earthquake.product">Product</a>&nbsp;retrieveProduct&#8203;(<a href="../product/ProductId.html" title="class in gov.usgs.earthquake.product">ProductId</a>&nbsp;id)
                  throws java.lang.Exception</pre>
 <div class="block">NotificationListeners use this method to request a product.
- 
+
  A NotificationReceiver may have many listeners, and should try to
  retrieve products once for each product id. This will typically generate
  a "local" notification, that, when expiring, signals the product may be
@@ -293,13 +293,13 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <pre class="methodSignature">void&nbsp;addNotificationListener&#8203;(<a href="NotificationListener.html" title="interface in gov.usgs.earthquake.distribution">NotificationListener</a>&nbsp;listener)
                       throws java.lang.Exception</pre>
 <div class="block">Add a NotificationListener.
- 
+
  Notifications processed after this call will be sent to listener.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>listener</code> - the listener to add.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if errors occur.</dd>
 </dl>
 </li>
 </ul>
@@ -312,13 +312,13 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <pre class="methodSignature">void&nbsp;removeNotificationListener&#8203;(<a href="NotificationListener.html" title="interface in gov.usgs.earthquake.distribution">NotificationListener</a>&nbsp;listener)
                          throws java.lang.Exception</pre>
 <div class="block">Remove a NotificationListener.
- 
+
  Notifications processed after this call will not be sent to listener.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>listener</code> - the listener to remove.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if errors occur.</dd>
 </dl>
 </li>
 </ul>
@@ -334,15 +334,15 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
                        java.util.List&lt;java.lang.String&gt;&nbsp;codes)
                 throws java.lang.Exception</pre>
 <div class="block">Send matching notifications to the listener.
- 
+
  This method is a way for listeners to search notifications that were
  processed while not an active listener. If sources, types, and codes are
  all null, a notifications for each known ProductId will be sent to
  listener.
- 
+
  For example, a new shakemap NotificationListener may wish to know about
  all known shakemaps.
- 
+
  <pre>
  NotificationListener shakemapListener;
  // register to receive new notifications as they arrive
@@ -360,7 +360,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <dd><code>types</code> - a list of types to search, or null for all types.</dd>
 <dd><code>codes</code> - a list of codes to search, or null for all codes.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if errors occur.</dd>
 </dl>
 </li>
 </ul>

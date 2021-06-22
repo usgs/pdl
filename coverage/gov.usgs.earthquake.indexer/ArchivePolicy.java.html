@@ -17,13 +17,13 @@ import java.util.logging.Logger;
  * archived. Generally, archiving means the data for that product/event is
  * removed from the index as well as the storage. Upon archiving, an
  * EVENT_ARCHIVED type of IndexerEvent is sent to interested listeners.
- * 
+ *
  * All archive policies run in their own thread (one thread separate from
  * indexing for all archive policies, not one each) and execute at configured
  * intervals.
- * 
+ *
  * @author emartinez
- * 
+ *
  */
 public class ArchivePolicy extends DefaultConfigurable {
 
@@ -39,24 +39,37 @@ public class ArchivePolicy extends DefaultConfigurable {
 	/** @deprecated */
 	public static final String ARCHIVE_MAX_AGE_PROPERTY = &quot;maxAge&quot;;
 
+	/** Property for archive minimum event age */
 	public static final String ARCHIVE_MIN_EVENT_AGE_PROPERTY = &quot;minEventAge&quot;;
+	/** Property for archive maximum event age */
 	public static final String ARCHIVE_MAX_EVENT_AGE_PROPERTY = &quot;maxEventAge&quot;;
 
+	/** Property for archive minimum event time */
 	public static final String ARCHIVE_MIN_EVENT_TIME_PROPERTY = &quot;minEventTime&quot;;
+	/** Property for archive maximum event time */
 	public static final String ARCHIVE_MAX_EVENT_TIME_PROPERTY = &quot;maxEventTime&quot;;
 
+	/** Property for archive minimum mag */
 	public static final String ARCHIVE_MIN_MAG_PROPERTY = &quot;minMag&quot;;
+	/** Property for archive maximum mag */
 	public static final String ARCHIVE_MAX_MAG_PROPERTY = &quot;maxMag&quot;;
 
+	/** Property for archive minimum latitude */
 	public static final String ARCHIVE_MIN_LAT_PROPERTY = &quot;minLat&quot;;
+	/** Property for archive maximum latitude */
 	public static final String ARCHIVE_MAX_LAT_PROPERTY = &quot;maxLat&quot;;
 
+	/** Property for archive minimum longitude */
 	public static final String ARCHIVE_MIN_LNG_PROPERTY = &quot;minLng&quot;;
+	/** Property for archive maximum longitude */
 	public static final String ARCHIVE_MAX_LNG_PROPERTY = &quot;maxLng&quot;;
 
+	/** Property for archive minimum depth */
 	public static final String ARCHIVE_MIN_DEPTH_PROPERTY = &quot;minDepth&quot;;
+	/** Property for archive maximum depth */
 	public static final String ARCHIVE_MAX_DEPTH_PROPERTY = &quot;maxDepth&quot;;
 
+	/** Property for archive event source */
 	public static final String ARCHIVE_EVENT_SOURCE_PROPERTY = &quot;eventSource&quot;;
 
 	// --------------------------------------------------------------------
@@ -64,127 +77,142 @@ public class ArchivePolicy extends DefaultConfigurable {
 	// --------------------------------------------------------------------
 
 	/** @deprecated */
-<span class="fc" id="L67">	protected Long minAge = null;</span>
+<span class="fc" id="L80">	protected Long minAge = null;</span>
 	/** @deprecated */
-<span class="fc" id="L69">	protected Long maxAge = null;</span>
+<span class="fc" id="L82">	protected Long maxAge = null;</span>
 
-<span class="fc" id="L71">	protected Long minEventAge = null;</span>
-<span class="fc" id="L72">	protected Long maxEventAge = null;</span>
+	/** Configured parameter var for minEventAge */
+<span class="fc" id="L85">	protected Long minEventAge = null;</span>
+	/** Configured parameter var for maxEventAge */
+<span class="fc" id="L87">	protected Long maxEventAge = null;</span>
 
-<span class="fc" id="L74">	protected Long minEventTime = null;</span>
-<span class="fc" id="L75">	protected Long maxEventTime = null;</span>
+	/** Configured parameter var for minEventTime */
+<span class="fc" id="L90">	protected Long minEventTime = null;</span>
+	/** Configured parameter var for maxEventTime */
+<span class="fc" id="L92">	protected Long maxEventTime = null;</span>
 
-<span class="fc" id="L77">	protected BigDecimal minMag = null;</span>
-<span class="fc" id="L78">	protected BigDecimal maxMag = null;</span>
+	/** Configured parameter var for minMag */
+<span class="fc" id="L95">	protected BigDecimal minMag = null;</span>
+	/** Configured parameter var for maxMag */
+<span class="fc" id="L97">	protected BigDecimal maxMag = null;</span>
 
-<span class="fc" id="L80">	protected BigDecimal minLat = null;</span>
-<span class="fc" id="L81">	protected BigDecimal maxLat = null;</span>
+	/** Configured parameter var for minLat */
+<span class="fc" id="L100">	protected BigDecimal minLat = null;</span>
+	/** Configured parameter var for maxLat */
+<span class="fc" id="L102">	protected BigDecimal maxLat = null;</span>
 
-<span class="fc" id="L83">	protected BigDecimal minLng = null;</span>
-<span class="fc" id="L84">	protected BigDecimal maxLng = null;</span>
+	/** Configured parameter var for minLng */
+<span class="fc" id="L105">	protected BigDecimal minLng = null;</span>
+	/** Configured parameter var for maxLng */
+<span class="fc" id="L107">	protected BigDecimal maxLng = null;</span>
 
-<span class="fc" id="L86">	protected BigDecimal minDepth = null;</span>
-<span class="fc" id="L87">	protected BigDecimal maxDepth = null;</span>
+	/** Configured parameter var for minDepth */
+<span class="fc" id="L110">	protected BigDecimal minDepth = null;</span>
+	/** Configured parameter var for maxDepth */
+<span class="fc" id="L112">	protected BigDecimal maxDepth = null;</span>
 
-<span class="fc" id="L89">	protected String eventSource = null;</span>
+	/** Configured parameter var for eventSource */
+<span class="fc" id="L115">	protected String eventSource = null;</span>
 
-<span class="fc" id="L91">	public ArchivePolicy() {</span>
+	/** Default Constructor */
+<span class="fc" id="L118">	public ArchivePolicy() {</span>
 		// Default constructor
-<span class="fc" id="L93">	}</span>
+<span class="fc" id="L120">	}</span>
 
 	@Override
 	public void configure(Config config) throws Exception {
-<span class="fc" id="L97">		minEventAge = parseLong(config, ARCHIVE_MIN_EVENT_AGE_PROPERTY);</span>
-<span class="fc" id="L98">		maxEventAge = parseLong(config, ARCHIVE_MAX_EVENT_AGE_PROPERTY);</span>
+<span class="fc" id="L124">		minEventAge = parseLong(config, ARCHIVE_MIN_EVENT_AGE_PROPERTY);</span>
+<span class="fc" id="L125">		maxEventAge = parseLong(config, ARCHIVE_MAX_EVENT_AGE_PROPERTY);</span>
 
-<span class="fc" id="L100">		minEventTime = parseDateOrLong(config, ARCHIVE_MIN_EVENT_TIME_PROPERTY);</span>
-<span class="fc" id="L101">		maxEventTime = parseDateOrLong(config, ARCHIVE_MAX_EVENT_TIME_PROPERTY);</span>
+<span class="fc" id="L127">		minEventTime = parseDateOrLong(config, ARCHIVE_MIN_EVENT_TIME_PROPERTY);</span>
+<span class="fc" id="L128">		maxEventTime = parseDateOrLong(config, ARCHIVE_MAX_EVENT_TIME_PROPERTY);</span>
 
-<span class="fc" id="L103">		minAge = parseLong(config, ARCHIVE_MIN_AGE_PROPERTY);</span>
-<span class="fc bfc" id="L104" title="All 2 branches covered.">		if (minAge != null) {</span>
-<span class="fc" id="L105">			LOGGER.config(&quot;Use of minAge property is deprecated.&quot;);</span>
+<span class="fc" id="L130">		minAge = parseLong(config, ARCHIVE_MIN_AGE_PROPERTY);</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">		if (minAge != null) {</span>
+<span class="fc" id="L132">			LOGGER.config(&quot;Use of minAge property is deprecated.&quot;);</span>
 		}
-<span class="fc" id="L107">		maxAge = parseLong(config, ARCHIVE_MAX_AGE_PROPERTY);</span>
-<span class="fc bfc" id="L108" title="All 2 branches covered.">		if (maxAge != null) {</span>
-<span class="fc" id="L109">			LOGGER.config(&quot;Use of maxAge property is deprecated.&quot;);</span>
+<span class="fc" id="L134">		maxAge = parseLong(config, ARCHIVE_MAX_AGE_PROPERTY);</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">		if (maxAge != null) {</span>
+<span class="fc" id="L136">			LOGGER.config(&quot;Use of maxAge property is deprecated.&quot;);</span>
 		}
 
-<span class="pc bpc" id="L112" title="1 of 4 branches missed.">		if (minEventAge != null &amp;&amp; maxEventTime != null) {</span>
-<span class="nc" id="L113">			LOGGER.config(&quot;Both minEventAge and maxEventTime were specified. &quot;</span>
+<span class="pc bpc" id="L139" title="1 of 4 branches missed.">		if (minEventAge != null &amp;&amp; maxEventTime != null) {</span>
+<span class="nc" id="L140">			LOGGER.config(&quot;Both minEventAge and maxEventTime were specified. &quot;</span>
 					+ &quot;Ignoring minEventAge. Only maxEventTime will be used.&quot;);
 		}
-<span class="pc bpc" id="L116" title="1 of 4 branches missed.">		if (maxEventAge != null &amp;&amp; minEventTime != null) {</span>
-<span class="nc" id="L117">			LOGGER.config(&quot;Both maxEventAge and minEventTime were specified. &quot;</span>
+<span class="pc bpc" id="L143" title="1 of 4 branches missed.">		if (maxEventAge != null &amp;&amp; minEventTime != null) {</span>
+<span class="nc" id="L144">			LOGGER.config(&quot;Both maxEventAge and minEventTime were specified. &quot;</span>
 					+ &quot;Ignoring maxEventAge. Only minEventTime will be used.&quot;);
 		}
 
-<span class="pc bpc" id="L121" title="2 of 12 branches missed.">		if ((minAge != null || maxAge != null)</span>
+<span class="pc bpc" id="L148" title="2 of 12 branches missed.">		if ((minAge != null || maxAge != null)</span>
 				&amp;&amp; (minEventAge != null || maxEventAge != null
 						|| minEventTime != null || maxEventTime != null)) {
 
-<span class="fc" id="L125">			ConfigurationException ce = new ConfigurationException(</span>
+<span class="fc" id="L152">			ConfigurationException ce = new ConfigurationException(</span>
 					&quot;Configuration mismatch. Can not specify both &quot;
 							+ &quot;minAge/maxAge (legacy) properties as well as &quot;
 							+ &quot;minEventAge/maxEventAge or minEventTime/maxEventTime.&quot;);
 
-<span class="fc" id="L130">			ce.fillInStackTrace();</span>
-<span class="fc" id="L131">			throw ce;</span>
+<span class="fc" id="L157">			ce.fillInStackTrace();</span>
+<span class="fc" id="L158">			throw ce;</span>
 		}
 
-<span class="fc bfc" id="L134" title="All 4 branches covered.">		if ((minEventAge != null &amp;&amp; maxEventAge != null)</span>
-<span class="fc bfc" id="L135" title="All 2 branches covered.">				&amp;&amp; (minEventAge &gt; maxEventAge)) {</span>
+<span class="fc bfc" id="L161" title="All 4 branches covered.">		if ((minEventAge != null &amp;&amp; maxEventAge != null)</span>
+<span class="fc bfc" id="L162" title="All 2 branches covered.">				&amp;&amp; (minEventAge &gt; maxEventAge)) {</span>
 
-<span class="fc" id="L137">			ConfigurationException ce = new ConfigurationException(</span>
+<span class="fc" id="L164">			ConfigurationException ce = new ConfigurationException(</span>
 					&quot;Configuration mismatch. minEventAge &quot;
 							+ &quot;greater than maxEventAge.&quot;);
-<span class="fc" id="L140">			ce.fillInStackTrace();</span>
-<span class="fc" id="L141">			throw ce;</span>
+<span class="fc" id="L167">			ce.fillInStackTrace();</span>
+<span class="fc" id="L168">			throw ce;</span>
 		}
 
-<span class="pc bpc" id="L144" title="1 of 4 branches missed.">		if ((minEventTime != null &amp;&amp; maxEventTime != null)</span>
-<span class="fc bfc" id="L145" title="All 2 branches covered.">				&amp;&amp; (minEventTime &gt; maxEventTime)) {</span>
+<span class="pc bpc" id="L171" title="1 of 4 branches missed.">		if ((minEventTime != null &amp;&amp; maxEventTime != null)</span>
+<span class="fc bfc" id="L172" title="All 2 branches covered.">				&amp;&amp; (minEventTime &gt; maxEventTime)) {</span>
 
-<span class="fc" id="L147">			ConfigurationException ce = new ConfigurationException(</span>
+<span class="fc" id="L174">			ConfigurationException ce = new ConfigurationException(</span>
 					&quot;Configuration mismatch. minEventTime &quot;
 							+ &quot;greater than maxEventTime.&quot;);
-<span class="fc" id="L150">			ce.fillInStackTrace();</span>
-<span class="fc" id="L151">			throw ce;</span>
+<span class="fc" id="L177">			ce.fillInStackTrace();</span>
+<span class="fc" id="L178">			throw ce;</span>
 		}
 
-<span class="fc" id="L154">		minMag = parseBigDecimal(config, ARCHIVE_MIN_MAG_PROPERTY);</span>
-<span class="fc" id="L155">		maxMag = parseBigDecimal(config, ARCHIVE_MAX_MAG_PROPERTY);</span>
-<span class="fc" id="L156">		minLat = parseBigDecimal(config, ARCHIVE_MIN_LAT_PROPERTY);</span>
-<span class="fc" id="L157">		maxLat = parseBigDecimal(config, ARCHIVE_MAX_LAT_PROPERTY);</span>
-<span class="fc" id="L158">		minLng = parseBigDecimal(config, ARCHIVE_MIN_LNG_PROPERTY);</span>
-<span class="fc" id="L159">		maxLng = parseBigDecimal(config, ARCHIVE_MAX_LNG_PROPERTY);</span>
-<span class="fc" id="L160">		minDepth = parseBigDecimal(config, ARCHIVE_MIN_DEPTH_PROPERTY);</span>
-<span class="fc" id="L161">		maxDepth = parseBigDecimal(config, ARCHIVE_MAX_DEPTH_PROPERTY);</span>
-<span class="fc" id="L162">		eventSource = config.getProperty(ARCHIVE_EVENT_SOURCE_PROPERTY);</span>
-<span class="fc" id="L163">	}</span>
+<span class="fc" id="L181">		minMag = parseBigDecimal(config, ARCHIVE_MIN_MAG_PROPERTY);</span>
+<span class="fc" id="L182">		maxMag = parseBigDecimal(config, ARCHIVE_MAX_MAG_PROPERTY);</span>
+<span class="fc" id="L183">		minLat = parseBigDecimal(config, ARCHIVE_MIN_LAT_PROPERTY);</span>
+<span class="fc" id="L184">		maxLat = parseBigDecimal(config, ARCHIVE_MAX_LAT_PROPERTY);</span>
+<span class="fc" id="L185">		minLng = parseBigDecimal(config, ARCHIVE_MIN_LNG_PROPERTY);</span>
+<span class="fc" id="L186">		maxLng = parseBigDecimal(config, ARCHIVE_MAX_LNG_PROPERTY);</span>
+<span class="fc" id="L187">		minDepth = parseBigDecimal(config, ARCHIVE_MIN_DEPTH_PROPERTY);</span>
+<span class="fc" id="L188">		maxDepth = parseBigDecimal(config, ARCHIVE_MAX_DEPTH_PROPERTY);</span>
+<span class="fc" id="L189">		eventSource = config.getProperty(ARCHIVE_EVENT_SOURCE_PROPERTY);</span>
+<span class="fc" id="L190">	}</span>
 
 	@Override
 	public void shutdown() throws Exception {
 		// Nothing to do
-<span class="nc" id="L168">	}</span>
+<span class="nc" id="L195">	}</span>
 
 	@Override
 	public void startup() throws Exception {
 		// Nothing to do
-<span class="nc" id="L173">	}</span>
+<span class="nc" id="L200">	}</span>
 
+	/** @return a ProductIndexQuery */
 	public ProductIndexQuery getIndexQuery() {
-<span class="fc" id="L176">		ProductIndexQuery productIndexQuery = new ProductIndexQuery();</span>
-<span class="fc" id="L177">		Date now = new Date();</span>
+<span class="fc" id="L204">		ProductIndexQuery productIndexQuery = new ProductIndexQuery();</span>
+<span class="fc" id="L205">		Date now = new Date();</span>
 
-<span class="fc bfc" id="L179" title="All 2 branches covered.">		if (minAge != null) {</span>
+<span class="fc bfc" id="L207" title="All 2 branches covered.">		if (minAge != null) {</span>
 			// min age corresponds to minimum event time
-<span class="fc" id="L181">			productIndexQuery.setMinEventTime(new Date(now.getTime()</span>
-<span class="fc" id="L182">					- minAge.longValue()));</span>
+<span class="fc" id="L209">			productIndexQuery.setMinEventTime(new Date(now.getTime()</span>
+<span class="fc" id="L210">					- minAge.longValue()));</span>
 		}
-<span class="fc bfc" id="L184" title="All 2 branches covered.">		if (maxAge != null) {</span>
+<span class="fc bfc" id="L212" title="All 2 branches covered.">		if (maxAge != null) {</span>
 			// max age corresponds to maximum event time
-<span class="fc" id="L186">			productIndexQuery.setMaxEventTime(new Date(now.getTime()</span>
-<span class="fc" id="L187">					- maxAge.longValue()));</span>
+<span class="fc" id="L214">			productIndexQuery.setMaxEventTime(new Date(now.getTime()</span>
+<span class="fc" id="L215">					- maxAge.longValue()));</span>
 		}
 
 		/*-
@@ -198,9 +226,9 @@ public class ArchivePolicy extends DefaultConfigurable {
 		   |------------------&gt; minTime                |
 		   |                                           |
 		   |--------------------------------------&gt; maxTime
-		   
+
 		 Simple Example (not to scale)
-		 
+
 		   0 (Epoch)                                              (Now) 100,000
 		   |------------------- maxAge &lt;--- (10,000) --------------------- |
 		   |                       |                                       |
@@ -211,54 +239,55 @@ public class ArchivePolicy extends DefaultConfigurable {
 		   |----- (90,000) ---&gt; minTime                |
 		   |                                           |
 		   |------------------------- (99,000) ---&gt; maxTime
-		   
+
 		   Events occurring in the *** time span will match the query and be
 		   archived.
 		 */
 
-<span class="fc bfc" id="L219" title="All 2 branches covered.">		if (maxEventAge != null) {</span>
-<span class="fc" id="L220">			productIndexQuery.setMinEventTime(new Date(now.getTime()</span>
-<span class="fc" id="L221">					- maxEventAge.longValue()));</span>
+<span class="fc bfc" id="L247" title="All 2 branches covered.">		if (maxEventAge != null) {</span>
+<span class="fc" id="L248">			productIndexQuery.setMinEventTime(new Date(now.getTime()</span>
+<span class="fc" id="L249">					- maxEventAge.longValue()));</span>
 		}
-<span class="fc bfc" id="L223" title="All 2 branches covered.">		if (minEventAge != null) {</span>
-<span class="fc" id="L224">			productIndexQuery.setMaxEventTime(new Date(now.getTime()</span>
-<span class="fc" id="L225">					- minEventAge.longValue()));</span>
-		}
-
-<span class="pc bpc" id="L228" title="1 of 2 branches missed.">		if (minEventTime != null) {</span>
-<span class="nc" id="L229">			productIndexQuery</span>
-<span class="nc" id="L230">					.setMinEventTime(new Date(minEventTime.longValue()));</span>
-		}
-<span class="fc bfc" id="L232" title="All 2 branches covered.">		if (maxEventTime != null) {</span>
-<span class="fc" id="L233">			productIndexQuery</span>
-<span class="fc" id="L234">					.setMaxEventTime(new Date(maxEventTime.longValue()));</span>
+<span class="fc bfc" id="L251" title="All 2 branches covered.">		if (minEventAge != null) {</span>
+<span class="fc" id="L252">			productIndexQuery.setMaxEventTime(new Date(now.getTime()</span>
+<span class="fc" id="L253">					- minEventAge.longValue()));</span>
 		}
 
-<span class="fc" id="L237">		productIndexQuery.setMinEventMagnitude(minMag);</span>
-<span class="fc" id="L238">		productIndexQuery.setMaxEventMagnitude(maxMag);</span>
-<span class="fc" id="L239">		productIndexQuery.setMinEventLatitude(minLat);</span>
-<span class="fc" id="L240">		productIndexQuery.setMaxEventLatitude(maxLat);</span>
-<span class="fc" id="L241">		productIndexQuery.setMinEventLongitude(minLng);</span>
-<span class="fc" id="L242">		productIndexQuery.setMaxEventLongitude(maxLng);</span>
-<span class="fc" id="L243">		productIndexQuery.setMinEventDepth(minDepth);</span>
-<span class="fc" id="L244">		productIndexQuery.setMaxEventDepth(maxDepth);</span>
-<span class="fc" id="L245">		productIndexQuery.setEventSource(eventSource);</span>
+<span class="pc bpc" id="L256" title="1 of 2 branches missed.">		if (minEventTime != null) {</span>
+<span class="nc" id="L257">			productIndexQuery</span>
+<span class="nc" id="L258">					.setMinEventTime(new Date(minEventTime.longValue()));</span>
+		}
+<span class="fc bfc" id="L260" title="All 2 branches covered.">		if (maxEventTime != null) {</span>
+<span class="fc" id="L261">			productIndexQuery</span>
+<span class="fc" id="L262">					.setMaxEventTime(new Date(maxEventTime.longValue()));</span>
+		}
+
+<span class="fc" id="L265">		productIndexQuery.setMinEventMagnitude(minMag);</span>
+<span class="fc" id="L266">		productIndexQuery.setMaxEventMagnitude(maxMag);</span>
+<span class="fc" id="L267">		productIndexQuery.setMinEventLatitude(minLat);</span>
+<span class="fc" id="L268">		productIndexQuery.setMaxEventLatitude(maxLat);</span>
+<span class="fc" id="L269">		productIndexQuery.setMinEventLongitude(minLng);</span>
+<span class="fc" id="L270">		productIndexQuery.setMaxEventLongitude(maxLng);</span>
+<span class="fc" id="L271">		productIndexQuery.setMinEventDepth(minDepth);</span>
+<span class="fc" id="L272">		productIndexQuery.setMaxEventDepth(maxDepth);</span>
+<span class="fc" id="L273">		productIndexQuery.setEventSource(eventSource);</span>
 
 		// this archive policy is only for events, only remove events based on
 		// their preferred properties
-<span class="fc" id="L249">		productIndexQuery</span>
-<span class="fc" id="L250">				.setEventSearchType(ProductIndexQuery.SEARCH_EVENT_PREFERRED);</span>
-		
-<span class="fc" id="L252">		productIndexQuery.setResultType(ProductIndexQuery.RESULT_TYPE_ALL);</span>
-		
-<span class="fc" id="L254">		return productIndexQuery;</span>
+<span class="fc" id="L277">		productIndexQuery</span>
+<span class="fc" id="L278">				.setEventSearchType(ProductIndexQuery.SEARCH_EVENT_PREFERRED);</span>
+
+<span class="fc" id="L280">		productIndexQuery.setResultType(ProductIndexQuery.RESULT_TYPE_ALL);</span>
+
+<span class="fc" id="L282">		return productIndexQuery;</span>
 	}
 
+	/** @return boolean if the policy is valid */
 	public boolean isValidPolicy() {
 		// Not valid if using both old and new configuration methods
-<span class="pc bpc" id="L259" title="6 of 8 branches missed.">		boolean valid = !((minAge != null || maxAge != null) &amp;&amp; (minEventAge != null || maxEventAge != null));</span>
+<span class="pc bpc" id="L288" title="6 of 8 branches missed.">		boolean valid = !((minAge != null || maxAge != null) &amp;&amp; (minEventAge != null || maxEventAge != null));</span>
 
-<span class="pc bpc" id="L261" title="28 of 32 branches missed.">		return valid</span>
+<span class="pc bpc" id="L290" title="28 of 32 branches missed.">		return valid</span>
 				&amp;&amp; (minAge != null || maxAge != null || minEventAge != null
 						|| maxEventAge != null || minEventTime != null
 						|| maxEventTime != null || minMag != null
@@ -267,175 +296,227 @@ public class ArchivePolicy extends DefaultConfigurable {
 						|| maxDepth != null || eventSource != null);
 	}
 
+	/**
+	 * Gets the property 'name' from config and returns a BigDecimal of it
+	 * @param config Config file
+	 * @param name name of property from config
+	 * @return BigDecimal of property
+	 */
 	protected BigDecimal parseBigDecimal(Config config, String name) {
-<span class="fc" id="L271">		BigDecimal property = null;</span>
+<span class="fc" id="L306">		BigDecimal property = null;</span>
 		try {
-<span class="fc" id="L273">			String buffer = config.getProperty(name);</span>
-<span class="pc bpc" id="L274" title="1 of 2 branches missed.">			if (buffer != null) {</span>
-<span class="nc" id="L275">				property = new BigDecimal(buffer);</span>
+<span class="fc" id="L308">			String buffer = config.getProperty(name);</span>
+<span class="pc bpc" id="L309" title="1 of 2 branches missed.">			if (buffer != null) {</span>
+<span class="nc" id="L310">				property = new BigDecimal(buffer);</span>
 			}
-<span class="nc" id="L277">		} catch (NumberFormatException npx) {</span>
-<span class="nc" id="L278">			property = null;</span>
-<span class="fc" id="L279">		}</span>
-<span class="fc" id="L280">		return property;</span>
+<span class="nc" id="L312">		} catch (NumberFormatException npx) {</span>
+<span class="nc" id="L313">			property = null;</span>
+<span class="fc" id="L314">		}</span>
+<span class="fc" id="L315">		return property;</span>
 	}
 
+	/**
+	 * Gets the property 'name' from config and returns a Date/Long of it
+	 * @param config Config file
+	 * @param name name of property from config
+	 * @return Date/Long of property
+	 */
 	protected Long parseDateOrLong(Config config, String name) {
-<span class="fc" id="L284">		Long property = null;</span>
+<span class="fc" id="L325">		Long property = null;</span>
 		try {
-<span class="fc" id="L286">			String buffer = config.getProperty(name);</span>
-<span class="fc bfc" id="L287" title="All 2 branches covered.">			if (buffer != null) {</span>
-<span class="pc bpc" id="L288" title="1 of 2 branches missed.">				if (buffer.indexOf(&quot;T&quot;) != -1) {</span>
+<span class="fc" id="L327">			String buffer = config.getProperty(name);</span>
+<span class="fc bfc" id="L328" title="All 2 branches covered.">			if (buffer != null) {</span>
+<span class="pc bpc" id="L329" title="1 of 2 branches missed.">				if (buffer.indexOf(&quot;T&quot;) != -1) {</span>
 					// try parsing as date
-<span class="nc" id="L290">					Date date = ISO8601.parse(buffer);</span>
-<span class="nc bnc" id="L291" title="All 2 branches missed.">					if (date != null) {</span>
-<span class="nc" id="L292">						property = date.getTime();</span>
+<span class="nc" id="L331">					Date date = ISO8601.parse(buffer);</span>
+<span class="nc bnc" id="L332" title="All 2 branches missed.">					if (date != null) {</span>
+<span class="nc" id="L333">						property = date.getTime();</span>
 					}
-<span class="nc" id="L294">				} else {</span>
-<span class="fc" id="L295">					property = Long.valueOf(buffer);</span>
+<span class="nc" id="L335">				} else {</span>
+<span class="fc" id="L336">					property = Long.valueOf(buffer);</span>
 				}
 			}
-<span class="nc" id="L298">		} catch (NumberFormatException npx) {</span>
-<span class="nc" id="L299">			property = null;</span>
-<span class="fc" id="L300">		}</span>
-<span class="fc" id="L301">		return property;</span>
+<span class="nc" id="L339">		} catch (NumberFormatException npx) {</span>
+<span class="nc" id="L340">			property = null;</span>
+<span class="fc" id="L341">		}</span>
+<span class="fc" id="L342">		return property;</span>
 	}
 
+	/**
+	 * Gets the property 'name' from config and returns a Long of it
+	 * @param config Config file
+	 * @param name name of property from config
+	 * @return Long of property
+	 */
 	protected Long parseLong(Config config, String name) {
-<span class="fc" id="L305">		Long property = null;</span>
+<span class="fc" id="L352">		Long property = null;</span>
 		try {
-<span class="fc" id="L307">			String buffer = config.getProperty(name);</span>
-<span class="fc bfc" id="L308" title="All 2 branches covered.">			if (buffer != null) {</span>
-<span class="fc" id="L309">				property = Long.valueOf(buffer);</span>
+<span class="fc" id="L354">			String buffer = config.getProperty(name);</span>
+<span class="fc bfc" id="L355" title="All 2 branches covered.">			if (buffer != null) {</span>
+<span class="fc" id="L356">				property = Long.valueOf(buffer);</span>
 			}
-<span class="nc" id="L311">		} catch (NumberFormatException npx) {</span>
-<span class="nc" id="L312">			property = null;</span>
-<span class="fc" id="L313">		}</span>
-<span class="fc" id="L314">		return property;</span>
+<span class="nc" id="L358">		} catch (NumberFormatException npx) {</span>
+<span class="nc" id="L359">			property = null;</span>
+<span class="fc" id="L360">		}</span>
+<span class="fc" id="L361">		return property;</span>
 	}
 
-	/** @deprecated */
+	/** @deprecated
+	 * @return minAge
+	 */
 	public Long getMinAge() {
-<span class="nc" id="L319">		return minAge;</span>
+<span class="nc" id="L368">		return minAge;</span>
 	}
 
-	/** @deprecated */
+	/** @deprecated
+	 * @param minAge to set
+	 */
 	public void setMinAge(Long minAge) {
-<span class="nc" id="L324">		this.minAge = minAge;</span>
-<span class="nc" id="L325">	}</span>
+<span class="nc" id="L375">		this.minAge = minAge;</span>
+<span class="nc" id="L376">	}</span>
 
-	/** @deprecated */
+	/** @deprecated
+	 * @return maxAge
+	 */
 	public Long getMaxAge() {
-<span class="nc" id="L329">		return maxAge;</span>
+<span class="nc" id="L382">		return maxAge;</span>
 	}
 
-	/** @deprecated */
+	/** @deprecated
+	 * @param maxAge to set
+	 */
 	public void setMaxAge(Long maxAge) {
-<span class="nc" id="L334">		this.maxAge = maxAge;</span>
-<span class="nc" id="L335">	}</span>
+<span class="nc" id="L389">		this.maxAge = maxAge;</span>
+<span class="nc" id="L390">	}</span>
 
+	/** @return minEventAge */
 	public Long getMinEventAge() {
-<span class="nc" id="L338">		return minEventAge;</span>
+<span class="nc" id="L394">		return minEventAge;</span>
 	}
 
+	/** @param minEventAge to set */
 	public void setMinEventAge(Long minEventAge) {
-<span class="nc" id="L342">		this.minEventAge = minEventAge;</span>
-<span class="nc" id="L343">	}</span>
+<span class="nc" id="L399">		this.minEventAge = minEventAge;</span>
+<span class="nc" id="L400">	}</span>
 
+	/** @return maxEventAge */
 	public Long getMaxEventAge() {
-<span class="nc" id="L346">		return maxEventAge;</span>
+<span class="nc" id="L404">		return maxEventAge;</span>
 	}
 
+	/** @param maxEventAge to set */
 	public void setMaxEventAge(Long maxEventAge) {
-<span class="nc" id="L350">		this.maxEventAge = maxEventAge;</span>
-<span class="nc" id="L351">	}</span>
+<span class="nc" id="L409">		this.maxEventAge = maxEventAge;</span>
+<span class="nc" id="L410">	}</span>
 
+	/** @return minEventTime */
 	public Long getMinEventTime() {
-<span class="nc" id="L354">		return minEventTime;</span>
+<span class="nc" id="L414">		return minEventTime;</span>
 	}
 
+	/** @param minEventTime to set */
 	public void setMinEventTime(Long minEventTime) {
-<span class="nc" id="L358">		this.minEventTime = minEventTime;</span>
-<span class="nc" id="L359">	}</span>
+<span class="nc" id="L419">		this.minEventTime = minEventTime;</span>
+<span class="nc" id="L420">	}</span>
 
+	/** @return maxEventTime */
 	public Long getMaxEventTime() {
-<span class="nc" id="L362">		return maxEventTime;</span>
+<span class="nc" id="L424">		return maxEventTime;</span>
 	}
 
+	/** @param maxEventTime to set  */
 	public void setMaxEventTime(Long maxEventTime) {
-<span class="nc" id="L366">		this.maxEventTime = maxEventTime;</span>
-<span class="nc" id="L367">	}</span>
+<span class="nc" id="L429">		this.maxEventTime = maxEventTime;</span>
+<span class="nc" id="L430">	}</span>
 
+	/** @return minMag */
 	public BigDecimal getMinMag() {
-<span class="nc" id="L370">		return minMag;</span>
+<span class="nc" id="L434">		return minMag;</span>
 	}
 
+	/** @param minMag to set  */
 	public void setMinMag(BigDecimal minMag) {
-<span class="nc" id="L374">		this.minMag = minMag;</span>
-<span class="nc" id="L375">	}</span>
+<span class="nc" id="L439">		this.minMag = minMag;</span>
+<span class="nc" id="L440">	}</span>
 
+	/** @return maxMag */
 	public BigDecimal getMaxMag() {
-<span class="nc" id="L378">		return maxMag;</span>
+<span class="nc" id="L444">		return maxMag;</span>
 	}
 
+	/** @param maxMag to set */
 	public void setMaxMag(BigDecimal maxMag) {
-<span class="nc" id="L382">		this.maxMag = maxMag;</span>
-<span class="nc" id="L383">	}</span>
+<span class="nc" id="L449">		this.maxMag = maxMag;</span>
+<span class="nc" id="L450">	}</span>
 
+	/** @return minLat */
 	public BigDecimal getMinLat() {
-<span class="nc" id="L386">		return minLat;</span>
+<span class="nc" id="L454">		return minLat;</span>
 	}
 
+	/** @param minLat to set */
 	public void setMinLat(BigDecimal minLat) {
-<span class="nc" id="L390">		this.minLat = minLat;</span>
-<span class="nc" id="L391">	}</span>
+<span class="nc" id="L459">		this.minLat = minLat;</span>
+<span class="nc" id="L460">	}</span>
 
+	/** @return maxLat */
 	public BigDecimal getMaxLat() {
-<span class="nc" id="L394">		return maxLat;</span>
+<span class="nc" id="L464">		return maxLat;</span>
 	}
 
+	/** @param maxLat to set */
 	public void setMaxLat(BigDecimal maxLat) {
-<span class="nc" id="L398">		this.maxLat = maxLat;</span>
-<span class="nc" id="L399">	}</span>
+<span class="nc" id="L469">		this.maxLat = maxLat;</span>
+<span class="nc" id="L470">	}</span>
 
+	/** @return minLng */
 	public BigDecimal getMinLng() {
-<span class="nc" id="L402">		return minLng;</span>
+<span class="nc" id="L474">		return minLng;</span>
 	}
 
+	/** @param minLng to set */
 	public void setMinLng(BigDecimal minLng) {
-<span class="nc" id="L406">		this.minLng = minLng;</span>
-<span class="nc" id="L407">	}</span>
+<span class="nc" id="L479">		this.minLng = minLng;</span>
+<span class="nc" id="L480">	}</span>
 
+	/** @return maxLng */
 	public BigDecimal getMaxLng() {
-<span class="nc" id="L410">		return maxLng;</span>
+<span class="nc" id="L484">		return maxLng;</span>
 	}
 
+	/** @param maxLng to set */
 	public void setMaxLng(BigDecimal maxLng) {
-<span class="nc" id="L414">		this.maxLng = maxLng;</span>
-<span class="nc" id="L415">	}</span>
+<span class="nc" id="L489">		this.maxLng = maxLng;</span>
+<span class="nc" id="L490">	}</span>
 
+	/** @return minDepth */
 	public BigDecimal getMinDepth() {
-<span class="nc" id="L418">		return minDepth;</span>
+<span class="nc" id="L494">		return minDepth;</span>
 	}
 
+	/** @param minDepth to set */
 	public void setMinDepth(BigDecimal minDepth) {
-<span class="nc" id="L422">		this.minDepth = minDepth;</span>
-<span class="nc" id="L423">	}</span>
+<span class="nc" id="L499">		this.minDepth = minDepth;</span>
+<span class="nc" id="L500">	}</span>
 
+	/** @return maxDepth */
 	public BigDecimal getMaxDepth() {
-<span class="nc" id="L426">		return maxDepth;</span>
+<span class="nc" id="L504">		return maxDepth;</span>
 	}
 
+	/** @param maxDepth to set */
 	public void setMaxDepth(BigDecimal maxDepth) {
-<span class="nc" id="L430">		this.maxDepth = maxDepth;</span>
-<span class="nc" id="L431">	}</span>
+<span class="nc" id="L509">		this.maxDepth = maxDepth;</span>
+<span class="nc" id="L510">	}</span>
 
+	/** @return eventSource */
 	public String getEventSource() {
-<span class="nc" id="L434">		return eventSource;</span>
+<span class="nc" id="L514">		return eventSource;</span>
 	}
 
+	/** @param eventSource to set */
 	public void setEventSource(String eventSource) {
-<span class="fc" id="L438">		this.eventSource = eventSource;</span>
-<span class="fc" id="L439">	}</span>
+<span class="fc" id="L519">		this.eventSource = eventSource;</span>
+<span class="fc" id="L520">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

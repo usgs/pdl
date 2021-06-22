@@ -18,44 +18,46 @@ import gov.usgs.earthquake.qdm.Regions;
      * Parse {@link gov.usgs.earthquake.qdm.Regions} from a GeoJSON feature collection.
      *
      * @param json geojson feature collection.
+     * @return Regions
      */
     public Regions parseRegions(final JsonObject json) {
-<span class="fc" id="L23">        Regions regions = new Regions();</span>
+<span class="fc" id="L24">        Regions regions = new Regions();</span>
         // NEIC is always the default
-<span class="fc" id="L25">        regions.defaultNetid = &quot;us&quot;;</span>
+<span class="fc" id="L26">        regions.defaultNetid = &quot;us&quot;;</span>
 
-<span class="fc" id="L27">        JsonArray features = json.getJsonArray(&quot;features&quot;);</span>
-<span class="fc bfc" id="L28" title="All 2 branches covered.">        for (JsonValue value : features) {</span>
-<span class="fc" id="L29">            JsonObject jsonRegion = value.asJsonObject();            </span>
-<span class="fc" id="L30">            Region region = parseRegion(jsonRegion);</span>
-<span class="fc" id="L31">            regions.netids.add(region.netid);</span>
-<span class="fc" id="L32">            regions.regions.add(region);</span>
-<span class="fc" id="L33">        }</span>
+<span class="fc" id="L28">        JsonArray features = json.getJsonArray(&quot;features&quot;);</span>
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        for (JsonValue value : features) {</span>
+<span class="fc" id="L30">            JsonObject jsonRegion = value.asJsonObject();</span>
+<span class="fc" id="L31">            Region region = parseRegion(jsonRegion);</span>
+<span class="fc" id="L32">            regions.netids.add(region.netid);</span>
+<span class="fc" id="L33">            regions.regions.add(region);</span>
+<span class="fc" id="L34">        }</span>
 
-<span class="fc" id="L35">        return regions;</span>
+<span class="fc" id="L36">        return regions;</span>
     }
 
     /**
      * Parse {@link gov.usgs.earthquake.qdm.Region} from a GeoJSON feature.
      *
      * @param json geojson feature.
+     * @return region
      */
     public Region parseRegion(final JsonObject json) {
-<span class="fc" id="L44">        JsonObject properties = json.getJsonObject(&quot;properties&quot;);</span>
-<span class="fc" id="L45">        String networkId = properties.getString(&quot;network&quot;);</span>
-<span class="fc" id="L46">        String regionId = properties.getString(&quot;region&quot;);</span>
+<span class="fc" id="L46">        JsonObject properties = json.getJsonObject(&quot;properties&quot;);</span>
+<span class="fc" id="L47">        String networkId = properties.getString(&quot;network&quot;);</span>
+<span class="fc" id="L48">        String regionId = properties.getString(&quot;region&quot;);</span>
 
-<span class="fc" id="L48">        Region region = new Region(networkId, regionId);</span>
-<span class="fc" id="L49">        JsonArray coordinates = json.getJsonObject(&quot;geometry&quot;)</span>
-<span class="fc" id="L50">                .getJsonArray(&quot;coordinates&quot;);</span>
-<span class="fc bfc" id="L51" title="All 2 branches covered.">        for (JsonValue coord : coordinates.getJsonArray(0)) {</span>
-<span class="fc" id="L52">            JsonArray point = coord.asJsonArray();</span>
-<span class="fc" id="L53">            region.points.add(new Point(</span>
-<span class="fc" id="L54">                point.getJsonNumber(0).doubleValue(),</span>
-<span class="fc" id="L55">                point.getJsonNumber(1).doubleValue()));</span>
-<span class="fc" id="L56">        }</span>
+<span class="fc" id="L50">        Region region = new Region(networkId, regionId);</span>
+<span class="fc" id="L51">        JsonArray coordinates = json.getJsonObject(&quot;geometry&quot;)</span>
+<span class="fc" id="L52">                .getJsonArray(&quot;coordinates&quot;);</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        for (JsonValue coord : coordinates.getJsonArray(0)) {</span>
+<span class="fc" id="L54">            JsonArray point = coord.asJsonArray();</span>
+<span class="fc" id="L55">            region.points.add(new Point(</span>
+<span class="fc" id="L56">                point.getJsonNumber(0).doubleValue(),</span>
+<span class="fc" id="L57">                point.getJsonNumber(1).doubleValue()));</span>
+<span class="fc" id="L58">        }</span>
 
-<span class="fc" id="L58">        return region;</span>
+<span class="fc" id="L60">        return region;</span>
     }
 
 }

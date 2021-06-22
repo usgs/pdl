@@ -8,30 +8,32 @@
 	/**
 	 * A method to simplify comparison of two values, either of which may be
 	 * null.
-	 * 
+	 *
 	 * For purposes of this comparison, null values are &amp;gt; non-null values.
-	 * 
+	 *
 	 * @param a
 	 *            value to compare
 	 * @param b
 	 *            value to compare
+	 * @param &lt;T&gt;
+	 *            type
 	 * @return -1, if a is not null and b is null; 0, if a is null and b is
 	 *         null; 1, if a is null and b is not null; otherwise,
 	 *         a.compareTo(b).
 	 */
 	public static &lt;T extends Comparable&lt;T&gt;&gt; int nullSafeCompare(final T a, final T b) {
-<span class="pc bpc" id="L23" title="1 of 4 branches missed.">		if (a == null &amp;&amp; b != null) {</span>
+<span class="pc bpc" id="L25" title="1 of 4 branches missed.">		if (a == null &amp;&amp; b != null) {</span>
 			// null &gt; real values
-<span class="nc" id="L25">			return 1;</span>
-<span class="fc bfc" id="L26" title="All 4 branches covered.">		} else if (a != null &amp;&amp; b == null) {</span>
+<span class="nc" id="L27">			return 1;</span>
+<span class="fc bfc" id="L28" title="All 4 branches covered.">		} else if (a != null &amp;&amp; b == null) {</span>
 			// real values &lt; null
-<span class="fc" id="L28">			return -1;</span>
-<span class="pc bpc" id="L29" title="1 of 4 branches missed.">		} else if (a == null &amp;&amp; b == null) {</span>
+<span class="fc" id="L30">			return -1;</span>
+<span class="pc bpc" id="L31" title="1 of 4 branches missed.">		} else if (a == null &amp;&amp; b == null) {</span>
 			// null == null
-<span class="fc" id="L31">			return 0;</span>
+<span class="fc" id="L33">			return 0;</span>
 		} else {
 			// not null, use object compareTo
-<span class="fc" id="L34">			return a.compareTo(b);</span>
+<span class="fc" id="L36">			return a.compareTo(b);</span>
 		}
 	}
 

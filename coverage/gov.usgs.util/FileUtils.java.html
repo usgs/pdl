@@ -33,7 +33,7 @@ import java.nio.file.StandardCopyOption;
 	 *
 	 * Calls getContentType(file.getName()).
 	 *
-	 * @param file
+	 * @param file a file to get type from
 	 * @return String mime type.
 	 */
 	public static String getContentType(final File file) {
@@ -73,11 +73,13 @@ import java.nio.file.StandardCopyOption;
 	 *            file to write.
 	 * @param content
 	 *            content to write to file.
+	 * @throws IOException
+	 *            if any errors occur
 	 */
 	public static void writeFile(final File file, final byte[] content)
 			throws IOException {
-<span class="fc" id="L79">		StreamUtils.transferStream(content, file);</span>
-<span class="fc" id="L80">	}</span>
+<span class="fc" id="L81">		StreamUtils.transferStream(content, file);</span>
+<span class="fc" id="L82">	}</span>
 
 	/**
 	 * Write a file's content atomically.
@@ -93,18 +95,18 @@ import java.nio.file.StandardCopyOption;
 	 */
 	public static void writeFileThenMove(final File tempfile, final File file,
 			final byte[] content) throws IOException {
-<span class="fc" id="L96">		writeFile(tempfile, content);</span>
+<span class="fc" id="L98">		writeFile(tempfile, content);</span>
 
-<span class="fc" id="L98">		File parent = file.getAbsoluteFile().getParentFile();</span>
-<span class="fc bfc" id="L99" title="All 2 branches covered.">		if (!parent.exists()) {</span>
-<span class="fc" id="L100">			parent.mkdirs();</span>
+<span class="fc" id="L100">		File parent = file.getAbsoluteFile().getParentFile();</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">		if (!parent.exists()) {</span>
+<span class="fc" id="L102">			parent.mkdirs();</span>
 		}
 		try {
-<span class="fc" id="L103">			Files.move(tempfile.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE);</span>
-<span class="nc" id="L104">		} catch (AtomicMoveNotSupportedException amnse) {</span>
-<span class="nc" id="L105">			Files.move(tempfile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);</span>
-<span class="fc" id="L106">		}</span>
-<span class="fc" id="L107">	}</span>
+<span class="fc" id="L105">			Files.move(tempfile.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE);</span>
+<span class="nc" id="L106">		} catch (AtomicMoveNotSupportedException amnse) {</span>
+<span class="nc" id="L107">			Files.move(tempfile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);</span>
+<span class="fc" id="L108">		}</span>
+<span class="fc" id="L109">	}</span>
 
 	/**
 	 * Delete all files recursively within tree.
@@ -113,24 +115,24 @@ import java.nio.file.StandardCopyOption;
 	 *            root of tree to delete.
 	 */
 	public static void deleteTree(final File path) {
-<span class="fc bfc" id="L116" title="All 2 branches covered.">		if (path.exists()) {</span>
-<span class="fc bfc" id="L117" title="All 2 branches covered.">			if (path.isDirectory()) {</span>
-<span class="fc" id="L118">				File[] files = path.listFiles();</span>
-<span class="fc bfc" id="L119" title="All 2 branches covered.">				for (int i = 0; i &lt; files.length; i++) {</span>
-<span class="fc bfc" id="L120" title="All 2 branches covered.">					if (files[i].isDirectory()) {</span>
-<span class="fc" id="L121">						deleteTree(files[i]);</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">		if (path.exists()) {</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">			if (path.isDirectory()) {</span>
+<span class="fc" id="L120">				File[] files = path.listFiles();</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">				for (int i = 0; i &lt; files.length; i++) {</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">					if (files[i].isDirectory()) {</span>
+<span class="fc" id="L123">						deleteTree(files[i]);</span>
 					} else {
-<span class="fc" id="L123">						files[i].delete();</span>
+<span class="fc" id="L125">						files[i].delete();</span>
 					}
 				}
-<span class="fc" id="L126">				files = null;</span>
-<span class="fc" id="L127">			} else {</span>
-<span class="fc" id="L128">				path.delete();</span>
+<span class="fc" id="L128">				files = null;</span>
+<span class="fc" id="L129">			} else {</span>
+<span class="fc" id="L130">				path.delete();</span>
 			}
 		}
 
-<span class="fc" id="L132">		deleteEmptyParents(path);</span>
-<span class="fc" id="L133">	}</span>
+<span class="fc" id="L134">		deleteEmptyParents(path);</span>
+<span class="fc" id="L135">	}</span>
 
 	/**
 	 * Delete path and any empty parent directories.
@@ -139,8 +141,8 @@ import java.nio.file.StandardCopyOption;
 	 *            directory to start in.
 	 */
 	public static void deleteEmptyParents(final File path) {
-<span class="fc" id="L142">		deleteEmptyParents(path, null);</span>
-<span class="fc" id="L143">	}</span>
+<span class="fc" id="L144">		deleteEmptyParents(path, null);</span>
+<span class="fc" id="L145">	}</span>
 
 	/**
 	 * Delete path and any empty parent directories up to the stopAt point.
@@ -151,18 +153,18 @@ import java.nio.file.StandardCopyOption;
 	 *            directory to stop at
 	 */
 	public static void deleteEmptyParents(final File path, final File stopAt) {
-<span class="fc" id="L154">		File parent = path;</span>
+<span class="fc" id="L156">		File parent = path;</span>
 		// Loop while parent is not null and we are not yet at the stopAt point
-<span class="fc bfc" id="L156" title="All 4 branches covered.">		while (parent != null &amp;&amp; !parent.equals(stopAt)) {</span>
+<span class="fc bfc" id="L158" title="All 4 branches covered.">		while (parent != null &amp;&amp; !parent.equals(stopAt)) {</span>
 			try {
-<span class="fc" id="L158">				parent.delete();</span>
-<span class="fc" id="L159">				parent = parent.getParentFile();</span>
-<span class="nc" id="L160">			} catch (Exception e) {</span>
-<span class="nc" id="L161">				e.printStackTrace();</span>
-<span class="nc" id="L162">				break;</span>
-<span class="fc" id="L163">			}</span>
+<span class="fc" id="L160">				parent.delete();</span>
+<span class="fc" id="L161">				parent = parent.getParentFile();</span>
+<span class="nc" id="L162">			} catch (Exception e) {</span>
+<span class="nc" id="L163">				e.printStackTrace();</span>
+<span class="nc" id="L164">				break;</span>
+<span class="fc" id="L165">			}</span>
 		}
-<span class="fc" id="L165">	}</span>
+<span class="fc" id="L167">	}</span>
 
 	/**
 	 * Extracts a resource file from within the executing JAR and copies it to
@@ -177,37 +179,37 @@ import java.nio.file.StandardCopyOption;
 	 *            this value are relative to the CWD.
 	 */
 	public static void extractResourceFile(String rsFile, String fsFile) {
-<span class="nc" id="L180">		InputStream is = FileUtils.class.getResourceAsStream(rsFile);</span>
+<span class="nc" id="L182">		InputStream is = FileUtils.class.getResourceAsStream(rsFile);</span>
 		try {
-<span class="nc" id="L182">			FileOutputStream os = new FileOutputStream(fsFile);</span>
+<span class="nc" id="L184">			FileOutputStream os = new FileOutputStream(fsFile);</span>
 			try {
-<span class="nc" id="L184">				byte[] buf = new byte[1024];</span>
+<span class="nc" id="L186">				byte[] buf = new byte[1024];</span>
 				while (true) {
-<span class="nc" id="L186">					int len = is.read(buf);</span>
-<span class="nc bnc" id="L187" title="All 2 branches missed.">					if (len &lt; 0) {</span>
-<span class="nc" id="L188">						break;</span>
+<span class="nc" id="L188">					int len = is.read(buf);</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">					if (len &lt; 0) {</span>
+<span class="nc" id="L190">						break;</span>
 					}
-<span class="nc" id="L190">					os.write(buf, 0, len);</span>
-<span class="nc" id="L191">				} // END: while</span>
+<span class="nc" id="L192">					os.write(buf, 0, len);</span>
+<span class="nc" id="L193">				} // END: while</span>
 
 				// Do we have a logger yet?
 				// System.err.println(&quot;Copied &quot; + rsFile + &quot; from jar file to &quot; +
 				// fsFile+&quot; in the file system.  (&quot;+totalCopied+&quot; bytes).&quot;);
 			} finally {
-<span class="nc" id="L197">				StreamUtils.closeStream(os);</span>
+<span class="nc" id="L199">				StreamUtils.closeStream(os);</span>
 			}
-<span class="nc" id="L199">		} catch (FileNotFoundException fnf) {</span>
+<span class="nc" id="L201">		} catch (FileNotFoundException fnf) {</span>
 			// Logger?
-<span class="nc" id="L201">			System.err.println(fnf.getMessage() + &quot; -- 1&quot;);</span>
-<span class="nc" id="L202">		} catch (IOException iox) {</span>
+<span class="nc" id="L203">			System.err.println(fnf.getMessage() + &quot; -- 1&quot;);</span>
+<span class="nc" id="L204">		} catch (IOException iox) {</span>
 			// Logger?
-<span class="nc" id="L204">			System.err.println(iox.getMessage() + &quot; -- 2&quot;);</span>
-<span class="nc" id="L205">		} catch (NullPointerException npx) {</span>
+<span class="nc" id="L206">			System.err.println(iox.getMessage() + &quot; -- 2&quot;);</span>
+<span class="nc" id="L207">		} catch (NullPointerException npx) {</span>
 			// A dummy catch
 		} finally {
-<span class="nc" id="L208">			StreamUtils.closeStream(is);</span>
+<span class="nc" id="L210">			StreamUtils.closeStream(is);</span>
 		}
-<span class="nc" id="L210">	}</span>
+<span class="nc" id="L212">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

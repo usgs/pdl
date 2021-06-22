@@ -4,64 +4,75 @@ import java.util.ArrayList;
 
 /**
  * A polygon without holes.
- * 
+ *
  * Points are assumed to use x=longitude, y=latitude.
  * A &quot;default&quot; region has no boundary points, and contains all points.
  */
 public class Region {
 
+  /** String for net id */
   public String netid;
+  /** String for region id */
   public String regionid;
 
+  /** Arraylist of points */
   public ArrayList&lt;Point&gt; points;
 
-<span class="fc" id="L18">  public Region(String netid, String regionid) {</span>
-<span class="fc" id="L19">    this.netid = netid;</span>
-<span class="fc" id="L20">    this.regionid = regionid;</span>
-<span class="fc" id="L21">    this.points = new ArrayList&lt;Point&gt;();</span>
-<span class="fc" id="L22">  }</span>
+  /**
+   * Region constructor
+   * @param netid string
+   * @param regionid string
+   */
+<span class="fc" id="L26">  public Region(String netid, String regionid) {</span>
+<span class="fc" id="L27">    this.netid = netid;</span>
+<span class="fc" id="L28">    this.regionid = regionid;</span>
+<span class="fc" id="L29">    this.points = new ArrayList&lt;Point&gt;();</span>
+<span class="fc" id="L30">  }</span>
 
   /**
    * Method to determine if this lat-lon in this region? In or out algorithm taken
    * from an algorithm by Edwards and Coleman of Oak Ridge Lab, version for BNL by
    * Benkovitz translated to C by Andy Michael and into Java by Alan Jones.
+   *
+   * @param xy point
+   * @return bool if point is in region
    */
   public boolean inpoly(Point xy) {
     int in;
     double sine;
-<span class="fc" id="L32">    boolean bool = false;</span>
-<span class="fc" id="L33">    int inside = 0;</span>
-<span class="fc" id="L34">    int nvert = this.points.size();</span>
+<span class="fc" id="L43">    boolean bool = false;</span>
+<span class="fc" id="L44">    int inside = 0;</span>
+<span class="fc" id="L45">    int nvert = this.points.size();</span>
     // If there are no points in the region, assume default region
     // and declare the point inside
-<span class="pc bpc" id="L37" title="1 of 2 branches missed.">    if (nvert == 0)</span>
-<span class="nc" id="L38">      return true;</span>
-<span class="fc" id="L39">    Point p[] = (Point[]) this.points.toArray(new Point[0]);</span>
-<span class="fc" id="L40">    double x = xy.x;</span>
-<span class="fc" id="L41">    double y = xy.y;</span>
-<span class="fc bfc" id="L42" title="All 2 branches covered.">    for (int i = 0; i &lt; nvert; ++i) {</span>
-<span class="fc" id="L43">      in = i + 1;</span>
-<span class="fc bfc" id="L44" title="All 2 branches covered.">      if (in &gt;= nvert)</span>
-<span class="fc" id="L45">        in = 0;</span>
-<span class="fc bfc" id="L46" title="All 4 branches covered.">      if (p[in].y == p[i].y &amp;&amp; p[in].x == p[i].x)</span>
-<span class="fc" id="L47">        continue;</span>
-<span class="fc" id="L48">      sine = (x - p[i].x) * (p[in].y - p[i].y) - (y - p[i].y) * (p[in].x - p[i].x);</span>
-<span class="pc bpc" id="L49" title="1 of 2 branches missed.">      if (sine == 0) {</span>
-<span class="nc bnc" id="L50" title="All 2 branches missed.">        if (((x - p[i].x) * (p[in].x - p[i].x) + (y - p[i].y) * (p[in].y - p[i].y))</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">    if (nvert == 0)</span>
+<span class="nc" id="L49">      return true;</span>
+<span class="fc" id="L50">    Point p[] = (Point[]) this.points.toArray(new Point[0]);</span>
+<span class="fc" id="L51">    double x = xy.x;</span>
+<span class="fc" id="L52">    double y = xy.y;</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">    for (int i = 0; i &lt; nvert; ++i) {</span>
+<span class="fc" id="L54">      in = i + 1;</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">      if (in &gt;= nvert)</span>
+<span class="fc" id="L56">        in = 0;</span>
+<span class="fc bfc" id="L57" title="All 4 branches covered.">      if (p[in].y == p[i].y &amp;&amp; p[in].x == p[i].x)</span>
+<span class="fc" id="L58">        continue;</span>
+<span class="fc" id="L59">      sine = (x - p[i].x) * (p[in].y - p[i].y) - (y - p[i].y) * (p[in].x - p[i].x);</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">      if (sine == 0) {</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        if (((x - p[i].x) * (p[in].x - p[i].x) + (y - p[i].y) * (p[in].y - p[i].y))</span>
             * ((x - p[in].x) * (p[in].x - p[i].x) + (y - p[in].y) * (p[in].y - p[i].y)) &gt; 0)
-<span class="nc" id="L52">          continue;</span>
-<span class="nc" id="L53">        return true;</span>
+<span class="nc" id="L63">          continue;</span>
+<span class="nc" id="L64">        return true;</span>
       }
-<span class="fc bfc" id="L55" title="All 12 branches covered.">      if (y &gt; p[in].y &amp;&amp; y &lt;= p[i].y &amp;&amp; sine &lt; 0 || y &lt;= p[in].y &amp;&amp; y &gt; p[i].y &amp;&amp; sine &gt; 0) {</span>
-<span class="fc bfc" id="L56" title="All 2 branches covered.">        bool = !bool;</span>
+<span class="fc bfc" id="L66" title="All 12 branches covered.">      if (y &gt; p[in].y &amp;&amp; y &lt;= p[i].y &amp;&amp; sine &lt; 0 || y &lt;= p[in].y &amp;&amp; y &gt; p[i].y &amp;&amp; sine &gt; 0) {</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        bool = !bool;</span>
       }
     }
-<span class="fc bfc" id="L59" title="All 2 branches covered.">    if (bool)</span>
-<span class="fc" id="L60">      inside = 1;</span>
-<span class="fc bfc" id="L61" title="All 2 branches covered.">    if (inside != 0)</span>
-<span class="fc" id="L62">      return true;</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">    if (bool)</span>
+<span class="fc" id="L71">      inside = 1;</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">    if (inside != 0)</span>
+<span class="fc" id="L73">      return true;</span>
     else
-<span class="fc" id="L64">      return false;</span>
+<span class="fc" id="L75">      return false;</span>
   }
 
 }

@@ -179,67 +179,93 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <tr class="altColor">
 <td class="colFirst"><code>protected boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#catchUpRunning">catchUpRunning</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">whether currenting catching up.</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected java.lang.Object</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#catchUpSync">catchUpSync</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">sync object for catchUp state.</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>protected java.lang.Thread</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#catchUpThread">catchUpThread</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">thread where catch up process runs.</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#catchUpThreadRunning">catchUpThreadRunning</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">whether thread should continue running (shutdown flag)</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#CONNECT_ATTEMPTS_PROPERTY">CONNECT_ATTEMPTS_PROPERTY</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Variable for connectAttempts string</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#CONNECT_TIMEOUT_PROPERTY">CONNECT_TIMEOUT_PROPERTY</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Variable for connectTimeout string</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#CREATED_AFTER_PROPERTY">CREATED_AFTER_PROPERTY</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Variable for createdAfter string</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected java.time.Instant</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#createdAfter">createdAfter</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Âµs timestamp of last message that has been processed</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#DEFAULT_CONNECT_ATTEMPTS">DEFAULT_CONNECT_ATTEMPTS</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Variable for connect attempts.</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#DEFAULT_CONNECT_TIMEOUT">DEFAULT_CONNECT_TIMEOUT</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Variable for timout.</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#DEFAULT_INITIAL_CATCHUP_AGE">DEFAULT_INITIAL_CATCHUP_AGE</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Variable for catchup age.</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#DEFAULT_TRACKING_FILE_NAME">DEFAULT_TRACKING_FILE_NAME</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Variable for tracking file.</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#INITIAL_CATCHUP_AGE_PROPERTY">INITIAL_CATCHUP_AGE_PROPERTY</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Variable for initialCatchUpAge string</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected double</code></td>
@@ -251,42 +277,58 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <tr class="altColor">
 <td class="colFirst"><code>protected <a href="JsonNotification.html" title="class in gov.usgs.earthquake.aws">JsonNotification</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#lastBroadcast">lastBroadcast</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">last broadcast message that has been processed (used for catch up)</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected java.lang.Long</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#lastBroadcastId">lastBroadcastId</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">ID of the previously mentioned last broadcast</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>protected java.time.Instant</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#lastCatchUpSent">lastCatchUpSent</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">last catch up message sent (for response timeouts)</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.util.logging.Logger</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#LOGGER">LOGGER</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Initialzation of logger.</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>protected boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#processBroadcast">processBroadcast</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">whether to process broadcast messages (after catching up).</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#TRACKING_FILE_NAME_PROPERTY">TRACKING_FILE_NAME_PROPERTY</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Variable for trackingFileName string</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#TRACKING_INDEX_PROPERTY">TRACKING_INDEX_PROPERTY</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Variable for trackingIndex string</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#URI_PROPERTY">URI_PROPERTY</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Variable for URI string</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -344,27 +386,37 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getAttempts()">getAttempts</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Getter for attempts</div>
+</td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>java.time.Instant</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getCreatedAfter()">getCreatedAfter</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Getter for createdAfter</div>
+</td>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>long</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getTimeout()">getTimeout</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Getter for timeout</div>
+</td>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getTrackingFileName()">getTrackingFileName</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Getter for trackingFileName</div>
+</td>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>java.net.URI</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getURI()">getURI</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Getter for URI</div>
+</td>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
@@ -385,7 +437,9 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <tr id="i8" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#onConnectFail()">onConnectFail</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Interface method to be overriden by WebSocket files and AwsProductReceiver</div>
+</td>
 </tr>
 <tr id="i9" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
@@ -429,7 +483,9 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <tr id="i14" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#onReconnectFail()">onReconnectFail</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Interface method to be overriden by WebSocket files and AwsProductReceiver</div>
+</td>
 </tr>
 <tr id="i15" class="rowColor">
 <td class="colFirst"><code>javax.json.JsonObject</code></td>
@@ -456,27 +512,37 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <tr id="i18" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setAttempts(int)">setAttempts</a></span>&#8203;(int&nbsp;attempts)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Setter for attempts</div>
+</td>
 </tr>
 <tr id="i19" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setCreatedAfter(java.time.Instant)">setCreatedAfter</a></span>&#8203;(java.time.Instant&nbsp;createdAfter)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Setter for createdAfter</div>
+</td>
 </tr>
 <tr id="i20" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setTimeout(long)">setTimeout</a></span>&#8203;(long&nbsp;timeout)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Setter for timeout</div>
+</td>
 </tr>
 <tr id="i21" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setTrackingFileName(java.lang.String)">setTrackingFileName</a></span>&#8203;(java.lang.String&nbsp;trackingFileName)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Setter for trackingFileName</div>
+</td>
 </tr>
 <tr id="i22" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setURI(java.net.URI)">setURI</a></span>&#8203;(java.net.URI&nbsp;uri)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Setter for URI</div>
+</td>
 </tr>
 <tr id="i23" class="rowColor">
 <td class="colFirst"><code>void</code></td>
@@ -580,6 +646,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>LOGGER</h4>
 <pre>public static final&nbsp;java.util.logging.Logger LOGGER</pre>
+<div class="block">Initialzation of logger. For us later in file.</div>
 </li>
 </ul>
 <a id="URI_PROPERTY">
@@ -589,6 +656,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>URI_PROPERTY</h4>
 <pre>public static final&nbsp;java.lang.String URI_PROPERTY</pre>
+<div class="block">Variable for URI string</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.aws.AwsProductReceiver.URI_PROPERTY">Constant Field Values</a></dd>
@@ -602,6 +670,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>CREATED_AFTER_PROPERTY</h4>
 <pre>public static final&nbsp;java.lang.String CREATED_AFTER_PROPERTY</pre>
+<div class="block">Variable for createdAfter string</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.aws.AwsProductReceiver.CREATED_AFTER_PROPERTY">Constant Field Values</a></dd>
@@ -615,6 +684,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>TRACKING_INDEX_PROPERTY</h4>
 <pre>public static final&nbsp;java.lang.String TRACKING_INDEX_PROPERTY</pre>
+<div class="block">Variable for trackingIndex string</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.aws.AwsProductReceiver.TRACKING_INDEX_PROPERTY">Constant Field Values</a></dd>
@@ -628,6 +698,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>TRACKING_FILE_NAME_PROPERTY</h4>
 <pre>public static final&nbsp;java.lang.String TRACKING_FILE_NAME_PROPERTY</pre>
+<div class="block">Variable for trackingFileName string</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.aws.AwsProductReceiver.TRACKING_FILE_NAME_PROPERTY">Constant Field Values</a></dd>
@@ -641,6 +712,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>CONNECT_ATTEMPTS_PROPERTY</h4>
 <pre>public static final&nbsp;java.lang.String CONNECT_ATTEMPTS_PROPERTY</pre>
+<div class="block">Variable for connectAttempts string</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.aws.AwsProductReceiver.CONNECT_ATTEMPTS_PROPERTY">Constant Field Values</a></dd>
@@ -654,6 +726,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>CONNECT_TIMEOUT_PROPERTY</h4>
 <pre>public static final&nbsp;java.lang.String CONNECT_TIMEOUT_PROPERTY</pre>
+<div class="block">Variable for connectTimeout string</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.aws.AwsProductReceiver.CONNECT_TIMEOUT_PROPERTY">Constant Field Values</a></dd>
@@ -667,6 +740,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>INITIAL_CATCHUP_AGE_PROPERTY</h4>
 <pre>public static final&nbsp;java.lang.String INITIAL_CATCHUP_AGE_PROPERTY</pre>
+<div class="block">Variable for initialCatchUpAge string</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.aws.AwsProductReceiver.INITIAL_CATCHUP_AGE_PROPERTY">Constant Field Values</a></dd>
@@ -680,6 +754,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>DEFAULT_TRACKING_FILE_NAME</h4>
 <pre>public static final&nbsp;java.lang.String DEFAULT_TRACKING_FILE_NAME</pre>
+<div class="block">Variable for tracking file. Links to data/AwsReceiver.json</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.aws.AwsProductReceiver.DEFAULT_TRACKING_FILE_NAME">Constant Field Values</a></dd>
@@ -693,6 +768,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>DEFAULT_CONNECT_ATTEMPTS</h4>
 <pre>public static final&nbsp;java.lang.String DEFAULT_CONNECT_ATTEMPTS</pre>
+<div class="block">Variable for connect attempts. Set to 5</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.aws.AwsProductReceiver.DEFAULT_CONNECT_ATTEMPTS">Constant Field Values</a></dd>
@@ -706,6 +782,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>DEFAULT_CONNECT_TIMEOUT</h4>
 <pre>public static final&nbsp;java.lang.String DEFAULT_CONNECT_TIMEOUT</pre>
+<div class="block">Variable for timout. Set to 1000</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.aws.AwsProductReceiver.DEFAULT_CONNECT_TIMEOUT">Constant Field Values</a></dd>
@@ -719,6 +796,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>DEFAULT_INITIAL_CATCHUP_AGE</h4>
 <pre>public static final&nbsp;java.lang.String DEFAULT_INITIAL_CATCHUP_AGE</pre>
+<div class="block">Variable for catchup age. Set to 7.0</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.aws.AwsProductReceiver.DEFAULT_INITIAL_CATCHUP_AGE">Constant Field Values</a></dd>
@@ -732,6 +810,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>createdAfter</h4>
 <pre>protected&nbsp;java.time.Instant createdAfter</pre>
+<div class="block">Âµs timestamp of last message that has been processed</div>
 </li>
 </ul>
 <a id="initialCatchUpAge">
@@ -751,6 +830,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>lastBroadcast</h4>
 <pre>protected&nbsp;<a href="JsonNotification.html" title="class in gov.usgs.earthquake.aws">JsonNotification</a> lastBroadcast</pre>
+<div class="block">last broadcast message that has been processed (used for catch up)</div>
 </li>
 </ul>
 <a id="lastBroadcastId">
@@ -760,6 +840,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>lastBroadcastId</h4>
 <pre>protected&nbsp;java.lang.Long lastBroadcastId</pre>
+<div class="block">ID of the previously mentioned last broadcast</div>
 </li>
 </ul>
 <a id="processBroadcast">
@@ -769,6 +850,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>processBroadcast</h4>
 <pre>protected&nbsp;boolean processBroadcast</pre>
+<div class="block">whether to process broadcast messages (after catching up).</div>
 </li>
 </ul>
 <a id="catchUpRunning">
@@ -778,6 +860,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>catchUpRunning</h4>
 <pre>protected&nbsp;boolean catchUpRunning</pre>
+<div class="block">whether currenting catching up.</div>
 </li>
 </ul>
 <a id="catchUpSync">
@@ -787,6 +870,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>catchUpSync</h4>
 <pre>protected final&nbsp;java.lang.Object catchUpSync</pre>
+<div class="block">sync object for catchUp state.</div>
 </li>
 </ul>
 <a id="catchUpThread">
@@ -796,6 +880,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>catchUpThread</h4>
 <pre>protected&nbsp;java.lang.Thread catchUpThread</pre>
+<div class="block">thread where catch up process runs.</div>
 </li>
 </ul>
 <a id="catchUpThreadRunning">
@@ -805,6 +890,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>catchUpThreadRunning</h4>
 <pre>protected&nbsp;boolean catchUpThreadRunning</pre>
+<div class="block">whether thread should continue running (shutdown flag)</div>
 </li>
 </ul>
 <a id="lastCatchUpSent">
@@ -814,6 +900,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>lastCatchUpSent</h4>
 <pre>protected&nbsp;java.time.Instant lastCatchUpSent</pre>
+<div class="block">last catch up message sent (for response timeouts)</div>
 </li>
 </ul>
 </li>
@@ -883,8 +970,10 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../distribution/WebSocketListener.html#onOpen(javax.websocket.Session)">onOpen</a></code>&nbsp;in interface&nbsp;<code><a href="../distribution/WebSocketListener.html" title="interface in gov.usgs.earthquake.distribution">WebSocketListener</a></code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>session</code> - Session to open</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.io.IOException</code> - IOException</dd>
 </dl>
 </li>
 </ul>
@@ -901,6 +990,9 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../distribution/WebSocketListener.html#onClose(javax.websocket.Session,javax.websocket.CloseReason)">onClose</a></code>&nbsp;in interface&nbsp;<code><a href="../distribution/WebSocketListener.html" title="interface in gov.usgs.earthquake.distribution">WebSocketListener</a></code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>session</code> - Session to close</dd>
+<dd><code>closeReason</code> - Reason for closing session</dd>
 </dl>
 </li>
 </ul>
@@ -924,9 +1016,9 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../distribution/WebSocketListener.html#onMessage(java.lang.String)">onMessage</a></code>&nbsp;in interface&nbsp;<code><a href="../distribution/WebSocketListener.html" title="interface in gov.usgs.earthquake.distribution">WebSocketListener</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>message</code> - </dd>
+<dd><code>message</code> - Message notification - string</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.io.IOException</code> - IOException</dd>
 </dl>
 </li>
 </ul>
@@ -944,9 +1036,9 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
  to help detect when caught up.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>json</code> - </dd>
+<dd><code>json</code> - JSON Message</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - Exception</dd>
 </dl>
 </li>
 </ul>
@@ -961,9 +1053,9 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <div class="block">Process a received notification and update current "created" timestamp.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>notification</code> - </dd>
+<dd><code>notification</code> - JSON Notification</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - Exception</dd>
 </dl>
 </li>
 </ul>
@@ -978,9 +1070,9 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <div class="block">Handle a message with "action"="product", which is received during catch up.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>json</code> - </dd>
+<dd><code>json</code> - JSON Message</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - Exception</dd>
 </dl>
 </li>
 </ul>
@@ -1000,9 +1092,9 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
  catch up process.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>json</code> - </dd>
+<dd><code>json</code> - JSON Message</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - Exception</dd>
 </dl>
 </li>
 </ul>
@@ -1042,7 +1134,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
  is complete.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.io.IOException</code> - IOException</dd>
 </dl>
 </li>
 </ul>
@@ -1093,6 +1185,8 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>onConnectFail</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;onConnectFail()</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../distribution/WebSocketListener.html#onConnectFail()">WebSocketListener</a></code></span></div>
+<div class="block">Interface method to be overriden by WebSocket files and AwsProductReceiver</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../distribution/WebSocketListener.html#onConnectFail()">onConnectFail</a></code>&nbsp;in interface&nbsp;<code><a href="../distribution/WebSocketListener.html" title="interface in gov.usgs.earthquake.distribution">WebSocketListener</a></code></dd>
@@ -1106,6 +1200,8 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>onReconnectFail</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;onReconnectFail()</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../distribution/WebSocketListener.html#onReconnectFail()">WebSocketListener</a></code></span></div>
+<div class="block">Interface method to be overriden by WebSocket files and AwsProductReceiver</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../distribution/WebSocketListener.html#onReconnectFail()">onReconnectFail</a></code>&nbsp;in interface&nbsp;<code><a href="../distribution/WebSocketListener.html" title="interface in gov.usgs.earthquake.distribution">WebSocketListener</a></code></dd>
@@ -1128,7 +1224,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code><a href="../distribution/DefaultNotificationReceiver.html#startup()">startup</a></code>&nbsp;in class&nbsp;<code><a href="../distribution/DefaultNotificationReceiver.html" title="class in gov.usgs.earthquake.distribution">DefaultNotificationReceiver</a></code></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - Exception</dd>
 </dl>
 </li>
 </ul>
@@ -1147,7 +1243,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code><a href="../distribution/DefaultNotificationReceiver.html#shutdown()">shutdown</a></code>&nbsp;in class&nbsp;<code><a href="../distribution/DefaultNotificationReceiver.html" title="class in gov.usgs.earthquake.distribution">DefaultNotificationReceiver</a></code></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - Exception</dd>
 </dl>
 </li>
 </ul>
@@ -1164,7 +1260,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>JsonObject tracking file</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - Exception</dd>
 </dl>
 </li>
 </ul>
@@ -1179,7 +1275,7 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <div class="block">Writes tracking file.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - Exception</dd>
 </dl>
 </li>
 </ul>
@@ -1190,6 +1286,11 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>getURI</h4>
 <pre class="methodSignature">public&nbsp;java.net.URI&nbsp;getURI()</pre>
+<div class="block">Getter for URI</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>URI</dd>
+</dl>
 </li>
 </ul>
 <a id="setURI(java.net.URI)">
@@ -1199,6 +1300,11 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>setURI</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setURI&#8203;(java.net.URI&nbsp;uri)</pre>
+<div class="block">Setter for URI</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>uri</code> - URI</dd>
+</dl>
 </li>
 </ul>
 <a id="getTrackingFileName()">
@@ -1208,6 +1314,11 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>getTrackingFileName</h4>
 <pre class="methodSignature">public&nbsp;java.lang.String&nbsp;getTrackingFileName()</pre>
+<div class="block">Getter for trackingFileName</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>name of tracking file</dd>
+</dl>
 </li>
 </ul>
 <a id="setTrackingFileName(java.lang.String)">
@@ -1217,6 +1328,11 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>setTrackingFileName</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setTrackingFileName&#8203;(java.lang.String&nbsp;trackingFileName)</pre>
+<div class="block">Setter for trackingFileName</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>trackingFileName</code> - trackingFileName</dd>
+</dl>
 </li>
 </ul>
 <a id="getCreatedAfter()">
@@ -1226,6 +1342,11 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>getCreatedAfter</h4>
 <pre class="methodSignature">public&nbsp;java.time.Instant&nbsp;getCreatedAfter()</pre>
+<div class="block">Getter for createdAfter</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>createdAfter</dd>
+</dl>
 </li>
 </ul>
 <a id="setCreatedAfter(java.time.Instant)">
@@ -1235,6 +1356,11 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>setCreatedAfter</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setCreatedAfter&#8203;(java.time.Instant&nbsp;createdAfter)</pre>
+<div class="block">Setter for createdAfter</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>createdAfter</code> - createdAfter</dd>
+</dl>
 </li>
 </ul>
 <a id="getAttempts()">
@@ -1244,6 +1370,11 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>getAttempts</h4>
 <pre class="methodSignature">public&nbsp;int&nbsp;getAttempts()</pre>
+<div class="block">Getter for attempts</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>attempts</dd>
+</dl>
 </li>
 </ul>
 <a id="setAttempts(int)">
@@ -1253,6 +1384,11 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>setAttempts</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setAttempts&#8203;(int&nbsp;attempts)</pre>
+<div class="block">Setter for attempts</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>attempts</code> - attempts</dd>
+</dl>
 </li>
 </ul>
 <a id="getTimeout()">
@@ -1262,6 +1398,11 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>getTimeout</h4>
 <pre class="methodSignature">public&nbsp;long&nbsp;getTimeout()</pre>
+<div class="block">Getter for timeout</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>timeout</dd>
+</dl>
 </li>
 </ul>
 <a id="setTimeout(long)">
@@ -1271,6 +1412,11 @@ implements java.lang.Runnable, <a href="../distribution/WebSocketListener.html" 
 <li class="blockList">
 <h4>setTimeout</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setTimeout&#8203;(long&nbsp;timeout)</pre>
+<div class="block">Setter for timeout</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>timeout</code> - long timeout</dd>
+</dl>
 </li>
 </ul>
 </li>

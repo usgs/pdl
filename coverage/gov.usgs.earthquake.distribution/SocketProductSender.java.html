@@ -31,20 +31,20 @@ import java.util.zip.DeflaterOutputStream;
 
 /**
  * Send Products to SocketProductReceivers.
- * 
+ *
  * The SocketProductSender implements the Configurable interface and uses the
  * following configuration parameters:
- * 
+ *
  * &lt;dl&gt;
  * &lt;dt&gt;host&lt;/dt&gt;
  * &lt;dd&gt;(Required) The IP address or hostname of a SocketProductReceiver.&lt;/dd&gt;
- * 
+ *
  * &lt;dt&gt;port&lt;/dt&gt;
  * &lt;dd&gt;(Optional, default=11235) The port on host of a SocketProductReceiver&lt;/dd&gt;
  * &lt;/dl&gt;
- * 
+ *
  * @author jmfee
- * 
+ *
  */
 public class SocketProductSender extends DefaultConfigurable implements
 		ProductSender {
@@ -53,19 +53,27 @@ public class SocketProductSender extends DefaultConfigurable implements
 <span class="fc" id="L53">	private static final Logger LOGGER = Logger</span>
 <span class="fc" id="L54">			.getLogger(SocketProductSender.class.getName());</span>
 
+	/** property for sender host */
 	public static final String SENDER_HOST_PROPERTY = &quot;host&quot;;
+	/** property for sender port */
 	public static final String SENDER_PORT_PROPERTY = &quot;port&quot;;
 
 	/** The default port number for SocketProductReceivers. */
 	public static final String DEFAULT_SENDER_PORT = &quot;11235&quot;;
 
+	/** property for connectTimeout */
 	public static final String CONNECT_TIMEOUT_PROPERTY = &quot;connectTimeout&quot;;
+	/** Default connection timeout */
 	public static final String DEFAULT_CONNECT_TIMEOUT = &quot;15000&quot;;
 
+	/** property for readTimeout */
 	public static final String READ_TIMEOUT_PROPERTY = &quot;readTimeout&quot;;
+	/** Default read timeout */
 	public static final String DEFAULT_READ_TIMEOUT = &quot;15000&quot;;
 
+	/** property for writeTimeout */
 	public static final String WRITE_TIMEOUT_PROPERTY = &quot;writeTimeout&quot;;
+	/** Default write timeout */
 	public static final String DEFAULT_WRITE_TIMEOUT = &quot;-1&quot;;
 
 	/** Property name to configure binary or xml format. */
@@ -78,304 +86,328 @@ public class SocketProductSender extends DefaultConfigurable implements
 	/** Default value for whether to use deflate compression. */
 	public static final String ENABLE_DEFLATE_DEFAULT = &quot;true&quot;;
 
+	/** property for deflateLevel */
 	public static final String DEFLATE_LEVEL_PROPERTY = &quot;deflateLevel&quot;;
+	/** Default deflate level */
 	public static final String DEFLATE_LEVEL_DEFAULT = &quot;1&quot;;
 
+	/** Property to enablePdlProtocol */
 	public static final String ENABLE_PDL_PROTOCOL_PROPERTY = &quot;enablePdlProtocol&quot;;
+	/** Default for enable pdl protocol */
 	public static final String DEFAULT_ENABLE_PDL_PROTOCOL = &quot;true&quot;;
 
-<span class="fc" id="L87">	public static final byte[] PROTOCOL_HEADER = { 'P', 'D', 'L' };</span>
+	/** Byte array for protocl header */
+<span class="fc" id="L100">	public static final byte[] PROTOCOL_HEADER = { 'P', 'D', 'L' };</span>
+	/** Static var for v0.1 protocol */
 	public static final String PROTOCOL_VERSION_0_1 = &quot;v0.1&quot;;
+	/** Static var for unknown product */
 	public static final String UNKNOWN_PRODUCT = &quot;Unknown product&quot;;
+	/** Static var for alreadying having the product */
 	public static final String ALREADY_HAVE_PRODUCT = &quot;Already have product&quot;;
+	/** Static var for a receive error */
 	public static final String RECEIVE_ERROR = &quot;Error receiving product&quot;;
 
 	/** Whether to store in binary format (true), or xml format (false). */
-<span class="pc" id="L94">	private boolean binaryFormat = false;</span>
+<span class="pc" id="L111">	private boolean binaryFormat = false;</span>
 
 	/** Whether to deflate product sent over the wire. */
-<span class="pc" id="L97">	private boolean enableDeflate = true;</span>
+<span class="pc" id="L114">	private boolean enableDeflate = true;</span>
 
 	/** Compression level when deflating products. */
-<span class="pc" id="L100">	private int deflateLevel = 1;</span>
+<span class="pc" id="L117">	private int deflateLevel = 1;</span>
 
-<span class="pc" id="L102">	private boolean enablePdlProtocol = true;</span>
+<span class="pc" id="L119">	private boolean enablePdlProtocol = true;</span>
 
 	/** The remote hostname or ip address. */
-<span class="pc" id="L105">	private String host = null;</span>
+<span class="pc" id="L122">	private String host = null;</span>
 	/** The remote port. */
-<span class="pc" id="L107">	private int port = -1; // -1 is invalid. This better be overridden.</span>
+<span class="pc" id="L124">	private int port = -1; // -1 is invalid. This better be overridden.</span>
 	/** How long to wait before connecting, in milliseconds. */
-<span class="pc" id="L109">	private int connectTimeout = 15000;</span>
+<span class="pc" id="L126">	private int connectTimeout = 15000;</span>
 	/** How long to block while reading, before timing out. */
-<span class="pc" id="L111">	private int readTimeout = 15000;</span>
+<span class="pc" id="L128">	private int readTimeout = 15000;</span>
 	/** How long to block while writing, before timing out. */
-<span class="pc" id="L113">	private int writeTimeout = -1;</span>
+<span class="pc" id="L130">	private int writeTimeout = -1;</span>
 
-<span class="pc" id="L115">	private Socket socket = null;</span>
+<span class="pc" id="L132">	private Socket socket = null;</span>
 
 	/**
-	 * Construct a new ProductSender.
-	 * 
-	 * @param host
-	 * @param port
+	 * Construct a new ProductSender with default connection timeout.
+	 *
+	 * @param host Host of product sender
+	 * @param port Port of product sender
 	 */
 	public SocketProductSender(final String host, final int port) {
-<span class="fc" id="L124">		this(host, port, Integer.parseInt(DEFAULT_CONNECT_TIMEOUT));</span>
-<span class="fc" id="L125">	}</span>
-
-	public SocketProductSender(final String host, final int port,
-			final int connectTimeout) {
-<span class="fc" id="L129">		this(host, port, connectTimeout,</span>
-<span class="fc" id="L130">				Integer.parseInt(DEFAULT_READ_TIMEOUT), Integer</span>
-<span class="fc" id="L131">						.parseInt(DEFAULT_WRITE_TIMEOUT));</span>
-<span class="fc" id="L132">	}</span>
-
-	public SocketProductSender(final String host, final int port,
-			final int connectTimeout, final int readTimeout,
-<span class="fc" id="L136">			final int writeTimeout) {</span>
-<span class="fc" id="L137">		this.host = host;</span>
-<span class="fc" id="L138">		this.port = port;</span>
-<span class="fc" id="L139">		this.connectTimeout = connectTimeout;</span>
-<span class="fc" id="L140">		this.readTimeout = readTimeout;</span>
-<span class="fc" id="L141">		this.writeTimeout = writeTimeout;</span>
+<span class="fc" id="L141">		this(host, port, Integer.parseInt(DEFAULT_CONNECT_TIMEOUT));</span>
 <span class="fc" id="L142">	}</span>
 
+	/**
+	 * Construct a new ProductSender with default read and write timeouts
+	 * @param host Host of product sender
+	 * @param port Port of product sender
+	 * @param connectTimeout Timeout in ms
+	 */
+	public SocketProductSender(final String host, final int port,
+			final int connectTimeout) {
+<span class="fc" id="L152">		this(host, port, connectTimeout,</span>
+<span class="fc" id="L153">				Integer.parseInt(DEFAULT_READ_TIMEOUT), Integer</span>
+<span class="fc" id="L154">						.parseInt(DEFAULT_WRITE_TIMEOUT));</span>
+<span class="fc" id="L155">	}</span>
+
+	/**
+	 *
+	 * Construct a new ProductSender
+	 * @param host Host of product sender
+	 * @param port Port of product sender
+	 * @param connectTimeout connect timeout in ms
+	 * @param readTimeout read timeout in ms
+	 * @param writeTimeout write timeout in ms
+	 */
+	public SocketProductSender(final String host, final int port,
+			final int connectTimeout, final int readTimeout,
+<span class="fc" id="L168">			final int writeTimeout) {</span>
+<span class="fc" id="L169">		this.host = host;</span>
+<span class="fc" id="L170">		this.port = port;</span>
+<span class="fc" id="L171">		this.connectTimeout = connectTimeout;</span>
+<span class="fc" id="L172">		this.readTimeout = readTimeout;</span>
+<span class="fc" id="L173">		this.writeTimeout = writeTimeout;</span>
+<span class="fc" id="L174">	}</span>
+
 	/** Empty constructor for configurable interface. */
-<span class="fc" id="L145">	public SocketProductSender() {</span>
-<span class="fc" id="L146">	}</span>
+<span class="fc" id="L177">	public SocketProductSender() {</span>
+<span class="fc" id="L178">	}</span>
 
 	/**
 	 * Construct a new ProductSender using a Config object.
-	 * 
-	 * @param config
-	 * @throws Exception
+	 *
+	 * @param config Config object
+	 * @throws Exception if error occurs
 	 */
-<span class="nc" id="L154">	public SocketProductSender(Config config) throws Exception {</span>
-<span class="nc" id="L155">		configure(config);</span>
-<span class="nc" id="L156">	}</span>
+<span class="nc" id="L186">	public SocketProductSender(Config config) throws Exception {</span>
+<span class="nc" id="L187">		configure(config);</span>
+<span class="nc" id="L188">	}</span>
 
 	/**
 	 * Implement the ProductSender interface.
-	 * 
+	 *
 	 * Connects to host:port and sends a Deflaterped xml encoded Product. There
 	 * is no direct response over the socket at this time.
-	 * 
+	 *
 	 * Updates may be retrieved from a ProductTracker.
 	 */
 	public void sendProduct(Product product) throws Exception {
-<span class="fc" id="L167">		BinaryIO io = new BinaryIO();</span>
-<span class="fc" id="L168">		boolean sendProduct = true;</span>
-<span class="fc" id="L169">		String status = null;</span>
-<span class="fc" id="L170">		ObjectProductSource productSource = null;</span>
-<span class="fc" id="L171">		InputStream in = null;</span>
-<span class="fc" id="L172">		OutputStream out = null;</span>
+<span class="fc" id="L199">		BinaryIO io = new BinaryIO();</span>
+<span class="fc" id="L200">		boolean sendProduct = true;</span>
+<span class="fc" id="L201">		String status = null;</span>
+<span class="fc" id="L202">		ObjectProductSource productSource = null;</span>
+<span class="fc" id="L203">		InputStream in = null;</span>
+<span class="fc" id="L204">		OutputStream out = null;</span>
 		try {
-<span class="fc" id="L174">			socket = new Socket();</span>
-<span class="fc" id="L175">			socket.setSoTimeout(readTimeout);</span>
-<span class="fc" id="L176">			socket.connect(new InetSocketAddress(host, port), connectTimeout);</span>
-<span class="fc" id="L177">			LOGGER.info(&quot;[&quot; + getName() + &quot;] sending product to &quot;</span>
-<span class="fc" id="L178">					+ socket.toString());</span>
+<span class="fc" id="L206">			socket = new Socket();</span>
+<span class="fc" id="L207">			socket.setSoTimeout(readTimeout);</span>
+<span class="fc" id="L208">			socket.connect(new InetSocketAddress(host, port), connectTimeout);</span>
+<span class="fc" id="L209">			LOGGER.info(&quot;[&quot; + getName() + &quot;] sending product to &quot;</span>
+<span class="fc" id="L210">					+ socket.toString());</span>
 
-<span class="fc" id="L180">			productSource = new ObjectProductSource(product);</span>
+<span class="fc" id="L212">			productSource = new ObjectProductSource(product);</span>
 
-<span class="fc" id="L182">			in = new BufferedInputStream(socket.getInputStream());</span>
-<span class="fc" id="L183">			out = new BufferedOutputStream(socket.getOutputStream());</span>
-<span class="pc bpc" id="L184" title="1 of 2 branches missed.">			if (writeTimeout &gt; 0) {</span>
-<span class="nc" id="L185">				out = new TimeoutOutputStream(out, writeTimeout);</span>
+<span class="fc" id="L214">			in = new BufferedInputStream(socket.getInputStream());</span>
+<span class="fc" id="L215">			out = new BufferedOutputStream(socket.getOutputStream());</span>
+<span class="pc bpc" id="L216" title="1 of 2 branches missed.">			if (writeTimeout &gt; 0) {</span>
+<span class="nc" id="L217">				out = new TimeoutOutputStream(out, writeTimeout);</span>
 			}
 
-<span class="pc bpc" id="L188" title="1 of 2 branches missed.">			if (enablePdlProtocol) {</span>
-<span class="fc" id="L189">				LOGGER.fine(&quot;[&quot; + getName() + &quot;] using protocol version &quot;</span>
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">			if (enablePdlProtocol) {</span>
+<span class="fc" id="L221">				LOGGER.fine(&quot;[&quot; + getName() + &quot;] using protocol version &quot;</span>
 						+ PROTOCOL_VERSION_0_1);
 
 				// flag to receiver for &quot;PDL&quot; protocol
-<span class="fc" id="L193">				out.write(PROTOCOL_HEADER);</span>
-<span class="fc" id="L194">				io.writeString(PROTOCOL_VERSION_0_1, out);</span>
-<span class="fc" id="L195">				io.writeString(product.getId().toString(), out);</span>
-<span class="fc" id="L196">				out.flush();</span>
+<span class="fc" id="L225">				out.write(PROTOCOL_HEADER);</span>
+<span class="fc" id="L226">				io.writeString(PROTOCOL_VERSION_0_1, out);</span>
+<span class="fc" id="L227">				io.writeString(product.getId().toString(), out);</span>
+<span class="fc" id="L228">				out.flush();</span>
 
-<span class="fc" id="L198">				status = io.readString(in);</span>
-<span class="fc bfc" id="L199" title="All 2 branches covered.">				if (ALREADY_HAVE_PRODUCT.equals(status)) {</span>
-<span class="fc" id="L200">					sendProduct = false;</span>
-<span class="pc bpc" id="L201" title="1 of 2 branches missed.">				} else if (UNKNOWN_PRODUCT.equals(status)) {</span>
+<span class="fc" id="L230">				status = io.readString(in);</span>
+<span class="fc bfc" id="L231" title="All 2 branches covered.">				if (ALREADY_HAVE_PRODUCT.equals(status)) {</span>
+<span class="fc" id="L232">					sendProduct = false;</span>
+<span class="pc bpc" id="L233" title="1 of 2 branches missed.">				} else if (UNKNOWN_PRODUCT.equals(status)) {</span>
 					// hub doesn't have this product, send
 				} else {
 					// unexpected reply, don't consider it success
-<span class="nc" id="L205">					throw new Exception(&quot;Unexpected hub reply '&quot; + status + &quot;'&quot;);</span>
+<span class="nc" id="L237">					throw new Exception(&quot;Unexpected hub reply '&quot; + status + &quot;'&quot;);</span>
 				}
 			} else {
-<span class="nc" id="L208">				LOGGER.fine(&quot;[&quot; + getName() + &quot;] not using PDL protocol&quot;);</span>
+<span class="nc" id="L240">				LOGGER.fine(&quot;[&quot; + getName() + &quot;] not using PDL protocol&quot;);</span>
 			}
 
-<span class="fc bfc" id="L211" title="All 2 branches covered.">			if (sendProduct) {</span>
-<span class="fc bfc" id="L212" title="All 2 branches covered.">				if (enableDeflate) {</span>
-<span class="fc" id="L213">					out = new DeflaterOutputStream(out, new Deflater(</span>
+<span class="fc bfc" id="L243" title="All 2 branches covered.">			if (sendProduct) {</span>
+<span class="fc bfc" id="L244" title="All 2 branches covered.">				if (enableDeflate) {</span>
+<span class="fc" id="L245">					out = new DeflaterOutputStream(out, new Deflater(</span>
 							deflateLevel));
 				}
 
 				// make sure product handler doesn't close stream before done
-<span class="fc" id="L218">				OutputStream productOut = new StreamUtils.UnclosableOutputStream(</span>
+<span class="fc" id="L250">				OutputStream productOut = new StreamUtils.UnclosableOutputStream(</span>
 						out);
-<span class="fc bfc" id="L220" title="All 2 branches covered.">				if (binaryFormat) {</span>
-<span class="fc" id="L221">					productSource</span>
-<span class="fc" id="L222">							.streamTo(new BinaryProductHandler(productOut));</span>
+<span class="fc bfc" id="L252" title="All 2 branches covered.">				if (binaryFormat) {</span>
+<span class="fc" id="L253">					productSource</span>
+<span class="fc" id="L254">							.streamTo(new BinaryProductHandler(productOut));</span>
 				} else {
-<span class="fc" id="L224">					productSource.streamTo(new XmlProductHandler(productOut));</span>
+<span class="fc" id="L256">					productSource.streamTo(new XmlProductHandler(productOut));</span>
 				}
 
 				// deflate requires &quot;finish&quot;
-<span class="fc bfc" id="L228" title="All 2 branches covered.">				if (enableDeflate) {</span>
-<span class="fc" id="L229">					((DeflaterOutputStream) out).finish();</span>
+<span class="fc bfc" id="L260" title="All 2 branches covered.">				if (enableDeflate) {</span>
+<span class="fc" id="L261">					((DeflaterOutputStream) out).finish();</span>
 				}
 
 				// flush buffered output stream to socket
-<span class="fc" id="L233">				out.flush();</span>
+<span class="fc" id="L265">				out.flush();</span>
 				// mark end of stream for server (for xml parser)
-<span class="fc" id="L235">				socket.shutdownOutput();</span>
+<span class="fc" id="L267">				socket.shutdownOutput();</span>
 
 				// finished sending, now get status from server
-<span class="pc bpc" id="L238" title="1 of 2 branches missed.">				if (enablePdlProtocol) {</span>
+<span class="pc bpc" id="L270" title="1 of 2 branches missed.">				if (enablePdlProtocol) {</span>
 					// the new way
-<span class="fc" id="L240">					status = io.readString(in);</span>
+<span class="fc" id="L272">					status = io.readString(in);</span>
 				} else {
 					// the old way
-<span class="nc" id="L243">					status = new BufferedReader(new InputStreamReader(</span>
-<span class="nc" id="L244">							socket.getInputStream())).readLine();</span>
+<span class="nc" id="L275">					status = new BufferedReader(new InputStreamReader(</span>
+<span class="nc" id="L276">							socket.getInputStream())).readLine();</span>
 				}
 			}
 
-<span class="fc" id="L248">			LOGGER.info(&quot;[&quot; + getName() + &quot;] send complete &quot;</span>
-<span class="fc" id="L249">					+ socket.toString() + &quot; response=\&quot;&quot; + status + &quot;\&quot;&quot;);</span>
-<span class="nc" id="L250">		} catch (SocketTimeoutException ste) {</span>
-<span class="nc" id="L251">			throw new Exception(&quot;Error sending to &quot; + host</span>
+<span class="fc" id="L280">			LOGGER.info(&quot;[&quot; + getName() + &quot;] send complete &quot;</span>
+<span class="fc" id="L281">					+ socket.toString() + &quot; response=\&quot;&quot; + status + &quot;\&quot;&quot;);</span>
+<span class="nc" id="L282">		} catch (SocketTimeoutException ste) {</span>
+<span class="nc" id="L283">			throw new Exception(&quot;Error sending to &quot; + host</span>
 					+ &quot;, connect or read timeout&quot;, ste);
-<span class="nc" id="L253">		} catch (UnknownHostException uhe) {</span>
-<span class="nc" id="L254">			throw new Exception(&quot;Unknown host &quot; + host</span>
+<span class="nc" id="L285">		} catch (UnknownHostException uhe) {</span>
+<span class="nc" id="L286">			throw new Exception(&quot;Unknown host &quot; + host</span>
 					+ &quot;, check that DNS is properly configured&quot;, uhe);
-<span class="nc" id="L256">		} catch (SocketException se) {</span>
-<span class="nc bnc" id="L257" title="All 2 branches missed.">			if (!enablePdlProtocol) {</span>
+<span class="nc" id="L288">		} catch (SocketException se) {</span>
+<span class="nc bnc" id="L289" title="All 2 branches missed.">			if (!enablePdlProtocol) {</span>
 				// check the old way
 				try {
 					// possible that hub already has product
-<span class="nc" id="L261">					status = new BufferedReader(new InputStreamReader(</span>
-<span class="nc" id="L262">							socket.getInputStream())).readLine();</span>
-<span class="nc bnc" id="L263" title="All 2 branches missed.">					if (status.equals(&quot;Product already received&quot;)) {</span>
+<span class="nc" id="L293">					status = new BufferedReader(new InputStreamReader(</span>
+<span class="nc" id="L294">							socket.getInputStream())).readLine();</span>
+<span class="nc bnc" id="L295" title="All 2 branches missed.">					if (status.equals(&quot;Product already received&quot;)) {</span>
 						// hub already has product
-<span class="nc" id="L265">						LOGGER.info(&quot;[&quot; + getName()</span>
+<span class="nc" id="L297">						LOGGER.info(&quot;[&quot; + getName()</span>
 								+ &quot;] hub already has product&quot;);
-<span class="nc" id="L267">						return;</span>
+<span class="nc" id="L299">						return;</span>
 					}
-<span class="nc" id="L269">				} catch (Exception e) {</span>
+<span class="nc" id="L301">				} catch (Exception e) {</span>
 					// ignore, already have an exception
-<span class="nc" id="L271">					e.printStackTrace();</span>
-<span class="nc" id="L272">				}</span>
+<span class="nc" id="L303">					e.printStackTrace();</span>
+<span class="nc" id="L304">				}</span>
 			}
-<span class="nc" id="L274">			throw new Exception(&quot;Error sending to &quot; + host</span>
+<span class="nc" id="L306">			throw new Exception(&quot;Error sending to &quot; + host</span>
 					+ &quot;, possible write timeout&quot;, se);
-<span class="nc" id="L276">		} catch (Exception e) {</span>
-<span class="nc" id="L277">			throw new Exception(&quot;[&quot; + getName() + &quot;] error sending to &quot; + host,</span>
+<span class="nc" id="L308">		} catch (Exception e) {</span>
+<span class="nc" id="L309">			throw new Exception(&quot;[&quot; + getName() + &quot;] error sending to &quot; + host,</span>
 					e);
 		} finally {
 			try {
-<span class="fc" id="L281">				out.close();</span>
-<span class="nc" id="L282">			} catch (Exception ignore) {</span>
-<span class="fc" id="L283">			}</span>
-<span class="fc" id="L284">			socket.close();</span>
-<span class="fc" id="L285">			socket = null;</span>
+<span class="fc" id="L313">				out.close();</span>
+<span class="nc" id="L314">			} catch (Exception ignore) {</span>
+<span class="fc" id="L315">			}</span>
+<span class="fc" id="L316">			socket.close();</span>
+<span class="fc" id="L317">			socket = null;</span>
 		}
 
-<span class="pc bpc" id="L288" title="2 of 4 branches missed.">		if (status != null &amp;&amp; status.startsWith(&quot;Error&quot;)) {</span>
-<span class="nc" id="L289">			throw new Exception(&quot;[&quot; + getName() + &quot;] error sending to &quot; + host</span>
+<span class="pc bpc" id="L320" title="2 of 4 branches missed.">		if (status != null &amp;&amp; status.startsWith(&quot;Error&quot;)) {</span>
+<span class="nc" id="L321">			throw new Exception(&quot;[&quot; + getName() + &quot;] error sending to &quot; + host</span>
 					+ &quot;, message=&quot; + status);
 		}
-<span class="fc" id="L292">	}</span>
+<span class="fc" id="L324">	}</span>
 
 	/**
 	 * Reads the host and port from config.
-	 * 
+	 *
 	 * @param config
 	 *            a Config object with host and port properties.
 	 */
 	public void configure(Config config) throws Exception {
-<span class="nc" id="L301">		host = config.getProperty(SENDER_HOST_PROPERTY);</span>
-<span class="nc bnc" id="L302" title="All 2 branches missed.">		if (host == null) {</span>
-<span class="nc" id="L303">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
+<span class="nc" id="L333">		host = config.getProperty(SENDER_HOST_PROPERTY);</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">		if (host == null) {</span>
+<span class="nc" id="L335">			throw new ConfigurationException(&quot;[&quot; + getName()</span>
 					+ &quot;] 'host' is a required configuration property&quot;);
 		}
-<span class="nc" id="L306">		LOGGER.config(&quot;[&quot; + getName() + &quot;] host is '&quot; + host + &quot;'&quot;);</span>
+<span class="nc" id="L338">		LOGGER.config(&quot;[&quot; + getName() + &quot;] host is '&quot; + host + &quot;'&quot;);</span>
 
-<span class="nc" id="L308">		port = Integer.parseInt(config.getProperty(SENDER_PORT_PROPERTY,</span>
-<span class="nc" id="L309">				DEFAULT_SENDER_PORT).trim());</span>
-<span class="nc" id="L310">		LOGGER.config(&quot;[&quot; + getName() + &quot;] port is '&quot; + port + &quot;'&quot;);</span>
+<span class="nc" id="L340">		port = Integer.parseInt(config.getProperty(SENDER_PORT_PROPERTY,</span>
+<span class="nc" id="L341">				DEFAULT_SENDER_PORT).trim());</span>
+<span class="nc" id="L342">		LOGGER.config(&quot;[&quot; + getName() + &quot;] port is '&quot; + port + &quot;'&quot;);</span>
 
-<span class="nc" id="L312">		connectTimeout = Integer.parseInt(config.getProperty(</span>
+<span class="nc" id="L344">		connectTimeout = Integer.parseInt(config.getProperty(</span>
 				CONNECT_TIMEOUT_PROPERTY, DEFAULT_CONNECT_TIMEOUT));
-<span class="nc" id="L314">		LOGGER.config(&quot;[&quot; + getName() + &quot;] connectTimeout is '&quot;</span>
+<span class="nc" id="L346">		LOGGER.config(&quot;[&quot; + getName() + &quot;] connectTimeout is '&quot;</span>
 				+ connectTimeout + &quot;'&quot;);
 
-<span class="nc" id="L317">		readTimeout = Integer.parseInt(config.getProperty(</span>
+<span class="nc" id="L349">		readTimeout = Integer.parseInt(config.getProperty(</span>
 				READ_TIMEOUT_PROPERTY, DEFAULT_READ_TIMEOUT));
-<span class="nc" id="L319">		LOGGER.config(&quot;[&quot; + getName() + &quot;] readTimeout is '&quot; + readTimeout</span>
+<span class="nc" id="L351">		LOGGER.config(&quot;[&quot; + getName() + &quot;] readTimeout is '&quot; + readTimeout</span>
 				+ &quot;'&quot;);
 
-<span class="nc" id="L322">		writeTimeout = Integer.parseInt(config.getProperty(</span>
+<span class="nc" id="L354">		writeTimeout = Integer.parseInt(config.getProperty(</span>
 				WRITE_TIMEOUT_PROPERTY, DEFAULT_WRITE_TIMEOUT));
-<span class="nc" id="L324">		LOGGER.config(&quot;[&quot; + getName() + &quot;] writeTimeout is '&quot; + writeTimeout</span>
+<span class="nc" id="L356">		LOGGER.config(&quot;[&quot; + getName() + &quot;] writeTimeout is '&quot; + writeTimeout</span>
 				+ &quot;'&quot;);
 
-<span class="nc" id="L327">		binaryFormat = Boolean.valueOf(config.getProperty(</span>
+<span class="nc" id="L359">		binaryFormat = Boolean.valueOf(config.getProperty(</span>
 				BINARY_FORMAT_PROPERTY, BINARY_FORMAT_DEFAULT));
-<span class="nc" id="L329">		LOGGER.config(&quot;[&quot; + getName() + &quot;] using &quot;</span>
-<span class="nc bnc" id="L330" title="All 2 branches missed.">				+ (binaryFormat ? &quot;binary&quot; : &quot;xml&quot;) + &quot; format&quot;);</span>
+<span class="nc" id="L361">		LOGGER.config(&quot;[&quot; + getName() + &quot;] using &quot;</span>
+<span class="nc bnc" id="L362" title="All 2 branches missed.">				+ (binaryFormat ? &quot;binary&quot; : &quot;xml&quot;) + &quot; format&quot;);</span>
 
-<span class="nc" id="L332">		enableDeflate = Boolean.valueOf(config.getProperty(</span>
+<span class="nc" id="L364">		enableDeflate = Boolean.valueOf(config.getProperty(</span>
 				ENABLE_DEFLATE_PROPERTY, ENABLE_DEFLATE_DEFAULT));
-<span class="nc" id="L334">		LOGGER.config(&quot;[&quot; + getName() + &quot;] enableDeflate is &quot; + enableDeflate);</span>
+<span class="nc" id="L366">		LOGGER.config(&quot;[&quot; + getName() + &quot;] enableDeflate is &quot; + enableDeflate);</span>
 
-<span class="nc" id="L336">		deflateLevel = Integer.valueOf(config.getProperty(</span>
+<span class="nc" id="L368">		deflateLevel = Integer.valueOf(config.getProperty(</span>
 				DEFLATE_LEVEL_PROPERTY, DEFLATE_LEVEL_DEFAULT));
-<span class="nc" id="L338">		LOGGER.config(&quot;[&quot; + getName() + &quot;] deflateLevel is &quot; + deflateLevel);</span>
+<span class="nc" id="L370">		LOGGER.config(&quot;[&quot; + getName() + &quot;] deflateLevel is &quot; + deflateLevel);</span>
 
-<span class="nc" id="L340">		enablePdlProtocol = Boolean.valueOf(config.getProperty(</span>
+<span class="nc" id="L372">		enablePdlProtocol = Boolean.valueOf(config.getProperty(</span>
 				ENABLE_PDL_PROTOCOL_PROPERTY, DEFAULT_ENABLE_PDL_PROTOCOL));
-<span class="nc" id="L342">		LOGGER.config(&quot;[&quot; + getName() + &quot;] enablePdlProtocol is &quot;</span>
+<span class="nc" id="L374">		LOGGER.config(&quot;[&quot; + getName() + &quot;] enablePdlProtocol is &quot;</span>
 				+ enablePdlProtocol);
-<span class="nc" id="L344">	}</span>
+<span class="nc" id="L376">	}</span>
 
 	/**
 	 * Makes sure the socket is closed.
 	 */
 	public void shutdown() throws Exception {
-<span class="pc bpc" id="L350" title="1 of 2 branches missed.">		if (socket != null) {</span>
-<span class="nc bnc" id="L351" title="All 2 branches missed.">			if (!socket.isOutputShutdown()) {</span>
+<span class="pc bpc" id="L382" title="1 of 2 branches missed.">		if (socket != null) {</span>
+<span class="nc bnc" id="L383" title="All 2 branches missed.">			if (!socket.isOutputShutdown()) {</span>
 				try {
-<span class="nc" id="L353">					socket.getOutputStream().flush();</span>
-<span class="nc" id="L354">					socket.getOutputStream().close();</span>
-<span class="nc" id="L355">				} catch (IOException iox) { /* Ignore */</span>
-<span class="nc" id="L356">				}</span>
+<span class="nc" id="L385">					socket.getOutputStream().flush();</span>
+<span class="nc" id="L386">					socket.getOutputStream().close();</span>
+<span class="nc" id="L387">				} catch (IOException iox) { /* Ignore */</span>
+<span class="nc" id="L388">				}</span>
 			}
-<span class="nc bnc" id="L358" title="All 2 branches missed.">			if (!socket.isClosed()) {</span>
+<span class="nc bnc" id="L390" title="All 2 branches missed.">			if (!socket.isClosed()) {</span>
 				try {
-<span class="nc" id="L360">					socket.close();</span>
-<span class="nc" id="L361">				} catch (IOException iox) { /* Ignore */</span>
-<span class="nc" id="L362">				}</span>
+<span class="nc" id="L392">					socket.close();</span>
+<span class="nc" id="L393">				} catch (IOException iox) { /* Ignore */</span>
+<span class="nc" id="L394">				}</span>
 			}
 		}
-<span class="fc" id="L365">	}</span>
+<span class="fc" id="L397">	}</span>
 
 	/**
 	 * Does nothing, a socket is opened each time a product is sent.
 	 */
 	public void startup() throws Exception {
 		// Nothing to do for startup...
-<span class="fc" id="L372">	}</span>
+<span class="fc" id="L404">	}</span>
 
 	/**
 	 * @return the binaryFormat
 	 */
 	public boolean isBinaryFormat() {
-<span class="nc" id="L378">		return binaryFormat;</span>
+<span class="nc" id="L410">		return binaryFormat;</span>
 	}
 
 	/**
@@ -383,14 +415,14 @@ public class SocketProductSender extends DefaultConfigurable implements
 	 *            the binaryFormat to set
 	 */
 	public void setBinaryFormat(boolean binaryFormat) {
-<span class="fc" id="L386">		this.binaryFormat = binaryFormat;</span>
-<span class="fc" id="L387">	}</span>
+<span class="fc" id="L418">		this.binaryFormat = binaryFormat;</span>
+<span class="fc" id="L419">	}</span>
 
 	/**
 	 * @return the enableDeflate
 	 */
 	public boolean isEnableDeflate() {
-<span class="nc" id="L393">		return enableDeflate;</span>
+<span class="nc" id="L425">		return enableDeflate;</span>
 	}
 
 	/**
@@ -398,14 +430,14 @@ public class SocketProductSender extends DefaultConfigurable implements
 	 *            the enableDeflate to set
 	 */
 	public void setEnableDeflate(boolean enableDeflate) {
-<span class="fc" id="L401">		this.enableDeflate = enableDeflate;</span>
-<span class="fc" id="L402">	}</span>
+<span class="fc" id="L433">		this.enableDeflate = enableDeflate;</span>
+<span class="fc" id="L434">	}</span>
 
 	/**
 	 * @return the deflateLevel
 	 */
 	public int getDeflateLevel() {
-<span class="nc" id="L408">		return deflateLevel;</span>
+<span class="nc" id="L440">		return deflateLevel;</span>
 	}
 
 	/**
@@ -413,14 +445,14 @@ public class SocketProductSender extends DefaultConfigurable implements
 	 *            the deflateLevel to set
 	 */
 	public void setDeflateLevel(int deflateLevel) {
-<span class="nc" id="L416">		this.deflateLevel = deflateLevel;</span>
-<span class="nc" id="L417">	}</span>
+<span class="nc" id="L448">		this.deflateLevel = deflateLevel;</span>
+<span class="nc" id="L449">	}</span>
 
 	/**
 	 * @return the enablePdlProtocol
 	 */
 	public boolean isEnablePdlProtocol() {
-<span class="nc" id="L423">		return enablePdlProtocol;</span>
+<span class="nc" id="L455">		return enablePdlProtocol;</span>
 	}
 
 	/**
@@ -428,14 +460,14 @@ public class SocketProductSender extends DefaultConfigurable implements
 	 *            the enablePdlProtocol to set
 	 */
 	public void setEnablePdlProtocol(boolean enablePdlProtocol) {
-<span class="nc" id="L431">		this.enablePdlProtocol = enablePdlProtocol;</span>
-<span class="nc" id="L432">	}</span>
+<span class="nc" id="L463">		this.enablePdlProtocol = enablePdlProtocol;</span>
+<span class="nc" id="L464">	}</span>
 
 	/**
 	 * @return the connectTimeout
 	 */
 	public int getConnectTimeout() {
-<span class="nc" id="L438">		return connectTimeout;</span>
+<span class="nc" id="L470">		return connectTimeout;</span>
 	}
 
 	/**
@@ -443,14 +475,14 @@ public class SocketProductSender extends DefaultConfigurable implements
 	 *            the connectTimeout to set
 	 */
 	public void setConnectTimeout(int connectTimeout) {
-<span class="nc" id="L446">		this.connectTimeout = connectTimeout;</span>
-<span class="nc" id="L447">	}</span>
+<span class="nc" id="L478">		this.connectTimeout = connectTimeout;</span>
+<span class="nc" id="L479">	}</span>
 
 	/**
 	 * @return the readTimeout
 	 */
 	public int getReadTimeout() {
-<span class="nc" id="L453">		return readTimeout;</span>
+<span class="nc" id="L485">		return readTimeout;</span>
 	}
 
 	/**
@@ -458,14 +490,14 @@ public class SocketProductSender extends DefaultConfigurable implements
 	 *            the readTimeout to set
 	 */
 	public void setReadTimeout(int readTimeout) {
-<span class="nc" id="L461">		this.readTimeout = readTimeout;</span>
-<span class="nc" id="L462">	}</span>
+<span class="nc" id="L493">		this.readTimeout = readTimeout;</span>
+<span class="nc" id="L494">	}</span>
 
 	/**
 	 * @return the writeTimeout
 	 */
 	public int getWriteTimeout() {
-<span class="nc" id="L468">		return writeTimeout;</span>
+<span class="nc" id="L500">		return writeTimeout;</span>
 	}
 
 	/**
@@ -473,14 +505,14 @@ public class SocketProductSender extends DefaultConfigurable implements
 	 *            the writeTimeout to set
 	 */
 	public void setWriteTimeout(int writeTimeout) {
-<span class="nc" id="L476">		this.writeTimeout = writeTimeout;</span>
-<span class="nc" id="L477">	}</span>
+<span class="nc" id="L508">		this.writeTimeout = writeTimeout;</span>
+<span class="nc" id="L509">	}</span>
 
 	/**
 	 * @return the host
 	 */
 	public String getHost() {
-<span class="nc" id="L483">		return host;</span>
+<span class="nc" id="L515">		return host;</span>
 	}
 
 	/**
@@ -488,14 +520,14 @@ public class SocketProductSender extends DefaultConfigurable implements
 	 *            the host to set
 	 */
 	public void setHost(String host) {
-<span class="fc" id="L491">		this.host = host;</span>
-<span class="fc" id="L492">	}</span>
+<span class="fc" id="L523">		this.host = host;</span>
+<span class="fc" id="L524">	}</span>
 
 	/**
 	 * @return the port
 	 */
 	public int getPort() {
-<span class="nc" id="L498">		return port;</span>
+<span class="nc" id="L530">		return port;</span>
 	}
 
 	/**
@@ -503,8 +535,8 @@ public class SocketProductSender extends DefaultConfigurable implements
 	 *            the port to set
 	 */
 	public void setPort(int port) {
-<span class="fc" id="L506">		this.port = port;</span>
-<span class="fc" id="L507">	}</span>
+<span class="fc" id="L538">		this.port = port;</span>
+<span class="fc" id="L539">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

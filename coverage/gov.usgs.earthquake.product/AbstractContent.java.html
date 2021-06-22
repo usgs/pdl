@@ -123,7 +123,7 @@ public abstract class AbstractContent implements Content {
 	/**
 	 * Set the content length.
 	 *
-	 * @param length
+	 * @param length long to set
 	 */
 	public void setLength(final Long length) {
 <span class="fc bfc" id="L129" title="All 2 branches covered.">		if (length == null) {</span>
@@ -144,28 +144,29 @@ public abstract class AbstractContent implements Content {
 	 * Get or generate the MD5 hash of content.
 	 *
 	 * @param computeIfMissing Use getInputStream to generate hash if missing.
-	 * @throws Exception
+	 * @return sha256 string
+	 * @throws Exception if error occurs
 	 */
 	public String getSha256(final boolean computeIfMissing) throws Exception {
-<span class="nc bnc" id="L150" title="All 4 branches missed.">		if (sha256 == null &amp;&amp; computeIfMissing) {</span>
-<span class="nc" id="L151">			try (final DigestOutputStream contentDigest =</span>
-<span class="nc" id="L152">							new DigestOutputStream(new NullOutputStream(), MessageDigest.getInstance(&quot;SHA-256&quot;));</span>
-<span class="nc" id="L153">					final OutputStream unclosable = new StreamUtils.UnclosableOutputStream(contentDigest)) {</span>
-<span class="nc" id="L154">				StreamUtils.transferStream(this.getInputStream(), unclosable);</span>
-<span class="nc" id="L155">				contentDigest.flush();</span>
-<span class="nc" id="L156">				setSha256(Base64.getEncoder().encodeToString(contentDigest.getMessageDigest().digest()));</span>
+<span class="nc bnc" id="L151" title="All 4 branches missed.">		if (sha256 == null &amp;&amp; computeIfMissing) {</span>
+<span class="nc" id="L152">			try (final DigestOutputStream contentDigest =</span>
+<span class="nc" id="L153">							new DigestOutputStream(new NullOutputStream(), MessageDigest.getInstance(&quot;SHA-256&quot;));</span>
+<span class="nc" id="L154">					final OutputStream unclosable = new StreamUtils.UnclosableOutputStream(contentDigest)) {</span>
+<span class="nc" id="L155">				StreamUtils.transferStream(this.getInputStream(), unclosable);</span>
+<span class="nc" id="L156">				contentDigest.flush();</span>
+<span class="nc" id="L157">				setSha256(Base64.getEncoder().encodeToString(contentDigest.getMessageDigest().digest()));</span>
 			}
 		}
-<span class="nc" id="L159">		return sha256;</span>
+<span class="nc" id="L160">		return sha256;</span>
 	}
 
 	/**
 	 * Set the sha256 hash of content.
 	 *
-	 * @param sha256
+	 * @param sha256 to set
 	 */
 	public void setSha256(final String sha256) {
-<span class="fc" id="L168">		this.sha256 = sha256;</span>
-<span class="fc" id="L169">	}</span>
+<span class="fc" id="L169">		this.sha256 = sha256;</span>
+<span class="fc" id="L170">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

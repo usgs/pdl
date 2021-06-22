@@ -14,15 +14,17 @@ import gov.usgs.util.XmlUtils;
 
     /**
      * Output ANSS Authoritative Regions in KML format.
+     * @param regions ANSS Authoritative regions
+     * @return string of ANSS regions in KML format
      */
     public String formatKML(final Regions regions) {
-<span class="nc" id="L19">        StringBuffer kml = new StringBuffer(String.join(&quot;\n&quot;,</span>
+<span class="nc" id="L21">        StringBuffer kml = new StringBuffer(String.join(&quot;\n&quot;,</span>
             &quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot;?&gt;&quot;,
             &quot;&lt;kml xmlns=\&quot;http://www.opengis.net/kml/2.2\&quot;&gt;&quot;,
             &quot;&lt;Document id=\&quot;regions_xml\&quot;&gt;&quot;,
             &quot;  &lt;name&gt;ANSS Authoritative Regions&lt;/name&gt;&quot;,
             &quot;  &lt;description&gt;&quot;
-<span class="nc" id="L25">                    + XmlUtils.formatDate(new Date())</span>
+<span class="nc" id="L27">                    + XmlUtils.formatDate(new Date())</span>
                     + &quot;&lt;/description&gt;&quot;,
             &quot;  &lt;open&gt;1&lt;/open&gt;&quot;,
             &quot;  &lt;Style id=\&quot;RegionStyle\&quot;&gt;&quot;,
@@ -42,37 +44,39 @@ import gov.usgs.util.XmlUtils;
             &quot;&quot;
         ));
 
-<span class="nc bnc" id="L45" title="All 2 branches missed.">        for (final Region region : regions.regions) {</span>
-<span class="nc" id="L46">            kml.append(&quot;\n&lt;Placemark id=\&quot;region_&quot;).append(region.regionid).append(&quot;\&quot;&gt;\n&quot;);</span>
-<span class="nc" id="L47">            kml.append(&quot;&lt;name&gt;&quot;).append(region.regionid).append(&quot;&lt;/name&gt;\n&quot;);</span>
-<span class="nc" id="L48">            kml.append(&quot;&lt;styleUrl&gt;#RegionStyle&lt;/styleUrl&gt;\n&quot;);</span>
-<span class="nc" id="L49">            kml.append(&quot;&lt;MultiGeometry&gt;&lt;Polygon&gt;&lt;outerBoundaryIs&gt;&lt;LinearRing&gt;&lt;coordinates&gt;\n&quot;);</span>
-<span class="nc bnc" id="L50" title="All 2 branches missed.">            for (final Point point : region.points) {</span>
-<span class="nc" id="L51">                kml.append(&quot;  &quot;).append(point.x).append(&quot;,&quot;).append(point.y).append(&quot;\n&quot;);</span>
-<span class="nc" id="L52">            }</span>
-<span class="nc" id="L53">            kml.append(&quot;&lt;/coordinates&gt;&lt;/LinearRing&gt;&lt;/outerBoundaryIs&gt;&lt;/Polygon&gt;&lt;/MultiGeometry&gt;\n&quot;);</span>
-<span class="nc" id="L54">            kml.append(&quot;&lt;/Placemark&gt;\n&quot;);</span>
-<span class="nc" id="L55">        }</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        for (final Region region : regions.regions) {</span>
+<span class="nc" id="L48">            kml.append(&quot;\n&lt;Placemark id=\&quot;region_&quot;).append(region.regionid).append(&quot;\&quot;&gt;\n&quot;);</span>
+<span class="nc" id="L49">            kml.append(&quot;&lt;name&gt;&quot;).append(region.regionid).append(&quot;&lt;/name&gt;\n&quot;);</span>
+<span class="nc" id="L50">            kml.append(&quot;&lt;styleUrl&gt;#RegionStyle&lt;/styleUrl&gt;\n&quot;);</span>
+<span class="nc" id="L51">            kml.append(&quot;&lt;MultiGeometry&gt;&lt;Polygon&gt;&lt;outerBoundaryIs&gt;&lt;LinearRing&gt;&lt;coordinates&gt;\n&quot;);</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">            for (final Point point : region.points) {</span>
+<span class="nc" id="L53">                kml.append(&quot;  &quot;).append(point.x).append(&quot;,&quot;).append(point.y).append(&quot;\n&quot;);</span>
+<span class="nc" id="L54">            }</span>
+<span class="nc" id="L55">            kml.append(&quot;&lt;/coordinates&gt;&lt;/LinearRing&gt;&lt;/outerBoundaryIs&gt;&lt;/Polygon&gt;&lt;/MultiGeometry&gt;\n&quot;);</span>
+<span class="nc" id="L56">            kml.append(&quot;&lt;/Placemark&gt;\n&quot;);</span>
+<span class="nc" id="L57">        }</span>
 
-<span class="nc" id="L57">        kml.append(String.join(&quot;\n&quot;,</span>
+<span class="nc" id="L59">        kml.append(String.join(&quot;\n&quot;,</span>
             &quot;&quot;,
             &quot;&lt;/Document&gt;&quot;,
             &quot;&lt;/kml&gt;&quot;,
             &quot;&quot;
         ));
 
-<span class="nc" id="L64">        return kml.toString();</span>
+<span class="nc" id="L66">        return kml.toString();</span>
     }
 
     /**
      * Download ANSS Authoritative Regions,
      * and print to console in Regions KML format.
+     * @param args Console arguments
+     * @throws Exception if error occurs
      */
     public static void main(final String[] args) throws Exception {
-<span class="nc" id="L72">        Regions regions = ANSSRegionsFactory.getFactory().getRegions();</span>
-<span class="nc" id="L73">        String kml = new RegionsKML().formatKML(regions);</span>
-<span class="nc" id="L74">        System.out.println(kml);</span>
-<span class="nc" id="L75">    }</span>
+<span class="nc" id="L76">        Regions regions = ANSSRegionsFactory.getFactory().getRegions();</span>
+<span class="nc" id="L77">        String kml = new RegionsKML().formatKML(regions);</span>
+<span class="nc" id="L78">        System.out.println(kml);</span>
+<span class="nc" id="L79">    }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

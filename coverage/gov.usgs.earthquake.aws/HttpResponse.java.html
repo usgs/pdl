@@ -14,31 +14,36 @@ import gov.usgs.util.StreamUtils;
  * Utility class to hold HttpURLConnection and parse JSON response data.
  */
 public class HttpResponse {
+  /** Variable to hold HttpURLConnection */
   public final HttpURLConnection connection;
+  /** Variable for holding IOExceptions */
   public final IOException readException;
+  /** Varialbe to hold URL response */
   public final byte[] response;
 
   /**
    * Reads response from HttpUrlConnection.
+   * @param connection HttpURLConnection to read
+   * @throws Exception exception if errors
    */
-<span class="nc" id="L24">  public HttpResponse(final HttpURLConnection connection) throws Exception {</span>
-<span class="nc" id="L25">    this.connection = connection;</span>
-<span class="nc" id="L26">    IOException exception = null;</span>
-<span class="nc" id="L27">    byte[] data = null;</span>
-<span class="nc" id="L28">    try (final InputStream in = connection.getInputStream()) {</span>
-<span class="nc" id="L29">      data = StreamUtils.readStream(in);</span>
-<span class="nc" id="L30">    } catch (IOException e) {</span>
-<span class="nc" id="L31">      exception = e;</span>
-<span class="nc" id="L32">      try (final InputStream err = connection.getErrorStream()) {</span>
-<span class="nc" id="L33">        data = StreamUtils.readStream(err);</span>
-<span class="nc" id="L34">      } catch (IOException e2) {</span>
+<span class="nc" id="L29">  public HttpResponse(final HttpURLConnection connection) throws Exception {</span>
+<span class="nc" id="L30">    this.connection = connection;</span>
+<span class="nc" id="L31">    IOException exception = null;</span>
+<span class="nc" id="L32">    byte[] data = null;</span>
+<span class="nc" id="L33">    try (final InputStream in = connection.getInputStream()) {</span>
+<span class="nc" id="L34">      data = StreamUtils.readStream(in);</span>
+<span class="nc" id="L35">    } catch (IOException e) {</span>
+<span class="nc" id="L36">      exception = e;</span>
+<span class="nc" id="L37">      try (final InputStream err = connection.getErrorStream()) {</span>
+<span class="nc" id="L38">        data = StreamUtils.readStream(err);</span>
+<span class="nc" id="L39">      } catch (IOException e2) {</span>
         // ignore
-<span class="nc" id="L36">      }</span>
+<span class="nc" id="L41">      }</span>
     } finally {
-<span class="nc" id="L38">      this.response = data;</span>
-<span class="nc" id="L39">      this.readException = exception;</span>
+<span class="nc" id="L43">      this.response = data;</span>
+<span class="nc" id="L44">      this.readException = exception;</span>
     }
-<span class="nc" id="L41">  }</span>
+<span class="nc" id="L46">  }</span>
 
   /**
    * Parse response into JsonObject.
@@ -47,7 +52,7 @@ public class HttpResponse {
    * @throws Exception if unable to parse.
    */
   public JsonObject getJsonObject() throws Exception {
-<span class="nc" id="L50">    return Json.createReader(new ByteArrayInputStream(response)).readObject();</span>
+<span class="nc" id="L55">    return Json.createReader(new ByteArrayInputStream(response)).readObject();</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

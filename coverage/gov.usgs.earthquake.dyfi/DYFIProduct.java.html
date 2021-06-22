@@ -15,15 +15,17 @@ import java.math.BigDecimal;
  */
 public class DYFIProduct extends Product {
 
-	// References the event_data.xml file in the Product
+	/** References the event_data.xml file in the Product */
 	public static final String DYFI_EVENT_XML_ATTACHMENT = &quot;event_data.xml&quot;;
 
-	// These attributes are read from the XML file
+	/** Attribute for number of responses. Read from XML */
 	public static final String DYFI_NUM_RESP_ATTRIBUTE = &quot;nresponses&quot;;
+	/** Attribute for max intensity. Read from XML */
 	public static final String DYFI_MAX_MMI_ATTRIBUTE = &quot;max_intensity&quot;;
 
-	// These properties are what we set internally
+	/** Internally set number of responses property */
 	public static final String DYFI_NUM_RESP_PROPERTY = &quot;numResp&quot;;
+	/** Internally set max intensity property */
 	public static final String DYFI_MAX_MMI_PROPERTY = &quot;maxmmi&quot;;
 
 	/**
@@ -36,37 +38,38 @@ public class DYFIProduct extends Product {
 	 *            The product serving as a basis for this instance.
 	 */
 	public DYFIProduct(final Product product) {
-<span class="fc" id="L39">		super(product);</span>
+<span class="fc" id="L41">		super(product);</span>
 
-<span class="fc bfc" id="L41" title="All 2 branches covered.">		if (product.getProperties().get(DYFI_NUM_RESP_PROPERTY) == null</span>
-<span class="pc bpc" id="L42" title="1 of 2 branches missed.">				|| product.getProperties().get(DYFI_MAX_MMI_PROPERTY) == null) {</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">		if (product.getProperties().get(DYFI_NUM_RESP_PROPERTY) == null</span>
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">				|| product.getProperties().get(DYFI_MAX_MMI_PROPERTY) == null) {</span>
 			// only load xml if properties not set
-<span class="fc" id="L44">			loadEventXml();</span>
+<span class="fc" id="L46">			loadEventXml();</span>
 		}
-<span class="fc" id="L46">	}</span>
+<span class="fc" id="L48">	}</span>
 
+	/** Reads in DYFI Event EXL and parses it into a EventDataXMLHandler */
 	protected void loadEventXml() {
 		// Parse event_data.xml for more information about product
-<span class="fc" id="L50">		Content source = getContents().get(DYFI_EVENT_XML_ATTACHMENT);</span>
-<span class="fc bfc" id="L51" title="All 2 branches covered.">		if (source == null) {</span>
-<span class="fc" id="L52">			throw new IllegalArgumentException(&quot;Given product lacked the &quot;</span>
+<span class="fc" id="L53">		Content source = getContents().get(DYFI_EVENT_XML_ATTACHMENT);</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">		if (source == null) {</span>
+<span class="fc" id="L55">			throw new IllegalArgumentException(&quot;Given product lacked the &quot;</span>
 					+ &quot;required file to be a DYFIProduct. (&quot;
 					+ DYFI_EVENT_XML_ATTACHMENT + &quot;)&quot;);
 		}
 
-<span class="fc" id="L57">		EventDataXMLHandler handler = new EventDataXMLHandler(this);</span>
-<span class="fc" id="L58">		try (final InputStream in = source.getInputStream()) {</span>
-<span class="fc" id="L59">			handler.parse(in);</span>
-<span class="nc" id="L60">		} catch (Exception e) {</span>
-<span class="nc" id="L61">			throw new IllegalArgumentException(e);</span>
-<span class="fc" id="L62">		}</span>
-<span class="fc" id="L63">	}</span>
+<span class="fc" id="L60">		EventDataXMLHandler handler = new EventDataXMLHandler(this);</span>
+<span class="fc" id="L61">		try (final InputStream in = source.getInputStream()) {</span>
+<span class="fc" id="L62">			handler.parse(in);</span>
+<span class="nc" id="L63">		} catch (Exception e) {</span>
+<span class="nc" id="L64">			throw new IllegalArgumentException(e);</span>
+<span class="fc" id="L65">		}</span>
+<span class="fc" id="L66">	}</span>
 
 	/**
 	 * @return The number of felt reports submitted for this event.
 	 */
 	public int getNumResponses() {
-<span class="fc" id="L69">		return Integer.parseInt(getProperties().get(DYFI_NUM_RESP_PROPERTY));</span>
+<span class="fc" id="L72">		return Integer.parseInt(getProperties().get(DYFI_NUM_RESP_PROPERTY));</span>
 	}
 
 	/**
@@ -82,16 +85,16 @@ public class DYFIProduct extends Product {
 			throws NumberFormatException {
 		// This is a throw-away line, but makes sure the value being passed
 		// at least makes sense; an exception is thrown for garbage input.
-<span class="fc" id="L85">		Integer.parseInt(numResponses);</span>
+<span class="fc" id="L88">		Integer.parseInt(numResponses);</span>
 
-<span class="fc" id="L87">		getProperties().put(DYFI_NUM_RESP_PROPERTY, numResponses);</span>
-<span class="fc" id="L88">	}</span>
+<span class="fc" id="L90">		getProperties().put(DYFI_NUM_RESP_PROPERTY, numResponses);</span>
+<span class="fc" id="L91">	}</span>
 
 	/**
 	 * @return The maximum reported intensity for this event.
 	 */
 	public BigDecimal getMaxMMI() {
-<span class="fc" id="L94">		return new BigDecimal(getProperties().get(DYFI_MAX_MMI_PROPERTY));</span>
+<span class="fc" id="L97">		return new BigDecimal(getProperties().get(DYFI_MAX_MMI_PROPERTY));</span>
 	}
 
 	/**
@@ -106,9 +109,9 @@ public class DYFIProduct extends Product {
 	public void setMaxMMI(final String maxMMI) throws NumberFormatException {
 		// This is a throw-away line, but makes sure the value being passed
 		// at least makes sense; an exception is thrown for garbage input.
-<span class="fc" id="L109">		Double.parseDouble(maxMMI);</span>
+<span class="fc" id="L112">		Double.parseDouble(maxMMI);</span>
 
-<span class="fc" id="L111">		getProperties().put(DYFI_MAX_MMI_PROPERTY, maxMMI);</span>
-<span class="fc" id="L112">	}</span>
+<span class="fc" id="L114">		getProperties().put(DYFI_MAX_MMI_PROPERTY, maxMMI);</span>
+<span class="fc" id="L115">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

@@ -102,25 +102,27 @@ public class ObjectProductSource implements ProductSource {
 	 * order by relation name, by URI.
 	 *
 	 * @param out
+	 *            the receiving ProductOutput.
 	 * @throws Exception
+	 *             if out.onProperty throws an Exception.
 	 */
 	public void sendLinks(final ProductHandler out) throws Exception {
-<span class="fc" id="L108">		ProductId id = product.getId();</span>
-<span class="fc" id="L109">		Map&lt;String, List&lt;URI&gt;&gt; links = product.getLinks();</span>
+<span class="fc" id="L110">		ProductId id = product.getId();</span>
+<span class="fc" id="L111">		Map&lt;String, List&lt;URI&gt;&gt; links = product.getLinks();</span>
 		// in alphabetical order by relation name
-<span class="fc" id="L111">		Iterator&lt;String&gt; linkRelations = new TreeSet&lt;String&gt;(links.keySet())</span>
-<span class="fc" id="L112">				.iterator();</span>
-<span class="fc bfc" id="L113" title="All 2 branches covered.">		while (linkRelations.hasNext()) {</span>
-<span class="fc" id="L114">			String relation = linkRelations.next();</span>
+<span class="fc" id="L113">		Iterator&lt;String&gt; linkRelations = new TreeSet&lt;String&gt;(links.keySet())</span>
+<span class="fc" id="L114">				.iterator();</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">		while (linkRelations.hasNext()) {</span>
+<span class="fc" id="L116">			String relation = linkRelations.next();</span>
 			// in alphabetical order by URI
-<span class="fc" id="L116">			Iterator&lt;URI&gt; linkURIs = new TreeSet&lt;URI&gt;(links.get(relation))</span>
-<span class="fc" id="L117">					.iterator();</span>
-<span class="fc bfc" id="L118" title="All 2 branches covered.">			while (linkURIs.hasNext()) {</span>
-<span class="fc" id="L119">				URI uri = linkURIs.next();</span>
-<span class="fc" id="L120">				out.onLink(id, relation, uri);</span>
-<span class="fc" id="L121">			}</span>
-<span class="fc" id="L122">		}</span>
-<span class="fc" id="L123">	}</span>
+<span class="fc" id="L118">			Iterator&lt;URI&gt; linkURIs = new TreeSet&lt;URI&gt;(links.get(relation))</span>
+<span class="fc" id="L119">					.iterator();</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">			while (linkURIs.hasNext()) {</span>
+<span class="fc" id="L121">				URI uri = linkURIs.next();</span>
+<span class="fc" id="L122">				out.onLink(id, relation, uri);</span>
+<span class="fc" id="L123">			}</span>
+<span class="fc" id="L124">		}</span>
+<span class="fc" id="L125">	}</span>
 
 	/**
 	 * Call out's onContent method for each product content. Calls
@@ -132,16 +134,16 @@ public class ObjectProductSource implements ProductSource {
 	 *             if out.onContent throws an Exception.
 	 */
 	public void sendContents(final ProductHandler out) throws Exception {
-<span class="fc" id="L135">		ProductId id = product.getId();</span>
-<span class="fc" id="L136">		Map&lt;String, Content&gt; contents = product.getContents();</span>
+<span class="fc" id="L137">		ProductId id = product.getId();</span>
+<span class="fc" id="L138">		Map&lt;String, Content&gt; contents = product.getContents();</span>
 		// in alphabetical order by content path
-<span class="fc" id="L138">		Iterator&lt;String&gt; paths = new TreeSet&lt;String&gt;(contents.keySet())</span>
-<span class="fc" id="L139">				.iterator();</span>
-<span class="fc bfc" id="L140" title="All 2 branches covered.">		while (paths.hasNext()) {</span>
-<span class="fc" id="L141">			String path = paths.next();</span>
-<span class="fc" id="L142">			out.onContent(id, path, contents.get(path));</span>
-<span class="fc" id="L143">		}</span>
-<span class="fc" id="L144">	}</span>
+<span class="fc" id="L140">		Iterator&lt;String&gt; paths = new TreeSet&lt;String&gt;(contents.keySet())</span>
+<span class="fc" id="L141">				.iterator();</span>
+<span class="fc bfc" id="L142" title="All 2 branches covered.">		while (paths.hasNext()) {</span>
+<span class="fc" id="L143">			String path = paths.next();</span>
+<span class="fc" id="L144">			out.onContent(id, path, contents.get(path));</span>
+<span class="fc" id="L145">		}</span>
+<span class="fc" id="L146">	}</span>
 
 
 	/**
@@ -153,8 +155,8 @@ public class ObjectProductSource implements ProductSource {
 	 *             if out.onSignature throws an Exception.
 	 */
 	public void sendSignatureVersion(final ProductHandler out) throws Exception {
-<span class="fc" id="L156">		out.onSignatureVersion(product.getId(), product.getSignatureVersion());</span>
-<span class="fc" id="L157">	}</span>
+<span class="fc" id="L158">		out.onSignatureVersion(product.getId(), product.getSignatureVersion());</span>
+<span class="fc" id="L159">	}</span>
 
 	/**
 	 * Call out's onSignature method with product signature.
@@ -165,8 +167,8 @@ public class ObjectProductSource implements ProductSource {
 	 *             if out.onSignature throws an Exception.
 	 */
 	public void sendSignature(final ProductHandler out) throws Exception {
-<span class="fc" id="L168">		out.onSignature(product.getId(), product.getSignature());</span>
-<span class="fc" id="L169">	}</span>
+<span class="fc" id="L170">		out.onSignature(product.getId(), product.getSignature());</span>
+<span class="fc" id="L171">	}</span>
 
 	/**
 	 * Call out's onEndProduct method for product.
@@ -177,8 +179,8 @@ public class ObjectProductSource implements ProductSource {
 	 *             if out.onEndProduct throws an Exception.
 	 */
 	public void sendEndProduct(final ProductHandler out) throws Exception {
-<span class="fc" id="L180">		out.onEndProduct(product.getId());</span>
-<span class="fc" id="L181">	}</span>
+<span class="fc" id="L182">		out.onEndProduct(product.getId());</span>
+<span class="fc" id="L183">	}</span>
 
 
 	/**
@@ -186,8 +188,8 @@ public class ObjectProductSource implements ProductSource {
 	 */
 	@Override
 	public void close() {
-<span class="fc" id="L189">		this.product = null;</span>
-<span class="fc" id="L190">	}</span>
+<span class="fc" id="L191">		this.product = null;</span>
+<span class="fc" id="L192">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

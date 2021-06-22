@@ -38,19 +38,20 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 <span class="nc" id="L39">public class XmlUtils {</span>
 
-<span class="fc" id="L41">	public static final Map&lt;String, String&gt; ESCAPES = new HashMap&lt;String, String&gt;();</span>
+	/** Hashmap of ESCAPES */
+<span class="fc" id="L42">	public static final Map&lt;String, String&gt; ESCAPES = new HashMap&lt;String, String&gt;();</span>
 	static {
 		// xml
-<span class="fc" id="L44">		ESCAPES.put(&quot;&amp;&quot;, &quot;&amp;amp;&quot;);</span>
-<span class="fc" id="L45">		ESCAPES.put(&quot;&lt;&quot;, &quot;&amp;lt;&quot;);</span>
-<span class="fc" id="L46">		ESCAPES.put(&quot;&gt;&quot;, &quot;&amp;gt;&quot;);</span>
-<span class="fc" id="L47">		ESCAPES.put(&quot;\&quot;&quot;, &quot;&amp;quot;&quot;);</span>
-<span class="fc" id="L48">		ESCAPES.put(&quot;'&quot;, &quot;&amp;apos;&quot;);</span>
+<span class="fc" id="L45">		ESCAPES.put(&quot;&amp;&quot;, &quot;&amp;amp;&quot;);</span>
+<span class="fc" id="L46">		ESCAPES.put(&quot;&lt;&quot;, &quot;&amp;lt;&quot;);</span>
+<span class="fc" id="L47">		ESCAPES.put(&quot;&gt;&quot;, &quot;&amp;gt;&quot;);</span>
+<span class="fc" id="L48">		ESCAPES.put(&quot;\&quot;&quot;, &quot;&amp;quot;&quot;);</span>
+<span class="fc" id="L49">		ESCAPES.put(&quot;'&quot;, &quot;&amp;apos;&quot;);</span>
 		// whitespace characters
-<span class="fc" id="L50">		ESCAPES.put(&quot;\t&quot;, &quot;&amp;#x9;&quot;); // tab</span>
-<span class="fc" id="L51">		ESCAPES.put(&quot;\n&quot;, &quot;&amp;#xA;&quot;); // newline</span>
-<span class="fc" id="L52">		ESCAPES.put(&quot;\r&quot;, &quot;&amp;#xD;&quot;); // carriage return</span>
-<span class="fc" id="L53">	}</span>
+<span class="fc" id="L51">		ESCAPES.put(&quot;\t&quot;, &quot;&amp;#x9;&quot;); // tab</span>
+<span class="fc" id="L52">		ESCAPES.put(&quot;\n&quot;, &quot;&amp;#xA;&quot;); // newline</span>
+<span class="fc" id="L53">		ESCAPES.put(&quot;\r&quot;, &quot;&amp;#xD;&quot;); // carriage return</span>
+<span class="fc" id="L54">	}</span>
 
 	/**
 	 * Convenience method to format a Date as an XML DateTime String.
@@ -60,12 +61,12 @@ import org.xml.sax.helpers.DefaultHandler;
 	 * @return the XML representation as a string.
 	 */
 	public static String formatDate(final Date date) {
-<span class="fc bfc" id="L63" title="All 2 branches covered.">		if (date == null) {</span>
-<span class="fc" id="L64">			return null;</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">		if (date == null) {</span>
+<span class="fc" id="L65">			return null;</span>
 		}
-<span class="fc" id="L66">		GregorianCalendar calendar = new GregorianCalendar();</span>
-<span class="fc" id="L67">		calendar.setTimeInMillis(date.getTime());</span>
-<span class="fc" id="L68">		return formatGregorianCalendar(calendar);</span>
+<span class="fc" id="L67">		GregorianCalendar calendar = new GregorianCalendar();</span>
+<span class="fc" id="L68">		calendar.setTimeInMillis(date.getTime());</span>
+<span class="fc" id="L69">		return formatGregorianCalendar(calendar);</span>
 	}
 
 	/**
@@ -78,11 +79,11 @@ import org.xml.sax.helpers.DefaultHandler;
 	public static String formatGregorianCalendar(
 			final GregorianCalendar calendar) {
 		try {
-<span class="fc" id="L81">			return DatatypeFactory.newInstance()</span>
-<span class="fc" id="L82">					.newXMLGregorianCalendar(calendar).normalize()</span>
-<span class="fc" id="L83">					.toXMLFormat();</span>
-<span class="nc" id="L84">		} catch (Exception e) {</span>
-<span class="nc" id="L85">			return null;</span>
+<span class="fc" id="L82">			return DatatypeFactory.newInstance()</span>
+<span class="fc" id="L83">					.newXMLGregorianCalendar(calendar).normalize()</span>
+<span class="fc" id="L84">					.toXMLFormat();</span>
+<span class="nc" id="L85">		} catch (Exception e) {</span>
+<span class="nc" id="L86">			return null;</span>
 		}
 	}
 
@@ -95,11 +96,11 @@ import org.xml.sax.helpers.DefaultHandler;
 	 * @return the parsed Date object.
 	 */
 	public static Date getDate(final String toParse) {
-<span class="fc" id="L98">		XMLGregorianCalendar calendar = getXMLGregorianCalendar(toParse);</span>
-<span class="fc bfc" id="L99" title="All 2 branches covered.">		if (calendar != null) {</span>
-<span class="fc" id="L100">			return new Date(calendar.toGregorianCalendar().getTimeInMillis());</span>
+<span class="fc" id="L99">		XMLGregorianCalendar calendar = getXMLGregorianCalendar(toParse);</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">		if (calendar != null) {</span>
+<span class="fc" id="L101">			return new Date(calendar.toGregorianCalendar().getTimeInMillis());</span>
 		} else {
-<span class="fc" id="L102">			return null;</span>
+<span class="fc" id="L103">			return null;</span>
 		}
 	}
 
@@ -113,10 +114,10 @@ import org.xml.sax.helpers.DefaultHandler;
 	public static XMLGregorianCalendar getXMLGregorianCalendar(
 			final String toParse) {
 		try {
-<span class="fc" id="L116">			return DatatypeFactory.newInstance().newXMLGregorianCalendar(</span>
+<span class="fc" id="L117">			return DatatypeFactory.newInstance().newXMLGregorianCalendar(</span>
 					toParse);
-<span class="fc" id="L118">		} catch (Exception e) {</span>
-<span class="fc" id="L119">			return null;</span>
+<span class="fc" id="L119">		} catch (Exception e) {</span>
+<span class="fc" id="L120">			return null;</span>
 		}
 	}
 
@@ -131,12 +132,12 @@ import org.xml.sax.helpers.DefaultHandler;
 		// is this equivalent to getDate(String) processing above??
 
 		// start with UTC, i.e. no daylight savings time.
-<span class="nc" id="L134">		TimeZone timezone = TimeZone.getTimeZone(&quot;GMT&quot;);</span>
+<span class="nc" id="L135">		TimeZone timezone = TimeZone.getTimeZone(&quot;GMT&quot;);</span>
 
 		// adjust timezone to match xmldate
-<span class="nc" id="L137">		int offsetMinutes = xmlDate.getTimezone();</span>
-<span class="nc bnc" id="L138" title="All 2 branches missed.">		if (offsetMinutes != DatatypeConstants.FIELD_UNDEFINED) {</span>
-<span class="nc" id="L139">			timezone.setRawOffset(</span>
+<span class="nc" id="L138">		int offsetMinutes = xmlDate.getTimezone();</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">		if (offsetMinutes != DatatypeConstants.FIELD_UNDEFINED) {</span>
+<span class="nc" id="L140">			timezone.setRawOffset(</span>
 			// convert minutes to milliseconds
 			offsetMinutes * 60 // seconds per minute
 			* 1000 // milliseconds per second
@@ -144,19 +145,19 @@ import org.xml.sax.helpers.DefaultHandler;
 		}
 
 		// use calendar so parsed date will be UTC
-<span class="nc" id="L147">		Calendar calendar = Calendar.getInstance(timezone);</span>
-<span class="nc" id="L148">		calendar.clear();</span>
-<span class="nc" id="L149">		calendar.set(xmlDate.getYear(),</span>
+<span class="nc" id="L148">		Calendar calendar = Calendar.getInstance(timezone);</span>
+<span class="nc" id="L149">		calendar.clear();</span>
+<span class="nc" id="L150">		calendar.set(xmlDate.getYear(),</span>
 				// xmlcalendar is 1 based, calender is 0 based
-<span class="nc" id="L151">				xmlDate.getMonth() - 1, xmlDate.getDay(), xmlDate.getHour(),</span>
-<span class="nc" id="L152">				xmlDate.getMinute(), xmlDate.getSecond());</span>
-<span class="nc" id="L153">		Date date = calendar.getTime();</span>
-<span class="nc" id="L154">		int millis = xmlDate.getMillisecond();</span>
-<span class="nc bnc" id="L155" title="All 2 branches missed.">		if (millis != DatatypeConstants.FIELD_UNDEFINED) {</span>
-<span class="nc" id="L156">			calendar.setTimeInMillis(calendar.getTimeInMillis() + millis);</span>
+<span class="nc" id="L152">				xmlDate.getMonth() - 1, xmlDate.getDay(), xmlDate.getHour(),</span>
+<span class="nc" id="L153">				xmlDate.getMinute(), xmlDate.getSecond());</span>
+<span class="nc" id="L154">		Date date = calendar.getTime();</span>
+<span class="nc" id="L155">		int millis = xmlDate.getMillisecond();</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">		if (millis != DatatypeConstants.FIELD_UNDEFINED) {</span>
+<span class="nc" id="L157">			calendar.setTimeInMillis(calendar.getTimeInMillis() + millis);</span>
 		}
 
-<span class="nc" id="L159">		return date;</span>
+<span class="nc" id="L160">		return date;</span>
 	}
 
 	/**
@@ -175,19 +176,19 @@ import org.xml.sax.helpers.DefaultHandler;
 	 */
 	public static void parse(final Object xml, final DefaultHandler handler)
 			throws SAXException, IOException, ParserConfigurationException {
-<span class="fc" id="L178">		SAXParserFactory spf = SAXParserFactory.newInstance();</span>
-<span class="fc" id="L179">		spf.setNamespaceAware(true);</span>
-<span class="fc" id="L180">		SAXParser sp = spf.newSAXParser();</span>
-<span class="fc" id="L181">		XMLReader xr = sp.getXMLReader();</span>
-<span class="fc" id="L182">		xr.setContentHandler(handler);</span>
-<span class="fc" id="L183">		xr.setErrorHandler(handler);</span>
-<span class="fc" id="L184">		InputStream in = StreamUtils.getInputStream(xml);</span>
+<span class="fc" id="L179">		SAXParserFactory spf = SAXParserFactory.newInstance();</span>
+<span class="fc" id="L180">		spf.setNamespaceAware(true);</span>
+<span class="fc" id="L181">		SAXParser sp = spf.newSAXParser();</span>
+<span class="fc" id="L182">		XMLReader xr = sp.getXMLReader();</span>
+<span class="fc" id="L183">		xr.setContentHandler(handler);</span>
+<span class="fc" id="L184">		xr.setErrorHandler(handler);</span>
+<span class="fc" id="L185">		InputStream in = StreamUtils.getInputStream(xml);</span>
 		try {
-<span class="fc" id="L186">			xr.parse(new InputSource(in));</span>
+<span class="fc" id="L187">			xr.parse(new InputSource(in));</span>
 		} finally {
-<span class="fc" id="L188">			StreamUtils.closeStream(in);</span>
+<span class="fc" id="L189">			StreamUtils.closeStream(in);</span>
 		}
-<span class="fc" id="L190">	}</span>
+<span class="fc" id="L191">	}</span>
 
 	/**
 	 * Sometimes parsers do not preserve the namespace for attributes. This
@@ -204,11 +205,11 @@ import org.xml.sax.helpers.DefaultHandler;
 	 */
 	public static String getAttribute(final Attributes attributes,
 			final String uri, final String localName) {
-<span class="fc" id="L207">		String value = attributes.getValue(uri, localName);</span>
-<span class="pc bpc" id="L208" title="1 of 2 branches missed.">		if (value == null) {</span>
-<span class="fc" id="L209">			value = attributes.getValue(localName);</span>
+<span class="fc" id="L208">		String value = attributes.getValue(uri, localName);</span>
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">		if (value == null) {</span>
+<span class="fc" id="L210">			value = attributes.getValue(localName);</span>
 		}
-<span class="fc" id="L211">		return value;</span>
+<span class="fc" id="L212">		return value;</span>
 	}
 
 	/**
@@ -224,17 +225,17 @@ import org.xml.sax.helpers.DefaultHandler;
 	 * @return the escaped value.
 	 */
 	public static String escape(final String value) {
-<span class="fc" id="L227">		String escapedValue = value;</span>
+<span class="fc" id="L228">		String escapedValue = value;</span>
 
 		// replace each escapeable character
-<span class="fc" id="L230">		Iterator&lt;String&gt; iter = ESCAPES.keySet().iterator();</span>
-<span class="fc bfc" id="L231" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
-<span class="fc" id="L232">			String raw = iter.next();</span>
-<span class="fc" id="L233">			String escaped = ESCAPES.get(raw);</span>
-<span class="fc" id="L234">			escapedValue = escapedValue.replace(raw, escaped);</span>
-<span class="fc" id="L235">		}</span>
+<span class="fc" id="L231">		Iterator&lt;String&gt; iter = ESCAPES.keySet().iterator();</span>
+<span class="fc bfc" id="L232" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L233">			String raw = iter.next();</span>
+<span class="fc" id="L234">			String escaped = ESCAPES.get(raw);</span>
+<span class="fc" id="L235">			escapedValue = escapedValue.replace(raw, escaped);</span>
+<span class="fc" id="L236">		}</span>
 
-<span class="fc" id="L237">		return escapedValue;</span>
+<span class="fc" id="L238">		return escapedValue;</span>
 	}
 
 	/**
@@ -251,17 +252,17 @@ import org.xml.sax.helpers.DefaultHandler;
 	 * @return the unescaped value.
 	 */
 	public static String unescape(final String value) {
-<span class="nc" id="L254">		String unescapedValue = value;</span>
+<span class="nc" id="L255">		String unescapedValue = value;</span>
 
 		// replace each escapeable character
-<span class="nc" id="L257">		Iterator&lt;String&gt; iter = ESCAPES.keySet().iterator();</span>
-<span class="nc bnc" id="L258" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
-<span class="nc" id="L259">			String raw = iter.next();</span>
-<span class="nc" id="L260">			String escaped = ESCAPES.get(raw);</span>
-<span class="nc" id="L261">			unescapedValue = unescapedValue.replace(escaped, raw);</span>
-<span class="nc" id="L262">		}</span>
+<span class="nc" id="L258">		Iterator&lt;String&gt; iter = ESCAPES.keySet().iterator();</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L260">			String raw = iter.next();</span>
+<span class="nc" id="L261">			String escaped = ESCAPES.get(raw);</span>
+<span class="nc" id="L262">			unescapedValue = unescapedValue.replace(escaped, raw);</span>
+<span class="nc" id="L263">		}</span>
 
-<span class="nc" id="L264">		return unescapedValue;</span>
+<span class="nc" id="L265">		return unescapedValue;</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

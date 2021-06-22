@@ -57,9 +57,13 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	/** When throttling, wait this many milliseconds between queue size checks. */
 <span class="fc" id="L58">	protected long throttleWaitInterval = 5000L;</span>
 
-<span class="fc" id="L60">	public ExecutorListenerNotifier(final DefaultNotificationReceiver receiver) {</span>
-<span class="fc" id="L61">		this.receiver = receiver;</span>
-<span class="fc" id="L62">	}</span>
+	/**
+	 * Constructor
+	 * @param receiver DefaultNotificationReceiver
+	 */
+<span class="fc" id="L64">	public ExecutorListenerNotifier(final DefaultNotificationReceiver receiver) {</span>
+<span class="fc" id="L65">		this.receiver = receiver;</span>
+<span class="fc" id="L66">	}</span>
 
 	/**
 	 * Add a new notification listener.
@@ -71,18 +75,18 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	@Override
 	public void addNotificationListener(NotificationListener listener)
 			throws Exception {
-<span class="pc bpc" id="L74" title="1 of 2 branches missed.">		if (!notificationListeners.containsKey(listener)) {</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">		if (!notificationListeners.containsKey(listener)) {</span>
 			// fixed thread pool allows us to inspect the queue length...
-<span class="fc" id="L76">			int concurrentProducts = 1;</span>
-<span class="fc bfc" id="L77" title="All 2 branches covered.">			if (listener instanceof DefaultNotificationListener) {</span>
-<span class="fc" id="L78">				concurrentProducts =</span>
-<span class="fc" id="L79">						((DefaultNotificationListener) listener).getConcurrentProducts();</span>
+<span class="fc" id="L80">			int concurrentProducts = 1;</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">			if (listener instanceof DefaultNotificationListener) {</span>
+<span class="fc" id="L82">				concurrentProducts =</span>
+<span class="fc" id="L83">						((DefaultNotificationListener) listener).getConcurrentProducts();</span>
 			}
-<span class="fc" id="L81">			ExecutorService listenerExecutor = Executors.newFixedThreadPool(</span>
+<span class="fc" id="L85">			ExecutorService listenerExecutor = Executors.newFixedThreadPool(</span>
 					concurrentProducts);
-<span class="fc" id="L83">			notificationListeners.put(listener, listenerExecutor);</span>
+<span class="fc" id="L87">			notificationListeners.put(listener, listenerExecutor);</span>
 		}
-<span class="fc" id="L85">	}</span>
+<span class="fc" id="L89">	}</span>
 
 	/**
 	 * Remove an existing notification listener.
@@ -97,17 +101,17 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	public void removeNotificationListener(NotificationListener listener)
 			throws Exception {
 		// remove listener from map
-<span class="fc" id="L100">		ExecutorService listenerExecutor = notificationListeners</span>
-<span class="fc" id="L101">				.remove(listener);</span>
+<span class="fc" id="L104">		ExecutorService listenerExecutor = notificationListeners</span>
+<span class="fc" id="L105">				.remove(listener);</span>
 
 		// shutdown executor thread
-<span class="fc" id="L104">		listenerExecutor.shutdown();</span>
+<span class="fc" id="L108">		listenerExecutor.shutdown();</span>
 
 		// Could use shutdownNow() instead?
 		// however, shutdown() gives all listeners a chance to
 		// process all notifications, but may keep client from shutting down
 		// quickly. Also, see DefaultNotificationReceiver.shutdown().
-<span class="fc" id="L110">	}</span>
+<span class="fc" id="L114">	}</span>
 
 	/**
 	 * Send a notification to all registered NotificationListeners.
@@ -120,168 +124,181 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	 *
 	 * @param event
 	 *            the notification being sent to listeners.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	@Override
 	public void notifyListeners(final NotificationEvent event) throws Exception {
-<span class="fc" id="L127">		this.notifyListeners(event, this.notificationListeners.keySet());</span>
-<span class="fc" id="L128">	}</span>
+<span class="fc" id="L131">		this.notifyListeners(event, this.notificationListeners.keySet());</span>
+<span class="fc" id="L132">	}</span>
 
+	/**
+	 * Calls queueNotification with event and listener for each listener
+	 * @param event NotificationEvent
+	 * @param listeners Collection of NotificationListeners
+	 * @throws Exception if error occurs
+	 */
 	public void notifyListeners(final NotificationEvent event,
 			final Collection&lt;NotificationListener&gt; listeners) throws Exception {
 
-<span class="fc" id="L133">		Iterator&lt;NotificationListener&gt; iter = listeners.iterator();</span>
-<span class="fc bfc" id="L134" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
-<span class="fc" id="L135">			NotificationListener listener = iter.next();</span>
+<span class="fc" id="L143">		Iterator&lt;NotificationListener&gt; iter = listeners.iterator();</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L145">			NotificationListener listener = iter.next();</span>
 			// only requeue for default notification listeners
-<span class="fc" id="L137">			queueNotification(listener, event);</span>
-<span class="fc" id="L138">		}</span>
-<span class="fc" id="L139">	}</span>
+<span class="fc" id="L147">			queueNotification(listener, event);</span>
+<span class="fc" id="L148">		}</span>
+<span class="fc" id="L149">	}</span>
 
+	/**
+	 * @param listener NotificationListener
+	 * @param event NotificationEvent
+	 */
 	protected void queueNotification(final NotificationListener listener,
 			final NotificationEvent event) {
-<span class="pc bpc" id="L143" title="1 of 4 branches missed.">		if (acceptBeforeQueuing</span>
+<span class="pc bpc" id="L157" title="1 of 4 branches missed.">		if (acceptBeforeQueuing</span>
 				&amp;&amp; listener instanceof DefaultNotificationListener) {
-<span class="fc" id="L145">			DefaultNotificationListener defaultListener = (DefaultNotificationListener) listener;</span>
-<span class="pc bpc" id="L146" title="1 of 2 branches missed.">			if (!defaultListener.accept(event.getNotification().getProductId())) {</span>
-<span class="nc" id="L147">				return;</span>
+<span class="fc" id="L159">			DefaultNotificationListener defaultListener = (DefaultNotificationListener) listener;</span>
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">			if (!defaultListener.accept(event.getNotification().getProductId())) {</span>
+<span class="nc" id="L161">				return;</span>
 			}
 		}
 
 		// determine retry delay
-<span class="fc" id="L152">		long retryDelay = 0L;</span>
-<span class="fc bfc" id="L153" title="All 2 branches covered.">		if (listener instanceof AbstractListener) {</span>
-<span class="fc" id="L154">			retryDelay = ((AbstractListener) listener).getRetryDelay();</span>
+<span class="fc" id="L166">		long retryDelay = 0L;</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">		if (listener instanceof AbstractListener) {</span>
+<span class="fc" id="L168">			retryDelay = ((AbstractListener) listener).getRetryDelay();</span>
 		}
 
-<span class="fc" id="L157">		ExecutorService listenerExecutor = notificationListeners.get(listener);</span>
-<span class="fc" id="L158">		ExecutorTask&lt;Void&gt; listenerTask = new ExecutorTask&lt;Void&gt;(</span>
-<span class="fc" id="L159">				listenerExecutor, listener.getMaxTries(),</span>
-<span class="fc" id="L160">				listener.getTimeout(), new NotificationListenerCallable(</span>
+<span class="fc" id="L171">		ExecutorService listenerExecutor = notificationListeners.get(listener);</span>
+<span class="fc" id="L172">		ExecutorTask&lt;Void&gt; listenerTask = new ExecutorTask&lt;Void&gt;(</span>
+<span class="fc" id="L173">				listenerExecutor, listener.getMaxTries(),</span>
+<span class="fc" id="L174">				listener.getTimeout(), new NotificationListenerCallable(</span>
 						listener, event), retryTimer, retryDelay);
-<span class="fc" id="L162">		listenerExecutor.submit(listenerTask);</span>
+<span class="fc" id="L176">		listenerExecutor.submit(listenerTask);</span>
 
 		// log how many notifications are pending
-<span class="pc bpc" id="L165" title="1 of 2 branches missed.">		if (listenerExecutor instanceof ThreadPoolExecutor) {</span>
-<span class="fc" id="L166">			BlockingQueue&lt;Runnable&gt; pending = ((ThreadPoolExecutor) listenerExecutor)</span>
-<span class="fc" id="L167">					.getQueue();</span>
-<span class="fc" id="L168">			LOGGER.fine(&quot;[&quot; + event.getNotificationReceiver().getName()</span>
-<span class="fc" id="L169">					+ &quot;] listener (&quot; + listener.getName() + &quot;) has &quot;</span>
-<span class="fc" id="L170">					+ pending.size() + &quot; queued notifications&quot;);</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">		if (listenerExecutor instanceof ThreadPoolExecutor) {</span>
+<span class="fc" id="L180">			BlockingQueue&lt;Runnable&gt; pending = ((ThreadPoolExecutor) listenerExecutor)</span>
+<span class="fc" id="L181">					.getQueue();</span>
+<span class="fc" id="L182">			LOGGER.fine(&quot;[&quot; + event.getNotificationReceiver().getName()</span>
+<span class="fc" id="L183">					+ &quot;] listener (&quot; + listener.getName() + &quot;) has &quot;</span>
+<span class="fc" id="L184">					+ pending.size() + &quot; queued notifications&quot;);</span>
 		}
-<span class="fc" id="L172">	}</span>
+<span class="fc" id="L186">	}</span>
 
 
 	@Override
 	public void shutdown() throws Exception {
 		// remove all listeners
-<span class="fc" id="L178">		Iterator&lt;NotificationListener&gt; iter = new ArrayList&lt;NotificationListener&gt;(</span>
-<span class="fc" id="L179">				notificationListeners.keySet()).iterator();</span>
-<span class="fc bfc" id="L180" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
-<span class="fc" id="L181">			removeNotificationListener(iter.next());</span>
+<span class="fc" id="L192">		Iterator&lt;NotificationListener&gt; iter = new ArrayList&lt;NotificationListener&gt;(</span>
+<span class="fc" id="L193">				notificationListeners.keySet()).iterator();</span>
+<span class="fc bfc" id="L194" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L195">			removeNotificationListener(iter.next());</span>
 		}
-<span class="fc" id="L183">	}</span>
+<span class="fc" id="L197">	}</span>
 
 	@Override
 	public void startup() throws Exception {
-<span class="fc" id="L187">		super.startup();</span>
+<span class="fc" id="L201">		super.startup();</span>
 
-<span class="fc" id="L189">		NotificationIndex index = receiver.getNotificationIndex();</span>
+<span class="fc" id="L203">		NotificationIndex index = receiver.getNotificationIndex();</span>
 
 		// filter down to listeners who can handle requeueing gracefully
-<span class="fc" id="L192">		ArrayList&lt;NotificationListener&gt; gracefulListeners = new ArrayList&lt;NotificationListener&gt;();</span>
-<span class="fc" id="L193">		Iterator&lt;NotificationListener&gt; iter = this.notificationListeners</span>
-<span class="fc" id="L194">				.keySet().iterator();</span>
-<span class="fc bfc" id="L195" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
-<span class="fc" id="L196">			NotificationListener listener = iter.next();</span>
+<span class="fc" id="L206">		ArrayList&lt;NotificationListener&gt; gracefulListeners = new ArrayList&lt;NotificationListener&gt;();</span>
+<span class="fc" id="L207">		Iterator&lt;NotificationListener&gt; iter = this.notificationListeners</span>
+<span class="fc" id="L208">				.keySet().iterator();</span>
+<span class="fc bfc" id="L209" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L210">			NotificationListener listener = iter.next();</span>
 			// make sure each index only notifies each listener once
-<span class="fc" id="L198">			String key = listener.getName() + '|' + index.getName();</span>
-<span class="pc bpc" id="L199" title="1 of 2 branches missed.">			if (AUTOLOADED_INDEXES.contains(key)) {</span>
+<span class="fc" id="L212">			String key = listener.getName() + '|' + index.getName();</span>
+<span class="pc bpc" id="L213" title="1 of 2 branches missed.">			if (AUTOLOADED_INDEXES.contains(key)) {</span>
 				// already loaded this notification index for this listener
 				// another receiver is sharing this notification index
-<span class="fc bfc" id="L202" title="All 2 branches covered.">			} else if (listener instanceof DefaultNotificationListener</span>
+<span class="fc bfc" id="L216" title="All 2 branches covered.">			} else if (listener instanceof DefaultNotificationListener</span>
 					&amp;&amp; ((DefaultNotificationListener) listener)
-<span class="fc bfc" id="L204" title="All 2 branches covered.">							.getNotificationIndex() != null) {</span>
-<span class="fc" id="L205">				gracefulListeners.add(listener);</span>
-<span class="fc" id="L206">				AUTOLOADED_INDEXES.add(key);</span>
+<span class="fc bfc" id="L218" title="All 2 branches covered.">							.getNotificationIndex() != null) {</span>
+<span class="fc" id="L219">				gracefulListeners.add(listener);</span>
+<span class="fc" id="L220">				AUTOLOADED_INDEXES.add(key);</span>
 			}
-<span class="fc" id="L208">		}</span>
+<span class="fc" id="L222">		}</span>
 
-<span class="fc bfc" id="L210" title="All 2 branches covered.">		if (gracefulListeners.size() == 0) {</span>
+<span class="fc bfc" id="L224" title="All 2 branches covered.">		if (gracefulListeners.size() == 0) {</span>
 			// don't bother searching if nobody is listening
-<span class="fc" id="L212">			return;</span>
+<span class="fc" id="L226">			return;</span>
 		}
 
-<span class="fc" id="L215">		LOGGER.info(&quot;[&quot; + receiver.getName()</span>
-<span class="fc" id="L216">				+ &quot;] requeueing notification index '&quot; + index.getName() + &quot;'&quot;);</span>
+<span class="fc" id="L229">		LOGGER.info(&quot;[&quot; + receiver.getName()</span>
+<span class="fc" id="L230">				+ &quot;] requeueing notification index '&quot; + index.getName() + &quot;'&quot;);</span>
 		// find all existing notifications
-<span class="fc" id="L218">		List&lt;Notification&gt; allNotifications = null;</span>
+<span class="fc" id="L232">		List&lt;Notification&gt; allNotifications = null;</span>
 
 		// for json index, push intersection into database if only one listener
-<span class="pc bpc" id="L221" title="3 of 4 branches missed.">		if (index instanceof JsonNotificationIndex &amp;&amp; gracefulListeners.size() == 1) {</span>
-<span class="nc" id="L222">			NotificationIndex listenerIndex =</span>
-<span class="nc" id="L223">					((DefaultNotificationListener) gracefulListeners.get(0))</span>
-<span class="nc" id="L224">					.getNotificationIndex();</span>
-<span class="nc bnc" id="L225" title="All 2 branches missed.">			if (listenerIndex instanceof JsonNotificationIndex) {</span>
+<span class="pc bpc" id="L235" title="3 of 4 branches missed.">		if (index instanceof JsonNotificationIndex &amp;&amp; gracefulListeners.size() == 1) {</span>
+<span class="nc" id="L236">			NotificationIndex listenerIndex =</span>
+<span class="nc" id="L237">					((DefaultNotificationListener) gracefulListeners.get(0))</span>
+<span class="nc" id="L238">					.getNotificationIndex();</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">			if (listenerIndex instanceof JsonNotificationIndex) {</span>
 				// get intersection
 				try {
-<span class="nc" id="L228">					allNotifications =</span>
-<span class="nc" id="L229">							((JsonNotificationIndex) index).getMissingNotifications(</span>
-<span class="nc" id="L230">									((JsonNotificationIndex) listenerIndex).getTable());</span>
-<span class="nc" id="L231">				} catch (Exception e) {</span>
-<span class="nc" id="L232">					LOGGER.log(Level.INFO, &quot;Exception loading intersection, continuing&quot;, e);</span>
-<span class="nc" id="L233">				}</span>
+<span class="nc" id="L242">					allNotifications =</span>
+<span class="nc" id="L243">							((JsonNotificationIndex) index).getMissingNotifications(</span>
+<span class="nc" id="L244">									((JsonNotificationIndex) listenerIndex).getTable());</span>
+<span class="nc" id="L245">				} catch (Exception e) {</span>
+<span class="nc" id="L246">					LOGGER.log(Level.INFO, &quot;Exception loading intersection, continuing&quot;, e);</span>
+<span class="nc" id="L247">				}</span>
 			}
 		}
 
-<span class="pc bpc" id="L237" title="1 of 2 branches missed.">		if (allNotifications == null) {</span>
+<span class="pc bpc" id="L251" title="1 of 2 branches missed.">		if (allNotifications == null) {</span>
 			// fallback to previous behavior
-<span class="fc" id="L239">			allNotifications = index.findNotifications(</span>
+<span class="fc" id="L253">			allNotifications = index.findNotifications(</span>
 					(List&lt;String&gt;) null, (List&lt;String&gt;) null, (List&lt;String&gt;) null);
 		}
-<span class="fc" id="L242">		LOGGER.info(&quot;Done finding existing notifications&quot;);</span>
+<span class="fc" id="L256">		LOGGER.info(&quot;Done finding existing notifications&quot;);</span>
 
 		// queue them for processing in case they were previous missed
-<span class="fc" id="L245">		Date now = new Date();</span>
-<span class="fc" id="L246">		int count = 0;</span>
-<span class="pc bpc" id="L247" title="1 of 2 branches missed.">		for (final Notification notification : allNotifications) {</span>
-<span class="nc" id="L248">			NotificationEvent event = new NotificationEvent(receiver, notification);</span>
-<span class="nc" id="L249">			count += 1;</span>
-<span class="nc bnc" id="L250" title="All 2 branches missed.">			if (event.getNotification().getExpirationDate().after(now)) {</span>
+<span class="fc" id="L259">		Date now = new Date();</span>
+<span class="fc" id="L260">		int count = 0;</span>
+<span class="pc bpc" id="L261" title="1 of 2 branches missed.">		for (final Notification notification : allNotifications) {</span>
+<span class="nc" id="L262">			NotificationEvent event = new NotificationEvent(receiver, notification);</span>
+<span class="nc" id="L263">			count += 1;</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">			if (event.getNotification().getExpirationDate().after(now)) {</span>
 				// still valid
-<span class="nc" id="L252">				this.notifyListeners(event, gracefulListeners);</span>
+<span class="nc" id="L266">				this.notifyListeners(event, gracefulListeners);</span>
 			}
 
 			// try to keep queue size managable during restart
-<span class="nc" id="L256">			throttleQueues(allNotifications.size() - count);</span>
-<span class="nc" id="L257">		}</span>
-<span class="fc" id="L258">		LOGGER.info(&quot;All notifications queued&quot;);</span>
+<span class="nc" id="L270">			throttleQueues(allNotifications.size() - count);</span>
+<span class="nc" id="L271">		}</span>
+<span class="fc" id="L272">		LOGGER.info(&quot;All notifications queued&quot;);</span>
 
 		// keep track that we've processed this notification index
-<span class="fc" id="L261">		AUTOLOADED_INDEXES.add(index.getName());</span>
-<span class="fc" id="L262">	}</span>
+<span class="fc" id="L275">		AUTOLOADED_INDEXES.add(index.getName());</span>
+<span class="fc" id="L276">	}</span>
 
+	/** @return default notification receiver */
 	public DefaultNotificationReceiver getReceiver() {
-<span class="nc" id="L265">		return receiver;</span>
+<span class="nc" id="L280">		return receiver;</span>
 	}
 
+	/** @param receiver of the default notification variety */
 	public void setReceiver(DefaultNotificationReceiver receiver) {
-<span class="nc" id="L269">		this.receiver = receiver;</span>
-<span class="nc" id="L270">	}</span>
+<span class="nc" id="L285">		this.receiver = receiver;</span>
+<span class="nc" id="L286">	}</span>
 
+	/** @return map of status */
 	public Map&lt;String, Integer&gt; getStatus() {
-<span class="nc" id="L273">		HashMap&lt;String, Integer&gt; status = new HashMap&lt;String, Integer&gt;();</span>
+<span class="nc" id="L290">		HashMap&lt;String, Integer&gt; status = new HashMap&lt;String, Integer&gt;();</span>
 
-<span class="nc bnc" id="L275" title="All 2 branches missed.">		for (final NotificationListener listener : notificationListeners.keySet()) {</span>
-<span class="nc" id="L276">			ExecutorService listenerExecutor = notificationListeners.get(listener);</span>
-<span class="nc bnc" id="L277" title="All 2 branches missed.">			if (listenerExecutor instanceof ThreadPoolExecutor) {</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">		for (final NotificationListener listener : notificationListeners.keySet()) {</span>
+<span class="nc" id="L293">			ExecutorService listenerExecutor = notificationListeners.get(listener);</span>
+<span class="nc bnc" id="L294" title="All 2 branches missed.">			if (listenerExecutor instanceof ThreadPoolExecutor) {</span>
 				// check how many notifications are pending
-<span class="nc" id="L279">				int size = ((ThreadPoolExecutor) listenerExecutor).getQueue().size();</span>
-<span class="nc" id="L280">				status.put(receiver.getName() + &quot; - &quot; + listener.getName(), size);</span>
+<span class="nc" id="L296">				int size = ((ThreadPoolExecutor) listenerExecutor).getQueue().size();</span>
+<span class="nc" id="L297">				status.put(receiver.getName() + &quot; - &quot; + listener.getName(), size);</span>
 			}
-<span class="nc" id="L282">		}</span>
+<span class="nc" id="L299">		}</span>
 
-<span class="nc" id="L284">		return status;</span>
+<span class="nc" id="L301">		return status;</span>
 	}
 
 	/**
@@ -290,62 +307,69 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	 * @return length of longest queue, or null if no queue lengths.
 	 */
 	public Integer getMaxQueueSize() {
-<span class="fc" id="L293">		Integer maxSize = null;</span>
-<span class="pc bpc" id="L294" title="1 of 2 branches missed.">		for (final NotificationListener listener : notificationListeners.keySet()) {</span>
-<span class="nc" id="L295">			ExecutorService listenerExecutor = notificationListeners.get(listener);</span>
-<span class="nc bnc" id="L296" title="All 2 branches missed.">			if (listenerExecutor instanceof ThreadPoolExecutor) {</span>
+<span class="fc" id="L310">		Integer maxSize = null;</span>
+<span class="pc bpc" id="L311" title="1 of 2 branches missed.">		for (final NotificationListener listener : notificationListeners.keySet()) {</span>
+<span class="nc" id="L312">			ExecutorService listenerExecutor = notificationListeners.get(listener);</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">			if (listenerExecutor instanceof ThreadPoolExecutor) {</span>
 				// check how many notifications are pending
-<span class="nc" id="L298">				int size = ((ThreadPoolExecutor) listenerExecutor).getQueue().size();</span>
-<span class="nc bnc" id="L299" title="All 4 branches missed.">				if (maxSize == null || size &gt; maxSize) {</span>
-<span class="nc" id="L300">					maxSize = size;</span>
+<span class="nc" id="L315">				int size = ((ThreadPoolExecutor) listenerExecutor).getQueue().size();</span>
+<span class="nc bnc" id="L316" title="All 4 branches missed.">				if (maxSize == null || size &gt; maxSize) {</span>
+<span class="nc" id="L317">					maxSize = size;</span>
 				}
 			}
-<span class="nc" id="L303">		}</span>
-<span class="fc" id="L304">		return maxSize;</span>
+<span class="nc" id="L320">		}</span>
+<span class="fc" id="L321">		return maxSize;</span>
 	}
 
 	/**
 	 * If longest queue has more than 50k notifications,
 	 * wait until longest queue has 25k notifications before returning.
 	 *
-	 * @throws InterruptedException
+	 * @throws InterruptedException if error occurs
 	 */
 	public void throttleQueues() throws InterruptedException {
-<span class="fc" id="L314">		throttleQueues(null);</span>
-<span class="fc" id="L315">	}</span>
+<span class="fc" id="L331">		throttleQueues(null);</span>
+<span class="fc" id="L332">	}</span>
 
+	/**
+	 * If longest queue has more than 50k notifications,
+	 * wait until longest queue has 25k notifications before returning.
+	 *
+	 * @param remaining integer
+	 * @throws InterruptedException if error occurs
+	 */
 	public void throttleQueues(Integer remaining) throws InterruptedException {
 		// try to keep queue size managable during restart
-<span class="fc" id="L319">		int limit = throttleStartThreshold;</span>
+<span class="fc" id="L343">		int limit = throttleStartThreshold;</span>
 		// track whether any throttles occurred
-<span class="fc" id="L321">		boolean throttled = false;</span>
+<span class="fc" id="L345">		boolean throttled = false;</span>
 
 		while (true) {
-<span class="fc" id="L324">			final Integer size = getMaxQueueSize();</span>
-<span class="fc bfc" id="L325" title="All 4 branches covered.">			if (size == null || size &lt;= limit) {</span>
+<span class="fc" id="L348">			final Integer size = getMaxQueueSize();</span>
+<span class="fc bfc" id="L349" title="All 4 branches covered.">			if (size == null || size &lt;= limit) {</span>
 				// within limit
-<span class="fc bfc" id="L327" title="All 2 branches covered.">				if (throttled) {</span>
-<span class="fc" id="L328">					LOGGER.info(&quot;[&quot; + getName() + &quot;] done throttling (size = &quot; + size + &quot;)&quot;);</span>
+<span class="fc bfc" id="L351" title="All 2 branches covered.">				if (throttled) {</span>
+<span class="fc" id="L352">					LOGGER.info(&quot;[&quot; + getName() + &quot;] done throttling (size = &quot; + size + &quot;)&quot;);</span>
 				}
 				break;
 			}
 
-<span class="fc" id="L333">			throttled = true;</span>
-<span class="fc" id="L334">			LOGGER.info(&quot;[&quot; + getName() + &quot;]&quot;</span>
+<span class="fc" id="L357">			throttled = true;</span>
+<span class="fc" id="L358">			LOGGER.info(&quot;[&quot; + getName() + &quot;]&quot;</span>
 					+ &quot; queueing throttled until below &quot;
 					+ throttleStopThreshold
 					+ &quot; (&quot;
 							+ &quot;size=&quot; + size
-<span class="pc bpc" id="L339" title="1 of 2 branches missed.">							+ &quot;, remaining=&quot; + (remaining == null ? &quot;?&quot; : remaining)</span>
+<span class="pc bpc" id="L363" title="1 of 2 branches missed.">							+ &quot;, remaining=&quot; + (remaining == null ? &quot;?&quot; : remaining)</span>
 					+ &quot;)&quot;);
 			// too many messages queued
 			// set limit to stop threshold
-<span class="fc" id="L343">			limit = throttleStopThreshold;</span>
+<span class="fc" id="L367">			limit = throttleStopThreshold;</span>
 			// wait for listener to do some processing
 			// 5s is a little low, but don't want to wait too long
-<span class="fc" id="L346">			Thread.sleep(throttleWaitInterval);</span>
-<span class="fc" id="L347">		}</span>
-<span class="fc" id="L348">	}</span>
+<span class="fc" id="L370">			Thread.sleep(throttleWaitInterval);</span>
+<span class="fc" id="L371">		}</span>
+<span class="fc" id="L372">	}</span>
 
 	/**
 	 * NOTE: messing with the executors map is not a good idea.
@@ -353,17 +377,23 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	 * @return the map of listeners and their executors.
 	 */
 	public Map&lt;NotificationListener, ExecutorService&gt; getExecutors() {
-<span class="nc" id="L356">		return notificationListeners;</span>
+<span class="nc" id="L380">		return notificationListeners;</span>
 	}
 
-<span class="nc" id="L359">	public int getThrottleStartThreshold() { return this.throttleStartThreshold; }</span>
-<span class="fc" id="L360">	public void setThrottleStartThreshold(final int n) { this.throttleStartThreshold = n; }</span>
+	/** @return int throttle start threshold */
+<span class="nc" id="L384">	public int getThrottleStartThreshold() { return this.throttleStartThreshold; }</span>
+	/** @param n int throttle start threshold */
+<span class="fc" id="L386">	public void setThrottleStartThreshold(final int n) { this.throttleStartThreshold = n; }</span>
 
-<span class="nc" id="L362">	public int getThrottleStopThreshold() { return this.throttleStopThreshold; }</span>
-<span class="fc" id="L363">	public void setThrottleStopThreshold(final int n) { this.throttleStopThreshold = n; }</span>
+	/** @return int throttle stop threshold */
+<span class="nc" id="L389">	public int getThrottleStopThreshold() { return this.throttleStopThreshold; }</span>
+	/** @param n int throttle stop threshold */
+<span class="fc" id="L391">	public void setThrottleStopThreshold(final int n) { this.throttleStopThreshold = n; }</span>
 
-<span class="nc" id="L365">	public long getThrottleWaitInterval() { return this.throttleWaitInterval; }</span>
-<span class="fc" id="L366">	public void setThrottleWaitInterval(final long ms) { this.throttleWaitInterval = ms; }</span>
+	/** @return int throttle wait interval */
+<span class="nc" id="L394">	public long getThrottleWaitInterval() { return this.throttleWaitInterval; }</span>
+	/** @param ms long throttle wait interval in ms */
+<span class="fc" id="L396">	public void setThrottleWaitInterval(final long ms) { this.throttleWaitInterval = ms; }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

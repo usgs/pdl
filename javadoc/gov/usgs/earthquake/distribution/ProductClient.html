@@ -238,7 +238,9 @@ implements <a href="ProductClientMBean.html" title="interface in gov.usgs.earthq
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#DEFAULT_ENABLE_ADMIN_SOCKET">DEFAULT_ENABLE_ADMIN_SOCKET</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Default bool for admin socket property</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
@@ -264,7 +266,9 @@ implements <a href="ProductClientMBean.html" title="interface in gov.usgs.earthq
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#ENABLE_ADMIN_SOCKET">ENABLE_ADMIN_SOCKET</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Property used to enable Admin Socket</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
@@ -875,6 +879,7 @@ implements <a href="ProductClientMBean.html" title="interface in gov.usgs.earthq
 <li class="blockList">
 <h4>ENABLE_ADMIN_SOCKET</h4>
 <pre>public static final&nbsp;java.lang.String ENABLE_ADMIN_SOCKET</pre>
+<div class="block">Property used to enable Admin Socket</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.distribution.ProductClient.ENABLE_ADMIN_SOCKET">Constant Field Values</a></dd>
@@ -888,6 +893,7 @@ implements <a href="ProductClientMBean.html" title="interface in gov.usgs.earthq
 <li class="blockList">
 <h4>DEFAULT_ENABLE_ADMIN_SOCKET</h4>
 <pre>public static final&nbsp;java.lang.String DEFAULT_ENABLE_ADMIN_SOCKET</pre>
+<div class="block">Default bool for admin socket property</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.distribution.ProductClient.DEFAULT_ENABLE_ADMIN_SOCKET">Constant Field Values</a></dd>
@@ -960,7 +966,7 @@ implements <a href="ProductClientMBean.html" title="interface in gov.usgs.earthq
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>config</code> - the configuration.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -977,7 +983,7 @@ implements <a href="ProductClientMBean.html" title="interface in gov.usgs.earthq
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>config</code> - the configuration</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -1032,9 +1038,9 @@ implements <a href="ProductClientMBean.html" title="interface in gov.usgs.earthq
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="Bootstrappable.html#run(java.lang.String%5B%5D)">run</a></code>&nbsp;in interface&nbsp;<code><a href="Bootstrappable.html" title="interface in gov.usgs.earthquake.distribution">Bootstrappable</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>args</code> - </dd>
+<dd><code>args</code> - argument</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - Exception</dd>
 </dl>
 </li>
 </ul>
@@ -1071,6 +1077,10 @@ implements <a href="ProductClientMBean.html" title="interface in gov.usgs.earthq
 <li class="blockList">
 <h4>getUsage</h4>
 <pre class="methodSignature">public static&nbsp;java.lang.String&nbsp;getUsage()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Product usage</dd>
+</dl>
 </li>
 </ul>
 <a id="getListenerQueueStatus()">

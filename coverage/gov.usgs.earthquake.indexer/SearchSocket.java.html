@@ -27,7 +27,7 @@ public class SearchSocket {
 
 	/**
 	 * Construct a new SearchSocket.
-	 * 
+	 *
 	 * @param host
 	 *            the remote host.
 	 * @param port
@@ -40,13 +40,13 @@ public class SearchSocket {
 
 	/**
 	 * Send a search request, converting the response to a java object.
-	 * 
+	 *
 	 * @param request
 	 *            the request to send.
 	 * @param storage
 	 *            where received products are stored.
 	 * @return the response.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public SearchResponse search(final SearchRequest request, final FileProductStorage storage) throws Exception {
 <span class="fc" id="L52">		final PipedInputStream pipedIn = new PipedInputStream();</span>
@@ -72,12 +72,12 @@ public class SearchSocket {
 
 	/**
 	 * Send a search request, writing the response to an outputstream.
-	 * 
+	 *
 	 * @param request
 	 *            the request to send.
 	 * @param responseOut
 	 *            the outputstream to write.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public void search(final SearchRequest request,
 			final OutputStream responseOut) throws Exception {

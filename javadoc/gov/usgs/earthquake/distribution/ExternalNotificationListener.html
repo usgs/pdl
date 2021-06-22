@@ -157,16 +157,16 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <pre>public class <span class="typeNameLabel">ExternalNotificationListener</span>
 extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.earthquake.distribution">DefaultNotificationListener</a></pre>
 <div class="block">An external process that is called when new products arrive.
- 
+
  The ExternalNotificationListener implements the Configurable interface and
  can use the following configuration parameters:
- 
+
  <dl>
  <dt>command</dt>
  <dd>(Required) The command to execute. This must be an executable command and
  may include arguments. Any product specific arguments are appended at the end
  of command.</dd>
- 
+
  <dt>storage</dt>
  <dd>(Required) A directory used to store all products. Each product is
  extracted into a separate directory within this directory and is referenced
@@ -467,7 +467,7 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <h4>ExternalNotificationListener</h4>
 <pre>public&nbsp;ExternalNotificationListener()</pre>
 <div class="block">Construct a new ExternalNotificationListener.
- 
+
  The listener must be configured with a FileProductStorage and command to
  function.</div>
 </li>
@@ -556,7 +556,7 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>command as a string.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -568,7 +568,7 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <h4>splitCommand</h4>
 <pre class="methodSignature">protected static&nbsp;java.lang.String[]&nbsp;splitCommand&#8203;(java.lang.String&nbsp;command)</pre>
 <div class="block">Split a command string into a command array.
- 
+
  This version uses a StringTokenizer to split arguments. Quoted arguments
  are supported (single or double), with quotes removed before passing to
  runtime. Double quoting arguments will preserve quotes when passing to
@@ -595,9 +595,9 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code><a href="DefaultNotificationListener.html#onProduct(gov.usgs.earthquake.product.Product)">onProduct</a></code>&nbsp;in class&nbsp;<code><a href="DefaultNotificationListener.html" title="class in gov.usgs.earthquake.distribution">DefaultNotificationListener</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>product</code> - </dd>
+<dd><code>product</code> - Product</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -612,7 +612,7 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
                             int&nbsp;exitValue)
                      throws java.lang.Exception</pre>
 <div class="block">Called when the command finishes executing normally.
- 
+
  This implementation throws a NotificationListenerException if the
  exitValue is non-zero.</div>
 <dl>
@@ -637,7 +637,7 @@ extends <a href="DefaultNotificationListener.html" title="class in gov.usgs.eart
                              java.lang.Exception&nbsp;exception)
                       throws java.lang.Exception</pre>
 <div class="block">Called when an exception occurs while running command.
- 
+
  This implementation throws a NotificationListenerException with exception
  as the cause.</div>
 <dl>

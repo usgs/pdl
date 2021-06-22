@@ -50,8 +50,11 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
 <span class="nc" id="L50">  private static final Logger LOGGER = Logger.getLogger(</span>
 <span class="nc" id="L51">      JsonProductStorage.class.getName());</span>
 
+  /** Variable for the default driver */
   public static final String DEFAULT_DRIVER = &quot;org.sqlite.JDBC&quot;;
+  /** Variable for the default table */
   public static final String DEFAULT_TABLE = &quot;product&quot;;
+  /** Variable for the default URL */
   public static final String DEFAULT_URL = &quot;jdbc:sqlite:json_product_index.db&quot;;
 
   /** Database table name. */
@@ -61,74 +64,82 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
    * Create a JsonProductStorage using defaults.
    */
   public JsonProductStorage() {
-<span class="nc" id="L64">    this(DEFAULT_DRIVER, DEFAULT_URL);</span>
-<span class="nc" id="L65">  }</span>
+<span class="nc" id="L67">    this(DEFAULT_DRIVER, DEFAULT_URL);</span>
+<span class="nc" id="L68">  }</span>
 
   /**
    * Create a JsonProductStorage with a default table.
+   * @param driver Driver to use
+   * @param url URL to use
    */
   public JsonProductStorage(final String driver, final String url) {
-<span class="nc" id="L71">    this(driver, url, DEFAULT_TABLE);</span>
-<span class="nc" id="L72">  }</span>
+<span class="nc" id="L76">    this(driver, url, DEFAULT_TABLE);</span>
+<span class="nc" id="L77">  }</span>
 
   /**
    * Create a JsonProductStorage with a custom driver, url, and table.
+   * @param driver Driver to use
+   * @param url URL to use
+   * @param table Table to use
    */
   public JsonProductStorage(
       final String driver, final String url, final String table) {
-<span class="nc" id="L79">    super(driver, url);</span>
-<span class="nc" id="L80">    this.table = table;</span>
-<span class="nc" id="L81">  }</span>
+<span class="nc" id="L87">    super(driver, url);</span>
+<span class="nc" id="L88">    this.table = table;</span>
+<span class="nc" id="L89">  }</span>
 
-<span class="nc" id="L83">  public String getTable() { return this.table; }</span>
-<span class="nc" id="L84">  public void setTable(final String table) { this.table = table; }</span>
+  /** @return table */
+<span class="nc" id="L92">  public String getTable() { return this.table; }</span>
+  /** @param table Table to set */
+<span class="nc" id="L94">  public void setTable(final String table) { this.table = table; }</span>
 
   @Override
   public void configure(final Config config) throws Exception {
-<span class="nc" id="L88">    super.configure(config);</span>
-<span class="nc bnc" id="L89" title="All 2 branches missed.">    if (getDriver() == null) { setDriver(DEFAULT_DRIVER); }</span>
-<span class="nc bnc" id="L90" title="All 2 branches missed.">    if (getUrl() == null) { setUrl(DEFAULT_URL); }</span>
+<span class="nc" id="L98">    super.configure(config);</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">    if (getDriver() == null) { setDriver(DEFAULT_DRIVER); }</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">    if (getUrl() == null) { setUrl(DEFAULT_URL); }</span>
 
-<span class="nc" id="L92">    setTable(config.getProperty(&quot;table&quot;, DEFAULT_TABLE));</span>
-<span class="nc" id="L93">    LOGGER.config(&quot;[&quot; + getName() + &quot;] driver=&quot; + getDriver());</span>
-<span class="nc" id="L94">    LOGGER.config(&quot;[&quot; + getName() + &quot;] table=&quot; + getTable());</span>
+<span class="nc" id="L102">    setTable(config.getProperty(&quot;table&quot;, DEFAULT_TABLE));</span>
+<span class="nc" id="L103">    LOGGER.config(&quot;[&quot; + getName() + &quot;] driver=&quot; + getDriver());</span>
+<span class="nc" id="L104">    LOGGER.config(&quot;[&quot; + getName() + &quot;] table=&quot; + getTable());</span>
     // do not log url, it may contain user/pass
-<span class="nc" id="L96">  }</span>
+<span class="nc" id="L106">  }</span>
 
   /**
    * After normal startup, check whether schema exists and attempt to create.
+   * @throws Exception if error occurs
    */
   @Override
   public void startup() throws Exception {
-<span class="nc" id="L103">    super.startup();</span>
+<span class="nc" id="L114">    super.startup();</span>
     // make sure schema exists
-<span class="nc bnc" id="L105" title="All 2 branches missed.">    if (!schemaExists()) {</span>
-<span class="nc" id="L106">      LOGGER.warning(&quot;[&quot; + getName() + &quot;] schema not found, creating&quot;);</span>
-<span class="nc" id="L107">      createSchema();</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">    if (!schemaExists()) {</span>
+<span class="nc" id="L117">      LOGGER.warning(&quot;[&quot; + getName() + &quot;] schema not found, creating&quot;);</span>
+<span class="nc" id="L118">      createSchema();</span>
     }
-<span class="nc" id="L109">  }</span>
+<span class="nc" id="L120">  }</span>
 
   /**
    * Check whether schema exists.
    *
-   * @return
-   * @throws Exception
+   * @return boolean
+   * @throws Exception if error occurs
    */
   public boolean schemaExists() throws Exception {
-<span class="nc" id="L118">    final String sql = &quot;select * from &quot; + this.table + &quot; limit 1&quot;;</span>
-<span class="nc" id="L119">    beginTransaction();</span>
-<span class="nc" id="L120">    try (final PreparedStatement test = getConnection().prepareStatement(sql)) {</span>
-<span class="nc" id="L121">      test.setQueryTimeout(60);</span>
+<span class="nc" id="L129">    final String sql = &quot;select * from &quot; + this.table + &quot; limit 1&quot;;</span>
+<span class="nc" id="L130">    beginTransaction();</span>
+<span class="nc" id="L131">    try (final PreparedStatement test = getConnection().prepareStatement(sql)) {</span>
+<span class="nc" id="L132">      test.setQueryTimeout(60);</span>
       // should throw exception if table does not exist
-<span class="nc" id="L123">      try (final ResultSet rs = test.executeQuery()) {</span>
-<span class="nc" id="L124">        rs.next();</span>
+<span class="nc" id="L134">      try (final ResultSet rs = test.executeQuery()) {</span>
+<span class="nc" id="L135">        rs.next();</span>
       }
-<span class="nc" id="L126">      commitTransaction();</span>
+<span class="nc" id="L137">      commitTransaction();</span>
       // schema exists
-<span class="nc" id="L128">      return true;</span>
-<span class="nc" id="L129">    } catch (Exception e) {</span>
-<span class="nc" id="L130">      rollbackTransaction();</span>
-<span class="nc" id="L131">      return false;</span>
+<span class="nc" id="L139">      return true;</span>
+<span class="nc" id="L140">    } catch (Exception e) {</span>
+<span class="nc" id="L141">      rollbackTransaction();</span>
+<span class="nc" id="L142">      return false;</span>
     }
   }
 
@@ -138,19 +149,19 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
    * Only supports sqlite or mysql.  When not using sqlite, relying on this
    * method is only recommended for local development.
    *
-   * @throws Exception
+   * @throws Exception if error occurs
    */
   public void createSchema() throws Exception {
     // create schema
-<span class="nc" id="L145">    beginTransaction();</span>
-<span class="nc" id="L146">    try (final Statement statement = getConnection().createStatement()) {</span>
-<span class="nc" id="L147">      String autoIncrement = &quot;&quot;;</span>
-<span class="nc" id="L148">      String engine = &quot;&quot;;</span>
-<span class="nc bnc" id="L149" title="All 2 branches missed.">      if (getDriver().contains(&quot;mysql&quot;)) {</span>
-<span class="nc" id="L150">        autoIncrement = &quot; AUTO_INCREMENT&quot;;</span>
-<span class="nc" id="L151">        engine = &quot; ENGINE=innodb CHARSET=utf8&quot;;</span>
+<span class="nc" id="L156">    beginTransaction();</span>
+<span class="nc" id="L157">    try (final Statement statement = getConnection().createStatement()) {</span>
+<span class="nc" id="L158">      String autoIncrement = &quot;&quot;;</span>
+<span class="nc" id="L159">      String engine = &quot;&quot;;</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">      if (getDriver().contains(&quot;mysql&quot;)) {</span>
+<span class="nc" id="L161">        autoIncrement = &quot; AUTO_INCREMENT&quot;;</span>
+<span class="nc" id="L162">        engine = &quot; ENGINE=innodb CHARSET=utf8&quot;;</span>
       }
-<span class="nc" id="L153">      statement.executeUpdate(</span>
+<span class="nc" id="L164">      statement.executeUpdate(</span>
           &quot;CREATE TABLE &quot; + this.table
           + &quot; (id INTEGER PRIMARY KEY&quot; + autoIncrement
           + &quot;, source VARCHAR(255)&quot;
@@ -159,22 +170,22 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
           + &quot;, updatetime BIGINT&quot;
           + &quot;, data TEXT&quot;
           + &quot;)&quot; + engine);
-<span class="nc" id="L162">      statement.executeUpdate(</span>
+<span class="nc" id="L173">      statement.executeUpdate(</span>
           &quot;CREATE UNIQUE INDEX product_index ON &quot; + this.table
           + &quot; (source, type, code, updatetime)&quot;);
-<span class="nc" id="L165">      commitTransaction();</span>
-<span class="nc" id="L166">    } catch (Exception e) {</span>
-<span class="nc" id="L167">      rollbackTransaction();</span>
-<span class="nc" id="L168">      throw e;</span>
-<span class="nc" id="L169">    }</span>
-<span class="nc" id="L170">  }</span>
+<span class="nc" id="L176">      commitTransaction();</span>
+<span class="nc" id="L177">    } catch (Exception e) {</span>
+<span class="nc" id="L178">      rollbackTransaction();</span>
+<span class="nc" id="L179">      throw e;</span>
+<span class="nc" id="L180">    }</span>
+<span class="nc" id="L181">  }</span>
 
   /**
    * Check whether product found in storage.
    */
   @Override
   public boolean hasProduct(ProductId id) throws Exception {
-<span class="nc bnc" id="L177" title="All 2 branches missed.">    return getProduct(id) != null;</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">    return getProduct(id) != null;</span>
   }
 
   /**
@@ -186,45 +197,45 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
    */
   @Override
   public synchronized Product getProduct(ProductId id) throws Exception {
-<span class="nc" id="L189">    Product product = null;</span>
-<span class="nc" id="L190">    final String sql = &quot;SELECT * FROM &quot; + this.table</span>
+<span class="nc" id="L200">    Product product = null;</span>
+<span class="nc" id="L201">    final String sql = &quot;SELECT * FROM &quot; + this.table</span>
         + &quot; WHERE source=? AND type=? AND code=? AND updatetime=?&quot;;
     // prepare statement
-<span class="nc" id="L193">    beginTransaction();</span>
-<span class="nc" id="L194">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
-<span class="nc" id="L195">      statement.setQueryTimeout(60);</span>
+<span class="nc" id="L204">    beginTransaction();</span>
+<span class="nc" id="L205">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
+<span class="nc" id="L206">      statement.setQueryTimeout(60);</span>
       // set parameters
-<span class="nc" id="L197">      statement.setString(1, id.getSource());</span>
-<span class="nc" id="L198">      statement.setString(2, id.getType());</span>
-<span class="nc" id="L199">      statement.setString(3, id.getCode());</span>
-<span class="nc" id="L200">      statement.setLong(4, id.getUpdateTime().getTime());</span>
+<span class="nc" id="L208">      statement.setString(1, id.getSource());</span>
+<span class="nc" id="L209">      statement.setString(2, id.getType());</span>
+<span class="nc" id="L210">      statement.setString(3, id.getCode());</span>
+<span class="nc" id="L211">      statement.setLong(4, id.getUpdateTime().getTime());</span>
 
       // execute
-<span class="nc" id="L203">      try (final ResultSet rs = statement.executeQuery()) {</span>
-<span class="nc bnc" id="L204" title="All 2 branches missed.">        if (rs.next()) {</span>
+<span class="nc" id="L214">      try (final ResultSet rs = statement.executeQuery()) {</span>
+<span class="nc bnc" id="L215" title="All 2 branches missed.">        if (rs.next()) {</span>
           // found product
-<span class="nc" id="L206">          final String data = rs.getString(&quot;data&quot;);</span>
-<span class="nc" id="L207">          product = new JsonProduct().getProduct(</span>
-<span class="nc" id="L208">              Json.createReader(</span>
-<span class="nc" id="L209">                new ByteArrayInputStream(data.getBytes())</span>
-<span class="nc" id="L210">              ).readObject());</span>
+<span class="nc" id="L217">          final String data = rs.getString(&quot;data&quot;);</span>
+<span class="nc" id="L218">          product = new JsonProduct().getProduct(</span>
+<span class="nc" id="L219">              Json.createReader(</span>
+<span class="nc" id="L220">                new ByteArrayInputStream(data.getBytes())</span>
+<span class="nc" id="L221">              ).readObject());</span>
         }
       }
-<span class="nc" id="L213">      commitTransaction();</span>
-<span class="nc" id="L214">    } catch (SQLException e) {</span>
+<span class="nc" id="L224">      commitTransaction();</span>
+<span class="nc" id="L225">    } catch (SQLException e) {</span>
       try {
         // otherwise roll back
-<span class="nc" id="L217">        rollbackTransaction();</span>
-<span class="nc" id="L218">      } catch (SQLException e2) {</span>
+<span class="nc" id="L228">        rollbackTransaction();</span>
+<span class="nc" id="L229">      } catch (SQLException e2) {</span>
         // ignore
-<span class="nc" id="L220">      }</span>
-<span class="nc" id="L221">      LOGGER.log(</span>
+<span class="nc" id="L231">      }</span>
+<span class="nc" id="L232">      LOGGER.log(</span>
           Level.INFO,
-<span class="nc" id="L223">          &quot;[&quot; + getName() + &quot;] exception in getProduct(&quot;</span>
-<span class="nc" id="L224">              + id.toString() + &quot;)&quot;,</span>
+<span class="nc" id="L234">          &quot;[&quot; + getName() + &quot;] exception in getProduct(&quot;</span>
+<span class="nc" id="L235">              + id.toString() + &quot;)&quot;,</span>
           e);
-<span class="nc" id="L226">    }</span>
-<span class="nc" id="L227">    return product;</span>
+<span class="nc" id="L237">    }</span>
+<span class="nc" id="L238">    return product;</span>
   }
 
   /**
@@ -236,39 +247,39 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
   @Override
   public synchronized ProductId storeProduct(Product product) throws Exception {
     // prepare statement
-<span class="nc" id="L239">    beginTransaction();</span>
+<span class="nc" id="L250">    beginTransaction();</span>
     try (
-<span class="nc" id="L241">      final PreparedStatement statement = getConnection().prepareStatement(</span>
+<span class="nc" id="L252">      final PreparedStatement statement = getConnection().prepareStatement(</span>
           &quot;INSERT INTO &quot; + this.table
           + &quot; (source, type, code, updatetime, data)&quot;
           + &quot; VALUES (?, ?, ?, ?, ?)&quot;)
     ) {
-<span class="nc" id="L246">      statement.setQueryTimeout(60);</span>
-<span class="nc" id="L247">      final ProductId id = product.getId();</span>
+<span class="nc" id="L257">      statement.setQueryTimeout(60);</span>
+<span class="nc" id="L258">      final ProductId id = product.getId();</span>
       // set parameters
-<span class="nc" id="L249">      statement.setString(1, id.getSource());</span>
-<span class="nc" id="L250">      statement.setString(2, id.getType());</span>
-<span class="nc" id="L251">      statement.setString(3, id.getCode());</span>
-<span class="nc" id="L252">      statement.setLong(4, id.getUpdateTime().getTime());</span>
-<span class="nc" id="L253">      statement.setString(5,</span>
-<span class="nc bnc" id="L254" title="All 2 branches missed.">          product != null</span>
-<span class="nc" id="L255">          ? new JsonProduct().getJsonObject(product).toString()</span>
-<span class="nc" id="L256">          : &quot;&quot;);</span>
+<span class="nc" id="L260">      statement.setString(1, id.getSource());</span>
+<span class="nc" id="L261">      statement.setString(2, id.getType());</span>
+<span class="nc" id="L262">      statement.setString(3, id.getCode());</span>
+<span class="nc" id="L263">      statement.setLong(4, id.getUpdateTime().getTime());</span>
+<span class="nc" id="L264">      statement.setString(5,</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">          product != null</span>
+<span class="nc" id="L266">          ? new JsonProduct().getJsonObject(product).toString()</span>
+<span class="nc" id="L267">          : &quot;&quot;);</span>
       // execute
-<span class="nc" id="L258">      statement.executeUpdate();</span>
-<span class="nc" id="L259">      commitTransaction();</span>
-<span class="nc" id="L260">      return id;</span>
-<span class="nc" id="L261">    } catch (SQLException e) {</span>
+<span class="nc" id="L269">      statement.executeUpdate();</span>
+<span class="nc" id="L270">      commitTransaction();</span>
+<span class="nc" id="L271">      return id;</span>
+<span class="nc" id="L272">    } catch (SQLException e) {</span>
       try {
         // otherwise roll back
-<span class="nc" id="L264">        rollbackTransaction();</span>
-<span class="nc" id="L265">      } catch (SQLException e2) {</span>
+<span class="nc" id="L275">        rollbackTransaction();</span>
+<span class="nc" id="L276">      } catch (SQLException e2) {</span>
         // ignore
-<span class="nc" id="L267">      }</span>
-<span class="nc bnc" id="L268" title="All 2 branches missed.">      if (e.toString().contains(&quot;Duplicate entry&quot;)) {</span>
-<span class="nc" id="L269">        throw new ProductAlreadyInStorageException(e.toString());</span>
+<span class="nc" id="L278">      }</span>
+<span class="nc bnc" id="L279" title="All 2 branches missed.">      if (e.toString().contains(&quot;Duplicate entry&quot;)) {</span>
+<span class="nc" id="L280">        throw new ProductAlreadyInStorageException(e.toString());</span>
       }
-<span class="nc" id="L271">      throw e;</span>
+<span class="nc" id="L282">      throw e;</span>
     }
   }
 
@@ -279,11 +290,11 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
    */
   @Override
   public ProductSource getProductSource(ProductId id) throws Exception {
-<span class="nc" id="L282">    final Product product = getProduct(id);</span>
-<span class="nc bnc" id="L283" title="All 2 branches missed.">    if (product == null) {</span>
-<span class="nc" id="L284">      return null;</span>
+<span class="nc" id="L293">    final Product product = getProduct(id);</span>
+<span class="nc bnc" id="L294" title="All 2 branches missed.">    if (product == null) {</span>
+<span class="nc" id="L295">      return null;</span>
     }
-<span class="nc" id="L286">    return new ObjectProductSource(product);</span>
+<span class="nc" id="L297">    return new ObjectProductSource(product);</span>
   }
 
   /**
@@ -296,9 +307,9 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
    */
   @Override
   public ProductId storeProductSource(ProductSource input) throws Exception {
-<span class="nc" id="L299">    final ObjectProductHandler handler = new ObjectProductHandler();</span>
-<span class="nc" id="L300">    input.streamTo(handler);</span>
-<span class="nc" id="L301">    return storeProduct(handler.getProduct());</span>
+<span class="nc" id="L310">    final ObjectProductHandler handler = new ObjectProductHandler();</span>
+<span class="nc" id="L311">    input.streamTo(handler);</span>
+<span class="nc" id="L312">    return storeProduct(handler.getProduct());</span>
   }
 
   /**
@@ -307,44 +318,44 @@ public class JsonProductStorage extends JDBCConnection implements ProductStorage
   @Override
   public synchronized void removeProduct(ProductId id) throws Exception {
     // prepare statement
-<span class="nc" id="L310">    final String sql = &quot;DELETE FROM &quot; + this.table</span>
+<span class="nc" id="L321">    final String sql = &quot;DELETE FROM &quot; + this.table</span>
           + &quot; WHERE source=? AND type=? AND code=? AND updatetime=?&quot;;
-<span class="nc" id="L312">    beginTransaction();</span>
-<span class="nc" id="L313">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
-<span class="nc" id="L314">      statement.setQueryTimeout(60);</span>
+<span class="nc" id="L323">    beginTransaction();</span>
+<span class="nc" id="L324">    try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {</span>
+<span class="nc" id="L325">      statement.setQueryTimeout(60);</span>
       // set parameters
-<span class="nc" id="L316">      statement.setString(1, id.getSource());</span>
-<span class="nc" id="L317">      statement.setString(2, id.getType());</span>
-<span class="nc" id="L318">      statement.setString(3, id.getCode());</span>
-<span class="nc" id="L319">      statement.setLong(4, id.getUpdateTime().getTime());</span>
+<span class="nc" id="L327">      statement.setString(1, id.getSource());</span>
+<span class="nc" id="L328">      statement.setString(2, id.getType());</span>
+<span class="nc" id="L329">      statement.setString(3, id.getCode());</span>
+<span class="nc" id="L330">      statement.setLong(4, id.getUpdateTime().getTime());</span>
       // execute
-<span class="nc" id="L321">      statement.executeUpdate();</span>
-<span class="nc" id="L322">      commitTransaction();</span>
-<span class="nc" id="L323">    } catch (SQLException e) {</span>
+<span class="nc" id="L332">      statement.executeUpdate();</span>
+<span class="nc" id="L333">      commitTransaction();</span>
+<span class="nc" id="L334">    } catch (SQLException e) {</span>
       try {
         // otherwise roll back
-<span class="nc" id="L326">        rollbackTransaction();</span>
-<span class="nc" id="L327">      } catch (SQLException e2) {</span>
+<span class="nc" id="L337">        rollbackTransaction();</span>
+<span class="nc" id="L338">      } catch (SQLException e2) {</span>
         // ignore
-<span class="nc" id="L329">      }</span>
-<span class="nc" id="L330">      throw e;</span>
-<span class="nc" id="L331">    }</span>
-<span class="nc" id="L332">  }</span>
+<span class="nc" id="L340">      }</span>
+<span class="nc" id="L341">      throw e;</span>
+<span class="nc" id="L342">    }</span>
+<span class="nc" id="L343">  }</span>
 
   @Override
   public void notifyListeners(StorageEvent event) {
     // listeners not supported
-<span class="nc" id="L337">  }</span>
+<span class="nc" id="L348">  }</span>
 
   @Override
   public void addStorageListener(StorageListener listener) {
     // listeners not supported
-<span class="nc" id="L342">  }</span>
+<span class="nc" id="L353">  }</span>
 
   @Override
   public void removeStorageListener(StorageListener listener) {
     // listeners not supported
-<span class="nc" id="L347">  }</span>
+<span class="nc" id="L358">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

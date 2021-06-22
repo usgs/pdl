@@ -134,7 +134,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <pre>public class <span class="typeNameLabel">ProductResender</span>
 extends java.lang.Object</pre>
 <div class="block">A utility class to (re)send an existing product to pdl hubs.
- 
+
  Mainly used when one server has not received a product, in order to
  redistribute the product.</div>
 </li>
@@ -160,12 +160,23 @@ extends java.lang.Object</pre>
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#BATCH_ARGUMENT">BATCH_ARGUMENT</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Batch arguments</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#PRIVATE_KEY_ARGUMENT">PRIVATE_KEY_ARGUMENT</a></span></code></th>
+<td class="colLast">
+<div class="block">Private Key Argument</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#SERVERS_ARGUMENT">SERVERS_ARGUMENT</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Servers arguments</div>
+</td>
 </tr>
 </table>
 </li>
@@ -209,14 +220,18 @@ extends java.lang.Object</pre>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>static void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#main(java.lang.String%5B%5D)">main</a></span>&#8203;(java.lang.String[]&nbsp;args)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Command Line Interface to ProductResender.</div>
+</td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>protected static void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#sendProduct(gov.usgs.earthquake.distribution.ProductBuilder,gov.usgs.earthquake.product.Product,boolean)">sendProduct</a></span>&#8203;(<a href="ProductBuilder.html" title="class in gov.usgs.earthquake.distribution">ProductBuilder</a>&nbsp;builder,
            <a href="../product/Product.html" title="class in gov.usgs.earthquake.product">Product</a>&nbsp;product,
            boolean&nbsp;batchMode)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Sends product to builder</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -249,6 +264,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>SERVERS_ARGUMENT</h4>
 <pre>public static final&nbsp;java.lang.String SERVERS_ARGUMENT</pre>
+<div class="block">Servers arguments</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.distribution.ProductResender.SERVERS_ARGUMENT">Constant Field Values</a></dd>
@@ -258,13 +274,28 @@ extends java.lang.Object</pre>
 <a id="BATCH_ARGUMENT">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>BATCH_ARGUMENT</h4>
 <pre>public static final&nbsp;java.lang.String BATCH_ARGUMENT</pre>
+<div class="block">Batch arguments</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.distribution.ProductResender.BATCH_ARGUMENT">Constant Field Values</a></dd>
+</dl>
+</li>
+</ul>
+<a id="PRIVATE_KEY_ARGUMENT">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>PRIVATE_KEY_ARGUMENT</h4>
+<pre>public static final&nbsp;java.lang.String PRIVATE_KEY_ARGUMENT</pre>
+<div class="block">Private Key Argument</div>
+<dl>
+<dt><span class="seeLabel">See Also:</span></dt>
+<dd><a href="../../../../constant-values.html#gov.usgs.earthquake.distribution.ProductResender.PRIVATE_KEY_ARGUMENT">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -305,9 +336,12 @@ extends java.lang.Object</pre>
 <h4>main</h4>
 <pre class="methodSignature">public static&nbsp;void&nbsp;main&#8203;(java.lang.String[]&nbsp;args)
                  throws java.lang.Exception</pre>
+<div class="block">Command Line Interface to ProductResender.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>args</code> - CLI arguments</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -321,9 +355,14 @@ extends java.lang.Object</pre>
                                   <a href="../product/Product.html" title="class in gov.usgs.earthquake.product">Product</a>&nbsp;product,
                                   boolean&nbsp;batchMode)
                            throws java.lang.Exception</pre>
+<div class="block">Sends product to builder</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>builder</code> - ProductBuilder</dd>
+<dd><code>product</code> - Product</dd>
+<dd><code>batchMode</code> - bool</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

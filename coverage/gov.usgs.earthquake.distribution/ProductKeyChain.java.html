@@ -26,50 +26,63 @@ public class ProductKeyChain {
 	/** List of candidate keys. */
 <span class="pc" id="L27">	private List&lt;ProductKey&gt; keychain = new LinkedList&lt;ProductKey&gt;();</span>
 
-<span class="fc" id="L29">	public ProductKeyChain() {</span>
-<span class="fc" id="L30">	}</span>
+	/** Empty constructor */
+<span class="fc" id="L30">	public ProductKeyChain() {</span>
+<span class="fc" id="L31">	}</span>
 
+	/**
+	 * Constructor for a string of keys
+	 * @param keys String of keys, separated by commas
+	 * @param config Config file
+	 * @throws Exception if error occurs
+	 */
 	public ProductKeyChain(final String keys, final Config config)
 			throws Exception {
-<span class="nc" id="L34">		this(StringUtils.split(keys, &quot;,&quot;), config);</span>
-<span class="nc" id="L35">	}</span>
+<span class="nc" id="L41">		this(StringUtils.split(keys, &quot;,&quot;), config);</span>
+<span class="nc" id="L42">	}</span>
 
+	/**
+	 * Constructor for list of keys
+	 * @param keys String list of keys
+	 * @param config Config file
+	 * @throws Exception if error occurs
+	 */
 	public ProductKeyChain(final List&lt;String&gt; keys, final Config config)
-<span class="nc" id="L38">			throws Exception {</span>
-<span class="nc" id="L39">		Iterator&lt;String&gt; iter = keys.iterator();</span>
-<span class="nc bnc" id="L40" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
-<span class="nc" id="L41">			String keyName = iter.next();</span>
-<span class="nc" id="L42">			LOGGER.config(&quot;Loading key '&quot; + keyName + &quot;'&quot;);</span>
-<span class="nc" id="L43">			ProductKey key = (ProductKey) Config.getConfig().getObject(keyName);</span>
-<span class="nc bnc" id="L44" title="All 2 branches missed.">			if (key != null) {</span>
-<span class="nc" id="L45">				keychain.add(key);</span>
+<span class="nc" id="L51">			throws Exception {</span>
+<span class="nc" id="L52">		Iterator&lt;String&gt; iter = keys.iterator();</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L54">			String keyName = iter.next();</span>
+<span class="nc" id="L55">			LOGGER.config(&quot;Loading key '&quot; + keyName + &quot;'&quot;);</span>
+<span class="nc" id="L56">			ProductKey key = (ProductKey) Config.getConfig().getObject(keyName);</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">			if (key != null) {</span>
+<span class="nc" id="L58">				keychain.add(key);</span>
 			}
-<span class="nc" id="L47">		}</span>
-<span class="nc" id="L48">	}</span>
+<span class="nc" id="L60">		}</span>
+<span class="nc" id="L61">	}</span>
 
 	/**
 	 * @return the keys
 	 */
 	public List&lt;ProductKey&gt; getKeychain() {
-<span class="fc" id="L54">		return keychain;</span>
+<span class="fc" id="L67">		return keychain;</span>
 	}
 
 	/**
 	 * Find public keys based on configured Keys.
-	 * 
-	 * @param id
+	 *
+	 * @param id ID of product
 	 * @return an array of candidate keys used to verify a signature.
 	 */
 	public PublicKey[] getProductKeys(final ProductId id) {
-<span class="fc" id="L64">		LinkedList&lt;PublicKey&gt; publicKeys = new LinkedList&lt;PublicKey&gt;();</span>
-<span class="fc" id="L65">		Iterator&lt;ProductKey&gt; iter = keychain.iterator();</span>
-<span class="fc bfc" id="L66" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
-<span class="fc" id="L67">			ProductKey key = iter.next();</span>
-<span class="pc bpc" id="L68" title="1 of 2 branches missed.">			if (key.isForProduct(id)) {</span>
-<span class="fc" id="L69">				publicKeys.add(key.getKey());</span>
+<span class="fc" id="L77">		LinkedList&lt;PublicKey&gt; publicKeys = new LinkedList&lt;PublicKey&gt;();</span>
+<span class="fc" id="L78">		Iterator&lt;ProductKey&gt; iter = keychain.iterator();</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L80">			ProductKey key = iter.next();</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">			if (key.isForProduct(id)) {</span>
+<span class="fc" id="L82">				publicKeys.add(key.getKey());</span>
 			}
-<span class="fc" id="L71">		}</span>
-<span class="fc" id="L72">		return publicKeys.toArray(new PublicKey[0]);</span>
+<span class="fc" id="L84">		}</span>
+<span class="fc" id="L85">		return publicKeys.toArray(new PublicKey[0]);</span>
 	}
 
 }

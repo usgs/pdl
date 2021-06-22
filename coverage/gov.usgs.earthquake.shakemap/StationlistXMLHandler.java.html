@@ -21,88 +21,118 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class StationlistXMLHandler extends DefaultHandler {
 
+	/** Element for Shakemap data */
 	public static final String SHAKEMAPDATA_ELEMENT = &quot;shakemap-data&quot;;
+	/** Shakemap data version */
 	public static final String SHAKEMAPDATA_VERSION = &quot;map_version&quot;;
 
+	/** Element for earthquake */
 	public static final String EARTHQUAKE_ELEMENT = &quot;earthquake&quot;;
+	/** String for earthquake id */
 	public static final String EARTHQUAKE_ID = &quot;id&quot;;
+	/** String for earthquake latitiude */
 	public static final String EARTHQUAKE_LAT = &quot;lat&quot;;
+	/** String for earthquake longitude */
 	public static final String EARTHQUAKE_LON = &quot;lon&quot;;
+	/** String for earthquake magnitude */
 	public static final String EARTHQUAKE_MAG = &quot;mag&quot;;
+	/** String for earthquake year */
 	public static final String EARTHQUAKE_YEAR = &quot;year&quot;;
+	/** String for earthquake month */
 	public static final String EARTHQUAKE_MONTH = &quot;month&quot;;
+	/** String for earthquake day */
 	public static final String EARTHQUAKE_DAY = &quot;day&quot;;
+	/** String for earthquake hour */
 	public static final String EARTHQUAKE_HOUR = &quot;hour&quot;;
+	/** String for earthquake minute */
 	public static final String EARTHQUAKE_MINUTE = &quot;minute&quot;;
+	/** String for earthquake second */
 	public static final String EARTHQUAKE_SECOND = &quot;second&quot;;
+	/** String for earthquake timezone */
 	public static final String EARTHQUAKE_TIMEZONE = &quot;timezone&quot;;
+	/** String for earthquake depth */
 	public static final String EARTHQUAKE_DEPTH = &quot;depth&quot;;
+	/** String for earthquake locstring */
 	public static final String EARTHQUAKE_LOCSTRING = &quot;locstring&quot;;
+	/** String for earthquake created */
 	public static final String EARTHQUAKE_CREATED = &quot;created&quot;;
 
 	/** The ShakeMap object parsed by this handler. */
 	private ShakeMap shakemap;
 
-<span class="nc" id="L46">	public StationlistXMLHandler(ShakeMap shakemap) {</span>
-<span class="nc" id="L47">		this.shakemap = shakemap;</span>
-<span class="nc" id="L48">	}</span>
+	/**
+	 * Constructor
+	 * @param shakemap a shakemap object parsed by handler
+	 */
+<span class="nc" id="L67">	public StationlistXMLHandler(ShakeMap shakemap) {</span>
+<span class="nc" id="L68">		this.shakemap = shakemap;</span>
+<span class="nc" id="L69">	}</span>
 
+	/** @return shakemap */
 	public ShakeMap getShakemap() {
-<span class="nc" id="L51">		return shakemap;</span>
+<span class="nc" id="L73">		return shakemap;</span>
 	}
 
+	/** @param shakemap to set */
 	public void setShakemap(ShakeMap shakemap) {
-<span class="nc" id="L55">		this.shakemap = shakemap;</span>
-<span class="nc" id="L56">	}</span>
+<span class="nc" id="L78">		this.shakemap = shakemap;</span>
+<span class="nc" id="L79">	}</span>
 
+	/**
+	 * Takes in an XML object and parses it
+	 * @param in an object
+	 * @return A shakemap
+	 * @throws Exception if error occurs
+	 */
 	public ShakeMap parse(final Object in) throws Exception {
-<span class="nc" id="L59">		XmlUtils.parse(in, this);</span>
-<span class="nc" id="L60">		return getShakemap();</span>
+<span class="nc" id="L88">		XmlUtils.parse(in, this);</span>
+<span class="nc" id="L89">		return getShakemap();</span>
 	}
 
 	/**
 	 * Parse element attributes.
-	 * 
+	 *
 	 * @param uri element namespace.
 	 * @param localName element name.
 	 * @param qName qualified element name.
 	 * @param attributes element attributes.
+	 * @throws SAXException if error occurs
 	 */
 	public final void startElement(final String uri, final String localName,
 			final String qName, final Attributes attributes)
 			throws SAXException {
 
 		try {
-<span class="nc bnc" id="L76" title="All 2 branches missed.">			if (localName.equals(SHAKEMAPDATA_ELEMENT)) {</span>
-<span class="nc" id="L77">				shakemap.setVersion(attributes</span>
-<span class="nc" id="L78">						.getValue(SHAKEMAPDATA_VERSION));</span>
-<span class="nc bnc" id="L79" title="All 2 branches missed.">			} else if (localName.equals(EARTHQUAKE_ELEMENT)) {</span>
-<span class="nc" id="L80">				shakemap.setLatitude(new BigDecimal(attributes</span>
-<span class="nc" id="L81">						.getValue(EARTHQUAKE_LAT)));</span>
-<span class="nc" id="L82">				shakemap.setLongitude(new BigDecimal(attributes</span>
-<span class="nc" id="L83">						.getValue(EARTHQUAKE_LON)));</span>
-<span class="nc" id="L84">				shakemap.setMagnitude(new BigDecimal(attributes</span>
-<span class="nc" id="L85">						.getValue(EARTHQUAKE_MAG)));</span>
-<span class="nc" id="L86">				shakemap.setDepth(new BigDecimal(attributes</span>
-<span class="nc" id="L87">						.getValue(EARTHQUAKE_DEPTH)));</span>
-<span class="nc" id="L88">				Calendar cal = Calendar.getInstance(TimeZone</span>
-<span class="nc" id="L89">						.getTimeZone(attributes.getValue(EARTHQUAKE_TIMEZONE)));</span>
-<span class="nc" id="L90">				cal.set(Integer.parseInt(attributes.getValue(EARTHQUAKE_YEAR)),</span>
-<span class="nc" id="L91">						Integer.parseInt(attributes.getValue(EARTHQUAKE_MONTH)),</span>
-<span class="nc" id="L92">						Integer.parseInt(attributes.getValue(EARTHQUAKE_DAY)),</span>
-<span class="nc" id="L93">						Integer.parseInt(attributes.getValue(EARTHQUAKE_HOUR)),</span>
-<span class="nc" id="L94">						Integer.parseInt(attributes.getValue(EARTHQUAKE_MINUTE)),</span>
-<span class="nc" id="L95">						Integer.parseInt(attributes.getValue(EARTHQUAKE_SECOND)));</span>
-<span class="nc" id="L96">				shakemap.setEventTime(cal.getTime());</span>
-<span class="nc" id="L97">				shakemap.setEventDescription(attributes</span>
-<span class="nc" id="L98">						.getValue(EARTHQUAKE_LOCSTRING));</span>
-<span class="nc" id="L99">				shakemap.setProcessTimestamp(new Date(StringUtils</span>
-<span class="nc" id="L100">						.getLong(attributes.getValue(EARTHQUAKE_CREATED))));</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">			if (localName.equals(SHAKEMAPDATA_ELEMENT)) {</span>
+<span class="nc" id="L107">				shakemap.setVersion(attributes</span>
+<span class="nc" id="L108">						.getValue(SHAKEMAPDATA_VERSION));</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">			} else if (localName.equals(EARTHQUAKE_ELEMENT)) {</span>
+<span class="nc" id="L110">				shakemap.setLatitude(new BigDecimal(attributes</span>
+<span class="nc" id="L111">						.getValue(EARTHQUAKE_LAT)));</span>
+<span class="nc" id="L112">				shakemap.setLongitude(new BigDecimal(attributes</span>
+<span class="nc" id="L113">						.getValue(EARTHQUAKE_LON)));</span>
+<span class="nc" id="L114">				shakemap.setMagnitude(new BigDecimal(attributes</span>
+<span class="nc" id="L115">						.getValue(EARTHQUAKE_MAG)));</span>
+<span class="nc" id="L116">				shakemap.setDepth(new BigDecimal(attributes</span>
+<span class="nc" id="L117">						.getValue(EARTHQUAKE_DEPTH)));</span>
+<span class="nc" id="L118">				Calendar cal = Calendar.getInstance(TimeZone</span>
+<span class="nc" id="L119">						.getTimeZone(attributes.getValue(EARTHQUAKE_TIMEZONE)));</span>
+<span class="nc" id="L120">				cal.set(Integer.parseInt(attributes.getValue(EARTHQUAKE_YEAR)),</span>
+<span class="nc" id="L121">						Integer.parseInt(attributes.getValue(EARTHQUAKE_MONTH)),</span>
+<span class="nc" id="L122">						Integer.parseInt(attributes.getValue(EARTHQUAKE_DAY)),</span>
+<span class="nc" id="L123">						Integer.parseInt(attributes.getValue(EARTHQUAKE_HOUR)),</span>
+<span class="nc" id="L124">						Integer.parseInt(attributes.getValue(EARTHQUAKE_MINUTE)),</span>
+<span class="nc" id="L125">						Integer.parseInt(attributes.getValue(EARTHQUAKE_SECOND)));</span>
+<span class="nc" id="L126">				shakemap.setEventTime(cal.getTime());</span>
+<span class="nc" id="L127">				shakemap.setEventDescription(attributes</span>
+<span class="nc" id="L128">						.getValue(EARTHQUAKE_LOCSTRING));</span>
+<span class="nc" id="L129">				shakemap.setProcessTimestamp(new Date(StringUtils</span>
+<span class="nc" id="L130">						.getLong(attributes.getValue(EARTHQUAKE_CREATED))));</span>
 			}
-<span class="nc" id="L102">		} catch (Exception e) {</span>
-<span class="nc" id="L103">			throw new SAXException(e);</span>
-<span class="nc" id="L104">		}</span>
-<span class="nc" id="L105">	}</span>
+<span class="nc" id="L132">		} catch (Exception e) {</span>
+<span class="nc" id="L133">			throw new SAXException(e);</span>
+<span class="nc" id="L134">		}</span>
+<span class="nc" id="L135">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

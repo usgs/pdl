@@ -24,22 +24,22 @@ import java.util.logging.Logger;
 
 /**
  * An external process that is called when new products arrive.
- * 
+ *
  * The ExternalNotificationListener implements the Configurable interface and
  * can use the following configuration parameters:
- * 
+ *
  * &lt;dl&gt;
  * &lt;dt&gt;command&lt;/dt&gt;
  * &lt;dd&gt;(Required) The command to execute. This must be an executable command and
  * may include arguments. Any product specific arguments are appended at the end
  * of command.&lt;/dd&gt;
- * 
+ *
  * &lt;dt&gt;storage&lt;/dt&gt;
  * &lt;dd&gt;(Required) A directory used to store all products. Each product is
  * extracted into a separate directory within this directory and is referenced
  * by the --directory=/path/to/directory argument when command is executed.&lt;/dd&gt;
  * &lt;/dl&gt;
- * 
+ *
  */
 public class ExternalNotificationListener extends DefaultNotificationListener {
 
@@ -66,7 +66,7 @@ public class ExternalNotificationListener extends DefaultNotificationListener {
 
 	/**
 	 * Construct a new ExternalNotificationListener.
-	 * 
+	 *
 	 * The listener must be configured with a FileProductStorage and command to
 	 * function.
 	 */
@@ -75,7 +75,7 @@ public class ExternalNotificationListener extends DefaultNotificationListener {
 
 	/**
 	 * Configure an ExternalNotificationListener using a Config object.
-	 * 
+	 *
 	 * @param config
 	 *            the config containing a
 	 */
@@ -136,11 +136,11 @@ public class ExternalNotificationListener extends DefaultNotificationListener {
 
 	/**
 	 * Append product arguments to the base command.
-	 * 
+	 *
 	 * @param product
 	 *            the product used to generate arguments.
 	 * @return command as a string.
-	 * @throws Exception
+	 * @throws Exception if error occurs
 	 */
 	public String getProductCommand(final Product product) throws Exception {
 <span class="nc" id="L146">		StringBuffer buf = new StringBuffer(command);</span>
@@ -210,12 +210,12 @@ public class ExternalNotificationListener extends DefaultNotificationListener {
 
 	/**
 	 * Split a command string into a command array.
-	 * 
+	 *
 	 * This version uses a StringTokenizer to split arguments. Quoted arguments
 	 * are supported (single or double), with quotes removed before passing to
 	 * runtime. Double quoting arguments will preserve quotes when passing to
 	 * runtime.
-	 * 
+	 *
 	 * @param command
 	 *            command to run.
 	 * @return Array of arguments suitable for passing to
@@ -275,9 +275,9 @@ public class ExternalNotificationListener extends DefaultNotificationListener {
 
 	/**
 	 * Call the external process for this product.
-	 * 
-	 * @param product
-	 * @throws Exception
+	 *
+	 * @param product Product
+	 * @throws Exception if error occurs
 	 */
 	public void onProduct(final Product product) throws Exception {
 		// store product
@@ -334,10 +334,10 @@ public class ExternalNotificationListener extends DefaultNotificationListener {
 
 	/**
 	 * Called when the command finishes executing normally.
-	 * 
+	 *
 	 * This implementation throws a NotificationListenerException if the
 	 * exitValue is non-zero.
-	 * 
+	 *
 	 * @param product
 	 *            the product being processed.
 	 * @param command
@@ -366,10 +366,10 @@ public class ExternalNotificationListener extends DefaultNotificationListener {
 
 	/**
 	 * Called when an exception occurs while running command.
-	 * 
+	 *
 	 * This implementation throws a NotificationListenerException with exception
 	 * as the cause.
-	 * 
+	 *
 	 * @param product
 	 *            product being processed
 	 * @param productCommand

@@ -135,7 +135,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 extends java.lang.Object</pre>
 <div class="block">The TimeoutProcessBuilder wraps a ProcessBuilder, adding support for a
  command time out.
- 
+
  This class does not support a full command String complete with arguments.
  You can use the StringUtils.split method to get around this.</div>
 <dl>
@@ -329,6 +329,11 @@ public&nbsp;TimeoutProcessBuilder&#8203;(java.util.List&lt;java.lang.String&gt;&
 <div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">This signature is preserved, but calls the alternate constructor with
  argument order swapped.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>command</code> - list of strings that represent command.</dd>
+<dd><code>timeout</code> - timeout in milliseconds for process, or &lt;= 0 for no timeout.</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -348,6 +353,10 @@ public&nbsp;TimeoutProcessBuilder&#8203;(java.util.List&lt;java.lang.String&gt;&
 <li class="blockList">
 <h4>command</h4>
 <pre class="methodSignature">public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;command()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>list of builder commands</dd>
+</dl>
 </li>
 </ul>
 <a id="command(java.util.List)">
@@ -357,6 +366,12 @@ public&nbsp;TimeoutProcessBuilder&#8203;(java.util.List&lt;java.lang.String&gt;&
 <li class="blockList">
 <h4>command</h4>
 <pre class="methodSignature">public&nbsp;<a href="TimeoutProcessBuilder.html" title="class in gov.usgs.util">TimeoutProcessBuilder</a>&nbsp;command&#8203;(java.util.List&lt;java.lang.String&gt;&nbsp;command)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>command</code> - give builder a list of commands</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>TimeoutProcessBuilder</dd>
+</dl>
 </li>
 </ul>
 <a id="command(java.lang.String)">
@@ -366,6 +381,12 @@ public&nbsp;TimeoutProcessBuilder&#8203;(java.util.List&lt;java.lang.String&gt;&
 <li class="blockList">
 <h4>command</h4>
 <pre class="methodSignature">public&nbsp;<a href="TimeoutProcessBuilder.html" title="class in gov.usgs.util">TimeoutProcessBuilder</a>&nbsp;command&#8203;(java.lang.String&nbsp;command)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>command</code> - give builder a single command</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>TimeoutProcessBuilder</dd>
+</dl>
 </li>
 </ul>
 <a id="directory()">
@@ -375,6 +396,10 @@ public&nbsp;TimeoutProcessBuilder&#8203;(java.util.List&lt;java.lang.String&gt;&
 <li class="blockList">
 <h4>directory</h4>
 <pre class="methodSignature">public&nbsp;java.io.File&nbsp;directory()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>builder directory</dd>
+</dl>
 </li>
 </ul>
 <a id="directory(java.io.File)">
@@ -384,6 +409,12 @@ public&nbsp;TimeoutProcessBuilder&#8203;(java.util.List&lt;java.lang.String&gt;&
 <li class="blockList">
 <h4>directory</h4>
 <pre class="methodSignature">public&nbsp;<a href="TimeoutProcessBuilder.html" title="class in gov.usgs.util">TimeoutProcessBuilder</a>&nbsp;directory&#8203;(java.io.File&nbsp;directory)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>directory</code> - to set</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>TimeoutProcessBuilder</dd>
+</dl>
 </li>
 </ul>
 <a id="environment()">
@@ -393,6 +424,10 @@ public&nbsp;TimeoutProcessBuilder&#8203;(java.util.List&lt;java.lang.String&gt;&
 <li class="blockList">
 <h4>environment</h4>
 <pre class="methodSignature">public&nbsp;java.util.Map&lt;java.lang.String,&#8203;java.lang.String&gt;&nbsp;environment()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>builder environment</dd>
+</dl>
 </li>
 </ul>
 <a id="redirectErrorStream()">
@@ -402,6 +437,10 @@ public&nbsp;TimeoutProcessBuilder&#8203;(java.util.List&lt;java.lang.String&gt;&
 <li class="blockList">
 <h4>redirectErrorStream</h4>
 <pre class="methodSignature">public&nbsp;boolean&nbsp;redirectErrorStream()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>boolean redirectErrorStream</dd>
+</dl>
 </li>
 </ul>
 <a id="redirectErrorStream(boolean)">
@@ -411,6 +450,12 @@ public&nbsp;TimeoutProcessBuilder&#8203;(java.util.List&lt;java.lang.String&gt;&
 <li class="blockList">
 <h4>redirectErrorStream</h4>
 <pre class="methodSignature">public&nbsp;<a href="TimeoutProcessBuilder.html" title="class in gov.usgs.util">TimeoutProcessBuilder</a>&nbsp;redirectErrorStream&#8203;(boolean&nbsp;redirectErrorStream)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>redirectErrorStream</code> - to set</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>TimeoutProcessBuilder</dd>
+</dl>
 </li>
 </ul>
 <a id="start()">
@@ -422,8 +467,10 @@ public&nbsp;TimeoutProcessBuilder&#8203;(java.util.List&lt;java.lang.String&gt;&
 <pre class="methodSignature">public&nbsp;<a href="TimeoutProcess.html" title="class in gov.usgs.util">TimeoutProcess</a>&nbsp;start()
                      throws java.io.IOException</pre>
 <dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a TimeoutProcess</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.io.IOException</code> - if IO error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -434,6 +481,10 @@ public&nbsp;TimeoutProcessBuilder&#8203;(java.util.List&lt;java.lang.String&gt;&
 <li class="blockList">
 <h4>getTimeout</h4>
 <pre class="methodSignature">public&nbsp;long&nbsp;getTimeout()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>timeout</dd>
+</dl>
 </li>
 </ul>
 <a id="setTimeout(long)">
@@ -443,6 +494,10 @@ public&nbsp;TimeoutProcessBuilder&#8203;(java.util.List&lt;java.lang.String&gt;&
 <li class="blockList">
 <h4>setTimeout</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setTimeout&#8203;(long&nbsp;timeout)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>timeout</code> - to set</dd>
+</dl>
 </li>
 </ul>
 </li>

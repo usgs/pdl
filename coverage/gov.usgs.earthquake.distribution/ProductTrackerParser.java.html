@@ -29,19 +29,25 @@ public class ProductTrackerParser extends SAXAdapter {
 	/** The current update being parsed. */
 <span class="nc" id="L30">	private ProductTrackerUpdate update = null;</span>
 
-	/** Create a new TrackerUpdateParser. */
-<span class="nc" id="L33">	public ProductTrackerParser(final URL trackerURL) {</span>
-<span class="nc" id="L34">		this.trackerURL = trackerURL;</span>
-<span class="nc" id="L35">	}</span>
+	/**
+	 * Create a new TrackerUpdateParser.
+	 * @param trackerURL URL that generated the list being parsed
+	 */
+<span class="nc" id="L36">	public ProductTrackerParser(final URL trackerURL) {</span>
+<span class="nc" id="L37">		this.trackerURL = trackerURL;</span>
+<span class="nc" id="L38">	}</span>
 
-	/** Get the parsed updates. */
+	/**
+	 * Get the parsed updates.
+	 * @return list of parsed updates
+	 */
 	public List&lt;ProductTrackerUpdate&gt; getUpdates() {
-<span class="nc" id="L39">		return updates;</span>
+<span class="nc" id="L45">		return updates;</span>
 	}
 
 	/**
 	 * SAXAdapter start element handler.
-	 * 
+	 *
 	 * @param uri
 	 *            element uri.
 	 * @param localName
@@ -56,33 +62,33 @@ public class ProductTrackerParser extends SAXAdapter {
 	public void onStartElement(final String uri, final String localName,
 			final String qName, final Attributes attributes)
 			throws SAXException {
-<span class="nc bnc" id="L59" title="All 2 branches missed.">		if (localName.equals(&quot;update&quot;)) {</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">		if (localName.equals(&quot;update&quot;)) {</span>
 			try {
-<span class="nc" id="L61">				Long sequenceNumber = Long.valueOf(XmlUtils.getAttribute(</span>
+<span class="nc" id="L67">				Long sequenceNumber = Long.valueOf(XmlUtils.getAttribute(</span>
 						attributes, uri, &quot;sequenceNumber&quot;));
-<span class="nc" id="L63">				Date created = XmlUtils.getDate(XmlUtils.getAttribute(</span>
+<span class="nc" id="L69">				Date created = XmlUtils.getDate(XmlUtils.getAttribute(</span>
 						attributes, uri, &quot;created&quot;));
-<span class="nc" id="L65">				InetAddress host = InetAddress.getByName(XmlUtils.getAttribute(</span>
+<span class="nc" id="L71">				InetAddress host = InetAddress.getByName(XmlUtils.getAttribute(</span>
 						attributes, uri, &quot;host&quot;));
-<span class="nc" id="L67">				ProductId id = new ProductId(XmlUtils.getAttribute(attributes,</span>
-<span class="nc" id="L68">						uri, &quot;source&quot;), XmlUtils.getAttribute(attributes,</span>
-<span class="nc" id="L69">								uri, &quot;type&quot;), XmlUtils.getAttribute(attributes, uri,</span>
-<span class="nc" id="L70">						&quot;code&quot;), XmlUtils.getDate(XmlUtils.getAttribute(</span>
+<span class="nc" id="L73">				ProductId id = new ProductId(XmlUtils.getAttribute(attributes,</span>
+<span class="nc" id="L74">						uri, &quot;source&quot;), XmlUtils.getAttribute(attributes,</span>
+<span class="nc" id="L75">								uri, &quot;type&quot;), XmlUtils.getAttribute(attributes, uri,</span>
+<span class="nc" id="L76">						&quot;code&quot;), XmlUtils.getDate(XmlUtils.getAttribute(</span>
 						attributes, uri, &quot;updateTime&quot;)));
-<span class="nc" id="L72">				String className = XmlUtils.getAttribute(attributes, uri,</span>
+<span class="nc" id="L78">				String className = XmlUtils.getAttribute(attributes, uri,</span>
 						&quot;className&quot;);
-<span class="nc" id="L74">				update = new ProductTrackerUpdate(trackerURL, sequenceNumber,</span>
+<span class="nc" id="L80">				update = new ProductTrackerUpdate(trackerURL, sequenceNumber,</span>
 						created, host, id, className, null);
-<span class="nc" id="L76">			} catch (Exception e) {</span>
-<span class="nc" id="L77">				throw new SAXException(e);</span>
-<span class="nc" id="L78">			}</span>
+<span class="nc" id="L82">			} catch (Exception e) {</span>
+<span class="nc" id="L83">				throw new SAXException(e);</span>
+<span class="nc" id="L84">			}</span>
 		}
-<span class="nc" id="L80">	}</span>
+<span class="nc" id="L86">	}</span>
 
 	/**
 	 * SAXAdapter end element handler. Content only includes characters that
 	 * were read from this element, NOT any characters from child elements.
-	 * 
+	 *
 	 * @param uri
 	 *            element uri.
 	 * @param localName
@@ -97,12 +103,12 @@ public class ProductTrackerParser extends SAXAdapter {
 	public void onEndElement(final String uri, final String localName,
 			final String qName, final String content) throws SAXException {
 		// message is element content
-<span class="nc" id="L100">		update.setMessage(content);</span>
+<span class="nc" id="L106">		update.setMessage(content);</span>
 		// add update to list of parsed updates
-<span class="nc" id="L102">		updates.add(update);</span>
+<span class="nc" id="L108">		updates.add(update);</span>
 		// reset update to null
-<span class="nc" id="L104">		update = null;</span>
-<span class="nc" id="L105">	}</span>
+<span class="nc" id="L110">		update = null;</span>
+<span class="nc" id="L111">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

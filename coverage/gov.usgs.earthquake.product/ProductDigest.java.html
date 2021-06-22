@@ -62,18 +62,20 @@ public class ProductDigest implements ProductHandler {
 <span class="fc" id="L62">	private Version version = null;</span>
 
 	/**
-	* Construct a new ProductDigest.
+	 * Construct a new ProductDigest.
+	 * @param version signature version
+	 * @throws NoSuchAlgorithmException if not SHA1 or SHA-256
 	 */
-<span class="fc" id="L67">	protected ProductDigest(final Version version) throws NoSuchAlgorithmException {</span>
-<span class="pc bpc" id="L68" title="1 of 2 branches missed.">		final String algorithm = version == Version.SIGNATURE_V2</span>
-<span class="nc" id="L69">				? MESSAGE_DIGEST_V2_ALGORITHM</span>
-<span class="fc" id="L70">				: MESSAGE_DIGEST_ALGORITHM;</span>
-<span class="fc" id="L71">		LOGGER.fine(&quot;Using digest version &quot; + version.toString()</span>
+<span class="fc" id="L69">	protected ProductDigest(final Version version) throws NoSuchAlgorithmException {</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">		final String algorithm = version == Version.SIGNATURE_V2</span>
+<span class="nc" id="L71">				? MESSAGE_DIGEST_V2_ALGORITHM</span>
+<span class="fc" id="L72">				: MESSAGE_DIGEST_ALGORITHM;</span>
+<span class="fc" id="L73">		LOGGER.fine(&quot;Using digest version &quot; + version.toString()</span>
 				+ &quot;, algorithm=&quot; + algorithm);
-<span class="fc" id="L73">		MessageDigest digest = MessageDigest.getInstance(algorithm);</span>
-<span class="fc" id="L74">		this.digestStream = new DigestOutputStream(new NullOutputStream(), digest);</span>
-<span class="fc" id="L75">		this.version = version;</span>
-<span class="fc" id="L76">	}</span>
+<span class="fc" id="L75">		MessageDigest digest = MessageDigest.getInstance(algorithm);</span>
+<span class="fc" id="L76">		this.digestStream = new DigestOutputStream(new NullOutputStream(), digest);</span>
+<span class="fc" id="L77">		this.version = version;</span>
+<span class="fc" id="L78">	}</span>
 
 	/**
 	 * A convenience method that generates a product digest.
@@ -85,28 +87,35 @@ public class ProductDigest implements ProductHandler {
 	 *             if errors occur while digesting product.
 	 */
 	public static byte[] digestProduct(final Product product) throws Exception {
-<span class="nc" id="L88">		return digestProduct(product, Version.SIGNATURE_V1);</span>
+<span class="nc" id="L90">		return digestProduct(product, Version.SIGNATURE_V1);</span>
 	}
 
+	/**
+	 *
+	 * @param product A product
+	 * @param version What version of product digest
+	 * @return A byte array of the product digest
+	 * @throws Exception if error occurs
+	 */
 	public static byte[] digestProduct(final Product product, final Version version)
 			throws Exception {
-<span class="fc" id="L93">		Date start = new Date();</span>
-<span class="fc" id="L94">		ProductDigest productDigest = new ProductDigest(version);</span>
+<span class="fc" id="L102">		Date start = new Date();</span>
+<span class="fc" id="L103">		ProductDigest productDigest = new ProductDigest(version);</span>
 		// ObjectProductInput generates ProductOutput calls in a reliable order.
-<span class="fc" id="L96">		new ObjectProductSource(product).streamTo(productDigest);</span>
-<span class="fc" id="L97">		Date end = new Date();</span>
+<span class="fc" id="L105">		new ObjectProductSource(product).streamTo(productDigest);</span>
+<span class="fc" id="L106">		Date end = new Date();</span>
 
-<span class="fc" id="L99">		byte[] digest = productDigest.getDigest();</span>
-<span class="fc" id="L100">		LOGGER.fine(&quot;Digest='&quot; + Base64.getEncoder().encodeToString(digest)</span>
-<span class="fc" id="L101">				+ &quot;' , &quot; + (end.getTime() - start.getTime()) + &quot;ms&quot;);</span>
-<span class="fc" id="L102">		return digest;</span>
+<span class="fc" id="L108">		byte[] digest = productDigest.getDigest();</span>
+<span class="fc" id="L109">		LOGGER.fine(&quot;Digest='&quot; + Base64.getEncoder().encodeToString(digest)</span>
+<span class="fc" id="L110">				+ &quot;' , &quot; + (end.getTime() - start.getTime()) + &quot;ms&quot;);</span>
+<span class="fc" id="L111">		return digest;</span>
 	}
 
 	/**
 	 * @return the computed digest, or null if not finished yet.
 	 */
 	public byte[] getDigest() {
-<span class="fc" id="L109">		return digest;</span>
+<span class="fc" id="L118">		return digest;</span>
 	}
 
 	/**
@@ -114,59 +123,59 @@ public class ProductDigest implements ProductHandler {
 	 */
 	public void onBeginProduct(ProductId id, String status, URL trackerURL)
 			throws Exception {
-<span class="fc" id="L117">		digestStream.write(id.toString().getBytes(CHARSET));</span>
-<span class="fc" id="L118">		digestStream.write(XmlUtils.formatDate(id.getUpdateTime()).getBytes(</span>
+<span class="fc" id="L126">		digestStream.write(id.toString().getBytes(CHARSET));</span>
+<span class="fc" id="L127">		digestStream.write(XmlUtils.formatDate(id.getUpdateTime()).getBytes(</span>
 				CHARSET));
-<span class="fc" id="L120">		digestStream.write(status.getBytes(CHARSET));</span>
-<span class="pc bpc" id="L121" title="2 of 4 branches missed.">		if (this.version != Version.SIGNATURE_V2 &amp;&amp; trackerURL != null) {</span>
-<span class="fc" id="L122">			digestStream.write(trackerURL.toString().getBytes(CHARSET));</span>
+<span class="fc" id="L129">		digestStream.write(status.getBytes(CHARSET));</span>
+<span class="pc bpc" id="L130" title="2 of 4 branches missed.">		if (this.version != Version.SIGNATURE_V2 &amp;&amp; trackerURL != null) {</span>
+<span class="fc" id="L131">			digestStream.write(trackerURL.toString().getBytes(CHARSET));</span>
 		}
-<span class="fc" id="L124">	}</span>
+<span class="fc" id="L133">	}</span>
 
 	/**
 	 * Digest the path, content attributes, and content bytes.
 	 */
 	public void onContent(ProductId id, String path, Content content)
 			throws Exception {
-<span class="fc" id="L131">		digestStream.write(path.getBytes(CHARSET));</span>
-<span class="fc" id="L132">		digestStream.write(content.getContentType().getBytes(CHARSET));</span>
-<span class="fc" id="L133">		digestStream.write(XmlUtils.formatDate(content.getLastModified())</span>
-<span class="fc" id="L134">				.getBytes(CHARSET));</span>
-<span class="fc" id="L135">		digestStream.write(content.getLength().toString().getBytes(CHARSET));</span>
-<span class="pc bpc" id="L136" title="1 of 2 branches missed.">		if (this.version == Version.SIGNATURE_V2) {</span>
-<span class="nc" id="L137">			digestStream.write(content.getSha256().getBytes(CHARSET));</span>
+<span class="fc" id="L140">		digestStream.write(path.getBytes(CHARSET));</span>
+<span class="fc" id="L141">		digestStream.write(content.getContentType().getBytes(CHARSET));</span>
+<span class="fc" id="L142">		digestStream.write(XmlUtils.formatDate(content.getLastModified())</span>
+<span class="fc" id="L143">				.getBytes(CHARSET));</span>
+<span class="fc" id="L144">		digestStream.write(content.getLength().toString().getBytes(CHARSET));</span>
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">		if (this.version == Version.SIGNATURE_V2) {</span>
+<span class="nc" id="L146">			digestStream.write(content.getSha256().getBytes(CHARSET));</span>
 		} else {
-<span class="fc" id="L139">			StreamUtils.transferStream(content.getInputStream(),</span>
+<span class="fc" id="L148">			StreamUtils.transferStream(content.getInputStream(),</span>
 					new StreamUtils.UnclosableOutputStream(digestStream));
 		}
-<span class="fc" id="L142">	}</span>
+<span class="fc" id="L151">	}</span>
 
 	/**
 	 * Finish computing digest.
 	 */
 	public void onEndProduct(ProductId id) throws Exception {
 		// finish computing message digest.
-<span class="fc" id="L149">		digestStream.flush();</span>
-<span class="fc" id="L150">		digest = digestStream.getMessageDigest().digest();</span>
-<span class="fc" id="L151">	}</span>
+<span class="fc" id="L158">		digestStream.flush();</span>
+<span class="fc" id="L159">		digest = digestStream.getMessageDigest().digest();</span>
+<span class="fc" id="L160">	}</span>
 
 	/**
 	 * Digest the link relation and href.
 	 */
 	public void onLink(ProductId id, String relation, URI href)
 			throws Exception {
-<span class="fc" id="L158">		digestStream.write(relation.getBytes(CHARSET));</span>
-<span class="fc" id="L159">		digestStream.write(href.toString().getBytes(CHARSET));</span>
-<span class="fc" id="L160">	}</span>
+<span class="fc" id="L167">		digestStream.write(relation.getBytes(CHARSET));</span>
+<span class="fc" id="L168">		digestStream.write(href.toString().getBytes(CHARSET));</span>
+<span class="fc" id="L169">	}</span>
 
 	/**
 	 * Digest the property name and value.
 	 */
 	public void onProperty(ProductId id, String name, String value)
 			throws Exception {
-<span class="fc" id="L167">		digestStream.write(name.getBytes(CHARSET));</span>
-<span class="fc" id="L168">		digestStream.write(value.getBytes(CHARSET));</span>
-<span class="fc" id="L169">	}</span>
+<span class="fc" id="L176">		digestStream.write(name.getBytes(CHARSET));</span>
+<span class="fc" id="L177">		digestStream.write(value.getBytes(CHARSET));</span>
+<span class="fc" id="L178">	}</span>
 
 	/**
 	 * Don't digest signature version.
@@ -174,7 +183,7 @@ public class ProductDigest implements ProductHandler {
 	@Override
 	public void onSignatureVersion(ProductId id, Version version) throws Exception {
 		// generating signature, ignore
-<span class="fc" id="L177">	}</span>
+<span class="fc" id="L186">	}</span>
 
 	/**
 	 * Don't digest the signature.
@@ -182,66 +191,71 @@ public class ProductDigest implements ProductHandler {
 	@Override
 	public void onSignature(ProductId id, String signature) throws Exception {
 		// generating signature, ignore
-<span class="fc" id="L185">	}</span>
+<span class="fc" id="L194">	}</span>
 
 	/**
 	 * Free any resources associated with this handler.
 	 */
 	@Override
 	public void close() {
-<span class="nc" id="L192">		StreamUtils.closeStream(digestStream);</span>
-<span class="nc" id="L193">	}</span>
+<span class="nc" id="L201">		StreamUtils.closeStream(digestStream);</span>
+<span class="nc" id="L202">	}</span>
 
 
+	/**
+	 * CLI access into ProductDigest
+	 * @param args CLI Args
+	 * @throws Exception if error occurs
+	 */
 	public static void main(final String[] args) throws Exception {
-<span class="nc bnc" id="L197" title="All 2 branches missed.">		if (args.length == 0) {</span>
-<span class="nc" id="L198">			System.err.println(&quot;Usage: ProductDigest FILE [FILE ...]&quot;);</span>
-<span class="nc" id="L199">			System.err</span>
-<span class="nc" id="L200">					.println(&quot;where FILE is a file or directory to include in digest&quot;);</span>
-<span class="nc" id="L201">			System.exit(1);</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">		if (args.length == 0) {</span>
+<span class="nc" id="L212">			System.err.println(&quot;Usage: ProductDigest FILE [FILE ...]&quot;);</span>
+<span class="nc" id="L213">			System.err</span>
+<span class="nc" id="L214">					.println(&quot;where FILE is a file or directory to include in digest&quot;);</span>
+<span class="nc" id="L215">			System.exit(1);</span>
 		}
 
-<span class="nc" id="L204">		Product product = new Product(new ProductId(&quot;test&quot;, &quot;test&quot;, &quot;test&quot;));</span>
+<span class="nc" id="L218">		Product product = new Product(new ProductId(&quot;test&quot;, &quot;test&quot;, &quot;test&quot;));</span>
 		try {
-<span class="nc" id="L206">			product.setTrackerURL(new URL(&quot;http://localhost/tracker&quot;));</span>
-<span class="nc" id="L207">		} catch (Exception e) {</span>
+<span class="nc" id="L220">			product.setTrackerURL(new URL(&quot;http://localhost/tracker&quot;));</span>
+<span class="nc" id="L221">		} catch (Exception e) {</span>
 			// ignore
-<span class="nc" id="L209">		}</span>
+<span class="nc" id="L223">		}</span>
 
 		// treat all arguments as files or directories to be added as content
-<span class="nc bnc" id="L212" title="All 2 branches missed.">		for (String arg : args) {</span>
-<span class="nc" id="L213">			File file = new File(arg);</span>
-<span class="nc bnc" id="L214" title="All 2 branches missed.">			if (!file.exists()) {</span>
-<span class="nc" id="L215">				System.err.println(file.getCanonicalPath() + &quot; does not exist&quot;);</span>
-<span class="nc" id="L216">				System.exit(1);</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">		for (String arg : args) {</span>
+<span class="nc" id="L227">			File file = new File(arg);</span>
+<span class="nc bnc" id="L228" title="All 2 branches missed.">			if (!file.exists()) {</span>
+<span class="nc" id="L229">				System.err.println(file.getCanonicalPath() + &quot; does not exist&quot;);</span>
+<span class="nc" id="L230">				System.exit(1);</span>
 			}
 
-<span class="nc bnc" id="L219" title="All 2 branches missed.">			if (file.isDirectory()) {</span>
-<span class="nc" id="L220">				product.getContents().putAll(</span>
-<span class="nc" id="L221">						FileContent.getDirectoryContents(file));</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">			if (file.isDirectory()) {</span>
+<span class="nc" id="L234">				product.getContents().putAll(</span>
+<span class="nc" id="L235">						FileContent.getDirectoryContents(file));</span>
 			} else {
-<span class="nc" id="L223">				product.getContents()</span>
-<span class="nc" id="L224">						.put(file.getName(), new FileContent(file));</span>
+<span class="nc" id="L237">				product.getContents()</span>
+<span class="nc" id="L238">						.put(file.getName(), new FileContent(file));</span>
 			}
 		}
 
-<span class="nc" id="L228">		long totalBytes = 0L;</span>
-<span class="nc" id="L229">		Iterator&lt;String&gt; iter = product.getContents().keySet().iterator();</span>
-<span class="nc bnc" id="L230" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
-<span class="nc" id="L231">			totalBytes += product.getContents().get(iter.next()).getLength();</span>
+<span class="nc" id="L242">		long totalBytes = 0L;</span>
+<span class="nc" id="L243">		Iterator&lt;String&gt; iter = product.getContents().keySet().iterator();</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L245">			totalBytes += product.getContents().get(iter.next()).getLength();</span>
 		}
 
-<span class="nc" id="L234">		KeyPair keyPair = CryptoUtils.generateDSAKeyPair(CryptoUtils.DSA_1024);</span>
-<span class="nc" id="L235">		Date start = new Date();</span>
-<span class="nc" id="L236">		product.sign(keyPair.getPrivate());</span>
-<span class="nc" id="L237">		Date end = new Date();</span>
-<span class="nc" id="L238">		long elapsed = (end.getTime() - start.getTime());</span>
+<span class="nc" id="L248">		KeyPair keyPair = CryptoUtils.generateDSAKeyPair(CryptoUtils.DSA_1024);</span>
+<span class="nc" id="L249">		Date start = new Date();</span>
+<span class="nc" id="L250">		product.sign(keyPair.getPrivate());</span>
+<span class="nc" id="L251">		Date end = new Date();</span>
+<span class="nc" id="L252">		long elapsed = (end.getTime() - start.getTime());</span>
 
-<span class="nc" id="L240">		System.err.println(&quot;Digested &quot; + totalBytes + &quot; bytes of content in &quot;</span>
+<span class="nc" id="L254">		System.err.println(&quot;Digested &quot; + totalBytes + &quot; bytes of content in &quot;</span>
 				+ elapsed + &quot;ms&quot;);
-<span class="nc" id="L242">		System.err.println(&quot;Average rate = &quot; + (totalBytes / (elapsed / 1000.0))</span>
+<span class="nc" id="L256">		System.err.println(&quot;Average rate = &quot; + (totalBytes / (elapsed / 1000.0))</span>
 				+ &quot; bytes/second&quot;);
-<span class="nc" id="L244">	}</span>
+<span class="nc" id="L258">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

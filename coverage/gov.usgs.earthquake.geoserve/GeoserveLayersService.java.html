@@ -31,7 +31,7 @@ public class GeoserveLayersService {
 
     /**
      * Create a service using a custom URL.
-     * 
+     *
      * @param endpointUrl layers service URL.
      *       Should contain the string &lt;code&gt;{type}&lt;/code&gt;,
      *       which is replaced during the #{@link #getLayer(String)}.
@@ -42,26 +42,32 @@ public class GeoserveLayersService {
 
     /**
      * Get the endpoint URL.
+     * @return endpoint URL
      */
     public String getEndpointURL() {
-<span class="nc" id="L47">        return this.endpointUrl;</span>
+<span class="nc" id="L48">        return this.endpointUrl;</span>
     }
 
     /**
      * Set the endpoint URL.
+     * @param url endpoint URL to set
      */
     public void setEndpointURL(final String url) {
-<span class="nc" id="L54">        this.endpointUrl = url;</span>
-<span class="nc" id="L55">    }</span>
+<span class="nc" id="L56">        this.endpointUrl = url;</span>
+<span class="nc" id="L57">    }</span>
 
     /**
      * Fetch and parse a JSON response from the Geoserve layers service.
+     * @param type type of response to fetch
+     * @return JSONObject response
+     * @throws IOException on IO error
+     * @throws MalformedURLException Error on URL failure
      */
     public JsonObject getLayer(final String type) throws IOException, MalformedURLException {
-<span class="fc" id="L61">        final URL url = new URL(endpointUrl.replace(&quot;{type}&quot;, type));</span>
-<span class="fc" id="L62">        try (InputStream in = StreamUtils.getInputStream(url)) {</span>
-<span class="fc" id="L63">            JsonObject json = Json.createReader(in).readObject();</span>
-<span class="fc" id="L64">            return json.getJsonObject(type);</span>
+<span class="fc" id="L67">        final URL url = new URL(endpointUrl.replace(&quot;{type}&quot;, type));</span>
+<span class="fc" id="L68">        try (InputStream in = StreamUtils.getInputStream(url)) {</span>
+<span class="fc" id="L69">            JsonObject json = Json.createReader(in).readObject();</span>
+<span class="fc" id="L70">            return json.getJsonObject(type);</span>
         }
     }
 

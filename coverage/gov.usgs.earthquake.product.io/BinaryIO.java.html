@@ -11,136 +11,231 @@ import java.util.Date;
 
 <span class="fc" id="L12">public class BinaryIO {</span>
 
+	/**
+	 * Writes an int to the OutputStream buffer
+	 * @param in an int to write
+	 * @param out the OutputStream
+	 * @throws IOException if IO error occurs
+	 */
 	public void writeInt(final int in, final OutputStream out)
 			throws IOException {
-<span class="fc" id="L16">		out.write(ByteBuffer.allocate(4).putInt(in).array());</span>
-<span class="fc" id="L17">	}</span>
+<span class="fc" id="L22">		out.write(ByteBuffer.allocate(4).putInt(in).array());</span>
+<span class="fc" id="L23">	}</span>
 
+	/**
+	 * Writes an long to the OutputStream buffer
+	 * @param in an long to write
+	 * @param out the OutputStream
+	 * @throws IOException if IO error occurs
+	 */
 	public void writeLong(final long in, final OutputStream out)
 			throws IOException {
-<span class="fc" id="L21">		out.write(ByteBuffer.allocate(8).putLong(in).array());</span>
-<span class="fc" id="L22">	}</span>
+<span class="fc" id="L33">		out.write(ByteBuffer.allocate(8).putLong(in).array());</span>
+<span class="fc" id="L34">	}</span>
 
+	/**
+	 * Writes an array of bytes to the OutputStream buffer
+	 * @param toWrite an array of bytes to write
+	 * @param out the OutputStream
+	 * @throws IOException if IO error occurs
+	 */
 	public void writeBytes(final byte[] toWrite, final OutputStream out)
 			throws IOException {
 		// length of string
-<span class="fc" id="L27">		writeInt(toWrite.length, out);</span>
+<span class="fc" id="L45">		writeInt(toWrite.length, out);</span>
 		// string
-<span class="fc" id="L29">		out.write(toWrite);</span>
-<span class="fc" id="L30">	}</span>
+<span class="fc" id="L47">		out.write(toWrite);</span>
+<span class="fc" id="L48">	}</span>
 
+	/**
+	 * Writes a string to the OutputStream buffer
+	 * @param toWrite a string to write
+	 * @param out the OutputStream
+	 * @throws IOException if IO error occurs
+	 */
 	public void writeString(final String toWrite, final OutputStream out)
 			throws IOException {
-<span class="fc" id="L34">		writeBytes(toWrite.getBytes(StandardCharsets.UTF_8), out);</span>
-<span class="fc" id="L35">	}</span>
+<span class="fc" id="L58">		writeBytes(toWrite.getBytes(StandardCharsets.UTF_8), out);</span>
+<span class="fc" id="L59">	}</span>
 
+	/**
+	 * Writes a date to the OutputStream buffer
+	 * @param toWrite a date to write
+	 * @param out the OutputStream
+	 * @throws IOException if IO error occurs
+	 */
 	public void writeDate(final Date toWrite, final OutputStream out)
 			throws IOException {
-<span class="fc" id="L39">		writeLong(toWrite.getTime(), out);</span>
-<span class="fc" id="L40">	}</span>
+<span class="fc" id="L69">		writeLong(toWrite.getTime(), out);</span>
+<span class="fc" id="L70">	}</span>
 
+	/**
+	 * Writes a long to the OutputStream buffer
+	 * @param length a long to write
+	 * @param in an input stream
+	 * @param out the OutputStream
+	 * @throws IOException if IO error occurs
+	 */
 	public void writeStream(final long length, final InputStream in,
 			final OutputStream out) throws IOException {
-<span class="fc" id="L44">		writeLong(length, out);</span>
+<span class="fc" id="L81">		writeLong(length, out);</span>
 
 		// transfer stream bytes
-<span class="fc" id="L47">		int read = -1;</span>
-<span class="fc" id="L48">		byte[] bytes = new byte[1024];</span>
+<span class="fc" id="L84">		int read = -1;</span>
+<span class="fc" id="L85">		byte[] bytes = new byte[1024];</span>
 		// read no more than length bytes
-<span class="fc bfc" id="L50" title="All 2 branches covered.">		while ((read = in.read(bytes)) != -1) {</span>
-<span class="fc" id="L51">			out.write(bytes, 0, read);</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">		while ((read = in.read(bytes)) != -1) {</span>
+<span class="fc" id="L88">			out.write(bytes, 0, read);</span>
 		}
-<span class="fc" id="L53">	}</span>
+<span class="fc" id="L90">	}</span>
 
+	/**
+	 * Reads 4 bytes from the InputStream
+	 * @param in InputStream
+	 * @return an int
+	 * @throws IOException if IO Error occurs
+	 */
 	public int readInt(final InputStream in) throws IOException {
-<span class="fc" id="L56">		byte[] buffer = new byte[4];</span>
-<span class="fc" id="L57">		readFully(buffer, in);</span>
-<span class="fc" id="L58">		return ByteBuffer.wrap(buffer).getInt();</span>
+<span class="fc" id="L99">		byte[] buffer = new byte[4];</span>
+<span class="fc" id="L100">		readFully(buffer, in);</span>
+<span class="fc" id="L101">		return ByteBuffer.wrap(buffer).getInt();</span>
 	}
 
+	/**
+	 * Reads 8 bytes from the InputStream
+	 * @param in InputStream
+	 * @return a long
+	 * @throws IOException if IO Error occurs
+	 */
 	public long readLong(final InputStream in) throws IOException {
-<span class="fc" id="L62">		byte[] buffer = new byte[8];</span>
-<span class="fc" id="L63">		readFully(buffer, in);</span>
-<span class="fc" id="L64">		return ByteBuffer.wrap(buffer).getLong();</span>
+<span class="fc" id="L111">		byte[] buffer = new byte[8];</span>
+<span class="fc" id="L112">		readFully(buffer, in);</span>
+<span class="fc" id="L113">		return ByteBuffer.wrap(buffer).getLong();</span>
 	}
 
+	/**
+	 * Reads a byte array from the InputStream
+	 * @param in InputStream
+	 * @return Byte[]
+	 * @throws IOException if IO Error occurs
+	 */
 	public byte[] readBytes(final InputStream in) throws IOException {
-<span class="nc" id="L68">		int length = readInt(in);</span>
-<span class="nc" id="L69">		byte[] buffer = new byte[length];</span>
-<span class="nc" id="L70">		readFully(buffer, in);</span>
-<span class="nc" id="L71">		return buffer;</span>
+<span class="nc" id="L123">		int length = readInt(in);</span>
+<span class="nc" id="L124">		byte[] buffer = new byte[length];</span>
+<span class="nc" id="L125">		readFully(buffer, in);</span>
+<span class="nc" id="L126">		return buffer;</span>
 	}
 
 
+	/**
+	 * Reads string from the InputStream
+	 * @param in InputStream
+	 * @return a string
+	 * @throws IOException if IO Error occurs
+	 */
 	public String readString(final InputStream in) throws IOException {
-<span class="fc" id="L76">		return this.readString(in, -1);</span>
+<span class="fc" id="L137">		return this.readString(in, -1);</span>
 	}
 
+	/**
+	 * Reads string with a max length from the InputStream
+	 * @param in InputStream
+	 * @param maxLength of string
+	 * @return an string
+	 * @throws IOException if IO Error occurs
+	 */
 	public String readString(final InputStream in, final int maxLength) throws IOException {
-<span class="fc" id="L80">		int length = readInt(in);</span>
-<span class="pc bpc" id="L81" title="1 of 4 branches missed.">		if (maxLength &gt; 0 &amp;&amp; length &gt; maxLength) {</span>
-<span class="nc" id="L82">			throw new IOException(&quot;request string length &quot; + length + &quot; greater than maxLength &quot; + maxLength);</span>
+<span class="fc" id="L148">		int length = readInt(in);</span>
+<span class="pc bpc" id="L149" title="1 of 4 branches missed.">		if (maxLength &gt; 0 &amp;&amp; length &gt; maxLength) {</span>
+<span class="nc" id="L150">			throw new IOException(&quot;request string length &quot; + length + &quot; greater than maxLength &quot; + maxLength);</span>
 		}
-<span class="fc" id="L84">		byte[] buffer = new byte[length];</span>
-<span class="fc" id="L85">		readFully(buffer, in);</span>
-<span class="fc" id="L86">		return new String(buffer, StandardCharsets.UTF_8);</span>
+<span class="fc" id="L152">		byte[] buffer = new byte[length];</span>
+<span class="fc" id="L153">		readFully(buffer, in);</span>
+<span class="fc" id="L154">		return new String(buffer, StandardCharsets.UTF_8);</span>
 	}
 
+	/**
+	 * Reads date from the InputStream
+	 * @param in InputStream
+	 * @return a date
+	 * @throws IOException if IO Error occurs
+	 */
 	public Date readDate(final InputStream in) throws IOException {
-<span class="fc" id="L90">		return new Date(readLong(in));</span>
+<span class="fc" id="L164">		return new Date(readLong(in));</span>
 	}
 
+	/**
+	 * Reads stream
+	 * @param in InputStream
+	 * @param out OutputStream
+	 * @throws IOException if IO Error occurs
+	 */
 	public void readStream(final InputStream in, final OutputStream out)
 			throws IOException {
-<span class="nc" id="L95">		long length = readLong(in);</span>
-<span class="nc" id="L96">		readStream(length, in, out);</span>
-<span class="nc" id="L97">	}</span>
+<span class="nc" id="L175">		long length = readLong(in);</span>
+<span class="nc" id="L176">		readStream(length, in, out);</span>
+<span class="nc" id="L177">	}</span>
 
+	/**
+	 * Function called by previous readStream
+	 * Used to read whole stream
+	 * @param length length of inputstream
+	 * @param in input stream
+	 * @param out output stream
+	 * @throws IOException if io error occurs
+	 */
 	public void readStream(final long length, final InputStream in,
 			final OutputStream out) throws IOException {
-<span class="fc" id="L101">		long remaining = length;</span>
+<span class="fc" id="L189">		long remaining = length;</span>
 
 		// transfer stream bytes, not going over total
-<span class="fc" id="L104">		int read = -1;</span>
-<span class="fc" id="L105">		byte[] bytes = new byte[1024];</span>
-<span class="fc" id="L106">		int readSize = bytes.length;</span>
+<span class="fc" id="L192">		int read = -1;</span>
+<span class="fc" id="L193">		byte[] bytes = new byte[1024];</span>
+<span class="fc" id="L194">		int readSize = bytes.length;</span>
 
-<span class="fc bfc" id="L108" title="All 2 branches covered.">		while (remaining &gt; 0) {</span>
-<span class="fc bfc" id="L109" title="All 2 branches covered.">			if (remaining &lt; readSize) {</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">		while (remaining &gt; 0) {</span>
+<span class="fc bfc" id="L197" title="All 2 branches covered.">			if (remaining &lt; readSize) {</span>
 				// don't read past end of stream
-<span class="fc" id="L111">				readSize = (int) remaining;</span>
+<span class="fc" id="L199">				readSize = (int) remaining;</span>
 			}
 
 			// read next chunk
-<span class="fc" id="L115">			read = in.read(bytes, 0, readSize);</span>
-<span class="pc bpc" id="L116" title="1 of 2 branches missed.">			if (read == -1) {</span>
+<span class="fc" id="L203">			read = in.read(bytes, 0, readSize);</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">			if (read == -1) {</span>
 				// shouldn't be at eof, since reading length specified in stream
-<span class="nc" id="L118">				throw new EOFException();</span>
+<span class="nc" id="L206">				throw new EOFException();</span>
 			}
 			// track how much has been read
-<span class="fc" id="L121">			remaining -= read;</span>
+<span class="fc" id="L209">			remaining -= read;</span>
 			// transfer to out stream
-<span class="fc" id="L123">			out.write(bytes, 0, read);</span>
+<span class="fc" id="L211">			out.write(bytes, 0, read);</span>
 		}
-<span class="fc" id="L125">	}</span>
+<span class="fc" id="L213">	}</span>
 
+	/**
+	 * Function used by other read funcs
+	 * Reads from input stream until buffer is full
+	 * @param buffer byte[]
+	 * @param in inputstream
+	 * @throws IOException if IO error occurs
+	 */
 	protected void readFully(final byte[] buffer, final InputStream in)
 			throws IOException {
-<span class="fc" id="L129">		int length = buffer.length;</span>
-<span class="fc" id="L130">		int totalRead = 0;</span>
-<span class="fc" id="L131">		int read = -1;</span>
+<span class="fc" id="L224">		int length = buffer.length;</span>
+<span class="fc" id="L225">		int totalRead = 0;</span>
+<span class="fc" id="L226">		int read = -1;</span>
 
-<span class="pc bpc" id="L133" title="1 of 2 branches missed.">		while ((read = in.read(buffer, totalRead, length - totalRead)) != -1) {</span>
-<span class="fc" id="L134">			totalRead += read;</span>
-<span class="fc bfc" id="L135" title="All 2 branches covered.">			if (totalRead == length) {</span>
-<span class="fc" id="L136">				break;</span>
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">		while ((read = in.read(buffer, totalRead, length - totalRead)) != -1) {</span>
+<span class="fc" id="L229">			totalRead += read;</span>
+<span class="fc bfc" id="L230" title="All 2 branches covered.">			if (totalRead == length) {</span>
+<span class="fc" id="L231">				break;</span>
 			}
 		}
 
-<span class="pc bpc" id="L140" title="1 of 2 branches missed.">		if (totalRead != length) {</span>
-<span class="nc" id="L141">			throw new IOException(&quot;EOF before buffer could be readFully, read=&quot; + totalRead + &quot;, expected=&quot; + length);</span>
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">		if (totalRead != length) {</span>
+<span class="nc" id="L236">			throw new IOException(&quot;EOF before buffer could be readFully, read=&quot; + totalRead + &quot;, expected=&quot; + length);</span>
 		}
-<span class="fc" id="L143">	}</span>
+<span class="fc" id="L238">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

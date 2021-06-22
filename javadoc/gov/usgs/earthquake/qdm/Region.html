@@ -134,7 +134,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <pre>public class <span class="typeNameLabel">Region</span>
 extends java.lang.Object</pre>
 <div class="block">A polygon without holes.
- 
+
  Points are assumed to use x=longitude, y=latitude.
  A "default" region has no boundary points, and contains all points.</div>
 </li>
@@ -160,17 +160,23 @@ extends java.lang.Object</pre>
 <tr class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#netid">netid</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">String for net id</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>java.util.ArrayList&lt;<a href="Point.html" title="class in gov.usgs.earthquake.qdm">Point</a>&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#points">points</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Arraylist of points</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#regionid">regionid</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">String for region id</div>
+</td>
 </tr>
 </table>
 </li>
@@ -192,7 +198,9 @@ extends java.lang.Object</pre>
 <tr class="altColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(java.lang.String,java.lang.String)">Region</a></span>&#8203;(java.lang.String&nbsp;netid,
       java.lang.String&nbsp;regionid)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Region constructor</div>
+</td>
 </tr>
 </table>
 </li>
@@ -252,6 +260,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>netid</h4>
 <pre>public&nbsp;java.lang.String netid</pre>
+<div class="block">String for net id</div>
 </li>
 </ul>
 <a id="regionid">
@@ -261,6 +270,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>regionid</h4>
 <pre>public&nbsp;java.lang.String regionid</pre>
+<div class="block">String for region id</div>
 </li>
 </ul>
 <a id="points">
@@ -270,6 +280,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>points</h4>
 <pre>public&nbsp;java.util.ArrayList&lt;<a href="Point.html" title="class in gov.usgs.earthquake.qdm">Point</a>&gt; points</pre>
+<div class="block">Arraylist of points</div>
 </li>
 </ul>
 </li>
@@ -290,6 +301,12 @@ extends java.lang.Object</pre>
 <h4>Region</h4>
 <pre>public&nbsp;Region&#8203;(java.lang.String&nbsp;netid,
               java.lang.String&nbsp;regionid)</pre>
+<div class="block">Region constructor</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>netid</code> - string</dd>
+<dd><code>regionid</code> - string</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -312,6 +329,12 @@ extends java.lang.Object</pre>
 <div class="block">Method to determine if this lat-lon in this region? In or out algorithm taken
  from an algorithm by Edwards and Coleman of Oak Ridge Lab, version for BNL by
  Benkovitz translated to C by Andy Michael and into Java by Alan Jones.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>xy</code> - point</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>bool if point is in region</dd>
+</dl>
 </li>
 </ul>
 </li>

@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.994s</div>
+<div class="counter">0.749s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,7 +79,7 @@
 </thead>
 <tr>
 <td class="success">associate()</td>
-<td class="success">0.994s</td>
+<td class="success">0.749s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -90,7 +90,7 @@
 <pre>FINER	thread=15	Evaluation of condition [org.junit.jupiter.engine.extension.DisabledCondition] on [public void gov.usgs.earthquake.indexer.MultipleSameSourceTest.associate() throws java.lang.Exception] resulted in: ConditionEvaluationResult [enabled = true, reason = '@Disabled is not present']
 
 ###
-Wed Feb 17 11:33:56 MST 2021
+Mon Jun 21 16:53:48 MDT 2021
 CONFIG	thread=15	[null] maxTries = 1
 CONFIG	thread=15	[null] maxTries = 1
 CONFIG	thread=15	[null] timeout = 0ms
@@ -100,14 +100,16 @@ CONFIG	thread=15	[null] concurrent products = 1
 CONFIG	thread=15	[null] process duplicates = false
 CONFIG	thread=15	[null] include paths = []
 CONFIG	thread=15	[null] exclude paths = []
-CONFIG	thread=15	[null] using storage directory 'C:\Users\jmfee\AppData\Local\Temp\multiple-same-source-test12313551834548543916\storage'
-CONFIG	thread=15	[null] using sqlite product index 'C:\Users\jmfee\AppData\Local\Temp\multiple-same-source-test12313551834548543916\productIndex.db'
+CONFIG	thread=15	[null] using storage directory 'C:\Users\jmfee\AppData\Local\Temp\multiple-same-source-test6138789369732540223\storage'
+CONFIG	thread=15	[null] using sqlite product index 'C:\Users\jmfee\AppData\Local\Temp\multiple-same-source-test6138789369732540223\productIndex.db'
 CONFIG	thread=15	[null] archive interval is '300000'
 CONFIG	thread=15	[null] no indexer modules configured.
 CONFIG	thread=15	[null] no indexer listeners configured.
 CONFIG	thread=15	[null] Local regions file: regions.json
 CONFIG	thread=15	[null] associateUsingCurrentProducts = false
-FINER	thread=236	[null] running listener cleanup
+FINER	thread=237	[null] running listener cleanup
+INFO	thread=202	[null] command 'echo --preferred-eventid=ncuno --preferred-eventsource=nc --preferred-eventsourcecode=uno --eventids=ncuno --preferred-magnitude=null --preferred-latitude=-0.899927005759539 --preferred-longitude=-0.899927005759539 --preferred-depth=null --preferred-eventtime=2021-06-21T22:53:47.036Z --type=testproduct --code=one --source=us --updateTime=2021-06-21T22:53:47.345Z --status=UPDATE --trackerURL=http://localhost/tracker/ &quot;--property-latitude=10.0&quot; &quot;--property-eventsourcecode=one&quot; &quot;--property-eventtime=2021-06-21T22:53:47.036Z&quot; &quot;--property-eventsource=us&quot; &quot;--property-version=two&quot; &quot;--property-longitude=10.0&quot; --action=EVENT_SPLIT' exited with status '0'
+INFO	thread=213	[null] command 'echo --preferred-eventid=usabcd1234 --preferred-eventsource=us --preferred-eventsourcecode=abcd1234 --eventids=usabcd1234 --preferred-magnitude=null --preferred-latitude=0.0 --preferred-longitude=0.0 --preferred-depth=null --preferred-eventtime=2021-06-21T22:53:47.551Z --action=EVENT_ARCHIVED' exited with status '0'
 FINEST	thread=15	[null] storing product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
 FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
 FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
@@ -123,7 +125,7 @@ FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:nc:or
 FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
 FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
 FINEST	thread=15	[null] stored product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
-FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nc:origin:nc72418635:1427489045050 in 59 ms
+FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nc:origin:nc72418635:1427489045050 in 26 ms
 FINER	thread=15	[null] summarizing product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
 FINER	thread=15	[null] indexing product id=urn:usgs-product:nc:origin:nc72418635:1427489045050
 FINEST	thread=15	[null] beginning index transaction
@@ -143,7 +145,6 @@ minEventLatitude=38.28457359424046075986183268469176255166530609130859375
 maxEventLatitude=40.08442960575953924013816731530823744833469390869140625
 minEventLongitude=-121.6035218119122
 maxEventLongitude=-119.2814727880878
-INFO	thread=202	[null] command 'echo --preferred-eventid=ncuno --preferred-eventsource=nc --preferred-eventsourcecode=uno --eventids=ncuno --preferred-magnitude=null --preferred-latitude=-0.899927005759539 --preferred-longitude=-0.899927005759539 --preferred-depth=null --preferred-eventtime=2021-02-17T18:33:54.729Z --type=testproduct --code=one --source=us --updateTime=2021-02-17T18:33:55.054Z --status=UPDATE --trackerURL=http://localhost/tracker/ &quot;--property-latitude=10.0&quot; &quot;--property-eventsourcecode=one&quot; &quot;--property-eventtime=2021-02-17T18:33:54.729Z&quot; &quot;--property-eventsource=us&quot; &quot;--property-version=two&quot; &quot;--property-longitude=10.0&quot; --action=EVENT_SPLIT' exited with status '0'
 FINER	thread=15	[null] adding summary to index
 FINEST	thread=15	[null] Added property magnitude-type:md for product 1
 FINEST	thread=15	[null] Added property origin-source:NC for product 1
@@ -194,7 +195,7 @@ FINER	thread=15	[null] committing transaction
 FINE	thread=15	[null] notifying listeners
 INFO	thread=15	[null] indexed product id=urn:usgs-product:nc:origin:nc72418635:1427489045050, status=UPDATE
 EVENT_ADDED null =&gt; nc72418635
-FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nc:origin:nc72418635:1427489045050 in 88 ms (0 ms sync delay)
+FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nc:origin:nc72418635:1427489045050 in 43 ms (0 ms sync delay)
 FINEST	thread=15	[null] storing product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
 FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
 FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
@@ -210,7 +211,7 @@ FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:nc:ph
 FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
 FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
 FINEST	thread=15	[null] stored product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
-FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050 in 43 ms
+FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050 in 31 ms
 FINER	thread=15	[null] summarizing product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
 FINER	thread=15	[null] indexing product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050
 FINEST	thread=15	[null] beginning index transaction
@@ -291,7 +292,7 @@ FINER	thread=15	[null] committing transaction
 FINE	thread=15	[null] notifying listeners
 INFO	thread=15	[null] indexed product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050, status=UPDATE
 EVENT_UPDATED nc72418635 =&gt; nc72418635
-FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050 in 68 ms (0 ms sync delay)
+FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nc:phase-data:nc72418635:1427489045050 in 52 ms (0 ms sync delay)
 FINEST	thread=15	[null] storing product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
 FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
 FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
@@ -307,7 +308,7 @@ FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:nn:or
 FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
 FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
 FINEST	thread=15	[null] stored product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
-FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nn:origin:nn00488363:1427492032529 in 37 ms
+FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nn:origin:nn00488363:1427492032529 in 28 ms
 FINER	thread=15	[null] summarizing product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
 FINER	thread=15	[null] indexing product id=urn:usgs-product:nn:origin:nn00488363:1427492032529
 FINEST	thread=15	[null] beginning index transaction
@@ -327,7 +328,6 @@ minEventLatitude=38.35007199424046075986183268469176255166530609130859375
 maxEventLatitude=40.14992800575953924013816731530823744833469390869140625
 minEventLongitude=-121.36870815357904
 maxEventLongitude=-119.04449184642095
-INFO	thread=211	[null] command 'echo --preferred-eventid=usabcd1234 --preferred-eventsource=us --preferred-eventsourcecode=abcd1234 --eventids=usabcd1234 --preferred-magnitude=null --preferred-latitude=0.0 --preferred-longitude=0.0 --preferred-depth=null --preferred-eventtime=2021-02-17T18:33:55.255Z --action=EVENT_ARCHIVED' exited with status '0'
 FINER	thread=15	[null] adding summary to index
 FINEST	thread=15	[null] Added property magnitude-type:ml for product 3
 FINEST	thread=15	[null] Added property origin-source:NN for product 3
@@ -397,7 +397,7 @@ FINER	thread=15	[null] committing transaction
 FINE	thread=15	[null] notifying listeners
 INFO	thread=15	[null] indexed product id=urn:usgs-product:nn:origin:nn00488363:1427492032529, status=UPDATE
 EVENT_UPDATED nc72418635 =&gt; nc72418635
-FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nn:origin:nn00488363:1427492032529 in 69 ms (0 ms sync delay)
+FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nn:origin:nn00488363:1427492032529 in 50 ms (0 ms sync delay)
 FINEST	thread=15	[null] storing product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
 FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
 FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
@@ -413,7 +413,7 @@ FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:nn:ph
 FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
 FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
 FINEST	thread=15	[null] stored product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
-FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529 in 40 ms
+FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529 in 27 ms
 FINER	thread=15	[null] summarizing product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
 FINER	thread=15	[null] indexing product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529
 FINEST	thread=15	[null] beginning index transaction
@@ -504,7 +504,7 @@ FINER	thread=15	[null] committing transaction
 FINE	thread=15	[null] notifying listeners
 INFO	thread=15	[null] indexed product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529, status=UPDATE
 EVENT_UPDATED nc72418635 =&gt; nc72418635
-FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529 in 70 ms (0 ms sync delay)
+FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529 in 50 ms (0 ms sync delay)
 FINEST	thread=15	[null] storing product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
 FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
 FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
@@ -520,7 +520,7 @@ FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:nn:or
 FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
 FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
 FINEST	thread=15	[null] stored product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
-FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nn:origin:nn00488363:1427492772035 in 36 ms
+FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nn:origin:nn00488363:1427492772035 in 27 ms
 FINER	thread=15	[null] summarizing product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
 FINER	thread=15	[null] indexing product id=urn:usgs-product:nn:origin:nn00488363:1427492772035
 FINEST	thread=15	[null] beginning index transaction
@@ -584,7 +584,7 @@ FINER	thread=15	[null] committing transaction
 FINE	thread=15	[null] notifying listeners
 INFO	thread=15	[null] indexed product id=urn:usgs-product:nn:origin:nn00488363:1427492772035, status=DELETE
 EVENT_UPDATED nc72418635 =&gt; nc72418635
-FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nn:origin:nn00488363:1427492772035 in 63 ms (0 ms sync delay)
+FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nn:origin:nn00488363:1427492772035 in 46 ms (0 ms sync delay)
 FINEST	thread=15	[null] storing product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
 FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
 FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
@@ -597,10 +597,11 @@ FINEST	thread=15	[null] acquiring read lock for product id=urn:usgs-product:nn:o
 FINEST	thread=15	[null] acquired read lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
 FINEST	thread=15	[null] releasing read lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
 FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
+Mon Jun 21 16:53:49 MDT 2021
 FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
 FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
 FINEST	thread=15	[null] stored product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
-FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nn:origin:nn00488366:1427492221309 in 39 ms
+FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nn:origin:nn00488366:1427492221309 in 26 ms
 FINER	thread=15	[null] summarizing product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
 FINER	thread=15	[null] indexing product id=urn:usgs-product:nn:origin:nn00488366:1427492221309
 FINEST	thread=15	[null] beginning index transaction
@@ -666,7 +667,7 @@ FINER	thread=15	[null] committing transaction
 FINE	thread=15	[null] notifying listeners
 INFO	thread=15	[null] indexed product id=urn:usgs-product:nn:origin:nn00488366:1427492221309, status=UPDATE
 EVENT_ADDED null =&gt; nn00488366
-FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nn:origin:nn00488366:1427492221309 in 68 ms (0 ms sync delay)
+FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nn:origin:nn00488366:1427492221309 in 48 ms (0 ms sync delay)
 FINEST	thread=15	[null] storing product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
 FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
 FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
@@ -682,7 +683,7 @@ FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:nn:ph
 FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
 FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
 FINEST	thread=15	[null] stored product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
-FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309 in 41 ms
+FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309 in 32 ms
 FINER	thread=15	[null] summarizing product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
 FINER	thread=15	[null] indexing product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309
 FINEST	thread=15	[null] beginning index transaction
@@ -759,7 +760,7 @@ FINER	thread=15	[null] committing transaction
 FINE	thread=15	[null] notifying listeners
 INFO	thread=15	[null] indexed product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309, status=UPDATE
 EVENT_UPDATED nn00488366 =&gt; nn00488366
-FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309 in 75 ms (0 ms sync delay)
+FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nn:phase-data:nn00488366:1427492221309 in 61 ms (0 ms sync delay)
 FINEST	thread=15	[null] storing product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
 FINEST	thread=15	[null] acquiring write lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
 FINEST	thread=15	[null] acquired write lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
@@ -775,7 +776,7 @@ FINEST	thread=15	[null] released read lock for product id=urn:usgs-product:nn:or
 FINEST	thread=15	[null] releasing write lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
 FINEST	thread=15	[null] released write lock for product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
 FINEST	thread=15	[null] stored product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
-FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nn:origin:nn00488366:1427492772081 in 30 ms
+FINE	thread=15	[null] indexer downloaded product id=urn:usgs-product:nn:origin:nn00488366:1427492772081 in 29 ms
 FINER	thread=15	[null] summarizing product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
 FINER	thread=15	[null] indexing product id=urn:usgs-product:nn:origin:nn00488366:1427492772081
 FINEST	thread=15	[null] beginning index transaction
@@ -823,11 +824,10 @@ FINER	thread=15	Products in event
 	status=DELETE, id=urn:usgs-product:nn:origin:nn00488366:1427492772081, eventid=nn00488366, latitude=null, longitude=null, time=null
 FINEST	thread=15	[null] Updated event properties in Product Index
 FINER	thread=15	[null] committing transaction
-FINER	thread=34	[null] running listener cleanup
 FINE	thread=15	[null] notifying listeners
 INFO	thread=15	[null] indexed product id=urn:usgs-product:nn:origin:nn00488366:1427492772081, status=DELETE
 EVENT_DELETED nn00488366 =&gt; nn00488366
-FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nn:origin:nn00488366:1427492772081 in 60 ms (0 ms sync delay)
+FINE	thread=15	[null] indexer processed product id=urn:usgs-product:nn:origin:nn00488366:1427492772081 in 50 ms (0 ms sync delay)
 FINE	thread=15	Eventindexid=1, eventid=nc72418635, latitude=39.1845016, longitude=-120.4424973, time=Fri Mar 27 14:42:30 MDT 2015, deleted=false
 FINER	thread=15	Products in event
 	status=UPDATE, id=urn:usgs-product:nn:phase-data:nn00488363:1427492032529, eventid=nn00488363, latitude=39.25, longitude=-120.2066, time=Fri Mar 27 14:42:30 MDT 2015
@@ -849,7 +849,7 @@ FINER	thread=15	Products in event
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 6.7.1</a> at Feb 17, 2021, 11:35:07 AM</p>
+<a href="http://www.gradle.org">Gradle 7.0</a> at Jun 21, 2021, 4:54:38 PM</p>
 </div>
 </div>
 </body>

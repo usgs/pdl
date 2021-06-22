@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 
 /**
  * Utilities for associating events.
- * 
+ *
  * Based on the QDM EQEventsUtils class.
  */
 <span class="fc" id="L23">public class DefaultAssociator implements Associator {</span>
@@ -38,10 +38,10 @@ import java.util.logging.Logger;
 
 	/**
 	 * Distance between related events latitude, in degrees.
-	 * 
+	 *
 	 * This is based on the max number of kilometers per degree, and provides
 	 * the maximum latitude separation (assuming events share a longitude).
-	 * 
+	 *
 	 * Used as a pre-filter before more expensive checks.
 	 */
 <span class="fc" id="L47">	public static final BigDecimal LOCATION_DIFF_DEGREES = new BigDecimal(</span>
@@ -76,7 +76,7 @@ import java.util.logging.Logger;
 
 	/**
 	 * Choose and return the most closely associated event.
-	 * 
+	 *
 	 * @param events
 	 *            a list of candidate events.
 	 * @param summary
@@ -174,9 +174,9 @@ import java.util.logging.Logger;
 	 * parameter from the product parameter, normalizing between 1 and -1, then
 	 * calculating the Euclidean distance in the 3D space composed of the
 	 * normalized lat, lon, and time vectors.
-	 * 
-	 * @param summary
-	 * @param events
+	 *
+	 * @param summary ProductSummary to compare events with
+	 * @param events List of events
 	 * @return Event with lowest distance
 	 */
 	protected Event chooseMostSimilar(ProductSummary summary, List&lt;Event&gt; events) {
@@ -242,7 +242,7 @@ import java.util.logging.Logger;
 
 	/**
 	 * Check if two events are associated to each other.
-	 * 
+	 *
 	 * Reasons events may be considered disassociated:
 	 * &lt;ol&gt;
 	 * &lt;li&gt;Share a common EVENTSOURCE with different EVENTSOURCECODE.&lt;/li&gt;
@@ -250,14 +250,14 @@ import java.util.logging.Logger;
 	 * &lt;li&gt;Preferred location in space and time is NOT nearby, and no other
 	 * reason to associate.&lt;/li&gt;
 	 * &lt;/ol&gt;
-	 * 
+	 *
 	 * Reasons events may be considered associated:
 	 * &lt;ol&gt;
 	 * &lt;li&gt;Share a common EVENTID&lt;/li&gt;
 	 * &lt;li&gt;Either has an associate product for the other.&lt;/li&gt;
 	 * &lt;li&gt;Their preferred location in space and time is nearby.&lt;/li&gt;
 	 * &lt;/ol&gt;
-	 * 
+	 *
 	 * @param event1
 	 *            candidate event to test.
 	 * @param event2
@@ -362,7 +362,7 @@ import java.util.logging.Logger;
 
 	/**
 	 * Build a ProductIndexQuery that searches based on event id.
-	 * 
+	 *
 	 * @param eventSource
 	 *            the eventSource to search
 	 * @param eventCode
@@ -395,8 +395,8 @@ import java.util.logging.Logger;
 
 	/**
 	 * Build a ProductIndexQuery that searches based on location.
-	 * 
-	 * 
+	 *
+	 *
 	 * @param time
 	 *            the time to search around.
 	 * @param latitude
@@ -468,7 +468,7 @@ import java.util.logging.Logger;
 
 	/**
 	 * Check if a location would be matched by a ProductIndexQuery.
-	 * 
+	 *
 	 * @param query
 	 *            location query
 	 * @param time

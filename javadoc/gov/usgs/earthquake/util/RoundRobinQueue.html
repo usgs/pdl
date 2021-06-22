@@ -147,7 +147,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 extends java.lang.Object
 implements java.util.Queue&lt;T&gt;</pre>
 <div class="block">An abstract base class for round-robin queueing.
- 
+
  Sub classes should implement the <a href="#getQueueId(T)"><code>getQueueId(Object)</code></a> to control how
  objects are added to queues.</div>
 </li>
@@ -374,14 +374,14 @@ implements java.util.Queue&lt;T&gt;</pre>
 <h4>RoundRobinQueue</h4>
 <pre>public&nbsp;RoundRobinQueue&#8203;(<a href="RoundRobinQueue.html" title="class in gov.usgs.earthquake.util">RoundRobinQueue</a>&lt;<a href="RoundRobinQueue.html" title="type parameter in RoundRobinQueue">T</a>&gt;&nbsp;that)</pre>
 <div class="block">Deep copy of another RoundRobinQueue.
- 
+
  This method is used for semi-destructive iteration methods.
- 
+
  NOTE: this assumes <a href="#getQueueId(T)"><code>getQueueId(Object)</code></a> behaves the same for this
  and that.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>that</code> - </dd>
+<dd><code>that</code> - a RoundRobinQueue to make a deep copy of</dd>
 </dl>
 </li>
 </ul>
@@ -639,7 +639,7 @@ implements java.util.Queue&lt;T&gt;</pre>
 <h4>toList</h4>
 <pre class="methodSignature">public&nbsp;java.util.List&lt;<a href="RoundRobinQueue.html" title="type parameter in RoundRobinQueue">T</a>&gt;&nbsp;toList()</pre>
 <div class="block">Flatten queue to a list.
- 
+
  Creates a copy (see <a href="#%3Cinit%3E(gov.usgs.earthquake.util.RoundRobinQueue)"><code>RoundRobinQueue(RoundRobinQueue)</code></a>, then
  builds list by polling until it is empty.</div>
 <dl>

@@ -437,7 +437,7 @@ implements <a href="Content.html" title="interface in gov.usgs.earthquake.produc
 <div class="block">Set the content length.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>length</code> - </dd>
+<dd><code>length</code> - long to set</dd>
 </dl>
 </li>
 </ul>
@@ -456,7 +456,7 @@ implements <a href="Content.html" title="interface in gov.usgs.earthquake.produc
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>base64 encoded sha256 of content bytes.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -472,8 +472,10 @@ implements <a href="Content.html" title="interface in gov.usgs.earthquake.produc
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>computeIfMissing</code> - Use getInputStream to generate hash if missing.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>sha256 string</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -487,7 +489,7 @@ implements <a href="Content.html" title="interface in gov.usgs.earthquake.produc
 <div class="block">Set the sha256 hash of content.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>sha256</code> - </dd>
+<dd><code>sha256</code> - to set</dd>
 </dl>
 </li>
 </ul>

@@ -64,19 +64,20 @@ public class HeartbeatListener extends DefaultNotificationListener {
 	 * Create a new HeartbeatListener.
 	 *
 	 * Sets up the includeTypes list to contain &quot;heartbeat&quot;.
+	 * @throws Exception if error occurs
 	 */
-<span class="fc" id="L68">	public HeartbeatListener() throws Exception {</span>
-<span class="fc" id="L69">		LISTENING = true;</span>
-<span class="fc" id="L70">		heartbeatFile = new File(DEFAULT_HEARTBEAT_FILENAME);</span>
-<span class="fc" id="L71">		storageTimeout = Long.valueOf(DEFAULT_STORAGE_TIMEOUT);</span>
-<span class="fc" id="L72">		this.getIncludeTypes().add(&quot;heartbeat&quot;);</span>
-<span class="fc" id="L73">	}</span>
+<span class="fc" id="L69">	public HeartbeatListener() throws Exception {</span>
+<span class="fc" id="L70">		LISTENING = true;</span>
+<span class="fc" id="L71">		heartbeatFile = new File(DEFAULT_HEARTBEAT_FILENAME);</span>
+<span class="fc" id="L72">		storageTimeout = Long.valueOf(DEFAULT_STORAGE_TIMEOUT);</span>
+<span class="fc" id="L73">		this.getIncludeTypes().add(&quot;heartbeat&quot;);</span>
+<span class="fc" id="L74">	}</span>
 
 	/**
 	 * @return map of component and heartbeat status.
 	 */
 	protected static Map&lt;String, HeartbeatStatus&gt; getHeartbeats() {
-<span class="fc" id="L79">		return HASH_HEARTBEATS;</span>
+<span class="fc" id="L80">		return HASH_HEARTBEATS;</span>
 	}
 
 	/**
@@ -86,82 +87,82 @@ public class HeartbeatListener extends DefaultNotificationListener {
 	public void onProduct(final Product product) throws Exception {
 
 		// track product
-<span class="nc" id="L89">		sendHeartbeatMessage(this.getName(), &quot;lastHeartbeat&quot;, product.getId()</span>
-<span class="nc" id="L90">				.toString());</span>
+<span class="nc" id="L90">		sendHeartbeatMessage(this.getName(), &quot;lastHeartbeat&quot;, product.getId()</span>
+<span class="nc" id="L91">				.toString());</span>
 
 		// track current memory usage
-<span class="nc" id="L93">		MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();</span>
-<span class="nc" id="L94">		MemoryUsage heapMemory = memoryMXBean.getHeapMemoryUsage();</span>
-<span class="nc" id="L95">		MemoryUsage nonHeapMemory = memoryMXBean.getNonHeapMemoryUsage();</span>
+<span class="nc" id="L94">		MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();</span>
+<span class="nc" id="L95">		MemoryUsage heapMemory = memoryMXBean.getHeapMemoryUsage();</span>
+<span class="nc" id="L96">		MemoryUsage nonHeapMemory = memoryMXBean.getNonHeapMemoryUsage();</span>
 
-<span class="nc" id="L97">		long heapUsed = heapMemory.getUsed();</span>
-<span class="nc" id="L98">		long nonHeapUsed = nonHeapMemory.getUsed();</span>
-<span class="nc" id="L99">		long heapCommitted = heapMemory.getCommitted();</span>
-<span class="nc" id="L100">		long nonHeapCommitted = nonHeapMemory.getCommitted();</span>
-<span class="nc" id="L101">		long heapMax = heapMemory.getMax();</span>
-<span class="nc" id="L102">		long nonHeapMax = nonHeapMemory.getMax();</span>
-<span class="nc" id="L103">		long totalUsed = heapUsed + nonHeapUsed;</span>
-<span class="nc" id="L104">		long totalCommitted = heapCommitted + nonHeapCommitted;</span>
-<span class="nc" id="L105">		long totalMax = heapMax + nonHeapMax;</span>
+<span class="nc" id="L98">		long heapUsed = heapMemory.getUsed();</span>
+<span class="nc" id="L99">		long nonHeapUsed = nonHeapMemory.getUsed();</span>
+<span class="nc" id="L100">		long heapCommitted = heapMemory.getCommitted();</span>
+<span class="nc" id="L101">		long nonHeapCommitted = nonHeapMemory.getCommitted();</span>
+<span class="nc" id="L102">		long heapMax = heapMemory.getMax();</span>
+<span class="nc" id="L103">		long nonHeapMax = nonHeapMemory.getMax();</span>
+<span class="nc" id="L104">		long totalUsed = heapUsed + nonHeapUsed;</span>
+<span class="nc" id="L105">		long totalCommitted = heapCommitted + nonHeapCommitted;</span>
+<span class="nc" id="L106">		long totalMax = heapMax + nonHeapMax;</span>
 
-<span class="nc" id="L107">		sendHeartbeatMessage(this.getName(), &quot;totalUsed&quot;, Long</span>
-<span class="nc" id="L108">				.toString(totalUsed));</span>
-<span class="nc" id="L109">		sendHeartbeatMessage(this.getName(), &quot;totalCommitted&quot;, Long</span>
-<span class="nc" id="L110">				.toString(totalCommitted));</span>
-<span class="nc" id="L111">		sendHeartbeatMessage(this.getName(), &quot;totalMax&quot;, Long</span>
-<span class="nc" id="L112">				.toString(totalMax));</span>
+<span class="nc" id="L108">		sendHeartbeatMessage(this.getName(), &quot;totalUsed&quot;, Long</span>
+<span class="nc" id="L109">				.toString(totalUsed));</span>
+<span class="nc" id="L110">		sendHeartbeatMessage(this.getName(), &quot;totalCommitted&quot;, Long</span>
+<span class="nc" id="L111">				.toString(totalCommitted));</span>
+<span class="nc" id="L112">		sendHeartbeatMessage(this.getName(), &quot;totalMax&quot;, Long</span>
+<span class="nc" id="L113">				.toString(totalMax));</span>
 
 		// write heartbeat information to file
-<span class="nc" id="L115">		this.writeHeartbeat();</span>
+<span class="nc" id="L116">		this.writeHeartbeat();</span>
 
-<span class="nc" id="L117">	}</span>
+<span class="nc" id="L118">	}</span>
 
 	/**
 	 * Send heartbeat data to heartbeat listener
 	 *
-	 * @param component
-	 * @param key
-	 * @param value
+	 * @param component String component
+	 * @param key Heartbeat key
+	 * @param value Heartbeat value
 	 */
 	public static void sendHeartbeatMessage(final String component,
 			final String key, final String value) {
 
-<span class="fc bfc" id="L129" title="All 2 branches covered.">		if (!LISTENING) {</span>
-<span class="fc" id="L130">			return;</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">		if (!LISTENING) {</span>
+<span class="fc" id="L131">			return;</span>
 		}
 		HeartbeatStatus objHeartbeat;
 
-<span class="fc" id="L134">		String heartbeatKey = component;</span>
-<span class="fc bfc" id="L135" title="All 2 branches covered.">		if (heartbeatKey == null) {</span>
-<span class="fc" id="L136">			heartbeatKey = &quot;&lt;null&gt;&quot;;</span>
+<span class="fc" id="L135">		String heartbeatKey = component;</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">		if (heartbeatKey == null) {</span>
+<span class="fc" id="L137">			heartbeatKey = &quot;&lt;null&gt;&quot;;</span>
 		}
 
 		// register this heartbeat in temporary storage
-<span class="fc bfc" id="L140" title="All 2 branches covered.">		if (HASH_HEARTBEATS.containsKey(heartbeatKey)) {</span>
-<span class="fc" id="L141">			objHeartbeat = HASH_HEARTBEATS.get(heartbeatKey);</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">		if (HASH_HEARTBEATS.containsKey(heartbeatKey)) {</span>
+<span class="fc" id="L142">			objHeartbeat = HASH_HEARTBEATS.get(heartbeatKey);</span>
 		} else {
-<span class="fc" id="L143">			objHeartbeat = new HeartbeatStatus();</span>
-<span class="fc" id="L144">			HASH_HEARTBEATS.put(heartbeatKey, objHeartbeat);</span>
+<span class="fc" id="L144">			objHeartbeat = new HeartbeatStatus();</span>
+<span class="fc" id="L145">			HASH_HEARTBEATS.put(heartbeatKey, objHeartbeat);</span>
 		}
 
 		// store the heartbeat key/value in temporary storage
-<span class="fc" id="L148">		objHeartbeat.updateStatus(key, value);</span>
-<span class="fc" id="L149">	}</span>
+<span class="fc" id="L149">		objHeartbeat.updateStatus(key, value);</span>
+<span class="fc" id="L150">	}</span>
 
 	/**
 	 * Write heartbeat data for all components to the heartbeat file
 	 *
 	 * @return true
-	 * @throws IOException
+	 * @throws IOException if IO error occurs
 	 */
 	public boolean writeHeartbeat() throws IOException {
-<span class="fc" id="L158">		String tempFileName = heartbeatFile.getName() + &quot;-temp&quot;;</span>
-<span class="fc" id="L159">		File tempFile = new File(tempFileName);</span>
+<span class="fc" id="L159">		String tempFileName = heartbeatFile.getName() + &quot;-temp&quot;;</span>
+<span class="fc" id="L160">		File tempFile = new File(tempFileName);</span>
 
-<span class="fc" id="L161">		gov.usgs.util.FileUtils.writeFileThenMove(tempFile, heartbeatFile, this</span>
-<span class="fc" id="L162">				.formatHeartbeatOutput().getBytes());</span>
+<span class="fc" id="L162">		gov.usgs.util.FileUtils.writeFileThenMove(tempFile, heartbeatFile, this</span>
+<span class="fc" id="L163">				.formatHeartbeatOutput().getBytes());</span>
 
-<span class="fc" id="L164">		return true;</span>
+<span class="fc" id="L165">		return true;</span>
 	}
 
 	/**
@@ -170,29 +171,29 @@ public class HeartbeatListener extends DefaultNotificationListener {
 	@Override
 	public void configure(Config config) throws Exception {
 		// let default notification listener configure itself
-<span class="fc" id="L173">		super.configure(config);</span>
+<span class="fc" id="L174">		super.configure(config);</span>
 
-<span class="fc" id="L175">		heartbeatFile = new File(config.getProperty(</span>
+<span class="fc" id="L176">		heartbeatFile = new File(config.getProperty(</span>
 				HEARTBEAT_FILENAME_PROPERTY, DEFAULT_HEARTBEAT_FILENAME));
-<span class="fc" id="L177">		LOGGER.config(&quot;[&quot; + getName() + &quot;] heartbeat file = &quot;</span>
-<span class="fc" id="L178">				+ heartbeatFile.getCanonicalPath());</span>
+<span class="fc" id="L178">		LOGGER.config(&quot;[&quot; + getName() + &quot;] heartbeat file = &quot;</span>
+<span class="fc" id="L179">				+ heartbeatFile.getCanonicalPath());</span>
 
-<span class="fc" id="L180">		storageTimeout = Long.valueOf(config.getProperty(</span>
+<span class="fc" id="L181">		storageTimeout = Long.valueOf(config.getProperty(</span>
 				HEARTBEAT_TIMEOUT_PROPERTY, DEFAULT_STORAGE_TIMEOUT));
-<span class="fc" id="L182">		LOGGER.config(&quot;[&quot; + getName() + &quot;] heartbeat timeout = &quot;</span>
+<span class="fc" id="L183">		LOGGER.config(&quot;[&quot; + getName() + &quot;] heartbeat timeout = &quot;</span>
 				+ storageTimeout + &quot;ms&quot;);
-<span class="fc" id="L184">	}</span>
+<span class="fc" id="L185">	}</span>
 
 	/**
 	 * @return JSON-formatted output from the map of components and their values
 	 */
 	public String formatHeartbeatOutput() {
-<span class="fc" id="L190">		JsonObjectBuilder builder = Json.createObjectBuilder();</span>
-<span class="fc bfc" id="L191" title="All 2 branches covered.">		for (String key : HASH_HEARTBEATS.keySet()) {</span>
-<span class="fc" id="L192">			HeartbeatStatus status = HASH_HEARTBEATS.get(key);</span>
-<span class="pc bpc" id="L193" title="1 of 2 branches missed.">			builder.add(key, status == null ? null : status.toJsonObject());</span>
-<span class="fc" id="L194">		}</span>
-<span class="fc" id="L195">		return builder.build().toString();</span>
+<span class="fc" id="L191">		JsonObjectBuilder builder = Json.createObjectBuilder();</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">		for (String key : HASH_HEARTBEATS.keySet()) {</span>
+<span class="fc" id="L193">			HeartbeatStatus status = HASH_HEARTBEATS.get(key);</span>
+<span class="pc bpc" id="L194" title="1 of 2 branches missed.">			builder.add(key, status == null ? null : status.toJsonObject());</span>
+<span class="fc" id="L195">		}</span>
+<span class="fc" id="L196">		return builder.build().toString();</span>
 	}
 
 	/**
@@ -200,52 +201,56 @@ public class HeartbeatListener extends DefaultNotificationListener {
 	 * heartbeats
 	 */
 	public void cleanup() {
-<span class="fc" id="L203">		super.cleanup();</span>
+<span class="fc" id="L204">		super.cleanup();</span>
 
-<span class="pc bpc" id="L205" title="1 of 2 branches missed.">		if (this.storageTimeout == 0) {</span>
-<span class="nc" id="L206">			return;</span>
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">		if (this.storageTimeout == 0) {</span>
+<span class="nc" id="L207">			return;</span>
 		}
 
-<span class="fc" id="L209">		Map&lt;String, HeartbeatStatus&gt; hashHeartbeats = getHeartbeats();</span>
+<span class="fc" id="L210">		Map&lt;String, HeartbeatStatus&gt; hashHeartbeats = getHeartbeats();</span>
 		HeartbeatStatus objHeartbeat;
 		String component;
-<span class="fc" id="L212">		Iterator&lt;String&gt; itComponents = hashHeartbeats.keySet().iterator();</span>
-<span class="fc" id="L213">		Date purgeDate = new Date(new Date().getTime() - this.storageTimeout);</span>
+<span class="fc" id="L213">		Iterator&lt;String&gt; itComponents = hashHeartbeats.keySet().iterator();</span>
+<span class="fc" id="L214">		Date purgeDate = new Date(new Date().getTime() - this.storageTimeout);</span>
 
 		// iterate through map of components
-<span class="fc bfc" id="L216" title="All 2 branches covered.">		while (itComponents.hasNext()) {</span>
-<span class="fc" id="L217">			component = itComponents.next();</span>
+<span class="fc bfc" id="L217" title="All 2 branches covered.">		while (itComponents.hasNext()) {</span>
+<span class="fc" id="L218">			component = itComponents.next();</span>
 
 			// purge old key/value entries within objHeartbeat
-<span class="fc" id="L220">			objHeartbeat = hashHeartbeats.get(component);</span>
-<span class="fc" id="L221">			objHeartbeat.clearDataOlderThanDate(purgeDate);</span>
+<span class="fc" id="L221">			objHeartbeat = hashHeartbeats.get(component);</span>
+<span class="fc" id="L222">			objHeartbeat.clearDataOlderThanDate(purgeDate);</span>
 
 			// if purge has left a objHeartheat with no remaining key/value
 			// entries,
 			// remove the objHeartbeat (i.e. the component)
-<span class="fc bfc" id="L226" title="All 2 branches covered.">			if (objHeartbeat.isEmpty()) {</span>
-<span class="fc" id="L227">				itComponents.remove();</span>
+<span class="fc bfc" id="L227" title="All 2 branches covered.">			if (objHeartbeat.isEmpty()) {</span>
+<span class="fc" id="L228">				itComponents.remove();</span>
 			}
 
 		} // END while more components
 
-<span class="fc" id="L232">	}</span>
+<span class="fc" id="L233">	}</span>
 
+	/** @return heartbeatFile */
 	public File getHeartbeatFile() {
-<span class="nc" id="L235">		return heartbeatFile;</span>
+<span class="nc" id="L237">		return heartbeatFile;</span>
 	}
 
+	/** @param heartbeatFile to set */
 	public void setHeartbeatFile(File heartbeatFile) {
-<span class="nc" id="L239">		this.heartbeatFile = heartbeatFile;</span>
-<span class="nc" id="L240">	}</span>
+<span class="nc" id="L242">		this.heartbeatFile = heartbeatFile;</span>
+<span class="nc" id="L243">	}</span>
 
+	/** @return storageTimeout */
 	public long getStorageTimeout() {
-<span class="nc" id="L243">		return storageTimeout;</span>
+<span class="nc" id="L247">		return storageTimeout;</span>
 	}
 
+	/** @param storageTimeout to set */
 	public void setStorageTimeout(long storageTimeout) {
-<span class="nc" id="L247">		this.storageTimeout = storageTimeout;</span>
-<span class="nc" id="L248">	}</span>
+<span class="nc" id="L252">		this.storageTimeout = storageTimeout;</span>
+<span class="nc" id="L253">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

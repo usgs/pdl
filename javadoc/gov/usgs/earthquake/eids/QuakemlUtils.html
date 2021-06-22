@@ -371,8 +371,9 @@ extends java.lang.Object</pre>
  scenario event.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>eventParameters</code> - </dd>
+<dd><code>eventParameters</code> - to find event from</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
+<dd>first event</dd>
 </dl>
 </li>
 </ul>
@@ -386,7 +387,7 @@ extends java.lang.Object</pre>
 <div class="block">Find the preferred Origin in an Event.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>event</code> - </dd>
+<dd><code>event</code> - event</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Origin with publicID equal to event.getPreferredOriginID(), or null
          if not found.</dd>
@@ -475,7 +476,7 @@ extends java.lang.Object</pre>
  of list) value that is not null.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>infos</code> - </dd>
+<dd><code>infos</code> - to flatten</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a CreationInfo object with the most specific properties (later in
          arguments list), which may be null.</dd>
@@ -491,7 +492,7 @@ extends java.lang.Object</pre>
 <pre class="methodSignature">public static&nbsp;java.math.BigDecimal&nbsp;getValue&#8203;(org.quakeml_1_2.RealQuantity&nbsp;value)</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>value</code> - </dd>
+<dd><code>value</code> - RealQuantity</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>value.getValue(), or null if value == null.</dd>
 </dl>
@@ -506,7 +507,7 @@ extends java.lang.Object</pre>
 <pre class="methodSignature">public static&nbsp;java.math.BigInteger&nbsp;getValue&#8203;(org.quakeml_1_2.IntegerQuantity&nbsp;value)</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>value</code> - </dd>
+<dd><code>value</code> - IntegerQuantity</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>value.getValue(), or null if value == null.</dd>
 </dl>
@@ -521,7 +522,7 @@ extends java.lang.Object</pre>
 <pre class="methodSignature">public static&nbsp;java.util.Date&nbsp;getValue&#8203;(org.quakeml_1_2.TimeQuantity&nbsp;value)</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>value</code> - </dd>
+<dd><code>value</code> - TimeQuantity</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>value.getValue(), or null if value == null.</dd>
 </dl>
@@ -534,6 +535,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getMagnitudeType</h4>
 <pre class="methodSignature">public static&nbsp;java.lang.String&nbsp;getMagnitudeType&#8203;(java.lang.String&nbsp;magnitudeType)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>magnitudeType</code> - to return</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>MagntitudeType string</dd>
+</dl>
 </li>
 </ul>
 <a id="hasPhaseData(org.quakeml_1_2.Event)">
@@ -631,7 +638,7 @@ extends java.lang.Object</pre>
  omits anies, events, and other attributes.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>oldEventParameters</code> - </dd>
+<dd><code>oldEventParameters</code> - to copy</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a new EventParameters object.</dd>
 </dl>
@@ -650,7 +657,7 @@ extends java.lang.Object</pre>
  other attributes, picks, preferred*ID, and station magnitudes.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>oldEvent</code> - </dd>
+<dd><code>oldEvent</code> - to copy</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a new Event object.</dd>
 </dl>
@@ -668,7 +675,7 @@ extends java.lang.Object</pre>
  omits anies, arrivals, and other attributes.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>oldOrigin</code> - </dd>
+<dd><code>oldOrigin</code> - to copy</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a new Origin object.</dd>
 </dl>
@@ -686,7 +693,7 @@ extends java.lang.Object</pre>
  omits anies, other attributes, and station magnitude contributions.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>oldMagnitude</code> - </dd>
+<dd><code>oldMagnitude</code> - to copy</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a new Magnitude object.</dd>
 </dl>
@@ -704,7 +711,7 @@ extends java.lang.Object</pre>
  omits anies, other attributes.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>oldMech</code> - </dd>
+<dd><code>oldMech</code> - to copy</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a new FocalMechanism object.</dd>
 </dl>

@@ -155,17 +155,23 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E()">ProductKeyChain</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Empty constructor</div>
+</td>
 </tr>
 <tr class="rowColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(java.lang.String,gov.usgs.util.Config)">ProductKeyChain</a></span>&#8203;(java.lang.String&nbsp;keys,
                <a href="../../util/Config.html" title="class in gov.usgs.util">Config</a>&nbsp;config)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Constructor for a string of keys</div>
+</td>
 </tr>
 <tr class="altColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(java.util.List,gov.usgs.util.Config)">ProductKeyChain</a></span>&#8203;(java.util.List&lt;java.lang.String&gt;&nbsp;keys,
                <a href="../../util/Config.html" title="class in gov.usgs.util">Config</a>&nbsp;config)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Constructor for list of keys</div>
+</td>
 </tr>
 </table>
 </li>
@@ -228,6 +234,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>ProductKeyChain</h4>
 <pre>public&nbsp;ProductKeyChain()</pre>
+<div class="block">Empty constructor</div>
 </li>
 </ul>
 <a id="&lt;init&gt;(java.lang.String,gov.usgs.util.Config)">
@@ -239,9 +246,13 @@ extends java.lang.Object</pre>
 <pre>public&nbsp;ProductKeyChain&#8203;(java.lang.String&nbsp;keys,
                        <a href="../../util/Config.html" title="class in gov.usgs.util">Config</a>&nbsp;config)
                 throws java.lang.Exception</pre>
+<div class="block">Constructor for a string of keys</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>keys</code> - String of keys, separated by commas</dd>
+<dd><code>config</code> - Config file</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -254,9 +265,13 @@ extends java.lang.Object</pre>
 <pre>public&nbsp;ProductKeyChain&#8203;(java.util.List&lt;java.lang.String&gt;&nbsp;keys,
                        <a href="../../util/Config.html" title="class in gov.usgs.util">Config</a>&nbsp;config)
                 throws java.lang.Exception</pre>
+<div class="block">Constructor for list of keys</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>keys</code> - String list of keys</dd>
+<dd><code>config</code> - Config file</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -293,7 +308,7 @@ extends java.lang.Object</pre>
 <div class="block">Find public keys based on configured Keys.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>id</code> - </dd>
+<dd><code>id</code> - ID of product</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>an array of candidate keys used to verify a signature.</dd>
 </dl>

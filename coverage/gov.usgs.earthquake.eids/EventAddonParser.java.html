@@ -21,7 +21,7 @@ import gov.usgs.util.XmlUtils;
 
 /**
  * Parser for event addon messages.
- * 
+ *
  * Maps these messages into an EQMessage with a
  * product link.
  */
@@ -34,24 +34,30 @@ import gov.usgs.util.XmlUtils;
 	/** The parsed addon object. */
 	private EventAddon addon;
 
+	/**
+	 * Takes a EIDSMessage event and returns the EQMessage
+	 * @param event EIDSMessageEvent to parse
+	 * @return an EQmessage
+	 * @throws Exception if error occurs
+	 */
 	public EQMessage parseMessage(EIDSMessageEvent event) throws Exception {
 		// create a parser object for this message
-<span class="nc" id="L39">		EventAddonParser parser = new EventAddonParser();</span>
+<span class="nc" id="L45">		EventAddonParser parser = new EventAddonParser();</span>
 
 		try {
 			// parse the message using the parser
-<span class="nc" id="L43">			XmlUtils.parse(event.getMessage(), parser);</span>
+<span class="nc" id="L49">			XmlUtils.parse(event.getMessage(), parser);</span>
 			// get the parsed addon
-<span class="nc" id="L45">			EventAddon addon = parser.getAddon();</span>
+<span class="nc" id="L51">			EventAddon addon = parser.getAddon();</span>
 			// convert the parsed addon to an EQMessage
-<span class="nc" id="L47">			return addon.getEQMessage();</span>
-<span class="nc" id="L48">		} catch (SAXException e) {</span>
-<span class="nc bnc" id="L49" title="All 2 branches missed.">			if (!(e.getCause() instanceof ParseException)) {</span>
-<span class="nc" id="L50">				throw e;</span>
+<span class="nc" id="L53">			return addon.getEQMessage();</span>
+<span class="nc" id="L54">		} catch (SAXException e) {</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">			if (!(e.getCause() instanceof ParseException)) {</span>
+<span class="nc" id="L56">				throw e;</span>
 			}
 		}
 
-<span class="nc" id="L54">		return null;</span>
+<span class="nc" id="L60">		return null;</span>
 	}
 
 	/**
@@ -60,110 +66,124 @@ import gov.usgs.util.XmlUtils;
 	 */
 	public static class EventAddon {
 
+		/** fileName */
 		public String fileName;
+		/** Submitter */
 		public String submitter;
+		/** Submit time */
 		public Date submitTime;
+		/** email */
 		public String email;
+		/** event id */
 		public String eventid;
+		/** type */
 		public String type;
+		/** version */
 		public String version;
+		/** action */
 		public String action;
+		/** description */
 		public String description;
+		/** link */
 		public String link;
+		/** text */
 		public String text;
 
-<span class="nc" id="L75">		public EventAddon() {</span>
-<span class="nc" id="L76">		}</span>
+		/** Constructor */
+<span class="nc" id="L93">		public EventAddon() {</span>
+<span class="nc" id="L94">		}</span>
 
 		/**
 		 * Parse eventaddon xml into a ProductLink.
-		 * 
+		 *
 		 * @return null, if there is no link.
 		 */
 		public ProductLink getProductLink() {
-<span class="nc bnc" id="L84" title="All 2 branches missed.">			if (this.link == null) {</span>
-<span class="nc" id="L85">				return null;</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">			if (this.link == null) {</span>
+<span class="nc" id="L103">				return null;</span>
 			}
 
-<span class="nc" id="L88">			Action plAction = Action.UPDATE;</span>
-<span class="nc bnc" id="L89" title="All 2 branches missed.">			if (action.equalsIgnoreCase(&quot;DEL&quot;)) {</span>
-<span class="nc" id="L90">				plAction = Action.DELETE;</span>
+<span class="nc" id="L106">			Action plAction = Action.UPDATE;</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">			if (action.equalsIgnoreCase(&quot;DEL&quot;)) {</span>
+<span class="nc" id="L108">				plAction = Action.DELETE;</span>
 			}
 
-<span class="nc" id="L93">			ProductLink link = new ProductLink();</span>
-<span class="nc" id="L94">			link.setSourceKey(submitter);</span>
-<span class="nc" id="L95">			link.setTypeKey(&quot;LinkURL&quot;);</span>
-<span class="nc" id="L96">			link.setAction(plAction);</span>
-<span class="nc" id="L97">			link.setCode(type);</span>
-<span class="nc" id="L98">			link.setLink(this.link);</span>
-<span class="nc" id="L99">			link.setNote(text);</span>
-<span class="nc" id="L100">			link.setVersion(version);</span>
+<span class="nc" id="L111">			ProductLink link = new ProductLink();</span>
+<span class="nc" id="L112">			link.setSourceKey(submitter);</span>
+<span class="nc" id="L113">			link.setTypeKey(&quot;LinkURL&quot;);</span>
+<span class="nc" id="L114">			link.setAction(plAction);</span>
+<span class="nc" id="L115">			link.setCode(type);</span>
+<span class="nc" id="L116">			link.setLink(this.link);</span>
+<span class="nc" id="L117">			link.setNote(text);</span>
+<span class="nc" id="L118">			link.setVersion(version);</span>
 
-<span class="nc" id="L102">			return link;</span>
+<span class="nc" id="L120">			return link;</span>
 		}
 
 		/**
 		 * Parse eventaddon xml into a Comment.
-		 * 
+		 *
 		 * @return null, if there is a link.
 		 */
 		public Comment getComment() {
-<span class="nc bnc" id="L111" title="All 2 branches missed.">			if (this.link != null) {</span>
-<span class="nc" id="L112">				return null;</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">			if (this.link != null) {</span>
+<span class="nc" id="L130">				return null;</span>
 			}
 
-<span class="nc" id="L115">			Action cAction = Action.UPDATE;</span>
-<span class="nc bnc" id="L116" title="All 2 branches missed.">			if (action.equalsIgnoreCase(&quot;DEL&quot;)) {</span>
-<span class="nc" id="L117">				cAction = Action.DELETE;</span>
+<span class="nc" id="L133">			Action cAction = Action.UPDATE;</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">			if (action.equalsIgnoreCase(&quot;DEL&quot;)) {</span>
+<span class="nc" id="L135">				cAction = Action.DELETE;</span>
 			}
 
-<span class="nc" id="L120">			Comment comment = new Comment();</span>
-<span class="nc" id="L121">			comment.setSourceKey(submitter);</span>
-<span class="nc" id="L122">			comment.setTypeKey(type);</span>
-<span class="nc" id="L123">			comment.setAction(cAction);</span>
-<span class="nc" id="L124">			comment.setText(text);</span>
-<span class="nc" id="L125">			comment.setVersion(version);</span>
+<span class="nc" id="L138">			Comment comment = new Comment();</span>
+<span class="nc" id="L139">			comment.setSourceKey(submitter);</span>
+<span class="nc" id="L140">			comment.setTypeKey(type);</span>
+<span class="nc" id="L141">			comment.setAction(cAction);</span>
+<span class="nc" id="L142">			comment.setText(text);</span>
+<span class="nc" id="L143">			comment.setVersion(version);</span>
 
-<span class="nc" id="L127">			return comment;</span>
+<span class="nc" id="L145">			return comment;</span>
 		}
 
+		/** @return event */
 		public Event getEvent() {
-<span class="nc" id="L131">			Event event = new Event();</span>
-<span class="nc" id="L132">			event.setDataSource(eventid.substring(0, 2));</span>
-<span class="nc" id="L133">			event.setEventID(eventid.substring(2));</span>
+<span class="nc" id="L150">			Event event = new Event();</span>
+<span class="nc" id="L151">			event.setDataSource(eventid.substring(0, 2));</span>
+<span class="nc" id="L152">			event.setEventID(eventid.substring(2));</span>
 
-<span class="nc" id="L135">			ProductLink link = getProductLink();</span>
-<span class="nc bnc" id="L136" title="All 2 branches missed.">			if (link != null) {</span>
-<span class="nc" id="L137">				event.getProductLink().add(getProductLink());</span>
+<span class="nc" id="L154">			ProductLink link = getProductLink();</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">			if (link != null) {</span>
+<span class="nc" id="L156">				event.getProductLink().add(getProductLink());</span>
 			} else {
-<span class="nc" id="L139">				Comment comment = getComment();</span>
-<span class="nc" id="L140">				event.getComment().add(comment);</span>
+<span class="nc" id="L158">				Comment comment = getComment();</span>
+<span class="nc" id="L159">				event.getComment().add(comment);</span>
 			}
 
-<span class="nc" id="L143">			return event;</span>
+<span class="nc" id="L162">			return event;</span>
 		}
 
+		/** @return EQMessage */
 		public EQMessage getEQMessage() {
-<span class="nc" id="L147">			EQMessage message = new EQMessage();</span>
-<span class="nc" id="L148">			message.setSent(submitTime);</span>
-<span class="nc" id="L149">			message.setSource(submitter);</span>
-<span class="nc" id="L150">			message.getEvent().add(getEvent());</span>
-<span class="nc" id="L151">			return message;</span>
+<span class="nc" id="L167">			EQMessage message = new EQMessage();</span>
+<span class="nc" id="L168">			message.setSent(submitTime);</span>
+<span class="nc" id="L169">			message.setSource(submitter);</span>
+<span class="nc" id="L170">			message.getEvent().add(getEvent());</span>
+<span class="nc" id="L171">			return message;</span>
 		}
 	}
 
 	/**
 	 * Get parsed addon.
-	 * 
+	 *
 	 * @return parsed addon, or null if nothing parsed.
 	 */
 	public EventAddon getAddon() {
-<span class="nc" id="L161">		return addon;</span>
+<span class="nc" id="L181">		return addon;</span>
 	}
 
 	/**
 	 * SAXAdapter start element handler.
-	 * 
+	 *
 	 * @param uri
 	 *            element uri.
 	 * @param localName
@@ -179,17 +199,17 @@ import gov.usgs.util.XmlUtils;
 			final String qName, final Attributes attributes)
 			throws SAXException {
 
-<span class="nc bnc" id="L182" title="All 2 branches missed.">		if (localName.equals(&quot;eventaddon&quot;)) {</span>
-<span class="nc" id="L183">			addon = new EventAddon();</span>
-<span class="nc bnc" id="L184" title="All 2 branches missed.">		} else if (localName.equals(&quot;file&quot;)) {</span>
-<span class="nc" id="L185">			addon.fileName = attributes.getValue(&quot;name&quot;);</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">		if (localName.equals(&quot;eventaddon&quot;)) {</span>
+<span class="nc" id="L203">			addon = new EventAddon();</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">		} else if (localName.equals(&quot;file&quot;)) {</span>
+<span class="nc" id="L205">			addon.fileName = attributes.getValue(&quot;name&quot;);</span>
 		}
-<span class="nc" id="L187">	}</span>
+<span class="nc" id="L207">	}</span>
 
 	/**
 	 * SAXAdapter end element handler. Content only includes characters that
 	 * were read from this element, NOT any characters from child elements.
-	 * 
+	 *
 	 * @param uri
 	 *            element uri.
 	 * @param localName
@@ -204,32 +224,32 @@ import gov.usgs.util.XmlUtils;
 	public void onEndElement(final String uri, final String localName,
 			final String qName, final String content) throws SAXException {
 
-<span class="nc bnc" id="L207" title="All 2 branches missed.">		if (localName.equals(&quot;submitter&quot;)) {</span>
-<span class="nc" id="L208">			addon.submitter = content;</span>
-<span class="nc bnc" id="L209" title="All 2 branches missed.">		} else if (localName.equals(&quot;email&quot;)) {</span>
-<span class="nc" id="L210">			addon.email = content;</span>
-<span class="nc bnc" id="L211" title="All 2 branches missed.">		} else if (localName.equals(&quot;eventid&quot;)) {</span>
-<span class="nc" id="L212">			addon.eventid = content;</span>
-<span class="nc bnc" id="L213" title="All 2 branches missed.">		} else if (localName.equals(&quot;type&quot;)) {</span>
-<span class="nc" id="L214">			addon.type = content;</span>
-<span class="nc bnc" id="L215" title="All 2 branches missed.">		} else if (localName.equals(&quot;version&quot;)) {</span>
-<span class="nc" id="L216">			addon.version = content;</span>
-<span class="nc bnc" id="L217" title="All 2 branches missed.">		} else if (localName.equals(&quot;action&quot;)) {</span>
-<span class="nc" id="L218">			addon.action = content;</span>
-<span class="nc bnc" id="L219" title="All 2 branches missed.">		} else if (localName.equals(&quot;description&quot;)) {</span>
-<span class="nc" id="L220">			addon.description = content;</span>
-<span class="nc bnc" id="L221" title="All 2 branches missed.">		} else if (localName.equals(&quot;link&quot;)) {</span>
-<span class="nc" id="L222">			addon.link = content;</span>
-<span class="nc bnc" id="L223" title="All 2 branches missed.">		} else if (localName.equals(&quot;text&quot;)) {</span>
-<span class="nc" id="L224">			addon.text = content;</span>
-<span class="nc bnc" id="L225" title="All 2 branches missed.">		} else if (localName.equals(&quot;submit_time&quot;)) {</span>
+<span class="nc bnc" id="L227" title="All 2 branches missed.">		if (localName.equals(&quot;submitter&quot;)) {</span>
+<span class="nc" id="L228">			addon.submitter = content;</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">		} else if (localName.equals(&quot;email&quot;)) {</span>
+<span class="nc" id="L230">			addon.email = content;</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">		} else if (localName.equals(&quot;eventid&quot;)) {</span>
+<span class="nc" id="L232">			addon.eventid = content;</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">		} else if (localName.equals(&quot;type&quot;)) {</span>
+<span class="nc" id="L234">			addon.type = content;</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">		} else if (localName.equals(&quot;version&quot;)) {</span>
+<span class="nc" id="L236">			addon.version = content;</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">		} else if (localName.equals(&quot;action&quot;)) {</span>
+<span class="nc" id="L238">			addon.action = content;</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">		} else if (localName.equals(&quot;description&quot;)) {</span>
+<span class="nc" id="L240">			addon.description = content;</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">		} else if (localName.equals(&quot;link&quot;)) {</span>
+<span class="nc" id="L242">			addon.link = content;</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">		} else if (localName.equals(&quot;text&quot;)) {</span>
+<span class="nc" id="L244">			addon.text = content;</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">		} else if (localName.equals(&quot;submit_time&quot;)) {</span>
 			try {
-<span class="nc" id="L227">				addon.submitTime = ADDON_DATE_FORMAT.parse(content);</span>
-<span class="nc" id="L228">			} catch (ParseException e) {</span>
-<span class="nc" id="L229">				throw new SAXException(e);</span>
-<span class="nc" id="L230">			}</span>
+<span class="nc" id="L247">				addon.submitTime = ADDON_DATE_FORMAT.parse(content);</span>
+<span class="nc" id="L248">			} catch (ParseException e) {</span>
+<span class="nc" id="L249">				throw new SAXException(e);</span>
+<span class="nc" id="L250">			}</span>
 		}
-<span class="nc" id="L232">	}</span>
+<span class="nc" id="L252">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

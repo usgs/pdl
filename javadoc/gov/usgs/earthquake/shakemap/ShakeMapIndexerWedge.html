@@ -155,10 +155,10 @@ public class <span class="typeNameLabel">ShakeMapIndexerWedge</span>
 extends <a href="../distribution/DefaultNotificationListener.html" title="class in gov.usgs.earthquake.distribution">DefaultNotificationListener</a></pre>
 <div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Legacy interface to trigger pre-Indexer ShakeMap processing.
- 
+
  The Old ShakeMap Indexer is no longer used,
  and this class is deprecated.
- 
+
  When a shakemap product arrives, it is only processed if one of these is
  true:
  <ul>
@@ -166,7 +166,7 @@ extends <a href="../distribution/DefaultNotificationListener.html" title="class 
  <li>from preferred source (product source = eventsource)</li>
  <li>from same source as before</li>
  </ul>
- 
+
  When processing a shakemap:
  <ol>
  <li>remove previous version</li>
@@ -174,17 +174,17 @@ extends <a href="../distribution/DefaultNotificationListener.html" title="class 
  <li>trigger legacy indexer</li>
  <li>send tracker update</li>
  </ol>
- 
+
  Configurable properties:
  <dl>
  <dt>indexerCommand</dt>
  <dd>The shakemap indexer command to run. Defaults to
  <code>/home/www/vhosts/earthquake/cron/shakemap_indexer.php</code> .</dd>
- 
+
  <dt>shakemapDirectory</dt>
  <dd>The shakemap event directory. Defaults to
  <code>/home/www/vhosts/earthquake/htdocs/earthquakes/shakemap</code> .</dd>
- 
+
  <dt>timeout</dt>
  <dd>How long in milliseconds the indexer is allowed to run before being
  terminated.</dd>
@@ -523,7 +523,7 @@ extends <a href="../distribution/DefaultNotificationListener.html" title="class 
 <pre>public&nbsp;ShakeMapIndexerWedge()</pre>
 <div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Create a new ShakeMapIndexerWedge.
- 
+
  Sets up the includeTypes list to contain "shakemap".</div>
 </li>
 </ul>
@@ -553,7 +553,7 @@ extends <a href="../distribution/DefaultNotificationListener.html" title="class 
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>product</code> - a shakemap type product.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -569,7 +569,7 @@ extends <a href="../distribution/DefaultNotificationListener.html" title="class 
                throws java.lang.Exception</pre>
 <div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Run the shakemap indexer.
- 
+
  If network and code are omitted, all events are updated.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -580,7 +580,7 @@ extends <a href="../distribution/DefaultNotificationListener.html" title="class 
 <dd>-1 if indexer does not complete within max(1, getAttemptCount())
          times, or exit code if indexer completes.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.io.IOException</code> - if IO error occurs</dd>
 <dd><code>java.lang.Exception</code></dd>
 </dl>
 </li>
@@ -601,7 +601,7 @@ extends <a href="../distribution/DefaultNotificationListener.html" title="class 
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the shakemap directory.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -614,7 +614,7 @@ extends <a href="../distribution/DefaultNotificationListener.html" title="class 
 <pre class="methodSignature">public&nbsp;java.lang.String&nbsp;translateShakeMapSource&#8203;(java.lang.String&nbsp;eventSource)</pre>
 <div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Translate from an event source to the old style shakemap source.
- 
+
  Driven by the SOURCE_TRANSLATION_MAP.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>

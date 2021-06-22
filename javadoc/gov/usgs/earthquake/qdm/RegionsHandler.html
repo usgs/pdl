@@ -148,7 +148,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <pre>public class <span class="typeNameLabel">RegionsHandler</span>
 extends <a href="../../util/SAXAdapter.html" title="class in gov.usgs.util">SAXAdapter</a></pre>
 <div class="block">XML SAX Handler for ANSS "regions.xml".
- 
+
  See the resource file <code>etc/config/regions.xml</code>
 
  Example:
@@ -185,22 +185,30 @@ extends <a href="../../util/SAXAdapter.html" title="class in gov.usgs.util">SAXA
 <tr class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#formatVersion">formatVersion</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">reported format version (no version-specific logic implemented)</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.util.logging.Logger</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#LOGGER">LOGGER</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Logger object</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code><a href="Regions.html" title="class in gov.usgs.earthquake.qdm">Regions</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#regions">regions</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">the regions that have been parsed</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>java.util.Date</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#updated">updated</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">update timestamp</div>
+</td>
 </tr>
 </table>
 </li>
@@ -306,6 +314,7 @@ extends <a href="../../util/SAXAdapter.html" title="class in gov.usgs.util">SAXA
 <li class="blockList">
 <h4>LOGGER</h4>
 <pre>public static final&nbsp;java.util.logging.Logger LOGGER</pre>
+<div class="block">Logger object</div>
 </li>
 </ul>
 <a id="regions">
@@ -315,6 +324,7 @@ extends <a href="../../util/SAXAdapter.html" title="class in gov.usgs.util">SAXA
 <li class="blockList">
 <h4>regions</h4>
 <pre>public&nbsp;<a href="Regions.html" title="class in gov.usgs.earthquake.qdm">Regions</a> regions</pre>
+<div class="block">the regions that have been parsed</div>
 </li>
 </ul>
 <a id="updated">
@@ -324,6 +334,7 @@ extends <a href="../../util/SAXAdapter.html" title="class in gov.usgs.util">SAXA
 <li class="blockList">
 <h4>updated</h4>
 <pre>public&nbsp;java.util.Date updated</pre>
+<div class="block">update timestamp</div>
 </li>
 </ul>
 <a id="formatVersion">
@@ -333,6 +344,7 @@ extends <a href="../../util/SAXAdapter.html" title="class in gov.usgs.util">SAXA
 <li class="blockList">
 <h4>formatVersion</h4>
 <pre>public&nbsp;java.lang.String formatVersion</pre>
+<div class="block">reported format version (no version-specific logic implemented)</div>
 </li>
 </ul>
 </li>
@@ -403,7 +415,7 @@ extends <a href="../../util/SAXAdapter.html" title="class in gov.usgs.util">SAXA
                          java.lang.String&nbsp;content)
                   throws org.xml.sax.SAXException</pre>
 <div class="block">End element handler.
- 
+
  Adds built region objects to regions object.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>

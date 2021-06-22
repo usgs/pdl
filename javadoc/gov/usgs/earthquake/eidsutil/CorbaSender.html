@@ -192,7 +192,9 @@ extends java.lang.Object</pre>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#destroy()">destroy</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Cleanup</div>
+</td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>protected com.isti.quakewatch.server.qw_feeder.QWFeeder</code></td>
@@ -307,7 +309,7 @@ extends java.lang.Object</pre>
  messages using this <code>CorbaSender</code>.</dd>
 <dd><code>port</code> - The port number to send messages to on the host.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>org.omg.CORBA.ORBPackage.InvalidName</code> - If the RootPOA is not aware of the type of object we 
+<dd><code>org.omg.CORBA.ORBPackage.InvalidName</code> - If the RootPOA is not aware of the type of object we
  request from it.</dd>
 <dd><code>org.omg.PortableServer.POAManagerPackage.AdapterInactive</code> - If the poaManager is not active.</dd>
 </dl>
@@ -330,6 +332,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>destroy</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;destroy()</pre>
+<div class="block">Cleanup</div>
 </li>
 </ul>
 <a id="getFeeder()">
@@ -340,7 +343,7 @@ extends java.lang.Object</pre>
 <h4>getFeeder</h4>
 <pre class="methodSignature">protected&nbsp;com.isti.quakewatch.server.qw_feeder.QWFeeder&nbsp;getFeeder()</pre>
 <div class="block">Retrieve a QWFeeder object associated with this CorbaSender.
- 
+
  First checks if the object is "non_existent", and if so re-narrows the object.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -356,9 +359,9 @@ extends java.lang.Object</pre>
 <h4>sendMessage</h4>
 <pre class="methodSignature">public&nbsp;boolean&nbsp;sendMessage&#8203;(java.lang.String&nbsp;message)</pre>
 <div class="block">Sends a data event message. If the event data does not begin with a
- &ldquo;DataMessage&rdquo; XML element then the data will be surrounded 
- with one. The &ldquo;sendSourced...&rdquo; methods are preferred because 
- the feeder-source host name and message number are used for improved 
+ &ldquo;DataMessage&rdquo; XML element then the data will be surrounded
+ with one. The &ldquo;sendSourced...&rdquo; methods are preferred because
+ the feeder-source host name and message number are used for improved
  message tracking.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -379,9 +382,9 @@ extends java.lang.Object</pre>
                            java.lang.String&nbsp;type,
                            java.lang.String&nbsp;message)</pre>
 <div class="block">Sends a data event message. If the event data does not begin with a
- &ldquo;DataMessage&rdquo; XML element then the data will be surrounded 
- with one. The &ldquo;sendSourced...&rdquo; methods are preferred because 
- the feeder-source host name and message number are used for improved 
+ &ldquo;DataMessage&rdquo; XML element then the data will be surrounded
+ with one. The &ldquo;sendSourced...&rdquo; methods are preferred because
+ the feeder-source host name and message number are used for improved
  message tracking.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -405,9 +408,9 @@ extends java.lang.Object</pre>
                            java.lang.String&nbsp;name,
                            java.lang.String&nbsp;message)</pre>
 <div class="block">Sends a data event message. If the event data does not begin with a
- &ldquo;DataMessage&rdquo; XML element then the data will be surrounded 
- with one. The &ldquo;sendSourced...&rdquo; methods are preferred because 
- the feeder-source host name and message number are used for improved 
+ &ldquo;DataMessage&rdquo; XML element then the data will be surrounded
+ with one. The &ldquo;sendSourced...&rdquo; methods are preferred because
+ the feeder-source host name and message number are used for improved
  message tracking.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -459,9 +462,9 @@ extends java.lang.Object</pre>
                            java.lang.String&nbsp;feederSourceHost,
                            long&nbsp;feederSrcHostMsgId)</pre>
 <div class="block">Sends a data event message. If the event data does not begin with a
- &ldquo;DataMessage&rdquo; XML element then the data will be surrounded 
- with one. The &ldquo;sendSourced...&rdquo; methods are preferred because 
- the feeder-source host name and message number are used for improved 
+ &ldquo;DataMessage&rdquo; XML element then the data will be surrounded
+ with one. The &ldquo;sendSourced...&rdquo; methods are preferred because
+ the feeder-source host name and message number are used for improved
  message tracking.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -490,9 +493,9 @@ extends java.lang.Object</pre>
                            java.lang.String&nbsp;feederSourceHost,
                            long&nbsp;feederSrcHostMsgId)</pre>
 <div class="block">Sends a data event message. If the event data does not begin with a
- &ldquo;DataMessage&rdquo; XML element then the data will be surrounded 
- with one. The &ldquo;sendSourced...&rdquo; methods are preferred because 
- the feeder-source host name and message number are used for improved 
+ &ldquo;DataMessage&rdquo; XML element then the data will be surrounded
+ with one. The &ldquo;sendSourced...&rdquo; methods are preferred because
+ the feeder-source host name and message number are used for improved
  message tracking.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>

@@ -25,10 +25,10 @@ import gov.usgs.util.FileUtils;
 
 /**
  * Legacy interface to trigger pre-Indexer ShakeMap processing.
- * 
+ *
  * The Old ShakeMap Indexer is no longer used,
  * and this class is deprecated.
- * 
+ *
  * When a shakemap product arrives, it is only processed if one of these is
  * true:
  * &lt;ul&gt;
@@ -36,7 +36,7 @@ import gov.usgs.util.FileUtils;
  * &lt;li&gt;from preferred source (product source = eventsource)&lt;/li&gt;
  * &lt;li&gt;from same source as before&lt;/li&gt;
  * &lt;/ul&gt;
- * 
+ *
  * When processing a shakemap:
  * &lt;ol&gt;
  * &lt;li&gt;remove previous version&lt;/li&gt;
@@ -44,17 +44,17 @@ import gov.usgs.util.FileUtils;
  * &lt;li&gt;trigger legacy indexer&lt;/li&gt;
  * &lt;li&gt;send tracker update&lt;/li&gt;
  * &lt;/ol&gt;
- * 
+ *
  * Configurable properties:
  * &lt;dl&gt;
  * &lt;dt&gt;indexerCommand&lt;/dt&gt;
  * &lt;dd&gt;The shakemap indexer command to run. Defaults to
  * &lt;code&gt;/home/www/vhosts/earthquake/cron/shakemap_indexer.php&lt;/code&gt; .&lt;/dd&gt;
- * 
+ *
  * &lt;dt&gt;shakemapDirectory&lt;/dt&gt;
  * &lt;dd&gt;The shakemap event directory. Defaults to
  * &lt;code&gt;/home/www/vhosts/earthquake/htdocs/earthquakes/shakemap&lt;/code&gt; .&lt;/dd&gt;
- * 
+ *
  * &lt;dt&gt;timeout&lt;/dt&gt;
  * &lt;dd&gt;How long in milliseconds the indexer is allowed to run before being
  * terminated.&lt;/dd&gt;
@@ -105,7 +105,7 @@ public class ShakeMapIndexerWedge extends DefaultNotificationListener {
 
 	/**
 	 * Create a new ShakeMapIndexerWedge.
-	 * 
+	 *
 	 * Sets up the includeTypes list to contain &quot;shakemap&quot;.
 	 */
 <span class="nc" id="L111">	public ShakeMapIndexerWedge() {</span>
@@ -114,7 +114,7 @@ public class ShakeMapIndexerWedge extends DefaultNotificationListener {
 
 	/**
 	 * Receive a ShakeMap from Product Distribution.
-	 * 
+	 *
 	 * @param product
 	 *            a shakemap type product.
 	 */
@@ -206,9 +206,9 @@ public class ShakeMapIndexerWedge extends DefaultNotificationListener {
 
 	/**
 	 * Run the shakemap indexer.
-	 * 
+	 *
 	 * If network and code are omitted, all events are updated.
-	 * 
+	 *
 	 * @param network
 	 *            the network to update.
 	 * @param code
@@ -217,7 +217,7 @@ public class ShakeMapIndexerWedge extends DefaultNotificationListener {
 	 *            whether indexer is handling a delete (true) or update (false).
 	 * @return -1 if indexer does not complete within max(1, getAttemptCount())
 	 *         times, or exit code if indexer completes.
-	 * @throws IOException
+	 * @throws IOException if IO error occurs
 	 */
 	public int runIndexer(final String network, final String code,
 			final boolean delete) throws Exception {
@@ -255,32 +255,33 @@ public class ShakeMapIndexerWedge extends DefaultNotificationListener {
 
 	/**
 	 * Get the directory for a particular shakemap.
-	 * 
+	 *
 	 * @param shakemap
 	 *            the shakemap to find a directory for.
 	 * @return the shakemap directory.
+	 * @throws Exception if error occurs
 	 */
 	public File getEventDirectory(final ShakeMap shakemap) throws Exception {
-<span class="nc" id="L264">		String source = translateShakeMapSource(shakemap.getEventSource());</span>
-<span class="nc" id="L265">		String code = shakemap.getEventSourceCode();</span>
+<span class="nc" id="L265">		String source = translateShakeMapSource(shakemap.getEventSource());</span>
+<span class="nc" id="L266">		String code = shakemap.getEventSourceCode();</span>
 
-<span class="nc" id="L267">		return new File(baseEventDirectory, source + &quot;/shake/&quot; + code);</span>
+<span class="nc" id="L268">		return new File(baseEventDirectory, source + &quot;/shake/&quot; + code);</span>
 	}
 
 	/**
 	 * Translate from an event source to the old style shakemap source.
-	 * 
+	 *
 	 * Driven by the SOURCE_TRANSLATION_MAP.
-	 * 
+	 *
 	 * @param eventSource
 	 *            the event network.
 	 * @return the shakemap network.
 	 */
 	public String translateShakeMapSource(final String eventSource) {
-<span class="nc bnc" id="L280" title="All 2 branches missed.">		if (SOURCE_TRANSLATION_MAP.containsKey(eventSource)) {</span>
-<span class="nc" id="L281">			return SOURCE_TRANSLATION_MAP.get(eventSource);</span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">		if (SOURCE_TRANSLATION_MAP.containsKey(eventSource)) {</span>
+<span class="nc" id="L282">			return SOURCE_TRANSLATION_MAP.get(eventSource);</span>
 		}
-<span class="nc" id="L283">		return eventSource;</span>
+<span class="nc" id="L284">		return eventSource;</span>
 	}
 
 	/**
@@ -288,21 +289,21 @@ public class ShakeMapIndexerWedge extends DefaultNotificationListener {
 	 */
 	@Override
 	public void configure(final Config config) throws Exception {
-<span class="nc" id="L291">		super.configure(config);</span>
+<span class="nc" id="L292">		super.configure(config);</span>
 
-<span class="nc" id="L293">		baseEventDirectory = new File(config.getProperty(</span>
+<span class="nc" id="L294">		baseEventDirectory = new File(config.getProperty(</span>
 				SHAKEMAP_DIRECTORY_PROPERTY, DEFAULT_SHAKEMAP_DIRECTORY));
-<span class="nc" id="L295">		LOGGER.config(&quot;Shakemap event directory &quot;</span>
-<span class="nc" id="L296">				+ baseEventDirectory.getCanonicalPath());</span>
+<span class="nc" id="L296">		LOGGER.config(&quot;Shakemap event directory &quot;</span>
+<span class="nc" id="L297">				+ baseEventDirectory.getCanonicalPath());</span>
 
-<span class="nc" id="L298">		indexerCommand = config.getProperty(SHAKEMAP_INDEXER_COMMAND_PROPERTY,</span>
+<span class="nc" id="L299">		indexerCommand = config.getProperty(SHAKEMAP_INDEXER_COMMAND_PROPERTY,</span>
 				DEFAULT_SHAKEMAP_INDEXER_COMMAND);
-<span class="nc" id="L300">		LOGGER.config(&quot;Shakemap indexer command &quot; + indexerCommand);</span>
+<span class="nc" id="L301">		LOGGER.config(&quot;Shakemap indexer command &quot; + indexerCommand);</span>
 
-<span class="nc" id="L302">		indexerTimeout = Long.valueOf(config.getProperty(</span>
+<span class="nc" id="L303">		indexerTimeout = Long.valueOf(config.getProperty(</span>
 				COMMAND_TIMEOUT_PROPERTY, DEFAULT_COMMAND_TIMEOUT));
-<span class="nc" id="L304">		LOGGER.config(&quot;Shakemap indexer command timeout &quot; + indexerTimeout);</span>
-<span class="nc" id="L305">	}</span>
+<span class="nc" id="L305">		LOGGER.config(&quot;Shakemap indexer command timeout &quot; + indexerTimeout);</span>
+<span class="nc" id="L306">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

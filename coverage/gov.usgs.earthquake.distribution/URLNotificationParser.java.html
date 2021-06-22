@@ -15,13 +15,20 @@ import org.xml.sax.SAXException;
 
 public class URLNotificationParser extends SAXAdapter {
 
+	/** Namespace for product XML */
 	public static final String PRODUCT_XML_NAMESPACE = &quot;http://earthquake.usgs.gov/distribution/product&quot;;
 
+	/** static var for notification element */
 	public static final String NOTIFICATION_ELEMENT = &quot;notification&quot;;
+	/** attribute for product id */
 	public static final String ATTRIBUTE_PRODUCT_ID = &quot;id&quot;;
+	/** attribute for updated */
 	public static final String ATTRIBUTE_PRODUCT_UPDATED = &quot;updated&quot;;
+	/** attribute for trackerURL */
 	public static final String ATTRIBUTE_TRACKER_URL = &quot;trackerURL&quot;;
+	/** attribute for expires */
 	public static final String ATTRIBUTE_EXPIRES = &quot;expires&quot;;
+	/** attribute for url */
 	public static final String ATTRIBUTE_URL = &quot;url&quot;;
 
 	/** The parsed notification. */
@@ -32,19 +39,19 @@ public class URLNotificationParser extends SAXAdapter {
 	 * instantiated directly. Instead, use the static URLNotification.parse
 	 * method.
 	 */
-<span class="fc" id="L35">	protected URLNotificationParser() {</span>
-<span class="fc" id="L36">	}</span>
+<span class="fc" id="L42">	protected URLNotificationParser() {</span>
+<span class="fc" id="L43">	}</span>
 
 	/**
 	 * @return the parsed notification
 	 */
 	public URLNotification getNotification() {
-<span class="fc" id="L42">		return notification;</span>
+<span class="fc" id="L49">		return notification;</span>
 	}
 
 	/**
 	 * SAXAdapter start element handler.
-	 * 
+	 *
 	 * @param uri
 	 *            element uri.
 	 * @param localName
@@ -60,39 +67,39 @@ public class URLNotificationParser extends SAXAdapter {
 			final String qName, final Attributes attributes)
 			throws SAXException {
 
-<span class="pc bpc" id="L63" title="1 of 2 branches missed.">		if (!uri.equals(PRODUCT_XML_NAMESPACE)) {</span>
-<span class="nc" id="L64">			return;</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">		if (!uri.equals(PRODUCT_XML_NAMESPACE)) {</span>
+<span class="nc" id="L71">			return;</span>
 		}
 
-<span class="pc bpc" id="L67" title="1 of 2 branches missed.">		if (localName.equals(NOTIFICATION_ELEMENT)) {</span>
-<span class="fc" id="L68">			ProductId id = ProductId.parse(XmlUtils.getAttribute(</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">		if (localName.equals(NOTIFICATION_ELEMENT)) {</span>
+<span class="fc" id="L75">			ProductId id = ProductId.parse(XmlUtils.getAttribute(</span>
 					attributes, uri, ATTRIBUTE_PRODUCT_ID));
-<span class="fc" id="L70">			id.setUpdateTime(XmlUtils.getDate(XmlUtils.getAttribute(</span>
+<span class="fc" id="L77">			id.setUpdateTime(XmlUtils.getDate(XmlUtils.getAttribute(</span>
 					attributes, uri, ATTRIBUTE_PRODUCT_UPDATED)));
 
-<span class="fc" id="L73">			URL trackerURL = null;</span>
+<span class="fc" id="L80">			URL trackerURL = null;</span>
 			try {
-<span class="fc" id="L75">				trackerURL = new URL(XmlUtils.getAttribute(attributes, uri,</span>
+<span class="fc" id="L82">				trackerURL = new URL(XmlUtils.getAttribute(attributes, uri,</span>
 						ATTRIBUTE_TRACKER_URL));
-<span class="nc" id="L77">			} catch (Exception e) {</span>
-<span class="nc" id="L78">				throw new SAXException(&quot;Unable to parse tracker url&quot;, e);</span>
-<span class="fc" id="L79">			}</span>
+<span class="nc" id="L84">			} catch (Exception e) {</span>
+<span class="nc" id="L85">				throw new SAXException(&quot;Unable to parse tracker url&quot;, e);</span>
+<span class="fc" id="L86">			}</span>
 
-<span class="fc" id="L81">			Date expirationDate = XmlUtils.getDate(XmlUtils.getAttribute(</span>
+<span class="fc" id="L88">			Date expirationDate = XmlUtils.getDate(XmlUtils.getAttribute(</span>
 					attributes, uri, ATTRIBUTE_EXPIRES));
 
-<span class="fc" id="L84">			URL productURL = null;</span>
+<span class="fc" id="L91">			URL productURL = null;</span>
 			try {
-<span class="fc" id="L86">				productURL = new URL(XmlUtils.getAttribute(attributes, uri,</span>
+<span class="fc" id="L93">				productURL = new URL(XmlUtils.getAttribute(attributes, uri,</span>
 						ATTRIBUTE_URL));
-<span class="nc" id="L88">			} catch (Exception e) {</span>
-<span class="nc" id="L89">				throw new SAXException(&quot;Unable to parse product url&quot;, e);</span>
-<span class="fc" id="L90">			}</span>
+<span class="nc" id="L95">			} catch (Exception e) {</span>
+<span class="nc" id="L96">				throw new SAXException(&quot;Unable to parse product url&quot;, e);</span>
+<span class="fc" id="L97">			}</span>
 
-<span class="fc" id="L92">			notification = new URLNotification(id, expirationDate,</span>
+<span class="fc" id="L99">			notification = new URLNotification(id, expirationDate,</span>
 					trackerURL, productURL);
 		}
-<span class="fc" id="L95">	}</span>
+<span class="fc" id="L102">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

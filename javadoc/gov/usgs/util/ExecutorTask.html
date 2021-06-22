@@ -271,7 +271,9 @@ implements java.util.concurrent.Future&lt;T&gt;, java.lang.Runnable</pre>
 <tr class="altColor">
 <td class="colFirst"><code>protected java.lang.Object</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#syncObject">syncObject</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">A synchronized object</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected long</code></td>
@@ -642,6 +644,7 @@ implements java.util.concurrent.Future&lt;T&gt;, java.lang.Runnable</pre>
 <li class="blockList">
 <h4>syncObject</h4>
 <pre>protected final&nbsp;java.lang.Object syncObject</pre>
+<div class="block">A synchronized object</div>
 </li>
 </ul>
 </li>
@@ -694,6 +697,14 @@ implements java.util.concurrent.Future&lt;T&gt;, java.lang.Runnable</pre>
                     <a href="ExecutorTask.html" title="type parameter in ExecutorTask">T</a>&nbsp;result)</pre>
 <div class="block">Wraps a runnable and result using the CallableRunnable class.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>service</code> - ExecutorService that this task will be submitted to.</dd>
+<dd><code>maxTries</code> - maximum number of tries callable can throw an exception or
+            timeout before giving up. &lt; 1 means never run.</dd>
+<dd><code>timeout</code> - number of milliseconds to allow callable to run before it is
+            interrupted. &lt;= 0 means never timeout.</dd>
+<dd><code>runnable</code> - a runnable</dd>
+<dd><code>result</code> - the result</dd>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><code>Executors.callable(Runnable, Object)</code></dd>
 </dl>
@@ -910,6 +921,10 @@ implements java.util.concurrent.Future&lt;T&gt;, java.lang.Runnable</pre>
 <li class="blockList">
 <h4>getName</h4>
 <pre class="methodSignature">public&nbsp;java.lang.String&nbsp;getName()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>name</dd>
+</dl>
 </li>
 </ul>
 <a id="setName(java.lang.String)">
@@ -919,6 +934,10 @@ implements java.util.concurrent.Future&lt;T&gt;, java.lang.Runnable</pre>
 <li class="blockList">
 <h4>setName</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setName&#8203;(java.lang.String&nbsp;name)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>name</code> - to set</dd>
+</dl>
 </li>
 </ul>
 <a id="getRetryDelay()">

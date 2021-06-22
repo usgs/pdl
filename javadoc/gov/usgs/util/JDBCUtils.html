@@ -352,9 +352,9 @@ extends java.lang.Object</pre>
 <dd><code>java.lang.ClassNotFoundException</code> - if driver class is not found.</dd>
 <dd><code>java.lang.IllegalAccessException</code> - if driver empty constructor is not public.</dd>
 <dd><code>java.lang.InstantiationException</code> - if an exception occurs while instantiating driver.</dd>
+<dd><code>java.lang.reflect.InvocationTargetException</code> - if an exception occurs with invoked method</dd>
+<dd><code>java.lang.NoSuchMethodException</code> - if method cannot be found</dd>
 <dd><code>java.sql.SQLException</code> - if an error occurs while making connection.</dd>
-<dd><code>java.lang.reflect.InvocationTargetException</code></dd>
-<dd><code>java.lang.NoSuchMethodException</code></dd>
 </dl>
 </li>
 </ul>
@@ -370,7 +370,7 @@ extends java.lang.Object</pre>
                                 int&nbsp;type)
                          throws java.sql.SQLException</pre>
 <div class="block">Set a JDBC prepared statement parameter.
- 
+
  Either calls statement.setNull if object is null, or sets the appropriate
  type based on the object. If the object is not null, type is ignored.</div>
 <dl>
@@ -380,7 +380,7 @@ extends java.lang.Object</pre>
 <dd><code>object</code> - value of parameter being set.</dd>
 <dd><code>type</code> - java.sql.Types constant for column type.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.sql.SQLException</code></dd>
+<dd><code>java.sql.SQLException</code> - if an error occurs while making connection.</dd>
 </dl>
 </li>
 </ul>
@@ -398,7 +398,7 @@ extends java.lang.Object</pre>
                                                      java.lang.reflect.InvocationTargetException,
                                                      java.lang.NoSuchMethodException</pre>
 <div class="block">Get a mysql connection from a URL.
- 
+
  Calls getConnection(MYSQL_DRIVER_CLASSNAME, url).</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -406,12 +406,12 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a Connection to a Mysql database.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.sql.SQLException</code></dd>
-<dd><code>java.lang.ClassNotFoundException</code></dd>
-<dd><code>java.lang.IllegalAccessException</code></dd>
-<dd><code>java.lang.InstantiationException</code></dd>
-<dd><code>java.lang.reflect.InvocationTargetException</code></dd>
-<dd><code>java.lang.NoSuchMethodException</code></dd>
+<dd><code>java.sql.SQLException</code> - if an error occurs while making connection.</dd>
+<dd><code>java.lang.ClassNotFoundException</code> - if driver class is not found.</dd>
+<dd><code>java.lang.IllegalAccessException</code> - if driver empty constructor is not public.</dd>
+<dd><code>java.lang.InstantiationException</code> - if an exception occurs while instantiating driver.</dd>
+<dd><code>java.lang.reflect.InvocationTargetException</code> - if an exception occurs with invoked method</dd>
+<dd><code>java.lang.NoSuchMethodException</code> - if method cannot be found</dd>
 </dl>
 </li>
 </ul>
@@ -429,7 +429,7 @@ extends java.lang.Object</pre>
                                                       java.lang.reflect.InvocationTargetException,
                                                       java.lang.NoSuchMethodException</pre>
 <div class="block">Get a sqlite connection from a file.
- 
+
  Builds a sqlite file url and calls getSqliteConnection(url).</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -437,12 +437,12 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>connection to sqlite database file.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.sql.SQLException</code></dd>
-<dd><code>java.lang.ClassNotFoundException</code></dd>
-<dd><code>java.lang.IllegalAccessException</code></dd>
-<dd><code>java.lang.InstantiationException</code></dd>
-<dd><code>java.lang.reflect.InvocationTargetException</code></dd>
-<dd><code>java.lang.NoSuchMethodException</code></dd>
+<dd><code>java.sql.SQLException</code> - if an error occurs while making connection.</dd>
+<dd><code>java.lang.ClassNotFoundException</code> - if driver class is not found.</dd>
+<dd><code>java.lang.IllegalAccessException</code> - if driver empty constructor is not public.</dd>
+<dd><code>java.lang.InstantiationException</code> - if an exception occurs while instantiating driver.</dd>
+<dd><code>java.lang.reflect.InvocationTargetException</code> - if an exception occurs with invoked method</dd>
+<dd><code>java.lang.NoSuchMethodException</code> - if method cannot be found</dd>
 </dl>
 </li>
 </ul>
@@ -460,7 +460,7 @@ extends java.lang.Object</pre>
                                                       java.lang.reflect.InvocationTargetException,
                                                       java.lang.NoSuchMethodException</pre>
 <div class="block">Get a sqlite connection from a URL.
- 
+
  Calls getConnection(SQLITE_DRIVER_CLASSNAME, url).</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -468,12 +468,12 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a Connection to a sqlite database.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.sql.SQLException</code></dd>
-<dd><code>java.lang.ClassNotFoundException</code></dd>
-<dd><code>java.lang.IllegalAccessException</code></dd>
-<dd><code>java.lang.InstantiationException</code></dd>
-<dd><code>java.lang.reflect.InvocationTargetException</code></dd>
-<dd><code>java.lang.NoSuchMethodException</code></dd>
+<dd><code>java.sql.SQLException</code> - if an error occurs while making connection.</dd>
+<dd><code>java.lang.ClassNotFoundException</code> - if driver class is not found.</dd>
+<dd><code>java.lang.IllegalAccessException</code> - if driver empty constructor is not public.</dd>
+<dd><code>java.lang.InstantiationException</code> - if an exception occurs while instantiating driver.</dd>
+<dd><code>java.lang.reflect.InvocationTargetException</code> - if an exception occurs with invoked method</dd>
+<dd><code>java.lang.NoSuchMethodException</code> - if method cannot be found</dd>
 </dl>
 </li>
 </ul>

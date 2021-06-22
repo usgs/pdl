@@ -61,39 +61,42 @@ public class QWEmbeddedClient extends QWTrackingClient implements EIDSListener {
 	/** Console log level. */
 <span class="fc" id="L62">	private String consoleLogLevel = &quot;Info&quot;;</span>
 
+	/** Constructor using the default host and port */
 	public QWEmbeddedClient() {
-<span class="fc" id="L65">		this(DEFAULT_SERVER_HOST, DEFAULT_SERVER_PORT);</span>
-<span class="fc" id="L66">	}</span>
+<span class="fc" id="L66">		this(DEFAULT_SERVER_HOST, DEFAULT_SERVER_PORT);</span>
+<span class="fc" id="L67">	}</span>
 
 	/**
 	 * Construct an EIDSClient using only server host and port.
-	 * 
+	 *
 	 * Calls other constructor with null values for other parameters.
-	 * 
-	 * @param serverHost
-	 * @param serverPort
+	 *
+	 * @param serverHost host of EIDS client
+	 * @param serverPort port of EIDS client
 	 */
 	public QWEmbeddedClient(final String serverHost, final Integer serverPort) {
-<span class="fc" id="L77">		this(serverHost, serverPort, &quot;&quot;);</span>
-<span class="fc" id="L78">	}</span>
+<span class="fc" id="L78">		this(serverHost, serverPort, &quot;&quot;);</span>
+<span class="fc" id="L79">	}</span>
 
 	/**
 	 * Construct an EIDSClient using serverHost, serverPort, and
 	 * alternateServersList.
-	 * 
-	 * @param serverHost
-	 * @param serverPort
+	 *
+	 * @param serverHost host of EIDS client
+	 * @param serverPort port of EIDS client
 	 * @param alternateServersList
+	 *            a comma delimited list of host:port that are used when unable
+	 *            to connect to the primary serverHost and serverPort.
 	 */
 	public QWEmbeddedClient(final String serverHost, final Integer serverPort,
 			final String alternateServersList) {
-<span class="fc" id="L90">		this(serverHost, serverPort, alternateServersList,</span>
+<span class="fc" id="L93">		this(serverHost, serverPort, alternateServersList,</span>
 				DEFAULT_MAX_SERVER_EVENT_AGE_DAYS, DEFAULT_TRACKING_FILE_NAME);
-<span class="fc" id="L92">	}</span>
+<span class="fc" id="L95">	}</span>
 
 	/**
 	 * Constructor with all options.
-	 * 
+	 *
 	 * @param serverHost
 	 *            the eids server host or ip address.
 	 * @param serverPort
@@ -109,120 +112,120 @@ public class QWEmbeddedClient extends QWTrackingClient implements EIDSListener {
 	 */
 	public QWEmbeddedClient(final String serverHost, final Integer serverPort,
 			final String alternateServersList,
-<span class="fc" id="L112">			final Double maxServerEventAgeDays, final String trackingFileName) {</span>
-<span class="fc" id="L113">		this.serverHost = serverHost;</span>
-<span class="fc" id="L114">		this.serverPort = serverPort;</span>
-<span class="fc" id="L115">		this.alternateServersList = alternateServersList;</span>
-<span class="fc" id="L116">		this.maxServerEventAgeDays = maxServerEventAgeDays;</span>
-<span class="fc" id="L117">		this.trackingFileName = trackingFileName;</span>
-<span class="fc" id="L118">	}</span>
+<span class="fc" id="L115">			final Double maxServerEventAgeDays, final String trackingFileName) {</span>
+<span class="fc" id="L116">		this.serverHost = serverHost;</span>
+<span class="fc" id="L117">		this.serverPort = serverPort;</span>
+<span class="fc" id="L118">		this.alternateServersList = alternateServersList;</span>
+<span class="fc" id="L119">		this.maxServerEventAgeDays = maxServerEventAgeDays;</span>
+<span class="fc" id="L120">		this.trackingFileName = trackingFileName;</span>
+<span class="fc" id="L121">	}</span>
 
 	/**
-	 * 
+	 *
 	 */
 	public void setupConfiguration(CfgProperties userPropsObj,
 			Object connGroupSelObj, Object logGroupSelObj,
 			boolean addPrependDeclFlag) {
-<span class="fc" id="L126">		super.setupConfiguration(userPropsObj, connGroupSelObj, logGroupSelObj,</span>
+<span class="fc" id="L129">		super.setupConfiguration(userPropsObj, connGroupSelObj, logGroupSelObj,</span>
 				addPrependDeclFlag);
-<span class="fc" id="L128">		CfgProperties props = getConnPropsObj().getConfigProps();</span>
-<span class="fc" id="L129">		props.get(&quot;serverHostAddress&quot;).setValue(serverHost);</span>
-<span class="fc" id="L130">		props.get(&quot;serverPortNumber&quot;).setValue(serverPort);</span>
-<span class="fc" id="L131">		props.get(&quot;maxServerEventAgeDays&quot;).setValue(maxServerEventAgeDays);</span>
+<span class="fc" id="L131">		CfgProperties props = getConnPropsObj().getConfigProps();</span>
+<span class="fc" id="L132">		props.get(&quot;serverHostAddress&quot;).setValue(serverHost);</span>
+<span class="fc" id="L133">		props.get(&quot;serverPortNumber&quot;).setValue(serverPort);</span>
+<span class="fc" id="L134">		props.get(&quot;maxServerEventAgeDays&quot;).setValue(maxServerEventAgeDays);</span>
 
-<span class="pc bpc" id="L133" title="1 of 2 branches missed.">		if (alternateServersList != null) {</span>
-<span class="fc" id="L134">			props.get(&quot;alternateServersList&quot;).setValue(alternateServersList);</span>
-<span class="fc" id="L135">			props.get(&quot;altServersEnabledFlag&quot;).setValue(true);</span>
-<span class="fc" id="L136">			props.get(&quot;keepDefaultAltServersFlag&quot;).setValue(true);</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">		if (alternateServersList != null) {</span>
+<span class="fc" id="L137">			props.get(&quot;alternateServersList&quot;).setValue(alternateServersList);</span>
+<span class="fc" id="L138">			props.get(&quot;altServersEnabledFlag&quot;).setValue(true);</span>
+<span class="fc" id="L139">			props.get(&quot;keepDefaultAltServersFlag&quot;).setValue(true);</span>
 		} else {
-<span class="nc" id="L138">			props.get(&quot;alternateServersList&quot;).setValue(&quot;&quot;);</span>
-<span class="nc" id="L139">			props.get(&quot;altServersEnabledFlag&quot;).setValue(false);</span>
-<span class="nc" id="L140">			props.get(&quot;keepDefaultAltServersFlag&quot;).setValue(true);</span>
+<span class="nc" id="L141">			props.get(&quot;alternateServersList&quot;).setValue(&quot;&quot;);</span>
+<span class="nc" id="L142">			props.get(&quot;altServersEnabledFlag&quot;).setValue(false);</span>
+<span class="nc" id="L143">			props.get(&quot;keepDefaultAltServersFlag&quot;).setValue(true);</span>
 		}
 
-<span class="fc" id="L143">		props.get(&quot;trackingFileName&quot;).setValue(trackingFileName);</span>
-<span class="fc" id="L144">		props.get(&quot;clientConsoleLevel&quot;).setValue(consoleLogLevel);</span>
+<span class="fc" id="L146">		props.get(&quot;trackingFileName&quot;).setValue(trackingFileName);</span>
+<span class="fc" id="L147">		props.get(&quot;clientConsoleLevel&quot;).setValue(consoleLogLevel);</span>
 
 		// disable separate log file
-<span class="fc" id="L147">		props.get(&quot;clientLogFileName&quot;).setValue(&quot;&quot;);</span>
-<span class="fc" id="L148">		props.get(&quot;clientLogFileLevel&quot;).setValue(&quot;Debug&quot;);</span>
-<span class="fc" id="L149">	}</span>
+<span class="fc" id="L150">		props.get(&quot;clientLogFileName&quot;).setValue(&quot;&quot;);</span>
+<span class="fc" id="L151">		props.get(&quot;clientLogFileLevel&quot;).setValue(&quot;Debug&quot;);</span>
+<span class="fc" id="L152">	}</span>
 
 	/**
 	 * Runs the client.
-	 * 
+	 *
 	 * Any listeners should be added before calling this method.
 	 */
 	public void startup() {
-<span class="pc bpc" id="L157" title="1 of 2 branches missed.">		if (isShutdown) {</span>
-<span class="nc" id="L158">			throw new IllegalArgumentException(</span>
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">		if (isShutdown) {</span>
+<span class="nc" id="L161">			throw new IllegalArgumentException(</span>
 					&quot;Cannot restart a QWEmbeddedClient after it has shutdown.&quot;);
 		}
 		// initialize client
-<span class="fc" id="L162">		setupConfiguration(null, null);</span>
+<span class="fc" id="L165">		setupConfiguration(null, null);</span>
 		// set information for this client
-<span class="fc" id="L164">		setupClientInfoProps(PROGRAM_NAME, PROGRAM_VERSION);</span>
+<span class="fc" id="L167">		setupClientInfoProps(PROGRAM_NAME, PROGRAM_VERSION);</span>
 		// must be called before runClient
-<span class="fc" id="L166">		processConfiguration(null, null, null, false, null, false, null);</span>
-<span class="fc" id="L167">		runClient(processor);</span>
-<span class="fc" id="L168">	}</span>
+<span class="fc" id="L169">		processConfiguration(null, null, null, false, null, false, null);</span>
+<span class="fc" id="L170">		runClient(processor);</span>
+<span class="fc" id="L171">	}</span>
 
 	/**
 	 * Shuts down a running client.
-	 * 
+	 *
 	 * Does not call system.exit.
 	 */
 	public void shutdown() {
 		// shutdown the client, but doesn't call System.exit()
-<span class="fc" id="L177">		stopClient();</span>
-<span class="fc" id="L178">		isShutdown = true;</span>
+<span class="fc" id="L180">		stopClient();</span>
+<span class="fc" id="L181">		isShutdown = true;</span>
 
 		// this is supposedly called by stopClient, but adding in because memory
 		// not being freed as expected
 		try {
-<span class="fc" id="L183">			QWConnectionMgr manager = this.getConnManagerObj();</span>
-<span class="fc" id="L184">			manager.closeConnection();</span>
-<span class="fc" id="L185">			manager.getMsgHandlerObj().clearWaitingMsgsQueueTable();</span>
-<span class="nc" id="L186">		} catch (Exception e) {</span>
-<span class="nc" id="L187">			System.err.println(&quot;Exception shutting down QWEmbeddedClient&quot;);</span>
-<span class="nc" id="L188">			e.printStackTrace();</span>
-<span class="fc" id="L189">		}</span>
-<span class="fc" id="L190">	}</span>
+<span class="fc" id="L186">			QWConnectionMgr manager = this.getConnManagerObj();</span>
+<span class="fc" id="L187">			manager.closeConnection();</span>
+<span class="fc" id="L188">			manager.getMsgHandlerObj().clearWaitingMsgsQueueTable();</span>
+<span class="nc" id="L189">		} catch (Exception e) {</span>
+<span class="nc" id="L190">			System.err.println(&quot;Exception shutting down QWEmbeddedClient&quot;);</span>
+<span class="nc" id="L191">			e.printStackTrace();</span>
+<span class="fc" id="L192">		}</span>
+<span class="fc" id="L193">	}</span>
 
 	/**
 	 * Add a listener.
-	 * 
+	 *
 	 * @param listener
 	 *            the listener to add.
 	 */
 	public synchronized void addListener(final EIDSListener listener) {
-<span class="fc" id="L199">		this.listeners.add(listener);</span>
-<span class="fc" id="L200">	}</span>
+<span class="fc" id="L202">		this.listeners.add(listener);</span>
+<span class="fc" id="L203">	}</span>
 
 	/**
 	 * Remove a listener.
-	 * 
+	 *
 	 * @param listener
 	 *            the listener to remove.
 	 */
 	public synchronized void removeListener(final EIDSListener listener) {
-<span class="nc" id="L209">		this.listeners.remove(listener);</span>
-<span class="nc" id="L210">	}</span>
+<span class="nc" id="L212">		this.listeners.remove(listener);</span>
+<span class="nc" id="L213">	}</span>
 
 	public void onEIDSMessage(EIDSMessageEvent event) {
 		// iterate over a copy of the listeners list
-<span class="fc" id="L214">		Iterator&lt;EIDSListener&gt; iter = new LinkedList&lt;EIDSListener&gt;(listeners)</span>
-<span class="fc" id="L215">				.iterator();</span>
-<span class="fc bfc" id="L216" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
-<span class="fc" id="L217">			iter.next().onEIDSMessage(event);</span>
+<span class="fc" id="L217">		Iterator&lt;EIDSListener&gt; iter = new LinkedList&lt;EIDSListener&gt;(listeners)</span>
+<span class="fc" id="L218">				.iterator();</span>
+<span class="fc bfc" id="L219" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L220">			iter.next().onEIDSMessage(event);</span>
 		}
-<span class="fc" id="L219">	}</span>
+<span class="fc" id="L222">	}</span>
 
 	/**
 	 * @return the serverHost
 	 */
 	public String getServerHost() {
-<span class="fc" id="L225">		return serverHost;</span>
+<span class="fc" id="L228">		return serverHost;</span>
 	}
 
 	/**
@@ -230,14 +233,14 @@ public class QWEmbeddedClient extends QWTrackingClient implements EIDSListener {
 	 *            the serverHost to set
 	 */
 	public void setServerHost(String serverHost) {
-<span class="nc" id="L233">		this.serverHost = serverHost;</span>
-<span class="nc" id="L234">	}</span>
+<span class="nc" id="L236">		this.serverHost = serverHost;</span>
+<span class="nc" id="L237">	}</span>
 
 	/**
 	 * @return the serverPort
 	 */
 	public Integer getServerPort() {
-<span class="nc" id="L240">		return serverPort;</span>
+<span class="nc" id="L243">		return serverPort;</span>
 	}
 
 	/**
@@ -245,14 +248,14 @@ public class QWEmbeddedClient extends QWTrackingClient implements EIDSListener {
 	 *            the serverPort to set
 	 */
 	public void setServerPort(Integer serverPort) {
-<span class="nc" id="L248">		this.serverPort = serverPort;</span>
-<span class="nc" id="L249">	}</span>
+<span class="nc" id="L251">		this.serverPort = serverPort;</span>
+<span class="nc" id="L252">	}</span>
 
 	/**
 	 * @return the alternateServersList
 	 */
 	public String getAlternateServersList() {
-<span class="nc" id="L255">		return alternateServersList;</span>
+<span class="nc" id="L258">		return alternateServersList;</span>
 	}
 
 	/**
@@ -260,14 +263,14 @@ public class QWEmbeddedClient extends QWTrackingClient implements EIDSListener {
 	 *            the alternateServersList to set
 	 */
 	public void setAlternateServersList(String alternateServersList) {
-<span class="nc" id="L263">		this.alternateServersList = alternateServersList;</span>
-<span class="nc" id="L264">	}</span>
+<span class="nc" id="L266">		this.alternateServersList = alternateServersList;</span>
+<span class="nc" id="L267">	}</span>
 
 	/**
 	 * @return the maxServerEventAgeDays
 	 */
 	public Double getMaxServerEventAgeDays() {
-<span class="nc" id="L270">		return maxServerEventAgeDays;</span>
+<span class="nc" id="L273">		return maxServerEventAgeDays;</span>
 	}
 
 	/**
@@ -275,14 +278,14 @@ public class QWEmbeddedClient extends QWTrackingClient implements EIDSListener {
 	 *            the maxServerEventAgeDays to set
 	 */
 	public void setMaxServerEventAgeDays(Double maxServerEventAgeDays) {
-<span class="nc" id="L278">		this.maxServerEventAgeDays = maxServerEventAgeDays;</span>
-<span class="nc" id="L279">	}</span>
+<span class="nc" id="L281">		this.maxServerEventAgeDays = maxServerEventAgeDays;</span>
+<span class="nc" id="L282">	}</span>
 
 	/**
 	 * @return the trackingFileName
 	 */
 	public String getTrackingFileName() {
-<span class="nc" id="L285">		return trackingFileName;</span>
+<span class="nc" id="L288">		return trackingFileName;</span>
 	}
 
 	/**
@@ -290,61 +293,63 @@ public class QWEmbeddedClient extends QWTrackingClient implements EIDSListener {
 	 *            the trackingFileName to set
 	 */
 	public void setTrackingFileName(String trackingFileName) {
-<span class="nc" id="L293">		this.trackingFileName = trackingFileName;</span>
-<span class="nc" id="L294">	}</span>
+<span class="nc" id="L296">		this.trackingFileName = trackingFileName;</span>
+<span class="nc" id="L297">	}</span>
 
+	/** @return console Log level */
 	public String getConsoleLogLevel() {
-<span class="nc" id="L297">		return consoleLogLevel;</span>
+<span class="nc" id="L301">		return consoleLogLevel;</span>
 	}
 
+	/** @param consoleLogLevel to set */
 	public void setConsoleLogLevel(String consoleLogLevel) {
-<span class="nc" id="L301">		this.consoleLogLevel = consoleLogLevel;</span>
-<span class="nc" id="L302">	}</span>
+<span class="nc" id="L306">		this.consoleLogLevel = consoleLogLevel;</span>
+<span class="nc" id="L307">	}</span>
 
 	/**
 	 * A method to test the EIDSClient.
-	 * 
-	 * @param args
-	 * @throws Exception
+	 *
+	 * @param args arguments
+	 * @throws Exception if error occurs
 	 */
 	public static void main(final String[] args) throws Exception {
-<span class="nc" id="L311">		EIDSListener listener = new EIDSListener() {</span>
+<span class="nc" id="L316">		EIDSListener listener = new EIDSListener() {</span>
 			public void onEIDSMessage(EIDSMessageEvent event) {
-<span class="nc" id="L313">				System.err.println(event.getServerHost() + &quot; &quot;</span>
-<span class="nc" id="L314">						+ event.getServerSequence());</span>
-<span class="nc" id="L315">				System.err.println(&quot;\t&quot; + event.getMessageSource() + &quot; &quot;</span>
-<span class="nc" id="L316">						+ event.getMessageSequence());</span>
-<span class="nc" id="L317">				System.err.println(&quot;\t&quot; + event.getRootNamespace() + &quot;:&quot;</span>
-<span class="nc" id="L318">						+ event.getRootElement());</span>
-<span class="nc" id="L319">			}</span>
+<span class="nc" id="L318">				System.err.println(event.getServerHost() + &quot; &quot;</span>
+<span class="nc" id="L319">						+ event.getServerSequence());</span>
+<span class="nc" id="L320">				System.err.println(&quot;\t&quot; + event.getMessageSource() + &quot; &quot;</span>
+<span class="nc" id="L321">						+ event.getMessageSequence());</span>
+<span class="nc" id="L322">				System.err.println(&quot;\t&quot; + event.getRootNamespace() + &quot;:&quot;</span>
+<span class="nc" id="L323">						+ event.getRootElement());</span>
+<span class="nc" id="L324">			}</span>
 		};
 
-<span class="nc" id="L322">		QWEmbeddedClient client = new QWEmbeddedClient(&quot;eids1.cr.usgs.gov&quot;,</span>
-<span class="nc" id="L323">				39977);</span>
-<span class="nc" id="L324">		client.addListener(listener);</span>
+<span class="nc" id="L327">		QWEmbeddedClient client = new QWEmbeddedClient(&quot;eids1.cr.usgs.gov&quot;,</span>
+<span class="nc" id="L328">				39977);</span>
+<span class="nc" id="L329">		client.addListener(listener);</span>
 
-<span class="nc" id="L326">		System.err.println(&quot;Starting client&quot;);</span>
+<span class="nc" id="L331">		System.err.println(&quot;Starting client&quot;);</span>
 		// run for 2 seconds
-<span class="nc" id="L328">		client.startup();</span>
-<span class="nc" id="L329">		Thread.sleep(5000);</span>
+<span class="nc" id="L333">		client.startup();</span>
+<span class="nc" id="L334">		Thread.sleep(5000);</span>
 
-<span class="nc" id="L331">		System.err.println(&quot;Stopping client&quot;);</span>
+<span class="nc" id="L336">		System.err.println(&quot;Stopping client&quot;);</span>
 		// stop for 2 seconds
-<span class="nc" id="L333">		client.shutdown();</span>
+<span class="nc" id="L338">		client.shutdown();</span>
 
 		// start a new client
-<span class="nc" id="L336">		client = new QWEmbeddedClient(&quot;eids1.cr.usgs.gov&quot;, 39977);</span>
-<span class="nc" id="L337">		client.addListener(listener);</span>
+<span class="nc" id="L341">		client = new QWEmbeddedClient(&quot;eids1.cr.usgs.gov&quot;, 39977);</span>
+<span class="nc" id="L342">		client.addListener(listener);</span>
 
-<span class="nc" id="L339">		System.err.println(&quot;Starting client&quot;);</span>
+<span class="nc" id="L344">		System.err.println(&quot;Starting client&quot;);</span>
 		// run for 2 seconds
-<span class="nc" id="L341">		client.startup();</span>
-<span class="nc" id="L342">		Thread.sleep(5000);</span>
+<span class="nc" id="L346">		client.startup();</span>
+<span class="nc" id="L347">		Thread.sleep(5000);</span>
 
-<span class="nc" id="L344">		System.err.println(&quot;Stopping client&quot;);</span>
+<span class="nc" id="L349">		System.err.println(&quot;Stopping client&quot;);</span>
 		// stop for 2 seconds
-<span class="nc" id="L346">		client.shutdown();</span>
-<span class="nc" id="L347">	}</span>
+<span class="nc" id="L351">		client.shutdown();</span>
+<span class="nc" id="L352">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

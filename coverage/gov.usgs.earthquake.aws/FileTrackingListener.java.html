@@ -28,13 +28,15 @@ import gov.usgs.util.StreamUtils;
  */
 public class FileTrackingListener extends DefaultConfigurable implements NotificationListener {
 
-<span class="nc" id="L31">  private static final Logger LOGGER = Logger.getLogger(FileTrackingListener.class.getName());</span>
+  /** Initialzation of logger. For us later in file. */
+<span class="nc" id="L32">  private static final Logger LOGGER = Logger.getLogger(FileTrackingListener.class.getName());</span>
 
-  // tracking index properties
+  /** Tracking index property */
   public static final String TRACKING_INDEX_PROPERTY = &quot;trackingIndex&quot;;
+  /** Tracking index file property */
   public static final String TRACKING_INDEX_FILE_PROPERTY = &quot;trackingIndexFile&quot;;
 
-  // tracking file properties
+  /** Tracking file property */
   public static final String TRACKING_FILE_PROEPRTY = &quot;trackingFile&quot;;
 
   /** File being tracked. */
@@ -42,117 +44,136 @@ public class FileTrackingListener extends DefaultConfigurable implements Notific
   /** Tracking Index where contents are stored */
   private TrackingIndex trackingIndex;
 
-<span class="nc" id="L45">  public FileTrackingListener() {</span>
-<span class="nc" id="L46">  }</span>
+  /** FileTrackingListener constructor */
+<span class="nc" id="L48">  public FileTrackingListener() {</span>
+<span class="nc" id="L49">  }</span>
 
-<span class="nc" id="L48">  public FileTrackingListener(final File trackingFile, final TrackingIndex trackingIndex) {</span>
-<span class="nc" id="L49">    this.trackingFile = trackingFile;</span>
-<span class="nc" id="L50">    this.trackingIndex = trackingIndex;</span>
-<span class="nc" id="L51">  }</span>
+  /** Initializable FileTrackingListener
+   * @param trackingFile file to be traacked
+   * @param trackingIndex Index where contents are stored
+   */
+<span class="nc" id="L55">  public FileTrackingListener(final File trackingFile, final TrackingIndex trackingIndex) {</span>
+<span class="nc" id="L56">    this.trackingFile = trackingFile;</span>
+<span class="nc" id="L57">    this.trackingIndex = trackingIndex;</span>
+<span class="nc" id="L58">  }</span>
 
-<span class="nc" id="L53">  public File getTrackingFile() { return this.trackingFile; }</span>
+  /** Getter for trackingFile
+   * @return trackingFile
+   */
+<span class="nc" id="L63">  public File getTrackingFile() { return this.trackingFile; }</span>
+
+  /** Setter for trackingFile
+   * @param trackingFile File to be tracked
+   */
   public void setTrackingFile(final File trackingFile) {
-<span class="nc" id="L55">    this.trackingFile = trackingFile;</span>
-<span class="nc" id="L56">  }</span>
+<span class="nc" id="L69">    this.trackingFile = trackingFile;</span>
+<span class="nc" id="L70">  }</span>
 
-<span class="nc" id="L58">  public TrackingIndex getTrackingIndex() { return this.trackingIndex; }</span>
+  /** Getter for trackingIndex
+   * @return trackingIndex
+   */
+<span class="nc" id="L75">  public TrackingIndex getTrackingIndex() { return this.trackingIndex; }</span>
+
+  /** Setter for trackingIndex
+   * @param trackingIndex Index where contents are stored
+   */
   public void setTrackingIndex(final TrackingIndex trackingIndex) {
-<span class="nc" id="L60">    this.trackingIndex = trackingIndex;</span>
-<span class="nc" id="L61">  }</span>
+<span class="nc" id="L81">    this.trackingIndex = trackingIndex;</span>
+<span class="nc" id="L82">  }</span>
 
   @Override
   public void configure(Config config) throws Exception {
-<span class="nc" id="L65">    super.configure(config);</span>
+<span class="nc" id="L86">    super.configure(config);</span>
 
     // configure tracking index
-<span class="nc" id="L68">    final String trackingIndexName = config.getProperty(TRACKING_INDEX_PROPERTY);</span>
-<span class="nc bnc" id="L69" title="All 2 branches missed.">    if (trackingIndexName != null) {</span>
-<span class="nc" id="L70">      LOGGER.config(&quot;[&quot; + getName() + &quot;] loading tracking index &quot;</span>
+<span class="nc" id="L89">    final String trackingIndexName = config.getProperty(TRACKING_INDEX_PROPERTY);</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">    if (trackingIndexName != null) {</span>
+<span class="nc" id="L91">      LOGGER.config(&quot;[&quot; + getName() + &quot;] loading tracking index &quot;</span>
           + trackingIndexName);
       try {
         // read object from global config
-<span class="nc" id="L74">        trackingIndex = (TrackingIndex) Config.getConfig().getObject(trackingIndexName);</span>
-<span class="nc" id="L75">      } catch (Exception e) {</span>
-<span class="nc" id="L76">        LOGGER.log(</span>
+<span class="nc" id="L95">        trackingIndex = (TrackingIndex) Config.getConfig().getObject(trackingIndexName);</span>
+<span class="nc" id="L96">      } catch (Exception e) {</span>
+<span class="nc" id="L97">        LOGGER.log(</span>
             Level.WARNING,
-<span class="nc" id="L78">            &quot;[&quot; + getName() + &quot;] error loading tracking index &quot;</span>
+<span class="nc" id="L99">            &quot;[&quot; + getName() + &quot;] error loading tracking index &quot;</span>
                 + trackingIndexName,
             e);
-<span class="nc" id="L81">      }</span>
+<span class="nc" id="L102">      }</span>
     } else {
-<span class="nc" id="L83">      final String trackingIndexFileName = config.getProperty(TRACKING_INDEX_FILE_PROPERTY);</span>
-<span class="nc bnc" id="L84" title="All 2 branches missed.">      if (trackingIndexFileName != null) {</span>
-<span class="nc" id="L85">        LOGGER.config(&quot;[&quot; + getName() + &quot;] creating tracking index at&quot;</span>
+<span class="nc" id="L104">      final String trackingIndexFileName = config.getProperty(TRACKING_INDEX_FILE_PROPERTY);</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">      if (trackingIndexFileName != null) {</span>
+<span class="nc" id="L106">        LOGGER.config(&quot;[&quot; + getName() + &quot;] creating tracking index at&quot;</span>
             + trackingIndexFileName);
-<span class="nc" id="L87">        trackingIndex = new TrackingIndex(</span>
+<span class="nc" id="L108">        trackingIndex = new TrackingIndex(</span>
             TrackingIndex.DEFAULT_DRIVER,
             &quot;jdbc:sqlite:&quot; + trackingIndexFileName);
       }
     }
 
     // configure tracking file
-<span class="nc" id="L94">    final String trackingFileName = config.getProperty(TRACKING_FILE_PROEPRTY);</span>
-<span class="nc bnc" id="L95" title="All 2 branches missed.">    if (trackingFileName == null) {</span>
-<span class="nc" id="L96">      throw new ConfigurationException(TRACKING_FILE_PROEPRTY + &quot; is required&quot;);</span>
+<span class="nc" id="L115">    final String trackingFileName = config.getProperty(TRACKING_FILE_PROEPRTY);</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">    if (trackingFileName == null) {</span>
+<span class="nc" id="L117">      throw new ConfigurationException(TRACKING_FILE_PROEPRTY + &quot; is required&quot;);</span>
     }
-<span class="nc" id="L98">    trackingFile = new File(trackingFileName);</span>
-<span class="nc" id="L99">  }</span>
+<span class="nc" id="L119">    trackingFile = new File(trackingFileName);</span>
+<span class="nc" id="L120">  }</span>
 
   /**
    * When starting, call loadTrackingFile to create/update file on disk.
    */
   @Override
   public void startup() throws Exception {
-<span class="nc" id="L106">    super.startup();</span>
-<span class="nc" id="L107">    trackingIndex.startup();</span>
-<span class="nc" id="L108">    loadTrackingFile();</span>
-<span class="nc" id="L109">  }</span>
+<span class="nc" id="L127">    super.startup();</span>
+<span class="nc" id="L128">    trackingIndex.startup();</span>
+<span class="nc" id="L129">    loadTrackingFile();</span>
+<span class="nc" id="L130">  }</span>
 
   /**
    * When shutting down, call storeTrackingFile to read from file on disk.
    */
   @Override
   public void shutdown() throws Exception {
-<span class="nc" id="L116">    storeTrackingFile();</span>
-<span class="nc" id="L117">    trackingIndex.shutdown();</span>
-<span class="nc" id="L118">    super.shutdown();</span>
-<span class="nc" id="L119">  }</span>
+<span class="nc" id="L137">    storeTrackingFile();</span>
+<span class="nc" id="L138">    trackingIndex.shutdown();</span>
+<span class="nc" id="L139">    super.shutdown();</span>
+<span class="nc" id="L140">  }</span>
 
   /**
    * Read trackingIndex and write trackingFile.
    *
-   * @throws Exception
+   * @throws Exception Exception
    */
   public void loadTrackingFile() throws Exception {
-<span class="nc" id="L127">    final String name = trackingFile.getAbsolutePath();</span>
-<span class="nc" id="L128">    final JsonObject trackingData = trackingIndex.getTrackingData(name);</span>
-<span class="nc bnc" id="L129" title="All 2 branches missed.">    if (trackingData == null) {</span>
-<span class="nc" id="L130">      LOGGER.info(&quot;[&quot; + getName() + &quot;] tracking data not found in index, ignoring&quot;);</span>
-<span class="nc" id="L131">      return;</span>
+<span class="nc" id="L148">    final String name = trackingFile.getAbsolutePath();</span>
+<span class="nc" id="L149">    final JsonObject trackingData = trackingIndex.getTrackingData(name);</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">    if (trackingData == null) {</span>
+<span class="nc" id="L151">      LOGGER.info(&quot;[&quot; + getName() + &quot;] tracking data not found in index, ignoring&quot;);</span>
+<span class="nc" id="L152">      return;</span>
     }
-<span class="nc" id="L133">    final byte[] data = Base64.getDecoder().decode(trackingData.getString(&quot;data&quot;));</span>
-<span class="nc" id="L134">    FileUtils.writeFile(trackingFile, data);</span>
-<span class="nc" id="L135">  }</span>
+<span class="nc" id="L154">    final byte[] data = Base64.getDecoder().decode(trackingData.getString(&quot;data&quot;));</span>
+<span class="nc" id="L155">    FileUtils.writeFile(trackingFile, data);</span>
+<span class="nc" id="L156">  }</span>
 
   /**
    * Read trackingFile and write into trackingIndex.
    *
-   * @throws Exception
+   * @throws Exception Exception
    */
   public void storeTrackingFile() throws Exception {
     try {
       // use absolute path as name
-<span class="nc" id="L145">      final String name = trackingFile.getAbsolutePath();</span>
-<span class="nc" id="L146">      final byte[] data = StreamUtils.readStream(trackingFile);</span>
-<span class="nc" id="L147">      final JsonObject trackingData = Json.createObjectBuilder()</span>
-<span class="nc" id="L148">          .add(&quot;name&quot;, name)</span>
-<span class="nc" id="L149">          .add(&quot;data&quot;, Base64.getEncoder().encodeToString(data))</span>
-<span class="nc" id="L150">          .build();</span>
-<span class="nc" id="L151">      trackingIndex.setTrackingData(trackingFile.getAbsolutePath(), trackingData);</span>
-<span class="nc" id="L152">    } catch (FileNotFoundException fnf) {</span>
-<span class="nc" id="L153">      LOGGER.info(&quot;[&quot; + getName() + &quot;] tracking file not found, ignoring&quot;);</span>
-<span class="nc" id="L154">    }</span>
-<span class="nc" id="L155">  }</span>
+<span class="nc" id="L166">      final String name = trackingFile.getAbsolutePath();</span>
+<span class="nc" id="L167">      final byte[] data = StreamUtils.readStream(trackingFile);</span>
+<span class="nc" id="L168">      final JsonObject trackingData = Json.createObjectBuilder()</span>
+<span class="nc" id="L169">          .add(&quot;name&quot;, name)</span>
+<span class="nc" id="L170">          .add(&quot;data&quot;, Base64.getEncoder().encodeToString(data))</span>
+<span class="nc" id="L171">          .build();</span>
+<span class="nc" id="L172">      trackingIndex.setTrackingData(trackingFile.getAbsolutePath(), trackingData);</span>
+<span class="nc" id="L173">    } catch (FileNotFoundException fnf) {</span>
+<span class="nc" id="L174">      LOGGER.info(&quot;[&quot; + getName() + &quot;] tracking file not found, ignoring&quot;);</span>
+<span class="nc" id="L175">    }</span>
+<span class="nc" id="L176">  }</span>
 
   /**
    * Notification Listener method stubs.
@@ -162,16 +183,16 @@ public class FileTrackingListener extends DefaultConfigurable implements Notific
   @Override
   public void onNotification(NotificationEvent event) throws Exception {
     // ignore
-<span class="nc" id="L165">  }</span>
+<span class="nc" id="L186">  }</span>
 
   @Override
   public int getMaxTries() {
-<span class="nc" id="L169">    return 1;</span>
+<span class="nc" id="L190">    return 1;</span>
   }
 
   @Override
   public long getTimeout() {
-<span class="nc" id="L174">    return 1;</span>
+<span class="nc" id="L195">    return 1;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

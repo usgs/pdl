@@ -144,7 +144,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 extends <a href="../../../util/DefaultConfigurable.html" title="class in gov.usgs.util">DefaultConfigurable</a>
 implements <a href="../ListenerNotifier.html" title="interface in gov.usgs.earthquake.distribution">ListenerNotifier</a>, java.lang.Runnable</pre>
 <div class="block">Use round-robin queues to notify listeners.
- 
+
  This attempts to prevent any one product source+type from blocking processing
  of notifications from other product source+type.</div>
 </li>
@@ -356,8 +356,10 @@ implements <a href="../ListenerNotifier.html" title="interface in gov.usgs.earth
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../ListenerNotifier.html#addNotificationListener(gov.usgs.earthquake.distribution.NotificationListener)">addNotificationListener</a></code>&nbsp;in interface&nbsp;<code><a href="../ListenerNotifier.html" title="interface in gov.usgs.earthquake.distribution">ListenerNotifier</a></code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>listener</code> - NotificationListener</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -373,8 +375,10 @@ implements <a href="../ListenerNotifier.html" title="interface in gov.usgs.earth
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../ListenerNotifier.html#removeNotificationListener(gov.usgs.earthquake.distribution.NotificationListener)">removeNotificationListener</a></code>&nbsp;in interface&nbsp;<code><a href="../ListenerNotifier.html" title="interface in gov.usgs.earthquake.distribution">ListenerNotifier</a></code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>listener</code> - NotificationListener</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -390,8 +394,10 @@ implements <a href="../ListenerNotifier.html" title="interface in gov.usgs.earth
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../ListenerNotifier.html#notifyListeners(gov.usgs.earthquake.distribution.NotificationEvent)">notifyListeners</a></code>&nbsp;in interface&nbsp;<code><a href="../ListenerNotifier.html" title="interface in gov.usgs.earthquake.distribution">ListenerNotifier</a></code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>event</code> - NotificationEvent</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -405,14 +411,14 @@ implements <a href="../ListenerNotifier.html" title="interface in gov.usgs.earth
                                java.util.Collection&lt;<a href="ListenerNotifierThread.html" title="class in gov.usgs.earthquake.distribution.roundrobinnotifier">ListenerNotifierThread</a>&gt;&nbsp;toNotify)
                         throws java.lang.Exception</pre>
 <div class="block">Notify a specific list of listeners.
- 
+
  Used during renotification to only notify listeners that have an index.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>event</code> - notification.</dd>
 <dd><code>toNotify</code> - list of listeners to notify.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -441,7 +447,7 @@ implements <a href="../ListenerNotifier.html" title="interface in gov.usgs.earth
 <div class="block">Requeue existing notifications at startup.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

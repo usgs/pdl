@@ -259,7 +259,9 @@ implements <a href="io/ProductHandler.html" title="interface in gov.usgs.earthqu
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>static void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#main(java.lang.String%5B%5D)">main</a></span>&#8203;(java.lang.String[]&nbsp;args)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">CLI access into ProductDigest</div>
+</td>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
@@ -402,8 +404,10 @@ implements <a href="io/ProductHandler.html" title="interface in gov.usgs.earthqu
                  throws java.security.NoSuchAlgorithmException</pre>
 <div class="block">Construct a new ProductDigest.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>version</code> - signature version</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.security.NoSuchAlgorithmException</code></dd>
+<dd><code>java.security.NoSuchAlgorithmException</code> - if not SHA1 or SHA-256</dd>
 </dl>
 </li>
 </ul>
@@ -446,8 +450,13 @@ implements <a href="io/ProductHandler.html" title="interface in gov.usgs.earthqu
                                    <a href="../../util/CryptoUtils.Version.html" title="enum in gov.usgs.util">CryptoUtils.Version</a>&nbsp;version)
                             throws java.lang.Exception</pre>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>product</code> - A product</dd>
+<dd><code>version</code> - What version of product digest</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>A byte array of the product digest</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -483,7 +492,7 @@ implements <a href="io/ProductHandler.html" title="interface in gov.usgs.earthqu
 <dd><code>status</code> - the product's status.</dd>
 <dd><code>trackerURL</code> - a location to send status updates.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -506,7 +515,7 @@ implements <a href="io/ProductHandler.html" title="interface in gov.usgs.earthqu
 <dd><code>path</code> - path to content within product.</dd>
 <dd><code>content</code> - the product content.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -525,7 +534,7 @@ implements <a href="io/ProductHandler.html" title="interface in gov.usgs.earthqu
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>id</code> - which product.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -548,7 +557,7 @@ implements <a href="io/ProductHandler.html" title="interface in gov.usgs.earthqu
 <dd><code>relation</code> - how the URI is related to this product.</dd>
 <dd><code>href</code> - the URI that is related to this product.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -571,7 +580,7 @@ implements <a href="io/ProductHandler.html" title="interface in gov.usgs.earthqu
 <dd><code>name</code> - the property name.</dd>
 <dd><code>value</code> - the property value.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -588,8 +597,11 @@ implements <a href="io/ProductHandler.html" title="interface in gov.usgs.earthqu
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="io/ProductHandler.html#onSignatureVersion(gov.usgs.earthquake.product.ProductId,gov.usgs.util.CryptoUtils.Version)">onSignatureVersion</a></code>&nbsp;in interface&nbsp;<code><a href="io/ProductHandler.html" title="interface in gov.usgs.earthquake.product.io">ProductHandler</a></code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>id</code> - which product.</dd>
+<dd><code>version</code> - product version</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -611,7 +623,7 @@ implements <a href="io/ProductHandler.html" title="interface in gov.usgs.earthqu
 <dd><code>signature</code> - the product signature, which can be verified using the
             ProductSigner class.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -637,9 +649,12 @@ implements <a href="io/ProductHandler.html" title="interface in gov.usgs.earthqu
 <h4>main</h4>
 <pre class="methodSignature">public static&nbsp;void&nbsp;main&#8203;(java.lang.String[]&nbsp;args)
                  throws java.lang.Exception</pre>
+<div class="block">CLI access into ProductDigest</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>args</code> - CLI Args</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

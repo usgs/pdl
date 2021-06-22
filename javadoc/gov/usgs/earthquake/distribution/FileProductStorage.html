@@ -723,6 +723,8 @@ implements <a href="ProductStorage.html" title="interface in gov.usgs.earthquake
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="ProductStorage.html#notifyListeners(gov.usgs.earthquake.distribution.StorageEvent)">notifyListeners</a></code>&nbsp;in interface&nbsp;<code><a href="ProductStorage.html" title="interface in gov.usgs.earthquake.distribution">ProductStorage</a></code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>event</code> - StorageEvent</dd>
 </dl>
 </li>
 </ul>
@@ -788,6 +790,12 @@ implements <a href="ProductStorage.html" title="interface in gov.usgs.earthquake
 <li class="blockList">
 <h4>getHashedProductPath</h4>
 <pre class="methodSignature">protected&nbsp;java.lang.String&nbsp;getHashedProductPath&#8203;(<a href="../product/ProductId.html" title="class in gov.usgs.earthquake.product">ProductId</a>&nbsp;id)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>id</code> - Specific productID</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>string buffer of hashed product path</dd>
+</dl>
 </li>
 </ul>
 <a id="getNormalProductPath(gov.usgs.earthquake.product.ProductId)">
@@ -797,6 +805,12 @@ implements <a href="ProductStorage.html" title="interface in gov.usgs.earthquake
 <li class="blockList">
 <h4>getNormalProductPath</h4>
 <pre class="methodSignature">public&nbsp;java.lang.String&nbsp;getNormalProductPath&#8203;(<a href="../product/ProductId.html" title="class in gov.usgs.earthquake.product">ProductId</a>&nbsp;id)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>id</code> - ProductId</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>string buffer of normal product path</dd>
+</dl>
 </li>
 </ul>
 <a id="getProductHandlerFormat(java.io.File)">
@@ -817,7 +831,7 @@ implements <a href="ProductStorage.html" title="interface in gov.usgs.earthquake
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the ProductHandler.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -839,7 +853,7 @@ implements <a href="ProductStorage.html" title="interface in gov.usgs.earthquake
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the ProductSource.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -900,7 +914,7 @@ implements <a href="ProductStorage.html" title="interface in gov.usgs.earthquake
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the loaded product.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>

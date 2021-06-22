@@ -55,358 +55,412 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 <span class="fc" id="L55">	private static final Logger LOGGER = Logger.getLogger(EIDSInputWedge.class</span>
 <span class="fc" id="L56">			.getName());</span>
 
+	/** Property for parser class */
 	public static final String PARSER_CLASS_PROPERTY = &quot;parserClass&quot;;
+	/** Default parser class */
 	public static final String DEFAULT_PARSER_CLASS = &quot;gov.usgs.earthquake.event.QuakemlToQuakemlConverter&quot;;
 
+	/** Property for polldir */
 	public static final String POLLDIR_PROPERTY = &quot;directory&quot;;
+	/** Default polldir */
 	public static final String DEFAULT_POLLDIR = &quot;polldir&quot;;
-<span class="fc" id="L63">	private File polldir = new File(DEFAULT_POLLDIR);</span>
+<span class="fc" id="L67">	private File polldir = new File(DEFAULT_POLLDIR);</span>
 
+	/** Property for storage directory */
 	public static final String STORAGEDIR_PROPERTY = &quot;oldinputdir&quot;;
+	/** Default storage directory */
 	public static final String DEFAULT_STORAGEDIR = &quot;oldinput&quot;;
-<span class="fc" id="L67">	private File storagedir = new File(DEFAULT_STORAGEDIR);</span>
+<span class="fc" id="L73">	private File storagedir = new File(DEFAULT_STORAGEDIR);</span>
 
+	/** Property for error directory */
 	public static final String ERRORDIR_PROPERTY = &quot;errordir&quot;;
+	/** Default error directory */
 	public static final String DEFAULT_ERRORDIR = &quot;errordir&quot;;
-<span class="fc" id="L71">	private File errordir = new File(DEFAULT_ERRORDIR);</span>
+<span class="fc" id="L79">	private File errordir = new File(DEFAULT_ERRORDIR);</span>
 
+	/** Property for validate */
 	public static final String VALIDATE_PROPERTY = &quot;validate&quot;;
+	/** Default status of validate */
 	public static final String DEFAULT_VALIDATE = &quot;false&quot;;
 
+	/** Property for sendOriginWhenPhasesExist */
 	public static final String SEND_ORIGIN_WHEN_PHASES_EXIST_PROPERTY = &quot;sendOriginWhenPhasesExist&quot;;
+	/** Default status of sendOrigin...  */
 	public static final String DEFAULT_SEND_ORIGIN_WHEN_PHASES_EXIST = &quot;false&quot;;
 
+	/** Property for sendMechanismWhenPhasesExist */
 	public static final String SEND_MECHANISM_WHEN_PHASES_EXIST_PROPERTY = &quot;sendMechanismWhenPhasesExist&quot;;
+	/** Default status of sendMechanism... */
 	public static final String DEFAULT_SEND_MECHANISM_WHEN_PHASES_EXIST = &quot;false&quot;;
 
 	/** Convert parsed quakeml to a product. */
-<span class="fc" id="L83">	private ProductCreator productCreator = new QuakemlProductCreator();</span>
+<span class="fc" id="L97">	private ProductCreator productCreator = new QuakemlProductCreator();</span>
 
 	/** Whether created products should be converted to internal types. */
 	public static final String CREATE_INTERNAL_PRODUCTS_PROPERTY = &quot;createInternalProducts&quot;;
+	/** Default status of CREATE_INTERNAL_PRODUCTS */
 	public static final String DEFAULT_CREATE_INTERNAL_PRODUCTS = &quot;false&quot;;
-<span class="fc" id="L88">	private boolean createInternalProducts = false;</span>
+<span class="fc" id="L103">	private boolean createInternalProducts = false;</span>
 
 	/** Whether created products should be converted to scenario types. */
 	public static final String CREATE_SCENARIO_PRODUCTS_PROPERTY = &quot;createScenarioProducts&quot;;
+	/** Default status of CREATE_SCENARIO_PRODUCTS */
 	public static final String DEFAULT_CREATE_SCENARIO_PRODUCTS = &quot;false&quot;;
-<span class="fc" id="L93">	private boolean createScenarioProducts = false;</span>
+<span class="fc" id="L109">	private boolean createScenarioProducts = false;</span>
 
 	/** Directory polling object. */
 	private DirectoryPoller directoryPoller;
 
+	/** Poll interval property */
 	public static final String POLLINTERVAL_PROPERTY = &quot;interval&quot;;
+	/** Default interval for POLLINTERVAL */
 	public static final String DEFAULT_POLLINTERVAL = &quot;1000&quot;;
-<span class="fc" id="L100">	private long pollInterval = 1000L;</span>
+<span class="fc" id="L118">	private long pollInterval = 1000L;</span>
 
+	/** Property for pollCarefully */
 	public static final String POLL_CAREFULLY_PROPERTY = &quot;pollCarefully&quot;;
+	/** Default status of POLL_CAREFULLY */
 	public static final String DEFAULT_POLL_CAREFULLY = &quot;false&quot;;
-<span class="fc" id="L104">	private boolean pollCarefully = false;</span>
+<span class="fc" id="L124">	private boolean pollCarefully = false;</span>
 
+	/** Property for doBufferFix */
 	public static final String DO_BUFFER_FIX_PROPERTY = &quot;doBufferFix&quot;;
+	/** Default status of DO_BUFFER_FIX property */
 	public static final String DEFAULT_DO_BUFFER_FIX = &quot;true&quot;;
-<span class="fc" id="L108">	private boolean doBufferFix = true;</span>
+<span class="fc" id="L130">	private boolean doBufferFix = true;</span>
 
-<span class="fc" id="L110">	private Thread pollThread = null;</span>
+<span class="fc" id="L132">	private Thread pollThread = null;</span>
 
-<span class="fc" id="L112">	public EIDSInputWedge() throws Exception {</span>
-<span class="fc" id="L113">	}</span>
+	/**
+	 * Empty constructor
+	 * @throws Exception if error occurs
+	 */
+<span class="fc" id="L138">	public EIDSInputWedge() throws Exception {</span>
+<span class="fc" id="L139">	}</span>
 
+	/**
+	 * Gets products from file and iterates through each product
+	 * During iteration, sets type to internal/scenario if createInternalProducts
+	 * or createScenarioProducts is true. Attaches Content files to product,
+	 * Sends product
+	 * @param file File containing products
+	 * @param attachContent Map of String and Content
+	 * @return Map of product IDs and sent products
+	 * @throws Exception if error occurs
+	 */
 	public Map&lt;ProductId, Map&lt;ProductSender, Exception&gt;&gt; parseAndSend(
 			final File file, final Map&lt;String, Content&gt; attachContent)
 			throws Exception {
 
-<span class="fc" id="L119">		Map&lt;ProductId, Map&lt;ProductSender, Exception&gt;&gt; sendProductResults = new HashMap&lt;ProductId, Map&lt;ProductSender, Exception&gt;&gt;();</span>
+<span class="fc" id="L155">		Map&lt;ProductId, Map&lt;ProductSender, Exception&gt;&gt; sendProductResults = new HashMap&lt;ProductId, Map&lt;ProductSender, Exception&gt;&gt;();</span>
 
-<span class="fc" id="L121">		List&lt;Product&gt; products = productCreator.getProducts(file);</span>
+<span class="fc" id="L157">		List&lt;Product&gt; products = productCreator.getProducts(file);</span>
 
-<span class="fc" id="L123">		Iterator&lt;Product&gt; iter = products.iterator();</span>
-<span class="fc bfc" id="L124" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
-<span class="fc" id="L125">			Product product = iter.next();</span>
-<span class="fc" id="L126">			ProductId id = product.getId();</span>
+<span class="fc" id="L159">		Iterator&lt;Product&gt; iter = products.iterator();</span>
+<span class="fc bfc" id="L160" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L161">			Product product = iter.next();</span>
+<span class="fc" id="L162">			ProductId id = product.getId();</span>
 
-<span class="fc bfc" id="L128" title="All 2 branches covered.">			if (createInternalProducts) {</span>
-<span class="fc" id="L129">				id.setType(&quot;internal-&quot; + id.getType());</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">			if (createInternalProducts) {</span>
+<span class="fc" id="L165">				id.setType(&quot;internal-&quot; + id.getType());</span>
 			}
-<span class="fc bfc" id="L131" title="All 2 branches covered.">			if (createScenarioProducts) {</span>
-<span class="fc" id="L132">				id.setType(id.getType() + &quot;-scenario&quot;);</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">			if (createScenarioProducts) {</span>
+<span class="fc" id="L168">				id.setType(id.getType() + &quot;-scenario&quot;);</span>
 			}
 
 			// attach files to generated product
-<span class="pc bpc" id="L136" title="2 of 4 branches missed.">			if (attachContent != null &amp;&amp; attachContent.size() &gt; 0) {</span>
-<span class="nc bnc" id="L137" title="All 2 branches missed.">				if (products.size() &gt; 1) {</span>
-<span class="nc" id="L138">					throw new Exception(&quot;Trying to attach files,&quot;</span>
+<span class="pc bpc" id="L172" title="2 of 4 branches missed.">			if (attachContent != null &amp;&amp; attachContent.size() &gt; 0) {</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">				if (products.size() &gt; 1) {</span>
+<span class="nc" id="L174">					throw new Exception(&quot;Trying to attach files,&quot;</span>
 							+ &quot; generated more than 1 product&quot;);
 				}
-<span class="nc" id="L141">				product.getContents().putAll(attachContent);</span>
+<span class="nc" id="L177">				product.getContents().putAll(attachContent);</span>
 			}
 
 			// send product, save any exceptions
-<span class="fc" id="L145">			sendProductResults.put(product.getId(), sendProduct(product));</span>
-<span class="fc" id="L146">		}</span>
+<span class="fc" id="L181">			sendProductResults.put(product.getId(), sendProduct(product));</span>
+<span class="fc" id="L182">		}</span>
 
-<span class="fc" id="L148">		return sendProductResults;</span>
+<span class="fc" id="L184">		return sendProductResults;</span>
 	}
 
+	/**
+	 * Parses given file, looking for send exceptions and reports statistics
+	 * @param file to parse and look for errors
+	 */
 	public void onFile(File file) {
-<span class="nc" id="L152">		Date inputtime = new Date();</span>
-<span class="nc" id="L153">		LOGGER.info(&quot;Reading file &quot; + file.getName());</span>
+<span class="nc" id="L192">		Date inputtime = new Date();</span>
+<span class="nc" id="L193">		LOGGER.info(&quot;Reading file &quot; + file.getName());</span>
 
 		try {
-<span class="nc" id="L156">			Map&lt;ProductId, Map&lt;ProductSender, Exception&gt;&gt; sendExceptions = parseAndSend(</span>
+<span class="nc" id="L196">			Map&lt;ProductId, Map&lt;ProductSender, Exception&gt;&gt; sendExceptions = parseAndSend(</span>
 					file, null);
 
 			// check how send went
-<span class="nc" id="L160">			int numSenders = getProductSenders().size();</span>
-<span class="nc" id="L161">			int total = sendExceptions.size();</span>
-<span class="nc" id="L162">			int successful = 0;</span>
-<span class="nc" id="L163">			int partialFailures = 0;</span>
-<span class="nc" id="L164">			int totalFailures = 0;</span>
+<span class="nc" id="L200">			int numSenders = getProductSenders().size();</span>
+<span class="nc" id="L201">			int total = sendExceptions.size();</span>
+<span class="nc" id="L202">			int successful = 0;</span>
+<span class="nc" id="L203">			int partialFailures = 0;</span>
+<span class="nc" id="L204">			int totalFailures = 0;</span>
 
-<span class="nc" id="L166">			Iterator&lt;ProductId&gt; sentIds = sendExceptions.keySet().iterator();</span>
-<span class="nc bnc" id="L167" title="All 2 branches missed.">			while (sentIds.hasNext()) {</span>
-<span class="nc" id="L168">				ProductId sentId = sentIds.next();</span>
-<span class="nc bnc" id="L169" title="All 2 branches missed.">				if (sendExceptions.get(sentId).size() == numSenders) {</span>
-<span class="nc" id="L170">					totalFailures++;</span>
-<span class="nc" id="L171">					LOGGER.severe(&quot;Total failure sending product &quot;</span>
-<span class="nc" id="L172">							+ sentId.toString());</span>
+<span class="nc" id="L206">			Iterator&lt;ProductId&gt; sentIds = sendExceptions.keySet().iterator();</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">			while (sentIds.hasNext()) {</span>
+<span class="nc" id="L208">				ProductId sentId = sentIds.next();</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">				if (sendExceptions.get(sentId).size() == numSenders) {</span>
+<span class="nc" id="L210">					totalFailures++;</span>
+<span class="nc" id="L211">					LOGGER.severe(&quot;Total failure sending product &quot;</span>
+<span class="nc" id="L212">							+ sentId.toString());</span>
 				} else {
 					// output built product id because it was sent at least once
-<span class="nc" id="L175">					System.out.println(sentId.toString());</span>
+<span class="nc" id="L215">					System.out.println(sentId.toString());</span>
 
-<span class="nc bnc" id="L177" title="All 2 branches missed.">					if (sendExceptions.get(sentId).size() == 0) {</span>
-<span class="nc" id="L178">						successful++;</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">					if (sendExceptions.get(sentId).size() == 0) {</span>
+<span class="nc" id="L218">						successful++;</span>
 					} else {
-<span class="nc" id="L180">						partialFailures++;</span>
-<span class="nc" id="L181">						LOGGER.warning(&quot;Partial failure sending product &quot;</span>
-<span class="nc" id="L182">								+ sentId.toString());</span>
+<span class="nc" id="L220">						partialFailures++;</span>
+<span class="nc" id="L221">						LOGGER.warning(&quot;Partial failure sending product &quot;</span>
+<span class="nc" id="L222">								+ sentId.toString());</span>
 					}
 				}
-<span class="nc" id="L185">			}</span>
+<span class="nc" id="L225">			}</span>
 
-<span class="nc" id="L187">			LOGGER.info(&quot;generated &quot; + total + &quot; products: &quot; + successful</span>
+<span class="nc" id="L227">			LOGGER.info(&quot;generated &quot; + total + &quot; products: &quot; + successful</span>
 					+ &quot; sent, &quot; + partialFailures + &quot; partially sent, &quot;
 					+ totalFailures + &quot; failed to send&quot;);
 
 			// notify of failures using exit code
-<span class="nc bnc" id="L192" title="All 2 branches missed.">			if (totalFailures &gt; 0) {</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">			if (totalFailures &gt; 0) {</span>
 				// consider this failure, event if some products sent
-<span class="nc" id="L194">				throw new Exception();</span>
+<span class="nc" id="L234">				throw new Exception();</span>
 			}
 
 			// succeeded, at least somewhat
 			// move to oldinput directory
-<span class="nc" id="L199">			file.renameTo(new File(storagedir, file.getName() + &quot;_&quot;</span>
-<span class="nc" id="L200">					+ inputtime.getTime()));</span>
-<span class="nc" id="L201">		} catch (Exception e) {</span>
-<span class="nc bnc" id="L202" title="All 2 branches missed.">			if (e instanceof JAXBException</span>
-<span class="nc bnc" id="L203" title="All 2 branches missed.">					&amp;&amp; ((JAXBException) e).getLinkedException() instanceof SAXParseException) {</span>
-<span class="nc" id="L204">				SAXParseException spe = (SAXParseException) ((JAXBException) e)</span>
-<span class="nc" id="L205">						.getLinkedException();</span>
-<span class="nc" id="L206">				LOGGER.warning(&quot;Parse error: &quot; + spe.getMessage() + &quot;; line=&quot;</span>
-<span class="nc" id="L207">						+ spe.getLineNumber() + &quot;, column=&quot;</span>
-<span class="nc" id="L208">						+ spe.getColumnNumber());</span>
+<span class="nc" id="L239">			file.renameTo(new File(storagedir, file.getName() + &quot;_&quot;</span>
+<span class="nc" id="L240">					+ inputtime.getTime()));</span>
+<span class="nc" id="L241">		} catch (Exception e) {</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">			if (e instanceof JAXBException</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">					&amp;&amp; ((JAXBException) e).getLinkedException() instanceof SAXParseException) {</span>
+<span class="nc" id="L244">				SAXParseException spe = (SAXParseException) ((JAXBException) e)</span>
+<span class="nc" id="L245">						.getLinkedException();</span>
+<span class="nc" id="L246">				LOGGER.warning(&quot;Parse error: &quot; + spe.getMessage() + &quot;; line=&quot;</span>
+<span class="nc" id="L247">						+ spe.getLineNumber() + &quot;, column=&quot;</span>
+<span class="nc" id="L248">						+ spe.getColumnNumber());</span>
 			}
 
-<span class="nc bnc" id="L211" title="All 2 branches missed.">			if (errordir != null) {</span>
-<span class="nc bnc" id="L212" title="All 2 branches missed.">				if (!errordir.exists()) {</span>
-<span class="nc" id="L213">					errordir.mkdirs();</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">			if (errordir != null) {</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">				if (!errordir.exists()) {</span>
+<span class="nc" id="L253">					errordir.mkdirs();</span>
 				}
-<span class="nc" id="L215">				File errorfile = new File(errordir, file.getName() + &quot;_&quot;</span>
-<span class="nc" id="L216">						+ new Date().getTime());</span>
+<span class="nc" id="L255">				File errorfile = new File(errordir, file.getName() + &quot;_&quot;</span>
+<span class="nc" id="L256">						+ new Date().getTime());</span>
 
 				// move to error directory
 				try {
-<span class="nc" id="L220">				LOGGER.log(Level.WARNING, &quot;Errors processing file, moving to &quot;</span>
-<span class="nc" id="L221">						+ errorfile.getCanonicalPath(), e);</span>
-<span class="nc" id="L222">				} catch (Exception ignore) {</span>
+<span class="nc" id="L260">				LOGGER.log(Level.WARNING, &quot;Errors processing file, moving to &quot;</span>
+<span class="nc" id="L261">						+ errorfile.getCanonicalPath(), e);</span>
+<span class="nc" id="L262">				} catch (Exception ignore) {</span>
 					//ignore
-<span class="nc" id="L224">				}</span>
-<span class="nc" id="L225">				file.renameTo(errorfile);</span>
-<span class="nc" id="L226">			} else {</span>
-<span class="nc" id="L227">				LOGGER.warning(&quot;Error processing file &quot; + file.getName()</span>
+<span class="nc" id="L264">				}</span>
+<span class="nc" id="L265">				file.renameTo(errorfile);</span>
+<span class="nc" id="L266">			} else {</span>
+<span class="nc" id="L267">				LOGGER.warning(&quot;Error processing file &quot; + file.getName()</span>
 						+ &quot;, and no error directory configured&quot;);
-<span class="nc" id="L229">				FileUtils.deleteTree(file);</span>
+<span class="nc" id="L269">				FileUtils.deleteTree(file);</span>
 			}
-<span class="nc" id="L231">		}</span>
-<span class="nc" id="L232">	}</span>
+<span class="nc" id="L271">		}</span>
+<span class="nc" id="L272">	}</span>
 
 	@Override
 	public void configure(Config config) throws Exception {
-<span class="nc" id="L236">		super.configure(config);</span>
+<span class="nc" id="L276">		super.configure(config);</span>
 
-<span class="nc" id="L238">		String parserClassName = config.getProperty(PARSER_CLASS_PROPERTY);</span>
-<span class="nc bnc" id="L239" title="All 2 branches missed.">		if (parserClassName == null) {</span>
-<span class="nc" id="L240">			LOGGER.config(&quot;Using QuakemlToProductConverter&quot;);</span>
+<span class="nc" id="L278">		String parserClassName = config.getProperty(PARSER_CLASS_PROPERTY);</span>
+<span class="nc bnc" id="L279" title="All 2 branches missed.">		if (parserClassName == null) {</span>
+<span class="nc" id="L280">			LOGGER.config(&quot;Using QuakemlToProductConverter&quot;);</span>
 		} else {
-<span class="nc" id="L242">			Object parserObj = Class.forName(parserClassName)</span>
-<span class="nc" id="L243">					.getConstructor().newInstance();</span>
-<span class="nc bnc" id="L244" title="All 2 branches missed.">			if (parserObj instanceof ProductCreator) {</span>
-<span class="nc" id="L245">				productCreator = (ProductCreator) parserObj;</span>
-<span class="nc bnc" id="L246" title="All 2 branches missed.">			} else if (parserObj instanceof FileToQuakemlConverter) {</span>
-<span class="nc" id="L247">				QuakemlProductCreator quakemlCreator = new QuakemlProductCreator(doBufferFix);</span>
-<span class="nc" id="L248">				quakemlCreator.setConverter((FileToQuakemlConverter) parserObj);</span>
-<span class="nc" id="L249">				productCreator = quakemlCreator;</span>
-<span class="nc" id="L250">			} else {</span>
-<span class="nc" id="L251">				throw new ConfigurationException(&quot;configured parser class &quot;</span>
+<span class="nc" id="L282">			Object parserObj = Class.forName(parserClassName)</span>
+<span class="nc" id="L283">					.getConstructor().newInstance();</span>
+<span class="nc bnc" id="L284" title="All 2 branches missed.">			if (parserObj instanceof ProductCreator) {</span>
+<span class="nc" id="L285">				productCreator = (ProductCreator) parserObj;</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">			} else if (parserObj instanceof FileToQuakemlConverter) {</span>
+<span class="nc" id="L287">				QuakemlProductCreator quakemlCreator = new QuakemlProductCreator(doBufferFix);</span>
+<span class="nc" id="L288">				quakemlCreator.setConverter((FileToQuakemlConverter) parserObj);</span>
+<span class="nc" id="L289">				productCreator = quakemlCreator;</span>
+<span class="nc" id="L290">			} else {</span>
+<span class="nc" id="L291">				throw new ConfigurationException(&quot;configured parser class &quot;</span>
 						+ parserClassName + &quot; does not implement &quot;
-<span class="nc" id="L253">						+ FileToQuakemlConverter.class.getName());</span>
+<span class="nc" id="L293">						+ FileToQuakemlConverter.class.getName());</span>
 			}
-<span class="nc" id="L255">			LOGGER.config(&quot;Using parser class &quot; + parserClassName);</span>
+<span class="nc" id="L295">			LOGGER.config(&quot;Using parser class &quot; + parserClassName);</span>
 		}
 
-<span class="nc" id="L258">		boolean validate = Boolean.getBoolean(config.getProperty(</span>
+<span class="nc" id="L298">		boolean validate = Boolean.getBoolean(config.getProperty(</span>
 				VALIDATE_PROPERTY, DEFAULT_VALIDATE));
-<span class="nc" id="L260">		productCreator.setValidate(validate);</span>
-<span class="nc bnc" id="L261" title="All 2 branches missed.">		LOGGER.config(&quot;Validation &quot; + (validate ? &quot;enabled&quot; : &quot;disabled&quot;));</span>
+<span class="nc" id="L300">		productCreator.setValidate(validate);</span>
+<span class="nc bnc" id="L301" title="All 2 branches missed.">		LOGGER.config(&quot;Validation &quot; + (validate ? &quot;enabled&quot; : &quot;disabled&quot;));</span>
 
-<span class="nc" id="L263">		boolean sendOriginWhenPhasesExist = Boolean.valueOf(config</span>
-<span class="nc" id="L264">				.getProperty(SEND_ORIGIN_WHEN_PHASES_EXIST_PROPERTY,</span>
+<span class="nc" id="L303">		boolean sendOriginWhenPhasesExist = Boolean.valueOf(config</span>
+<span class="nc" id="L304">				.getProperty(SEND_ORIGIN_WHEN_PHASES_EXIST_PROPERTY,</span>
 						DEFAULT_SEND_ORIGIN_WHEN_PHASES_EXIST));
-<span class="nc bnc" id="L266" title="All 2 branches missed.">		if (productCreator instanceof EQMessageProductCreator) {</span>
-<span class="nc" id="L267">			((EQMessageProductCreator) productCreator)</span>
-<span class="nc" id="L268">					.setSendOriginWhenPhasesExist(sendOriginWhenPhasesExist);</span>
+<span class="nc bnc" id="L306" title="All 2 branches missed.">		if (productCreator instanceof EQMessageProductCreator) {</span>
+<span class="nc" id="L307">			((EQMessageProductCreator) productCreator)</span>
+<span class="nc" id="L308">					.setSendOriginWhenPhasesExist(sendOriginWhenPhasesExist);</span>
 		} else {
-<span class="nc" id="L270">			((QuakemlProductCreator) productCreator)</span>
-<span class="nc" id="L271">					.setSendOriginWhenPhasesExist(sendOriginWhenPhasesExist);</span>
+<span class="nc" id="L310">			((QuakemlProductCreator) productCreator)</span>
+<span class="nc" id="L311">					.setSendOriginWhenPhasesExist(sendOriginWhenPhasesExist);</span>
 		}
-<span class="nc" id="L273">		LOGGER.config(&quot;sendOriginWhenPhasesExist = &quot;</span>
+<span class="nc" id="L313">		LOGGER.config(&quot;sendOriginWhenPhasesExist = &quot;</span>
 				+ sendOriginWhenPhasesExist);
 
-<span class="nc" id="L276">		boolean sendMechanismWhenPhasesExist = Boolean.valueOf(config</span>
-<span class="nc" id="L277">				.getProperty(SEND_MECHANISM_WHEN_PHASES_EXIST_PROPERTY,</span>
+<span class="nc" id="L316">		boolean sendMechanismWhenPhasesExist = Boolean.valueOf(config</span>
+<span class="nc" id="L317">				.getProperty(SEND_MECHANISM_WHEN_PHASES_EXIST_PROPERTY,</span>
 						DEFAULT_SEND_MECHANISM_WHEN_PHASES_EXIST));
-<span class="nc bnc" id="L279" title="All 2 branches missed.">		if (productCreator instanceof EQMessageProductCreator) {</span>
-<span class="nc bnc" id="L280" title="All 2 branches missed.">			if (sendMechanismWhenPhasesExist) {</span>
-<span class="nc" id="L281">				LOGGER.warning(SEND_MECHANISM_WHEN_PHASES_EXIST_PROPERTY</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">		if (productCreator instanceof EQMessageProductCreator) {</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">			if (sendMechanismWhenPhasesExist) {</span>
+<span class="nc" id="L321">				LOGGER.warning(SEND_MECHANISM_WHEN_PHASES_EXIST_PROPERTY</span>
 						+ &quot; is not supported for EQMessageProductCreator&quot;);
 			}
 		} else {
-<span class="nc" id="L285">			((QuakemlProductCreator) productCreator)</span>
-<span class="nc" id="L286">					.setSendMechanismWhenPhasesExist(sendMechanismWhenPhasesExist);</span>
+<span class="nc" id="L325">			((QuakemlProductCreator) productCreator)</span>
+<span class="nc" id="L326">					.setSendMechanismWhenPhasesExist(sendMechanismWhenPhasesExist);</span>
 		}
-<span class="nc" id="L288">		LOGGER.config(&quot;sendMechanismWhenPhasesExist = &quot;</span>
+<span class="nc" id="L328">		LOGGER.config(&quot;sendMechanismWhenPhasesExist = &quot;</span>
 				+ sendMechanismWhenPhasesExist);
 
-<span class="nc" id="L291">		polldir = new File(</span>
-<span class="nc" id="L292">				config.getProperty(POLLDIR_PROPERTY, DEFAULT_POLLDIR));</span>
-<span class="nc" id="L293">		LOGGER.config(&quot;Using poll directory &quot; + polldir.getCanonicalPath());</span>
+<span class="nc" id="L331">		polldir = new File(</span>
+<span class="nc" id="L332">				config.getProperty(POLLDIR_PROPERTY, DEFAULT_POLLDIR));</span>
+<span class="nc" id="L333">		LOGGER.config(&quot;Using poll directory &quot; + polldir.getCanonicalPath());</span>
 
-<span class="nc" id="L295">		pollInterval = Long.valueOf(config.getProperty(POLLINTERVAL_PROPERTY,</span>
+<span class="nc" id="L335">		pollInterval = Long.valueOf(config.getProperty(POLLINTERVAL_PROPERTY,</span>
 				DEFAULT_POLLINTERVAL));
-<span class="nc" id="L297">		LOGGER.config(&quot;Using poll interval &quot; + pollInterval + &quot;ms&quot;);</span>
+<span class="nc" id="L337">		LOGGER.config(&quot;Using poll interval &quot; + pollInterval + &quot;ms&quot;);</span>
 
-<span class="nc" id="L299">		pollCarefully = Boolean.valueOf(config.getProperty(POLL_CAREFULLY_PROPERTY,</span>
+<span class="nc" id="L339">		pollCarefully = Boolean.valueOf(config.getProperty(POLL_CAREFULLY_PROPERTY,</span>
 				DEFAULT_POLL_CAREFULLY));
-<span class="nc" id="L301">		LOGGER.config(&quot;Poll carefully = &quot; + pollCarefully);</span>
+<span class="nc" id="L341">		LOGGER.config(&quot;Poll carefully = &quot; + pollCarefully);</span>
 
-<span class="nc" id="L303">		storagedir = new File(config.getProperty(STORAGEDIR_PROPERTY,</span>
+<span class="nc" id="L343">		storagedir = new File(config.getProperty(STORAGEDIR_PROPERTY,</span>
 				DEFAULT_STORAGEDIR));
-<span class="nc" id="L305">		LOGGER.config(&quot;Using oldinput directory &quot;</span>
-<span class="nc" id="L306">				+ storagedir.getCanonicalPath());</span>
+<span class="nc" id="L345">		LOGGER.config(&quot;Using oldinput directory &quot;</span>
+<span class="nc" id="L346">				+ storagedir.getCanonicalPath());</span>
 
-<span class="nc" id="L308">		errordir = new File(config.getProperty(ERRORDIR_PROPERTY,</span>
+<span class="nc" id="L348">		errordir = new File(config.getProperty(ERRORDIR_PROPERTY,</span>
 				DEFAULT_ERRORDIR));
-<span class="nc" id="L310">		LOGGER.config(&quot;Using error directory &quot; + errordir.getCanonicalPath());</span>
+<span class="nc" id="L350">		LOGGER.config(&quot;Using error directory &quot; + errordir.getCanonicalPath());</span>
 
-<span class="nc" id="L312">		createInternalProducts = Boolean.valueOf(config</span>
-<span class="nc" id="L313">				.getProperty(CREATE_INTERNAL_PRODUCTS_PROPERTY,</span>
+<span class="nc" id="L352">		createInternalProducts = Boolean.valueOf(config</span>
+<span class="nc" id="L353">				.getProperty(CREATE_INTERNAL_PRODUCTS_PROPERTY,</span>
 						DEFAULT_CREATE_INTERNAL_PRODUCTS));
-<span class="nc" id="L315">		LOGGER.config(&quot;createInternalProducts = &quot; + createInternalProducts);</span>
+<span class="nc" id="L355">		LOGGER.config(&quot;createInternalProducts = &quot; + createInternalProducts);</span>
 
-<span class="nc" id="L317">		createScenarioProducts = Boolean.valueOf(config</span>
-<span class="nc" id="L318">				.getProperty(CREATE_SCENARIO_PRODUCTS_PROPERTY,</span>
+<span class="nc" id="L357">		createScenarioProducts = Boolean.valueOf(config</span>
+<span class="nc" id="L358">				.getProperty(CREATE_SCENARIO_PRODUCTS_PROPERTY,</span>
 						DEFAULT_CREATE_SCENARIO_PRODUCTS));
-<span class="nc" id="L320">		LOGGER.config(&quot;createScenarioProducts = &quot; + createScenarioProducts);</span>
+<span class="nc" id="L360">		LOGGER.config(&quot;createScenarioProducts = &quot; + createScenarioProducts);</span>
 
-<span class="nc" id="L322">		doBufferFix = Boolean.valueOf(config</span>
-<span class="nc" id="L323">				.getProperty(DO_BUFFER_FIX_PROPERTY,</span>
+<span class="nc" id="L362">		doBufferFix = Boolean.valueOf(config</span>
+<span class="nc" id="L363">				.getProperty(DO_BUFFER_FIX_PROPERTY,</span>
 								DEFAULT_DO_BUFFER_FIX));
-<span class="nc" id="L325">		LOGGER.config(&quot;doBufferFix = &quot; + doBufferFix);</span>
-<span class="nc" id="L326">	}</span>
+<span class="nc" id="L365">		LOGGER.config(&quot;doBufferFix = &quot; + doBufferFix);</span>
+<span class="nc" id="L366">	}</span>
 
 	@Override
 	public void shutdown() throws Exception {
-<span class="nc bnc" id="L330" title="All 2 branches missed.">		if (pollThread != null) {</span>
-<span class="nc" id="L331">			pollThread.interrupt();</span>
-<span class="nc" id="L332">			pollThread = null;</span>
+<span class="nc bnc" id="L370" title="All 2 branches missed.">		if (pollThread != null) {</span>
+<span class="nc" id="L371">			pollThread.interrupt();</span>
+<span class="nc" id="L372">			pollThread = null;</span>
 		}
 
-<span class="nc" id="L335">		super.shutdown();</span>
-<span class="nc" id="L336">	}</span>
+<span class="nc" id="L375">		super.shutdown();</span>
+<span class="nc" id="L376">	}</span>
 
 	@Override
 	public void startup() throws Exception {
-<span class="nc" id="L340">		super.startup();</span>
+<span class="nc" id="L380">		super.startup();</span>
 
-<span class="nc bnc" id="L342" title="All 2 branches missed.">		if (pollThread == null) {</span>
-<span class="nc" id="L343">			pollThread = new Thread(this);</span>
-<span class="nc" id="L344">			pollThread.setName(&quot;poll thread&quot;);</span>
-<span class="nc" id="L345">			pollThread.start();</span>
+<span class="nc bnc" id="L382" title="All 2 branches missed.">		if (pollThread == null) {</span>
+<span class="nc" id="L383">			pollThread = new Thread(this);</span>
+<span class="nc" id="L384">			pollThread.setName(&quot;poll thread&quot;);</span>
+<span class="nc" id="L385">			pollThread.start();</span>
 		}
-<span class="nc" id="L347">	}</span>
-
-	public File getPolldir() {
-<span class="nc" id="L350">		return polldir;</span>
-	}
-
-	public void setPolldir(File polldir) {
-<span class="nc" id="L354">		this.polldir = polldir;</span>
-<span class="nc" id="L355">	}</span>
-
-	public File getStoragedir() {
-<span class="nc" id="L358">		return storagedir;</span>
-	}
-
-	public void setStoragedir(File storagedir) {
-<span class="nc" id="L362">		this.storagedir = storagedir;</span>
-<span class="nc" id="L363">	}</span>
-
-	public File getErrordir() {
-<span class="nc" id="L366">		return errordir;</span>
-	}
-
-	public void setErrordir(File errordir) {
-<span class="nc" id="L370">		this.errordir = errordir;</span>
-<span class="nc" id="L371">	}</span>
-
-	public ProductCreator getProductCreator() {
-<span class="fc" id="L374">		return productCreator;</span>
-	}
-
-	public void setProductCreator(ProductCreator productCreator) {
-<span class="fc" id="L378">		this.productCreator = productCreator;</span>
-<span class="fc" id="L379">	}</span>
-
-	public DirectoryPoller getDirectoryPoller() {
-<span class="nc" id="L382">		return directoryPoller;</span>
-	}
-
-	public void setDirectoryPoller(DirectoryPoller directoryPoller) {
-<span class="nc" id="L386">		this.directoryPoller = directoryPoller;</span>
 <span class="nc" id="L387">	}</span>
 
+	/** @return polldir */
+	public File getPolldir() {
+<span class="nc" id="L391">		return polldir;</span>
+	}
+
+	/** @param polldir File to set */
+	public void setPolldir(File polldir) {
+<span class="nc" id="L396">		this.polldir = polldir;</span>
+<span class="nc" id="L397">	}</span>
+
+	/** @return storagedir */
+	public File getStoragedir() {
+<span class="nc" id="L401">		return storagedir;</span>
+	}
+
+	/** @param storagedir File to set */
+	public void setStoragedir(File storagedir) {
+<span class="nc" id="L406">		this.storagedir = storagedir;</span>
+<span class="nc" id="L407">	}</span>
+
+	/** @return errordir */
+	public File getErrordir() {
+<span class="nc" id="L411">		return errordir;</span>
+	}
+
+	/** @param errordir File to send */
+	public void setErrordir(File errordir) {
+<span class="nc" id="L416">		this.errordir = errordir;</span>
+<span class="nc" id="L417">	}</span>
+
+	/** @return productCreator */
+	public ProductCreator getProductCreator() {
+<span class="fc" id="L421">		return productCreator;</span>
+	}
+
+	/** @param productCreator to set */
+	public void setProductCreator(ProductCreator productCreator) {
+<span class="fc" id="L426">		this.productCreator = productCreator;</span>
+<span class="fc" id="L427">	}</span>
+
+	/** @return directoryPoller */
+	public DirectoryPoller getDirectoryPoller() {
+<span class="nc" id="L431">		return directoryPoller;</span>
+	}
+
+	/** @param directoryPoller to set */
+	public void setDirectoryPoller(DirectoryPoller directoryPoller) {
+<span class="nc" id="L436">		this.directoryPoller = directoryPoller;</span>
+<span class="nc" id="L437">	}</span>
+
+	/** @return pollInterval long */
 	public long getPollInterval() {
-<span class="nc" id="L390">		return pollInterval;</span>
+<span class="nc" id="L441">		return pollInterval;</span>
 	}
 
+	/** @param pollInterval long to set */
 	public void setPollInterval(long pollInterval) {
-<span class="nc" id="L394">		this.pollInterval = pollInterval;</span>
-<span class="nc" id="L395">	}</span>
+<span class="nc" id="L446">		this.pollInterval = pollInterval;</span>
+<span class="nc" id="L447">	}</span>
 
+	/** @return pollCarefully boolean */
 	public boolean isPollCarefully() {
-<span class="nc" id="L398">		return pollCarefully;</span>
+<span class="nc" id="L451">		return pollCarefully;</span>
 	}
 
+	/** @param pollCarefully boolean to set */
 	public void setPollCarefully(boolean pollCarefully) {
-<span class="nc" id="L402">		this.pollCarefully = pollCarefully;</span>
-<span class="nc" id="L403">	}</span>
+<span class="nc" id="L456">		this.pollCarefully = pollCarefully;</span>
+<span class="nc" id="L457">	}</span>
 
 	/**
 	 * @return the createInternalProducts
 	 */
 	public boolean isCreateInternalProducts() {
-<span class="nc" id="L409">		return createInternalProducts;</span>
+<span class="nc" id="L463">		return createInternalProducts;</span>
 	}
 
 	/**
@@ -414,14 +468,14 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 	 *            the createInternalProducts to set
 	 */
 	public void setCreateInternalProducts(boolean createInternalProducts) {
-<span class="nc" id="L417">		this.createInternalProducts = createInternalProducts;</span>
-<span class="nc" id="L418">	}</span>
+<span class="nc" id="L471">		this.createInternalProducts = createInternalProducts;</span>
+<span class="nc" id="L472">	}</span>
 
 	/**
 	 * @return the createScenarioProducts
 	 */
 	public boolean isCreateScenarioProducts() {
-<span class="nc" id="L424">		return createScenarioProducts;</span>
+<span class="nc" id="L478">		return createScenarioProducts;</span>
 	}
 
 	/**
@@ -429,58 +483,92 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 	 *            the createScenarioProducts to set
 	 */
 	public void setCreateScenarioProducts(boolean createScenarioProducts) {
-<span class="nc" id="L432">		this.createScenarioProducts = createScenarioProducts;</span>
-<span class="nc" id="L433">	}</span>
+<span class="nc" id="L486">		this.createScenarioProducts = createScenarioProducts;</span>
+<span class="nc" id="L487">	}</span>
 
+	/**
+	 * Parses a string of servers into SocketProductSenders, all put into a list
+	 * of product senders
+	 * @param servers String of servers, split by commas
+	 * @param connectTimeout int timeout
+	 * @param binaryFormat boolean if binary format
+	 * @param enableDeflate boolean if Deflate should be enabled
+	 * @return List of product senders
+	 */
 	public static List&lt;ProductSender&gt; parseServers(final String servers,
 			final Integer connectTimeout, final boolean binaryFormat,
 			final boolean enableDeflate) {
-<span class="fc" id="L438">		List&lt;ProductSender&gt; senders = new ArrayList&lt;ProductSender&gt;();</span>
+<span class="fc" id="L501">		List&lt;ProductSender&gt; senders = new ArrayList&lt;ProductSender&gt;();</span>
 
-<span class="fc" id="L440">		Iterator&lt;String&gt; iter = StringUtils.split(servers, &quot;,&quot;).iterator();</span>
-<span class="fc bfc" id="L441" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
-<span class="fc" id="L442">			String server = iter.next();</span>
-<span class="fc" id="L443">			String[] parts = server.split(&quot;:&quot;);</span>
-<span class="fc" id="L444">			SocketProductSender sender = new SocketProductSender(parts[0],</span>
-<span class="fc" id="L445">					Integer.parseInt(parts[1]), connectTimeout);</span>
-<span class="fc" id="L446">			sender.setBinaryFormat(binaryFormat);</span>
-<span class="fc" id="L447">			sender.setEnableDeflate(enableDeflate);</span>
-<span class="fc" id="L448">			senders.add(sender);</span>
-<span class="fc" id="L449">		}</span>
+<span class="fc" id="L503">		Iterator&lt;String&gt; iter = StringUtils.split(servers, &quot;,&quot;).iterator();</span>
+<span class="fc bfc" id="L504" title="All 2 branches covered.">		while (iter.hasNext()) {</span>
+<span class="fc" id="L505">			String server = iter.next();</span>
+<span class="fc" id="L506">			String[] parts = server.split(&quot;:&quot;);</span>
+<span class="fc" id="L507">			SocketProductSender sender = new SocketProductSender(parts[0],</span>
+<span class="fc" id="L508">					Integer.parseInt(parts[1]), connectTimeout);</span>
+<span class="fc" id="L509">			sender.setBinaryFormat(binaryFormat);</span>
+<span class="fc" id="L510">			sender.setEnableDeflate(enableDeflate);</span>
+<span class="fc" id="L511">			senders.add(sender);</span>
+<span class="fc" id="L512">		}</span>
 
-<span class="fc" id="L451">		return senders;</span>
+<span class="fc" id="L514">		return senders;</span>
 	}
 
+	/** Argument for help */
 	public static final String HELP_ARGUMENT = &quot;--help&quot;;
+	/** Argument for poll */
 	public static final String POLL_ARGUMENT = &quot;--poll&quot;;
 
+	/** Argument for poleCarefully */
 	public static final String POLL_CAREFULLY_ARGUMENT = &quot;--pollCarefully&quot;;
+	/** Argument for polldir */
 	public static final String POLLDIR_ARGUMENT = &quot;--polldir=&quot;;
+	/** Argument for errordir */
 	public static final String ERRORDIR_ARGUMENT = &quot;--errordir=&quot;;
+	/** Argument for storagedir */
 	public static final String STORAGEDIR_ARGUMENT = &quot;--oldinputdir=&quot;;
+	/** Argument for poll interval */
 	public static final String POLL_INTERVAL_ARGUMENT = &quot;--pollInterval=&quot;;
+	/** Argument for tracker url */
 	public static final String TRACKER_URL_ARGUMENT = &quot;--trackerURL=&quot;;
 
+	/** Argument for file */
 	public static final String FILE_ARGUMENT = &quot;--file=&quot;;
 
+	/** Argument for parser */
 	public static final String PARSER_ARGUMENT = &quot;--parser=&quot;;
+	/** Argument for validate */
 	public static final String VALIDATE_ARGUMENT = &quot;--validate&quot;;
+	/** Argument for privateKey */
 	public static final String PRIVATE_KEY_ARGUMENT = &quot;--privateKey=&quot;;
+	/** Argument for signatureVersion */
 	public static final String SIGNATURE_VERSION_ARGUMENT = &quot;--signatureVersion=&quot;;
 
+	/** Argument for servers */
 	public static final String SERVERS_ARGUMENT = &quot;--servers=&quot;;
+	/** Default server for server argument */
 	public static final String SERVERS_DEFAULT = &quot;prod01-pdl01.cr.usgs.gov:11235,prod02-pdl01.cr.usgs.gov:11235&quot;;
+	/** Argument for connection timeout */
 	public static final String CONNECT_TIMEOUT_ARGUMENT = &quot;--connectTimeout=&quot;;
-<span class="fc" id="L474">	public static final Integer DEFAULT_CONNECT_TIMEOUT = 15000;</span>
+	/** Default timeout for connection */
+<span class="fc" id="L554">	public static final Integer DEFAULT_CONNECT_TIMEOUT = 15000;</span>
+	/** Argument for binaryFormat */
 	public static final String BINARY_FORMAT_ARGUMENT = &quot;--binaryFormat&quot;;
+	/** Argument for disableDeflate */
 	public static final String DISABLE_DEFLATE_ARGUMENT = &quot;--disableDeflate&quot;;
+	/** Argument for attach */
 	public static final String ATTACH_ARGUMENT = &quot;--attach=&quot;;
+	/** Argument for sending origin with phases */
 	public static final String SEND_ORIGINS_WITH_PHASES = &quot;--sendOriginWhenPhasesExist&quot;;
+	/** Argument for sending mechanisms with phases */
 	public static final String SEND_MECHANISMS_WITH_PHASES = &quot;--sendMechanismWhenPhasesExist&quot;;
 
+	/** Argument for creating internal products */
 	public static final String CREATE_INTERNAL_PRODUCTS = &quot;--internal&quot;;
+	/** Argument for creating scenario products */
 	public static final String CREATE_SCENARIO_PRODUCTS = &quot;--scenario&quot;;
 
+	/** Argument for testing */
 	public static final String TEST_ARGUMENT = &quot;--test&quot;;
 
 	/**
@@ -489,144 +577,144 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 	@Override
 	public void run(final String[] args) throws Exception {
 		// save arguments in global for access by FileToQuakemlParser objects.
-<span class="fc" id="L492">		EIDSInputWedge.ARGS = args;</span>
+<span class="fc" id="L580">		EIDSInputWedge.ARGS = args;</span>
 
-<span class="fc" id="L494">		boolean test = false;</span>
-<span class="fc" id="L495">		boolean help = false;</span>
-<span class="fc" id="L496">		boolean poll = false;</span>
-<span class="fc" id="L497">		boolean validate = this.productCreator.isValidate();</span>
-<span class="fc" id="L498">		boolean sendOriginWhenPhasesExist = false;</span>
-<span class="fc" id="L499">		boolean sendMechanismWhenPhasesExist = false;</span>
+<span class="fc" id="L582">		boolean test = false;</span>
+<span class="fc" id="L583">		boolean help = false;</span>
+<span class="fc" id="L584">		boolean poll = false;</span>
+<span class="fc" id="L585">		boolean validate = this.productCreator.isValidate();</span>
+<span class="fc" id="L586">		boolean sendOriginWhenPhasesExist = false;</span>
+<span class="fc" id="L587">		boolean sendMechanismWhenPhasesExist = false;</span>
 
 		// preserve any existing settings from config file
-<span class="pc bpc" id="L502" title="1 of 2 branches missed.">		if (productCreator instanceof QuakemlProductCreator) {</span>
-<span class="fc" id="L503">			sendOriginWhenPhasesExist = ((QuakemlProductCreator) productCreator)</span>
-<span class="fc" id="L504">					.isSendOriginWhenPhasesExist();</span>
-<span class="fc" id="L505">			sendMechanismWhenPhasesExist = ((QuakemlProductCreator) productCreator)</span>
-<span class="fc" id="L506">					.isSendMechanismWhenPhasesExist();</span>
-<span class="nc bnc" id="L507" title="All 2 branches missed.">		} else if (productCreator instanceof EQMessageProductCreator) {</span>
-<span class="nc" id="L508">			sendOriginWhenPhasesExist = ((EQMessageProductCreator) productCreator)</span>
-<span class="nc" id="L509">					.isSendOriginWhenPhasesExist();</span>
+<span class="pc bpc" id="L590" title="1 of 2 branches missed.">		if (productCreator instanceof QuakemlProductCreator) {</span>
+<span class="fc" id="L591">			sendOriginWhenPhasesExist = ((QuakemlProductCreator) productCreator)</span>
+<span class="fc" id="L592">					.isSendOriginWhenPhasesExist();</span>
+<span class="fc" id="L593">			sendMechanismWhenPhasesExist = ((QuakemlProductCreator) productCreator)</span>
+<span class="fc" id="L594">					.isSendMechanismWhenPhasesExist();</span>
+<span class="nc bnc" id="L595" title="All 2 branches missed.">		} else if (productCreator instanceof EQMessageProductCreator) {</span>
+<span class="nc" id="L596">			sendOriginWhenPhasesExist = ((EQMessageProductCreator) productCreator)</span>
+<span class="nc" id="L597">					.isSendOriginWhenPhasesExist();</span>
 		}
 
-<span class="fc" id="L512">		File file = null;</span>
+<span class="fc" id="L600">		File file = null;</span>
 		// when sending 1 product, allow extra files to be attached.
-<span class="fc" id="L514">		HashMap&lt;String, Content&gt; attachContent = new HashMap&lt;String, Content&gt;();</span>
-<span class="fc" id="L515">		Integer connectTimeout = DEFAULT_CONNECT_TIMEOUT;</span>
-<span class="fc" id="L516">		boolean binaryFormat = false;</span>
-<span class="fc" id="L517">		boolean enableDeflate = true;</span>
+<span class="fc" id="L602">		HashMap&lt;String, Content&gt; attachContent = new HashMap&lt;String, Content&gt;();</span>
+<span class="fc" id="L603">		Integer connectTimeout = DEFAULT_CONNECT_TIMEOUT;</span>
+<span class="fc" id="L604">		boolean binaryFormat = false;</span>
+<span class="fc" id="L605">		boolean enableDeflate = true;</span>
 
-<span class="fc" id="L519">		StringBuffer arguments = new StringBuffer();</span>
-<span class="fc bfc" id="L520" title="All 2 branches covered.">		for (String arg : args) {</span>
-<span class="fc" id="L521">			arguments.append(arg).append(&quot; &quot;);</span>
-<span class="pc bpc" id="L522" title="1 of 2 branches missed.">			if (arg.equals(HELP_ARGUMENT)) {</span>
-<span class="nc" id="L523">				help = true;</span>
-<span class="pc bpc" id="L524" title="1 of 2 branches missed.">			} else if (arg.equals(POLL_ARGUMENT)) {</span>
-<span class="nc" id="L525">				poll = true;</span>
-<span class="pc bpc" id="L526" title="1 of 2 branches missed.">			} else if (arg.equals(POLL_CAREFULLY_ARGUMENT)) {</span>
-<span class="nc" id="L527">				pollCarefully = true;</span>
-<span class="pc bpc" id="L528" title="1 of 2 branches missed.">			} else if (arg.equals(SEND_ORIGINS_WITH_PHASES)) {</span>
-<span class="nc" id="L529">				sendOriginWhenPhasesExist = true;</span>
-<span class="pc bpc" id="L530" title="1 of 2 branches missed.">			} else if (arg.equals(SEND_MECHANISMS_WITH_PHASES)) {</span>
-<span class="nc" id="L531">				sendMechanismWhenPhasesExist = true;</span>
-<span class="pc bpc" id="L532" title="1 of 2 branches missed.">			} else if (arg.startsWith(POLLDIR_ARGUMENT)) {</span>
-<span class="nc" id="L533">				setPolldir(new File(arg.replace(POLLDIR_ARGUMENT, &quot;&quot;)));</span>
-<span class="pc bpc" id="L534" title="1 of 2 branches missed.">			} else if (arg.startsWith(ERRORDIR_ARGUMENT)) {</span>
-<span class="nc" id="L535">				setErrordir(new File(arg.replace(ERRORDIR_ARGUMENT, &quot;&quot;)));</span>
-<span class="pc bpc" id="L536" title="1 of 2 branches missed.">			} else if (arg.startsWith(STORAGEDIR_ARGUMENT)) {</span>
-<span class="nc" id="L537">				setStoragedir(new File(arg.replace(STORAGEDIR_ARGUMENT, &quot;&quot;)));</span>
-<span class="fc bfc" id="L538" title="All 2 branches covered.">			} else if (arg.startsWith(FILE_ARGUMENT)) {</span>
-<span class="fc" id="L539">				file = new File(arg.replace(FILE_ARGUMENT, &quot;&quot;));</span>
-<span class="pc bpc" id="L540" title="1 of 2 branches missed.">			} else if (arg.startsWith(ATTACH_ARGUMENT)) {</span>
-<span class="nc" id="L541">				File attach = new File(arg.replace(ATTACH_ARGUMENT, &quot;&quot;));</span>
-<span class="nc bnc" id="L542" title="All 2 branches missed.">				if (attach.isDirectory()) {</span>
-<span class="nc" id="L543">					attachContent.putAll(FileContent</span>
-<span class="nc" id="L544">							.getDirectoryContents(attach));</span>
+<span class="fc" id="L607">		StringBuffer arguments = new StringBuffer();</span>
+<span class="fc bfc" id="L608" title="All 2 branches covered.">		for (String arg : args) {</span>
+<span class="fc" id="L609">			arguments.append(arg).append(&quot; &quot;);</span>
+<span class="pc bpc" id="L610" title="1 of 2 branches missed.">			if (arg.equals(HELP_ARGUMENT)) {</span>
+<span class="nc" id="L611">				help = true;</span>
+<span class="pc bpc" id="L612" title="1 of 2 branches missed.">			} else if (arg.equals(POLL_ARGUMENT)) {</span>
+<span class="nc" id="L613">				poll = true;</span>
+<span class="pc bpc" id="L614" title="1 of 2 branches missed.">			} else if (arg.equals(POLL_CAREFULLY_ARGUMENT)) {</span>
+<span class="nc" id="L615">				pollCarefully = true;</span>
+<span class="pc bpc" id="L616" title="1 of 2 branches missed.">			} else if (arg.equals(SEND_ORIGINS_WITH_PHASES)) {</span>
+<span class="nc" id="L617">				sendOriginWhenPhasesExist = true;</span>
+<span class="pc bpc" id="L618" title="1 of 2 branches missed.">			} else if (arg.equals(SEND_MECHANISMS_WITH_PHASES)) {</span>
+<span class="nc" id="L619">				sendMechanismWhenPhasesExist = true;</span>
+<span class="pc bpc" id="L620" title="1 of 2 branches missed.">			} else if (arg.startsWith(POLLDIR_ARGUMENT)) {</span>
+<span class="nc" id="L621">				setPolldir(new File(arg.replace(POLLDIR_ARGUMENT, &quot;&quot;)));</span>
+<span class="pc bpc" id="L622" title="1 of 2 branches missed.">			} else if (arg.startsWith(ERRORDIR_ARGUMENT)) {</span>
+<span class="nc" id="L623">				setErrordir(new File(arg.replace(ERRORDIR_ARGUMENT, &quot;&quot;)));</span>
+<span class="pc bpc" id="L624" title="1 of 2 branches missed.">			} else if (arg.startsWith(STORAGEDIR_ARGUMENT)) {</span>
+<span class="nc" id="L625">				setStoragedir(new File(arg.replace(STORAGEDIR_ARGUMENT, &quot;&quot;)));</span>
+<span class="fc bfc" id="L626" title="All 2 branches covered.">			} else if (arg.startsWith(FILE_ARGUMENT)) {</span>
+<span class="fc" id="L627">				file = new File(arg.replace(FILE_ARGUMENT, &quot;&quot;));</span>
+<span class="pc bpc" id="L628" title="1 of 2 branches missed.">			} else if (arg.startsWith(ATTACH_ARGUMENT)) {</span>
+<span class="nc" id="L629">				File attach = new File(arg.replace(ATTACH_ARGUMENT, &quot;&quot;));</span>
+<span class="nc bnc" id="L630" title="All 2 branches missed.">				if (attach.isDirectory()) {</span>
+<span class="nc" id="L631">					attachContent.putAll(FileContent</span>
+<span class="nc" id="L632">							.getDirectoryContents(attach));</span>
 				} else {
-<span class="nc" id="L546">					attachContent</span>
-<span class="nc" id="L547">							.put(attach.getName(), new FileContent(attach));</span>
+<span class="nc" id="L634">					attachContent</span>
+<span class="nc" id="L635">							.put(attach.getName(), new FileContent(attach));</span>
 				}
-<span class="pc bfc" id="L549" title="All 2 branches covered.">			} else if (arg.startsWith(PARSER_ARGUMENT)) {</span>
-<span class="fc" id="L550">				Object parser = Class.forName(arg.replace(PARSER_ARGUMENT, &quot;&quot;))</span>
-<span class="fc" id="L551">						.getConstructor().newInstance();</span>
-<span class="pc bpc" id="L552" title="1 of 2 branches missed.">				if (parser instanceof ProductCreator) {</span>
-<span class="fc" id="L553">					setProductCreator((ProductCreator) parser);</span>
+<span class="pc bfc" id="L637" title="All 2 branches covered.">			} else if (arg.startsWith(PARSER_ARGUMENT)) {</span>
+<span class="fc" id="L638">				Object parser = Class.forName(arg.replace(PARSER_ARGUMENT, &quot;&quot;))</span>
+<span class="fc" id="L639">						.getConstructor().newInstance();</span>
+<span class="pc bpc" id="L640" title="1 of 2 branches missed.">				if (parser instanceof ProductCreator) {</span>
+<span class="fc" id="L641">					setProductCreator((ProductCreator) parser);</span>
 				} else {
-<span class="nc" id="L555">					QuakemlProductCreator productCreator = new QuakemlProductCreator();</span>
-<span class="nc" id="L556">					productCreator</span>
-<span class="nc" id="L557">							.setConverter((FileToQuakemlConverter) parser);</span>
-<span class="nc" id="L558">					setProductCreator(productCreator);</span>
+<span class="nc" id="L643">					QuakemlProductCreator productCreator = new QuakemlProductCreator();</span>
+<span class="nc" id="L644">					productCreator</span>
+<span class="nc" id="L645">							.setConverter((FileToQuakemlConverter) parser);</span>
+<span class="nc" id="L646">					setProductCreator(productCreator);</span>
 				}
-<span class="pc bpc" id="L560" title="1 of 2 branches missed.">			} else if (arg.startsWith(VALIDATE_ARGUMENT)) {</span>
-<span class="nc" id="L561">				validate = true;</span>
-<span class="fc bfc" id="L562" title="All 2 branches covered.">			} else if (arg.startsWith(SERVERS_ARGUMENT)) {</span>
+<span class="pc bpc" id="L648" title="1 of 2 branches missed.">			} else if (arg.startsWith(VALIDATE_ARGUMENT)) {</span>
+<span class="nc" id="L649">				validate = true;</span>
+<span class="fc bfc" id="L650" title="All 2 branches covered.">			} else if (arg.startsWith(SERVERS_ARGUMENT)) {</span>
 				// ignore servers argument when in test mode
-<span class="pc bpc" id="L564" title="1 of 2 branches missed.">				if (!test) {</span>
-<span class="fc" id="L565">					getProductSenders().clear();</span>
-<span class="fc" id="L566">					getProductSenders().addAll(</span>
-<span class="fc" id="L567">							parseServers(arg.replace(SERVERS_ARGUMENT, &quot;&quot;),</span>
+<span class="pc bpc" id="L652" title="1 of 2 branches missed.">				if (!test) {</span>
+<span class="fc" id="L653">					getProductSenders().clear();</span>
+<span class="fc" id="L654">					getProductSenders().addAll(</span>
+<span class="fc" id="L655">							parseServers(arg.replace(SERVERS_ARGUMENT, &quot;&quot;),</span>
 									connectTimeout, binaryFormat, enableDeflate));
 				}
-<span class="pc bpc" id="L570" title="1 of 2 branches missed.">			} else if (arg.startsWith(TEST_ARGUMENT)) {</span>
-<span class="nc" id="L571">				test = true;</span>
-<span class="nc" id="L572">				getProductSenders().clear();</span>
-<span class="nc" id="L573">				getProductSenders().add(new DebugProductSender());</span>
-<span class="fc bfc" id="L574" title="All 2 branches covered.">			} else if (arg.startsWith(PRIVATE_KEY_ARGUMENT)) {</span>
-<span class="fc" id="L575">				setPrivateKey(CryptoUtils.readOpenSSHPrivateKey(FileUtils</span>
-<span class="fc" id="L576">						.readFile(new File(arg</span>
-<span class="fc" id="L577">								.replace(PRIVATE_KEY_ARGUMENT, &quot;&quot;))), null));</span>
-<span class="pc bpc" id="L578" title="1 of 2 branches missed.">			} else if (arg.startsWith(SIGNATURE_VERSION_ARGUMENT)) {</span>
-<span class="nc" id="L579">				setSignatureVersion(Version.fromString(</span>
-<span class="nc" id="L580">						arg.replace(SIGNATURE_VERSION_ARGUMENT, &quot;&quot;)));</span>
-<span class="pc bpc" id="L581" title="1 of 2 branches missed.">			} else if (arg.startsWith(CONNECT_TIMEOUT_ARGUMENT)) {</span>
-<span class="nc" id="L582">				connectTimeout = Integer.valueOf(arg.replace(</span>
+<span class="pc bpc" id="L658" title="1 of 2 branches missed.">			} else if (arg.startsWith(TEST_ARGUMENT)) {</span>
+<span class="nc" id="L659">				test = true;</span>
+<span class="nc" id="L660">				getProductSenders().clear();</span>
+<span class="nc" id="L661">				getProductSenders().add(new DebugProductSender());</span>
+<span class="fc bfc" id="L662" title="All 2 branches covered.">			} else if (arg.startsWith(PRIVATE_KEY_ARGUMENT)) {</span>
+<span class="fc" id="L663">				setPrivateKey(CryptoUtils.readOpenSSHPrivateKey(FileUtils</span>
+<span class="fc" id="L664">						.readFile(new File(arg</span>
+<span class="fc" id="L665">								.replace(PRIVATE_KEY_ARGUMENT, &quot;&quot;))), null));</span>
+<span class="pc bpc" id="L666" title="1 of 2 branches missed.">			} else if (arg.startsWith(SIGNATURE_VERSION_ARGUMENT)) {</span>
+<span class="nc" id="L667">				setSignatureVersion(Version.fromString(</span>
+<span class="nc" id="L668">						arg.replace(SIGNATURE_VERSION_ARGUMENT, &quot;&quot;)));</span>
+<span class="pc bpc" id="L669" title="1 of 2 branches missed.">			} else if (arg.startsWith(CONNECT_TIMEOUT_ARGUMENT)) {</span>
+<span class="nc" id="L670">				connectTimeout = Integer.valueOf(arg.replace(</span>
 						CONNECT_TIMEOUT_ARGUMENT, &quot;&quot;));
-<span class="pc bpc" id="L584" title="1 of 2 branches missed.">			} else if (arg.equals(BINARY_FORMAT_ARGUMENT)) {</span>
-<span class="nc" id="L585">				binaryFormat = true;</span>
-<span class="pc bpc" id="L586" title="1 of 2 branches missed.">			} else if (arg.equals(DISABLE_DEFLATE_ARGUMENT)) {</span>
-<span class="nc" id="L587">				enableDeflate = false;</span>
-<span class="pc bpc" id="L588" title="1 of 2 branches missed.">			} else if (arg.startsWith(POLL_INTERVAL_ARGUMENT)) {</span>
-<span class="nc" id="L589">				setPollInterval(Long.valueOf(arg.replace(</span>
+<span class="pc bpc" id="L672" title="1 of 2 branches missed.">			} else if (arg.equals(BINARY_FORMAT_ARGUMENT)) {</span>
+<span class="nc" id="L673">				binaryFormat = true;</span>
+<span class="pc bpc" id="L674" title="1 of 2 branches missed.">			} else if (arg.equals(DISABLE_DEFLATE_ARGUMENT)) {</span>
+<span class="nc" id="L675">				enableDeflate = false;</span>
+<span class="pc bpc" id="L676" title="1 of 2 branches missed.">			} else if (arg.startsWith(POLL_INTERVAL_ARGUMENT)) {</span>
+<span class="nc" id="L677">				setPollInterval(Long.valueOf(arg.replace(</span>
 						POLL_INTERVAL_ARGUMENT, &quot;&quot;)));
-<span class="pc bpc" id="L591" title="1 of 2 branches missed.">			} else if (arg.startsWith(TRACKER_URL_ARGUMENT)) {</span>
-<span class="nc" id="L592">				this.setTrackerURL(new URL(arg</span>
-<span class="nc" id="L593">						.replace(TRACKER_URL_ARGUMENT, &quot;&quot;)));</span>
-<span class="fc bfc" id="L594" title="All 2 branches covered.">			} else if (arg.equals(CREATE_INTERNAL_PRODUCTS)) {</span>
-<span class="fc" id="L595">				createInternalProducts = true;</span>
-<span class="pc bpc" id="L596" title="1 of 2 branches missed.">			} else if (arg.equals(CREATE_SCENARIO_PRODUCTS)) {</span>
-<span class="fc" id="L597">				createScenarioProducts = true;</span>
-<span class="nc bnc" id="L598" title="All 2 branches missed.">			} else if (arg.equals(CLIProductBuilder.DISABLE_PARALLEL_SEND)) {</span>
-<span class="nc" id="L599">				parallelSend = false;</span>
-<span class="nc bnc" id="L600" title="All 2 branches missed.">			} else if (arg.startsWith(CLIProductBuilder.PARALLEL_SEND_TIMEOUT_ARGUMENT)) {</span>
-<span class="nc" id="L601">				parallelSendTimeout = Long.valueOf(</span>
-<span class="nc" id="L602">						arg.replace(CLIProductBuilder.PARALLEL_SEND_TIMEOUT_ARGUMENT, &quot;&quot;));</span>
+<span class="pc bpc" id="L679" title="1 of 2 branches missed.">			} else if (arg.startsWith(TRACKER_URL_ARGUMENT)) {</span>
+<span class="nc" id="L680">				this.setTrackerURL(new URL(arg</span>
+<span class="nc" id="L681">						.replace(TRACKER_URL_ARGUMENT, &quot;&quot;)));</span>
+<span class="fc bfc" id="L682" title="All 2 branches covered.">			} else if (arg.equals(CREATE_INTERNAL_PRODUCTS)) {</span>
+<span class="fc" id="L683">				createInternalProducts = true;</span>
+<span class="pc bpc" id="L684" title="1 of 2 branches missed.">			} else if (arg.equals(CREATE_SCENARIO_PRODUCTS)) {</span>
+<span class="fc" id="L685">				createScenarioProducts = true;</span>
+<span class="nc bnc" id="L686" title="All 2 branches missed.">			} else if (arg.equals(CLIProductBuilder.DISABLE_PARALLEL_SEND)) {</span>
+<span class="nc" id="L687">				parallelSend = false;</span>
+<span class="nc bnc" id="L688" title="All 2 branches missed.">			} else if (arg.startsWith(CLIProductBuilder.PARALLEL_SEND_TIMEOUT_ARGUMENT)) {</span>
+<span class="nc" id="L689">				parallelSendTimeout = Long.valueOf(</span>
+<span class="nc" id="L690">						arg.replace(CLIProductBuilder.PARALLEL_SEND_TIMEOUT_ARGUMENT, &quot;&quot;));</span>
 			}
 		}
 
-<span class="fc" id="L606">		ProductCreator creator = getProductCreator();</span>
-<span class="fc" id="L607">		creator.setValidate(validate);</span>
-<span class="pc bpc" id="L608" title="1 of 2 branches missed.">		if (creator instanceof EQMessageProductCreator) {</span>
-<span class="fc" id="L609">			((EQMessageProductCreator) creator)</span>
-<span class="fc" id="L610">					.setSendOriginWhenPhasesExist(sendOriginWhenPhasesExist);</span>
-<span class="nc bnc" id="L611" title="All 2 branches missed.">		} else if (creator instanceof QuakemlProductCreator) {</span>
-<span class="nc" id="L612">			QuakemlProductCreator quakemlCreator = ((QuakemlProductCreator) creator);</span>
-<span class="nc" id="L613">			quakemlCreator</span>
-<span class="nc" id="L614">					.setSendOriginWhenPhasesExist(sendOriginWhenPhasesExist);</span>
-<span class="nc" id="L615">			quakemlCreator</span>
-<span class="nc" id="L616">					.setSendMechanismWhenPhasesExist(sendMechanismWhenPhasesExist);</span>
+<span class="fc" id="L694">		ProductCreator creator = getProductCreator();</span>
+<span class="fc" id="L695">		creator.setValidate(validate);</span>
+<span class="pc bpc" id="L696" title="1 of 2 branches missed.">		if (creator instanceof EQMessageProductCreator) {</span>
+<span class="fc" id="L697">			((EQMessageProductCreator) creator)</span>
+<span class="fc" id="L698">					.setSendOriginWhenPhasesExist(sendOriginWhenPhasesExist);</span>
+<span class="nc bnc" id="L699" title="All 2 branches missed.">		} else if (creator instanceof QuakemlProductCreator) {</span>
+<span class="nc" id="L700">			QuakemlProductCreator quakemlCreator = ((QuakemlProductCreator) creator);</span>
+<span class="nc" id="L701">			quakemlCreator</span>
+<span class="nc" id="L702">					.setSendOriginWhenPhasesExist(sendOriginWhenPhasesExist);</span>
+<span class="nc" id="L703">			quakemlCreator</span>
+<span class="nc" id="L704">					.setSendMechanismWhenPhasesExist(sendMechanismWhenPhasesExist);</span>
 		}
 
-<span class="pc bpc" id="L619" title="4 of 8 branches missed.">		if (</span>
+<span class="pc bpc" id="L707" title="4 of 8 branches missed.">		if (</span>
 		// want usage, or didn't provide arguments
 		(help || args.length == 0)
 		// or didn't provide correct arguments
 				|| (!poll &amp;&amp; file == null)) {
-<span class="nc" id="L624">			printUsage();</span>
+<span class="nc" id="L712">			printUsage();</span>
 		}
 
 		// run continuously
-<span class="pc bpc" id="L628" title="1 of 2 branches missed.">		else if (poll) {</span>
-<span class="nc" id="L629">			startup();</span>
+<span class="pc bpc" id="L716" title="1 of 2 branches missed.">		else if (poll) {</span>
+<span class="nc" id="L717">			startup();</span>
 		}
 
 		// send, then shutdown
@@ -634,70 +722,71 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 			// file != null
 			try {
 				// send
-<span class="fc" id="L637">				Map&lt;ProductId, Map&lt;ProductSender, Exception&gt;&gt; sendExceptions = parseAndSend(</span>
+<span class="fc" id="L725">				Map&lt;ProductId, Map&lt;ProductSender, Exception&gt;&gt; sendExceptions = parseAndSend(</span>
 						file, attachContent);
 
 				// check how send went
-<span class="fc" id="L641">				int numSenders = getProductSenders().size();</span>
-<span class="fc" id="L642">				int total = sendExceptions.size();</span>
-<span class="fc" id="L643">				int successful = 0;</span>
-<span class="fc" id="L644">				int partialFailures = 0;</span>
-<span class="fc" id="L645">				int totalFailures = 0;</span>
+<span class="fc" id="L729">				int numSenders = getProductSenders().size();</span>
+<span class="fc" id="L730">				int total = sendExceptions.size();</span>
+<span class="fc" id="L731">				int successful = 0;</span>
+<span class="fc" id="L732">				int partialFailures = 0;</span>
+<span class="fc" id="L733">				int totalFailures = 0;</span>
 
-<span class="fc" id="L647">				Iterator&lt;ProductId&gt; sentIds = sendExceptions.keySet()</span>
-<span class="fc" id="L648">						.iterator();</span>
-<span class="fc bfc" id="L649" title="All 2 branches covered.">				while (sentIds.hasNext()) {</span>
-<span class="fc" id="L650">					ProductId sentId = sentIds.next();</span>
-<span class="pc bpc" id="L651" title="1 of 2 branches missed.">					if (sendExceptions.get(sentId).size() == numSenders) {</span>
-<span class="nc" id="L652">						totalFailures++;</span>
-<span class="nc" id="L653">						LOGGER.severe(&quot;Total failure sending product &quot;</span>
-<span class="nc" id="L654">								+ sentId.toString());</span>
+<span class="fc" id="L735">				Iterator&lt;ProductId&gt; sentIds = sendExceptions.keySet()</span>
+<span class="fc" id="L736">						.iterator();</span>
+<span class="fc bfc" id="L737" title="All 2 branches covered.">				while (sentIds.hasNext()) {</span>
+<span class="fc" id="L738">					ProductId sentId = sentIds.next();</span>
+<span class="pc bpc" id="L739" title="1 of 2 branches missed.">					if (sendExceptions.get(sentId).size() == numSenders) {</span>
+<span class="nc" id="L740">						totalFailures++;</span>
+<span class="nc" id="L741">						LOGGER.severe(&quot;Total failure sending product &quot;</span>
+<span class="nc" id="L742">								+ sentId.toString());</span>
 					} else {
 						// output built product id because it was sent at least
 						// once
-<span class="fc" id="L658">						System.out.println(sentId.toString());</span>
+<span class="fc" id="L746">						System.out.println(sentId.toString());</span>
 
-<span class="pc bpc" id="L660" title="1 of 2 branches missed.">						if (sendExceptions.get(sentId).size() == 0) {</span>
-<span class="fc" id="L661">							successful++;</span>
+<span class="pc bpc" id="L748" title="1 of 2 branches missed.">						if (sendExceptions.get(sentId).size() == 0) {</span>
+<span class="fc" id="L749">							successful++;</span>
 						} else {
-<span class="nc" id="L663">							partialFailures++;</span>
-<span class="nc" id="L664">							LOGGER.warning(&quot;Partial failure sending product &quot;</span>
-<span class="nc" id="L665">									+ sentId.toString());</span>
+<span class="nc" id="L751">							partialFailures++;</span>
+<span class="nc" id="L752">							LOGGER.warning(&quot;Partial failure sending product &quot;</span>
+<span class="nc" id="L753">									+ sentId.toString());</span>
 						}
 					}
-<span class="fc" id="L668">				}</span>
+<span class="fc" id="L756">				}</span>
 
-<span class="fc" id="L670">				LOGGER.info(&quot;Generated &quot; + total + &quot; products: &quot; + successful</span>
+<span class="fc" id="L758">				LOGGER.info(&quot;Generated &quot; + total + &quot; products: &quot; + successful</span>
 						+ &quot; sent, &quot; + partialFailures + &quot; partially sent, &quot;
 						+ totalFailures + &quot; failed to send&quot;);
 
 				// notify of failures using exit code
-<span class="pc bpc" id="L675" title="1 of 2 branches missed.">				if (totalFailures &gt; 0) {</span>
-<span class="nc" id="L676">					System.exit(CLIProductBuilder.EXIT_UNABLE_TO_SEND);</span>
+<span class="pc bpc" id="L763" title="1 of 2 branches missed.">				if (totalFailures &gt; 0) {</span>
+<span class="nc" id="L764">					System.exit(CLIProductBuilder.EXIT_UNABLE_TO_SEND);</span>
 				}
-<span class="pc bpc" id="L678" title="1 of 2 branches missed.">				if (partialFailures &gt; 0) {</span>
-<span class="nc" id="L679">					System.exit(CLIProductBuilder.EXIT_PARTIALLY_SENT);</span>
+<span class="pc bpc" id="L766" title="1 of 2 branches missed.">				if (partialFailures &gt; 0) {</span>
+<span class="nc" id="L767">					System.exit(CLIProductBuilder.EXIT_PARTIALLY_SENT);</span>
 				}
-<span class="nc" id="L681">			} catch (Exception e) {</span>
-<span class="nc bnc" id="L682" title="All 2 branches missed.">				if (e instanceof JAXBException</span>
-<span class="nc bnc" id="L683" title="All 2 branches missed.">						&amp;&amp; ((JAXBException) e).getLinkedException() instanceof SAXParseException) {</span>
-<span class="nc" id="L684">					SAXParseException spe = (SAXParseException) ((JAXBException) e)</span>
-<span class="nc" id="L685">							.getLinkedException();</span>
-<span class="nc" id="L686">					LOGGER.severe(&quot;Parse error: &quot; + spe.getMessage()</span>
-<span class="nc" id="L687">							+ &quot;; line=&quot; + spe.getLineNumber() + &quot;, column=&quot;</span>
-<span class="nc" id="L688">							+ spe.getColumnNumber());</span>
-<span class="nc" id="L689">				} else {</span>
-<span class="nc" id="L690">					LOGGER.log(Level.SEVERE, &quot;Exception while sending&quot;, e);</span>
+<span class="nc" id="L769">			} catch (Exception e) {</span>
+<span class="nc bnc" id="L770" title="All 2 branches missed.">				if (e instanceof JAXBException</span>
+<span class="nc bnc" id="L771" title="All 2 branches missed.">						&amp;&amp; ((JAXBException) e).getLinkedException() instanceof SAXParseException) {</span>
+<span class="nc" id="L772">					SAXParseException spe = (SAXParseException) ((JAXBException) e)</span>
+<span class="nc" id="L773">							.getLinkedException();</span>
+<span class="nc" id="L774">					LOGGER.severe(&quot;Parse error: &quot; + spe.getMessage()</span>
+<span class="nc" id="L775">							+ &quot;; line=&quot; + spe.getLineNumber() + &quot;, column=&quot;</span>
+<span class="nc" id="L776">							+ spe.getColumnNumber());</span>
+<span class="nc" id="L777">				} else {</span>
+<span class="nc" id="L778">					LOGGER.log(Level.SEVERE, &quot;Exception while sending&quot;, e);</span>
 				}
-<span class="nc" id="L692">				System.exit(CLIProductBuilder.EXIT_UNABLE_TO_SEND);</span>
-<span class="fc" id="L693">			}</span>
+<span class="nc" id="L780">				System.exit(CLIProductBuilder.EXIT_UNABLE_TO_SEND);</span>
+<span class="fc" id="L781">			}</span>
 		}
 
-<span class="fc" id="L696">	}</span>
+<span class="fc" id="L784">	}</span>
 
+	/** Usage for interface */
 	public static void printUsage() {
-<span class="nc" id="L699">		System.err</span>
-<span class="nc" id="L700">				.println(&quot;\nUsage:\n\n&quot;</span>
+<span class="nc" id="L788">		System.err</span>
+<span class="nc" id="L789">				.println(&quot;\nUsage:\n\n&quot;</span>
 						+ &quot;java -cp ProductClient.jar gov.usgs.earthquake.eids.EIDSInputWedge&quot;
 						+ &quot; (&quot;
 						+ HELP_ARGUMENT
@@ -745,158 +834,158 @@ public class EIDSInputWedge extends ProductBuilder implements Runnable,
 						+ CLIProductBuilder.PARALLEL_SEND_TIMEOUT_ARGUMENT
 						+ &quot;300]&quot;);
 
-<span class="nc" id="L748">		System.err.println();</span>
+<span class="nc" id="L837">		System.err.println();</span>
 
-<span class="nc" id="L750">		System.err.println(&quot;\t&quot; + HELP_ARGUMENT);</span>
-<span class="nc" id="L751">		System.err.println(&quot;\t\tdisplay this message&quot;);</span>
-<span class="nc" id="L752">		System.err.println(&quot;\t&quot; + FILE_ARGUMENT + &quot;FILE&quot;);</span>
-<span class="nc" id="L753">		System.err.println(&quot;\t\tparse and send one file&quot;);</span>
-<span class="nc" id="L754">		System.err.println(&quot;\t&quot; + POLL_ARGUMENT);</span>
-<span class="nc" id="L755">		System.err.println(&quot;\t\trun continuously, checking POLLDIR for files&quot;);</span>
+<span class="nc" id="L839">		System.err.println(&quot;\t&quot; + HELP_ARGUMENT);</span>
+<span class="nc" id="L840">		System.err.println(&quot;\t\tdisplay this message&quot;);</span>
+<span class="nc" id="L841">		System.err.println(&quot;\t&quot; + FILE_ARGUMENT + &quot;FILE&quot;);</span>
+<span class="nc" id="L842">		System.err.println(&quot;\t\tparse and send one file&quot;);</span>
+<span class="nc" id="L843">		System.err.println(&quot;\t&quot; + POLL_ARGUMENT);</span>
+<span class="nc" id="L844">		System.err.println(&quot;\t\trun continuously, checking POLLDIR for files&quot;);</span>
 
-<span class="nc" id="L757">		System.err.println();</span>
+<span class="nc" id="L846">		System.err.println();</span>
 
-<span class="nc" id="L759">		System.err.println(&quot;\t&quot; + PRIVATE_KEY_ARGUMENT + &quot;KEYFILE&quot;);</span>
-<span class="nc" id="L760">		System.err.println(&quot;\t\topenssh private key used to sign products&quot;);</span>
-<span class="nc" id="L761">		System.err.println(&quot;\t&quot; + SIGNATURE_VERSION_ARGUMENT + &quot;VERSION&quot;);</span>
-<span class="nc" id="L762">		System.err.println(&quot;\t\t'v1' is default, 'v2' is other option.&quot;);</span>
+<span class="nc" id="L848">		System.err.println(&quot;\t&quot; + PRIVATE_KEY_ARGUMENT + &quot;KEYFILE&quot;);</span>
+<span class="nc" id="L849">		System.err.println(&quot;\t\topenssh private key used to sign products&quot;);</span>
+<span class="nc" id="L850">		System.err.println(&quot;\t&quot; + SIGNATURE_VERSION_ARGUMENT + &quot;VERSION&quot;);</span>
+<span class="nc" id="L851">		System.err.println(&quot;\t\t'v1' is default, 'v2' is other option.&quot;);</span>
 
-<span class="nc" id="L764">		System.err.println(&quot;\t&quot; + CONNECT_TIMEOUT_ARGUMENT + &quot;TIMEOUT&quot;);</span>
-<span class="nc" id="L765">		System.err.println(&quot;\t\tmilliseconds before timeout while connecting&quot;);</span>
-<span class="nc" id="L766">		System.err.println(&quot;\t\tdefault is \&quot;&quot; + DEFAULT_CONNECT_TIMEOUT</span>
+<span class="nc" id="L853">		System.err.println(&quot;\t&quot; + CONNECT_TIMEOUT_ARGUMENT + &quot;TIMEOUT&quot;);</span>
+<span class="nc" id="L854">		System.err.println(&quot;\t\tmilliseconds before timeout while connecting&quot;);</span>
+<span class="nc" id="L855">		System.err.println(&quot;\t\tdefault is \&quot;&quot; + DEFAULT_CONNECT_TIMEOUT</span>
 				+ &quot;\&quot;ms&quot;);
-<span class="nc" id="L768">		System.err.println(&quot;\t\t(must appear before &quot; + SERVERS_ARGUMENT + &quot;)&quot;);</span>
+<span class="nc" id="L857">		System.err.println(&quot;\t\t(must appear before &quot; + SERVERS_ARGUMENT + &quot;)&quot;);</span>
 
-<span class="nc" id="L770">		System.err.println(&quot;\t&quot; + SERVERS_ARGUMENT + &quot;SERVERS&quot;);</span>
-<span class="nc" id="L771">		System.err</span>
-<span class="nc" id="L772">				.println(&quot;\t\tcomma delimited list of servers(host:port) where products are sent&quot;);</span>
-<span class="nc" id="L773">		System.err.println(&quot;\t\tdefault is \&quot;&quot; + SERVERS_DEFAULT + &quot;\&quot;&quot;);</span>
-<span class="nc" id="L774">		System.err.println(&quot;\t&quot; + TEST_ARGUMENT);</span>
-<span class="nc" id="L775">		System.err.println(&quot;\t\tPrint generated products to console for testing, ignores &quot;</span>
+<span class="nc" id="L859">		System.err.println(&quot;\t&quot; + SERVERS_ARGUMENT + &quot;SERVERS&quot;);</span>
+<span class="nc" id="L860">		System.err</span>
+<span class="nc" id="L861">				.println(&quot;\t\tcomma delimited list of servers(host:port) where products are sent&quot;);</span>
+<span class="nc" id="L862">		System.err.println(&quot;\t\tdefault is \&quot;&quot; + SERVERS_DEFAULT + &quot;\&quot;&quot;);</span>
+<span class="nc" id="L863">		System.err.println(&quot;\t&quot; + TEST_ARGUMENT);</span>
+<span class="nc" id="L864">		System.err.println(&quot;\t\tPrint generated products to console for testing, ignores &quot;</span>
 				+ SERVERS_ARGUMENT);
-<span class="nc" id="L777">		System.err.println(&quot;\t&quot; + PARSER_ARGUMENT + &quot;PARSER&quot;);</span>
-<span class="nc" id="L778">		System.err.println(&quot;\t\tclass that implements &quot;</span>
+<span class="nc" id="L866">		System.err.println(&quot;\t&quot; + PARSER_ARGUMENT + &quot;PARSER&quot;);</span>
+<span class="nc" id="L867">		System.err.println(&quot;\t\tclass that implements &quot;</span>
 				+ &quot;gov.usgs.earthquake.quakeml.FileToQuakemlConverter&quot;);
-<span class="nc" id="L780">		System.err.println(&quot;\t\tdefault is \&quot;&quot; + DEFAULT_PARSER_CLASS + &quot;\&quot;&quot;);</span>
+<span class="nc" id="L869">		System.err.println(&quot;\t\tdefault is \&quot;&quot; + DEFAULT_PARSER_CLASS + &quot;\&quot;&quot;);</span>
 
-<span class="nc" id="L782">		System.err.println();</span>
+<span class="nc" id="L871">		System.err.println();</span>
 
-<span class="nc" id="L784">		System.err.println(&quot;\t&quot; + POLLDIR_ARGUMENT + &quot;POLLDIR&quot;);</span>
-<span class="nc" id="L785">		System.err.println(&quot;\t\tdirectory to poll for messages&quot;);</span>
+<span class="nc" id="L873">		System.err.println(&quot;\t&quot; + POLLDIR_ARGUMENT + &quot;POLLDIR&quot;);</span>
+<span class="nc" id="L874">		System.err.println(&quot;\t\tdirectory to poll for messages&quot;);</span>
 
-<span class="nc" id="L787">		System.err.println(&quot;\t&quot; + POLL_INTERVAL_ARGUMENT + &quot;INTERVAL&quot;);</span>
-<span class="nc" id="L788">		System.err.println(&quot;\t\tmilliseconds between polling&quot;);</span>
-<span class="nc" id="L789">		System.err.println(&quot;\t\tdefault is \&quot;&quot; + DEFAULT_POLLINTERVAL + &quot;\&quot;ms&quot;);</span>
+<span class="nc" id="L876">		System.err.println(&quot;\t&quot; + POLL_INTERVAL_ARGUMENT + &quot;INTERVAL&quot;);</span>
+<span class="nc" id="L877">		System.err.println(&quot;\t\tmilliseconds between polling&quot;);</span>
+<span class="nc" id="L878">		System.err.println(&quot;\t\tdefault is \&quot;&quot; + DEFAULT_POLLINTERVAL + &quot;\&quot;ms&quot;);</span>
 
-<span class="nc" id="L791">		System.err.println(&quot;\t&quot; + STORAGEDIR_ARGUMENT + &quot;STORAGEDIR&quot;);</span>
-<span class="nc" id="L792">		System.err.println(&quot;\t\tdirectory for files that were processed&quot;);</span>
+<span class="nc" id="L880">		System.err.println(&quot;\t&quot; + STORAGEDIR_ARGUMENT + &quot;STORAGEDIR&quot;);</span>
+<span class="nc" id="L881">		System.err.println(&quot;\t\tdirectory for files that were processed&quot;);</span>
 
-<span class="nc" id="L794">		System.err.println(&quot;\t&quot; + ERRORDIR_ARGUMENT + &quot;ERRORDIR&quot;);</span>
-<span class="nc" id="L795">		System.err.println(&quot;\t\tdirectory for files that weren't processed&quot;);</span>
+<span class="nc" id="L883">		System.err.println(&quot;\t&quot; + ERRORDIR_ARGUMENT + &quot;ERRORDIR&quot;);</span>
+<span class="nc" id="L884">		System.err.println(&quot;\t\tdirectory for files that weren't processed&quot;);</span>
 
-<span class="nc" id="L797">		System.err.println(&quot;\t&quot; + ATTACH_ARGUMENT + &quot;ATTACH&quot;);</span>
-<span class="nc" id="L798">		System.err</span>
-<span class="nc" id="L799">				.println(&quot;\t\tattach a file or directory to one generated product, repeatable&quot;);</span>
-<span class="nc" id="L800">		System.err</span>
-<span class="nc" id="L801">				.println(&quot;\t\tdirectory trees are preserved, each path must be unique&quot;);</span>
-<span class="nc" id="L802">		System.err</span>
-<span class="nc" id="L803">				.println(&quot;\t\tif more than one product is generated, an exception will be thrown&quot;);</span>
-<span class="nc" id="L804">		System.err.println(&quot;\t&quot; + SEND_ORIGINS_WITH_PHASES);</span>
-<span class="nc" id="L805">		System.err</span>
-<span class="nc" id="L806">				.println(&quot;\t\tWhen a phase-data product is generated, also send an origin product without the phase data&quot;);</span>
-<span class="nc" id="L807">		System.err.println(&quot;\t&quot; + SEND_MECHANISMS_WITH_PHASES);</span>
-<span class="nc" id="L808">		System.err</span>
-<span class="nc" id="L809">				.println(&quot;\t\tWhen an phase-data product is generated, also send focal mechanism products without the phase data&quot;);</span>
-<span class="nc" id="L810">		System.err.println();</span>
+<span class="nc" id="L886">		System.err.println(&quot;\t&quot; + ATTACH_ARGUMENT + &quot;ATTACH&quot;);</span>
+<span class="nc" id="L887">		System.err</span>
+<span class="nc" id="L888">				.println(&quot;\t\tattach a file or directory to one generated product, repeatable&quot;);</span>
+<span class="nc" id="L889">		System.err</span>
+<span class="nc" id="L890">				.println(&quot;\t\tdirectory trees are preserved, each path must be unique&quot;);</span>
+<span class="nc" id="L891">		System.err</span>
+<span class="nc" id="L892">				.println(&quot;\t\tif more than one product is generated, an exception will be thrown&quot;);</span>
+<span class="nc" id="L893">		System.err.println(&quot;\t&quot; + SEND_ORIGINS_WITH_PHASES);</span>
+<span class="nc" id="L894">		System.err</span>
+<span class="nc" id="L895">				.println(&quot;\t\tWhen a phase-data product is generated, also send an origin product without the phase data&quot;);</span>
+<span class="nc" id="L896">		System.err.println(&quot;\t&quot; + SEND_MECHANISMS_WITH_PHASES);</span>
+<span class="nc" id="L897">		System.err</span>
+<span class="nc" id="L898">				.println(&quot;\t\tWhen an phase-data product is generated, also send focal mechanism products without the phase data&quot;);</span>
+<span class="nc" id="L899">		System.err.println();</span>
 
-<span class="nc" id="L812">		System.err.println(&quot;\t&quot; + CREATE_INTERNAL_PRODUCTS);</span>
-<span class="nc" id="L813">		System.err</span>
-<span class="nc" id="L814">				.println(&quot;\t\tuse the product type prefix 'internal-' for all generated products&quot;);</span>
-<span class="nc" id="L815">		System.err.println(&quot;\t&quot; + CREATE_SCENARIO_PRODUCTS);</span>
-<span class="nc" id="L816">		System.err</span>
-<span class="nc" id="L817">				.println(&quot;\t\tuse the product type suffix '-scenario' for all generated products&quot;);</span>
+<span class="nc" id="L901">		System.err.println(&quot;\t&quot; + CREATE_INTERNAL_PRODUCTS);</span>
+<span class="nc" id="L902">		System.err</span>
+<span class="nc" id="L903">				.println(&quot;\t\tuse the product type prefix 'internal-' for all generated products&quot;);</span>
+<span class="nc" id="L904">		System.err.println(&quot;\t&quot; + CREATE_SCENARIO_PRODUCTS);</span>
+<span class="nc" id="L905">		System.err</span>
+<span class="nc" id="L906">				.println(&quot;\t\tuse the product type suffix '-scenario' for all generated products&quot;);</span>
 
-<span class="nc" id="L819">		System.err.println(&quot;\t&quot; + BINARY_FORMAT_ARGUMENT);</span>
-<span class="nc" id="L820">		System.err.println(&quot;\t\tsend to hub using binary format&quot;);</span>
+<span class="nc" id="L908">		System.err.println(&quot;\t&quot; + BINARY_FORMAT_ARGUMENT);</span>
+<span class="nc" id="L909">		System.err.println(&quot;\t\tsend to hub using binary format&quot;);</span>
 
-<span class="nc" id="L822">		System.err.println(&quot;\t&quot; + DISABLE_DEFLATE_ARGUMENT);</span>
-<span class="nc" id="L823">		System.err.println(&quot;\t\tdisable deflate compression when sending to hubs&quot;);</span>
+<span class="nc" id="L911">		System.err.println(&quot;\t&quot; + DISABLE_DEFLATE_ARGUMENT);</span>
+<span class="nc" id="L912">		System.err.println(&quot;\t\tdisable deflate compression when sending to hubs&quot;);</span>
 
-<span class="nc" id="L825">		System.err.println(&quot;\t&quot; + CLIProductBuilder.DISABLE_PARALLEL_SEND);</span>
-<span class="nc" id="L826">		System.err.println(&quot;\t\tsend to servers sequentially&quot;);</span>
+<span class="nc" id="L914">		System.err.println(&quot;\t&quot; + CLIProductBuilder.DISABLE_PARALLEL_SEND);</span>
+<span class="nc" id="L915">		System.err.println(&quot;\t\tsend to servers sequentially&quot;);</span>
 
-<span class="nc" id="L828">		System.err.println(&quot;\t&quot; + CLIProductBuilder.PARALLEL_SEND_TIMEOUT_ARGUMENT);</span>
-<span class="nc" id="L829">		System.err.println(&quot;\t\ttimeout for parallel sends in seconds&quot;);</span>
+<span class="nc" id="L917">		System.err.println(&quot;\t&quot; + CLIProductBuilder.PARALLEL_SEND_TIMEOUT_ARGUMENT);</span>
+<span class="nc" id="L918">		System.err.println(&quot;\t\ttimeout for parallel sends in seconds&quot;);</span>
 
-<span class="nc" id="L831">		System.exit(1);</span>
-<span class="nc" id="L832">	}</span>
+<span class="nc" id="L920">		System.exit(1);</span>
+<span class="nc" id="L921">	}</span>
 
 	@Override
 	public void run() {
-<span class="nc bnc" id="L836" title="All 2 branches missed.">		if (!polldir.exists()) {</span>
-<span class="nc" id="L837">			polldir.mkdirs();</span>
+<span class="nc bnc" id="L925" title="All 2 branches missed.">		if (!polldir.exists()) {</span>
+<span class="nc" id="L926">			polldir.mkdirs();</span>
 		}
-<span class="nc bnc" id="L839" title="All 2 branches missed.">		while (!Thread.currentThread().isInterrupted()) {</span>
+<span class="nc bnc" id="L928" title="All 2 branches missed.">		while (!Thread.currentThread().isInterrupted()) {</span>
 			try {
-<span class="nc" id="L841">				Date pollStart = new Date();</span>
+<span class="nc" id="L930">				Date pollStart = new Date();</span>
 
-<span class="nc" id="L843">				String[] polldirFiles = polldir.list();</span>
-<span class="nc bnc" id="L844" title="All 2 branches missed.">				if (polldirFiles.length &gt; 0) {</span>
-<span class="nc" id="L845">					LOGGER.fine(&quot;Polldir contains &quot; + polldirFiles.length</span>
+<span class="nc" id="L932">				String[] polldirFiles = polldir.list();</span>
+<span class="nc bnc" id="L933" title="All 2 branches missed.">				if (polldirFiles.length &gt; 0) {</span>
+<span class="nc" id="L934">					LOGGER.fine(&quot;Polldir contains &quot; + polldirFiles.length</span>
 							+ &quot; files&quot;);
 				}
 
-<span class="nc bnc" id="L849" title="All 2 branches missed.">				for (int i = 0, len = polldirFiles.length; i &lt; len; i++) {</span>
-<span class="nc" id="L850">					File file = new File(polldir, polldirFiles[i]);</span>
+<span class="nc bnc" id="L938" title="All 2 branches missed.">				for (int i = 0, len = polldirFiles.length; i &lt; len; i++) {</span>
+<span class="nc" id="L939">					File file = new File(polldir, polldirFiles[i]);</span>
 					try {
-<span class="nc bnc" id="L852" title="All 2 branches missed.">						if (pollCarefully) {</span>
+<span class="nc bnc" id="L941" title="All 2 branches missed.">						if (pollCarefully) {</span>
 							// wait until file is at least pollInterval ms old,
 							// in case it is still being written
-<span class="nc" id="L855">							long age = new Date().getTime() - file.lastModified();</span>
-<span class="nc bnc" id="L856" title="All 2 branches missed.">							if (age &lt;= pollInterval) {</span>
-<span class="nc" id="L857">								continue;</span>
+<span class="nc" id="L944">							long age = new Date().getTime() - file.lastModified();</span>
+<span class="nc bnc" id="L945" title="All 2 branches missed.">							if (age &lt;= pollInterval) {</span>
+<span class="nc" id="L946">								continue;</span>
 							}
 						}
 
-<span class="nc" id="L861">						onFile(file);</span>
+<span class="nc" id="L950">						onFile(file);</span>
 
-<span class="nc bnc" id="L863" title="All 2 branches missed.">						if (storagedir != null) {</span>
-<span class="nc bnc" id="L864" title="All 2 branches missed.">							if (!storagedir.exists()) {</span>
-<span class="nc" id="L865">								storagedir.mkdirs();</span>
+<span class="nc bnc" id="L952" title="All 2 branches missed.">						if (storagedir != null) {</span>
+<span class="nc bnc" id="L953" title="All 2 branches missed.">							if (!storagedir.exists()) {</span>
+<span class="nc" id="L954">								storagedir.mkdirs();</span>
 							}
-<span class="nc" id="L867">							file.renameTo(new File(storagedir, pollStart</span>
-<span class="nc" id="L868">									.getTime() + &quot;_&quot; + file.getName()));</span>
+<span class="nc" id="L956">							file.renameTo(new File(storagedir, pollStart</span>
+<span class="nc" id="L957">									.getTime() + &quot;_&quot; + file.getName()));</span>
 						} else {
-<span class="nc" id="L870">							FileUtils.deleteTree(file);</span>
+<span class="nc" id="L959">							FileUtils.deleteTree(file);</span>
 						}
-<span class="nc" id="L872">					} catch (Exception e) {</span>
-<span class="nc bnc" id="L873" title="All 2 branches missed.">						if (errordir != null) {</span>
-<span class="nc bnc" id="L874" title="All 2 branches missed.">							if (!errordir.exists()) {</span>
-<span class="nc" id="L875">								errordir.mkdirs();</span>
+<span class="nc" id="L961">					} catch (Exception e) {</span>
+<span class="nc bnc" id="L962" title="All 2 branches missed.">						if (errordir != null) {</span>
+<span class="nc bnc" id="L963" title="All 2 branches missed.">							if (!errordir.exists()) {</span>
+<span class="nc" id="L964">								errordir.mkdirs();</span>
 							}
-<span class="nc" id="L877">							file.renameTo(new File(errordir, pollStart</span>
-<span class="nc" id="L878">									.getTime() + &quot;_&quot; + file.getName()));</span>
+<span class="nc" id="L966">							file.renameTo(new File(errordir, pollStart</span>
+<span class="nc" id="L967">									.getTime() + &quot;_&quot; + file.getName()));</span>
 						} else {
-<span class="nc" id="L880">							LOGGER.warning(&quot;Error processing file &quot;</span>
-<span class="nc" id="L881">									+ file.getName()</span>
+<span class="nc" id="L969">							LOGGER.warning(&quot;Error processing file &quot;</span>
+<span class="nc" id="L970">									+ file.getName()</span>
 									+ &quot;, and no error directory configured&quot;);
-<span class="nc" id="L883">							FileUtils.deleteTree(file);</span>
+<span class="nc" id="L972">							FileUtils.deleteTree(file);</span>
 						}
-<span class="nc" id="L885">					}</span>
+<span class="nc" id="L974">					}</span>
 				}
 
-<span class="nc" id="L888">				Date pollEnd = new Date();</span>
-<span class="nc" id="L889">				Long pollTime = pollEnd.getTime() - pollStart.getTime();</span>
-<span class="nc bnc" id="L890" title="All 2 branches missed.">				if (pollTime &lt; pollInterval) {</span>
-<span class="nc" id="L891">					Thread.sleep(pollInterval - pollTime);</span>
+<span class="nc" id="L977">				Date pollEnd = new Date();</span>
+<span class="nc" id="L978">				Long pollTime = pollEnd.getTime() - pollStart.getTime();</span>
+<span class="nc bnc" id="L979" title="All 2 branches missed.">				if (pollTime &lt; pollInterval) {</span>
+<span class="nc" id="L980">					Thread.sleep(pollInterval - pollTime);</span>
 				}
-<span class="nc" id="L893">			} catch (InterruptedException ie) {</span>
+<span class="nc" id="L982">			} catch (InterruptedException ie) {</span>
 				// interrupted means shutdown
-<span class="nc" id="L895">				return;</span>
-<span class="nc" id="L896">			}</span>
+<span class="nc" id="L984">				return;</span>
+<span class="nc" id="L985">			}</span>
 		}
 
-<span class="nc" id="L899">	}</span>
+<span class="nc" id="L988">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

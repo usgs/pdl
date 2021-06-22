@@ -139,7 +139,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 extends java.lang.Object
 implements <a href="Associator.html" title="interface in gov.usgs.earthquake.indexer">Associator</a></pre>
 <div class="block">Utilities for associating events.
- 
+
  Based on the QDM EQEventsUtils class.</div>
 </li>
 </ul>
@@ -353,10 +353,10 @@ implements <a href="Associator.html" title="interface in gov.usgs.earthquake.ind
 <h4>LOCATION_DIFF_DEGREES</h4>
 <pre>public static final&nbsp;java.math.BigDecimal LOCATION_DIFF_DEGREES</pre>
 <div class="block">Distance between related events latitude, in degrees.
- 
+
  This is based on the max number of kilometers per degree, and provides
  the maximum latitude separation (assuming events share a longitude).
- 
+
  Used as a pre-filter before more expensive checks.</div>
 </li>
 </ul>
@@ -444,8 +444,8 @@ implements <a href="Associator.html" title="interface in gov.usgs.earthquake.ind
  normalized lat, lon, and time vectors.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>summary</code> - </dd>
-<dd><code>events</code> - </dd>
+<dd><code>summary</code> - ProductSummary to compare events with</dd>
+<dd><code>events</code> - List of events</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Event with lowest distance</dd>
 </dl>
@@ -460,7 +460,7 @@ implements <a href="Associator.html" title="interface in gov.usgs.earthquake.ind
 <pre class="methodSignature">public&nbsp;boolean&nbsp;eventsAssociated&#8203;(<a href="Event.html" title="class in gov.usgs.earthquake.indexer">Event</a>&nbsp;event1,
                                 <a href="Event.html" title="class in gov.usgs.earthquake.indexer">Event</a>&nbsp;event2)</pre>
 <div class="block">Check if two events are associated to each other.
- 
+
  Reasons events may be considered disassociated:
  <ol>
  <li>Share a common EVENTSOURCE with different EVENTSOURCECODE.</li>
@@ -468,7 +468,7 @@ implements <a href="Associator.html" title="interface in gov.usgs.earthquake.ind
  <li>Preferred location in space and time is NOT nearby, and no other
  reason to associate.</li>
  </ol>
- 
+
  Reasons events may be considered associated:
  <ol>
  <li>Share a common EVENTID</li>

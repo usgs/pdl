@@ -35,114 +35,136 @@ public class EventSummary implements Comparable&lt;EventSummary&gt; {
 <span class="fc" id="L35">	public EventSummary() {</span>
 <span class="fc" id="L36">	}</span>
 
+	/** @param indexId to set */
 	public void setIndexId(Long indexId) {
-<span class="fc" id="L39">		this.indexId = indexId;</span>
-<span class="fc" id="L40">	}</span>
+<span class="fc" id="L40">		this.indexId = indexId;</span>
+<span class="fc" id="L41">	}</span>
 
+	/** @return indexID */
 	public Long getIndexId() {
-<span class="fc" id="L43">		return indexId;</span>
+<span class="fc" id="L45">		return indexId;</span>
 	}
 
+	/**
+	 * Combines source + source code for ID or returns null
+	 * @return Id or null
+	 */
 	public String getId() {
-<span class="pc bpc" id="L47" title="2 of 4 branches missed.">		if (source != null &amp;&amp; sourceCode != null) {</span>
-<span class="fc" id="L48">			return source + sourceCode;</span>
+<span class="pc bpc" id="L53" title="2 of 4 branches missed.">		if (source != null &amp;&amp; sourceCode != null) {</span>
+<span class="fc" id="L54">			return source + sourceCode;</span>
 		}
-<span class="nc" id="L50">		return null;</span>
+<span class="nc" id="L56">		return null;</span>
 	}
 
+	/** @return source */
 	public String getSource() {
-<span class="fc" id="L54">		return source;</span>
+<span class="fc" id="L61">		return source;</span>
 	}
 
+	/** @param source to set */
 	public void setSource(String source) {
-<span class="fc" id="L58">		this.source = source;</span>
-<span class="fc" id="L59">	}</span>
-
-	public String getSourceCode() {
-<span class="fc" id="L62">		return sourceCode;</span>
-	}
-
-	public void setSourceCode(String sourceCode) {
-<span class="fc" id="L66">		this.sourceCode = sourceCode;</span>
+<span class="fc" id="L66">		this.source = source;</span>
 <span class="fc" id="L67">	}</span>
 
+	/** @return sourceCode */
+	public String getSourceCode() {
+<span class="fc" id="L71">		return sourceCode;</span>
+	}
+
+	/** @param sourceCode to set */
+	public void setSourceCode(String sourceCode) {
+<span class="fc" id="L76">		this.sourceCode = sourceCode;</span>
+<span class="fc" id="L77">	}</span>
+
+	/** @return time */
 	public Date getTime() {
-<span class="fc" id="L70">		return time;</span>
+<span class="fc" id="L81">		return time;</span>
 	}
 
+	/** @param time to set */
 	public void setTime(Date time) {
-<span class="fc" id="L74">		this.time = time;</span>
-<span class="fc" id="L75">	}</span>
+<span class="fc" id="L86">		this.time = time;</span>
+<span class="fc" id="L87">	}</span>
 
+	/** @return latitude */
 	public BigDecimal getLatitude() {
-<span class="fc" id="L78">		return latitude;</span>
+<span class="fc" id="L91">		return latitude;</span>
 	}
 
+	/** @param latitude to set */
 	public void setLatitude(BigDecimal latitude) {
-<span class="fc" id="L82">		this.latitude = latitude;</span>
-<span class="fc" id="L83">	}</span>
+<span class="fc" id="L96">		this.latitude = latitude;</span>
+<span class="fc" id="L97">	}</span>
 
+	/** @return longitude */
 	public BigDecimal getLongitude() {
-<span class="fc" id="L86">		return longitude;</span>
+<span class="fc" id="L101">		return longitude;</span>
 	}
 
+	/** @param longitude to set */
 	public void setLongitude(BigDecimal longitude) {
-<span class="fc" id="L90">		this.longitude = longitude;</span>
-<span class="fc" id="L91">	}</span>
-
-	public BigDecimal getDepth() {
-<span class="fc" id="L94">		return depth;</span>
-	}
-
-	public void setDepth(BigDecimal depth) {
-<span class="fc" id="L98">		this.depth = depth;</span>
-<span class="fc" id="L99">	}</span>
-
-	public BigDecimal getMagnitude() {
-<span class="fc" id="L102">		return magnitude;</span>
-	}
-
-	public void setMagnitude(BigDecimal magnitude) {
-<span class="fc" id="L106">		this.magnitude = magnitude;</span>
+<span class="fc" id="L106">		this.longitude = longitude;</span>
 <span class="fc" id="L107">	}</span>
 
-	public void setDeleted(final boolean deleted) {
-<span class="fc" id="L110">		this.deleted = deleted;</span>
-<span class="fc" id="L111">	}</span>
+	/** @return depth */
+	public BigDecimal getDepth() {
+<span class="fc" id="L111">		return depth;</span>
+	}
 
+	/** @param depth to set */
+	public void setDepth(BigDecimal depth) {
+<span class="fc" id="L116">		this.depth = depth;</span>
+<span class="fc" id="L117">	}</span>
+
+	/** @return magnitude */
+	public BigDecimal getMagnitude() {
+<span class="fc" id="L121">		return magnitude;</span>
+	}
+
+	/** @param magnitude to set */
+	public void setMagnitude(BigDecimal magnitude) {
+<span class="fc" id="L126">		this.magnitude = magnitude;</span>
+<span class="fc" id="L127">	}</span>
+
+	/** @param deleted to set */
+	public void setDeleted(final boolean deleted) {
+<span class="fc" id="L131">		this.deleted = deleted;</span>
+<span class="fc" id="L132">	}</span>
+
+	/** @return deleted */
 	public boolean isDeleted() {
-<span class="fc" id="L114">		return deleted;</span>
+<span class="fc" id="L136">		return deleted;</span>
 	}
 
 	/**
 	 * These properties are derived from product properties, and are those
 	 * desirable for searching at an event level.
-	 * 
+	 *
 	 * @return The properties of this event.
 	 */
 	public Map&lt;String, String&gt; getProperties() {
-<span class="fc" id="L124">		return this.properties;</span>
+<span class="fc" id="L146">		return this.properties;</span>
 	}
 
 	/**
-	 * 
+	 *
 	 * @return A map of event codes associated with this event.
 	 */
 	public Map&lt;String, String&gt; getEventCodes() {
-<span class="fc" id="L132">		return this.eventCodes;</span>
+<span class="fc" id="L154">		return this.eventCodes;</span>
 	}
 
 	@Override
 	public int compareTo(EventSummary that) {
 		int r;
 
-<span class="fc" id="L139">		r = this.getSource().compareTo(that.getSource());</span>
-<span class="pc bpc" id="L140" title="1 of 2 branches missed.">		if (r != 0) {</span>
-<span class="nc" id="L141">			return r;</span>
+<span class="fc" id="L161">		r = this.getSource().compareTo(that.getSource());</span>
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">		if (r != 0) {</span>
+<span class="nc" id="L163">			return r;</span>
 		}
-<span class="fc" id="L143">		r = this.getSourceCode().compareTo(that.getSourceCode());</span>
+<span class="fc" id="L165">		r = this.getSourceCode().compareTo(that.getSourceCode());</span>
 
-<span class="fc" id="L145">		return r;</span>
+<span class="fc" id="L167">		return r;</span>
 	}
 
 }

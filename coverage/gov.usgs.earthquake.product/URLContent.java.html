@@ -30,7 +30,7 @@ public class URLContent extends AbstractContent {
 	 *
 	 * @param content
 	 *            the content available at a URL.
-	 * @throws URISyntaxException
+	 * @throws URISyntaxException on URI error
 	 */
 <span class="fc" id="L35">	public URLContent(final URL content) throws URISyntaxException {</span>
 <span class="fc" id="L36">		this.setContentType(MIME_TYPES.getContentType(content.toURI()</span>
@@ -43,24 +43,26 @@ public class URLContent extends AbstractContent {
 	 *
 	 * @param fc
 	 *            the file content.
+	 * @throws MalformedURLException if URL error
 	 */
 	public URLContent(final FileContent fc) throws MalformedURLException {
-<span class="fc" id="L48">		super(fc);</span>
-<span class="fc" id="L49">		this.content = fc.getFile().toURI().toURL();</span>
-<span class="fc" id="L50">	}</span>
+<span class="fc" id="L49">		super(fc);</span>
+<span class="fc" id="L50">		this.content = fc.getFile().toURI().toURL();</span>
+<span class="fc" id="L51">	}</span>
 
 	/**
 	 * @return an InputStream for the wrapped content.
+	 * @throws IOException on IO error
 	 */
 	public InputStream getInputStream() throws IOException {
-<span class="nc" id="L56">		return StreamUtils.getURLInputStream(content);</span>
+<span class="nc" id="L58">		return StreamUtils.getURLInputStream(content);</span>
 	}
 
 	/**
 	 * @return the wrapped url.
 	 */
 	public URL getURL() {
-<span class="fc" id="L63">		return content;</span>
+<span class="fc" id="L65">		return content;</span>
 	}
 
 	/**
@@ -68,7 +70,7 @@ public class URLContent extends AbstractContent {
 	 */
 	public void close() {
 		// nothing to free
-<span class="nc" id="L71">	}</span>
+<span class="nc" id="L73">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

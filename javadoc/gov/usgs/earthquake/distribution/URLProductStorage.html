@@ -171,7 +171,9 @@ extends <a href="FileProductStorage.html" title="class in gov.usgs.earthquake.di
 <tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="URLProductStorage.Format.html" title="enum in gov.usgs.earthquake.distribution">URLProductStorage.Format</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Different types of formats</div>
+</td>
 </tr>
 </table>
 </li>
@@ -208,17 +210,23 @@ extends <a href="FileProductStorage.html" title="class in gov.usgs.earthquake.di
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#DEFAULT_STORAGE_PATH">DEFAULT_STORAGE_PATH</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Sets up default storage path</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#STORAGE_FORMAT_PROPERTY">STORAGE_FORMAT_PROPERTY</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Property for storageFormat</div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#STORAGE_PATH_PROPERTY">STORAGE_PATH_PROPERTY</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Property for storagePath</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
@@ -403,6 +411,7 @@ extends <a href="FileProductStorage.html" title="class in gov.usgs.earthquake.di
 <li class="blockList">
 <h4>STORAGE_FORMAT_PROPERTY</h4>
 <pre>public static final&nbsp;java.lang.String STORAGE_FORMAT_PROPERTY</pre>
+<div class="block">Property for storageFormat</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.distribution.URLProductStorage.STORAGE_FORMAT_PROPERTY">Constant Field Values</a></dd>
@@ -416,6 +425,7 @@ extends <a href="FileProductStorage.html" title="class in gov.usgs.earthquake.di
 <li class="blockList">
 <h4>STORAGE_PATH_PROPERTY</h4>
 <pre>public static final&nbsp;java.lang.String STORAGE_PATH_PROPERTY</pre>
+<div class="block">Property for storagePath</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.distribution.URLProductStorage.STORAGE_PATH_PROPERTY">Constant Field Values</a></dd>
@@ -429,6 +439,7 @@ extends <a href="FileProductStorage.html" title="class in gov.usgs.earthquake.di
 <li class="blockList">
 <h4>DEFAULT_STORAGE_PATH</h4>
 <pre>public static final&nbsp;java.lang.String DEFAULT_STORAGE_PATH</pre>
+<div class="block">Sets up default storage path</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#gov.usgs.earthquake.distribution.URLProductStorage.DEFAULT_STORAGE_PATH">Constant Field Values</a></dd>
@@ -545,7 +556,7 @@ extends <a href="FileProductStorage.html" title="class in gov.usgs.earthquake.di
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the URL to a product.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -590,7 +601,7 @@ extends <a href="FileProductStorage.html" title="class in gov.usgs.earthquake.di
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the ProductOutput.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -614,7 +625,7 @@ extends <a href="FileProductStorage.html" title="class in gov.usgs.earthquake.di
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the ProductInput.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -625,6 +636,10 @@ extends <a href="FileProductStorage.html" title="class in gov.usgs.earthquake.di
 <li class="blockList">
 <h4>getStorageFormat</h4>
 <pre class="methodSignature">public&nbsp;<a href="URLProductStorage.Format.html" title="enum in gov.usgs.earthquake.distribution">URLProductStorage.Format</a>&nbsp;getStorageFormat()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>storageFormat</dd>
+</dl>
 </li>
 </ul>
 <a id="setStorageFormat(gov.usgs.earthquake.distribution.URLProductStorage.Format)">
@@ -634,6 +649,10 @@ extends <a href="FileProductStorage.html" title="class in gov.usgs.earthquake.di
 <li class="blockList">
 <h4>setStorageFormat</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setStorageFormat&#8203;(<a href="URLProductStorage.Format.html" title="enum in gov.usgs.earthquake.distribution">URLProductStorage.Format</a>&nbsp;format)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>format</code> - set a storageFormat</dd>
+</dl>
 </li>
 </ul>
 <a id="getStoragePath()">
@@ -643,6 +662,10 @@ extends <a href="FileProductStorage.html" title="class in gov.usgs.earthquake.di
 <li class="blockList">
 <h4>getStoragePath</h4>
 <pre class="methodSignature">public&nbsp;java.lang.String&nbsp;getStoragePath()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>storagePath</dd>
+</dl>
 </li>
 </ul>
 <a id="setStoragePath(java.lang.String)">
@@ -652,6 +675,10 @@ extends <a href="FileProductStorage.html" title="class in gov.usgs.earthquake.di
 <li class="blockList">
 <h4>setStoragePath</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setStoragePath&#8203;(java.lang.String&nbsp;path)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>path</code> - set a string as the storagePath</dd>
+</dl>
 </li>
 </ul>
 </li>

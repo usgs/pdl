@@ -259,7 +259,9 @@ extends <a href="DefaultStorageListener.html" title="class in gov.usgs.earthquak
                           java.lang.String&nbsp;replCmd,
                           long&nbsp;replTimeout,
                           java.util.List&lt;java.lang.String&gt;&nbsp;replHosts)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Customer initialization of the constructor</div>
+</td>
 </tr>
 </table>
 </li>
@@ -315,7 +317,9 @@ extends <a href="DefaultStorageListener.html" title="class in gov.usgs.earthquak
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setReplHosts(java.util.List)">setReplHosts</a></span>&#8203;(java.util.List&lt;java.lang.String&gt;&nbsp;replHosts)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Set new Replication hosts</div>
+</td>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
@@ -475,6 +479,14 @@ extends <a href="DefaultStorageListener.html" title="class in gov.usgs.earthquak
                                   java.lang.String&nbsp;replCmd,
                                   long&nbsp;replTimeout,
                                   java.util.List&lt;java.lang.String&gt;&nbsp;replHosts)</pre>
+<div class="block">Customer initialization of the constructor</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>archiveFlag</code> - Bool flag of what to do on archive</dd>
+<dd><code>replCmd</code> - Replication command on host system</dd>
+<dd><code>replTimeout</code> - Replication in ms</dd>
+<dd><code>replHosts</code> - List of Replication hosts</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -494,6 +506,11 @@ extends <a href="DefaultStorageListener.html" title="class in gov.usgs.earthquak
 <li class="blockList">
 <h4>setReplHosts</h4>
 <pre class="methodSignature">protected&nbsp;void&nbsp;setReplHosts&#8203;(java.util.List&lt;java.lang.String&gt;&nbsp;replHosts)</pre>
+<div class="block">Set new Replication hosts</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>replHosts</code> - string list of new hosts</dd>
+</dl>
 </li>
 </ul>
 <a id="configure(gov.usgs.util.Config)">
@@ -531,8 +548,10 @@ extends <a href="DefaultStorageListener.html" title="class in gov.usgs.earthquak
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code><a href="DefaultStorageListener.html#onProductStored(gov.usgs.earthquake.distribution.StorageEvent)">onProductStored</a></code>&nbsp;in class&nbsp;<code><a href="DefaultStorageListener.html" title="class in gov.usgs.earthquake.distribution">DefaultStorageListener</a></code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>event</code> - The event that triggered the call</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -550,8 +569,10 @@ extends <a href="DefaultStorageListener.html" title="class in gov.usgs.earthquak
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code><a href="DefaultStorageListener.html#onProductRemoved(gov.usgs.earthquake.distribution.StorageEvent)">onProductRemoved</a></code>&nbsp;in class&nbsp;<code><a href="DefaultStorageListener.html" title="class in gov.usgs.earthquake.distribution">DefaultStorageListener</a></code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>event</code> - The event that triggered the call</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code></dd>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -566,8 +587,12 @@ extends <a href="DefaultStorageListener.html" title="class in gov.usgs.earthquak
                                    boolean&nbsp;deleting)
                             throws java.io.IOException</pre>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>storage</code> - FileProductStorage to use as the base directory</dd>
+<dd><code>id</code> - ID of product in storage</dd>
+<dd><code>deleting</code> - Bool flag for deleting</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.io.IOException</code> - if IO error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -594,7 +619,7 @@ extends <a href="DefaultStorageListener.html" title="class in gov.usgs.earthquak
 <dd>The command and arguments as a list suitable for a
          <code>ProcessBuilder</code>.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.io.IOException</code> - if IO error occurs</dd>
 </dl>
 </li>
 </ul>

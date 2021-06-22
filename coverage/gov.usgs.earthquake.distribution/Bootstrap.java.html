@@ -93,7 +93,7 @@ public class Bootstrap {
 	public static final String MAINCLASS_PROPERTY_NAME = &quot;mainclass&quot;;
 	/** Default mainclass is &quot;gov.usgs.earthquake.distribution.ProductClient. */
 	public static final String DEFAULT_MAINCLASS = &quot;gov.usgs.earthquake.distribution.ProductClient&quot;;
-
+	/** Argument for version */
 	public static final String VERSION_ARGUMENT = &quot;--version&quot;;
 
 	// private static
@@ -106,10 +106,9 @@ public class Bootstrap {
 	/** List of logger objects that have level overrides configured. */
 <span class="nc" id="L107">	private final ArrayList&lt;Logger&gt; loggers = new ArrayList&lt;Logger&gt;();</span>
 
-	// constructors
-
-<span class="nc" id="L111">	public Bootstrap() {</span>
-<span class="nc" id="L112">	}</span>
+	/** Constructor */
+<span class="nc" id="L110">	public Bootstrap() {</span>
+<span class="nc" id="L111">	}</span>
 
 	// members
 
@@ -118,48 +117,55 @@ public class Bootstrap {
 	 *
 	 * @param configFile
 	 *            config file to load.
+	 * @return
+	 *            config
 	 * @throws IOException
+	 *            if IO error occurs
 	 */
 	public Config loadConfig(final File configFile) throws IOException {
-<span class="nc" id="L124">		Config config = new Config();</span>
+<span class="nc" id="L126">		Config config = new Config();</span>
 
 		// load defaults from jar file
-<span class="nc" id="L127">		InputStream in = Bootstrap.class.getClassLoader().getResourceAsStream(</span>
+<span class="nc" id="L129">		InputStream in = Bootstrap.class.getClassLoader().getResourceAsStream(</span>
 				JAR_CONFIGFILE);
-<span class="nc bnc" id="L129" title="All 2 branches missed.">		if (in != null) {</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">		if (in != null) {</span>
 			try {
-<span class="nc" id="L131">				config.load(in);</span>
+<span class="nc" id="L133">				config.load(in);</span>
 			} finally {
-<span class="nc" id="L133">				StreamUtils.closeStream(in);</span>
-<span class="nc" id="L134">			}</span>
+<span class="nc" id="L135">				StreamUtils.closeStream(in);</span>
+<span class="nc" id="L136">			}</span>
 		} else {
-<span class="nc" id="L136">			LOGGER.config(&quot;Jar configuration not found&quot;);</span>
+<span class="nc" id="L138">			LOGGER.config(&quot;Jar configuration not found&quot;);</span>
 		}
 
 		// override settings with a config file
-<span class="nc bnc" id="L140" title="All 2 branches missed.">		if (configFile.exists()) {</span>
-<span class="nc" id="L141">			LOGGER.config(&quot;Loading configuration file &quot;</span>
-<span class="nc" id="L142">					+ configFile.getCanonicalPath());</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">		if (configFile.exists()) {</span>
+<span class="nc" id="L143">			LOGGER.config(&quot;Loading configuration file &quot;</span>
+<span class="nc" id="L144">					+ configFile.getCanonicalPath());</span>
 
-<span class="nc" id="L144">			config = new Config(config);</span>
-<span class="nc" id="L145">			in = StreamUtils.getInputStream(configFile);</span>
+<span class="nc" id="L146">			config = new Config(config);</span>
+<span class="nc" id="L147">			in = StreamUtils.getInputStream(configFile);</span>
 			try {
-<span class="nc" id="L147">				config.load(in);</span>
+<span class="nc" id="L149">				config.load(in);</span>
 			} finally {
-<span class="nc" id="L149">				StreamUtils.closeStream(in);</span>
+<span class="nc" id="L151">				StreamUtils.closeStream(in);</span>
 			}
 		}
 
-<span class="nc" id="L153">		return config;</span>
+<span class="nc" id="L155">		return config;</span>
 	}
 
+	/**
+	 * Sets up LogManager
+	 * @param config Config file
+	 */
 	public void setupLogging(final Config config) {
-<span class="nc" id="L157">		final LogManager logManager = LogManager.getLogManager();</span>
-<span class="nc" id="L158">		logManager.reset();</span>
-<span class="nc" id="L159">		loggers.clear();</span>
+<span class="nc" id="L163">		final LogManager logManager = LogManager.getLogManager();</span>
+<span class="nc" id="L164">		logManager.reset();</span>
+<span class="nc" id="L165">		loggers.clear();</span>
 
 		// logging is noisy without this
-<span class="nc bnc" id="L162" title="All 2 branches missed.">		for (final String name : new String[]{</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">		for (final String name : new String[]{</span>
 			&quot;com.sun.activation&quot;,
 			&quot;com.sun.xml.bind&quot;,
 			&quot;javax.xml.bind&quot;,
@@ -167,179 +173,179 @@ public class Bootstrap {
 			&quot;org.glassfish.tyrus&quot;,
 			&quot;sun.awt.X11.timeoutTask.XToolkit&quot;
 		}) {
-<span class="nc" id="L170">			final Logger logger = Logger.getLogger(name);</span>
-<span class="nc" id="L171">			logger.setLevel(Level.INFO);</span>
+<span class="nc" id="L176">			final Logger logger = Logger.getLogger(name);</span>
+<span class="nc" id="L177">			logger.setLevel(Level.INFO);</span>
 			// save reference to logger since LogManager uses weakref
-<span class="nc" id="L173">			loggers.add(logger);</span>
+<span class="nc" id="L179">			loggers.add(logger);</span>
 		};
 
-<span class="nc" id="L176">		final Level level = Level.parse(config.getProperty(LOGLEVEL_PROPERTY_NAME,</span>
+<span class="nc" id="L182">		final Level level = Level.parse(config.getProperty(LOGLEVEL_PROPERTY_NAME,</span>
 				DEFAULT_LOGLEVEL));
-<span class="nc" id="L178">		final String logDirectory = config.getProperty(LOGDIRECTORY_PROPERTY_NAME,</span>
+<span class="nc" id="L184">		final String logDirectory = config.getProperty(LOGDIRECTORY_PROPERTY_NAME,</span>
 				DEFAULT_LOGDIRECTORY);
-<span class="nc" id="L180">		LOGGER.config(&quot;Logging Level '&quot; + level + &quot;'&quot;);</span>
-<span class="nc" id="L181">		LOGGER.config(&quot;Log directory '&quot; + logDirectory + &quot;'&quot;);</span>
+<span class="nc" id="L186">		LOGGER.config(&quot;Logging Level '&quot; + level + &quot;'&quot;);</span>
+<span class="nc" id="L187">		LOGGER.config(&quot;Log directory '&quot; + logDirectory + &quot;'&quot;);</span>
 
-<span class="nc" id="L183">		Logger rootLogger = Logger.getLogger(&quot;&quot;);</span>
-<span class="nc" id="L184">		rootLogger.setLevel(level);</span>
+<span class="nc" id="L189">		Logger rootLogger = Logger.getLogger(&quot;&quot;);</span>
+<span class="nc" id="L190">		rootLogger.setLevel(level);</span>
 
 		try {
-<span class="nc" id="L187">			File logDirectoryFile = new File(logDirectory);</span>
-<span class="nc bnc" id="L188" title="All 2 branches missed.">			if (!logDirectoryFile.exists()) {</span>
-<span class="nc" id="L189">				LOGGER.fine(&quot;Creating log directory&quot;);</span>
-<span class="nc bnc" id="L190" title="All 2 branches missed.">				if (!logDirectoryFile.mkdirs()) {</span>
-<span class="nc" id="L191">					LOGGER.warning(&quot;Unable to create log directory&quot;);</span>
+<span class="nc" id="L193">			File logDirectoryFile = new File(logDirectory);</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">			if (!logDirectoryFile.exists()) {</span>
+<span class="nc" id="L195">				LOGGER.fine(&quot;Creating log directory&quot;);</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">				if (!logDirectoryFile.mkdirs()) {</span>
+<span class="nc" id="L197">					LOGGER.warning(&quot;Unable to create log directory&quot;);</span>
 				}
 			}
 
 			// filepattern, maxBytesPerFile, maxFiles, append
 			// FileHandler handler = new FileHandler(logFile, 100000, 10, true);
-<span class="nc" id="L197">			Handler handler = new SimpleLogFileHandler(logDirectoryFile,</span>
+<span class="nc" id="L203">			Handler handler = new SimpleLogFileHandler(logDirectoryFile,</span>
 					new SimpleDateFormat(DEFAULT_LOGFILE));
-<span class="nc" id="L199">			handler.setLevel(level);</span>
-<span class="nc" id="L200">			rootLogger.addHandler(handler);</span>
-<span class="nc" id="L201">		} catch (Exception e) {</span>
-<span class="nc" id="L202">			LOGGER.log(Level.WARNING, &quot;Unable to create log file handler&quot;, e);</span>
-<span class="nc" id="L203">		}</span>
+<span class="nc" id="L205">			handler.setLevel(level);</span>
+<span class="nc" id="L206">			rootLogger.addHandler(handler);</span>
+<span class="nc" id="L207">		} catch (Exception e) {</span>
+<span class="nc" id="L208">			LOGGER.log(Level.WARNING, &quot;Unable to create log file handler&quot;, e);</span>
+<span class="nc" id="L209">		}</span>
 
-<span class="nc" id="L205">		String redirectConsole = config.getProperty(</span>
+<span class="nc" id="L211">		String redirectConsole = config.getProperty(</span>
 				CONSOLEREDIRECT_PROPERTY_NAME, DEFAULT_CONSOLEREDIRECT);
-<span class="nc bnc" id="L207" title="All 2 branches missed.">		if (!redirectConsole.equals(DEFAULT_CONSOLEREDIRECT)) {</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">		if (!redirectConsole.equals(DEFAULT_CONSOLEREDIRECT)) {</span>
 			// default is off, so enable
-<span class="nc" id="L209">			System.err.println(&quot;Redirecting STDOUT and STDERR to log file&quot;);</span>
-<span class="nc" id="L210">			System.setOut(new PrintStream(new LoggingOutputStream(Logger</span>
-<span class="nc" id="L211">					.getLogger(&quot;stdout&quot;), StdOutErrLevel.STDOUT)));</span>
-<span class="nc" id="L212">			System.setErr(new PrintStream(new LoggingOutputStream(Logger</span>
-<span class="nc" id="L213">					.getLogger(&quot;stderr&quot;), StdOutErrLevel.STDERR)));</span>
+<span class="nc" id="L215">			System.err.println(&quot;Redirecting STDOUT and STDERR to log file&quot;);</span>
+<span class="nc" id="L216">			System.setOut(new PrintStream(new LoggingOutputStream(Logger</span>
+<span class="nc" id="L217">					.getLogger(&quot;stdout&quot;), StdOutErrLevel.STDOUT)));</span>
+<span class="nc" id="L218">			System.setErr(new PrintStream(new LoggingOutputStream(Logger</span>
+<span class="nc" id="L219">					.getLogger(&quot;stderr&quot;), StdOutErrLevel.STDERR)));</span>
 		} else {
-<span class="nc" id="L215">			ConsoleHandler handler = new ConsoleHandler();</span>
-<span class="nc" id="L216">			handler.setLevel(level);</span>
-<span class="nc" id="L217">			rootLogger.addHandler(handler);</span>
+<span class="nc" id="L221">			ConsoleHandler handler = new ConsoleHandler();</span>
+<span class="nc" id="L222">			handler.setLevel(level);</span>
+<span class="nc" id="L223">			rootLogger.addHandler(handler);</span>
 		}
 
 		Formatter formatter;
-<span class="nc" id="L221">		String logFormat = config.getProperty(</span>
+<span class="nc" id="L227">		String logFormat = config.getProperty(</span>
 				LOGFORMAT_PROPERTY_NAME, DEFAULT_LOGFORMAT);
-<span class="nc bnc" id="L223" title="All 2 branches missed.">		if (logFormat.equals(LOGFORMAT_SIMPLE)) {</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">		if (logFormat.equals(LOGFORMAT_SIMPLE)) {</span>
 			// built in simple formatter
-<span class="nc" id="L225">			formatter = new SimpleFormatter();</span>
-<span class="nc bnc" id="L226" title="All 2 branches missed.">		} else if (logFormat.equals(LOGFORMAT_XML)) {</span>
+<span class="nc" id="L231">			formatter = new SimpleFormatter();</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">		} else if (logFormat.equals(LOGFORMAT_XML)) {</span>
 			// built in xml formatter
-<span class="nc" id="L228">			formatter = new XMLFormatter();</span>
+<span class="nc" id="L234">			formatter = new XMLFormatter();</span>
 		} else {
 			// pdl style simple formatter
-<span class="nc" id="L231">			formatter = new SimpleLogFormatter();</span>
+<span class="nc" id="L237">			formatter = new SimpleLogFormatter();</span>
 		}
-<span class="nc bnc" id="L233" title="All 2 branches missed.">		for (Handler handler : rootLogger.getHandlers()) {</span>
-<span class="nc" id="L234">			handler.setFormatter(formatter);</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">		for (Handler handler : rootLogger.getHandlers()) {</span>
+<span class="nc" id="L240">			handler.setFormatter(formatter);</span>
 		}
-<span class="nc" id="L236">	}</span>
+<span class="nc" id="L242">	}</span>
 
 	public static void main(final String[] args) throws Exception {
-<span class="nc" id="L239">		StringBuffer argumentList = new StringBuffer();</span>
-<span class="nc" id="L240">		boolean configTest = false;</span>
+<span class="nc" id="L245">		StringBuffer argumentList = new StringBuffer();</span>
+<span class="nc" id="L246">		boolean configTest = false;</span>
 
-<span class="nc" id="L242">		String className = null;</span>
+<span class="nc" id="L248">		String className = null;</span>
 
 		// use default config file
-<span class="nc" id="L245">		File configFile = new File(DEFAULT_CONFIGFILE);</span>
-<span class="nc bnc" id="L246" title="All 2 branches missed.">		for (String arg : args) {</span>
-<span class="nc" id="L247">			argumentList.append(arg).append(&quot; &quot;);</span>
-<span class="nc bnc" id="L248" title="All 2 branches missed.">			if (arg.startsWith(CONFIGFILE_ARGUMENT)) {</span>
+<span class="nc" id="L251">		File configFile = new File(DEFAULT_CONFIGFILE);</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">		for (String arg : args) {</span>
+<span class="nc" id="L253">			argumentList.append(arg).append(&quot; &quot;);</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">			if (arg.startsWith(CONFIGFILE_ARGUMENT)) {</span>
 				// unless config file argument provided
-<span class="nc" id="L250">				configFile = new File(arg.replace(CONFIGFILE_ARGUMENT, &quot;&quot;));</span>
-<span class="nc bnc" id="L251" title="All 2 branches missed.">			} else if (arg.equals(CONFIG_TEST_ARGUMENT)) {</span>
-<span class="nc" id="L252">				configTest = true;</span>
-<span class="nc bnc" id="L253" title="All 2 branches missed.">			} else if (arg.startsWith(MAINCLASS_ARGUMENT)) {</span>
-<span class="nc" id="L254">				className = arg.replace(MAINCLASS_ARGUMENT, &quot;&quot;);</span>
-<span class="nc bnc" id="L255" title="All 2 branches missed.">			} else if (arg.equals(VERSION_ARGUMENT)) {</span>
-<span class="nc" id="L256">				System.err.println(&quot;Product Distribution Client&quot;);</span>
-<span class="nc" id="L257">				System.err.println(ProductClient.RELEASE_VERSION);</span>
-<span class="nc" id="L258">				System.exit(0);</span>
+<span class="nc" id="L256">				configFile = new File(arg.replace(CONFIGFILE_ARGUMENT, &quot;&quot;));</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">			} else if (arg.equals(CONFIG_TEST_ARGUMENT)) {</span>
+<span class="nc" id="L258">				configTest = true;</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">			} else if (arg.startsWith(MAINCLASS_ARGUMENT)) {</span>
+<span class="nc" id="L260">				className = arg.replace(MAINCLASS_ARGUMENT, &quot;&quot;);</span>
+<span class="nc bnc" id="L261" title="All 2 branches missed.">			} else if (arg.equals(VERSION_ARGUMENT)) {</span>
+<span class="nc" id="L262">				System.err.println(&quot;Product Distribution Client&quot;);</span>
+<span class="nc" id="L263">				System.err.println(ProductClient.RELEASE_VERSION);</span>
+<span class="nc" id="L264">				System.exit(0);</span>
 			}
 		}
 
-<span class="nc" id="L262">		Bootstrap bootstrap = new Bootstrap();</span>
+<span class="nc" id="L268">		Bootstrap bootstrap = new Bootstrap();</span>
 
 		// load configuration file
-<span class="nc" id="L265">		Config config = bootstrap.loadConfig(configFile);</span>
+<span class="nc" id="L271">		Config config = bootstrap.loadConfig(configFile);</span>
 
 		// set global config object
-<span class="nc" id="L268">		Config.setConfig(config);</span>
+<span class="nc" id="L274">		Config.setConfig(config);</span>
 
 		// setup logging based on configuration
-<span class="nc" id="L271">		bootstrap.setupLogging(config);</span>
+<span class="nc" id="L277">		bootstrap.setupLogging(config);</span>
 
 		// java and os information
-<span class="nc" id="L274">		LOGGER.config(&quot;java.vendor = &quot; + System.getProperty(&quot;java.vendor&quot;));</span>
-<span class="nc" id="L275">		LOGGER.config(&quot;java.version = &quot; + System.getProperty(&quot;java.version&quot;));</span>
-<span class="nc" id="L276">		LOGGER.config(&quot;java.home = &quot; + System.getProperty(&quot;java.home&quot;));</span>
-<span class="nc" id="L277">		LOGGER.config(&quot;os.arch = &quot; + System.getProperty(&quot;os.arch&quot;));</span>
-<span class="nc" id="L278">		LOGGER.config(&quot;os.name = &quot; + System.getProperty(&quot;os.name&quot;));</span>
-<span class="nc" id="L279">		LOGGER.config(&quot;os.version = &quot; + System.getProperty(&quot;os.version&quot;));</span>
-<span class="nc" id="L280">		LOGGER.config(&quot;user.dir = &quot; + System.getProperty(&quot;user.dir&quot;));</span>
-<span class="nc" id="L281">		LOGGER.config(&quot;user.name = &quot; + System.getProperty(&quot;user.name&quot;));</span>
+<span class="nc" id="L280">		LOGGER.config(&quot;java.vendor = &quot; + System.getProperty(&quot;java.vendor&quot;));</span>
+<span class="nc" id="L281">		LOGGER.config(&quot;java.version = &quot; + System.getProperty(&quot;java.version&quot;));</span>
+<span class="nc" id="L282">		LOGGER.config(&quot;java.home = &quot; + System.getProperty(&quot;java.home&quot;));</span>
+<span class="nc" id="L283">		LOGGER.config(&quot;os.arch = &quot; + System.getProperty(&quot;os.arch&quot;));</span>
+<span class="nc" id="L284">		LOGGER.config(&quot;os.name = &quot; + System.getProperty(&quot;os.name&quot;));</span>
+<span class="nc" id="L285">		LOGGER.config(&quot;os.version = &quot; + System.getProperty(&quot;os.version&quot;));</span>
+<span class="nc" id="L286">		LOGGER.config(&quot;user.dir = &quot; + System.getProperty(&quot;user.dir&quot;));</span>
+<span class="nc" id="L287">		LOGGER.config(&quot;user.name = &quot; + System.getProperty(&quot;user.name&quot;));</span>
 
 		// log command line arguments
-<span class="nc" id="L284">		LOGGER.fine(&quot;Command line arguments: &quot; + argumentList.toString().trim());</span>
+<span class="nc" id="L290">		LOGGER.fine(&quot;Command line arguments: &quot; + argumentList.toString().trim());</span>
 
 		// configure whether tracker updates are sent.
-<span class="nc" id="L287">		String enableTrackerProperty = config</span>
-<span class="nc" id="L288">				.getProperty(ENABLE_TRACKER_PROPERTY_NAME);</span>
-<span class="nc bnc" id="L289" title="All 2 branches missed.">		if (Boolean.valueOf(enableTrackerProperty)) {</span>
-<span class="nc" id="L290">			LOGGER.warning(&quot;Enabled tracker updates,&quot;</span>
+<span class="nc" id="L293">		String enableTrackerProperty = config</span>
+<span class="nc" id="L294">				.getProperty(ENABLE_TRACKER_PROPERTY_NAME);</span>
+<span class="nc bnc" id="L295" title="All 2 branches missed.">		if (Boolean.valueOf(enableTrackerProperty)) {</span>
+<span class="nc" id="L296">			LOGGER.warning(&quot;Enabled tracker updates,&quot;</span>
 					+ &quot; this is usually not a good idea.&quot;);
-<span class="nc" id="L292">			ProductTracker.setTrackerEnabled(true);</span>
+<span class="nc" id="L298">			ProductTracker.setTrackerEnabled(true);</span>
 		}
 
 		// lookup main class
-<span class="nc bnc" id="L296" title="All 2 branches missed.">		if (className == null) {</span>
+<span class="nc bnc" id="L302" title="All 2 branches missed.">		if (className == null) {</span>
 			// no argument specified, check configuration
-<span class="nc" id="L298">			className = config.getProperty(MAINCLASS_PROPERTY_NAME,</span>
+<span class="nc" id="L304">			className = config.getProperty(MAINCLASS_PROPERTY_NAME,</span>
 					DEFAULT_MAINCLASS);
 		}
 
 		// invoke main class main(String[] args) method
-<span class="nc" id="L303">		LOGGER.config(&quot;Loading main class &quot; + className);</span>
-<span class="nc" id="L304">		Bootstrappable main = null;</span>
+<span class="nc" id="L309">		LOGGER.config(&quot;Loading main class &quot; + className);</span>
+<span class="nc" id="L310">		Bootstrappable main = null;</span>
 		try {
-<span class="nc" id="L306">			main = (Bootstrappable) Class.forName(className)</span>
-<span class="nc" id="L307">					.getConstructor().newInstance();</span>
-<span class="nc" id="L308">		} catch (ClassCastException cce) {</span>
-<span class="nc" id="L309">			LOGGER.log(Level.SEVERE,</span>
+<span class="nc" id="L312">			main = (Bootstrappable) Class.forName(className)</span>
+<span class="nc" id="L313">					.getConstructor().newInstance();</span>
+<span class="nc" id="L314">		} catch (ClassCastException cce) {</span>
+<span class="nc" id="L315">			LOGGER.log(Level.SEVERE,</span>
 					&quot;Main class must implement the Bootstrappable interface&quot;,
 					cce);
-<span class="nc" id="L312">			System.exit(1);</span>
-<span class="nc" id="L313">		}</span>
+<span class="nc" id="L318">			System.exit(1);</span>
+<span class="nc" id="L319">		}</span>
 
 		// use the configurable interface when available
-<span class="nc bnc" id="L316" title="All 2 branches missed.">		if (main instanceof Configurable) {</span>
-<span class="nc" id="L317">			Configurable configurable = ((Configurable) main);</span>
-<span class="nc" id="L318">			configurable.setName(&quot;main&quot;);</span>
+<span class="nc bnc" id="L322" title="All 2 branches missed.">		if (main instanceof Configurable) {</span>
+<span class="nc" id="L323">			Configurable configurable = ((Configurable) main);</span>
+<span class="nc" id="L324">			configurable.setName(&quot;main&quot;);</span>
 			try {
-<span class="nc" id="L320">				configurable.configure(config);</span>
-<span class="nc" id="L321">			} catch (Exception e) {</span>
-<span class="nc" id="L322">				LOGGER.log(Level.SEVERE, &quot;Exception loading configuration &quot;, e);</span>
-<span class="nc" id="L323">				System.exit(1);</span>
-<span class="nc" id="L324">			}</span>
+<span class="nc" id="L326">				configurable.configure(config);</span>
+<span class="nc" id="L327">			} catch (Exception e) {</span>
+<span class="nc" id="L328">				LOGGER.log(Level.SEVERE, &quot;Exception loading configuration &quot;, e);</span>
+<span class="nc" id="L329">				System.exit(1);</span>
+<span class="nc" id="L330">			}</span>
 		}
 
 		// configuration loaded okay
-<span class="nc" id="L328">		LOGGER.config(&quot;Configuration loaded&quot;);</span>
-<span class="nc bnc" id="L329" title="All 2 branches missed.">		if (configTest) {</span>
+<span class="nc" id="L334">		LOGGER.config(&quot;Configuration loaded&quot;);</span>
+<span class="nc bnc" id="L335" title="All 2 branches missed.">		if (configTest) {</span>
 			// exit successfully
-<span class="nc" id="L331">			System.exit(0);</span>
+<span class="nc" id="L337">			System.exit(0);</span>
 		}
 
 		// run main instance
-<span class="nc" id="L335">		LOGGER.config(&quot;Bootstrap complete, running main class\n&quot;);</span>
+<span class="nc" id="L341">		LOGGER.config(&quot;Bootstrap complete, running main class\n&quot;);</span>
 		try {
-<span class="nc" id="L337">			main.run(args);</span>
-<span class="nc" id="L338">		} catch (Exception e) {</span>
-<span class="nc" id="L339">			LOGGER.log(Level.SEVERE, &quot;Main class threw exception, exiting&quot;, e);</span>
-<span class="nc" id="L340">			System.exit(Bootstrappable.RUN_EXCEPTION_EXIT_CODE);</span>
-<span class="nc" id="L341">		}</span>
-<span class="nc" id="L342">	}</span>
+<span class="nc" id="L343">			main.run(args);</span>
+<span class="nc" id="L344">		} catch (Exception e) {</span>
+<span class="nc" id="L345">			LOGGER.log(Level.SEVERE, &quot;Main class threw exception, exiting&quot;, e);</span>
+<span class="nc" id="L346">			System.exit(Bootstrappable.RUN_EXCEPTION_EXIT_CODE);</span>
+<span class="nc" id="L347">		}</span>
+<span class="nc" id="L348">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>
