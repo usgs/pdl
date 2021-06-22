@@ -37,7 +37,7 @@ public class FutureExecutorTask<T> extends ExecutorTask<T> {
    * Construct a new ExecutorTask
    *
    * @param backgroundService
-   *            ExecutorService used to execute callableÍ
+   *            ExecutorService used to execute callable.
    * @param service
    *            ExecutorService that this task will be submitted to.
    * @param maxTries
