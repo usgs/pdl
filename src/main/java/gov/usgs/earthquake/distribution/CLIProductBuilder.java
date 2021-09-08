@@ -193,7 +193,7 @@ public class CLIProductBuilder extends DefaultConfigurable {
 	 * There should be a property "senders" containing a comma delimited list of
 	 * sender names to be loaded.
 	 *
-	 * @param config
+	 * @param confi
 	 *            the Config to load.
 	 */
 	public void configure(final Config config) throws Exception {
