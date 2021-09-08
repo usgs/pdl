@@ -21,9 +21,9 @@ stages:
       - .gradle/wrapper
   image: ${DEVOPS_REGISTRY}usgs/java:11-jdk
   script:
-    # run gradle
+    # run gradle and javadoc
     - export GRADLE_USER_HOME="${CI_PROJECT_DIR}/.gradle"
-    - ./gradlew build createZip
+    - ./gradlew build createZip javadoc
     # set up artifact paths
     - cp build/libs/ProductClient.jar ProductClient.jar
     - cp build/distributions/ProductClient.zip ProductClient.zip
@@ -45,9 +45,3 @@ Java Latest:
   extends:
     - .check_code
   image: ${DEVOPS_REGISTRY}usgs/java:latest-jdk
-
-Javadoc:
-  script:
-    - ./gradlew javadoc
-  image: ${DEVOPS_REGISTRY}usgs/java:latest-jdk
-  stage: build
