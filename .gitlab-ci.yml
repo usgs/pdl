@@ -1,8 +1,8 @@
 image: ${DEVOPS_REGISTRY}usgs/centos:8
 
 stages:
-  - javadoc
   - build
+  - javadoc
 
 .check_code:
   after_script:
@@ -32,12 +32,6 @@ stages:
   tags:
     - development
 
-Javadoc:
-  allow_failure: true
-  image: ${DEVOPS_REGISTRY}usgs/java:latest-jdk
-  script:
-    - ./gradlew javadoc
-  stage: javadoc
 
 Java 8:
   extends:
@@ -53,3 +47,10 @@ Java Latest:
   extends:
     - .check_code
   image: ${DEVOPS_REGISTRY}usgs/java:latest-jdk
+
+  Javadoc:
+  allow_failure: true
+  image: ${DEVOPS_REGISTRY}usgs/java:latest-jdk
+  script:
+    - ./gradlew javadoc
+  stage: javadoc
