@@ -1,6 +1,7 @@
 image: ${DEVOPS_REGISTRY}usgs/centos:8
 
 stages:
+  - javadoc
   - build
 
 .check_code:
@@ -23,13 +24,20 @@ stages:
   script:
     # run gradle and javadoc
     - export GRADLE_USER_HOME="${CI_PROJECT_DIR}/.gradle"
-    - ./gradlew build createZip javadoc
+    - ./gradlew build createZip
     # set up artifact paths
     - cp build/libs/ProductClient.jar ProductClient.jar
     - cp build/distributions/ProductClient.zip ProductClient.zip
   stage: build
   tags:
     - development
+
+Javadoc:
+  allow_failure: true
+  image: ${DEVOPS_REGISTRY}usgs/java:latest-jdk
+  script:
+    - ./gradlew javadoc
+  stage: javadoc
 
 Java 8:
   extends:
