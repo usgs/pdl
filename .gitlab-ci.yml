@@ -2,6 +2,7 @@ image: ${DEVOPS_REGISTRY}usgs/centos:8
 
 stages:
   - build
+  - javadoc
 
 .check_code:
   after_script:
@@ -21,7 +22,7 @@ stages:
       - .gradle/wrapper
   image: ${DEVOPS_REGISTRY}usgs/java:11-jdk
   script:
-    # run gradle
+    # run gradle and javadoc
     - export GRADLE_USER_HOME="${CI_PROJECT_DIR}/.gradle"
     - ./gradlew build createZip
     # set up artifact paths
@@ -30,6 +31,7 @@ stages:
   stage: build
   tags:
     - development
+
 
 Java 8:
   extends:
@@ -45,3 +47,9 @@ Java Latest:
   extends:
     - .check_code
   image: ${DEVOPS_REGISTRY}usgs/java:latest-jdk
+
+Javadoc:
+  image: ${DEVOPS_REGISTRY}usgs/java:latest-jdk
+  script:
+    - ./gradlew javadoc
+  stage: javadoc
