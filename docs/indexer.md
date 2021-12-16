@@ -98,11 +98,6 @@ The Default Indexer Module is the basis for all other Modules and implements ANS
 | +50   | If product has *Location*, and `eventsource` is authoritative
 | +100  | If product has *Location*, and `source` is authoritative
 
-> NOTE: *Location* values that include a latitude or longitude that is exactly `0`
-> do not get any authoritative boost from the Location.  These typically result
-> from software errors, and NEIC is the only contributor for locations in these
-> areas.
-
 #### Moment Tensor Indexer Module
 The Moment Tensor Module extends preferred weight calculations (added to Default Indexer Module weights) for "moment-tensor" products.
 
