@@ -1,5 +1,5 @@
-Indexer
-=======
+Indexer Processing
+==================
 
 
 ## Overview
@@ -98,6 +98,31 @@ The Default Indexer Module is the basis for all other Modules and implements ANS
 | +50   | If product has *Location*, and `eventsource` is authoritative
 | +100  | If product has *Location*, and `source` is authoritative
 
+#### Moment Tensor Indexer Module
+The Moment Tensor Module extends preferred weight calculations (added to Default Indexer Module weights) for "moment-tensor" products.
+
+| Value | Description
+| :---: | -----------
+| +60   | If `beachball-type` property is `mww`
+| +56   | If `beachball-source` property is `gcmt`
+| +2    | If `beachball-type` property is `mwc`
+| +1    | If `beachball-type` property is `mwb`
+| -100  | If `beachball-type` property is `mwb` and `derived-magnitude` property is outside the range [5.5, 7.0]
+
+> NOTE: property comparisons are case-insensitive
+
+#### ShakeMap Indexer Module
+The ShakeMap Indexer Module extends preferred weight calculations (added to Default Indexer Module weights) for "shakemap" products.
+
+| Value | Description
+| :---: | -----------
+| +200  | If product `source` is `atlas`
+| +50   | If map extent contains epicenter
+| +25*  | If map center is less than 2 degrees from epicenter.  Scaled based on distance `25 * (1-(distance/2))`
+
+Map extent is defined by the properties `maximum-latitude`, `maximum-longitude`, `minimum-latitude`, `minimum-longitude`.  Epicenter is defined by the properties `latitude` and `longitude`.
+
+> The ShakeMap Indexer Module is also configured to ignore the `NN` source, so it only receives `preferredWeight=1` from default indexer module before ShakeMap rules are applied.
 
 ### 3) Search for associated information
 

@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">2.034s</div>
+<div class="counter">0.808s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,12 +79,12 @@
 </thead>
 <tr>
 <td class="success">shakemapNotificationFirst</td>
-<td class="success">0.959s</td>
+<td class="success">0.457s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">shakemapSocketFirst</td>
-<td class="success">1.075s</td>
+<td class="success">0.351s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -94,40 +94,37 @@
 <span class="code">
 <pre>
 ###
-Mon Jun 21 16:53:52 MDT 2021
-INFO	thread=314	[null] sending product to Socket[addr=localhost/127.0.0.1,port=11235,localport=53093]
+Thu Dec 16 16:39:07 MST 2021
+INFO	thread=339	[null] sending product to Socket[addr=localhost/127.0.0.1,port=11235,localport=55270]
 There are 1 active/queued socket connections
-INFO	thread=315	[null] accepted connection Socket[addr=/127.0.0.1,port=53093,localport=11235]
-Mon Jun 21 16:53:53 MDT 2021
-INFO	thread=315	[null] received product 'urn:usgs-product:us:shakemap:usa00040xz:1287260900624'
- from Socket[addr=/127.0.0.1,port=53093,localport=11235]
-INFO	thread=314	[null] send complete Socket[addr=localhost/127.0.0.1,port=11235,localport=53093] response=&quot;[null] received product 'urn:usgs-product:us:shakemap:usa00040xz:1287260900624'
+INFO	thread=340	[null] accepted connection Socket[addr=/127.0.0.1,port=55270,localport=11235]
+INFO	thread=340	[null] received product 'urn:usgs-product:us:shakemap:usa00040xz:1287260900624'
+ from Socket[addr=/127.0.0.1,port=55270,localport=11235]
+INFO	thread=339	[null] send complete Socket[addr=localhost/127.0.0.1,port=11235,localport=55270] response=&quot;[null] received product 'urn:usgs-product:us:shakemap:usa00040xz:1287260900624'
 &quot;
-INFO	thread=315	[null] closed connection Socket[addr=/127.0.0.1,port=53093,localport=11235]
-java.net.SocketException: Interrupted function call: accept failed
-	at java.base/java.net.PlainSocketImpl.accept0(Native Method)
-	at java.base/java.net.PlainSocketImpl.socketAccept(PlainSocketImpl.java:159)
+INFO	thread=340	[null] closed connection Socket[addr=/127.0.0.1,port=55270,localport=11235]
+java.net.SocketException: Socket closed
+	at java.base/java.net.PlainSocketImpl.socketAccept(Native Method)
 	at java.base/java.net.AbstractPlainSocketImpl.accept(AbstractPlainSocketImpl.java:458)
-	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:551)
-	at java.base/java.net.ServerSocket.accept(ServerSocket.java:519)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:565)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:533)
 	at gov.usgs.earthquake.distribution.ConcurrentStorageTest$ProductWebServer.run(ConcurrentStorageTest.java:322)
 
 ###
-Mon Jun 21 16:53:54 MDT 2021
-INFO	thread=429	[null] sending product to Socket[addr=localhost/127.0.0.1,port=11235,localport=53095]
+Thu Dec 16 16:39:08 MST 2021
+INFO	thread=454	[null] sending product to Socket[addr=localhost/127.0.0.1,port=11235,localport=55274]
 There are 1 active/queued socket connections
-INFO	thread=432	[null] accepted connection Socket[addr=/127.0.0.1,port=53095,localport=11235]
-INFO	thread=432	[null] received product 'urn:usgs-product:us:shakemap:usa00040xz:1287260900624'
- from Socket[addr=/127.0.0.1,port=53095,localport=11235]
-INFO	thread=429	[null] send complete Socket[addr=localhost/127.0.0.1,port=11235,localport=53095] response=&quot;[null] received product 'urn:usgs-product:us:shakemap:usa00040xz:1287260900624'
+INFO	thread=457	[null] accepted connection Socket[addr=/127.0.0.1,port=55274,localport=11235]
+INFO	thread=457	[null] received product 'urn:usgs-product:us:shakemap:usa00040xz:1287260900624'
+ from Socket[addr=/127.0.0.1,port=55274,localport=11235]
+INFO	thread=454	[null] send complete Socket[addr=localhost/127.0.0.1,port=11235,localport=55274] response=&quot;[null] received product 'urn:usgs-product:us:shakemap:usa00040xz:1287260900624'
 &quot;
-INFO	thread=432	[null] closed connection Socket[addr=/127.0.0.1,port=53095,localport=11235]
-java.net.SocketException: Interrupted function call: accept failed
-	at java.base/java.net.PlainSocketImpl.accept0(Native Method)
-	at java.base/java.net.PlainSocketImpl.socketAccept(PlainSocketImpl.java:159)
+INFO	thread=457	[null] closed connection Socket[addr=/127.0.0.1,port=55274,localport=11235]
+java.net.SocketException: Socket closed
+	at java.base/java.net.PlainSocketImpl.socketAccept(Native Method)
 	at java.base/java.net.AbstractPlainSocketImpl.accept(AbstractPlainSocketImpl.java:458)
-	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:551)
-	at java.base/java.net.ServerSocket.accept(ServerSocket.java:519)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:565)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:533)
 	at gov.usgs.earthquake.distribution.ConcurrentStorageTest$ProductWebServer.run(ConcurrentStorageTest.java:322)
 </pre>
 </span>
@@ -140,7 +137,7 @@ java.net.SocketException: Interrupted function call: accept failed
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 7.0</a> at Jun 21, 2021, 4:54:39 PM</p>
+<a href="http://www.gradle.org">Gradle 7.3</a> at Dec 16, 2021, 4:39:45 PM</p>
 </div>
 </div>
 </body>
