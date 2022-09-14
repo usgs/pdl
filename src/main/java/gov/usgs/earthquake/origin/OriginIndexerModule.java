@@ -113,7 +113,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
         summaryProperties.put("title", StringUtils.encodeAsUtf8(title));
       } catch (Exception ex) {
         LOGGER
-            .fine(String.format("[%s] %s for product %s", this.getName(), ex.getMessage(), product.getId().toString()));
+            .warning(String.format("[%s] %s for product %s", this.getName(), ex.getMessage(), product.getId().toString()));
         // Do nothing, value-added failed. Move on.
       }
     }
@@ -263,18 +263,16 @@ public class OriginIndexerModule extends DefaultIndexerModule {
           new BigInteger(String.valueOf(this.distanceThreshold))
         );
 
-      if (feature != null) {
-        return this.formatEventTitle(feature);
-      } else {
-        message = "Nearest place exceeded distance threshold";
-        messages.append(message + ". ");
-        LOGGER.log(Level.INFO, "[" + this.getName() + "] " + message);
-      }
+      return this.formatEventTitle(feature);
+    } catch (IndexOutOfBoundsException ibx) {
+      message = "Places service returned no places within distance threshold";
+      messages.append(message + ". ");
+      LOGGER.log(Level.INFO, "[" + this.getName() + "] " + message);
     } catch (Exception e) {
       message = "Failed to get nearest place from geoserve places service";
       messages.append(message + ". ");
       messages.append(e.getMessage() + ". ");
-      LOGGER.log(Level.WARNING, "[" + this.getName() + "] " + message);
+      LOGGER.log(Level.INFO, "[" + this.getName() + "] " + message);
     }
 
     try {
@@ -283,9 +281,10 @@ public class OriginIndexerModule extends DefaultIndexerModule {
       message = "Failed to get FE region name";
       messages.append(message + ". ");
       messages.append(e.getMessage() + ". ");
-      LOGGER.log(Level.WARNING, "[" + this.getName() + "] .");
+      LOGGER.log(Level.INFO, "[" + this.getName() + "] .");
     }
 
+    // If we get this far, things failed spectacularly, report the error
     Exception e = new Exception(messages.toString());
     e.fillInStackTrace();
     throw e;

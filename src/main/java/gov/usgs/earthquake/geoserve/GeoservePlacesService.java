@@ -105,11 +105,13 @@ public class GeoservePlacesService {
    * @param latitude of place
    * @param longitude of place
    * @return JSONObject of place
+   * @throws IndexOutOfBoundsException on no places returned
    * @throws IOException on IO error
    * @throws MalformedURLException on URL error
+   * @deprecated
    */
   public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude)
-      throws IOException, MalformedURLException {
+      throws IndexOutOfBoundsException, IOException, MalformedURLException {
     return this.getNearestPlace(latitude, longitude, null);
   }
 
@@ -119,11 +121,12 @@ public class GeoservePlacesService {
    * @param longitude of place
    * @param maxradiuskm around place
    * @return JSONObject of place
+   * @throws IndexOutOfBoundsException on no places returned
    * @throws IOException on IO error
    * @throws MalformedURLException on URL error
    */
   public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude,
-      BigInteger maxradiuskm) throws IOException, MalformedURLException {
+      BigInteger maxradiuskm) throws IndexOutOfBoundsException, IOException, MalformedURLException {
     // JsonObject places = this.getEventPlaces(latitude, longitude);
     // JsonObject feature = places.getJsonArray("features").getJsonObject(0);
     if (maxradiuskm == null) {

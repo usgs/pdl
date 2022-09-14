@@ -2,6 +2,7 @@ package gov.usgs.earthquake.origin;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 
 import javax.json.Json;
@@ -140,7 +141,7 @@ public class OriginIndexerModuleTest {
 
 
   @Test
-  public void getEventTitleTest() throws IOException {
+  public void getEventTitleTest() throws Exception, IOException {
     BigDecimal latitude = new BigDecimal("0.0");
     BigDecimal longitude = new BigDecimal("0.0");
     String title = "";
@@ -171,16 +172,21 @@ public class OriginIndexerModuleTest {
 
   protected class DummyPlacesService extends GeoservePlacesService {
     @Override
-    public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude) throws IOException, MalformedURLException {
-      return Json.createObjectBuilder().add("properties",
-          Json.createObjectBuilder()
-              .add("admin1_name", "admin1_name")
-              .add("azimuth", 60.1)
-              .add("country_code", "country_code")
-              .add("country_name", "country_name")
-              .add("distance", distance)
-              .add("name", "name")
-          ).build();
+    public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude, BigInteger maxradiuskm)
+        throws IndexOutOfBoundsException, IOException, MalformedURLException {
+      if (distance <= maxradiuskm.doubleValue()) {
+        return Json.createObjectBuilder().add("properties",
+            Json.createObjectBuilder()
+                .add("admin1_name", "admin1_name")
+                .add("azimuth", 60.1)
+                .add("country_code", "country_code")
+                .add("country_name", "country_name")
+                .add("distance", distance)
+                .add("name", "name"))
+            .build();
+      } else {
+        throw new IndexOutOfBoundsException("Index out of bounds");
+      }
     }
   }
   protected class DummyRegionsService extends GeoserveRegionsService {
