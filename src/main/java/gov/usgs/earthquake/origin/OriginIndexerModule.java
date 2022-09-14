@@ -2,6 +2,8 @@ package gov.usgs.earthquake.origin;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -250,19 +252,43 @@ public class OriginIndexerModule extends DefaultIndexerModule {
    *
    * @throws IOException if IO error occurs
    */
-  public String getEventTitle(BigDecimal latitude, BigDecimal longitude) throws IOException {
-    try {
-      JsonObject feature = this.geoservePlaces.getNearestPlace(latitude, longitude);
-      double distance = feature.getJsonObject("properties").getJsonNumber("distance").doubleValue();
+  public String getEventTitle(BigDecimal latitude, BigDecimal longitude) throws Exception, IOException {
+    StringBuffer messages = new StringBuffer();
+    String message = null;
 
-      if (distance <= (double) this.distanceThreshold) {
+    try {
+      final JsonObject feature = this.geoservePlaces.getNearestPlace(
+          latitude,
+          longitude,
+          new BigInteger(String.valueOf(this.distanceThreshold))
+        );
+
+      if (feature != null) {
         return this.formatEventTitle(feature);
+      } else {
+        message = "Nearest place exceeded distance threshold";
+        messages.append(message + ". ");
+        LOGGER.log(Level.INFO, "[" + this.getName() + "] " + message);
       }
     } catch (Exception e) {
-      LOGGER.log(Level.WARNING, "[" + this.getName() + "] failed to get nearest place from geoserve places service.");
+      message = "Failed to get nearest place from geoserve places service";
+      messages.append(message + ". ");
+      messages.append(e.getMessage() + ". ");
+      LOGGER.log(Level.WARNING, "[" + this.getName() + "] " + message);
     }
 
-    return this.geoserveRegions.getFeRegionName(latitude, longitude);
+    try {
+      return this.geoserveRegions.getFeRegionName(latitude, longitude);
+    } catch (Exception e) {
+      message = "Failed to get FE region name";
+      messages.append(message + ". ");
+      messages.append(e.getMessage() + ". ");
+      LOGGER.log(Level.WARNING, "[" + this.getName() + "] .");
+    }
+
+    Exception e = new Exception(messages.toString());
+    e.fillInStackTrace();
+    throw e;
   }
 
   /**

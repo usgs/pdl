@@ -3,6 +3,7 @@ package gov.usgs.earthquake.geoserve;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -98,6 +99,7 @@ public class GeoservePlacesService {
     }
   }
 
+
   /**
    * Get nearest place to a latitude and longitude
    * @param latitude of place
@@ -106,11 +108,42 @@ public class GeoservePlacesService {
    * @throws IOException on IO error
    * @throws MalformedURLException on URL error
    */
-  public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude) throws IOException, MalformedURLException {
-    JsonObject places = this.getEventPlaces(latitude, longitude);
-    JsonObject feature = places.getJsonArray("features").getJsonObject(0);
+  public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude)
+      throws IOException, MalformedURLException {
+    return this.getNearestPlace(latitude, longitude, null);
+  }
 
-    return feature;
+  /**
+   * Get nearest place to a latitude and longitude
+   * @param latitude of place
+   * @param longitude of place
+   * @param maxradiuskm around place
+   * @return JSONObject of place
+   * @throws IOException on IO error
+   * @throws MalformedURLException on URL error
+   */
+  public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude,
+      BigInteger maxradiuskm) throws IOException, MalformedURLException {
+    // JsonObject places = this.getEventPlaces(latitude, longitude);
+    // JsonObject feature = places.getJsonArray("features").getJsonObject(0);
+    if (maxradiuskm == null) {
+      maxradiuskm = new BigInteger("300");
+    }
+
+    final URL url = new URL(this.endpointUrl +
+       "?type=geonames" +
+       "&latitude=" + URLEncoder.encode(latitude.toString(), StandardCharsets.UTF_8.toString()) +
+       "&longitude=" + URLEncoder.encode(longitude.toString(), StandardCharsets.UTF_8.toString()) +
+       "&maxradiuskm=" + URLEncoder.encode(maxradiuskm.toString(), StandardCharsets.UTF_8.toString())
+    );
+
+    try (InputStream in = StreamUtils.getURLInputStream(url, this.connectTimeout, this.readTimeout)) {
+      JsonReader reader = Json.createReader(in);
+      JsonObject json = reader.readObject();
+      reader.close();
+      JsonObject places = json.getJsonObject("event");
+      return places.getJsonArray("features").getJsonObject(0);
+    }
   }
 
   /** @return readTimeout */
