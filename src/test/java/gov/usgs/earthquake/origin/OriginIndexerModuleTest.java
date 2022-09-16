@@ -172,9 +172,9 @@ public class OriginIndexerModuleTest {
 
   protected class DummyPlacesService extends GeoservePlacesService {
     @Override
-    public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude, BigInteger maxradiuskm)
+    public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude, int maxradiuskm)
         throws IOException, MalformedURLException {
-      if (distance <= maxradiuskm.doubleValue()) {
+      if (distance <= maxradiuskm) {
         return Json.createObjectBuilder().add("properties",
             Json.createObjectBuilder()
                 .add("admin1_name", "admin1_name")

@@ -113,7 +113,7 @@ public class GeoservePlacesService {
    */
   public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude)
       throws IndexOutOfBoundsException, IOException, MalformedURLException {
-    return this.getNearestPlace(latitude, longitude, null);
+    return this.getNearestPlace(latitude, longitude, 300);
   }
 
   /**
@@ -126,18 +126,12 @@ public class GeoservePlacesService {
    * @throws MalformedURLException on URL error
    */
   public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude,
-      BigInteger maxradiuskm) throws IOException, MalformedURLException {
-    // JsonObject places = this.getEventPlaces(latitude, longitude);
-    // JsonObject feature = places.getJsonArray("features").getJsonObject(0);
-    if (maxradiuskm == null) {
-      maxradiuskm = new BigInteger("300");
-    }
-
+      int maxradiuskm) throws IOException, MalformedURLException {
     final URL url = new URL(this.endpointUrl +
        "?type=geonames" +
        "&latitude=" + URLEncoder.encode(latitude.toString(), StandardCharsets.UTF_8.toString()) +
        "&longitude=" + URLEncoder.encode(longitude.toString(), StandardCharsets.UTF_8.toString()) +
-       "&maxradiuskm=" + URLEncoder.encode(maxradiuskm.toString(), StandardCharsets.UTF_8.toString()) +
+       "&maxradiuskm=" + URLEncoder.encode(String.valueOf(maxradiuskm), StandardCharsets.UTF_8.toString()) +
        "&limit=1"
     );
 

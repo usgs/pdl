@@ -260,7 +260,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
       final JsonObject feature = this.geoservePlaces.getNearestPlace(
           latitude,
           longitude,
-          new BigInteger(String.valueOf(this.distanceThreshold))
+          this.distanceThreshold
       );
 
       if (feature != null) {
