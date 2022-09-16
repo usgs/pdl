@@ -146,7 +146,7 @@ public class GeoservePlacesService {
       JsonReader reader = Json.createReader(in)
     ) {
       JsonObject json = reader.readObject();
-      JsonObject places = json.getJsonObject("event");
+      JsonObject places = json.getJsonObject("geonames");
       return places.getJsonArray("features").getJsonObject(0);
     }
   }
