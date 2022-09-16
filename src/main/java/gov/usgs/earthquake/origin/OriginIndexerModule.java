@@ -2,8 +2,6 @@ package gov.usgs.earthquake.origin;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -338,4 +336,31 @@ public class OriginIndexerModule extends DefaultIndexerModule {
     return directions[(int) Math.round((azimuth % 360.0) / fullwind)];
   }
 
+  public static void main(String[] args) throws Exception {
+    BigDecimal latitude = new BigDecimal("0.0");
+    BigDecimal longitude = new BigDecimal("0.0");
+    int maxradiuskm = DEFAULT_GEOSERVE_DISTANCE_THRESHOLD;
+    final OriginIndexerModule module = new OriginIndexerModule(
+      new GeoservePlacesService(),
+      new GeoserveRegionsService()
+    );
+    module.setName("TestModule");
+
+    for (String arg : args) {
+      if (arg.startsWith("--latitude=")) {
+        latitude = new BigDecimal(arg.replace("--latitude=", ""));
+      } else if (arg.startsWith("--longitude=")) {
+        longitude = new BigDecimal(arg.replace("--longitude=", ""));
+      } else if (arg.startsWith("--maxradiuskm=")) {
+        maxradiuskm = Integer.parseInt(arg.replace("--maxradiuskm=", ""));
+      }
+    }
+
+    module.setDistanceThreshold(maxradiuskm);
+
+    System.out.printf("Title[%s, %s] = `%s`\n",
+        latitude.doubleValue(),
+        longitude.doubleValue(),
+        module.getEventTitle(latitude, longitude));
+  }
 }
