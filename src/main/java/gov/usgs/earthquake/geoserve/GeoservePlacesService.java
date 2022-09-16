@@ -137,7 +137,8 @@ public class GeoservePlacesService {
        "?type=geonames" +
        "&latitude=" + URLEncoder.encode(latitude.toString(), StandardCharsets.UTF_8.toString()) +
        "&longitude=" + URLEncoder.encode(longitude.toString(), StandardCharsets.UTF_8.toString()) +
-       "&maxradiuskm=" + URLEncoder.encode(maxradiuskm.toString(), StandardCharsets.UTF_8.toString())
+       "&maxradiuskm=" + URLEncoder.encode(maxradiuskm.toString(), StandardCharsets.UTF_8.toString()) +
+       "&limit=1"
     );
 
     try (InputStream in = StreamUtils.getURLInputStream(url, this.connectTimeout, this.readTimeout)) {
