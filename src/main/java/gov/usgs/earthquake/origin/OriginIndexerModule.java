@@ -261,13 +261,15 @@ public class OriginIndexerModule extends DefaultIndexerModule {
           latitude,
           longitude,
           new BigInteger(String.valueOf(this.distanceThreshold))
-        );
+      );
 
-      return this.formatEventTitle(feature);
-    } catch (IndexOutOfBoundsException ibx) {
-      message = "Places service returned no places within distance threshold";
-      messages.append(message + ". ");
-      LOGGER.log(Level.INFO, "[" + this.getName() + "] " + message);
+      if (feature != null) {
+        return this.formatEventTitle(feature);
+      } else {
+        message = "Places service returned no places within distance threshold";
+        messages.append(message + ". ");
+        LOGGER.log(Level.INFO, "[" + this.getName() + "] " + message);
+      }
     } catch (Exception e) {
       message = "Failed to get nearest place from geoserve places service";
       messages.append(message + ". ");

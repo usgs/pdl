@@ -10,6 +10,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -121,12 +122,11 @@ public class GeoservePlacesService {
    * @param longitude of place
    * @param maxradiuskm around place
    * @return JSONObject of place
-   * @throws IndexOutOfBoundsException on no places returned
    * @throws IOException on IO error
    * @throws MalformedURLException on URL error
    */
   public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude,
-      BigInteger maxradiuskm) throws IndexOutOfBoundsException, IOException, MalformedURLException {
+      BigInteger maxradiuskm) throws IOException, MalformedURLException {
     // JsonObject places = this.getEventPlaces(latitude, longitude);
     // JsonObject feature = places.getJsonArray("features").getJsonObject(0);
     if (maxradiuskm == null) {
@@ -147,7 +147,13 @@ public class GeoservePlacesService {
     ) {
       JsonObject json = reader.readObject();
       JsonObject places = json.getJsonObject("geonames");
-      return places.getJsonArray("features").getJsonObject(0);
+      JsonArray features = places.getJsonArray("features");
+
+      if (features.size() > 0) {
+        return features.getJsonObject(0);
+      } else {
+        return null;
+      }
     }
   }
 

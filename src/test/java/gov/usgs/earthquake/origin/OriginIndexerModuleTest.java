@@ -173,7 +173,7 @@ public class OriginIndexerModuleTest {
   protected class DummyPlacesService extends GeoservePlacesService {
     @Override
     public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude, BigInteger maxradiuskm)
-        throws IndexOutOfBoundsException, IOException, MalformedURLException {
+        throws IOException, MalformedURLException {
       if (distance <= maxradiuskm.doubleValue()) {
         return Json.createObjectBuilder().add("properties",
             Json.createObjectBuilder()
@@ -185,7 +185,7 @@ public class OriginIndexerModuleTest {
                 .add("name", "name"))
             .build();
       } else {
-        throw new IndexOutOfBoundsException("Index out of bounds");
+        return null;
       }
     }
   }
