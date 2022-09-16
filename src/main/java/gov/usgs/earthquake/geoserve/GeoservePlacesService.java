@@ -141,10 +141,11 @@ public class GeoservePlacesService {
        "&limit=1"
     );
 
-    try (InputStream in = StreamUtils.getURLInputStream(url, this.connectTimeout, this.readTimeout)) {
-      JsonReader reader = Json.createReader(in);
+    try (
+      InputStream in = StreamUtils.getURLInputStream(url, this.connectTimeout, this.readTimeout);
+      JsonReader reader = Json.createReader(in)
+    ) {
       JsonObject json = reader.readObject();
-      reader.close();
       JsonObject places = json.getJsonObject("event");
       return places.getJsonArray("features").getJsonObject(0);
     }
