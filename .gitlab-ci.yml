@@ -14,7 +14,9 @@ stages:
       - ProductClient.jar
       - ProductClient.zip
     reports:
-      cobertura: build/reports/cobertura/cobertura.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: build/reports/cobertura/cobertura.xml
       junit: build/test-results/test/TEST-*.xml
   cache:
     paths:

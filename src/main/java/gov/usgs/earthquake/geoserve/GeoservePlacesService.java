@@ -3,7 +3,6 @@ package gov.usgs.earthquake.geoserve;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;

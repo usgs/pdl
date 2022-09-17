@@ -8,8 +8,8 @@ plugins {
   id "java"
   id "jacoco"                                     // code coverage
   id "pmd"                                        // static code analysis
-  id "org.ajoberstar.grgit" version "4.1.0"       // git repo information
-  id "org.ajoberstar.git-publish" version "3.0.0" // publish gh-pages branch
+  id "org.ajoberstar.grgit" version "4.1.1"       // git repo information
+  id "org.ajoberstar.git-publish" version "3.0.1" // publish gh-pages branch
   id "com.kageiit.jacobo" version "2.1.0"
 }
 
@@ -25,8 +25,6 @@ configurations {
 }
 
 dependencies {
-  codacy "com.codacy:codacy-coverage-reporter:4.0+"
-
   // for explanation of dependency types, see
   // https://docs.gradle.org/current/userguide/building_java_projects.html
 
@@ -189,9 +187,6 @@ gitPublish {
   }
 }
 
-
-// Tasks for TravisCI
-
 // convert jacoco to cobertura
 import com.kageiit.jacobo.JacoboTask
 tasks.create("jacobo", JacoboTask, {
@@ -200,18 +195,3 @@ tasks.create("jacobo", JacoboTask, {
     it.srcDirs = sourceSets.main.java.srcDirs
 }).dependsOn(jacocoTestReport)
 check.dependsOn jacobo
-
-
-// .travis.yml uses this to upload coverage
-task sendCoverageToCodacy(type: JavaExec, dependsOn: jacocoTestReport) {
-  description = "Upload coverage to codacy (used by TravisCI)"
-  main = "com.codacy.CodacyCoverageReporter"
-  classpath = configurations.codacy
-  args = [
-    "report",
-    "-l",
-    "Java",
-    "-r",
-    "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-  ]
-}
