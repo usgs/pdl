@@ -9,6 +9,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -32,16 +33,16 @@ public class GeoservePlacesService {
 
   /** Default constructor */
   public GeoservePlacesService() {
-<span class="fc" id="L35">    this(DEFAULT_ENDPOINT_URL, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);</span>
-<span class="fc" id="L36">  }</span>
+<span class="fc" id="L36">    this(DEFAULT_ENDPOINT_URL, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);</span>
+<span class="fc" id="L37">  }</span>
 
   /**
    * Constructor taking in endpointURL
    * @param endpointUrl for places service
    */
   public GeoservePlacesService(final String endpointUrl) {
-<span class="nc" id="L43">    this(endpointUrl, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);</span>
-<span class="nc" id="L44">  }</span>
+<span class="nc" id="L44">    this(endpointUrl, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);</span>
+<span class="nc" id="L45">  }</span>
 
   /**
    * Constructor taking in timeouts and using default endpoint URL
@@ -49,8 +50,8 @@ public class GeoservePlacesService {
    * @param readTimeout in ms
    */
   public GeoservePlacesService(final int connectTimeout, final int readTimeout) {
-<span class="nc" id="L52">    this(DEFAULT_ENDPOINT_URL, connectTimeout, readTimeout);</span>
-<span class="nc" id="L53">  }</span>
+<span class="nc" id="L53">    this(DEFAULT_ENDPOINT_URL, connectTimeout, readTimeout);</span>
+<span class="nc" id="L54">  }</span>
 
   /**
    * Custom constructor
@@ -58,20 +59,20 @@ public class GeoservePlacesService {
    * @param connectTimeout in ms
    * @param readTimeout in ms
    */
-<span class="fc" id="L61">  public GeoservePlacesService(final String endpointUrl, final int connectTimeout, final int readTimeout) {</span>
-<span class="fc" id="L62">    this.setEndpointURL(endpointUrl);</span>
-<span class="fc" id="L63">    this.setConnectTimeout(connectTimeout);</span>
-<span class="fc" id="L64">    this.setReadTimeout(readTimeout);</span>
-<span class="fc" id="L65">  }</span>
+<span class="fc" id="L62">  public GeoservePlacesService(final String endpointUrl, final int connectTimeout, final int readTimeout) {</span>
+<span class="fc" id="L63">    this.setEndpointURL(endpointUrl);</span>
+<span class="fc" id="L64">    this.setConnectTimeout(connectTimeout);</span>
+<span class="fc" id="L65">    this.setReadTimeout(readTimeout);</span>
+<span class="fc" id="L66">  }</span>
 
   /** @return connectTimemout */
   public int getConnectTimeout() {
-<span class="nc" id="L69">    return this.connectTimeout;</span>
+<span class="nc" id="L70">    return this.connectTimeout;</span>
   }
 
   /** @return endpointURL */
   public String getEndpointURL() {
-<span class="nc" id="L74">    return this.endpointUrl;</span>
+<span class="nc" id="L75">    return this.endpointUrl;</span>
   }
 
   /**
@@ -84,54 +85,90 @@ public class GeoservePlacesService {
    */
   public JsonObject getEventPlaces(BigDecimal latitude, BigDecimal longitude)
       throws IOException, MalformedURLException {
-<span class="nc" id="L87">    final URL url = new URL(this.endpointUrl +</span>
+<span class="nc" id="L88">    final URL url = new URL(this.endpointUrl +</span>
         &quot;?type=event&quot; +
-<span class="nc" id="L89">        &quot;&amp;latitude=&quot; + URLEncoder.encode(latitude.toString(), StandardCharsets.UTF_8.toString()) +</span>
-<span class="nc" id="L90">        &quot;&amp;longitude=&quot; + URLEncoder.encode(longitude.toString(), StandardCharsets.UTF_8.toString())</span>
+<span class="nc" id="L90">        &quot;&amp;latitude=&quot; + URLEncoder.encode(latitude.toString(), StandardCharsets.UTF_8.toString()) +</span>
+<span class="nc" id="L91">        &quot;&amp;longitude=&quot; + URLEncoder.encode(longitude.toString(), StandardCharsets.UTF_8.toString())</span>
     );
 
-<span class="nc" id="L93">    try (InputStream in = StreamUtils.getURLInputStream(url, this.connectTimeout, this.readTimeout)) {</span>
-<span class="nc" id="L94">      JsonReader reader = Json.createReader(in);</span>
-<span class="nc" id="L95">      JsonObject json = reader.readObject();</span>
-<span class="nc" id="L96">      reader.close();</span>
-<span class="nc" id="L97">      return json.getJsonObject(&quot;event&quot;);</span>
+<span class="nc" id="L94">    try (InputStream in = StreamUtils.getURLInputStream(url, this.connectTimeout, this.readTimeout)) {</span>
+<span class="nc" id="L95">      JsonReader reader = Json.createReader(in);</span>
+<span class="nc" id="L96">      JsonObject json = reader.readObject();</span>
+<span class="nc" id="L97">      reader.close();</span>
+<span class="nc" id="L98">      return json.getJsonObject(&quot;event&quot;);</span>
     }
   }
+
 
   /**
    * Get nearest place to a latitude and longitude
    * @param latitude of place
    * @param longitude of place
    * @return JSONObject of place
+   * @throws IndexOutOfBoundsException on no places returned
+   * @throws IOException on IO error
+   * @throws MalformedURLException on URL error
+   * @deprecated
+   */
+  public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude)
+      throws IndexOutOfBoundsException, IOException, MalformedURLException {
+<span class="nc" id="L115">    return this.getNearestPlace(latitude, longitude, 300);</span>
+  }
+
+  /**
+   * Get nearest place to a latitude and longitude
+   * @param latitude of place
+   * @param longitude of place
+   * @param maxradiuskm around place
+   * @return JSONObject of place
    * @throws IOException on IO error
    * @throws MalformedURLException on URL error
    */
-  public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude) throws IOException, MalformedURLException {
-<span class="fc" id="L110">    JsonObject places = this.getEventPlaces(latitude, longitude);</span>
-<span class="fc" id="L111">    JsonObject feature = places.getJsonArray(&quot;features&quot;).getJsonObject(0);</span>
+  public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude,
+      int maxradiuskm) throws IOException, MalformedURLException {
+<span class="nc" id="L129">    final URL url = new URL(this.endpointUrl +</span>
+       &quot;?type=geonames&quot; +
+<span class="nc" id="L131">       &quot;&amp;latitude=&quot; + URLEncoder.encode(latitude.toString(), StandardCharsets.UTF_8.toString()) +</span>
+<span class="nc" id="L132">       &quot;&amp;longitude=&quot; + URLEncoder.encode(longitude.toString(), StandardCharsets.UTF_8.toString()) +</span>
+<span class="nc" id="L133">       &quot;&amp;maxradiuskm=&quot; + URLEncoder.encode(String.valueOf(maxradiuskm), StandardCharsets.UTF_8.toString()) +</span>
+       &quot;&amp;limit=1&quot;
+    );
 
-<span class="fc" id="L113">    return feature;</span>
+    try (
+<span class="nc" id="L138">      InputStream in = StreamUtils.getURLInputStream(url, this.connectTimeout, this.readTimeout);</span>
+<span class="nc" id="L139">      JsonReader reader = Json.createReader(in)</span>
+    ) {
+<span class="nc" id="L141">      JsonObject json = reader.readObject();</span>
+<span class="nc" id="L142">      JsonObject places = json.getJsonObject(&quot;geonames&quot;);</span>
+<span class="nc" id="L143">      JsonArray features = places.getJsonArray(&quot;features&quot;);</span>
+
+<span class="nc bnc" id="L145" title="All 2 branches missed.">      if (features.size() &gt; 0) {</span>
+<span class="nc" id="L146">        return features.getJsonObject(0);</span>
+      } else {
+<span class="nc" id="L148">        return null;</span>
+      }
+<span class="nc bnc" id="L150" title="All 4 branches missed.">    }</span>
   }
 
   /** @return readTimeout */
   public int getReadTimeout() {
-<span class="nc" id="L118">    return this.readTimeout;</span>
+<span class="nc" id="L155">    return this.readTimeout;</span>
   }
 
   /** @param connectTimeout int to set */
   public void setConnectTimeout(final int connectTimeout) {
-<span class="fc" id="L123">    this.connectTimeout = connectTimeout;</span>
-<span class="fc" id="L124">  }</span>
+<span class="fc" id="L160">    this.connectTimeout = connectTimeout;</span>
+<span class="fc" id="L161">  }</span>
 
   /** @param endpointUrl string to set */
   public void setEndpointURL(final String endpointUrl) {
-<span class="fc" id="L128">    this.endpointUrl = endpointUrl;</span>
-<span class="fc" id="L129">  }</span>
+<span class="fc" id="L165">    this.endpointUrl = endpointUrl;</span>
+<span class="fc" id="L166">  }</span>
 
   /** @param readTimeout int to set */
   public void setReadTimeout(final int readTimeout) {
-<span class="fc" id="L133">    this.readTimeout = readTimeout;</span>
-<span class="fc" id="L134">  }</span>
+<span class="fc" id="L170">    this.readTimeout = readTimeout;</span>
+<span class="fc" id="L171">  }</span>
 
   // as needed, implement full GeoServe places API options
 }

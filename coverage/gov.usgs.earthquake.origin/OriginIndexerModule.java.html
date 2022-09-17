@@ -111,7 +111,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
 <span class="fc" id="L111">        summaryProperties.put(&quot;title&quot;, StringUtils.encodeAsUtf8(title));</span>
 <span class="nc" id="L112">      } catch (Exception ex) {</span>
 <span class="nc" id="L113">        LOGGER</span>
-<span class="nc" id="L114">            .fine(String.format(&quot;[%s] %s for product %s&quot;, this.getName(), ex.getMessage(), product.getId().toString()));</span>
+<span class="nc" id="L114">            .warning(String.format(&quot;[%s] %s for product %s&quot;, this.getName(), ex.getMessage(), product.getId().toString()));</span>
         // Do nothing, value-added failed. Move on.
 <span class="fc" id="L116">      }</span>
     }
@@ -250,19 +250,44 @@ public class OriginIndexerModule extends DefaultIndexerModule {
    *
    * @throws IOException if IO error occurs
    */
-  public String getEventTitle(BigDecimal latitude, BigDecimal longitude) throws IOException {
+  public String getEventTitle(BigDecimal latitude, BigDecimal longitude) throws Exception, IOException {
+<span class="fc" id="L254">    StringBuffer messages = new StringBuffer();</span>
+<span class="fc" id="L255">    String message = null;</span>
+
     try {
-<span class="fc" id="L255">      JsonObject feature = this.geoservePlaces.getNearestPlace(latitude, longitude);</span>
-<span class="fc" id="L256">      double distance = feature.getJsonObject(&quot;properties&quot;).getJsonNumber(&quot;distance&quot;).doubleValue();</span>
+<span class="fc" id="L258">      final JsonObject feature = this.geoservePlaces.getNearestPlace(</span>
+          latitude,
+          longitude,
+          this.distanceThreshold
+      );
 
-<span class="fc bfc" id="L258" title="All 2 branches covered.">      if (distance &lt;= (double) this.distanceThreshold) {</span>
-<span class="fc" id="L259">        return this.formatEventTitle(feature);</span>
+<span class="fc bfc" id="L264" title="All 2 branches covered.">      if (feature != null) {</span>
+<span class="fc" id="L265">        return this.formatEventTitle(feature);</span>
+      } else {
+<span class="fc" id="L267">        message = &quot;Places service returned no places within distance threshold&quot;;</span>
+<span class="fc" id="L268">        messages.append(message + &quot;. &quot;);</span>
+<span class="fc" id="L269">        LOGGER.log(Level.INFO, &quot;[&quot; + this.getName() + &quot;] &quot; + message);</span>
       }
-<span class="nc" id="L261">    } catch (Exception e) {</span>
-<span class="nc" id="L262">      LOGGER.log(Level.WARNING, &quot;[&quot; + this.getName() + &quot;] failed to get nearest place from geoserve places service.&quot;);</span>
-<span class="fc" id="L263">    }</span>
+<span class="nc" id="L271">    } catch (Exception e) {</span>
+<span class="nc" id="L272">      message = &quot;Failed to get nearest place from geoserve places service&quot;;</span>
+<span class="nc" id="L273">      messages.append(message + &quot;. &quot;);</span>
+<span class="nc" id="L274">      messages.append(e.getMessage() + &quot;. &quot;);</span>
+<span class="nc" id="L275">      LOGGER.log(Level.INFO, &quot;[&quot; + this.getName() + &quot;] &quot; + message);</span>
+<span class="fc" id="L276">    }</span>
 
-<span class="fc" id="L265">    return this.geoserveRegions.getFeRegionName(latitude, longitude);</span>
+    try {
+<span class="fc" id="L279">      return this.geoserveRegions.getFeRegionName(latitude, longitude);</span>
+<span class="nc" id="L280">    } catch (Exception e) {</span>
+<span class="nc" id="L281">      message = &quot;Failed to get FE region name&quot;;</span>
+<span class="nc" id="L282">      messages.append(message + &quot;. &quot;);</span>
+<span class="nc" id="L283">      messages.append(e.getMessage() + &quot;. &quot;);</span>
+<span class="nc" id="L284">      LOGGER.log(Level.INFO, &quot;[&quot; + this.getName() + &quot;] .&quot;);</span>
+    }
+
+    // If we get this far, things failed spectacularly, report the error
+<span class="nc" id="L288">    Exception e = new Exception(messages.toString());</span>
+<span class="nc" id="L289">    e.fillInStackTrace();</span>
+<span class="nc" id="L290">    throw e;</span>
   }
 
   /**
@@ -271,20 +296,20 @@ public class OriginIndexerModule extends DefaultIndexerModule {
    * @return string with distance, direction, name, and admin
    */
   public String formatEventTitle(JsonObject feature) {
-<span class="fc" id="L274">    JsonObject properties = feature.getJsonObject(&quot;properties&quot;);</span>
+<span class="fc" id="L299">    JsonObject properties = feature.getJsonObject(&quot;properties&quot;);</span>
 
-<span class="fc" id="L276">    String name = properties.getString(&quot;name&quot;);</span>
-<span class="fc" id="L277">    String country = properties.getString(&quot;country_code&quot;).toLowerCase();</span>
-<span class="fc" id="L278">    String admin = properties.getString(&quot;country_name&quot;);</span>
-<span class="fc" id="L279">    int distance = properties.getInt(&quot;distance&quot;);</span>
-<span class="fc" id="L280">    double azimuth = properties.getJsonNumber(&quot;azimuth&quot;).doubleValue();</span>
-<span class="fc" id="L281">    String direction = azimuthToDirection(azimuth);</span>
+<span class="fc" id="L301">    String name = properties.getString(&quot;name&quot;);</span>
+<span class="fc" id="L302">    String country = properties.getString(&quot;country_code&quot;).toLowerCase();</span>
+<span class="fc" id="L303">    String admin = properties.getString(&quot;country_name&quot;);</span>
+<span class="fc" id="L304">    int distance = properties.getInt(&quot;distance&quot;);</span>
+<span class="fc" id="L305">    double azimuth = properties.getJsonNumber(&quot;azimuth&quot;).doubleValue();</span>
+<span class="fc" id="L306">    String direction = azimuthToDirection(azimuth);</span>
 
-<span class="fc bfc" id="L283" title="All 2 branches covered.">    if (&quot;us&quot;.equals(country)) {</span>
-<span class="fc" id="L284">      admin = properties.getString(&quot;admin1_name&quot;);</span>
+<span class="fc bfc" id="L308" title="All 2 branches covered.">    if (&quot;us&quot;.equals(country)) {</span>
+<span class="fc" id="L309">      admin = properties.getString(&quot;admin1_name&quot;);</span>
     }
 
-<span class="fc" id="L287">    return String.format(&quot;%d km %s of %s, %s&quot;, distance, direction, name, admin);</span>
+<span class="fc" id="L312">    return String.format(&quot;%d km %s of %s, %s&quot;, distance, direction, name, admin);</span>
   }
 
   /**
@@ -295,21 +320,48 @@ public class OriginIndexerModule extends DefaultIndexerModule {
    * @return {String} The canonical compass direction for the given input azimuth
    */
   public String azimuthToDirection(double azimuth) {
-<span class="fc" id="L298">    double fullwind = 22.5;</span>
-<span class="fc" id="L299">    String[] directions = { &quot;N&quot;, &quot;NNE&quot;, &quot;NE&quot;, &quot;ENE&quot;, &quot;E&quot;, &quot;ESE&quot;, &quot;SE&quot;, &quot;SSE&quot;, &quot;S&quot;, &quot;SSW&quot;, &quot;SW&quot;, &quot;WSW&quot;, &quot;W&quot;, &quot;WNW&quot;, &quot;NW&quot;,</span>
+<span class="fc" id="L323">    double fullwind = 22.5;</span>
+<span class="fc" id="L324">    String[] directions = { &quot;N&quot;, &quot;NNE&quot;, &quot;NE&quot;, &quot;ENE&quot;, &quot;E&quot;, &quot;ESE&quot;, &quot;SE&quot;, &quot;SSE&quot;, &quot;S&quot;, &quot;SSW&quot;, &quot;SW&quot;, &quot;WSW&quot;, &quot;W&quot;, &quot;WNW&quot;, &quot;NW&quot;,</span>
         &quot;NNW&quot;, &quot;N&quot; };
 
     // Invert azimuth for proper directivity
     // Maybe not needed in the future.
-<span class="fc" id="L304">    azimuth += 180.0;</span>
+<span class="fc" id="L329">    azimuth += 180.0;</span>
 
     // adjust azimuth if negative
-<span class="fc bfc" id="L307" title="All 2 branches covered.">    while (azimuth &lt; 0.0) {</span>
-<span class="fc" id="L308">      azimuth = azimuth + 360.0;</span>
+<span class="fc bfc" id="L332" title="All 2 branches covered.">    while (azimuth &lt; 0.0) {</span>
+<span class="fc" id="L333">      azimuth = azimuth + 360.0;</span>
     }
 
-<span class="fc" id="L311">    return directions[(int) Math.round((azimuth % 360.0) / fullwind)];</span>
+<span class="fc" id="L336">    return directions[(int) Math.round((azimuth % 360.0) / fullwind)];</span>
   }
 
+  public static void main(String[] args) throws Exception {
+<span class="nc" id="L340">    BigDecimal latitude = new BigDecimal(&quot;0.0&quot;);</span>
+<span class="nc" id="L341">    BigDecimal longitude = new BigDecimal(&quot;0.0&quot;);</span>
+<span class="nc" id="L342">    int maxradiuskm = DEFAULT_GEOSERVE_DISTANCE_THRESHOLD;</span>
+<span class="nc" id="L343">    final OriginIndexerModule module = new OriginIndexerModule(</span>
+      new GeoservePlacesService(),
+      new GeoserveRegionsService()
+    );
+<span class="nc" id="L347">    module.setName(&quot;TestModule&quot;);</span>
+
+<span class="nc bnc" id="L349" title="All 2 branches missed.">    for (String arg : args) {</span>
+<span class="nc bnc" id="L350" title="All 2 branches missed.">      if (arg.startsWith(&quot;--latitude=&quot;)) {</span>
+<span class="nc" id="L351">        latitude = new BigDecimal(arg.replace(&quot;--latitude=&quot;, &quot;&quot;));</span>
+<span class="nc bnc" id="L352" title="All 2 branches missed.">      } else if (arg.startsWith(&quot;--longitude=&quot;)) {</span>
+<span class="nc" id="L353">        longitude = new BigDecimal(arg.replace(&quot;--longitude=&quot;, &quot;&quot;));</span>
+<span class="nc bnc" id="L354" title="All 2 branches missed.">      } else if (arg.startsWith(&quot;--maxradiuskm=&quot;)) {</span>
+<span class="nc" id="L355">        maxradiuskm = Integer.parseInt(arg.replace(&quot;--maxradiuskm=&quot;, &quot;&quot;));</span>
+      }
+    }
+
+<span class="nc" id="L359">    module.setDistanceThreshold(maxradiuskm);</span>
+
+<span class="nc" id="L361">    System.out.printf(&quot;Title[%s, %s] = `%s`\n&quot;,</span>
+<span class="nc" id="L362">        latitude.doubleValue(),</span>
+<span class="nc" id="L363">        longitude.doubleValue(),</span>
+<span class="nc" id="L364">        module.getEventTitle(latitude, longitude));</span>
+<span class="nc" id="L365">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

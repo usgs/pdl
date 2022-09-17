@@ -110,11 +110,11 @@ import gov.usgs.util.Config;
 <span class="pc bpc" id="L110" title="1 of 4 branches missed.">        if (productList == null || productList.size() == 0) {</span>
           try {
             //Wait when there are no more products to process
-<span class="nc" id="L113">            syncObject.wait();</span>
+<span class="fc" id="L113">            syncObject.wait();</span>
 <span class="fc" id="L114">          } catch (InterruptedException ignore) {</span>
             //Ignore because it's most likely we get interrupted by shutdown
 <span class="fc" id="L116">            LOGGER.log(Level.FINE,&quot;[&quot; + getName() + &quot;] was told to stop, or something went wrong&quot;);</span>
-<span class="nc" id="L117">          }</span>
+<span class="fc" id="L117">          }</span>
 <span class="fc" id="L118">          continue;</span>
         }
 <span class="fc" id="L120">      }</span>
