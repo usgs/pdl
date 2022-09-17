@@ -9,6 +9,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -98,19 +99,55 @@ public class GeoservePlacesService {
     }
   }
 
+
   /**
    * Get nearest place to a latitude and longitude
    * @param latitude of place
    * @param longitude of place
    * @return JSONObject of place
+   * @throws IndexOutOfBoundsException on no places returned
+   * @throws IOException on IO error
+   * @throws MalformedURLException on URL error
+   * @deprecated
+   */
+  public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude)
+      throws IndexOutOfBoundsException, IOException, MalformedURLException {
+    return this.getNearestPlace(latitude, longitude, 300);
+  }
+
+  /**
+   * Get nearest place to a latitude and longitude
+   * @param latitude of place
+   * @param longitude of place
+   * @param maxradiuskm around place
+   * @return JSONObject of place
    * @throws IOException on IO error
    * @throws MalformedURLException on URL error
    */
-  public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude) throws IOException, MalformedURLException {
-    JsonObject places = this.getEventPlaces(latitude, longitude);
-    JsonObject feature = places.getJsonArray("features").getJsonObject(0);
+  public JsonObject getNearestPlace(BigDecimal latitude, BigDecimal longitude,
+      int maxradiuskm) throws IOException, MalformedURLException {
+    final URL url = new URL(this.endpointUrl +
+       "?type=geonames" +
+       "&latitude=" + URLEncoder.encode(latitude.toString(), StandardCharsets.UTF_8.toString()) +
+       "&longitude=" + URLEncoder.encode(longitude.toString(), StandardCharsets.UTF_8.toString()) +
+       "&maxradiuskm=" + URLEncoder.encode(String.valueOf(maxradiuskm), StandardCharsets.UTF_8.toString()) +
+       "&limit=1"
+    );
 
-    return feature;
+    try (
+      InputStream in = StreamUtils.getURLInputStream(url, this.connectTimeout, this.readTimeout);
+      JsonReader reader = Json.createReader(in)
+    ) {
+      JsonObject json = reader.readObject();
+      JsonObject places = json.getJsonObject("geonames");
+      JsonArray features = places.getJsonArray("features");
+
+      if (features.size() > 0) {
+        return features.getJsonObject(0);
+      } else {
+        return null;
+      }
+    }
   }
 
   /** @return readTimeout */

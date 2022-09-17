@@ -2,14 +2,11 @@ package gov.usgs.earthquake.geoserve;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 
 import javax.json.Json;
 import javax.json.JsonObject;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 public class GeoservePlacesServiceTest {
 
@@ -25,29 +22,5 @@ public class GeoservePlacesServiceTest {
         )
       ).build();
 
-  @Before
-  public void setUpTestEnvironment() {
-    this.service = new DummyPlacesService();
-  }
-
-  @Test
-  public void getNearestPlace() throws Exception {
-    BigDecimal latitude = new BigDecimal("0.0");
-    BigDecimal longitude = new BigDecimal("0.0");
-
-    // nearest feature from feature collection
-    JsonObject expectation = this.feature;
-    Assert.assertEquals(expectation, this.service.getNearestPlace(latitude, longitude));
-  }
-
-  protected class DummyPlacesService extends GeoservePlacesService {
-    @Override
-    public JsonObject getEventPlaces(BigDecimal latitude, BigDecimal longitude) throws IOException, MalformedURLException {
-      JsonObject eventCollection = Json.createObjectBuilder().add("features",
-          Json.createArrayBuilder().add(0, feature)
-        ).build();
-
-      return eventCollection;
-    }
-  }
+  // TODO Test this class, consider Mockito
 }

@@ -111,7 +111,7 @@ public class OriginIndexerModule extends DefaultIndexerModule {
         summaryProperties.put("title", StringUtils.encodeAsUtf8(title));
       } catch (Exception ex) {
         LOGGER
-            .fine(String.format("[%s] %s for product %s", this.getName(), ex.getMessage(), product.getId().toString()));
+            .warning(String.format("[%s] %s for product %s", this.getName(), ex.getMessage(), product.getId().toString()));
         // Do nothing, value-added failed. Move on.
       }
     }
@@ -250,19 +250,44 @@ public class OriginIndexerModule extends DefaultIndexerModule {
    *
    * @throws IOException if IO error occurs
    */
-  public String getEventTitle(BigDecimal latitude, BigDecimal longitude) throws IOException {
-    try {
-      JsonObject feature = this.geoservePlaces.getNearestPlace(latitude, longitude);
-      double distance = feature.getJsonObject("properties").getJsonNumber("distance").doubleValue();
+  public String getEventTitle(BigDecimal latitude, BigDecimal longitude) throws Exception, IOException {
+    StringBuffer messages = new StringBuffer();
+    String message = null;
 
-      if (distance <= (double) this.distanceThreshold) {
+    try {
+      final JsonObject feature = this.geoservePlaces.getNearestPlace(
+          latitude,
+          longitude,
+          this.distanceThreshold
+      );
+
+      if (feature != null) {
         return this.formatEventTitle(feature);
+      } else {
+        message = "Places service returned no places within distance threshold";
+        messages.append(message + ". ");
+        LOGGER.log(Level.INFO, "[" + this.getName() + "] " + message);
       }
     } catch (Exception e) {
-      LOGGER.log(Level.WARNING, "[" + this.getName() + "] failed to get nearest place from geoserve places service.");
+      message = "Failed to get nearest place from geoserve places service";
+      messages.append(message + ". ");
+      messages.append(e.getMessage() + ". ");
+      LOGGER.log(Level.INFO, "[" + this.getName() + "] " + message);
     }
 
-    return this.geoserveRegions.getFeRegionName(latitude, longitude);
+    try {
+      return this.geoserveRegions.getFeRegionName(latitude, longitude);
+    } catch (Exception e) {
+      message = "Failed to get FE region name";
+      messages.append(message + ". ");
+      messages.append(e.getMessage() + ". ");
+      LOGGER.log(Level.INFO, "[" + this.getName() + "] .");
+    }
+
+    // If we get this far, things failed spectacularly, report the error
+    Exception e = new Exception(messages.toString());
+    e.fillInStackTrace();
+    throw e;
   }
 
   /**
@@ -311,4 +336,31 @@ public class OriginIndexerModule extends DefaultIndexerModule {
     return directions[(int) Math.round((azimuth % 360.0) / fullwind)];
   }
 
+  public static void main(String[] args) throws Exception {
+    BigDecimal latitude = new BigDecimal("0.0");
+    BigDecimal longitude = new BigDecimal("0.0");
+    int maxradiuskm = DEFAULT_GEOSERVE_DISTANCE_THRESHOLD;
+    final OriginIndexerModule module = new OriginIndexerModule(
+      new GeoservePlacesService(),
+      new GeoserveRegionsService()
+    );
+    module.setName("TestModule");
+
+    for (String arg : args) {
+      if (arg.startsWith("--latitude=")) {
+        latitude = new BigDecimal(arg.replace("--latitude=", ""));
+      } else if (arg.startsWith("--longitude=")) {
+        longitude = new BigDecimal(arg.replace("--longitude=", ""));
+      } else if (arg.startsWith("--maxradiuskm=")) {
+        maxradiuskm = Integer.parseInt(arg.replace("--maxradiuskm=", ""));
+      }
+    }
+
+    module.setDistanceThreshold(maxradiuskm);
+
+    System.out.printf("Title[%s, %s] = `%s`\n",
+        latitude.doubleValue(),
+        longitude.doubleValue(),
+        module.getEventTitle(latitude, longitude));
+  }
 }
