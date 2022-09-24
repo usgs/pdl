@@ -50,7 +50,7 @@ import java.util.logging.Level;
  * allocated one thread to process notifications from this queue.
  */
 public class DefaultNotificationReceiver extends DefaultConfigurable implements
-		NotificationReceiver {
+		NotificationReceiver, NotificationIndexCleanup.Listener {
 
 	/** Logging object. */
 	private static final Logger LOGGER = Logger
@@ -118,6 +118,9 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 
 	/** Timer that schedules receiver cleanup task. */
 	private Timer receiverCleanupTimer = new Timer();
+
+	/** Notification cleanup */
+	private NotificationIndexCleanup notificationCleanup = null;
 
 	private int connectTimeout = Integer.parseInt(DEFAULT_CONNECT_TIMEOUT);
 	private int readTimeout = Integer.parseInt(DEFAULT_READ_TIMEOUT);
@@ -235,29 +238,36 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 	 * removed.
 	 *
 	 * @throws Exception
-	 *             if productStorage or notificationIndex throw an Exception.
+	 *             if NotificationIndexCleanup throws an Exception.
 	 */
 	public void removeExpiredNotifications() throws Exception {
 		LOGGER.fine("[" + getName() + "] running receiver cleanup");
-		Iterator<Notification> iter = notificationIndex
-				.findExpiredNotifications().iterator();
-		while (iter.hasNext()) {
-			Notification notification = iter.next();
-			if (!(notification instanceof URLNotification)) {
-				// if it isn't a url notification, it's also in storage
-				productStorage.removeProduct(notification.getProductId());
-				if (LOGGER.isLoggable(Level.FINEST)) {
-					LOGGER.finest("[" + getName()
-							+ "] removed expired product from receiver cache "
-							+ notification.getProductId().toString());
-				}
-			}
+		// use NotificationIndexCleanup to manage cleanup in separate thread
+		if (this.notificationCleanup == null) {
+			this.notificationCleanup = new NotificationIndexCleanup(this.notificationIndex, this);
+			this.notificationCleanup.startup();
+		} else {
+			this.notificationCleanup.wakeUp();
+		}
+	}
 
-			// remove expired notification from index
-			notificationIndex.removeNotification(notification);
+	/**
+	 * Callback from the NotificationIndexCleanup thread.
+	 *
+	 * Checks if Notification refers to a product in storage,
+	 * which should also be removed.
+	 *
+	 * @param notification
+	 *     expired notification about to be removed.
+	 * @throws Exception
+	 */
+	public void onExpiredNotification(final Notification notification) throws Exception {
+		if (!(notification instanceof URLNotification)) {
+			// if it isn't a url notification, it's also in storage
+			productStorage.removeProduct(notification.getProductId());
 			if (LOGGER.isLoggable(Level.FINEST)) {
 				LOGGER.finest("[" + getName()
-						+ "] removed expired notification from receiver index "
+						+ "] removed expired product from receiver cache "
 						+ notification.getProductId().toString());
 			}
 		}
@@ -593,7 +603,13 @@ public class DefaultNotificationReceiver extends DefaultConfigurable implements
 
 	public void shutdown() throws Exception {
 		receiverCleanupTimer.cancel();
-
+		if (notificationCleanup != null) {
+			try {
+				notificationCleanup.shutdown();
+				notificationCleanup = null;
+			} catch (Exception ignore) {
+			}
+		}
 		try {
 			notifier.shutdown();
 		} catch (Exception ignore) {

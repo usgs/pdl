@@ -33,7 +33,7 @@ import java.util.logging.Logger;
  * @see gov.usgs.earthquake.product.AbstractListener
  */
 public class DefaultNotificationListener extends AbstractListener implements
-		NotificationListener {
+		NotificationListener, NotificationIndexCleanup.Listener {
 
 	/** Logging object. */
 	private static final Logger LOGGER = Logger
@@ -72,6 +72,9 @@ public class DefaultNotificationListener extends AbstractListener implements
 
 	/** Timer that schedules sender cleanup task. */
 	private Timer cleanupTimer = null;
+
+	/** Notification index cleanup. */
+	private NotificationIndexCleanup notificationCleanup = null;
 
 	/** How many products to process at the same time. */
 	private int concurrentProducts = 1;
@@ -266,43 +269,26 @@ public class DefaultNotificationListener extends AbstractListener implements
 	 * @param notification to be removed
 	 * @throws Exception if error occurs
 	 */
-	protected void onExpiredNotification(final Notification notification)
+	@Override
+	public void onExpiredNotification(final Notification notification)
 			throws Exception {
 		// nothing to do
 	}
 
-	/**
+		/**
 	 * Periodic cleanup task.
 	 *
 	 * Called every cleanupInterval milliseconds.
 	 */
-	public void cleanup() {
+	public void cleanup() throws Exception {
 		LOGGER.finer("[" + getName() + "] running listener cleanup");
-		try {
-			if (notificationIndex != null) {
-				Iterator<Notification> iter = notificationIndex
-						.findExpiredNotifications().iterator();
-				while (iter.hasNext()) {
-					Notification notification = iter.next();
-
-					// let subclasses remove other stuff first
-					onExpiredNotification(notification);
-
-					// remove expired notification from index
-					notificationIndex.removeNotification(notification);
-
-					if (LOGGER.isLoggable(Level.FINEST)) {
-						LOGGER.finest("["
-								+ getName()
-								+ "] removed expired notification from sender index "
-								+ notification.getProductId().toString());
-					}
-				}
-			}
-		} catch (Exception e) {
-			LOGGER.log(Level.WARNING, "Exception during listener cleanup", e);
+		if (this.notificationCleanup == null) {
+			this.notificationCleanup = new NotificationIndexCleanup(this.notificationIndex, this);
+			this.notificationCleanup.startup();
+		} else {
+			this.notificationCleanup.wakeUp();
 		}
-	};
+	}
 
 	@Override
 	public void startup() throws Exception {
@@ -320,7 +306,7 @@ public class DefaultNotificationListener extends AbstractListener implements
 						cleanup();
 					} catch (Exception e) {
 						LOGGER.log(Level.WARNING, "[" + getName()
-								+ "] exception during sender cleanup", e);
+								+ "] exception during cleanup", e);
 					}
 				}
 			}, 0, cleanupInterval);
@@ -334,6 +320,14 @@ public class DefaultNotificationListener extends AbstractListener implements
 			this.notificationIndex.shutdown();
 		} catch (Exception e) {
 			// ignore
+		}
+		if (this.notificationCleanup != null) {
+			try {
+				this.notificationCleanup.shutdown();
+			} catch (Exception ignore) {
+			} finally {
+				this.notificationCleanup = null;
+			}
 		}
 		try {
 			this.cleanupTimer.cancel();
