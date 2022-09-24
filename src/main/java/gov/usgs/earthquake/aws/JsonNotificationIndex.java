@@ -572,7 +572,9 @@ public class JsonNotificationIndex
         + " '' as created, t.expires, t.source, t.type, t.code, t.updateTime"
         + ", '' as url, null as data"
         + " FROM " + this.table + " t"
-        + " WHERE NOT EXISTS ("
+        // only missing if not expired
+        + " WHERE t.expires >= ?"
+        + " AND NOT EXISTS ("
           + "SELECT * FROM " + otherTable
             + " WHERE source=t.source AND type=t.type"
             + " AND code=t.code AND updatetime=t.updateTime"
@@ -582,6 +584,10 @@ public class JsonNotificationIndex
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
         statement.setQueryTimeout(1800);
+
+        // set parameters
+        statement.setString(1, Instant.now().toString());
+
         // execute and commit if successful
         final List<Notification> notifications = getNotifications(statement);
         commitTransaction();
