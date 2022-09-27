@@ -273,42 +273,56 @@ public class JsonNotificationIndex
    */
   @Override
   public synchronized void removeNotification(Notification notification) throws Exception {
-    // all notifications
-    Instant expires = notification.getExpirationDate().toInstant();
-    ProductId id = notification.getProductId();
-    // json only
-    Instant created = null;
-    Product product = null;
-    // url only
-    URL url = null;
-    if (notification instanceof JsonNotification) {
-      JsonNotification jsonNotification = (JsonNotification) notification;
-      created = jsonNotification.created;
-      product = jsonNotification.product;
-    } else if (notification instanceof URLNotification) {
-      url = ((URLNotification) notification).getProductURL();
-    }
+    final List<Notification> notifications = new ArrayList<>();
+    notifications.add(notification);
+    this.removeNotifications(notifications);
+  }
+
+  /**
+   * Remove notifications from index.
+   *
+   * Tracker URLs are ignored.
+   * @param notification to be removed from index
+   * @throws Exception if error occurs
+   */
+  @Override
+  public synchronized void removeNotifications(List<Notification> notifications) throws Exception {
     // prepare statement
     final String sql = "DELETE FROM " + this.table
           + " WHERE created=? AND expires=? AND source=? AND type=? AND code=?"
-          + " AND updatetime=? AND url=? AND data"
-          // created is _very_ specific and is set when product is not null
-          // skip overhead of embedding product in query
-          + (product == null ? " IS NULL" : " IS NOT NULL");
+          + " AND updatetime=? AND url=?";
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
         statement.setQueryTimeout(60);
-        // set parameters
-        statement.setString(1, created != null ? created.toString() : "");
-        statement.setString(2, expires.toString());
-        statement.setString(3, id.getSource());
-        statement.setString(4, id.getType());
-        statement.setString(5, id.getCode());
-        statement.setLong(6, id.getUpdateTime().getTime());
-        statement.setString(7, url != null ? url.toString() : "");
+
+        for (Notification notification : notifications) {
+          // all notifications
+          Instant expires = notification.getExpirationDate().toInstant();
+          ProductId id = notification.getProductId();
+          // json only
+          Instant created = null;
+          // url only
+          URL url = null;
+          if (notification instanceof JsonNotification) {
+            JsonNotification jsonNotification = (JsonNotification) notification;
+            created = jsonNotification.created;
+          } else if (notification instanceof URLNotification) {
+            url = ((URLNotification) notification).getProductURL();
+          }
+
+          // set parameters
+          statement.setString(1, created != null ? created.toString() : "");
+          statement.setString(2, expires.toString());
+          statement.setString(3, id.getSource());
+          statement.setString(4, id.getType());
+          statement.setString(5, id.getCode());
+          statement.setLong(6, id.getUpdateTime().getTime());
+          statement.setString(7, url != null ? url.toString() : "");
+          statement.addBatch();
+        }
         // execute
-        statement.executeUpdate();
+        statement.executeBatch();
         commitTransaction();
       } catch (SQLException e) {
         LOGGER.log(Level.WARNING, "Exception removing notification", e);
@@ -478,7 +492,7 @@ public class JsonNotificationIndex
    */
   @Override
   public synchronized List<Notification> findExpiredNotifications() throws Exception {
-    final String sql = "SELECT * FROM " + this.table + " WHERE expires <= ? LIMIT 1000";
+    final String sql = "SELECT * FROM " + this.table + " WHERE expires <= ? LIMIT 5000";
     // prepare statement
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {

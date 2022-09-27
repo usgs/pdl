@@ -1,5 +1,6 @@
 package gov.usgs.earthquake.distribution;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,25 +66,32 @@ public class NotificationIndexCleanup implements Runnable {
       }
 
       // remove batch of expired notifications
-      int removed = 0;
-      for (final Notification expired : expiredNotifications) {
-        synchronized (syncObject) {
-          if (stopThread) {
-            break;
+      final List<Notification> removed = new ArrayList<>(expiredNotifications.size());
+      if (this.listener == null) {
+        removed.addAll(expiredNotifications);
+      } else {
+        // notify listener, remove only those successfully processed by listener
+        for (final Notification expired : expiredNotifications) {
+          synchronized (syncObject) {
+            if (stopThread) {
+              break;
+            }
           }
-        }
-        try {
-          if (this.listener != null) {
+          try {
             this.listener.onExpiredNotification(expired);
+            removed.add(expired);
+          } catch (Exception e) {
+            LOGGER.log(Level.WARNING, e, () -> "[" + indexName + "] Listener exception processing expired notification");
           }
-          this.index.removeNotification(expired);
-          removed++;
-        } catch (Exception e) {
-          LOGGER.log(Level.WARNING, e, () -> "[" + indexName + "] Exception removing expired notification");
         }
       }
-      final int total = removed;
-      LOGGER.fine(() -> "[" + indexName + "] Removed " + total + " expired notifications");
+      try {
+        // remove in batch
+        this.index.removeNotifications(removed);
+        LOGGER.fine(() -> "[" + indexName + "] Removed " + removed.size() + " expired notifications");
+      } catch (Exception e) {
+        LOGGER.log(Level.WARNING, e, () -> "[" + indexName + "] Exception removing expired notifications");
+      }
     }
     LOGGER.finer(() -> "[" + indexName + "] NotificationIndexCleanup exiting");
     this.cleanupThread = null;

@@ -63,7 +63,7 @@ public class NotificationIndexCleanupTest {
     final NotificationIndexCleanup cleanup = new NotificationIndexCleanup(index, (Notification expired) -> {
       listenerNotifications.add(expired);
       // check size before return
-      Assert.assertEquals(listenerNotifications.size() - 1, index.removedNotifications.size());
+      Assert.assertTrue(listenerNotifications.size() > index.removedNotifications.size());
     });
     // thread should start and wait
     cleanup.startup();
@@ -170,6 +170,12 @@ public class NotificationIndexCleanupTest {
     public void removeNotification(final Notification notification) throws Exception {
       removedNotifications.add(notification);
     }
+
+    @Override
+    public void removeNotifications(final List<Notification> notifications) throws Exception {
+      removedNotifications.addAll(notifications);
+    }
+
   }
 
 }

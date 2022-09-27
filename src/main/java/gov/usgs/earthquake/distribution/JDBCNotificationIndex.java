@@ -656,6 +656,24 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	}
 
 	/**
+	 * Remove notifications from the index.
+	 *
+	 * All matching notifications should be removed from the index.
+	 *
+	 * @param notifications
+	 *            the notifications to remove.
+	 * @throws Exception
+	 *             if an error occurs while removing the notifications.
+	 * @see gov.usgs.earthquake.distribution.NotificationIndex
+	 */
+	public synchronized void removeNotifications(List<Notification> notifications)
+			throws Exception {
+		for (Notification notification : notifications) {
+			this.removeNotification(notification);
+		}
+	}
+
+	/**
 	 * Search the index for notifications matching id.
 	 *
 	 * If more than one notification matches, all should be returned.
