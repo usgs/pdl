@@ -131,14 +131,14 @@ public class NotificationIndexCleanupTest {
     index.expiredNotificationsReturns.add(notifications);
     listenerThrow.add(true);
     cleanup.wakeUp();
-    Thread.sleep(1L);
+    Thread.sleep(5L);
     Assert.assertEquals(0, index.removedNotifications.size());
     Assert.assertEquals(0, listenerNotifications.size());
     // run with multiple findExpiredNotifications returns, should remove all
     index.expiredNotificationsReturns.add(notifications);
     listenerThrow.clear();
     cleanup.wakeUp();
-    Thread.sleep(1L);
+    Thread.sleep(5L);
     Assert.assertEquals(2, index.removedNotifications.size());
     Assert.assertEquals(2, listenerNotifications.size());
   }
