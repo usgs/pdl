@@ -48,7 +48,8 @@ public interface NotificationIndex extends Configurable {
 	 * Remove notifications from index.
 	 *
 	 * Tracker URLs are ignored.
-	 * @param notification to be removed from index
+	 * @param notifications
+	 *     notifications to be removed from index
 	 * @throws Exception if error occurs
 	 */
 	public void removeNotifications(List<Notification> notifications)
