@@ -47,7 +47,9 @@ public class ExtentIndexerListener extends ReliableIndexerListener {
    */
   @Override
   protected void onBeforeProcessThreadStart() throws Exception {
-    setLastIndexId(((ExtentIndex) productIndex).getLastExtentIndexId());
+    long lastIndexId = ((ExtentIndex) productIndex).getLastExtentIndexId();
+    LOGGER.fine("[" + getName() + "] last index id " + lastIndexId);
+    setLastIndexId(lastIndexId);
   }
 
   /**
@@ -63,12 +65,12 @@ public class ExtentIndexerListener extends ReliableIndexerListener {
     ExtentSummary extent = new ExtentSummary(product);
 
     if (extent.isValid()) {
-      LOGGER.log(Level.FINE, "[" + getName() + "] adding product "
+      LOGGER.log(Level.FINEST, "[" + getName() + "] adding product "
           + product.getId().toString()
           + " to extent table");
       ((ExtentIndex) productIndex).addExtentSummary(extent);
     } else {
-      LOGGER.log(Level.FINE, "[" + getName() + "] product "
+      LOGGER.log(Level.FINEST, "[" + getName() + "] product "
           + product.getId().toString()
           + " has no extent information; won't add to extent table");
     }

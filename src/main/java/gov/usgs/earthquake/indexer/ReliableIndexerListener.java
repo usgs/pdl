@@ -37,7 +37,7 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements R
   protected static final Logger LOGGER = Logger
           .getLogger(ReliableIndexerListener.class.getName());
 
-  private static final int PRODUCTS_PER_QUERY = 10;
+  private static final int PRODUCTS_PER_QUERY = 1000;
 
   private boolean stopThread = false;
   private long lastIndexId = -1;
@@ -123,8 +123,10 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements R
       for(ProductSummary summary : productList) {
         LOGGER.log(Level.FINEST,"[" + getName() + "] preparing to process product " + summary.getIndexId());
         //Check for shutdown every iteration so we don't hog shutdown time
-        if (stopThread) {
-          break;
+        synchronized(syncObject) {
+          if (stopThread) {
+            break;
+          }
         }
         try {
           //Process the product types we're told to in configuration
@@ -161,7 +163,10 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements R
   public void startup() throws Exception{
     super.startup();
     this.onBeforeProcessThreadStart();
-    this.processThread = new Thread(this);
+    synchronized(syncObject) {
+      stopThread = false;
+      this.processThread = new Thread(this);
+    }
     this.processThread.start();
   }
 
@@ -174,9 +179,9 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements R
   public void shutdown() throws Exception {
     try {
       LOGGER.log(Level.FINEST,"[" + getName() + "] trying to shut down...");
-      stopThread = true;
       //When the thread is ready, tell it to stop
       synchronized (syncObject) {
+        stopThread = true;
         this.processThread.interrupt();
       }
       this.processThread.join();
@@ -270,7 +275,7 @@ public class ReliableIndexerListener extends DefaultIndexerListener implements R
    */
   public void processProduct(final ProductSummary product) throws Exception {
     //Do stuff
-    LOGGER.log(Level.FINE,"[" + getName() + "] processing product " + product.getId());
+    LOGGER.log(Level.FINER,"[" + getName() + "] processing product " + product.getId());
   }
 
 
