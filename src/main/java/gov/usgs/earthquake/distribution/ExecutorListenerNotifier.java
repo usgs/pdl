@@ -236,8 +236,10 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 			NotificationIndex listenerIndex =
 					((DefaultNotificationListener) gracefulListeners.get(0))
 					.getNotificationIndex();
-			if (listenerIndex instanceof JsonNotificationIndex) {
-				// get intersection
+			if (listenerIndex instanceof JsonNotificationIndex
+					&& !((JsonNotificationIndex) listenerIndex).getDriver().contains("sqlite")
+			) {
+				// get intersection when potentially sharing database
 				try {
 					allNotifications =
 							((JsonNotificationIndex) index).getMissingNotifications(
