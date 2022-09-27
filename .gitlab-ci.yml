@@ -1,4 +1,4 @@
-image: ${CI_REGISTRY}/devops/images/usgs/java:11-jdk
+image: ${CI_REGISTRY}/devops/images/usgs/java:11
 
 stages:
   - build
@@ -22,7 +22,7 @@ stages:
     paths:
       - .gradle/caches
       - .gradle/wrapper
-  image: ${CI_REGISTRY}/devops/images/usgs/java:11-jdk
+  image: ${CI_REGISTRY}/devops/images/usgs/java:11
   script:
     # run gradle and javadoc
     - export GRADLE_USER_HOME="${CI_PROJECT_DIR}/.gradle"
@@ -38,20 +38,20 @@ stages:
 Java 8:
   extends:
     - .check_code
-  image: ${CI_REGISTRY}/devops/images/usgs/java:8-jdk
+  image: ${DEVOPS_REGISTRY}usgs/java:8-jdk
 
 Java 11:
   extends:
     - .check_code
-  image: ${CI_REGISTRY}/devops/images/usgs/java:11-jdk
+  image: ${CI_REGISTRY}/devops/images/usgs/java:11
 
 Java 17:
   extends:
     - .check_code
-  image: ${CI_REGISTRY}/devops/images/usgs/java:17-jdk
+  image: ${CI_REGISTRY}/devops/images/usgs/java:17
 
 Javadoc:
-  image: ${CI_REGISTRY}/devops/images/usgs/java:17-jdk
+  image: ${CI_REGISTRY}/devops/images/usgs/java:17
   script:
     - ./gradlew javadoc
   stage: javadoc
