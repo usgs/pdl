@@ -11,6 +11,7 @@
 		<a href="../index.html#documentation">&laquo; Back to User Guide</a>
 	</p>
 
+
 	<h2>Navigation</h2>
 	<ul>
 		<li><a href="#format">Format</a></li>
@@ -24,6 +25,7 @@
 				<li><a href="#ProductSender">ProductSender</a></li>
 				<li><a href="#ProductStorage">ProductStorage</a></li>
 				<li><a href="#ProductKey">ProductKey</a></li>
+				<li><a href="#TrackingIndex">TrackingIndex</a></li>
 			</ul></li>
 
 		<li><a href="#indexerconfig">Indexer Components</a>
@@ -37,6 +39,7 @@
 
 		<li><a href="reliable.html">Reliable Listener Configuration</a></li>
 	</ul>
+
 
 	<h2 id="format">Format</h2>
 	<p>The configuration file uses an INI style syntax for properties.
@@ -232,6 +235,7 @@
 
 
 	<h2 id="distributionconfig">Distribution Components</h2>
+
 	<h3 id="NotificationIndex">NotificationIndex</h3>
 	<p>A notification index is used by Hubs and Clients to track
 		available products.</p>
@@ -243,7 +247,56 @@
 				<dd>The SQLite database file. Default is "pd_index.db".</dd>
 			</dl>
 		</dd>
+
+		<dt>gov.usgs.earthquake.aws.JsonNotificationIndex</dt>
+		<dd>
+			<dl>
+				<dt>driver</dt>
+				<dd>
+					JDBC Driver class for connection.
+					(Optional, default <code>org.sqlite.JDBC</code>)
+				</dd>
+
+				<dt>table</dt>
+				<dd>
+					Database table name.
+					(Optional, default <code>notification</code>)
+				</dd>
+
+				<dt>url</dt>
+				<dd>
+					JDBC Connection URL.
+					(Optional, default <code>jdbc:sqlite:json_notification_index.db</code>)
+				</dd>
+			</dl>
+		</dd>
+
+		<p>
+			The JsonNotificationIndex schema can be created automatically when using Sqlite.
+			For mysql or other databases, it is recommended to create the schema
+			separately and run with a user with only SELECT,INSERT,UPDATE, and DELETE
+			permissions.
+		</p>
+
+		<pre>
+CREATE TABLE IF NOT EXISTS notification
+ (id INTEGER PRIMARY KEY AUTO_INCREMENT
+ , created VARCHAR(255)
+ , expires VARCHAR(255)
+ , source VARCHAR(255)
+ , type VARCHAR(255)
+ , code VARCHAR(255)
+ , updatetime BIGINT
+ , url TEXT
+ , data LONGTEXT
+ , KEY source_index (source)
+ , KEY type_index (type)
+ , KEY code_index (code)
+ , KEY expires_index (expires)
+ ) ENGINE=innodb CHARSET=utf8;
+		</pre>
 	</dl>
+
 	<h3 id="NotificationListener">NotificationListener</h3>
 	<p>Listeners are used by Hubs and Clients</p>
 
@@ -512,6 +565,7 @@
 			</dl>
 		</dd>
 	</dl>
+
 	<h3 id="NotificationReceiver">NotificationReceiver</h3>
 	<p>Receivers are used by Hubs and Clients.</p>
 
@@ -599,7 +653,10 @@
 
 			<dl>
 				<dt>url</dt>
-				<dd>Base URL for hub.</dd>
+				<dd>Base URL for hub.
+
+					e.g. <code>wss://earthquake.usgs.gov/pdl/west/subscribe</code>
+				</dd>
 
 				<dt>trackingFileName</dt>
 				<dd>File where current position in hub notifications is tracked.</dd>
@@ -618,7 +675,7 @@
 
 				<dt>initialCatchUpAge</dt>
 				<dd>
-					(Optional, default 7.0 days) how far back in time to start when
+					(Optional, default 7.0 days, max 30.0) how far back in time to start when
 					connecting to server.  subsequent attempts start at current position,
 					which is tracked.
 				</dd>
@@ -854,7 +911,56 @@
 				</dd>
 			</dl>
 		</dd>
+
+		<dt>gov.usgs.earthquake.aws.JsonProductStorage</dt>
+		<dd>
+			<p>
+				A JsonProductStorage stores Json product metadata in a database,
+				instead of the filesystem, and works best with an AwsProductReceiver.
+			</p>
+
+			<dl>
+				<dt>driver</dt>
+				<dd>
+					JDBC Driver class for connection.
+					(Optional, default <code>org.sqlite.JDBC</code>)
+				</dd>
+
+				<dt>table</dt>
+				<dd>
+					Database table name.
+					(Optional, default <code>product</code>)
+				</dd>
+
+				<dt>url</dt>
+				<dd>
+					JDBC Connection URL.
+					(Optional, default <code>jdbc:sqlite:json_product_index.db</code>)
+				</dd>
+			</dl>
+
+			<p>
+				The JsonProductStorage schema can be created automatically when using Sqlite.
+				For mysql or other databases, it is recommended to create the schema
+				separately and run with a user with only SELECT,INSERT,UPDATE, and DELETE
+				permissions.
+			</p>
+
+			<pre>
+CREATE TABLE IF NOT EXISTS product
+ (id INTEGER PRIMARY KEY AUTO_INCREMENT
+ , source VARCHAR(255)
+ , type VARCHAR(255)
+ , code VARCHAR(255)
+ , updatetime BIGINT
+ , data LONGTEXT
+ , UNIQUE KEY product_index (source, type, code, updatetime)
+ ) ENGINE=innodb CHARSET=utf8;
+			</pre>
+		</dd>
 	</dl>
+
+
 	<h3 id="StorageListener">StorageListener</h3>
 	<p>Listeners are notified when products are added-to, or removed
 		from the ProductStorage.</p>
@@ -897,6 +1003,7 @@
 			</dl>
 		</dd>
 	</dl>
+
 	<h3 id="ProductKey">ProductKey</h3>
 	<p>Keys are used to verify signed products, and more specifically
 		by FileProductStorage.</p>
@@ -919,6 +1026,54 @@
 		</dd>
 	</dl>
 
+	<h3 id="TrackingIndex">TrackingIndex</h3>
+	<p>The TrackingIndex is used to store component state in a database.</p>
+
+	<dl>
+		<dt>gov.usgs.earthquake.aws.TrackingIndex</dt>
+		<dd>
+			<p>
+				Used by an AwsProductReceiver.
+			</p>
+
+			<dl>
+				<dt>driver</dt>
+				<dd>
+					JDBC Driver class for connection.
+					(Optional, default <code>org.sqlite.JDBC</code>)
+				</dd>
+
+				<dt>table</dt>
+				<dd>
+					Database table name.
+					(Optional, default <code>tracking</code>)
+				</dd>
+
+				<dt>url</dt>
+				<dd>
+					JDBC Connection URL.
+					(Optional, default <code>jdbc:sqlite:json_product_index.db</code>)
+				</dd>
+			</dl>
+
+			<p>
+				The TrackingIndex schema can be created automatically when using Sqlite.
+				For mysql or other databases, it is recommended to create the schema
+				separately and run PDL with a user with only SELECT,INSERT,UPDATE, and DELETE
+				permissions.
+			</p>
+
+			<pre>
+CREATE TABLE IF NOT EXISTS tracking
+	(id INTEGER PRIMARY KEY AUTO_INCREMENT
+	, created VARCHAR(255)
+	, name VARCHAR(255)
+	, data LONGTEXT
+	, UNIQUE KEY name_index (name)
+	) ENGINE=innodb CHARSET=utf8;
+			</pre>
+		</dd>
+	</dl>
 
 
 	<h2 id="indexerconfig">Indexer Components</h2>
