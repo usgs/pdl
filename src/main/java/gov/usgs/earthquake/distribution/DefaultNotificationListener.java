@@ -316,18 +316,19 @@ public class DefaultNotificationListener extends AbstractListener implements
 	@Override
 	public void shutdown() throws Exception {
 		super.shutdown();
+		if (this.notificationCleanup != null) {
+			try {
+				this.notificationCleanup.shutdown();
+			} catch (Exception e) {
+				LOGGER.log(Level.INFO, "[" + getName() + "] exception stopping notification cleanup", e);
+			} finally {
+				this.notificationCleanup = null;
+			}
+		}
 		try {
 			this.notificationIndex.shutdown();
 		} catch (Exception e) {
 			// ignore
-		}
-		if (this.notificationCleanup != null) {
-			try {
-				this.notificationCleanup.shutdown();
-			} catch (Exception ignore) {
-			} finally {
-				this.notificationCleanup = null;
-			}
 		}
 		try {
 			this.cleanupTimer.cancel();
