@@ -38,7 +38,7 @@ public class NotificationIndexCleanupTest {
     // run cleanup thread, should remove 2 notifications
     index.expiredNotificationsReturns.add(notifications);
     cleanup.wakeUp();
-    Thread.sleep(1L);
+    Thread.sleep(5L);
     Assert.assertEquals(index.removedNotifications.size(), 2);
 
     // run with multiple findExpiredNotifications returns, should remove all
@@ -46,7 +46,7 @@ public class NotificationIndexCleanupTest {
     index.expiredNotificationsReturns.add(notifications);
     index.expiredNotificationsReturns.add(notifications);
     cleanup.wakeUp();
-    Thread.sleep(2L);
+    Thread.sleep(5L);
     Assert.assertEquals(index.removedNotifications.size(), 4);
   }
 
