@@ -292,7 +292,9 @@ public class JsonNotificationIndex
     final String sql = "DELETE FROM " + this.table
           + " WHERE created=? AND expires=? AND source=? AND type=? AND code=?"
           + " AND updatetime=? AND url=? AND data"
-          + (product == null ? " IS NULL" : "=?");
+          // created is _very_ specific and is set when product is not null
+          // skip overhead of embedding product in query
+          + (product == null ? " IS NULL" : " IS NOT NULL");
     beginTransaction();
     try (final PreparedStatement statement = getConnection().prepareStatement(sql)) {
       try {
@@ -305,10 +307,6 @@ public class JsonNotificationIndex
         statement.setString(5, id.getCode());
         statement.setLong(6, id.getUpdateTime().getTime());
         statement.setString(7, url != null ? url.toString() : "");
-        if (product != null) {
-          statement.setString(8,
-              new JsonProduct().getJsonObject(product).toString());
-        }
         // execute
         statement.executeUpdate();
         commitTransaction();
@@ -440,7 +438,9 @@ public class JsonNotificationIndex
       sql = "SELECT DISTINCT"
           + " '' as created, expires, source, type, code, updateTime"
           + ", '' as url, null as data"
-          + " FROM " + this.table;
+          + " FROM " + this.table
+          + " WHERE expires > ?";
+      values.add(Instant.now().toString());
     }
     // prepare statement
     beginTransaction();
@@ -573,7 +573,7 @@ public class JsonNotificationIndex
         + ", '' as url, null as data"
         + " FROM " + this.table + " t"
         // only missing if not expired
-        + " WHERE t.expires >= ?"
+        + " WHERE t.expires > ?"
         + " AND NOT EXISTS ("
           + "SELECT * FROM " + otherTable
             + " WHERE source=t.source AND type=t.type"

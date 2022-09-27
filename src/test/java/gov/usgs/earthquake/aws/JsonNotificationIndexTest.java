@@ -15,7 +15,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.junit.After;
@@ -355,19 +354,18 @@ public class JsonNotificationIndexTest {
     // functionality.
 
     List<Notification> found = null;
-    Iterator<Notification> iter = null;
     List<String> sources = null;
     List<String> types = null;
     List<String> codes = null;
 
     // Check the null null null case.
     found = index.findNotifications(sources, types, codes);
-
+    final Date now = new Date();
     List<Notification> all = index
         .getNotifications(_query_allNotifications);
-    iter = all.iterator();
-    while (iter.hasNext()) {
-      Assert.assertTrue(contains(found, iter.next()));
+    for (final Notification notification : all) {
+      Assert.assertTrue(contains(found, notification)
+          || notification.getExpirationDate().getTime() < now.getTime());
     }
 
     // Check a search by sources only
