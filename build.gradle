@@ -40,7 +40,7 @@ dependencies {
   implementation "org.glassfish.tyrus.bundles:tyrus-standalone-client:1.17"
   // database drivers
   runtimeOnly "mysql:mysql-connector-java:5.1.47"
-  runtimeOnly "org.xerial:sqlite-jdbc:3.23.1"
+  runtimeOnly "org.xerial:sqlite-jdbc:3.39.2.1"
   // ssh keys
   implementation "ch.ethz.ganymed:ganymed-ssh2:262"
   // nats
@@ -72,7 +72,7 @@ tasks.withType(JavaCompile) {
 
 // coverage reports
 jacoco {
-  toolVersion "0.8.7"
+  toolVersion "0.8.8"
 }
 jacocoTestReport {
   reports {

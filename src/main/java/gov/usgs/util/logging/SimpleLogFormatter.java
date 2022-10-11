@@ -16,9 +16,9 @@ import java.io.PrintStream;
 
 /**
  * Simple(r) log formatter for java.util.logging messages.
- * 
+ *
  * Outputs unique dates once, with all messages sharing that time tab indented below.
- * 
+ *
  * Example Format:
  * <pre>
  * Wed Sep 30 19:31:48 GMT 2009
@@ -31,7 +31,7 @@ import java.io.PrintStream;
  * INFO    [logging_client] received urn:earthquake-usgs-gov:shakemap-scraper:global:2009medd:1
  * INFO    [shakemap] received urn:earthquake-usgs-gov:shakemap-scraper:global:2009medd:1
  * </pre>
- * 
+ *
  */
 public class SimpleLogFormatter extends Formatter {
 
@@ -47,7 +47,7 @@ public class SimpleLogFormatter extends Formatter {
 
     /**
      * Format a LogRecord for output.
-     * 
+     *
      * @param record
      *            LogRecord to format.
      * @return formatted LogRecord as String.
@@ -72,7 +72,7 @@ public class SimpleLogFormatter extends Formatter {
         // add log message
         buf.append(record.getLevel().toString());
         buf.append("\tthread=").append(record.getThreadID());
-        buf.append("\t").append(record.getMessage());
+        buf.append("\t").append(formatMessage(record));
         buf.append("\n");
 
         // output any associated exception

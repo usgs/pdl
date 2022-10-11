@@ -376,7 +376,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 		final List<String> clauseList = buildProductClauses(query);
 		// Add the unassociated quantifier to the clause list
 		clauseList.add("eventId IS NULL");
-		final String sql = buildProductQuery(clauseList);
+		final String sql = buildProductQuery(query, clauseList);
 
 		try (
 			final PreparedStatement statement = getConnection().prepareStatement(sql);
@@ -430,10 +430,10 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 */
 	public synchronized List<ProductSummary> getProducts(ProductIndexQuery query, final boolean loadDetails)
 			throws Exception {
-		final List<String> clauseList = buildProductClauses(query);
-		final String sql = buildProductQuery(clauseList);
+		final String sql = buildProductQuery(query);
 
 		final List<ProductSummary> products = new LinkedList<ProductSummary>();
+		LOGGER.finer("Executing query " + sql);
 		try (
 			final PreparedStatement statement = getConnection().prepareStatement(sql);
 		) {
@@ -998,51 +998,50 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	}
 
 	/**
-	 * Create the full SELECT query for the products table using the clauseList
-	 * as the WHERE clause
+	 * Create the full SELECT query for the products table using the default clauseList.
 	 *
-	 * @param clauseList
-	 *            List of Strings to be AND'd together in the WHERE clause
-	 * @param orderby
-	 *            Complete ORDER BY clause to be added after the WHERE clause
+	 * @param query
+	 *     Query to build.
 	 * @return String containing the full SELECT query
+	 * @see #buildProductClauses(ProductIndexQuery)
 	 */
-	protected String buildProductQuery(List<String> clauseList, String orderby) {
-		// Join all the clauses into a WHERE clause
-		StringBuilder whereClause = new StringBuilder();
-		String and = " AND ";
-		boolean first = true;
-		for (String clause : clauseList) {
-			if (!first) {
-				whereClause.append(and);
-			} else {
-				first = false;
-			}
-			whereClause.append(clause);
-		}
+	protected String buildProductQuery(final ProductIndexQuery query) {
 
-		String query_prefix = String
-				.format("SELECT * FROM %s p", SUMMARY_TABLE);
-		String query_suffix = "";
-		if (whereClause.length() > 0) {
-			query_suffix = String.format(" WHERE %s", whereClause.toString());
-		}
-		String query_text = query_prefix + query_suffix + " " + orderby;
-
-		return query_text;
+		final List<String> clauseList = buildProductClauses(query);
+		return buildProductQuery(query, clauseList);
 	}
 
 	/**
-	 * Create the full SELECT query for the products table using the clauseList
-	 * as the WHERE clause. This method is a wrapper for
-	 * {@link #buildProductQuery(List, String)} with an empty
-	 * orderby string
+	 * Create the full SELECT query for the products table using a custom clauseList.
 	 *
+	 * @param query
+	 *     Query to build.
 	 * @param clauseList List of clauses for WHERE
 	 * @return String containing the full SELECT query
 	 */
-	protected String buildProductQuery(List<String> clauseList) {
-		return buildProductQuery(clauseList, "");
+	protected String buildProductQuery(final ProductIndexQuery query, final List<String> clauseList) {
+		final StringBuffer sql = new StringBuffer();
+
+		sql.append("SELECT * FROM " + SUMMARY_TABLE + " p");
+
+		// optional where
+		if (clauseList.size() > 0) {
+			sql.append(" WHERE ").append(String.join(" AND ", clauseList));
+		}
+
+		// optional order by
+		String queryOrderBy = query.getOrderBy();
+		if (queryOrderBy != null) {
+			sql.append(" ORDER BY ").append(queryOrderBy);
+		}
+
+		// limit is after order by
+		Integer queryLimit = query.getLimit();
+		if (queryLimit != null) {
+			sql.append(" LIMIT ").append(queryLimit);
+		}
+
+		return sql.toString();
 	}
 
 	/**

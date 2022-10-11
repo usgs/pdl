@@ -259,6 +259,30 @@ public class JDBCProductIndexTest {
 	}
 
 	/**
+	 * Query with limit includes limit clause.
+	 * @throws Exception
+	 */
+	@Test
+	public void limitQueryTest() throws Exception {
+		query = new ProductIndexQuery();
+		query.setLimit(123);
+		String sql = index.buildProductQuery(query);
+		Assert.assertTrue(sql.contains(" LIMIT 123"));
+	}
+
+	/**
+	 * Query with limit includes limit clause.
+	 * @throws Exception
+	 */
+	@Test
+	public void orderByQueryTest() throws Exception {
+		query = new ProductIndexQuery();
+		query.setOrderBy(JDBCProductIndex.SUMMARY_PRODUCT_INDEX_ID);
+		String sql = index.buildProductQuery(query);
+		Assert.assertTrue(sql.contains(" ORDER BY id"));
+	}
+
+	/**
 	 * Open a connection to a mysql database called productIndex on localhost
 	 * with the user: "test" and the password: "test". This test will
 	 * insert an event, a product, and then remove them.

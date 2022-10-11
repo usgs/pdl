@@ -1,8 +1,6 @@
-image: ${DEVOPS_REGISTRY}usgs/centos:8
 
 stages:
   - build
-  - javadoc
 
 .check_code:
   after_script:
@@ -45,13 +43,13 @@ Java 11:
     - .check_code
   image: ${DEVOPS_REGISTRY}usgs/java:11-jdk
 
-Java Latest:
-  extends:
-    - .check_code
-  image: ${DEVOPS_REGISTRY}usgs/java:latest-jdk
+# Java Latest:
+#   extends:
+#     - .check_code
+#   image: ${DEVOPS_REGISTRY}usgs/java:latest-jdk
 
 Javadoc:
-  image: ${DEVOPS_REGISTRY}usgs/java:latest-jdk
+  image: ${DEVOPS_REGISTRY}usgs/java:11-jdk
   script:
     - ./gradlew javadoc
-  stage: javadoc
+  stage: build

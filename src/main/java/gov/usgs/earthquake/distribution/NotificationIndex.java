@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * Stores and retrieves Notifications.
- * 
+ *
  * This is typically used by a NotificationReceiver to track its Notifications,
  * but may also be used by NotificationListeners. Each object should maintain a
  * separate NotificationIndex.
@@ -19,10 +19,10 @@ public interface NotificationIndex extends Configurable {
 
 	/**
 	 * Add a notification to the index.
-	 * 
+	 *
 	 * If an identical notification is already in the index, the implementation
 	 * may choose whether or not to store the duplicate information.
-	 * 
+	 *
 	 * @param notification
 	 *            the notification to add.
 	 * @throws Exception
@@ -33,9 +33,9 @@ public interface NotificationIndex extends Configurable {
 
 	/**
 	 * Remove a notification from the index.
-	 * 
+	 *
 	 * All matching notifications should be removed from the index.
-	 * 
+	 *
 	 * @param notification
 	 *            the notification to remove.
 	 * @throws Exception
@@ -45,10 +45,21 @@ public interface NotificationIndex extends Configurable {
 			throws Exception;
 
 	/**
+	 * Remove notifications from index.
+	 *
+	 * Tracker URLs are ignored.
+	 * @param notifications
+	 *     notifications to be removed from index
+	 * @throws Exception if error occurs
+	 */
+	public void removeNotifications(List<Notification> notifications)
+			throws Exception;
+
+	/**
 	 * Search the index for notifications matching id.
-	 * 
+	 *
 	 * If more than one notification matches, all should be returned.
-	 * 
+	 *
 	 * @param id
 	 *            the ProductId to find.
 	 * @return a list of matching notifications.
@@ -61,13 +72,13 @@ public interface NotificationIndex extends Configurable {
 	/**
 	 * Search the index for notifications matching the sources, types, and
 	 * codes.
-	 * 
+	 *
 	 * Only one notification for each unique ProductId
 	 * (source+type+code+updateTime) should be returned. If sources, types,
 	 * and/or codes are null, that parameter should be considered a wildcard. If
 	 * sources, types, and codes are all null, a notification for each unique
 	 * ProductId in the index should be returned.
-	 * 
+	 *
 	 * @param source
 	 *            sources to include, or all if null.
 	 * @param type
@@ -84,13 +95,13 @@ public interface NotificationIndex extends Configurable {
 	/**
 	 * Search the index for notifications matching the sources, types, and
 	 * codes.
-	 * 
+	 *
 	 * Only one notification for each unique ProductId
 	 * (source+type+code+updateTime) should be returned. If sources, types,
 	 * and/or codes are null, that parameter should be considered a wildcard. If
 	 * sources, types, and codes are all null, a notification for each unique
 	 * ProductId in the index should be returned.
-	 * 
+	 *
 	 * @param sources
 	 *            sources to include, or all if null.
 	 * @param types
@@ -103,12 +114,12 @@ public interface NotificationIndex extends Configurable {
 	 */
 	public List<Notification> findNotifications(List<String> sources,
 			List<String> types, List<String> codes) throws Exception;
-	
+
 	/**
 	 * Search the index for expired notifications.
-	 * 
+	 *
 	 * All expired notifications, even if duplicate, should be returned.
-	 * 
+	 *
 	 * @return a list of expired notifications.
 	 * @throws Exception
 	 *             if an error occurs while searching the index.

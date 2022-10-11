@@ -200,7 +200,8 @@ public class HeartbeatListener extends DefaultNotificationListener {
 	 * purge heartbeat key/values older than storageTimeout, also purging empty
 	 * heartbeats
 	 */
-	public void cleanup() {
+	@Override
+	public void cleanup() throws Exception {
 		super.cleanup();
 
 		if (this.storageTimeout == 0) {

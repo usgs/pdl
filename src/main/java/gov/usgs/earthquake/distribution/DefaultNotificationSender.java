@@ -178,7 +178,7 @@ public class DefaultNotificationSender extends DefaultNotificationListener {
    * @throws Exception if something goes wrong
    */
   @Override
-  protected void onExpiredNotification(final Notification notification) throws Exception{
+  public void onExpiredNotification(final Notification notification) throws Exception{
     List<Notification> notifications = getNotificationIndex()
             .findNotifications(notification.getProductId());
     if (notifications.size() <= 1) {
