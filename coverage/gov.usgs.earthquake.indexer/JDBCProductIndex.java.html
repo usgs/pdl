@@ -376,7 +376,7 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 <span class="fc" id="L376">		final List&lt;String&gt; clauseList = buildProductClauses(query);</span>
 		// Add the unassociated quantifier to the clause list
 <span class="fc" id="L378">		clauseList.add(&quot;eventId IS NULL&quot;);</span>
-<span class="fc" id="L379">		final String sql = buildProductQuery(clauseList);</span>
+<span class="fc" id="L379">		final String sql = buildProductQuery(query, clauseList);</span>
 
 		try (
 <span class="fc" id="L382">			final PreparedStatement statement = getConnection().prepareStatement(sql);</span>
@@ -430,10 +430,10 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 */
 	public synchronized List&lt;ProductSummary&gt; getProducts(ProductIndexQuery query, final boolean loadDetails)
 			throws Exception {
-<span class="fc" id="L433">		final List&lt;String&gt; clauseList = buildProductClauses(query);</span>
-<span class="fc" id="L434">		final String sql = buildProductQuery(clauseList);</span>
+<span class="fc" id="L433">		final String sql = buildProductQuery(query);</span>
 
-<span class="fc" id="L436">		final List&lt;ProductSummary&gt; products = new LinkedList&lt;ProductSummary&gt;();</span>
+<span class="fc" id="L435">		final List&lt;ProductSummary&gt; products = new LinkedList&lt;ProductSummary&gt;();</span>
+<span class="fc" id="L436">		LOGGER.finer(&quot;Executing query &quot; + sql);</span>
 		try (
 <span class="fc" id="L438">			final PreparedStatement statement = getConnection().prepareStatement(sql);</span>
 		) {
@@ -998,51 +998,50 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	}
 
 	/**
-	 * Create the full SELECT query for the products table using the clauseList
-	 * as the WHERE clause
+	 * Create the full SELECT query for the products table using the default clauseList.
 	 *
-	 * @param clauseList
-	 *            List of Strings to be AND'd together in the WHERE clause
-	 * @param orderby
-	 *            Complete ORDER BY clause to be added after the WHERE clause
+	 * @param query
+	 *     Query to build.
 	 * @return String containing the full SELECT query
+	 * @see #buildProductClauses(ProductIndexQuery)
 	 */
-	protected String buildProductQuery(List&lt;String&gt; clauseList, String orderby) {
-		// Join all the clauses into a WHERE clause
-<span class="fc" id="L1012">		StringBuilder whereClause = new StringBuilder();</span>
-<span class="fc" id="L1013">		String and = &quot; AND &quot;;</span>
-<span class="fc" id="L1014">		boolean first = true;</span>
-<span class="fc bfc" id="L1015" title="All 2 branches covered.">		for (String clause : clauseList) {</span>
-<span class="fc bfc" id="L1016" title="All 2 branches covered.">			if (!first) {</span>
-<span class="fc" id="L1017">				whereClause.append(and);</span>
-			} else {
-<span class="fc" id="L1019">				first = false;</span>
-			}
-<span class="fc" id="L1021">			whereClause.append(clause);</span>
-<span class="fc" id="L1022">		}</span>
+	protected String buildProductQuery(final ProductIndexQuery query) {
 
-<span class="fc" id="L1024">		String query_prefix = String</span>
-<span class="fc" id="L1025">				.format(&quot;SELECT * FROM %s p&quot;, SUMMARY_TABLE);</span>
-<span class="fc" id="L1026">		String query_suffix = &quot;&quot;;</span>
-<span class="fc bfc" id="L1027" title="All 2 branches covered.">		if (whereClause.length() &gt; 0) {</span>
-<span class="fc" id="L1028">			query_suffix = String.format(&quot; WHERE %s&quot;, whereClause.toString());</span>
-		}
-<span class="fc" id="L1030">		String query_text = query_prefix + query_suffix + &quot; &quot; + orderby;</span>
-
-<span class="fc" id="L1032">		return query_text;</span>
+<span class="fc" id="L1010">		final List&lt;String&gt; clauseList = buildProductClauses(query);</span>
+<span class="fc" id="L1011">		return buildProductQuery(query, clauseList);</span>
 	}
 
 	/**
-	 * Create the full SELECT query for the products table using the clauseList
-	 * as the WHERE clause. This method is a wrapper for
-	 * {@link #buildProductQuery(List, String)} with an empty
-	 * orderby string
+	 * Create the full SELECT query for the products table using a custom clauseList.
 	 *
+	 * @param query
+	 *     Query to build.
 	 * @param clauseList List of clauses for WHERE
 	 * @return String containing the full SELECT query
 	 */
-	protected String buildProductQuery(List&lt;String&gt; clauseList) {
-<span class="fc" id="L1045">		return buildProductQuery(clauseList, &quot;&quot;);</span>
+	protected String buildProductQuery(final ProductIndexQuery query, final List&lt;String&gt; clauseList) {
+<span class="fc" id="L1023">		final StringBuffer sql = new StringBuffer();</span>
+
+<span class="fc" id="L1025">		sql.append(&quot;SELECT * FROM &quot; + SUMMARY_TABLE + &quot; p&quot;);</span>
+
+		// optional where
+<span class="fc bfc" id="L1028" title="All 2 branches covered.">		if (clauseList.size() &gt; 0) {</span>
+<span class="fc" id="L1029">			sql.append(&quot; WHERE &quot;).append(String.join(&quot; AND &quot;, clauseList));</span>
+		}
+
+		// optional order by
+<span class="fc" id="L1033">		String queryOrderBy = query.getOrderBy();</span>
+<span class="fc bfc" id="L1034" title="All 2 branches covered.">		if (queryOrderBy != null) {</span>
+<span class="fc" id="L1035">			sql.append(&quot; ORDER BY &quot;).append(queryOrderBy);</span>
+		}
+
+		// limit is after order by
+<span class="fc" id="L1039">		Integer queryLimit = query.getLimit();</span>
+<span class="fc bfc" id="L1040" title="All 2 branches covered.">		if (queryLimit != null) {</span>
+<span class="fc" id="L1041">			sql.append(&quot; LIMIT &quot;).append(queryLimit);</span>
+		}
+
+<span class="fc" id="L1044">		return sql.toString();</span>
 	}
 
 	/**
@@ -1053,68 +1052,68 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 */
 	protected synchronized void loadProductSummaries(final List&lt;ProductSummary&gt; summaries)
 			throws Exception {
-<span class="fc bfc" id="L1056" title="All 2 branches covered.">		if (summaries.size() == 0) {</span>
+<span class="fc bfc" id="L1055" title="All 2 branches covered.">		if (summaries.size() == 0) {</span>
 			// nothing to load
-<span class="fc" id="L1058">			return;</span>
+<span class="fc" id="L1057">			return;</span>
 		}
 
 		// index by id
-<span class="fc" id="L1062">		final Map&lt;Long, ProductSummary&gt; summaryMap = new HashMap&lt;&gt;();</span>
-<span class="fc bfc" id="L1063" title="All 2 branches covered.">		for (final ProductSummary summary : summaries) {</span>
-<span class="fc" id="L1064">			summaryMap.put(summary.getIndexId(), summary);</span>
-<span class="fc" id="L1065">		}</span>
+<span class="fc" id="L1061">		final Map&lt;Long, ProductSummary&gt; summaryMap = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L1062" title="All 2 branches covered.">		for (final ProductSummary summary : summaries) {</span>
+<span class="fc" id="L1063">			summaryMap.put(summary.getIndexId(), summary);</span>
+<span class="fc" id="L1064">		}</span>
 
 		// load all links in one query
-<span class="fc" id="L1068">		final String linkSql = &quot;SELECT productSummaryIndexId as id, relation, url&quot;</span>
+<span class="fc" id="L1067">		final String linkSql = &quot;SELECT productSummaryIndexId as id, relation, url&quot;</span>
 				+ &quot; FROM productSummaryLink&quot;
 				+ &quot; WHERE productSummaryIndexId IN (&quot;
-<span class="fc" id="L1071">				+ StringUtils.join(</span>
-<span class="fc" id="L1072">						summaryMap.keySet().stream().collect(Collectors.toList()),</span>
+<span class="fc" id="L1070">				+ StringUtils.join(</span>
+<span class="fc" id="L1071">						summaryMap.keySet().stream().collect(Collectors.toList()),</span>
 						&quot;,&quot;)
 				+ &quot;)&quot;;
 		try (
-<span class="fc" id="L1076">			final PreparedStatement statement = getConnection().prepareStatement(linkSql);</span>
+<span class="fc" id="L1075">			final PreparedStatement statement = getConnection().prepareStatement(linkSql);</span>
 		) {
-<span class="fc" id="L1078">			statement.setQueryTimeout(60);</span>
+<span class="fc" id="L1077">			statement.setQueryTimeout(60);</span>
 			try (
-<span class="fc" id="L1080">				final ResultSet results = statement.executeQuery();</span>
+<span class="fc" id="L1079">				final ResultSet results = statement.executeQuery();</span>
 			) {
-<span class="fc bfc" id="L1082" title="All 2 branches covered.">				while (results.next()) {</span>
-<span class="fc" id="L1083">					Long id = results.getLong(&quot;id&quot;);</span>
-<span class="fc" id="L1084">					String relation = results.getString(&quot;relation&quot;);</span>
-<span class="fc" id="L1085">					String uri = results.getString(&quot;url&quot;);</span>
+<span class="fc bfc" id="L1081" title="All 2 branches covered.">				while (results.next()) {</span>
+<span class="fc" id="L1082">					Long id = results.getLong(&quot;id&quot;);</span>
+<span class="fc" id="L1083">					String relation = results.getString(&quot;relation&quot;);</span>
+<span class="fc" id="L1084">					String uri = results.getString(&quot;url&quot;);</span>
 					// add properties to existing objects
-<span class="fc" id="L1087">					summaryMap.get(id).addLink(relation, new URI(uri));</span>
-<span class="fc" id="L1088">				}</span>
+<span class="fc" id="L1086">					summaryMap.get(id).addLink(relation, new URI(uri));</span>
+<span class="fc" id="L1087">				}</span>
 			}
 		}
 
 		// load all properties in one query
-<span class="fc" id="L1093">		final String propertySql = &quot;SELECT productSummaryIndexId as id, name, value&quot;</span>
+<span class="fc" id="L1092">		final String propertySql = &quot;SELECT productSummaryIndexId as id, name, value&quot;</span>
 				+ &quot; FROM productSummaryProperty&quot;
 				+ &quot; WHERE productSummaryIndexId IN (&quot;
-<span class="fc" id="L1096">				+ StringUtils.join(</span>
-<span class="fc" id="L1097">						summaryMap.keySet().stream().collect(Collectors.toList()),</span>
+<span class="fc" id="L1095">				+ StringUtils.join(</span>
+<span class="fc" id="L1096">						summaryMap.keySet().stream().collect(Collectors.toList()),</span>
 						&quot;,&quot;)
 				+ &quot;)&quot;;
 		try (
-<span class="fc" id="L1101">			final PreparedStatement statement =</span>
-<span class="fc" id="L1102">					getConnection().prepareStatement(propertySql);</span>
+<span class="fc" id="L1100">			final PreparedStatement statement =</span>
+<span class="fc" id="L1101">					getConnection().prepareStatement(propertySql);</span>
 		) {
-<span class="fc" id="L1104">			statement.setQueryTimeout(60);</span>
+<span class="fc" id="L1103">			statement.setQueryTimeout(60);</span>
 			try (
-<span class="fc" id="L1106">				final ResultSet results = statement.executeQuery();</span>
+<span class="fc" id="L1105">				final ResultSet results = statement.executeQuery();</span>
 			) {
-<span class="fc bfc" id="L1108" title="All 2 branches covered.">				while (results.next()) {</span>
-<span class="fc" id="L1109">					Long id = results.getLong(&quot;id&quot;);</span>
-<span class="fc" id="L1110">					String name = results.getString(&quot;name&quot;);</span>
-<span class="fc" id="L1111">					String value = results.getString(&quot;value&quot;);</span>
+<span class="fc bfc" id="L1107" title="All 2 branches covered.">				while (results.next()) {</span>
+<span class="fc" id="L1108">					Long id = results.getLong(&quot;id&quot;);</span>
+<span class="fc" id="L1109">					String name = results.getString(&quot;name&quot;);</span>
+<span class="fc" id="L1110">					String value = results.getString(&quot;value&quot;);</span>
 					// add properties to existing objects
-<span class="fc" id="L1113">					summaryMap.get(id).getProperties().put(name, value);</span>
-<span class="fc" id="L1114">				}</span>
+<span class="fc" id="L1112">					summaryMap.get(id).getProperties().put(name, value);</span>
+<span class="fc" id="L1113">				}</span>
 			}
 		}
-<span class="fc" id="L1117">	}</span>
+<span class="fc" id="L1116">	}</span>
 
 	/**
 	 * Parse ProductSummary without loading links or properties.
@@ -1125,51 +1124,51 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 */
 	protected ProductSummary parseProductSummary(ResultSet results)
 			throws Exception {
-<span class="fc" id="L1128">		ProductSummary p = new ProductSummary();</span>
-<span class="fc" id="L1129">		p.setIndexId(results.getLong(SUMMARY_PRODUCT_INDEX_ID));</span>
-<span class="fc" id="L1130">		ProductId pid = ProductId.parse(results.getString(SUMMARY_PRODUCT_ID));</span>
-<span class="fc" id="L1131">		p.setId(pid);</span>
-<span class="fc" id="L1132">		p.setEventSource(results.getString(SUMMARY_EVENT_SOURCE));</span>
-<span class="fc" id="L1133">		p.setEventSourceCode(results.getString(SUMMARY_EVENT_SOURCE_CODE));</span>
+<span class="fc" id="L1127">		ProductSummary p = new ProductSummary();</span>
+<span class="fc" id="L1128">		p.setIndexId(results.getLong(SUMMARY_PRODUCT_INDEX_ID));</span>
+<span class="fc" id="L1129">		ProductId pid = ProductId.parse(results.getString(SUMMARY_PRODUCT_ID));</span>
+<span class="fc" id="L1130">		p.setId(pid);</span>
+<span class="fc" id="L1131">		p.setEventSource(results.getString(SUMMARY_EVENT_SOURCE));</span>
+<span class="fc" id="L1132">		p.setEventSourceCode(results.getString(SUMMARY_EVENT_SOURCE_CODE));</span>
 		try {
-<span class="fc" id="L1135">			p.setEventTime(new Date(results.getLong(SUMMARY_EVENT_TIME)));</span>
-<span class="nc" id="L1136">		} catch (Exception e) {</span>
-<span class="nc" id="L1137">			p.setEventTime(null);</span>
-<span class="fc" id="L1138">		}</span>
+<span class="fc" id="L1134">			p.setEventTime(new Date(results.getLong(SUMMARY_EVENT_TIME)));</span>
+<span class="nc" id="L1135">		} catch (Exception e) {</span>
+<span class="nc" id="L1136">			p.setEventTime(null);</span>
+<span class="fc" id="L1137">		}</span>
 
 		// getDouble() returns 0 if the value was actually NULL. In this case,
 		// we are going to set the value to null
-<span class="fc" id="L1142">		String latitude = results.getString(SUMMARY_EVENT_LATITUDE);</span>
-<span class="fc bfc" id="L1143" title="All 2 branches covered.">		if (latitude == null) {</span>
-<span class="fc" id="L1144">			p.setEventLatitude(null);</span>
+<span class="fc" id="L1141">		String latitude = results.getString(SUMMARY_EVENT_LATITUDE);</span>
+<span class="fc bfc" id="L1142" title="All 2 branches covered.">		if (latitude == null) {</span>
+<span class="fc" id="L1143">			p.setEventLatitude(null);</span>
 		} else {
-<span class="fc" id="L1146">			p.setEventLatitude(new BigDecimal(latitude));</span>
+<span class="fc" id="L1145">			p.setEventLatitude(new BigDecimal(latitude));</span>
 		}
-<span class="fc" id="L1148">		String longitude = results.getString(SUMMARY_EVENT_LONGITUDE);</span>
-<span class="fc bfc" id="L1149" title="All 2 branches covered.">		if (longitude == null) {</span>
-<span class="fc" id="L1150">			p.setEventLongitude(null);</span>
+<span class="fc" id="L1147">		String longitude = results.getString(SUMMARY_EVENT_LONGITUDE);</span>
+<span class="fc bfc" id="L1148" title="All 2 branches covered.">		if (longitude == null) {</span>
+<span class="fc" id="L1149">			p.setEventLongitude(null);</span>
 		} else {
-<span class="fc" id="L1152">			p.setEventLongitude(new BigDecimal(longitude));</span>
+<span class="fc" id="L1151">			p.setEventLongitude(new BigDecimal(longitude));</span>
 		}
-<span class="fc" id="L1154">		String depth = results.getString(SUMMARY_EVENT_DEPTH);</span>
-<span class="fc bfc" id="L1155" title="All 2 branches covered.">		if (depth == null) {</span>
-<span class="fc" id="L1156">			p.setEventDepth(null);</span>
+<span class="fc" id="L1153">		String depth = results.getString(SUMMARY_EVENT_DEPTH);</span>
+<span class="fc bfc" id="L1154" title="All 2 branches covered.">		if (depth == null) {</span>
+<span class="fc" id="L1155">			p.setEventDepth(null);</span>
 		} else {
-<span class="fc" id="L1158">			p.setEventDepth(new BigDecimal(depth));</span>
+<span class="fc" id="L1157">			p.setEventDepth(new BigDecimal(depth));</span>
 		}
-<span class="fc" id="L1160">		String magnitude = results.getString(SUMMARY_EVENT_MAGNITUDE);</span>
-<span class="fc bfc" id="L1161" title="All 2 branches covered.">		if (magnitude == null) {</span>
-<span class="fc" id="L1162">			p.setEventMagnitude(null);</span>
+<span class="fc" id="L1159">		String magnitude = results.getString(SUMMARY_EVENT_MAGNITUDE);</span>
+<span class="fc bfc" id="L1160" title="All 2 branches covered.">		if (magnitude == null) {</span>
+<span class="fc" id="L1161">			p.setEventMagnitude(null);</span>
 		} else {
-<span class="fc" id="L1164">			p.setEventMagnitude(new BigDecimal(magnitude));</span>
+<span class="fc" id="L1163">			p.setEventMagnitude(new BigDecimal(magnitude));</span>
 		}
-<span class="fc" id="L1166">		p.setVersion(results.getString(SUMMARY_VERSION));</span>
-<span class="fc" id="L1167">		p.setStatus(results.getString(SUMMARY_STATUS));</span>
-<span class="pc bpc" id="L1168" title="1 of 2 branches missed.">		p.setTrackerURL((results.getString(SUMMARY_TRACKER_URL) != null) ? new URL(</span>
-<span class="pc" id="L1169">				results.getString(SUMMARY_TRACKER_URL)) : null);</span>
-<span class="fc" id="L1170">		p.setPreferredWeight(results.getLong(SUMMARY_PREFERRED));</span>
+<span class="fc" id="L1165">		p.setVersion(results.getString(SUMMARY_VERSION));</span>
+<span class="fc" id="L1166">		p.setStatus(results.getString(SUMMARY_STATUS));</span>
+<span class="pc bpc" id="L1167" title="1 of 2 branches missed.">		p.setTrackerURL((results.getString(SUMMARY_TRACKER_URL) != null) ? new URL(</span>
+<span class="pc" id="L1168">				results.getString(SUMMARY_TRACKER_URL)) : null);</span>
+<span class="fc" id="L1169">		p.setPreferredWeight(results.getLong(SUMMARY_PREFERRED));</span>
 
-<span class="fc" id="L1172">		return p;</span>
+<span class="fc" id="L1171">		return p;</span>
 	}
 
 	/**
@@ -1181,48 +1180,48 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	public synchronized List&lt;ProductId&gt; removeProductSummaries(
 			final List&lt;ProductSummary&gt; summaries) throws Exception {
 		// index by id
-<span class="fc" id="L1184">		final ArrayList&lt;ProductId&gt; ids = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1183">		final ArrayList&lt;ProductId&gt; ids = new ArrayList&lt;&gt;();</span>
 				// index by id
-<span class="fc" id="L1186">		final Map&lt;Long, ProductSummary&gt; summaryMap = new HashMap&lt;&gt;();</span>
-<span class="fc bfc" id="L1187" title="All 2 branches covered.">		for (final ProductSummary summary : summaries) {</span>
-<span class="pc bpc" id="L1188" title="1 of 2 branches missed.">			if (summary.getIndexId() == null) {</span>
-<span class="nc" id="L1189">				LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+<span class="fc" id="L1185">		final Map&lt;Long, ProductSummary&gt; summaryMap = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L1186" title="All 2 branches covered.">		for (final ProductSummary summary : summaries) {</span>
+<span class="pc bpc" id="L1187" title="1 of 2 branches missed.">			if (summary.getIndexId() == null) {</span>
+<span class="nc" id="L1188">				LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 						+ &quot;] Could not delete product summary. Index id not found&quot;);
-<span class="nc" id="L1191">				throw new Exception(&quot;[&quot; + getName()</span>
+<span class="nc" id="L1190">				throw new Exception(&quot;[&quot; + getName()</span>
 						+ &quot;] Could not delete summary. Index id not found.&quot;);
 			}
-<span class="fc" id="L1194">			summaryMap.put(summary.getIndexId(), summary);</span>
-<span class="fc" id="L1195">			ids.add(summary.getId());</span>
-<span class="fc" id="L1196">		}</span>
+<span class="fc" id="L1193">			summaryMap.put(summary.getIndexId(), summary);</span>
+<span class="fc" id="L1194">			ids.add(summary.getId());</span>
+<span class="fc" id="L1195">		}</span>
 
-<span class="fc bfc" id="L1198" title="All 2 branches covered.">		if (summaries.size() == 0) {</span>
-<span class="fc" id="L1199">			return ids;</span>
+<span class="fc bfc" id="L1197" title="All 2 branches covered.">		if (summaries.size() == 0) {</span>
+<span class="fc" id="L1198">			return ids;</span>
 		}
 
 		// remove all products in one query
 		// on delete cascade wasn't always set...
-<span class="fc" id="L1204">		final String[] sqls = {</span>
+<span class="fc" id="L1203">		final String[] sqls = {</span>
 			&quot;DELETE FROM productSummaryLink WHERE productSummaryIndexId IN&quot;,
 			&quot;DELETE FROM productSummaryProperty WHERE productSummaryIndexId IN&quot;,
 			&quot;DELETE FROM productSummary WHERE id IN&quot;,
 		};
-<span class="fc" id="L1209">		final String idsIn =&quot; (&quot;</span>
-<span class="fc" id="L1210">				+ StringUtils.join(</span>
-<span class="fc" id="L1211">						summaryMap.keySet().stream().collect(Collectors.toList()),</span>
+<span class="fc" id="L1208">		final String idsIn =&quot; (&quot;</span>
+<span class="fc" id="L1209">				+ StringUtils.join(</span>
+<span class="fc" id="L1210">						summaryMap.keySet().stream().collect(Collectors.toList()),</span>
 						&quot;,&quot;)
 				+ &quot;)&quot;;
-<span class="fc bfc" id="L1214" title="All 2 branches covered.">		for (final String sql : sqls) {</span>
+<span class="fc bfc" id="L1213" title="All 2 branches covered.">		for (final String sql : sqls) {</span>
 			try (
-<span class="fc" id="L1216">				final PreparedStatement statement =</span>
-<span class="fc" id="L1217">						verifyConnection().prepareStatement(sql + idsIn);</span>
+<span class="fc" id="L1215">				final PreparedStatement statement =</span>
+<span class="fc" id="L1216">						verifyConnection().prepareStatement(sql + idsIn);</span>
 			) {
-<span class="fc" id="L1219">				statement.setQueryTimeout(60);</span>
-<span class="fc" id="L1220">				int rows = statement.executeUpdate();</span>
-<span class="fc" id="L1221">				LOGGER.log(Level.FINER, &quot;[&quot; + getName() + &quot;] removed &quot; + rows + &quot; rows&quot;);</span>
+<span class="fc" id="L1218">				statement.setQueryTimeout(60);</span>
+<span class="fc" id="L1219">				int rows = statement.executeUpdate();</span>
+<span class="fc" id="L1220">				LOGGER.log(Level.FINER, &quot;[&quot; + getName() + &quot;] removed &quot; + rows + &quot; rows&quot;);</span>
 			}
 		}
 
-<span class="fc" id="L1225">		return ids;</span>
+<span class="fc" id="L1224">		return ids;</span>
 	}
 
 	/**
@@ -1236,27 +1235,27 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	protected synchronized void addProductProperties(final long productId,
 			final Map&lt;String, String&gt; properties) throws SQLException {
 		// Loop through the properties list and add them all to the database
-<span class="fc" id="L1239">		final String sql = &quot;INSERT INTO productSummaryProperty&quot;</span>
+<span class="fc" id="L1238">		final String sql = &quot;INSERT INTO productSummaryProperty&quot;</span>
 				+ &quot; (productSummaryIndexId, name, value) VALUES (?, ?, ?)&quot;;
 		try (
-<span class="fc" id="L1242">			final PreparedStatement insertProperty = getConnection().prepareStatement(sql);</span>
+<span class="fc" id="L1241">			final PreparedStatement insertProperty = getConnection().prepareStatement(sql);</span>
 		) {
-<span class="fc" id="L1244">			insertProperty.setQueryTimeout(60);</span>
-<span class="fc bfc" id="L1245" title="All 2 branches covered.">			for (String key : properties.keySet()) {</span>
-<span class="fc" id="L1246">				JDBCUtils.setParameter(insertProperty, 1, productId, Types.BIGINT);</span>
-<span class="fc" id="L1247">				JDBCUtils.setParameter(insertProperty, 2, key, Types.VARCHAR);</span>
-<span class="fc" id="L1248">				JDBCUtils.setParameter(insertProperty, 3, properties.get(key),</span>
+<span class="fc" id="L1243">			insertProperty.setQueryTimeout(60);</span>
+<span class="fc bfc" id="L1244" title="All 2 branches covered.">			for (String key : properties.keySet()) {</span>
+<span class="fc" id="L1245">				JDBCUtils.setParameter(insertProperty, 1, productId, Types.BIGINT);</span>
+<span class="fc" id="L1246">				JDBCUtils.setParameter(insertProperty, 2, key, Types.VARCHAR);</span>
+<span class="fc" id="L1247">				JDBCUtils.setParameter(insertProperty, 3, properties.get(key),</span>
 						Types.VARCHAR);
-<span class="fc" id="L1250">				insertProperty.addBatch();</span>
-<span class="fc bfc" id="L1251" title="All 2 branches covered.">				if (LOGGER.isLoggable(Level.FINEST)) {</span>
-<span class="fc" id="L1252">					LOGGER.log(Level.FINEST, &quot;[&quot; + getName() + &quot;] Added property &quot;</span>
-<span class="fc" id="L1253">							+ key + &quot;:&quot; + properties.get(key) + &quot; for product &quot;</span>
+<span class="fc" id="L1249">				insertProperty.addBatch();</span>
+<span class="fc bfc" id="L1250" title="All 2 branches covered.">				if (LOGGER.isLoggable(Level.FINEST)) {</span>
+<span class="fc" id="L1251">					LOGGER.log(Level.FINEST, &quot;[&quot; + getName() + &quot;] Added property &quot;</span>
+<span class="fc" id="L1252">							+ key + &quot;:&quot; + properties.get(key) + &quot; for product &quot;</span>
 							+ productId);
 				}
-<span class="fc" id="L1256">			}</span>
-<span class="fc" id="L1257">			insertProperty.executeBatch();</span>
+<span class="fc" id="L1255">			}</span>
+<span class="fc" id="L1256">			insertProperty.executeBatch();</span>
 		}
-<span class="fc" id="L1259">	}</span>
+<span class="fc" id="L1258">	}</span>
 
 	/**
 	 * Save the links in the database and associate them to the given productId
@@ -1270,26 +1269,26 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	protected synchronized void addProductLinks(long productId,
 			Map&lt;String, List&lt;URI&gt;&gt; links) throws SQLException {
 		// Loop through the properties list and add them all to the database
-<span class="fc" id="L1273">		final String sql = &quot;INSERT INTO productSummaryLink&quot;</span>
+<span class="fc" id="L1272">		final String sql = &quot;INSERT INTO productSummaryLink&quot;</span>
 				+ &quot; (productSummaryIndexId, relation, url) VALUES (?, ?, ?)&quot;;
 		try (
-<span class="fc" id="L1276">			final PreparedStatement insertLink = getConnection().prepareStatement(sql);</span>
+<span class="fc" id="L1275">			final PreparedStatement insertLink = getConnection().prepareStatement(sql);</span>
 		) {
-<span class="fc" id="L1278">			insertLink.setQueryTimeout(60);</span>
-<span class="fc bfc" id="L1279" title="All 2 branches covered.">			for (final String relation : links.keySet()) {</span>
-<span class="fc bfc" id="L1280" title="All 2 branches covered.">				for (final URI uri : links.get(relation)) {</span>
-<span class="fc" id="L1281">					JDBCUtils.setParameter(insertLink, 1, productId, Types.BIGINT);</span>
-<span class="fc" id="L1282">					JDBCUtils.setParameter(insertLink, 2, relation, Types.VARCHAR);</span>
-<span class="fc" id="L1283">					JDBCUtils.setParameter(insertLink, 3, uri.toString(), Types.VARCHAR);</span>
-<span class="fc" id="L1284">					insertLink.addBatch();</span>
-<span class="fc" id="L1285">					LOGGER.log(Level.FINEST, &quot;[&quot; + getName() + &quot;] Added link &quot;</span>
-<span class="fc" id="L1286">							+ relation + &quot;:&quot; + uri.toString() + &quot; for product &quot;</span>
+<span class="fc" id="L1277">			insertLink.setQueryTimeout(60);</span>
+<span class="fc bfc" id="L1278" title="All 2 branches covered.">			for (final String relation : links.keySet()) {</span>
+<span class="fc bfc" id="L1279" title="All 2 branches covered.">				for (final URI uri : links.get(relation)) {</span>
+<span class="fc" id="L1280">					JDBCUtils.setParameter(insertLink, 1, productId, Types.BIGINT);</span>
+<span class="fc" id="L1281">					JDBCUtils.setParameter(insertLink, 2, relation, Types.VARCHAR);</span>
+<span class="fc" id="L1282">					JDBCUtils.setParameter(insertLink, 3, uri.toString(), Types.VARCHAR);</span>
+<span class="fc" id="L1283">					insertLink.addBatch();</span>
+<span class="fc" id="L1284">					LOGGER.log(Level.FINEST, &quot;[&quot; + getName() + &quot;] Added link &quot;</span>
+<span class="fc" id="L1285">							+ relation + &quot;:&quot; + uri.toString() + &quot; for product &quot;</span>
 							+ productId);
-<span class="fc" id="L1288">				}</span>
-<span class="fc" id="L1289">			}</span>
-<span class="fc" id="L1290">			insertLink.executeBatch();</span>
+<span class="fc" id="L1287">				}</span>
+<span class="fc" id="L1288">			}</span>
+<span class="fc" id="L1289">			insertLink.executeBatch();</span>
 		}
-<span class="fc" id="L1292">	}</span>
+<span class="fc" id="L1291">	}</span>
 
 	/**
 	 * Convert the given longitude to be between -180 and 180. If the given
@@ -1299,27 +1298,27 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @return double normalized between -180 and 180
 	 */
 	protected double normalizeLongitude(double lon) {
-<span class="fc" id="L1302">		double normalizedLon = lon;</span>
+<span class="fc" id="L1301">		double normalizedLon = lon;</span>
 
-<span class="fc bfc" id="L1304" title="All 4 branches covered.">		if (normalizedLon &lt;= 180 &amp;&amp; normalizedLon &gt; -180) {</span>
-<span class="fc" id="L1305">			return normalizedLon;</span>
+<span class="fc bfc" id="L1303" title="All 4 branches covered.">		if (normalizedLon &lt;= 180 &amp;&amp; normalizedLon &gt; -180) {</span>
+<span class="fc" id="L1304">			return normalizedLon;</span>
 		}
 
 		// If the value is above 180, make it negative by subtracting 360
-<span class="fc bfc" id="L1309" title="All 2 branches covered.">		if (normalizedLon &gt; 180) {</span>
-<span class="fc" id="L1310">			normalizedLon = normalizedLon % 360;</span>
-<span class="fc" id="L1311">			normalizedLon = normalizedLon - 360;</span>
-<span class="fc" id="L1312">			return normalizedLon;</span>
+<span class="fc bfc" id="L1308" title="All 2 branches covered.">		if (normalizedLon &gt; 180) {</span>
+<span class="fc" id="L1309">			normalizedLon = normalizedLon % 360;</span>
+<span class="fc" id="L1310">			normalizedLon = normalizedLon - 360;</span>
+<span class="fc" id="L1311">			return normalizedLon;</span>
 		}
 
 		// If the value is below 180, make it positive by adding 360
-<span class="pc bpc" id="L1316" title="1 of 2 branches missed.">		if (normalizedLon &lt;= -180) {</span>
-<span class="fc" id="L1317">			normalizedLon = normalizedLon % 360;</span>
-<span class="fc" id="L1318">			normalizedLon = normalizedLon + 360;</span>
-<span class="fc" id="L1319">			return normalizedLon;</span>
+<span class="pc bpc" id="L1315" title="1 of 2 branches missed.">		if (normalizedLon &lt;= -180) {</span>
+<span class="fc" id="L1316">			normalizedLon = normalizedLon % 360;</span>
+<span class="fc" id="L1317">			normalizedLon = normalizedLon + 360;</span>
+<span class="fc" id="L1318">			return normalizedLon;</span>
 		}
 
-<span class="nc" id="L1322">		return normalizedLon;</span>
+<span class="nc" id="L1321">		return normalizedLon;</span>
 	}
 
 	/**
@@ -1329,11 +1328,11 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 * @return Normalized BigDecimal latitude
 	 */
 	protected BigDecimal normalizeLongitude(BigDecimal lon) {
-<span class="fc bfc" id="L1332" title="All 2 branches covered.">		if (lon == null) {</span>
-<span class="fc" id="L1333">			return null;</span>
+<span class="fc bfc" id="L1331" title="All 2 branches covered.">		if (lon == null) {</span>
+<span class="fc" id="L1332">			return null;</span>
 		}
 
-<span class="fc" id="L1336">		return BigDecimal.valueOf(normalizeLongitude(lon.doubleValue()));</span>
+<span class="fc" id="L1335">		return BigDecimal.valueOf(normalizeLongitude(lon.doubleValue()));</span>
 	}
 
 	/**
@@ -1345,108 +1344,108 @@ public class JDBCProductIndex extends JDBCConnection implements ProductIndex {
 	 */
 	@Override
 	public synchronized void eventsUpdated(List&lt;Event&gt; events) throws Exception {
-<span class="fc" id="L1348">		Long indexId = null;</span>
+<span class="fc" id="L1347">		Long indexId = null;</span>
 
-<span class="fc" id="L1350">		final String deletedSql = &quot;UPDATE event SET status=? WHERE id=?&quot;;</span>
-<span class="fc" id="L1351">		final String updatedSql = &quot;UPDATE event&quot;</span>
+<span class="fc" id="L1349">		final String deletedSql = &quot;UPDATE event SET status=? WHERE id=?&quot;;</span>
+<span class="fc" id="L1350">		final String updatedSql = &quot;UPDATE event&quot;</span>
 				+ &quot; SET updated=?, source=?, sourceCode=?, eventTime=?&quot;
 				+ &quot; , latitude=?, longitude=?, depth=?, magnitude=?, status=?&quot;
 				+ &quot; WHERE id=?&quot;;
 
 		try (
-<span class="fc" id="L1357">			final PreparedStatement updateDeletedEvent =</span>
-<span class="fc" id="L1358">					getConnection().prepareStatement(deletedSql);</span>
-<span class="fc" id="L1359">			final PreparedStatement updateEvent =</span>
-<span class="fc" id="L1360">					getConnection().prepareStatement(updatedSql);</span>
+<span class="fc" id="L1356">			final PreparedStatement updateDeletedEvent =</span>
+<span class="fc" id="L1357">					getConnection().prepareStatement(deletedSql);</span>
+<span class="fc" id="L1358">			final PreparedStatement updateEvent =</span>
+<span class="fc" id="L1359">					getConnection().prepareStatement(updatedSql);</span>
 		) {
 			// big events take time...
-<span class="fc" id="L1363">			updateDeletedEvent.setQueryTimeout(300);</span>
-<span class="fc" id="L1364">			updateEvent.setQueryTimeout(300);</span>
-<span class="fc" id="L1365">			Iterator&lt;Event&gt; iter = events.iterator();</span>
-<span class="fc bfc" id="L1366" title="All 2 branches covered.">			while (iter.hasNext()) {</span>
-<span class="fc" id="L1367">				Event updated = iter.next();</span>
+<span class="fc" id="L1362">			updateDeletedEvent.setQueryTimeout(300);</span>
+<span class="fc" id="L1363">			updateEvent.setQueryTimeout(300);</span>
+<span class="fc" id="L1364">			Iterator&lt;Event&gt; iter = events.iterator();</span>
+<span class="fc bfc" id="L1365" title="All 2 branches covered.">			while (iter.hasNext()) {</span>
+<span class="fc" id="L1366">				Event updated = iter.next();</span>
 
-<span class="fc" id="L1369">				indexId = updated.getIndexId();</span>
-<span class="fc" id="L1370">				LOGGER.finer(&quot;[&quot; + getName() + &quot;] Updating event indexid=&quot; + indexId);</span>
-<span class="fc" id="L1371">				updated.log(LOGGER);</span>
+<span class="fc" id="L1368">				indexId = updated.getIndexId();</span>
+<span class="fc" id="L1369">				LOGGER.finer(&quot;[&quot; + getName() + &quot;] Updating event indexid=&quot; + indexId);</span>
+<span class="fc" id="L1370">				updated.log(LOGGER);</span>
 
 				try {
-<span class="fc bfc" id="L1374" title="All 2 branches covered.">					if (updated.isDeleted()) {</span>
+<span class="fc bfc" id="L1373" title="All 2 branches covered.">					if (updated.isDeleted()) {</span>
 						// only update status if event deleted, leave other
 						// parameters intact
-<span class="fc" id="L1377">						JDBCUtils.setParameter(updateDeletedEvent, 1,</span>
+<span class="fc" id="L1376">						JDBCUtils.setParameter(updateDeletedEvent, 1,</span>
 								EVENT_STATUS_DELETE, Types.VARCHAR);
-<span class="fc" id="L1379">						JDBCUtils.setParameter(updateDeletedEvent, 2, indexId,</span>
+<span class="fc" id="L1378">						JDBCUtils.setParameter(updateDeletedEvent, 2, indexId,</span>
 								Types.BIGINT);
 
-<span class="fc" id="L1382">						updateDeletedEvent.executeUpdate();</span>
+<span class="fc" id="L1381">						updateDeletedEvent.executeUpdate();</span>
 					} else {
-<span class="fc" id="L1384">						EventSummary summary = updated.getEventSummary();</span>
+<span class="fc" id="L1383">						EventSummary summary = updated.getEventSummary();</span>
 
 						// otherwise update event parameters
-<span class="fc" id="L1387">						JDBCUtils.setParameter(updateEvent, 1,</span>
-<span class="fc" id="L1388">								new Date().getTime(), Types.BIGINT);</span>
-<span class="fc" id="L1389">						JDBCUtils.setParameter(updateEvent, 2, summary.getSource(),</span>
+<span class="fc" id="L1386">						JDBCUtils.setParameter(updateEvent, 1,</span>
+<span class="fc" id="L1387">								new Date().getTime(), Types.BIGINT);</span>
+<span class="fc" id="L1388">						JDBCUtils.setParameter(updateEvent, 2, summary.getSource(),</span>
 								Types.VARCHAR);
-<span class="fc" id="L1391">						JDBCUtils.setParameter(updateEvent, 3,</span>
-<span class="fc" id="L1392">								summary.getSourceCode(), Types.VARCHAR);</span>
+<span class="fc" id="L1390">						JDBCUtils.setParameter(updateEvent, 3,</span>
+<span class="fc" id="L1391">								summary.getSourceCode(), Types.VARCHAR);</span>
 
-<span class="fc" id="L1394">						Long eventTime = null;</span>
-<span class="pc bpc" id="L1395" title="1 of 2 branches missed.">						if (summary.getTime() != null) {</span>
-<span class="fc" id="L1396">							eventTime = summary.getTime().getTime();</span>
+<span class="fc" id="L1393">						Long eventTime = null;</span>
+<span class="pc bpc" id="L1394" title="1 of 2 branches missed.">						if (summary.getTime() != null) {</span>
+<span class="fc" id="L1395">							eventTime = summary.getTime().getTime();</span>
 						}
-<span class="fc" id="L1398">						JDBCUtils.setParameter(updateEvent, 4, eventTime,</span>
+<span class="fc" id="L1397">						JDBCUtils.setParameter(updateEvent, 4, eventTime,</span>
 								Types.BIGINT);
 
-<span class="fc" id="L1401">						Double latitude = null;</span>
-<span class="pc bpc" id="L1402" title="1 of 2 branches missed.">						if (summary.getLatitude() != null) {</span>
-<span class="fc" id="L1403">							latitude = summary.getLatitude().doubleValue();</span>
+<span class="fc" id="L1400">						Double latitude = null;</span>
+<span class="pc bpc" id="L1401" title="1 of 2 branches missed.">						if (summary.getLatitude() != null) {</span>
+<span class="fc" id="L1402">							latitude = summary.getLatitude().doubleValue();</span>
 						}
-<span class="fc" id="L1405">						JDBCUtils.setParameter(updateEvent, 5, latitude,</span>
+<span class="fc" id="L1404">						JDBCUtils.setParameter(updateEvent, 5, latitude,</span>
 								Types.DOUBLE);
 
-<span class="fc" id="L1408">						Double longitude = null;</span>
-<span class="pc bpc" id="L1409" title="1 of 2 branches missed.">						if (summary.getLongitude() != null) {</span>
-<span class="fc" id="L1410">							longitude = summary.getLongitude().doubleValue();</span>
+<span class="fc" id="L1407">						Double longitude = null;</span>
+<span class="pc bpc" id="L1408" title="1 of 2 branches missed.">						if (summary.getLongitude() != null) {</span>
+<span class="fc" id="L1409">							longitude = summary.getLongitude().doubleValue();</span>
 						}
-<span class="fc" id="L1412">						JDBCUtils.setParameter(updateEvent, 6, longitude,</span>
+<span class="fc" id="L1411">						JDBCUtils.setParameter(updateEvent, 6, longitude,</span>
 								Types.DOUBLE);
 
 						// these may be null, handle carefully
-<span class="fc" id="L1416">						Double depth = null;</span>
-<span class="fc bfc" id="L1417" title="All 2 branches covered.">						if (summary.getDepth() != null) {</span>
-<span class="fc" id="L1418">							depth = summary.getDepth().doubleValue();</span>
+<span class="fc" id="L1415">						Double depth = null;</span>
+<span class="fc bfc" id="L1416" title="All 2 branches covered.">						if (summary.getDepth() != null) {</span>
+<span class="fc" id="L1417">							depth = summary.getDepth().doubleValue();</span>
 						}
-<span class="fc" id="L1420">						JDBCUtils.setParameter(updateEvent, 7, depth, Types.DOUBLE);</span>
+<span class="fc" id="L1419">						JDBCUtils.setParameter(updateEvent, 7, depth, Types.DOUBLE);</span>
 
-<span class="fc" id="L1422">						Double magnitude = null;</span>
-<span class="fc bfc" id="L1423" title="All 2 branches covered.">						if (summary.getMagnitude() != null) {</span>
-<span class="fc" id="L1424">							magnitude = summary.getMagnitude().doubleValue();</span>
+<span class="fc" id="L1421">						Double magnitude = null;</span>
+<span class="fc bfc" id="L1422" title="All 2 branches covered.">						if (summary.getMagnitude() != null) {</span>
+<span class="fc" id="L1423">							magnitude = summary.getMagnitude().doubleValue();</span>
 						}
-<span class="fc" id="L1426">						JDBCUtils.setParameter(updateEvent, 8, magnitude,</span>
+<span class="fc" id="L1425">						JDBCUtils.setParameter(updateEvent, 8, magnitude,</span>
 								Types.DOUBLE);
 
-<span class="fc" id="L1429">						JDBCUtils.setParameter(updateEvent, 9, EVENT_STATUS_UPDATE,</span>
+<span class="fc" id="L1428">						JDBCUtils.setParameter(updateEvent, 9, EVENT_STATUS_UPDATE,</span>
 								Types.VARCHAR);
 
-<span class="fc" id="L1432">						JDBCUtils.setParameter(updateEvent, 10, indexId,</span>
+<span class="fc" id="L1431">						JDBCUtils.setParameter(updateEvent, 10, indexId,</span>
 								Types.BIGINT);
 
-<span class="fc" id="L1435">						updateEvent.executeUpdate();</span>
+<span class="fc" id="L1434">						updateEvent.executeUpdate();</span>
 					}
 
-<span class="fc" id="L1438">					LOGGER.log(Level.FINEST, &quot;[&quot; + getName()</span>
+<span class="fc" id="L1437">					LOGGER.log(Level.FINEST, &quot;[&quot; + getName()</span>
 							+ &quot;] Updated event properties in Product Index&quot;);
-<span class="nc" id="L1440">				} catch (Exception e) {</span>
-<span class="nc" id="L1441">					LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+<span class="nc" id="L1439">				} catch (Exception e) {</span>
+<span class="nc" id="L1440">					LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
 							+ &quot;] Error updating event properties, eventid=&quot;
 							+ indexId, e);
 					// trigger a rollback
-<span class="nc" id="L1445">					throw e;</span>
-<span class="fc" id="L1446">				}</span>
-<span class="fc" id="L1447">			}</span>
+<span class="nc" id="L1444">					throw e;</span>
+<span class="fc" id="L1445">				}</span>
+<span class="fc" id="L1446">			}</span>
 		}
-<span class="fc" id="L1449">	}</span>
+<span class="fc" id="L1448">	}</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

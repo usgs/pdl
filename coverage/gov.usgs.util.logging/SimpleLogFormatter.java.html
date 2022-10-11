@@ -16,9 +16,9 @@ import java.io.PrintStream;
 
 /**
  * Simple(r) log formatter for java.util.logging messages.
- * 
+ *
  * Outputs unique dates once, with all messages sharing that time tab indented below.
- * 
+ *
  * Example Format:
  * &lt;pre&gt;
  * Wed Sep 30 19:31:48 GMT 2009
@@ -31,7 +31,7 @@ import java.io.PrintStream;
  * INFO    [logging_client] received urn:earthquake-usgs-gov:shakemap-scraper:global:2009medd:1
  * INFO    [shakemap] received urn:earthquake-usgs-gov:shakemap-scraper:global:2009medd:1
  * &lt;/pre&gt;
- * 
+ *
  */
 public class SimpleLogFormatter extends Formatter {
 
@@ -47,7 +47,7 @@ public class SimpleLogFormatter extends Formatter {
 
     /**
      * Format a LogRecord for output.
-     * 
+     *
      * @param record
      *            LogRecord to format.
      * @return formatted LogRecord as String.
@@ -72,7 +72,7 @@ public class SimpleLogFormatter extends Formatter {
         // add log message
 <span class="fc" id="L73">        buf.append(record.getLevel().toString());</span>
 <span class="fc" id="L74">        buf.append(&quot;\tthread=&quot;).append(record.getThreadID());</span>
-<span class="fc" id="L75">        buf.append(&quot;\t&quot;).append(record.getMessage());</span>
+<span class="fc" id="L75">        buf.append(&quot;\t&quot;).append(formatMessage(record));</span>
 <span class="fc" id="L76">        buf.append(&quot;\n&quot;);</span>
 
         // output any associated exception
@@ -87,4 +87,4 @@ public class SimpleLogFormatter extends Formatter {
     }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

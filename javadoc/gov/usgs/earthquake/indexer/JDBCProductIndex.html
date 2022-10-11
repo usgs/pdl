@@ -282,19 +282,17 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>protected java.lang.String</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#buildProductQuery(java.util.List)">buildProductQuery</a></span>&#8203;(java.util.List&lt;java.lang.String&gt;&nbsp;clauseList)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#buildProductQuery(gov.usgs.earthquake.indexer.ProductIndexQuery)">buildProductQuery</a></span>&#8203;(<a href="ProductIndexQuery.html" title="class in gov.usgs.earthquake.indexer">ProductIndexQuery</a>&nbsp;query)</code></th>
 <td class="colLast">
-<div class="block">Create the full SELECT query for the products table using the clauseList
- as the WHERE clause.</div>
+<div class="block">Create the full SELECT query for the products table using the default clauseList.</div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code>protected java.lang.String</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#buildProductQuery(java.util.List,java.lang.String)">buildProductQuery</a></span>&#8203;(java.util.List&lt;java.lang.String&gt;&nbsp;clauseList,
-                 java.lang.String&nbsp;orderby)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#buildProductQuery(gov.usgs.earthquake.indexer.ProductIndexQuery,java.util.List)">buildProductQuery</a></span>&#8203;(<a href="ProductIndexQuery.html" title="class in gov.usgs.earthquake.indexer">ProductIndexQuery</a>&nbsp;query,
+                 java.util.List&lt;java.lang.String&gt;&nbsp;clauseList)</code></th>
 <td class="colLast">
-<div class="block">Create the full SELECT query for the products table using the clauseList
- as the WHERE clause</div>
+<div class="block">Create the full SELECT query for the products table using a custom clauseList.</div>
 </td>
 </tr>
 <tr id="i8" class="altColor">
@@ -854,38 +852,36 @@ implements <a href="ProductIndex.html" title="interface in gov.usgs.earthquake.i
 </dl>
 </li>
 </ul>
-<a id="buildProductQuery(java.util.List,java.lang.String)">
+<a id="buildProductQuery(gov.usgs.earthquake.indexer.ProductIndexQuery)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>buildProductQuery</h4>
-<pre class="methodSignature">protected&nbsp;java.lang.String&nbsp;buildProductQuery&#8203;(java.util.List&lt;java.lang.String&gt;&nbsp;clauseList,
-                                             java.lang.String&nbsp;orderby)</pre>
-<div class="block">Create the full SELECT query for the products table using the clauseList
- as the WHERE clause</div>
+<pre class="methodSignature">protected&nbsp;java.lang.String&nbsp;buildProductQuery&#8203;(<a href="ProductIndexQuery.html" title="class in gov.usgs.earthquake.indexer">ProductIndexQuery</a>&nbsp;query)</pre>
+<div class="block">Create the full SELECT query for the products table using the default clauseList.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>clauseList</code> - List of Strings to be AND'd together in the WHERE clause</dd>
-<dd><code>orderby</code> - Complete ORDER BY clause to be added after the WHERE clause</dd>
+<dd><code>query</code> - Query to build.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String containing the full SELECT query</dd>
+<dt><span class="seeLabel">See Also:</span></dt>
+<dd><a href="#buildProductClauses(gov.usgs.earthquake.indexer.ProductIndexQuery)"><code>buildProductClauses(ProductIndexQuery)</code></a></dd>
 </dl>
 </li>
 </ul>
-<a id="buildProductQuery(java.util.List)">
+<a id="buildProductQuery(gov.usgs.earthquake.indexer.ProductIndexQuery,java.util.List)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>buildProductQuery</h4>
-<pre class="methodSignature">protected&nbsp;java.lang.String&nbsp;buildProductQuery&#8203;(java.util.List&lt;java.lang.String&gt;&nbsp;clauseList)</pre>
-<div class="block">Create the full SELECT query for the products table using the clauseList
- as the WHERE clause. This method is a wrapper for
- <a href="#buildProductQuery(java.util.List,java.lang.String)"><code>buildProductQuery(List, String)</code></a> with an empty
- orderby string</div>
+<pre class="methodSignature">protected&nbsp;java.lang.String&nbsp;buildProductQuery&#8203;(<a href="ProductIndexQuery.html" title="class in gov.usgs.earthquake.indexer">ProductIndexQuery</a>&nbsp;query,
+                                             java.util.List&lt;java.lang.String&gt;&nbsp;clauseList)</pre>
+<div class="block">Create the full SELECT query for the products table using a custom clauseList.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>query</code> - Query to build.</dd>
 <dd><code>clauseList</code> - List of clauses for WHERE</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String containing the full SELECT query</dd>

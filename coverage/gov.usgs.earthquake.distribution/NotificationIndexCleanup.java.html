@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NotificationIndexCleanup.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">pdl</a> &gt; <a href="index.source.html" class="el_package">gov.usgs.earthquake.distribution</a> &gt; <span class="el_source">NotificationIndexCleanup.java</span></div><h1>NotificationIndexCleanup.java</h1><pre class="source lang-java linenums">package gov.usgs.earthquake.distribution;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * NotificationIndexCleanup manages cleaning up expired notifications.
+ *
+ * Uses background thread to remove expired notifications while they exist,
+ * then uses wait/notify to pause until shutdown() or wakeUp() methods are
+ * called.
+ *
+ * NOTE: this class does not schedule periodic cleanup, and the wakeUp() method
+ * must be called periodically.
+ */
+public class NotificationIndexCleanup implements Runnable {
+
+<span class="fc" id="L20">  private static final Logger LOGGER = Logger.getLogger(NotificationIndexCleanup.class.getName());</span>
+
+  public final NotificationIndex index;
+
+  // listener that can take additional actions during cleanup
+  public final Listener listener;
+
+  // object used to synchronize state access between threads
+<span class="fc" id="L28">  public final Object syncObject = new Object();</span>
+  // thread where cleanup loop runs
+<span class="fc" id="L30">  public Thread cleanupThread = null;</span>
+  // whether thread should stop running
+<span class="fc" id="L32">  private boolean stopThread = false;</span>
+
+<span class="fc" id="L34">  public NotificationIndexCleanup(final NotificationIndex index, final Listener listener) {</span>
+<span class="fc" id="L35">    this.index = index;</span>
+<span class="fc" id="L36">    this.listener = listener;</span>
+<span class="fc" id="L37">  }</span>
+
+  /**
+   * Notification cleanup thread loop.
+   *
+   * This method blocks and should probably not be called by you.
+   */
+  public void run() {
+<span class="fc" id="L45">    final String indexName = this.index.getName();</span>
+
+<span class="fc" id="L47">    LOGGER.finer(() -&gt; &quot;[&quot; + indexName + &quot;] NotificationIndexCleanup starting&quot;);</span>
+    // run until thread stopped
+<span class="fc bfc" id="L49" title="All 2 branches covered.">    while (!stopThread) {</span>
+<span class="fc" id="L50">      List&lt;Notification&gt; expiredNotifications = null;</span>
+<span class="fc" id="L51">      synchronized (syncObject) {</span>
+        try {
+<span class="fc" id="L53">          expiredNotifications = this.index.findExpiredNotifications();</span>
+<span class="nc" id="L54">        } catch (Exception e) {</span>
+<span class="nc" id="L55">          LOGGER.log(Level.INFO, e, () -&gt; &quot;[&quot; + indexName + &quot;] exception finding expired notifications&quot;);</span>
+<span class="fc" id="L56">        }</span>
+<span class="pc bpc" id="L57" title="1 of 4 branches missed.">        if (expiredNotifications == null || expiredNotifications.size() == 0) {</span>
+          // Wait for expired notifications to process
+          try {
+<span class="fc" id="L60">            syncObject.wait();</span>
+<span class="fc" id="L61">          } catch (InterruptedException ignore) {</span>
+            // signal from another thread (stopThread checked above)
+<span class="fc" id="L63">            continue;</span>
+<span class="fc" id="L64">          }</span>
+        }
+<span class="fc" id="L66">      }</span>
+
+      // remove batch of expired notifications
+<span class="fc" id="L69">      final List&lt;Notification&gt; removed = new ArrayList&lt;&gt;(expiredNotifications.size());</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">      if (this.listener == null) {</span>
+<span class="fc" id="L71">        removed.addAll(expiredNotifications);</span>
+      } else {
+        // notify listener, remove only those successfully processed by listener
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        for (final Notification expired : expiredNotifications) {</span>
+<span class="fc" id="L75">          synchronized (syncObject) {</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">            if (stopThread) {</span>
+<span class="nc" id="L77">              break;</span>
+            }
+<span class="fc" id="L79">          }</span>
+          try {
+<span class="fc" id="L81">            this.listener.onExpiredNotification(expired);</span>
+<span class="fc" id="L82">            removed.add(expired);</span>
+<span class="fc" id="L83">          } catch (Exception e) {</span>
+<span class="fc" id="L84">            LOGGER.log(Level.WARNING, e, () -&gt; &quot;[&quot; + indexName + &quot;] Listener exception processing expired notification&quot;);</span>
+<span class="fc" id="L85">          }</span>
+<span class="fc" id="L86">        }</span>
+      }
+      try {
+        // remove in batch
+<span class="fc" id="L90">        this.index.removeNotifications(removed);</span>
+<span class="fc" id="L91">        LOGGER.fine(() -&gt; &quot;[&quot; + indexName + &quot;] Removed &quot; + removed.size() + &quot; expired notifications&quot;);</span>
+<span class="nc" id="L92">      } catch (Exception e) {</span>
+<span class="nc" id="L93">        LOGGER.log(Level.WARNING, e, () -&gt; &quot;[&quot; + indexName + &quot;] Exception removing expired notifications&quot;);</span>
+<span class="fc" id="L94">      }</span>
+<span class="fc" id="L95">    }</span>
+<span class="fc" id="L96">    LOGGER.finer(() -&gt; &quot;[&quot; + indexName + &quot;] NotificationIndexCleanup exiting&quot;);</span>
+<span class="fc" id="L97">    this.cleanupThread = null;</span>
+<span class="fc" id="L98">  }</span>
+
+  /**
+   * Start cleanup process.
+   *
+   * @throws Exception
+   */
+  public void startup() throws Exception {
+<span class="fc" id="L106">    synchronized (syncObject) {</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">      if (this.cleanupThread != null) {</span>
+<span class="nc" id="L108">        throw new IllegalStateException(&quot;Already started&quot;);</span>
+      }
+      // start thread
+<span class="fc" id="L111">      stopThread = false;</span>
+<span class="fc" id="L112">      this.cleanupThread = new Thread(this);</span>
+<span class="fc" id="L113">    }</span>
+<span class="fc" id="L114">    this.cleanupThread.start();</span>
+<span class="fc" id="L115">  }</span>
+
+  /**
+   * Stop cleanup process.
+   *
+   * @throws Exception
+   */
+  public void shutdown() throws Exception {
+<span class="fc" id="L123">    synchronized (syncObject) {</span>
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">      if (this.cleanupThread == null) {</span>
+<span class="nc" id="L125">        throw new IllegalStateException(&quot;Already stopped&quot;);</span>
+      }
+      // stop thread
+<span class="fc" id="L128">      stopThread = true;</span>
+<span class="fc" id="L129">      this.cleanupThread.interrupt();</span>
+<span class="fc" id="L130">    }</span>
+<span class="fc" id="L131">    this.cleanupThread.join();</span>
+<span class="fc" id="L132">  }</span>
+
+  /**
+   * Wake up the background thread if it is waiting.
+   */
+  public void wakeUp() {
+<span class="fc" id="L138">    synchronized (syncObject) {</span>
+<span class="fc" id="L139">      syncObject.notify();</span>
+<span class="fc" id="L140">    }</span>
+<span class="fc" id="L141">  }</span>
+
+  /**
+   * Interface for cleanup listeners to take additional steps before a
+   * notification is removed.
+   */
+  public static interface Listener {
+    public void onExpiredNotification(final Notification expired) throws Exception;
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

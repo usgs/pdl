@@ -200,57 +200,58 @@ public class HeartbeatListener extends DefaultNotificationListener {
 	 * purge heartbeat key/values older than storageTimeout, also purging empty
 	 * heartbeats
 	 */
-	public void cleanup() {
-<span class="fc" id="L204">		super.cleanup();</span>
+	@Override
+	public void cleanup() throws Exception {
+<span class="fc" id="L205">		super.cleanup();</span>
 
-<span class="pc bpc" id="L206" title="1 of 2 branches missed.">		if (this.storageTimeout == 0) {</span>
-<span class="nc" id="L207">			return;</span>
+<span class="pc bpc" id="L207" title="1 of 2 branches missed.">		if (this.storageTimeout == 0) {</span>
+<span class="nc" id="L208">			return;</span>
 		}
 
-<span class="fc" id="L210">		Map&lt;String, HeartbeatStatus&gt; hashHeartbeats = getHeartbeats();</span>
+<span class="fc" id="L211">		Map&lt;String, HeartbeatStatus&gt; hashHeartbeats = getHeartbeats();</span>
 		HeartbeatStatus objHeartbeat;
 		String component;
-<span class="fc" id="L213">		Iterator&lt;String&gt; itComponents = hashHeartbeats.keySet().iterator();</span>
-<span class="fc" id="L214">		Date purgeDate = new Date(new Date().getTime() - this.storageTimeout);</span>
+<span class="fc" id="L214">		Iterator&lt;String&gt; itComponents = hashHeartbeats.keySet().iterator();</span>
+<span class="fc" id="L215">		Date purgeDate = new Date(new Date().getTime() - this.storageTimeout);</span>
 
 		// iterate through map of components
-<span class="fc bfc" id="L217" title="All 2 branches covered.">		while (itComponents.hasNext()) {</span>
-<span class="fc" id="L218">			component = itComponents.next();</span>
+<span class="fc bfc" id="L218" title="All 2 branches covered.">		while (itComponents.hasNext()) {</span>
+<span class="fc" id="L219">			component = itComponents.next();</span>
 
 			// purge old key/value entries within objHeartbeat
-<span class="fc" id="L221">			objHeartbeat = hashHeartbeats.get(component);</span>
-<span class="fc" id="L222">			objHeartbeat.clearDataOlderThanDate(purgeDate);</span>
+<span class="fc" id="L222">			objHeartbeat = hashHeartbeats.get(component);</span>
+<span class="fc" id="L223">			objHeartbeat.clearDataOlderThanDate(purgeDate);</span>
 
 			// if purge has left a objHeartheat with no remaining key/value
 			// entries,
 			// remove the objHeartbeat (i.e. the component)
-<span class="fc bfc" id="L227" title="All 2 branches covered.">			if (objHeartbeat.isEmpty()) {</span>
-<span class="fc" id="L228">				itComponents.remove();</span>
+<span class="fc bfc" id="L228" title="All 2 branches covered.">			if (objHeartbeat.isEmpty()) {</span>
+<span class="fc" id="L229">				itComponents.remove();</span>
 			}
 
 		} // END while more components
 
-<span class="fc" id="L233">	}</span>
+<span class="fc" id="L234">	}</span>
 
 	/** @return heartbeatFile */
 	public File getHeartbeatFile() {
-<span class="nc" id="L237">		return heartbeatFile;</span>
+<span class="nc" id="L238">		return heartbeatFile;</span>
 	}
 
 	/** @param heartbeatFile to set */
 	public void setHeartbeatFile(File heartbeatFile) {
-<span class="nc" id="L242">		this.heartbeatFile = heartbeatFile;</span>
-<span class="nc" id="L243">	}</span>
+<span class="nc" id="L243">		this.heartbeatFile = heartbeatFile;</span>
+<span class="nc" id="L244">	}</span>
 
 	/** @return storageTimeout */
 	public long getStorageTimeout() {
-<span class="nc" id="L247">		return storageTimeout;</span>
+<span class="nc" id="L248">		return storageTimeout;</span>
 	}
 
 	/** @param storageTimeout to set */
 	public void setStorageTimeout(long storageTimeout) {
-<span class="nc" id="L252">		this.storageTimeout = storageTimeout;</span>
-<span class="nc" id="L253">	}</span>
+<span class="nc" id="L253">		this.storageTimeout = storageTimeout;</span>
+<span class="nc" id="L254">	}</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

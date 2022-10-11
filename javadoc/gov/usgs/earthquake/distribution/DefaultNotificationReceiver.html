@@ -26,7 +26,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -136,7 +136,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="blockList">
 <dl>
 <dt>All Implemented Interfaces:</dt>
-<dd><code><a href="NotificationReceiver.html" title="interface in gov.usgs.earthquake.distribution">NotificationReceiver</a></code>, <code><a href="../../util/Configurable.html" title="interface in gov.usgs.util">Configurable</a></code></dd>
+<dd><code><a href="NotificationIndexCleanup.Listener.html" title="interface in gov.usgs.earthquake.distribution">NotificationIndexCleanup.Listener</a></code>, <code><a href="NotificationReceiver.html" title="interface in gov.usgs.earthquake.distribution">NotificationReceiver</a></code>, <code><a href="../../util/Configurable.html" title="interface in gov.usgs.util">Configurable</a></code></dd>
 </dl>
 <dl>
 <dt>Direct Known Subclasses:</dt>
@@ -145,7 +145,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <hr>
 <pre>public class <span class="typeNameLabel">DefaultNotificationReceiver</span>
 extends <a href="../../util/DefaultConfigurable.html" title="class in gov.usgs.util">DefaultConfigurable</a>
-implements <a href="NotificationReceiver.html" title="interface in gov.usgs.earthquake.distribution">NotificationReceiver</a></pre>
+implements <a href="NotificationReceiver.html" title="interface in gov.usgs.earthquake.distribution">NotificationReceiver</a>, <a href="NotificationIndexCleanup.Listener.html" title="interface in gov.usgs.earthquake.distribution">NotificationIndexCleanup.Listener</a></pre>
 <div class="block">The core of product distribution.
 
  A DefaultNotificationReceiver receives notifications and notifies listeners
@@ -403,12 +403,19 @@ implements <a href="NotificationReceiver.html" title="interface in gov.usgs.eart
 </tr>
 <tr id="i12" class="altColor">
 <td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#onExpiredNotification(gov.usgs.earthquake.distribution.Notification)">onExpiredNotification</a></span>&#8203;(<a href="Notification.html" title="interface in gov.usgs.earthquake.distribution">Notification</a>&nbsp;notification)</code></th>
+<td class="colLast">
+<div class="block">Callback from the NotificationIndexCleanup thread.</div>
+</td>
+</tr>
+<tr id="i13" class="rowColor">
+<td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#receiveNotification(gov.usgs.earthquake.distribution.Notification)">receiveNotification</a></span>&#8203;(<a href="Notification.html" title="interface in gov.usgs.earthquake.distribution">Notification</a>&nbsp;notification)</code></th>
 <td class="colLast">
 <div class="block">Store a notification and notify listeners.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#removeExpiredNotifications()">removeExpiredNotifications</a></span>()</code></th>
 <td class="colLast">
@@ -416,21 +423,21 @@ implements <a href="NotificationReceiver.html" title="interface in gov.usgs.eart
  that are found.</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#removeNotificationListener(gov.usgs.earthquake.distribution.NotificationListener)">removeNotificationListener</a></span>&#8203;(<a href="NotificationListener.html" title="interface in gov.usgs.earthquake.distribution">NotificationListener</a>&nbsp;listener)</code></th>
 <td class="colLast">
 <div class="block">Remove an existing notification listener.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code><a href="../product/Product.html" title="class in gov.usgs.earthquake.product">Product</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#retrieveProduct(gov.usgs.earthquake.product.ProductId)">retrieveProduct</a></span>&#8203;(<a href="../product/ProductId.html" title="class in gov.usgs.earthquake.product">ProductId</a>&nbsp;id)</code></th>
 <td class="colLast">
 <div class="block">Retrieve a product by id.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#sendNotifications(gov.usgs.earthquake.distribution.NotificationListener,java.util.List,java.util.List,java.util.List)">sendNotifications</a></span>&#8203;(<a href="NotificationListener.html" title="interface in gov.usgs.earthquake.distribution">NotificationListener</a>&nbsp;listener,
                  java.util.List&lt;java.lang.String&gt;&nbsp;sources,
@@ -440,63 +447,63 @@ implements <a href="NotificationReceiver.html" title="interface in gov.usgs.eart
 <div class="block">Send matching notifications to listener.</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setConnectTimeout(int)">setConnectTimeout</a></span>&#8203;(int&nbsp;connectTimeout)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setNotificationIndex(gov.usgs.earthquake.distribution.NotificationIndex)">setNotificationIndex</a></span>&#8203;(<a href="NotificationIndex.html" title="interface in gov.usgs.earthquake.distribution">NotificationIndex</a>&nbsp;notificationIndex)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i20" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setNotifier(gov.usgs.earthquake.distribution.ListenerNotifier)">setNotifier</a></span>&#8203;(<a href="ListenerNotifier.html" title="interface in gov.usgs.earthquake.distribution">ListenerNotifier</a>&nbsp;notifier)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i21" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setProductStorage(gov.usgs.earthquake.distribution.ProductStorage)">setProductStorage</a></span>&#8203;(<a href="ProductStorage.html" title="interface in gov.usgs.earthquake.distribution">ProductStorage</a>&nbsp;productStorage)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i22" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setProductStorageMaxAge(java.lang.Long)">setProductStorageMaxAge</a></span>&#8203;(java.lang.Long&nbsp;productStorageMaxAge)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i22" class="altColor">
+<tr id="i23" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setReadTimeout(int)">setReadTimeout</a></span>&#8203;(int&nbsp;readTimeout)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i23" class="rowColor">
+<tr id="i24" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setReceiverCleanupInterval(java.lang.Long)">setReceiverCleanupInterval</a></span>&#8203;(java.lang.Long&nbsp;receiverCleanupInterval)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i24" class="altColor">
+<tr id="i25" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#shutdown()">shutdown</a></span>()</code></th>
 <td class="colLast">
 <div class="block">Stop any processing/background threads.</div>
 </td>
 </tr>
-<tr id="i25" class="rowColor">
+<tr id="i26" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#startup()">startup</a></span>()</code></th>
 <td class="colLast">
 <div class="block">Start any processing/background threads.</div>
 </td>
 </tr>
-<tr id="i26" class="altColor">
+<tr id="i27" class="rowColor">
 <td class="colFirst"><code>protected <a href="Notification.html" title="interface in gov.usgs.earthquake.distribution">Notification</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#storeProductSource(gov.usgs.earthquake.product.io.ProductSource)">storeProductSource</a></span>&#8203;(<a href="../product/io/ProductSource.html" title="interface in gov.usgs.earthquake.product.io">ProductSource</a>&nbsp;source)</code></th>
 <td class="colLast">
 <div class="block">Calls the current <code>ProductStorage.storeProductSource</code> method.</div>
 </td>
 </tr>
-<tr id="i27" class="rowColor">
+<tr id="i28" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#throttleQueues()">throttleQueues</a></span>()</code></th>
 <td class="colLast">
@@ -913,7 +920,29 @@ implements <a href="NotificationReceiver.html" title="interface in gov.usgs.eart
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="NotificationReceiver.html#removeExpiredNotifications()">removeExpiredNotifications</a></code>&nbsp;in interface&nbsp;<code><a href="NotificationReceiver.html" title="interface in gov.usgs.earthquake.distribution">NotificationReceiver</a></code></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code> - if productStorage or notificationIndex throw an Exception.</dd>
+<dd><code>java.lang.Exception</code> - if NotificationIndexCleanup throws an Exception.</dd>
+</dl>
+</li>
+</ul>
+<a id="onExpiredNotification(gov.usgs.earthquake.distribution.Notification)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>onExpiredNotification</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;onExpiredNotification&#8203;(<a href="Notification.html" title="interface in gov.usgs.earthquake.distribution">Notification</a>&nbsp;notification)
+                           throws java.lang.Exception</pre>
+<div class="block">Callback from the NotificationIndexCleanup thread.
+
+ Checks if Notification refers to a product in storage,
+ which should also be removed.</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="NotificationIndexCleanup.Listener.html#onExpiredNotification(gov.usgs.earthquake.distribution.Notification)">onExpiredNotification</a></code>&nbsp;in interface&nbsp;<code><a href="NotificationIndexCleanup.Listener.html" title="interface in gov.usgs.earthquake.distribution">NotificationIndexCleanup.Listener</a></code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>notification</code> - expired notification about to be removed.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.Exception</code></dd>
 </dl>
 </li>
 </ul>

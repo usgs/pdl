@@ -141,7 +141,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="blockList">
 <dl>
 <dt>All Implemented Interfaces:</dt>
-<dd><code><a href="NotificationListener.html" title="interface in gov.usgs.earthquake.distribution">NotificationListener</a></code>, <code><a href="../../util/Configurable.html" title="interface in gov.usgs.util">Configurable</a></code></dd>
+<dd><code><a href="NotificationIndexCleanup.Listener.html" title="interface in gov.usgs.earthquake.distribution">NotificationIndexCleanup.Listener</a></code>, <code><a href="NotificationListener.html" title="interface in gov.usgs.earthquake.distribution">NotificationListener</a></code>, <code><a href="../../util/Configurable.html" title="interface in gov.usgs.util">Configurable</a></code></dd>
 </dl>
 <dl>
 <dt>Direct Known Subclasses:</dt>
@@ -150,7 +150,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <hr>
 <pre>public class <span class="typeNameLabel">DefaultNotificationListener</span>
 extends <a href="../product/AbstractListener.html" title="class in gov.usgs.earthquake.product">AbstractListener</a>
-implements <a href="NotificationListener.html" title="interface in gov.usgs.earthquake.distribution">NotificationListener</a></pre>
+implements <a href="NotificationListener.html" title="interface in gov.usgs.earthquake.distribution">NotificationListener</a>, <a href="NotificationIndexCleanup.Listener.html" title="interface in gov.usgs.earthquake.distribution">NotificationIndexCleanup.Listener</a></pre>
 <div class="block">A base implementation of a notification listener. Implements functionality
  that is useful for most notification listeners.
 
@@ -366,7 +366,7 @@ implements <a href="NotificationListener.html" title="interface in gov.usgs.eart
 </td>
 </tr>
 <tr id="i11" class="rowColor">
-<td class="colFirst"><code>protected void</code></td>
+<td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#onExpiredNotification(gov.usgs.earthquake.distribution.Notification)">onExpiredNotification</a></span>&#8203;(<a href="Notification.html" title="interface in gov.usgs.earthquake.distribution">Notification</a>&nbsp;notification)</code></th>
 <td class="colLast">
 <div class="block">Called when an expired notification is being removed from the index.</div>
@@ -752,10 +752,12 @@ implements <a href="NotificationListener.html" title="interface in gov.usgs.eart
 <ul class="blockList">
 <li class="blockList">
 <h4>onExpiredNotification</h4>
-<pre class="methodSignature">protected&nbsp;void&nbsp;onExpiredNotification&#8203;(<a href="Notification.html" title="interface in gov.usgs.earthquake.distribution">Notification</a>&nbsp;notification)
-                              throws java.lang.Exception</pre>
+<pre class="methodSignature">public&nbsp;void&nbsp;onExpiredNotification&#8203;(<a href="Notification.html" title="interface in gov.usgs.earthquake.distribution">Notification</a>&nbsp;notification)
+                           throws java.lang.Exception</pre>
 <div class="block">Called when an expired notification is being removed from the index.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="NotificationIndexCleanup.Listener.html#onExpiredNotification(gov.usgs.earthquake.distribution.Notification)">onExpiredNotification</a></code>&nbsp;in interface&nbsp;<code><a href="NotificationIndexCleanup.Listener.html" title="interface in gov.usgs.earthquake.distribution">NotificationIndexCleanup.Listener</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>notification</code> - to be removed</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
@@ -769,10 +771,15 @@ implements <a href="NotificationListener.html" title="interface in gov.usgs.eart
 <ul class="blockList">
 <li class="blockList">
 <h4>cleanup</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;cleanup()</pre>
+<pre class="methodSignature">public&nbsp;void&nbsp;cleanup()
+             throws java.lang.Exception</pre>
 <div class="block">Periodic cleanup task.
 
  Called every cleanupInterval milliseconds.</div>
+<dl>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.Exception</code></dd>
+</dl>
 </li>
 </ul>
 <a id="startup()">

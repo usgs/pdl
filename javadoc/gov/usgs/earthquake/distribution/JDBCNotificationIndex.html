@@ -26,7 +26,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -334,12 +334,19 @@ implements <a href="NotificationIndex.html" title="interface in gov.usgs.earthqu
 </tr>
 <tr id="i11" class="rowColor">
 <td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#removeNotifications(java.util.List)">removeNotifications</a></span>&#8203;(java.util.List&lt;<a href="Notification.html" title="interface in gov.usgs.earthquake.distribution">Notification</a>&gt;&nbsp;notifications)</code></th>
+<td class="colLast">
+<div class="block">Remove notifications from the index.</div>
+</td>
+</tr>
+<tr id="i12" class="altColor">
+<td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#shutdown()">shutdown</a></span>()</code></th>
 <td class="colLast">
 <div class="block">Closes the JDBC connection and all it's associated prepared statements.</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#startup()">startup</a></span>()</code></th>
 <td class="colLast">
@@ -619,6 +626,29 @@ implements <a href="NotificationIndex.html" title="interface in gov.usgs.earthqu
 <dd><code>notification</code> - the notification to remove.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.lang.Exception</code> - if an error occurs while removing the notification.</dd>
+<dt><span class="seeLabel">See Also:</span></dt>
+<dd><a href="NotificationIndex.html" title="interface in gov.usgs.earthquake.distribution"><code>NotificationIndex</code></a></dd>
+</dl>
+</li>
+</ul>
+<a id="removeNotifications(java.util.List)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>removeNotifications</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;removeNotifications&#8203;(java.util.List&lt;<a href="Notification.html" title="interface in gov.usgs.earthquake.distribution">Notification</a>&gt;&nbsp;notifications)
+                         throws java.lang.Exception</pre>
+<div class="block">Remove notifications from the index.
+
+ All matching notifications should be removed from the index.</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="NotificationIndex.html#removeNotifications(java.util.List)">removeNotifications</a></code>&nbsp;in interface&nbsp;<code><a href="NotificationIndex.html" title="interface in gov.usgs.earthquake.distribution">NotificationIndex</a></code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>notifications</code> - the notifications to remove.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.Exception</code> - if an error occurs while removing the notifications.</dd>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="NotificationIndex.html" title="interface in gov.usgs.earthquake.distribution"><code>NotificationIndex</code></a></dd>
 </dl>

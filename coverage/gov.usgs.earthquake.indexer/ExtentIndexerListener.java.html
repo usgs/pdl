@@ -47,8 +47,10 @@ import java.util.logging.Logger;
    */
   @Override
   protected void onBeforeProcessThreadStart() throws Exception {
-<span class="nc" id="L50">    setLastIndexId(((ExtentIndex) productIndex).getLastExtentIndexId());</span>
-<span class="nc" id="L51">  }</span>
+<span class="nc" id="L50">    long lastIndexId = ((ExtentIndex) productIndex).getLastExtentIndexId();</span>
+<span class="nc" id="L51">    LOGGER.fine(&quot;[&quot; + getName() + &quot;] last index id &quot; + lastIndexId);</span>
+<span class="nc" id="L52">    setLastIndexId(lastIndexId);</span>
+<span class="nc" id="L53">  }</span>
 
   /**
    * Hands product to index to be added to table
@@ -59,22 +61,22 @@ import java.util.logging.Logger;
    */
   @Override
   public void processProduct(ProductSummary product) throws Exception {
-<span class="nc" id="L62">    super.processProduct(product);</span>
-<span class="nc" id="L63">    ExtentSummary extent = new ExtentSummary(product);</span>
+<span class="nc" id="L64">    super.processProduct(product);</span>
+<span class="nc" id="L65">    ExtentSummary extent = new ExtentSummary(product);</span>
 
-<span class="nc bnc" id="L65" title="All 2 branches missed.">    if (extent.isValid()) {</span>
-<span class="nc" id="L66">      LOGGER.log(Level.FINE, &quot;[&quot; + getName() + &quot;] adding product &quot;</span>
-<span class="nc" id="L67">          + product.getId().toString()</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">    if (extent.isValid()) {</span>
+<span class="nc" id="L68">      LOGGER.log(Level.FINEST, &quot;[&quot; + getName() + &quot;] adding product &quot;</span>
+<span class="nc" id="L69">          + product.getId().toString()</span>
           + &quot; to extent table&quot;);
-<span class="nc" id="L69">      ((ExtentIndex) productIndex).addExtentSummary(extent);</span>
+<span class="nc" id="L71">      ((ExtentIndex) productIndex).addExtentSummary(extent);</span>
     } else {
-<span class="nc" id="L71">      LOGGER.log(Level.FINE, &quot;[&quot; + getName() + &quot;] product &quot;</span>
-<span class="nc" id="L72">          + product.getId().toString()</span>
+<span class="nc" id="L73">      LOGGER.log(Level.FINEST, &quot;[&quot; + getName() + &quot;] product &quot;</span>
+<span class="nc" id="L74">          + product.getId().toString()</span>
           + &quot; has no extent information; won't add to extent table&quot;);
     }
 
-<span class="nc" id="L76">    setLastIndexId(product.getIndexId());</span>
-<span class="nc" id="L77">  }</span>
+<span class="nc" id="L78">    setLastIndexId(product.getIndexId());</span>
+<span class="nc" id="L79">  }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

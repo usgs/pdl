@@ -236,69 +236,71 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 <span class="nc" id="L236">			NotificationIndex listenerIndex =</span>
 <span class="nc" id="L237">					((DefaultNotificationListener) gracefulListeners.get(0))</span>
 <span class="nc" id="L238">					.getNotificationIndex();</span>
-<span class="nc bnc" id="L239" title="All 2 branches missed.">			if (listenerIndex instanceof JsonNotificationIndex) {</span>
-				// get intersection
+<span class="nc bnc" id="L239" title="All 2 branches missed.">			if (listenerIndex instanceof JsonNotificationIndex</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">					&amp;&amp; !((JsonNotificationIndex) listenerIndex).getDriver().contains(&quot;sqlite&quot;)</span>
+			) {
+				// get intersection when potentially sharing database
 				try {
-<span class="nc" id="L242">					allNotifications =</span>
-<span class="nc" id="L243">							((JsonNotificationIndex) index).getMissingNotifications(</span>
-<span class="nc" id="L244">									((JsonNotificationIndex) listenerIndex).getTable());</span>
-<span class="nc" id="L245">				} catch (Exception e) {</span>
-<span class="nc" id="L246">					LOGGER.log(Level.INFO, &quot;Exception loading intersection, continuing&quot;, e);</span>
-<span class="nc" id="L247">				}</span>
+<span class="nc" id="L244">					allNotifications =</span>
+<span class="nc" id="L245">							((JsonNotificationIndex) index).getMissingNotifications(</span>
+<span class="nc" id="L246">									((JsonNotificationIndex) listenerIndex).getTable());</span>
+<span class="nc" id="L247">				} catch (Exception e) {</span>
+<span class="nc" id="L248">					LOGGER.log(Level.INFO, &quot;Exception loading intersection, continuing&quot;, e);</span>
+<span class="nc" id="L249">				}</span>
 			}
 		}
 
-<span class="pc bpc" id="L251" title="1 of 2 branches missed.">		if (allNotifications == null) {</span>
+<span class="pc bpc" id="L253" title="1 of 2 branches missed.">		if (allNotifications == null) {</span>
 			// fallback to previous behavior
-<span class="fc" id="L253">			allNotifications = index.findNotifications(</span>
+<span class="fc" id="L255">			allNotifications = index.findNotifications(</span>
 					(List&lt;String&gt;) null, (List&lt;String&gt;) null, (List&lt;String&gt;) null);
 		}
-<span class="fc" id="L256">		LOGGER.info(&quot;Done finding existing notifications&quot;);</span>
+<span class="fc" id="L258">		LOGGER.info(&quot;Done finding existing notifications&quot;);</span>
 
 		// queue them for processing in case they were previous missed
-<span class="fc" id="L259">		Date now = new Date();</span>
-<span class="fc" id="L260">		int count = 0;</span>
-<span class="pc bpc" id="L261" title="1 of 2 branches missed.">		for (final Notification notification : allNotifications) {</span>
-<span class="nc" id="L262">			NotificationEvent event = new NotificationEvent(receiver, notification);</span>
-<span class="nc" id="L263">			count += 1;</span>
-<span class="nc bnc" id="L264" title="All 2 branches missed.">			if (event.getNotification().getExpirationDate().after(now)) {</span>
+<span class="fc" id="L261">		Date now = new Date();</span>
+<span class="fc" id="L262">		int count = 0;</span>
+<span class="pc bpc" id="L263" title="1 of 2 branches missed.">		for (final Notification notification : allNotifications) {</span>
+<span class="nc" id="L264">			NotificationEvent event = new NotificationEvent(receiver, notification);</span>
+<span class="nc" id="L265">			count += 1;</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">			if (event.getNotification().getExpirationDate().after(now)) {</span>
 				// still valid
-<span class="nc" id="L266">				this.notifyListeners(event, gracefulListeners);</span>
+<span class="nc" id="L268">				this.notifyListeners(event, gracefulListeners);</span>
 			}
 
 			// try to keep queue size managable during restart
-<span class="nc" id="L270">			throttleQueues(allNotifications.size() - count);</span>
-<span class="nc" id="L271">		}</span>
-<span class="fc" id="L272">		LOGGER.info(&quot;All notifications queued&quot;);</span>
+<span class="nc" id="L272">			throttleQueues(allNotifications.size() - count);</span>
+<span class="nc" id="L273">		}</span>
+<span class="fc" id="L274">		LOGGER.info(&quot;All notifications queued&quot;);</span>
 
 		// keep track that we've processed this notification index
-<span class="fc" id="L275">		AUTOLOADED_INDEXES.add(index.getName());</span>
-<span class="fc" id="L276">	}</span>
+<span class="fc" id="L277">		AUTOLOADED_INDEXES.add(index.getName());</span>
+<span class="fc" id="L278">	}</span>
 
 	/** @return default notification receiver */
 	public DefaultNotificationReceiver getReceiver() {
-<span class="nc" id="L280">		return receiver;</span>
+<span class="nc" id="L282">		return receiver;</span>
 	}
 
 	/** @param receiver of the default notification variety */
 	public void setReceiver(DefaultNotificationReceiver receiver) {
-<span class="nc" id="L285">		this.receiver = receiver;</span>
-<span class="nc" id="L286">	}</span>
+<span class="nc" id="L287">		this.receiver = receiver;</span>
+<span class="nc" id="L288">	}</span>
 
 	/** @return map of status */
 	public Map&lt;String, Integer&gt; getStatus() {
-<span class="nc" id="L290">		HashMap&lt;String, Integer&gt; status = new HashMap&lt;String, Integer&gt;();</span>
+<span class="nc" id="L292">		HashMap&lt;String, Integer&gt; status = new HashMap&lt;String, Integer&gt;();</span>
 
-<span class="nc bnc" id="L292" title="All 2 branches missed.">		for (final NotificationListener listener : notificationListeners.keySet()) {</span>
-<span class="nc" id="L293">			ExecutorService listenerExecutor = notificationListeners.get(listener);</span>
-<span class="nc bnc" id="L294" title="All 2 branches missed.">			if (listenerExecutor instanceof ThreadPoolExecutor) {</span>
+<span class="nc bnc" id="L294" title="All 2 branches missed.">		for (final NotificationListener listener : notificationListeners.keySet()) {</span>
+<span class="nc" id="L295">			ExecutorService listenerExecutor = notificationListeners.get(listener);</span>
+<span class="nc bnc" id="L296" title="All 2 branches missed.">			if (listenerExecutor instanceof ThreadPoolExecutor) {</span>
 				// check how many notifications are pending
-<span class="nc" id="L296">				int size = ((ThreadPoolExecutor) listenerExecutor).getQueue().size();</span>
-<span class="nc" id="L297">				status.put(receiver.getName() + &quot; - &quot; + listener.getName(), size);</span>
+<span class="nc" id="L298">				int size = ((ThreadPoolExecutor) listenerExecutor).getQueue().size();</span>
+<span class="nc" id="L299">				status.put(receiver.getName() + &quot; - &quot; + listener.getName(), size);</span>
 			}
-<span class="nc" id="L299">		}</span>
+<span class="nc" id="L301">		}</span>
 
-<span class="nc" id="L301">		return status;</span>
+<span class="nc" id="L303">		return status;</span>
 	}
 
 	/**
@@ -307,18 +309,18 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	 * @return length of longest queue, or null if no queue lengths.
 	 */
 	public Integer getMaxQueueSize() {
-<span class="fc" id="L310">		Integer maxSize = null;</span>
-<span class="pc bpc" id="L311" title="1 of 2 branches missed.">		for (final NotificationListener listener : notificationListeners.keySet()) {</span>
-<span class="nc" id="L312">			ExecutorService listenerExecutor = notificationListeners.get(listener);</span>
-<span class="nc bnc" id="L313" title="All 2 branches missed.">			if (listenerExecutor instanceof ThreadPoolExecutor) {</span>
+<span class="fc" id="L312">		Integer maxSize = null;</span>
+<span class="pc bpc" id="L313" title="1 of 2 branches missed.">		for (final NotificationListener listener : notificationListeners.keySet()) {</span>
+<span class="nc" id="L314">			ExecutorService listenerExecutor = notificationListeners.get(listener);</span>
+<span class="nc bnc" id="L315" title="All 2 branches missed.">			if (listenerExecutor instanceof ThreadPoolExecutor) {</span>
 				// check how many notifications are pending
-<span class="nc" id="L315">				int size = ((ThreadPoolExecutor) listenerExecutor).getQueue().size();</span>
-<span class="nc bnc" id="L316" title="All 4 branches missed.">				if (maxSize == null || size &gt; maxSize) {</span>
-<span class="nc" id="L317">					maxSize = size;</span>
+<span class="nc" id="L317">				int size = ((ThreadPoolExecutor) listenerExecutor).getQueue().size();</span>
+<span class="nc bnc" id="L318" title="All 4 branches missed.">				if (maxSize == null || size &gt; maxSize) {</span>
+<span class="nc" id="L319">					maxSize = size;</span>
 				}
 			}
-<span class="nc" id="L320">		}</span>
-<span class="fc" id="L321">		return maxSize;</span>
+<span class="nc" id="L322">		}</span>
+<span class="fc" id="L323">		return maxSize;</span>
 	}
 
 	/**
@@ -328,8 +330,8 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	 * @throws InterruptedException if error occurs
 	 */
 	public void throttleQueues() throws InterruptedException {
-<span class="fc" id="L331">		throttleQueues(null);</span>
-<span class="fc" id="L332">	}</span>
+<span class="fc" id="L333">		throttleQueues(null);</span>
+<span class="fc" id="L334">	}</span>
 
 	/**
 	 * If longest queue has more than 50k notifications,
@@ -340,36 +342,36 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	 */
 	public void throttleQueues(Integer remaining) throws InterruptedException {
 		// try to keep queue size managable during restart
-<span class="fc" id="L343">		int limit = throttleStartThreshold;</span>
+<span class="fc" id="L345">		int limit = throttleStartThreshold;</span>
 		// track whether any throttles occurred
-<span class="fc" id="L345">		boolean throttled = false;</span>
+<span class="fc" id="L347">		boolean throttled = false;</span>
 
 		while (true) {
-<span class="fc" id="L348">			final Integer size = getMaxQueueSize();</span>
-<span class="fc bfc" id="L349" title="All 4 branches covered.">			if (size == null || size &lt;= limit) {</span>
+<span class="fc" id="L350">			final Integer size = getMaxQueueSize();</span>
+<span class="fc bfc" id="L351" title="All 4 branches covered.">			if (size == null || size &lt;= limit) {</span>
 				// within limit
-<span class="fc bfc" id="L351" title="All 2 branches covered.">				if (throttled) {</span>
-<span class="fc" id="L352">					LOGGER.info(&quot;[&quot; + getName() + &quot;] done throttling (size = &quot; + size + &quot;)&quot;);</span>
+<span class="fc bfc" id="L353" title="All 2 branches covered.">				if (throttled) {</span>
+<span class="fc" id="L354">					LOGGER.info(&quot;[&quot; + getName() + &quot;] done throttling (size = &quot; + size + &quot;)&quot;);</span>
 				}
 				break;
 			}
 
-<span class="fc" id="L357">			throttled = true;</span>
-<span class="fc" id="L358">			LOGGER.info(&quot;[&quot; + getName() + &quot;]&quot;</span>
+<span class="fc" id="L359">			throttled = true;</span>
+<span class="fc" id="L360">			LOGGER.info(&quot;[&quot; + getName() + &quot;]&quot;</span>
 					+ &quot; queueing throttled until below &quot;
 					+ throttleStopThreshold
 					+ &quot; (&quot;
 							+ &quot;size=&quot; + size
-<span class="pc bpc" id="L363" title="1 of 2 branches missed.">							+ &quot;, remaining=&quot; + (remaining == null ? &quot;?&quot; : remaining)</span>
+<span class="pc bpc" id="L365" title="1 of 2 branches missed.">							+ &quot;, remaining=&quot; + (remaining == null ? &quot;?&quot; : remaining)</span>
 					+ &quot;)&quot;);
 			// too many messages queued
 			// set limit to stop threshold
-<span class="fc" id="L367">			limit = throttleStopThreshold;</span>
+<span class="fc" id="L369">			limit = throttleStopThreshold;</span>
 			// wait for listener to do some processing
 			// 5s is a little low, but don't want to wait too long
-<span class="fc" id="L370">			Thread.sleep(throttleWaitInterval);</span>
-<span class="fc" id="L371">		}</span>
-<span class="fc" id="L372">	}</span>
+<span class="fc" id="L372">			Thread.sleep(throttleWaitInterval);</span>
+<span class="fc" id="L373">		}</span>
+<span class="fc" id="L374">	}</span>
 
 	/**
 	 * NOTE: messing with the executors map is not a good idea.
@@ -377,23 +379,23 @@ public class ExecutorListenerNotifier extends DefaultConfigurable implements
 	 * @return the map of listeners and their executors.
 	 */
 	public Map&lt;NotificationListener, ExecutorService&gt; getExecutors() {
-<span class="nc" id="L380">		return notificationListeners;</span>
+<span class="nc" id="L382">		return notificationListeners;</span>
 	}
 
 	/** @return int throttle start threshold */
-<span class="nc" id="L384">	public int getThrottleStartThreshold() { return this.throttleStartThreshold; }</span>
+<span class="nc" id="L386">	public int getThrottleStartThreshold() { return this.throttleStartThreshold; }</span>
 	/** @param n int throttle start threshold */
-<span class="fc" id="L386">	public void setThrottleStartThreshold(final int n) { this.throttleStartThreshold = n; }</span>
+<span class="fc" id="L388">	public void setThrottleStartThreshold(final int n) { this.throttleStartThreshold = n; }</span>
 
 	/** @return int throttle stop threshold */
-<span class="nc" id="L389">	public int getThrottleStopThreshold() { return this.throttleStopThreshold; }</span>
+<span class="nc" id="L391">	public int getThrottleStopThreshold() { return this.throttleStopThreshold; }</span>
 	/** @param n int throttle stop threshold */
-<span class="fc" id="L391">	public void setThrottleStopThreshold(final int n) { this.throttleStopThreshold = n; }</span>
+<span class="fc" id="L393">	public void setThrottleStopThreshold(final int n) { this.throttleStopThreshold = n; }</span>
 
 	/** @return int throttle wait interval */
-<span class="nc" id="L394">	public long getThrottleWaitInterval() { return this.throttleWaitInterval; }</span>
+<span class="nc" id="L396">	public long getThrottleWaitInterval() { return this.throttleWaitInterval; }</span>
 	/** @param ms long throttle wait interval in ms */
-<span class="fc" id="L396">	public void setThrottleWaitInterval(final long ms) { this.throttleWaitInterval = ms; }</span>
+<span class="fc" id="L398">	public void setThrottleWaitInterval(final long ms) { this.throttleWaitInterval = ms; }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

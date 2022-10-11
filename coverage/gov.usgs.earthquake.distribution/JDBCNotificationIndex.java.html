@@ -656,6 +656,24 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 <span class="fc" id="L656">	}</span>
 
 	/**
+	 * Remove notifications from the index.
+	 *
+	 * All matching notifications should be removed from the index.
+	 *
+	 * @param notifications
+	 *            the notifications to remove.
+	 * @throws Exception
+	 *             if an error occurs while removing the notifications.
+	 * @see gov.usgs.earthquake.distribution.NotificationIndex
+	 */
+	public synchronized void removeNotifications(List&lt;Notification&gt; notifications)
+			throws Exception {
+<span class="nc bnc" id="L671" title="All 2 branches missed.">		for (Notification notification : notifications) {</span>
+<span class="nc" id="L672">			this.removeNotification(notification);</span>
+<span class="nc" id="L673">		}</span>
+<span class="nc" id="L674">	}</span>
+
+	/**
 	 * Search the index for notifications matching id.
 	 *
 	 * If more than one notification matches, all should be returned.
@@ -670,19 +688,19 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	public synchronized List&lt;Notification&gt; findNotifications(ProductId id)
 			throws Exception {
 		// verify connection
-<span class="fc" id="L673">		this.verifyConnection();</span>
+<span class="fc" id="L691">		this.verifyConnection();</span>
 
-<span class="fc" id="L675">		String source = id.getSource();</span>
-<span class="fc" id="L676">		String type = id.getType();</span>
-<span class="fc" id="L677">		String code = id.getCode();</span>
-<span class="fc" id="L678">		java.sql.Date update = new java.sql.Date(id.getUpdateTime().getTime());</span>
+<span class="fc" id="L693">		String source = id.getSource();</span>
+<span class="fc" id="L694">		String type = id.getType();</span>
+<span class="fc" id="L695">		String code = id.getCode();</span>
+<span class="fc" id="L696">		java.sql.Date update = new java.sql.Date(id.getUpdateTime().getTime());</span>
 
-<span class="fc" id="L680">		_query_findNotificationsById.setString(1, source);</span>
-<span class="fc" id="L681">		_query_findNotificationsById.setString(2, type);</span>
-<span class="fc" id="L682">		_query_findNotificationsById.setString(3, code);</span>
-<span class="fc" id="L683">		_query_findNotificationsById.setDate(4, update);</span>
+<span class="fc" id="L698">		_query_findNotificationsById.setString(1, source);</span>
+<span class="fc" id="L699">		_query_findNotificationsById.setString(2, type);</span>
+<span class="fc" id="L700">		_query_findNotificationsById.setString(3, code);</span>
+<span class="fc" id="L701">		_query_findNotificationsById.setDate(4, update);</span>
 
-<span class="fc" id="L685">		return getNotifications(_query_findNotificationsById);</span>
+<span class="fc" id="L703">		return getNotifications(_query_findNotificationsById);</span>
 	}
 
 	/**
@@ -709,17 +727,17 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	public synchronized List&lt;Notification&gt; findNotifications(String source,
 			String type, String code) throws Exception {
 		// verify connection
-<span class="fc" id="L712">		this.verifyConnection();</span>
+<span class="fc" id="L730">		this.verifyConnection();</span>
 
-<span class="fc bfc" id="L714" title="All 2 branches covered.">		source = (source == null) ? &quot;%&quot; : source.toUpperCase();</span>
-<span class="fc bfc" id="L715" title="All 2 branches covered.">		type = (type == null) ? &quot;%&quot; : type.toUpperCase();</span>
-<span class="fc bfc" id="L716" title="All 2 branches covered.">		code = (code == null) ? &quot;%&quot; : code.toUpperCase();</span>
+<span class="fc bfc" id="L732" title="All 2 branches covered.">		source = (source == null) ? &quot;%&quot; : source.toUpperCase();</span>
+<span class="fc bfc" id="L733" title="All 2 branches covered.">		type = (type == null) ? &quot;%&quot; : type.toUpperCase();</span>
+<span class="fc bfc" id="L734" title="All 2 branches covered.">		code = (code == null) ? &quot;%&quot; : code.toUpperCase();</span>
 
-<span class="fc" id="L718">		_query_findNotificationsByData.setString(1, source);</span>
-<span class="fc" id="L719">		_query_findNotificationsByData.setString(2, type);</span>
-<span class="fc" id="L720">		_query_findNotificationsByData.setString(3, code);</span>
+<span class="fc" id="L736">		_query_findNotificationsByData.setString(1, source);</span>
+<span class="fc" id="L737">		_query_findNotificationsByData.setString(2, type);</span>
+<span class="fc" id="L738">		_query_findNotificationsByData.setString(3, code);</span>
 
-<span class="fc" id="L722">		return getNotifications(_query_findNotificationsByData);</span>
+<span class="fc" id="L740">		return getNotifications(_query_findNotificationsByData);</span>
 	}
 
 	/**
@@ -751,60 +769,60 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 			List&lt;String&gt; sources, List&lt;String&gt; types, List&lt;String&gt; codes)
 			throws Exception {
 		// verify connection
-<span class="fc" id="L754">		this.verifyConnection();</span>
+<span class="fc" id="L772">		this.verifyConnection();</span>
 
-<span class="fc" id="L756">		List&lt;Notification&gt; n = null;</span>
+<span class="fc" id="L774">		List&lt;Notification&gt; n = null;</span>
 
-<span class="fc" id="L758">		Connection conn = getConnection();</span>
+<span class="fc" id="L776">		Connection conn = getConnection();</span>
 		try {
 			// begin a transaction
-<span class="fc" id="L761">			conn.setAutoCommit(false);</span>
+<span class="fc" id="L779">			conn.setAutoCommit(false);</span>
 
 			// Create a temporary lookup table
-<span class="fc" id="L764">			_dml_createTmpTable.executeUpdate();</span>
+<span class="fc" id="L782">			_dml_createTmpTable.executeUpdate();</span>
 
 			// Populate the temporary lookup table with our given lists
-<span class="fc bfc" id="L767" title="All 2 branches covered.">			if (sources != null) {</span>
+<span class="fc bfc" id="L785" title="All 2 branches covered.">			if (sources != null) {</span>
 				// Not null, insert values
-<span class="fc" id="L769">				Iterator&lt;String&gt; iter = sources.iterator();</span>
-<span class="fc bfc" id="L770" title="All 2 branches covered.">				while (iter.hasNext()) {</span>
-<span class="fc" id="L771">					_dml_addTmpSource.setString(1, iter.next());</span>
-<span class="fc" id="L772">					_dml_addTmpSource.addBatch();</span>
+<span class="fc" id="L787">				Iterator&lt;String&gt; iter = sources.iterator();</span>
+<span class="fc bfc" id="L788" title="All 2 branches covered.">				while (iter.hasNext()) {</span>
+<span class="fc" id="L789">					_dml_addTmpSource.setString(1, iter.next());</span>
+<span class="fc" id="L790">					_dml_addTmpSource.addBatch();</span>
 				}
-<span class="fc" id="L774">				_dml_addTmpSource.executeBatch();</span>
+<span class="fc" id="L792">				_dml_addTmpSource.executeBatch();</span>
 			}
 
-<span class="fc bfc" id="L777" title="All 2 branches covered.">			if (types != null) {</span>
+<span class="fc bfc" id="L795" title="All 2 branches covered.">			if (types != null) {</span>
 				// Not null, insert values
-<span class="fc" id="L779">				Iterator&lt;String&gt; iter = types.iterator();</span>
-<span class="fc bfc" id="L780" title="All 2 branches covered.">				while (iter.hasNext()) {</span>
-<span class="fc" id="L781">					_dml_addTmpType.setString(1, iter.next());</span>
-<span class="fc" id="L782">					_dml_addTmpType.addBatch();</span>
+<span class="fc" id="L797">				Iterator&lt;String&gt; iter = types.iterator();</span>
+<span class="fc bfc" id="L798" title="All 2 branches covered.">				while (iter.hasNext()) {</span>
+<span class="fc" id="L799">					_dml_addTmpType.setString(1, iter.next());</span>
+<span class="fc" id="L800">					_dml_addTmpType.addBatch();</span>
 				}
-<span class="fc" id="L784">				_dml_addTmpType.executeBatch();</span>
+<span class="fc" id="L802">				_dml_addTmpType.executeBatch();</span>
 			}
 
-<span class="fc bfc" id="L787" title="All 2 branches covered.">			if (codes != null) {</span>
+<span class="fc bfc" id="L805" title="All 2 branches covered.">			if (codes != null) {</span>
 				// Not null, insert values
-<span class="fc" id="L789">				Iterator&lt;String&gt; iter = codes.iterator();</span>
-<span class="fc bfc" id="L790" title="All 2 branches covered.">				while (iter.hasNext()) {</span>
-<span class="fc" id="L791">					_dml_addTmpCode.setString(1, iter.next());</span>
-<span class="fc" id="L792">					_dml_addTmpCode.addBatch();</span>
+<span class="fc" id="L807">				Iterator&lt;String&gt; iter = codes.iterator();</span>
+<span class="fc bfc" id="L808" title="All 2 branches covered.">				while (iter.hasNext()) {</span>
+<span class="fc" id="L809">					_dml_addTmpCode.setString(1, iter.next());</span>
+<span class="fc" id="L810">					_dml_addTmpCode.addBatch();</span>
 				}
-<span class="fc" id="L794">				_dml_addTmpCode.executeBatch();</span>
+<span class="fc" id="L812">				_dml_addTmpCode.executeBatch();</span>
 			}
 
 			// is this a problem? reading with uncommitted writes?
-<span class="fc" id="L798">			PreparedStatement ps = getCorrectStatement(sources, types, codes);</span>
-<span class="fc" id="L799">			n = getNotifications(ps);</span>
+<span class="fc" id="L816">			PreparedStatement ps = getCorrectStatement(sources, types, codes);</span>
+<span class="fc" id="L817">			n = getNotifications(ps);</span>
 		} finally {
-<span class="fc" id="L801">			conn.rollback();</span>
+<span class="fc" id="L819">			conn.rollback();</span>
 			// todo: this looks funky, but it's re-enabling autoCommit, which is
 			// needed for selects to not block other transactions
-<span class="fc" id="L804">			conn.setAutoCommit(true);</span>
+<span class="fc" id="L822">			conn.setAutoCommit(true);</span>
 		}
 
-<span class="fc" id="L807">		return n;</span>
+<span class="fc" id="L825">		return n;</span>
 	}
 
 	/**
@@ -820,15 +838,15 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	public synchronized List&lt;Notification&gt; findExpiredNotifications()
 			throws Exception {
 		// verify connection
-<span class="fc" id="L823">		this.verifyConnection();</span>
+<span class="fc" id="L841">		this.verifyConnection();</span>
 
 		// Create a new calendar object set to current date/time
-<span class="fc" id="L826">		java.sql.Date curDate = new java.sql.Date((new Date()).getTime());</span>
+<span class="fc" id="L844">		java.sql.Date curDate = new java.sql.Date((new Date()).getTime());</span>
 
 		// Bind the expiration date parameter and run the query
-<span class="fc" id="L829">		_query_findExpiredNotifications.setDate(1, curDate);</span>
+<span class="fc" id="L847">		_query_findExpiredNotifications.setDate(1, curDate);</span>
 
-<span class="fc" id="L831">		return getNotifications(_query_findExpiredNotifications);</span>
+<span class="fc" id="L849">		return getNotifications(_query_findExpiredNotifications);</span>
 	}
 
 	/**
@@ -852,29 +870,29 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	 */
 	protected synchronized List&lt;Notification&gt; getNotifications(PreparedStatement ps)
 			throws Exception {
-<span class="fc" id="L855">		List&lt;Notification&gt; n = new ArrayList&lt;Notification&gt;();</span>
-<span class="fc" id="L856">		ResultSet rs = null;</span>
+<span class="fc" id="L873">		List&lt;Notification&gt; n = new ArrayList&lt;Notification&gt;();</span>
+<span class="fc" id="L874">		ResultSet rs = null;</span>
 
 		try {
-<span class="fc" id="L859">			rs = ps.executeQuery();</span>
-<span class="fc bfc" id="L860" title="All 2 branches covered.">			while (rs.next()) {</span>
-<span class="fc" id="L861">				n.add(parseNotification(rs.getString(PRODUCT_SOURCE_COLUMN),</span>
-<span class="fc" id="L862">						rs.getString(PRODUCT_TYPE_COLUMN),</span>
-<span class="fc" id="L863">						rs.getString(PRODUCT_CODE_COLUMN),</span>
-<span class="fc" id="L864">						rs.getDate(PRODUCT_UPDATE_COLUMN),</span>
-<span class="fc" id="L865">						rs.getDate(EXPIRATION_DATE_COLUMN),</span>
-<span class="fc" id="L866">						rs.getString(TRACKER_URL_COLUMN),</span>
-<span class="fc" id="L867">						rs.getString(PRODUCT_URL_COLUMN)));</span>
+<span class="fc" id="L877">			rs = ps.executeQuery();</span>
+<span class="fc bfc" id="L878" title="All 2 branches covered.">			while (rs.next()) {</span>
+<span class="fc" id="L879">				n.add(parseNotification(rs.getString(PRODUCT_SOURCE_COLUMN),</span>
+<span class="fc" id="L880">						rs.getString(PRODUCT_TYPE_COLUMN),</span>
+<span class="fc" id="L881">						rs.getString(PRODUCT_CODE_COLUMN),</span>
+<span class="fc" id="L882">						rs.getDate(PRODUCT_UPDATE_COLUMN),</span>
+<span class="fc" id="L883">						rs.getDate(EXPIRATION_DATE_COLUMN),</span>
+<span class="fc" id="L884">						rs.getString(TRACKER_URL_COLUMN),</span>
+<span class="fc" id="L885">						rs.getString(PRODUCT_URL_COLUMN)));</span>
 			}
 		} finally {
 			try {
-<span class="fc" id="L871">				rs.close();</span>
-<span class="nc" id="L872">			} catch (Exception e) {</span>
+<span class="fc" id="L889">				rs.close();</span>
+<span class="nc" id="L890">			} catch (Exception e) {</span>
 				//ignore
-<span class="fc" id="L874">			}</span>
+<span class="fc" id="L892">			}</span>
 		}
 
-<span class="fc" id="L877">		return n;</span>
+<span class="fc" id="L895">		return n;</span>
 	}
 
 	/**
@@ -911,15 +929,15 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	protected Notification parseNotification(String source, String type,
 			String code, java.sql.Date update, java.sql.Date expires,
 			String tracker, String download) throws Exception {
-<span class="fc" id="L914">		Notification n = null;</span>
-<span class="fc" id="L915">		ProductId productId = new ProductId(source, type, code, update);</span>
-<span class="pc bpc" id="L916" title="1 of 2 branches missed.">		URL trackerURL = !&quot;&quot;.equals(tracker) ? new URL(tracker) : null;</span>
+<span class="fc" id="L932">		Notification n = null;</span>
+<span class="fc" id="L933">		ProductId productId = new ProductId(source, type, code, update);</span>
+<span class="pc bpc" id="L934" title="1 of 2 branches missed.">		URL trackerURL = !&quot;&quot;.equals(tracker) ? new URL(tracker) : null;</span>
 		try {
-<span class="fc" id="L918">			n = new URLNotification(productId, expires, trackerURL, new URL(download));</span>
-<span class="fc" id="L919">		} catch (MalformedURLException mux) {</span>
-<span class="fc" id="L920">			n = new DefaultNotification(productId, expires, trackerURL);</span>
-<span class="fc" id="L921">		}</span>
-<span class="fc" id="L922">		return n;</span>
+<span class="fc" id="L936">			n = new URLNotification(productId, expires, trackerURL, new URL(download));</span>
+<span class="fc" id="L937">		} catch (MalformedURLException mux) {</span>
+<span class="fc" id="L938">			n = new DefaultNotification(productId, expires, trackerURL);</span>
+<span class="fc" id="L939">		}</span>
+<span class="fc" id="L940">		return n;</span>
 	}
 
 	/**
@@ -931,26 +949,26 @@ public class JDBCNotificationIndex extends JDBCConnection implements
 	 */
 	protected PreparedStatement getCorrectStatement(List&lt;String&gt; sources,
 			List&lt;String&gt; types, List&lt;String&gt; codes) throws Exception {
-<span class="fc bfc" id="L934" title="All 6 branches covered.">		if (sources != null &amp;&amp; types != null &amp;&amp; codes != null) {</span>
-<span class="fc" id="L935">			return _query_searchBySourceTypeCode;</span>
-<span class="pc bpc" id="L936" title="1 of 6 branches missed.">		} else if (sources != null &amp;&amp; types != null &amp;&amp; codes == null) {</span>
-<span class="fc" id="L937">			return _query_searchBySourceType;</span>
-<span class="pc bpc" id="L938" title="2 of 6 branches missed.">		} else if (sources != null &amp;&amp; types == null &amp;&amp; codes != null) {</span>
-<span class="nc" id="L939">			return _query_searchBySourceCode;</span>
-<span class="fc bfc" id="L940" title="All 6 branches covered.">		} else if (sources == null &amp;&amp; types != null &amp;&amp; codes != null) {</span>
-<span class="fc" id="L941">			return _query_searchByTypeCode;</span>
-<span class="pc bpc" id="L942" title="2 of 6 branches missed.">		} else if (sources != null &amp;&amp; types == null &amp;&amp; codes == null) {</span>
-<span class="fc" id="L943">			return _query_searchBySource;</span>
-<span class="pc bpc" id="L944" title="2 of 6 branches missed.">		} else if (sources == null &amp;&amp; types != null &amp;&amp; codes == null) {</span>
-<span class="fc" id="L945">			return _query_searchByType;</span>
-<span class="pc bpc" id="L946" title="2 of 6 branches missed.">		} else if (sources == null &amp;&amp; types == null &amp;&amp; codes != null) {</span>
-<span class="fc" id="L947">			return _query_searchByCode;</span>
-<span class="pc bpc" id="L948" title="3 of 6 branches missed.">		} else if (sources == null &amp;&amp; types == null &amp;&amp; codes == null) {</span>
-<span class="fc" id="L949">			return _query_getAllNotifications;</span>
+<span class="fc bfc" id="L952" title="All 6 branches covered.">		if (sources != null &amp;&amp; types != null &amp;&amp; codes != null) {</span>
+<span class="fc" id="L953">			return _query_searchBySourceTypeCode;</span>
+<span class="pc bpc" id="L954" title="1 of 6 branches missed.">		} else if (sources != null &amp;&amp; types != null &amp;&amp; codes == null) {</span>
+<span class="fc" id="L955">			return _query_searchBySourceType;</span>
+<span class="pc bpc" id="L956" title="2 of 6 branches missed.">		} else if (sources != null &amp;&amp; types == null &amp;&amp; codes != null) {</span>
+<span class="nc" id="L957">			return _query_searchBySourceCode;</span>
+<span class="fc bfc" id="L958" title="All 6 branches covered.">		} else if (sources == null &amp;&amp; types != null &amp;&amp; codes != null) {</span>
+<span class="fc" id="L959">			return _query_searchByTypeCode;</span>
+<span class="pc bpc" id="L960" title="2 of 6 branches missed.">		} else if (sources != null &amp;&amp; types == null &amp;&amp; codes == null) {</span>
+<span class="fc" id="L961">			return _query_searchBySource;</span>
+<span class="pc bpc" id="L962" title="2 of 6 branches missed.">		} else if (sources == null &amp;&amp; types != null &amp;&amp; codes == null) {</span>
+<span class="fc" id="L963">			return _query_searchByType;</span>
+<span class="pc bpc" id="L964" title="2 of 6 branches missed.">		} else if (sources == null &amp;&amp; types == null &amp;&amp; codes != null) {</span>
+<span class="fc" id="L965">			return _query_searchByCode;</span>
+<span class="pc bpc" id="L966" title="3 of 6 branches missed.">		} else if (sources == null &amp;&amp; types == null &amp;&amp; codes == null) {</span>
+<span class="fc" id="L967">			return _query_getAllNotifications;</span>
 		}
 
-<span class="nc" id="L952">		return null;</span>
+<span class="nc" id="L970">		return null;</span>
 	}
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

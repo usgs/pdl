@@ -33,7 +33,7 @@ import java.util.logging.Logger;
  * @see gov.usgs.earthquake.product.AbstractListener
  */
 <span class="fc" id="L35">public class DefaultNotificationListener extends AbstractListener implements</span>
-		NotificationListener {
+		NotificationListener, NotificationIndexCleanup.Listener {
 
 	/** Logging object. */
 <span class="fc" id="L39">	private static final Logger LOGGER = Logger</span>
@@ -73,23 +73,26 @@ import java.util.logging.Logger;
 	/** Timer that schedules sender cleanup task. */
 <span class="fc" id="L74">	private Timer cleanupTimer = null;</span>
 
+	/** Notification index cleanup. */
+<span class="fc" id="L77">	private NotificationIndexCleanup notificationCleanup = null;</span>
+
 	/** How many products to process at the same time. */
-<span class="fc" id="L77">	private int concurrentProducts = 1;</span>
+<span class="fc" id="L80">	private int concurrentProducts = 1;</span>
 
 	/** Whether or not to process products that have already been processed. */
-<span class="fc" id="L80">	private boolean processDuplicates = false;</span>
+<span class="fc" id="L83">	private boolean processDuplicates = false;</span>
 
 	/** Array of content paths to search. */
-<span class="fc" id="L83">	private final ArrayList&lt;String&gt; includePaths = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L86">	private final ArrayList&lt;String&gt; includePaths = new ArrayList&lt;String&gt;();</span>
 
 	/** Array of content paths to search. */
-<span class="fc" id="L86">	private final ArrayList&lt;String&gt; excludePaths = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L89">	private final ArrayList&lt;String&gt; excludePaths = new ArrayList&lt;String&gt;();</span>
 
 	/**
 	 * Locks used to keep concurrent listener from processing product
 	 * more than once at the same time.
 	 */
-<span class="fc" id="L92">	private ObjectLock&lt;ProductId&gt; storageLocks = new ObjectLock&lt;ProductId&gt;();</span>
+<span class="fc" id="L95">	private ObjectLock&lt;ProductId&gt; storageLocks = new ObjectLock&lt;ProductId&gt;();</span>
 
 	/**
 	 * Implement the NotificationListener interface.
@@ -98,48 +101,48 @@ import java.util.logging.Logger;
 	 * product and calls onProduct.
 	 */
 	public void onNotification(final NotificationEvent event) throws Exception {
-<span class="fc" id="L101">		Notification notification = event.getNotification();</span>
-<span class="fc" id="L102">		ProductId id = notification.getProductId();</span>
-<span class="fc" id="L103">		String productId = id.toString();</span>
+<span class="fc" id="L104">		Notification notification = event.getNotification();</span>
+<span class="fc" id="L105">		ProductId id = notification.getProductId();</span>
+<span class="fc" id="L106">		String productId = id.toString();</span>
 
-<span class="fc" id="L105">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] received notification for id=&quot;</span>
+<span class="fc" id="L108">		LOGGER.finest(&quot;[&quot; + getName() + &quot;] received notification for id=&quot;</span>
 				+ productId);
 
-<span class="pc bpc" id="L108" title="1 of 2 branches missed.">		if (!accept(id)) {</span>
-<span class="nc" id="L109">			LOGGER.finest(&quot;[&quot; + getName() + &quot;] rejected notification for id=&quot;</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">		if (!accept(id)) {</span>
+<span class="nc" id="L112">			LOGGER.finest(&quot;[&quot; + getName() + &quot;] rejected notification for id=&quot;</span>
 					+ productId);
-<span class="nc" id="L111">			return;</span>
+<span class="nc" id="L114">			return;</span>
 		}
 
 		// only allow one thread to process a product
-<span class="fc" id="L115">		storageLocks.acquireLock(id);</span>
+<span class="fc" id="L118">		storageLocks.acquireLock(id);</span>
 		try {
-<span class="fc bfc" id="L117" title="All 2 branches covered.">			if (!onBeforeProcessNotification(notification)) {</span>
-<span class="fc" id="L118">				return;</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">			if (!onBeforeProcessNotification(notification)) {</span>
+<span class="fc" id="L121">				return;</span>
 			}
 
-<span class="fc" id="L121">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] processing notification for id=&quot;</span>
+<span class="fc" id="L124">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] processing notification for id=&quot;</span>
 					+ productId);
 
-<span class="fc" id="L124">			Product product = event.getProduct();</span>
-<span class="pc bpc" id="L125" title="1 of 2 branches missed.">			if (product == null) {</span>
-<span class="nc" id="L126">				throw new ContinuableListenerException(&quot;retrieved product null,&quot;</span>
+<span class="fc" id="L127">			Product product = event.getProduct();</span>
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">			if (product == null) {</span>
+<span class="nc" id="L129">				throw new ContinuableListenerException(&quot;retrieved product null,&quot;</span>
 						+ &quot; notification id=&quot; + productId);
 			}
 
-<span class="pc bpc" id="L130" title="1 of 2 branches missed.">			if (!onBeforeProcessProduct(product)) {</span>
-<span class="nc" id="L131">				return;</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">			if (!onBeforeProcessProduct(product)) {</span>
+<span class="nc" id="L134">				return;</span>
 			}
-<span class="fc" id="L133">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] processing product for id=&quot;</span>
+<span class="fc" id="L136">			LOGGER.finer(&quot;[&quot; + getName() + &quot;] processing product for id=&quot;</span>
 					+ productId);
-<span class="fc" id="L135">			onProduct(product);</span>
+<span class="fc" id="L138">			onProduct(product);</span>
 
-<span class="fc" id="L137">			onAfterProcessNotification(notification);</span>
+<span class="fc" id="L140">			onAfterProcessNotification(notification);</span>
 		} finally {
 			// be sure to release lock when done/error
-<span class="fc" id="L140">			storageLocks.releaseLock(id);</span>
+<span class="fc" id="L143">			storageLocks.releaseLock(id);</span>
 		}
-<span class="fc" id="L142">	}</span>
+<span class="fc" id="L145">	}</span>
 
 	/**
 	 * Called by onNotification when a product is retrieved.
@@ -150,23 +153,23 @@ import java.util.logging.Logger;
 	 */
 	public void onProduct(final Product product) throws Exception {
 		// subclasses do stuff here
-<span class="nc" id="L153">		ProductId id = product.getId();</span>
-<span class="nc" id="L154">		StringBuffer b = new StringBuffer(&quot;[&quot; + getName()</span>
-<span class="nc" id="L155">				+ &quot;] product processed source=&quot; + id.getSource() + &quot;, type=&quot;</span>
-<span class="nc" id="L156">				+ id.getType() + &quot;, code=&quot; + id.getCode() + &quot;, updateTime=&quot;</span>
-<span class="nc" id="L157">				+ id.getUpdateTime().toString());</span>
+<span class="nc" id="L156">		ProductId id = product.getId();</span>
+<span class="nc" id="L157">		StringBuffer b = new StringBuffer(&quot;[&quot; + getName()</span>
+<span class="nc" id="L158">				+ &quot;] product processed source=&quot; + id.getSource() + &quot;, type=&quot;</span>
+<span class="nc" id="L159">				+ id.getType() + &quot;, code=&quot; + id.getCode() + &quot;, updateTime=&quot;</span>
+<span class="nc" id="L160">				+ id.getUpdateTime().toString());</span>
 
-<span class="nc" id="L159">		Map&lt;String, String&gt; properties = product.getProperties();</span>
-<span class="nc" id="L160">		Iterator&lt;String&gt; iter = properties.keySet().iterator();</span>
-<span class="nc bnc" id="L161" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
-<span class="nc" id="L162">			String name = iter.next();</span>
-<span class="nc" id="L163">			b.append(&quot;, &quot;).append(name).append(&quot;=&quot;)</span>
-<span class="nc" id="L164">					.append(properties.get(name));</span>
-<span class="nc" id="L165">		}</span>
+<span class="nc" id="L162">		Map&lt;String, String&gt; properties = product.getProperties();</span>
+<span class="nc" id="L163">		Iterator&lt;String&gt; iter = properties.keySet().iterator();</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">		while (iter.hasNext()) {</span>
+<span class="nc" id="L165">			String name = iter.next();</span>
+<span class="nc" id="L166">			b.append(&quot;, &quot;).append(name).append(&quot;=&quot;)</span>
+<span class="nc" id="L167">					.append(properties.get(name));</span>
+<span class="nc" id="L168">		}</span>
 
-<span class="nc" id="L167">		LOGGER.info(b.toString());</span>
-<span class="nc" id="L168">		System.out.println(b.toString());</span>
-<span class="nc" id="L169">	}</span>
+<span class="nc" id="L170">		LOGGER.info(b.toString());</span>
+<span class="nc" id="L171">		System.out.println(b.toString());</span>
+<span class="nc" id="L172">	}</span>
 
 	/**
 	 * Called just before this listener processes a notification.
@@ -179,18 +182,18 @@ import java.util.logging.Logger;
 	protected boolean onBeforeProcessNotification(
 			final Notification notification) throws Exception {
 		// only check if we care
-<span class="pc bpc" id="L182" title="1 of 4 branches missed.">		if (!processDuplicates &amp;&amp; this.notificationIndex != null) {</span>
-<span class="fc" id="L183">			List&lt;Notification&gt; notifications = this.notificationIndex</span>
-<span class="fc" id="L184">					.findNotifications(notification.getProductId());</span>
-<span class="fc bfc" id="L185" title="All 2 branches covered.">			if (notifications.size() &gt; 0) {</span>
-<span class="fc" id="L186">				LOGGER.finer(&quot;[&quot; + getName()</span>
+<span class="pc bpc" id="L185" title="1 of 4 branches missed.">		if (!processDuplicates &amp;&amp; this.notificationIndex != null) {</span>
+<span class="fc" id="L186">			List&lt;Notification&gt; notifications = this.notificationIndex</span>
+<span class="fc" id="L187">					.findNotifications(notification.getProductId());</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">			if (notifications.size() &gt; 0) {</span>
+<span class="fc" id="L189">				LOGGER.finer(&quot;[&quot; + getName()</span>
 						+ &quot;] skipping existing product &quot;
-<span class="fc" id="L188">						+ notification.getProductId().toString());</span>
-<span class="fc" id="L189">				return false;</span>
+<span class="fc" id="L191">						+ notification.getProductId().toString());</span>
+<span class="fc" id="L192">				return false;</span>
 			}
 		}
 
-<span class="fc" id="L193">		return true;</span>
+<span class="fc" id="L196">		return true;</span>
 	}
 
 	/**
@@ -208,42 +211,42 @@ import java.util.logging.Logger;
 	 */
 	protected boolean onBeforeProcessProduct(final Product product)
 			throws Exception {
-<span class="pc bpc" id="L211" title="1 of 2 branches missed.">		if (excludePaths.size() != 0) {</span>
-<span class="nc" id="L212">			Map&lt;String, Content&gt; contents = product.getContents();</span>
-<span class="nc" id="L213">			Iterator&lt;String&gt; pathIter = excludePaths.iterator();</span>
-<span class="nc bnc" id="L214" title="All 2 branches missed.">			while (pathIter.hasNext()) {</span>
-<span class="nc" id="L215">				String path = pathIter.next();</span>
-<span class="nc bnc" id="L216" title="All 2 branches missed.">				if (contents.containsKey(path)) {</span>
+<span class="pc bpc" id="L214" title="1 of 2 branches missed.">		if (excludePaths.size() != 0) {</span>
+<span class="nc" id="L215">			Map&lt;String, Content&gt; contents = product.getContents();</span>
+<span class="nc" id="L216">			Iterator&lt;String&gt; pathIter = excludePaths.iterator();</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">			while (pathIter.hasNext()) {</span>
+<span class="nc" id="L218">				String path = pathIter.next();</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">				if (contents.containsKey(path)) {</span>
 					// contains at least one matching include path
-<span class="nc" id="L218">					LOGGER.fine(&quot;[&quot; + getName() + &quot;] skipping product &quot;</span>
-<span class="nc" id="L219">							+ product.getId().toString() + &quot;, '&quot; + path</span>
+<span class="nc" id="L221">					LOGGER.fine(&quot;[&quot; + getName() + &quot;] skipping product &quot;</span>
+<span class="nc" id="L222">							+ product.getId().toString() + &quot;, '&quot; + path</span>
 							+ &quot;' matches excludePaths&quot;);
-<span class="nc" id="L221">					return false;</span>
+<span class="nc" id="L224">					return false;</span>
 				}
-<span class="nc" id="L223">			}</span>
+<span class="nc" id="L226">			}</span>
 		}
 
-<span class="pc bpc" id="L226" title="1 of 2 branches missed.">		if (includePaths.size() != 0) {</span>
-<span class="nc" id="L227">			boolean containsPath = false;</span>
-<span class="nc" id="L228">			Map&lt;String, Content&gt; contents = product.getContents();</span>
-<span class="nc" id="L229">			Iterator&lt;String&gt; pathIter = includePaths.iterator();</span>
-<span class="nc bnc" id="L230" title="All 2 branches missed.">			while (pathIter.hasNext()) {</span>
-<span class="nc" id="L231">				String path = pathIter.next();</span>
-<span class="nc bnc" id="L232" title="All 2 branches missed.">				if (contents.containsKey(path)) {</span>
+<span class="pc bpc" id="L229" title="1 of 2 branches missed.">		if (includePaths.size() != 0) {</span>
+<span class="nc" id="L230">			boolean containsPath = false;</span>
+<span class="nc" id="L231">			Map&lt;String, Content&gt; contents = product.getContents();</span>
+<span class="nc" id="L232">			Iterator&lt;String&gt; pathIter = includePaths.iterator();</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">			while (pathIter.hasNext()) {</span>
+<span class="nc" id="L234">				String path = pathIter.next();</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">				if (contents.containsKey(path)) {</span>
 					// contains at least one matching include path
-<span class="nc" id="L234">					containsPath = true;</span>
-<span class="nc" id="L235">					break;</span>
+<span class="nc" id="L237">					containsPath = true;</span>
+<span class="nc" id="L238">					break;</span>
 				}
-<span class="nc" id="L237">			}</span>
-<span class="nc bnc" id="L238" title="All 2 branches missed.">			if (!containsPath) {</span>
-<span class="nc" id="L239">				LOGGER.fine(&quot;[&quot; + getName() + &quot;] skipping product &quot;</span>
-<span class="nc" id="L240">						+ product.getId().toString()</span>
+<span class="nc" id="L240">			}</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">			if (!containsPath) {</span>
+<span class="nc" id="L242">				LOGGER.fine(&quot;[&quot; + getName() + &quot;] skipping product &quot;</span>
+<span class="nc" id="L243">						+ product.getId().toString()</span>
 						+ &quot;, does not match includePaths&quot;);
-<span class="nc" id="L242">				return false;</span>
+<span class="nc" id="L245">				return false;</span>
 			}
 		}
 
-<span class="fc" id="L246">		return true;</span>
+<span class="fc" id="L249">		return true;</span>
 	}
 
 	/**
@@ -255,10 +258,10 @@ import java.util.logging.Logger;
 	 */
 	protected void onAfterProcessNotification(final Notification notification)
 			throws Exception {
-<span class="fc bfc" id="L258" title="All 2 branches covered.">		if (this.notificationIndex != null) {</span>
-<span class="fc" id="L259">			this.notificationIndex.addNotification(notification);</span>
+<span class="fc bfc" id="L261" title="All 2 branches covered.">		if (this.notificationIndex != null) {</span>
+<span class="fc" id="L262">			this.notificationIndex.addNotification(notification);</span>
 		}
-<span class="fc" id="L261">	}</span>
+<span class="fc" id="L264">	}</span>
 
 	/**
 	 * Called when an expired notification is being removed from the index.
@@ -266,182 +269,174 @@ import java.util.logging.Logger;
 	 * @param notification to be removed
 	 * @throws Exception if error occurs
 	 */
-	protected void onExpiredNotification(final Notification notification)
+	@Override
+	public void onExpiredNotification(final Notification notification)
 			throws Exception {
 		// nothing to do
-<span class="nc" id="L272">	}</span>
+<span class="nc" id="L276">	}</span>
 
-	/**
+		/**
 	 * Periodic cleanup task.
 	 *
 	 * Called every cleanupInterval milliseconds.
 	 */
-	public void cleanup() {
-<span class="fc" id="L280">		LOGGER.finer(&quot;[&quot; + getName() + &quot;] running listener cleanup&quot;);</span>
-		try {
-<span class="fc bfc" id="L282" title="All 2 branches covered.">			if (notificationIndex != null) {</span>
-<span class="fc" id="L283">				Iterator&lt;Notification&gt; iter = notificationIndex</span>
-<span class="fc" id="L284">						.findExpiredNotifications().iterator();</span>
-<span class="pc bpc" id="L285" title="1 of 2 branches missed.">				while (iter.hasNext()) {</span>
-<span class="nc" id="L286">					Notification notification = iter.next();</span>
-
-					// let subclasses remove other stuff first
-<span class="nc" id="L289">					onExpiredNotification(notification);</span>
-
-					// remove expired notification from index
-<span class="nc" id="L292">					notificationIndex.removeNotification(notification);</span>
-
-<span class="nc bnc" id="L294" title="All 2 branches missed.">					if (LOGGER.isLoggable(Level.FINEST)) {</span>
-<span class="nc" id="L295">						LOGGER.finest(&quot;[&quot;</span>
-<span class="nc" id="L296">								+ getName()</span>
-								+ &quot;] removed expired notification from sender index &quot;
-<span class="nc" id="L298">								+ notification.getProductId().toString());</span>
-					}
-<span class="nc" id="L300">				}</span>
-			}
-<span class="nc" id="L302">		} catch (Exception e) {</span>
-<span class="nc" id="L303">			LOGGER.log(Level.WARNING, &quot;Exception during listener cleanup&quot;, e);</span>
-<span class="fc" id="L304">		}</span>
-<span class="fc" id="L305">	};</span>
+	public void cleanup() throws Exception {
+<span class="fc" id="L284">		LOGGER.finer(&quot;[&quot; + getName() + &quot;] running listener cleanup&quot;);</span>
+<span class="fc bfc" id="L285" title="All 2 branches covered.">		if (this.notificationCleanup == null) {</span>
+<span class="fc" id="L286">			this.notificationCleanup = new NotificationIndexCleanup(this.notificationIndex, this);</span>
+<span class="fc" id="L287">			this.notificationCleanup.startup();</span>
+		} else {
+<span class="fc" id="L289">			this.notificationCleanup.wakeUp();</span>
+		}
+<span class="fc" id="L291">	}</span>
 
 	@Override
 	public void startup() throws Exception {
-<span class="fc" id="L309">		super.startup();</span>
-<span class="fc bfc" id="L310" title="All 2 branches covered.">		if (this.notificationIndex != null) {</span>
-<span class="fc" id="L311">			this.notificationIndex.startup();</span>
+<span class="fc" id="L295">		super.startup();</span>
+<span class="fc bfc" id="L296" title="All 2 branches covered.">		if (this.notificationIndex != null) {</span>
+<span class="fc" id="L297">			this.notificationIndex.startup();</span>
 		}
 
 		// only schedule cleanup if interval is non-zero
-<span class="fc bfc" id="L315" title="All 2 branches covered.">		if (cleanupInterval &gt; 0) {</span>
-<span class="fc" id="L316">			cleanupTimer = new Timer();</span>
-<span class="fc" id="L317">			cleanupTimer.scheduleAtFixedRate(new TimerTask() {</span>
+<span class="fc bfc" id="L301" title="All 2 branches covered.">		if (cleanupInterval &gt; 0) {</span>
+<span class="fc" id="L302">			cleanupTimer = new Timer();</span>
+<span class="fc" id="L303">			cleanupTimer.scheduleAtFixedRate(new TimerTask() {</span>
 				public void run() {
 					try {
-<span class="fc" id="L320">						cleanup();</span>
-<span class="nc" id="L321">					} catch (Exception e) {</span>
-<span class="nc" id="L322">						LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
-								+ &quot;] exception during sender cleanup&quot;, e);
-<span class="fc" id="L324">					}</span>
-<span class="fc" id="L325">				}</span>
-<span class="fc" id="L326">			}, 0, cleanupInterval);</span>
+<span class="fc" id="L306">						cleanup();</span>
+<span class="nc" id="L307">					} catch (Exception e) {</span>
+<span class="nc" id="L308">						LOGGER.log(Level.WARNING, &quot;[&quot; + getName()</span>
+								+ &quot;] exception during cleanup&quot;, e);
+<span class="fc" id="L310">					}</span>
+<span class="fc" id="L311">				}</span>
+<span class="fc" id="L312">			}, 0, cleanupInterval);</span>
 		}
-<span class="fc" id="L328">	}</span>
+<span class="fc" id="L314">	}</span>
 
 	@Override
 	public void shutdown() throws Exception {
-<span class="fc" id="L332">		super.shutdown();</span>
+<span class="fc" id="L318">		super.shutdown();</span>
+<span class="fc bfc" id="L319" title="All 2 branches covered.">		if (this.notificationCleanup != null) {</span>
+			try {
+<span class="fc" id="L321">				this.notificationCleanup.shutdown();</span>
+<span class="nc" id="L322">			} catch (Exception e) {</span>
+<span class="nc" id="L323">				LOGGER.log(Level.INFO, &quot;[&quot; + getName() + &quot;] exception stopping notification cleanup&quot;, e);</span>
+			} finally {
+<span class="fc" id="L325">				this.notificationCleanup = null;</span>
+			}
+		}
 		try {
-<span class="fc" id="L334">			this.notificationIndex.shutdown();</span>
+<span class="fc" id="L329">			this.notificationIndex.shutdown();</span>
+<span class="fc" id="L330">		} catch (Exception e) {</span>
+			// ignore
+<span class="fc" id="L332">		}</span>
+		try {
+<span class="fc" id="L334">			this.cleanupTimer.cancel();</span>
 <span class="fc" id="L335">		} catch (Exception e) {</span>
 			// ignore
 <span class="fc" id="L337">		}</span>
-		try {
-<span class="fc" id="L339">			this.cleanupTimer.cancel();</span>
-<span class="fc" id="L340">		} catch (Exception e) {</span>
-			// ignore
-<span class="fc" id="L342">		}</span>
-<span class="fc" id="L343">	}</span>
+<span class="fc" id="L338">	}</span>
 
 	@Override
 	public void configure(final Config config) throws Exception {
-<span class="fc" id="L347">		super.configure(config);</span>
+<span class="fc" id="L342">		super.configure(config);</span>
 
-<span class="fc" id="L349">		String notificationIndexName = config</span>
-<span class="fc" id="L350">				.getProperty(NOTIFICATION_INDEX_PROPERTY);</span>
-<span class="fc" id="L351">		String notificationIndexFile = config.getProperty(INDEX_FILE_PROPERTY);</span>
-<span class="pc bpc" id="L352" title="1 of 2 branches missed.">		if (notificationIndexName != null) {</span>
-<span class="nc" id="L353">			LOGGER.config(&quot;[&quot; + getName() + &quot;] loading notification index '&quot;</span>
+<span class="fc" id="L344">		String notificationIndexName = config</span>
+<span class="fc" id="L345">				.getProperty(NOTIFICATION_INDEX_PROPERTY);</span>
+<span class="fc" id="L346">		String notificationIndexFile = config.getProperty(INDEX_FILE_PROPERTY);</span>
+<span class="pc bpc" id="L347" title="1 of 2 branches missed.">		if (notificationIndexName != null) {</span>
+<span class="nc" id="L348">			LOGGER.config(&quot;[&quot; + getName() + &quot;] loading notification index '&quot;</span>
 					+ notificationIndexName + &quot;'&quot;);
-<span class="nc" id="L355">			notificationIndex = (NotificationIndex) Config.getConfig()</span>
-<span class="nc" id="L356">					.getObject(notificationIndexName);</span>
-<span class="nc bnc" id="L357" title="All 2 branches missed.">			if (notificationIndex == null) {</span>
-<span class="nc" id="L358">				throw new ConfigurationException(&quot;[&quot; + getName() + &quot;] index '&quot;</span>
+<span class="nc" id="L350">			notificationIndex = (NotificationIndex) Config.getConfig()</span>
+<span class="nc" id="L351">					.getObject(notificationIndexName);</span>
+<span class="nc bnc" id="L352" title="All 2 branches missed.">			if (notificationIndex == null) {</span>
+<span class="nc" id="L353">				throw new ConfigurationException(&quot;[&quot; + getName() + &quot;] index '&quot;</span>
 						+ notificationIndexName
 						+ &quot;' is not properly configured&quot;);
 			}
-<span class="pc bpc" id="L362" title="1 of 2 branches missed.">		} else if (notificationIndexFile != null) {</span>
-<span class="nc" id="L363">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using notification index '&quot;</span>
+<span class="pc bpc" id="L357" title="1 of 2 branches missed.">		} else if (notificationIndexFile != null) {</span>
+<span class="nc" id="L358">			LOGGER.config(&quot;[&quot; + getName() + &quot;] using notification index '&quot;</span>
 					+ notificationIndexFile + &quot;'&quot;);
-<span class="nc" id="L365">			notificationIndex = new JDBCNotificationIndex(notificationIndexFile);</span>
+<span class="nc" id="L360">			notificationIndex = new JDBCNotificationIndex(notificationIndexFile);</span>
 		}
 
-<span class="fc" id="L368">		cleanupInterval = Long.parseLong(config.getProperty(</span>
+<span class="fc" id="L363">		cleanupInterval = Long.parseLong(config.getProperty(</span>
 				CLEANUP_INTERVAL_PROPERTY, DEFAULT_CLEANUP_INTERVAL));
-<span class="fc" id="L370">		LOGGER.config(&quot;[&quot; + getName() + &quot;] cleanup interval = &quot;</span>
+<span class="fc" id="L365">		LOGGER.config(&quot;[&quot; + getName() + &quot;] cleanup interval = &quot;</span>
 				+ processDuplicates);
 
-<span class="fc" id="L373">		concurrentProducts = Integer.parseInt(config.getProperty(</span>
+<span class="fc" id="L368">		concurrentProducts = Integer.parseInt(config.getProperty(</span>
 			CONCURRENT_PRODUCTS_PROPERTY, DEFAULT_CONCURRENT_PRODUCTS));
-<span class="fc" id="L375">		LOGGER.config(&quot;[&quot; + getName() + &quot;] concurrent products = &quot;</span>
+<span class="fc" id="L370">		LOGGER.config(&quot;[&quot; + getName() + &quot;] concurrent products = &quot;</span>
 				+ concurrentProducts);
 
-<span class="fc" id="L378">		processDuplicates = Boolean.valueOf(config.getProperty(</span>
+<span class="fc" id="L373">		processDuplicates = Boolean.valueOf(config.getProperty(</span>
 				PROCESS_DUPLICATES, DEFAULT_PROCESS_DUPLICATES));
-<span class="fc" id="L380">		LOGGER.config(&quot;[&quot; + getName() + &quot;] process duplicates = &quot;</span>
+<span class="fc" id="L375">		LOGGER.config(&quot;[&quot; + getName() + &quot;] process duplicates = &quot;</span>
 				+ processDuplicates);
 
-<span class="fc" id="L383">		includePaths.addAll(StringUtils.split(</span>
-<span class="fc" id="L384">				config.getProperty(INCLUDE_PATHS_PROPERTY), &quot;,&quot;));</span>
-<span class="fc" id="L385">		LOGGER.config(&quot;[&quot; + getName() + &quot;] include paths = &quot; + includePaths);</span>
+<span class="fc" id="L378">		includePaths.addAll(StringUtils.split(</span>
+<span class="fc" id="L379">				config.getProperty(INCLUDE_PATHS_PROPERTY), &quot;,&quot;));</span>
+<span class="fc" id="L380">		LOGGER.config(&quot;[&quot; + getName() + &quot;] include paths = &quot; + includePaths);</span>
 
-<span class="fc" id="L387">		excludePaths.addAll(StringUtils.split(</span>
-<span class="fc" id="L388">				config.getProperty(EXCLUDE_PATHS_PROPERTY), &quot;,&quot;));</span>
-<span class="fc" id="L389">		LOGGER.config(&quot;[&quot; + getName() + &quot;] exclude paths = &quot; + excludePaths);</span>
-<span class="fc" id="L390">	}</span>
+<span class="fc" id="L382">		excludePaths.addAll(StringUtils.split(</span>
+<span class="fc" id="L383">				config.getProperty(EXCLUDE_PATHS_PROPERTY), &quot;,&quot;));</span>
+<span class="fc" id="L384">		LOGGER.config(&quot;[&quot; + getName() + &quot;] exclude paths = &quot; + excludePaths);</span>
+<span class="fc" id="L385">	}</span>
 
 	/** @return notificationIndex */
 	public NotificationIndex getNotificationIndex() {
-<span class="fc" id="L394">		return notificationIndex;</span>
+<span class="fc" id="L389">		return notificationIndex;</span>
 	}
 
 	/** @param notificationIndex to set */
 	public void setNotificationIndex(NotificationIndex notificationIndex) {
-<span class="fc" id="L399">		this.notificationIndex = notificationIndex;</span>
-<span class="fc" id="L400">	}</span>
+<span class="fc" id="L394">		this.notificationIndex = notificationIndex;</span>
+<span class="fc" id="L395">	}</span>
 
 	/** @return cleanupInterval */
 	public Long getCleanupInterval() {
-<span class="nc" id="L404">		return cleanupInterval;</span>
+<span class="nc" id="L399">		return cleanupInterval;</span>
 	}
 
 	/** @param cleanupInterval long to set */
 	public void setCleanupInterval(Long cleanupInterval) {
-<span class="fc" id="L409">		this.cleanupInterval = cleanupInterval;</span>
-<span class="fc" id="L410">	}</span>
+<span class="fc" id="L404">		this.cleanupInterval = cleanupInterval;</span>
+<span class="fc" id="L405">	}</span>
 
 	/** @return concurrentProducts */
 	public int getConcurrentProducts() {
-<span class="fc" id="L414">		return concurrentProducts;</span>
+<span class="fc" id="L409">		return concurrentProducts;</span>
 	}
 
 	/** @param concurrentProducts int to set */
 	public void setConcurrentProducts(int concurrentProducts) {
-<span class="nc" id="L419">		this.concurrentProducts = concurrentProducts;</span>
-<span class="nc" id="L420">	}</span>
+<span class="nc" id="L414">		this.concurrentProducts = concurrentProducts;</span>
+<span class="nc" id="L415">	}</span>
 
 	/** @return processDuplicates */
 	public boolean isProcessDuplicates() {
-<span class="fc" id="L424">		return processDuplicates;</span>
+<span class="fc" id="L419">		return processDuplicates;</span>
 	}
 
 	/** @param processDuplicates boolean to set */
 	public void setProcessDuplicates(boolean processDuplicates) {
-<span class="nc" id="L429">		this.processDuplicates = processDuplicates;</span>
-<span class="nc" id="L430">	}</span>
+<span class="nc" id="L424">		this.processDuplicates = processDuplicates;</span>
+<span class="nc" id="L425">	}</span>
 
 	/**
 	 * @return the includePaths
 	 */
 	public ArrayList&lt;String&gt; getIncludePaths() {
-<span class="nc" id="L436">		return includePaths;</span>
+<span class="nc" id="L431">		return includePaths;</span>
 	}
 
 	/**
 	 * @return the excludePaths
 	 */
 	public ArrayList&lt;String&gt; getExcludePaths() {
-<span class="nc" id="L443">		return excludePaths;</span>
+<span class="nc" id="L438">		return excludePaths;</span>
 	}
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

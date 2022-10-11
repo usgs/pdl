@@ -178,7 +178,7 @@ import java.util.logging.Logger;
    * @throws Exception if something goes wrong
    */
   @Override
-  protected void onExpiredNotification(final Notification notification) throws Exception{
+  public void onExpiredNotification(final Notification notification) throws Exception{
 <span class="fc" id="L182">    List&lt;Notification&gt; notifications = getNotificationIndex()</span>
 <span class="fc" id="L183">            .findNotifications(notification.getProductId());</span>
 <span class="pc bpc" id="L184" title="1 of 2 branches missed.">    if (notifications.size() &lt;= 1) {</span>
@@ -268,4 +268,4 @@ import java.util.logging.Logger;
 <span class="fc" id="L268">    this.productStorageMaxAge = productStorageMaxAge;</span>
 <span class="fc" id="L269">  }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

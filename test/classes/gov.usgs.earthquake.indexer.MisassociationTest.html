@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.102s</div>
+<div class="counter">0.096s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,7 +79,7 @@
 </thead>
 <tr>
 <td class="success">associate()</td>
-<td class="success">0.102s</td>
+<td class="success">0.096s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -89,7 +89,7 @@
 <span class="code">
 <pre>
 ###
-Fri Sep 16 21:04:41 MDT 2022
+Tue Oct 11 12:21:38 MDT 2022
 CONFIG	thread=1	[null] maxTries = 1
 CONFIG	thread=1	[null] maxTries = 1
 CONFIG	thread=1	[null] timeout = 0ms
@@ -99,14 +99,17 @@ CONFIG	thread=1	[null] concurrent products = 1
 CONFIG	thread=1	[null] process duplicates = false
 CONFIG	thread=1	[null] include paths = []
 CONFIG	thread=1	[null] exclude paths = []
-CONFIG	thread=1	[null] using storage directory '/tmp/misassociation-test5043050909764736394/storage'
-CONFIG	thread=1	[null] using sqlite product index '/tmp/misassociation-test5043050909764736394/productIndex.db'
+CONFIG	thread=1	[null] using storage directory '/tmp/misassociation-test5726922294954859742/storage'
+CONFIG	thread=1	[null] using sqlite product index '/tmp/misassociation-test5726922294954859742/productIndex.db'
 CONFIG	thread=1	[null] archive interval is '300000'
 CONFIG	thread=1	[null] no indexer modules configured.
 CONFIG	thread=1	[null] no indexer listeners configured.
 CONFIG	thread=1	[null] Local regions file: regions.json
 CONFIG	thread=1	[null] associateUsingCurrentProducts = false
-FINER	thread=244	[null] running listener cleanup
+FINER	thread=264	[null] running listener cleanup
+Exception in thread &quot;Thread-145&quot; java.lang.NullPointerException
+	at gov.usgs.earthquake.distribution.NotificationIndexCleanup.run(NotificationIndexCleanup.java:45)
+	at java.base/java.lang.Thread.run(Thread.java:829)
 FINEST	thread=1	[null] storing product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
 FINEST	thread=1	[null] acquiring write lock for product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
 FINEST	thread=1	[null] acquired write lock for product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
@@ -122,11 +125,12 @@ FINEST	thread=1	[null] released read lock for product id=urn:usgs-product:us:ori
 FINEST	thread=1	[null] releasing write lock for product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
 FINEST	thread=1	[null] released write lock for product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
 FINEST	thread=1	[null] stored product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
-FINE	thread=1	[null] indexer downloaded product id=urn:usgs-product:us:origin:usc00053hg:1311534397000 in 4 ms
+FINE	thread=1	[null] indexer downloaded product id=urn:usgs-product:us:origin:usc00053hg:1311534397000 in 3 ms
 FINER	thread=1	[null] summarizing product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
 FINER	thread=1	[null] indexing product id=urn:usgs-product:us:origin:usc00053hg:1311534397000
 FINEST	thread=1	[null] beginning index transaction
 FINER	thread=1	[null] finding previous version
+FINER	thread=1	Executing query SELECT * FROM productSummary p WHERE p.id = (SELECT id FROM productSummary ps WHERE ps.source='us' AND ps.type='origin' AND ps.code='usc00053hg' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='us' AND type='origin' AND code='usc00053hg'
 FINER	thread=1	[null] finding previous event
 FINEST	thread=1	Product Index Query
 eventSearchType=SEARCH_EVENT_PRODUCTS
@@ -212,6 +216,7 @@ FINER	thread=1	Products in event
 	status=UPDATE, id=urn:usgs-product:us:origin:usc00053hg:1311534397000, eventid=usc00053hg, latitude=37.7580, longitude=141.5398, time=Sun Jul 24 12:51:25 MDT 2011
 FINEST	thread=1	[null] Updated event properties in Product Index
 FINER	thread=1	[null] committing transaction
+FINER	thread=33	[null] running listener cleanup
 FINE	thread=1	[null] notifying listeners
 INFO	thread=1	[null] indexed product id=urn:usgs-product:us:origin:usc00053hg:1311534397000, status=UPDATE
 EVENT_ADDED null =&gt; usc00053hg
@@ -236,6 +241,7 @@ FINER	thread=1	[null] summarizing product id=urn:usgs-product:us:focal-mechanism
 FINER	thread=1	[null] indexing product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000
 FINEST	thread=1	[null] beginning index transaction
 FINER	thread=1	[null] finding previous version
+FINER	thread=1	Executing query SELECT * FROM productSummary p WHERE p.id = (SELECT id FROM productSummary ps WHERE ps.source='us' AND ps.type='focal-mechanism' AND ps.code='usc00053hg-neic-mwc' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='us' AND type='focal-mechanism' AND code='usc00053hg-neic-mwc'
 FINER	thread=1	[null] finding previous event
 FINEST	thread=1	Product Index Query
 eventSearchType=SEARCH_EVENT_PRODUCTS
@@ -314,7 +320,7 @@ FINER	thread=1	[null] committing transaction
 FINE	thread=1	[null] notifying listeners
 INFO	thread=1	[null] indexed product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000, status=UPDATE
 EVENT_UPDATED usc00053hg =&gt; usc00053hg
-FINE	thread=1	[null] indexer processed product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000 in 25 ms (0 ms sync delay)
+FINE	thread=1	[null] indexer processed product id=urn:usgs-product:us:focal-mechanism:usc00053hg-neic-mwc:1311537586000 in 22 ms (0 ms sync delay)
 FINEST	thread=1	[null] storing product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
 FINEST	thread=1	[null] acquiring write lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
 FINEST	thread=1	[null] acquired write lock for product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
@@ -335,6 +341,7 @@ FINER	thread=1	[null] summarizing product id=urn:usgs-product:nc:origin:nc716066
 FINER	thread=1	[null] indexing product id=urn:usgs-product:nc:origin:nc71606670:1311633433000
 FINEST	thread=1	[null] beginning index transaction
 FINER	thread=1	[null] finding previous version
+FINER	thread=1	Executing query SELECT * FROM productSummary p WHERE p.id = (SELECT id FROM productSummary ps WHERE ps.source='nc' AND ps.type='origin' AND ps.code='nc71606670' AND ps.status &lt;&gt; 'DELETE' ORDER BY ps.updateTime DESC LIMIT 1) AND source='nc' AND type='origin' AND code='nc71606670'
 FINER	thread=1	[null] finding previous event
 FINEST	thread=1	Product Index Query
 eventSearchType=SEARCH_EVENT_PRODUCTS
@@ -399,7 +406,7 @@ FINER	thread=1	[null] committing transaction
 FINE	thread=1	[null] notifying listeners
 INFO	thread=1	[null] indexed product id=urn:usgs-product:nc:origin:nc71606670:1311633433000, status=UPDATE
 EVENT_ADDED null =&gt; nc71606670
-FINE	thread=1	[null] indexer processed product id=urn:usgs-product:nc:origin:nc71606670:1311633433000 in 33 ms (0 ms sync delay)
+FINE	thread=1	[null] indexer processed product id=urn:usgs-product:nc:origin:nc71606670:1311633433000 in 28 ms (0 ms sync delay)
 </pre>
 </span>
 </div>
@@ -411,7 +418,7 @@ FINE	thread=1	[null] indexer processed product id=urn:usgs-product:nc:origin:nc7
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 7.3</a> at Sep 16, 2022, 9:05:30 PM</p>
+<a href="http://www.gradle.org">Gradle 7.3</a> at Oct 11, 2022, 12:22:27 PM</p>
 </div>
 </div>
 </body>

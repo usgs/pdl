@@ -760,15 +760,13 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <div class="block">Build a list of all the pieces of the WHERE clause relevant to the
  productSummary table.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/indexer/JDBCProductIndex.html#buildProductQuery(java.util.List)">buildProductQuery(List&lt;String&gt;)</a></span> - Method in class gov.usgs.earthquake.indexer.<a href="gov/usgs/earthquake/indexer/JDBCProductIndex.html" title="class in gov.usgs.earthquake.indexer">JDBCProductIndex</a></dt>
+<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/indexer/JDBCProductIndex.html#buildProductQuery(gov.usgs.earthquake.indexer.ProductIndexQuery)">buildProductQuery(ProductIndexQuery)</a></span> - Method in class gov.usgs.earthquake.indexer.<a href="gov/usgs/earthquake/indexer/JDBCProductIndex.html" title="class in gov.usgs.earthquake.indexer">JDBCProductIndex</a></dt>
 <dd>
-<div class="block">Create the full SELECT query for the products table using the clauseList
- as the WHERE clause.</div>
+<div class="block">Create the full SELECT query for the products table using the default clauseList.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/indexer/JDBCProductIndex.html#buildProductQuery(java.util.List,java.lang.String)">buildProductQuery(List&lt;String&gt;, String)</a></span> - Method in class gov.usgs.earthquake.indexer.<a href="gov/usgs/earthquake/indexer/JDBCProductIndex.html" title="class in gov.usgs.earthquake.indexer">JDBCProductIndex</a></dt>
+<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/indexer/JDBCProductIndex.html#buildProductQuery(gov.usgs.earthquake.indexer.ProductIndexQuery,java.util.List)">buildProductQuery(ProductIndexQuery, List&lt;String&gt;)</a></span> - Method in class gov.usgs.earthquake.indexer.<a href="gov/usgs/earthquake/indexer/JDBCProductIndex.html" title="class in gov.usgs.earthquake.indexer">JDBCProductIndex</a></dt>
 <dd>
-<div class="block">Create the full SELECT query for the products table using the clauseList
- as the WHERE clause</div>
+<div class="block">Create the full SELECT query for the products table using a custom clauseList.</div>
 </dd>
 <dt><a href="gov/usgs/earthquake/product/ByteContent.html" title="class in gov.usgs.earthquake.product"><span class="typeNameLink">ByteContent</span></a> - Class in <a href="gov/usgs/earthquake/product/package-summary.html">gov.usgs.earthquake.product</a></dt>
 <dd>
@@ -882,6 +880,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">How long to wait until checking for expired notifications/products.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html#cleanupThread">cleanupThread</a></span> - Variable in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html" title="class in gov.usgs.earthquake.distribution">NotificationIndexCleanup</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gov/usgs/earthquake/util/RoundRobinQueue.html#clear()">clear()</a></span> - Method in class gov.usgs.earthquake.util.<a href="gov/usgs/earthquake/util/RoundRobinQueue.html" title="class in gov.usgs.earthquake.util">RoundRobinQueue</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/HeartbeatStatus.html#clearDataOlderThanDate(java.util.Date)">clearDataOlderThanDate(Date)</a></span> - Method in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/HeartbeatStatus.html" title="class in gov.usgs.earthquake.distribution">HeartbeatStatus</a></dt>
@@ -5792,6 +5792,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">Configuration parameter for include types list.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html#index">index</a></span> - Variable in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html" title="class in gov.usgs.earthquake.distribution">NotificationIndexCleanup</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gov/usgs/earthquake/indexer/Indexer.html#INDEX_ARCHIVE_INTERVAL_PROPERTY">INDEX_ARCHIVE_INTERVAL_PROPERTY</a></span> - Static variable in class gov.usgs.earthquake.indexer.<a href="gov/usgs/earthquake/indexer/Indexer.html" title="class in gov.usgs.earthquake.indexer">Indexer</a></dt>
 <dd>
 <div class="block">Configurable property for index archive internal</div>
@@ -6381,6 +6383,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">Write properties to a PrintWriter.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html#listener">listener</a></span> - Variable in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html" title="class in gov.usgs.earthquake.distribution">NotificationIndexCleanup</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/DefaultNotificationReceiver.html#LISTENER_NOTIFIER_PROPERTY">LISTENER_NOTIFIER_PROPERTY</a></span> - Static variable in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/DefaultNotificationReceiver.html" title="class in gov.usgs.earthquake.distribution">DefaultNotificationReceiver</a></dt>
 <dd>
 <div class="block">Property for listener notifier</div>
@@ -7032,6 +7036,17 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">Stores and retrieves Notifications.</div>
 </dd>
+<dt><a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html" title="class in gov.usgs.earthquake.distribution"><span class="typeNameLink">NotificationIndexCleanup</span></a> - Class in <a href="gov/usgs/earthquake/distribution/package-summary.html">gov.usgs.earthquake.distribution</a></dt>
+<dd>
+<div class="block">NotificationIndexCleanup manages cleaning up expired notifications.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html#%3Cinit%3E(gov.usgs.earthquake.distribution.NotificationIndex,gov.usgs.earthquake.distribution.NotificationIndexCleanup.Listener)">NotificationIndexCleanup(NotificationIndex, NotificationIndexCleanup.Listener)</a></span> - Constructor for class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html" title="class in gov.usgs.earthquake.distribution">NotificationIndexCleanup</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.Listener.html" title="interface in gov.usgs.earthquake.distribution"><span class="typeNameLink">NotificationIndexCleanup.Listener</span></a> - Interface in <a href="gov/usgs/earthquake/distribution/package-summary.html">gov.usgs.earthquake.distribution</a></dt>
+<dd>
+<div class="block">Interface for cleanup listeners to take additional steps before a
+ notification is removed.</div>
+</dd>
 <dt><a href="gov/usgs/earthquake/distribution/NotificationListener.html" title="interface in gov.usgs.earthquake.distribution"><span class="typeNameLink">NotificationListener</span></a> - Interface in <a href="gov/usgs/earthquake/distribution/package-summary.html">gov.usgs.earthquake.distribution</a></dt>
 <dd>
 <div class="block">Process Notifications of Products.</div>
@@ -7366,10 +7381,16 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">Called when an expired notification is being removed from the index.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/DefaultNotificationReceiver.html#onExpiredNotification(gov.usgs.earthquake.distribution.Notification)">onExpiredNotification(Notification)</a></span> - Method in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/DefaultNotificationReceiver.html" title="class in gov.usgs.earthquake.distribution">DefaultNotificationReceiver</a></dt>
+<dd>
+<div class="block">Callback from the NotificationIndexCleanup thread.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/DefaultNotificationSender.html#onExpiredNotification(gov.usgs.earthquake.distribution.Notification)">onExpiredNotification(Notification)</a></span> - Method in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/DefaultNotificationSender.html" title="class in gov.usgs.earthquake.distribution">DefaultNotificationSender</a></dt>
 <dd>
 <div class="block">Called when a notification expires</div>
 </dd>
+<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.Listener.html#onExpiredNotification(gov.usgs.earthquake.distribution.Notification)">onExpiredNotification(Notification)</a></span> - Method in interface gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.Listener.html" title="interface in gov.usgs.earthquake.distribution">NotificationIndexCleanup.Listener</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gov/usgs/earthquake/eids/EIDSInputWedge.html#onFile(java.io.File)">onFile(File)</a></span> - Method in class gov.usgs.earthquake.eids.<a href="gov/usgs/earthquake/eids/EIDSInputWedge.html" title="class in gov.usgs.earthquake.eids">EIDSInputWedge</a></dt>
 <dd>
 <div class="block">Parses given file, looking for send exceptions and reports statistics</div>
@@ -9076,6 +9097,18 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">Remove a notification listener.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/aws/JsonNotificationIndex.html#removeNotifications(java.util.List)">removeNotifications(List&lt;Notification&gt;)</a></span> - Method in class gov.usgs.earthquake.aws.<a href="gov/usgs/earthquake/aws/JsonNotificationIndex.html" title="class in gov.usgs.earthquake.aws">JsonNotificationIndex</a></dt>
+<dd>
+<div class="block">Remove notifications from index.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/JDBCNotificationIndex.html#removeNotifications(java.util.List)">removeNotifications(List&lt;Notification&gt;)</a></span> - Method in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/JDBCNotificationIndex.html" title="class in gov.usgs.earthquake.distribution">JDBCNotificationIndex</a></dt>
+<dd>
+<div class="block">Remove notifications from the index.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/NotificationIndex.html#removeNotifications(java.util.List)">removeNotifications(List&lt;Notification&gt;)</a></span> - Method in interface gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/NotificationIndex.html" title="interface in gov.usgs.earthquake.distribution">NotificationIndex</a></dt>
+<dd>
+<div class="block">Remove notifications from index.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="gov/usgs/earthquake/eids/QuakemlUtils.html#removePhaseData(org.quakeml_1_2.Event)">removePhaseData(Event)</a></span> - Static method in class gov.usgs.earthquake.eids.<a href="gov/usgs/earthquake/eids/QuakemlUtils.html" title="class in gov.usgs.earthquake.eids">QuakemlUtils</a></dt>
 <dd>
 <div class="block">Similar to <a href="gov/usgs/earthquake/eids/QuakemlUtils.html#hasPhaseData(org.quakeml_1_2.Event)"><code>QuakemlUtils.hasPhaseData(Event)</code></a>, but empties any lists that have
@@ -9312,6 +9345,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dt><span class="memberNameLink"><a href="gov/usgs/earthquake/aws/AwsProductReceiver.html#run()">run()</a></span> - Method in class gov.usgs.earthquake.aws.<a href="gov/usgs/earthquake/aws/AwsProductReceiver.html" title="class in gov.usgs.earthquake.aws">AwsProductReceiver</a></dt>
 <dd>
 <div class="block">Catch up process.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html#run()">run()</a></span> - Method in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html" title="class in gov.usgs.earthquake.distribution">NotificationIndexCleanup</a></dt>
+<dd>
+<div class="block">Notification cleanup thread loop.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/ReplicationStorageListener.ReplicationTask.html#run()">run()</a></span> - Method in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/ReplicationStorageListener.ReplicationTask.html" title="class in gov.usgs.earthquake.distribution">ReplicationStorageListener.ReplicationTask</a></dt>
 <dd>&nbsp;</dd>
@@ -10811,6 +10848,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">Closes the JDBC connection and all it's associated prepared statements.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html#shutdown()">shutdown()</a></span> - Method in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html" title="class in gov.usgs.earthquake.distribution">NotificationIndexCleanup</a></dt>
+<dd>
+<div class="block">Stop cleanup process.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/ProductBuilder.html#shutdown()">shutdown()</a></span> - Method in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/ProductBuilder.html" title="class in gov.usgs.earthquake.distribution">ProductBuilder</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/ProductClient.html#shutdown()">shutdown()</a></span> - Method in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/ProductClient.html" title="class in gov.usgs.earthquake.distribution">ProductClient</a></dt>
@@ -11210,6 +11251,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <div class="block">Connects to the JDBC DB index and prepares the DML/Query statements that
  will execute at runtime.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html#startup()">startup()</a></span> - Method in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html" title="class in gov.usgs.earthquake.distribution">NotificationIndexCleanup</a></dt>
+<dd>
+<div class="block">Start cleanup process.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/ProductBuilder.html#startup()">startup()</a></span> - Method in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/ProductBuilder.html" title="class in gov.usgs.earthquake.distribution">ProductBuilder</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/ProductClient.html#startup()">startup()</a></span> - Method in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/ProductClient.html" title="class in gov.usgs.earthquake.distribution">ProductClient</a></dt>
@@ -11545,6 +11590,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">SVN Id property.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html#syncObject">syncObject</a></span> - Variable in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html" title="class in gov.usgs.earthquake.distribution">NotificationIndexCleanup</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gov/usgs/util/ExecutorTask.html#syncObject">syncObject</a></span> - Variable in class gov.usgs.util.<a href="gov/usgs/util/ExecutorTask.html" title="class in gov.usgs.util">ExecutorTask</a></dt>
 <dd>
 <div class="block">A synchronized object</div>
@@ -12120,6 +12167,10 @@ the order they are declared.</div>
 <dd>
 <div class="block">Wait for the process to complete, either normally or because its timeout
  was reached.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html#wakeUp()">wakeUp()</a></span> - Method in class gov.usgs.earthquake.distribution.<a href="gov/usgs/earthquake/distribution/NotificationIndexCleanup.html" title="class in gov.usgs.earthquake.distribution">NotificationIndexCleanup</a></dt>
+<dd>
+<div class="block">Wake up the background thread if it is waiting.</div>
 </dd>
 <dt><a href="gov/usgs/earthquake/distribution/WebSocketClient.html" title="class in gov.usgs.earthquake.distribution"><span class="typeNameLink">WebSocketClient</span></a> - Class in <a href="gov/usgs/earthquake/distribution/package-summary.html">gov.usgs.earthquake.distribution</a></dt>
 <dd>

@@ -37,7 +37,7 @@ import gov.usgs.util.Config;
 <span class="fc" id="L37">  protected static final Logger LOGGER = Logger</span>
 <span class="fc" id="L38">          .getLogger(ReliableIndexerListener.class.getName());</span>
 
-  private static final int PRODUCTS_PER_QUERY = 10;
+  private static final int PRODUCTS_PER_QUERY = 1000;
 
 <span class="fc" id="L42">  private boolean stopThread = false;</span>
 <span class="fc" id="L43">  private long lastIndexId = -1;</span>
@@ -110,11 +110,11 @@ import gov.usgs.util.Config;
 <span class="pc bpc" id="L110" title="1 of 4 branches missed.">        if (productList == null || productList.size() == 0) {</span>
           try {
             //Wait when there are no more products to process
-<span class="fc" id="L113">            syncObject.wait();</span>
+<span class="nc" id="L113">            syncObject.wait();</span>
 <span class="fc" id="L114">          } catch (InterruptedException ignore) {</span>
             //Ignore because it's most likely we get interrupted by shutdown
 <span class="fc" id="L116">            LOGGER.log(Level.FINE,&quot;[&quot; + getName() + &quot;] was told to stop, or something went wrong&quot;);</span>
-<span class="fc" id="L117">          }</span>
+<span class="nc" id="L117">          }</span>
 <span class="fc" id="L118">          continue;</span>
         }
 <span class="fc" id="L120">      }</span>
@@ -123,31 +123,33 @@ import gov.usgs.util.Config;
 <span class="fc bfc" id="L123" title="All 2 branches covered.">      for(ProductSummary summary : productList) {</span>
 <span class="fc" id="L124">        LOGGER.log(Level.FINEST,&quot;[&quot; + getName() + &quot;] preparing to process product &quot; + summary.getIndexId());</span>
         //Check for shutdown every iteration so we don't hog shutdown time
-<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        if (stopThread) {</span>
-<span class="nc" id="L127">          break;</span>
-        }
+<span class="fc" id="L126">        synchronized(syncObject) {</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">          if (stopThread) {</span>
+<span class="nc" id="L128">            break;</span>
+          }
+<span class="fc" id="L130">        }</span>
         try {
           //Process the product types we're told to in configuration
-<span class="fc" id="L131">          LOGGER.log(Level.FINEST,&quot;[&quot; + getName() + &quot;] determining if we can process product &quot; + summary.getIndexId());</span>
-<span class="pc bpc" id="L132" title="1 of 2 branches missed.">          if (accept(summary.getId())) {</span>
-<span class="fc" id="L133">            LOGGER.log(Level.FINEST,&quot;[&quot; + getName() + &quot;] attempting to process product &quot; + summary.getIndexId());</span>
-<span class="fc" id="L134">            this.processProduct(summary);</span>
+<span class="fc" id="L133">          LOGGER.log(Level.FINEST,&quot;[&quot; + getName() + &quot;] determining if we can process product &quot; + summary.getIndexId());</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">          if (accept(summary.getId())) {</span>
+<span class="fc" id="L135">            LOGGER.log(Level.FINEST,&quot;[&quot; + getName() + &quot;] attempting to process product &quot; + summary.getIndexId());</span>
+<span class="fc" id="L136">            this.processProduct(summary);</span>
           }
           //Update internal storage so we don't reprocess products
-<span class="fc" id="L137">          this.setLastIndexId(summary.getIndexId());</span>
-<span class="nc" id="L138">        } catch (Exception e) {</span>
+<span class="fc" id="L139">          this.setLastIndexId(summary.getIndexId());</span>
+<span class="nc" id="L140">        } catch (Exception e) {</span>
           try {
             //Handle exception if we can
-<span class="nc" id="L141">            this.onProcessException(summary,e);</span>
-<span class="nc" id="L142">          } catch(Exception e2) {</span>
+<span class="nc" id="L143">            this.onProcessException(summary,e);</span>
+<span class="nc" id="L144">          } catch(Exception e2) {</span>
             //Give up if we can't
-<span class="nc" id="L144">            break;</span>
-<span class="nc" id="L145">          }</span>
-<span class="fc" id="L146">        }</span>
-<span class="fc" id="L147">      }</span>
+<span class="nc" id="L146">            break;</span>
+<span class="nc" id="L147">          }</span>
+<span class="fc" id="L148">        }</span>
+<span class="fc" id="L149">      }</span>
 
-<span class="fc" id="L149">    }</span>
-<span class="fc" id="L150">  }</span>
+<span class="fc" id="L151">    }</span>
+<span class="fc" id="L152">  }</span>
 
   /**
    * Starts thread
@@ -159,11 +161,14 @@ import gov.usgs.util.Config;
    */
   @Override
   public void startup() throws Exception{
-<span class="fc" id="L162">    super.startup();</span>
-<span class="fc" id="L163">    this.onBeforeProcessThreadStart();</span>
-<span class="fc" id="L164">    this.processThread = new Thread(this);</span>
-<span class="fc" id="L165">    this.processThread.start();</span>
-<span class="fc" id="L166">  }</span>
+<span class="fc" id="L164">    super.startup();</span>
+<span class="fc" id="L165">    this.onBeforeProcessThreadStart();</span>
+<span class="fc" id="L166">    synchronized(syncObject) {</span>
+<span class="fc" id="L167">      stopThread = false;</span>
+<span class="fc" id="L168">      this.processThread = new Thread(this);</span>
+<span class="fc" id="L169">    }</span>
+<span class="fc" id="L170">    this.processThread.start();</span>
+<span class="fc" id="L171">  }</span>
 
   /**
    * Closes thread
@@ -173,27 +178,27 @@ import gov.usgs.util.Config;
   @Override
   public void shutdown() throws Exception {
     try {
-<span class="fc" id="L176">      LOGGER.log(Level.FINEST,&quot;[&quot; + getName() + &quot;] trying to shut down...&quot;);</span>
-<span class="fc" id="L177">      stopThread = true;</span>
+<span class="fc" id="L181">      LOGGER.log(Level.FINEST,&quot;[&quot; + getName() + &quot;] trying to shut down...&quot;);</span>
       //When the thread is ready, tell it to stop
-<span class="fc" id="L179">      synchronized (syncObject) {</span>
-<span class="fc" id="L180">        this.processThread.interrupt();</span>
-<span class="fc" id="L181">      }</span>
-<span class="fc" id="L182">      this.processThread.join();</span>
+<span class="fc" id="L183">      synchronized (syncObject) {</span>
+<span class="fc" id="L184">        stopThread = true;</span>
+<span class="fc" id="L185">        this.processThread.interrupt();</span>
+<span class="fc" id="L186">      }</span>
+<span class="fc" id="L187">      this.processThread.join();</span>
     } finally {
-<span class="fc" id="L184">      super.shutdown();</span>
+<span class="fc" id="L189">      super.shutdown();</span>
     }
-<span class="fc" id="L186">  }</span>
+<span class="fc" id="L191">  }</span>
 
   /** @return ProductIndex */
   public ProductIndex getProductIndex() {
-<span class="nc" id="L190">    return this.productIndex;</span>
+<span class="nc" id="L195">    return this.productIndex;</span>
   }
 
   /** @param productIndex to set */
   public void setProductIndex(ProductIndex productIndex) {
-<span class="fc" id="L195">    this.productIndex = productIndex;</span>
-<span class="fc" id="L196">  }</span>
+<span class="fc" id="L200">    this.productIndex = productIndex;</span>
+<span class="fc" id="L201">  }</span>
 
 
   ////////////////////////
@@ -205,7 +210,7 @@ import gov.usgs.util.Config;
    * @return lastIndexId
    */
   public long getLastIndexId() {
-<span class="fc" id="L208">    return lastIndexId;</span>
+<span class="fc" id="L213">    return lastIndexId;</span>
   }
 
   /**
@@ -213,8 +218,8 @@ import gov.usgs.util.Config;
    * @param lastIndexId to set
    */
   public void setLastIndexId(final long lastIndexId) {
-<span class="fc" id="L216">    this.lastIndexId = lastIndexId;</span>
-<span class="fc" id="L217">  }</span>
+<span class="fc" id="L221">    this.lastIndexId = lastIndexId;</span>
+<span class="fc" id="L222">  }</span>
 
   /**
    * Run before thread start.
@@ -223,7 +228,7 @@ import gov.usgs.util.Config;
    */
   protected void onBeforeProcessThreadStart() throws Exception {
     //Do database call to update lastIndexId
-<span class="fc" id="L226">  }</span>
+<span class="fc" id="L231">  }</span>
 
   /**
    * Exception handling for product fetch
@@ -232,8 +237,8 @@ import gov.usgs.util.Config;
    * @throws Exception in case we can't handle the first exception
    */
   protected void onProductGetException(Exception e) throws Exception {
-<span class="nc" id="L235">    LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] Exception getting next products&quot;, e);</span>
-<span class="nc" id="L236">  }</span>
+<span class="nc" id="L240">    LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] Exception getting next products&quot;, e);</span>
+<span class="nc" id="L241">  }</span>
 
   /**
    * Exception handling for product processing.
@@ -244,8 +249,8 @@ import gov.usgs.util.Config;
    * @throws Exception in case we can't handle the first exception.
    */
   protected void onProcessException(ProductSummary product, Exception e) throws Exception {
-<span class="nc" id="L247">    LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] Exception processing product &quot; + product.getId(), e);</span>
-<span class="nc" id="L248">  }</span>
+<span class="nc" id="L252">    LOGGER.log(Level.WARNING, &quot;[&quot; + getName() + &quot;] Exception processing product &quot; + product.getId(), e);</span>
+<span class="nc" id="L253">  }</span>
 
   /**
    * Gets the next products using the index provided in Config
@@ -254,12 +259,12 @@ import gov.usgs.util.Config;
    * @throws Exception if we have a database issue
    */
   public List&lt;ProductSummary&gt; getNextProducts() throws Exception{
-<span class="fc" id="L257">    ProductIndexQuery query = new ProductIndexQuery();</span>
-<span class="fc" id="L258">    query.setLimit(PRODUCTS_PER_QUERY);</span>
-<span class="fc" id="L259">    query.setOrderBy(JDBCProductIndex.SUMMARY_PRODUCT_INDEX_ID); //Currently the only public field; should maybe change</span>
-<span class="fc" id="L260">    query.setMinProductIndexId(this.getLastIndexId()+1);</span>
+<span class="fc" id="L262">    ProductIndexQuery query = new ProductIndexQuery();</span>
+<span class="fc" id="L263">    query.setLimit(PRODUCTS_PER_QUERY);</span>
+<span class="fc" id="L264">    query.setOrderBy(JDBCProductIndex.SUMMARY_PRODUCT_INDEX_ID); //Currently the only public field; should maybe change</span>
+<span class="fc" id="L265">    query.setMinProductIndexId(this.getLastIndexId()+1);</span>
 
-<span class="fc" id="L262">    return productIndex.getProducts(query);</span>
+<span class="fc" id="L267">    return productIndex.getProducts(query);</span>
   }
 
   /**
@@ -270,10 +275,10 @@ import gov.usgs.util.Config;
    */
   public void processProduct(final ProductSummary product) throws Exception {
     //Do stuff
-<span class="fc" id="L273">    LOGGER.log(Level.FINE,&quot;[&quot; + getName() + &quot;] processing product &quot; + product.getId());</span>
-<span class="fc" id="L274">  }</span>
+<span class="fc" id="L278">    LOGGER.log(Level.FINER,&quot;[&quot; + getName() + &quot;] processing product &quot; + product.getId());</span>
+<span class="fc" id="L279">  }</span>
 
 
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

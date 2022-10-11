@@ -26,7 +26,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6};
+var data = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -133,7 +133,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <pre>public interface <span class="typeNameLabel">NotificationIndex</span>
 extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util">Configurable</a></pre>
 <div class="block">Stores and retrieves Notifications.
- 
+
  This is typically used by a NotificationReceiver to track its Notifications,
  but may also be used by NotificationListeners. Each object should maintain a
  separate NotificationIndex.</div>
@@ -205,6 +205,13 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <div class="block">Remove a notification from the index.</div>
 </td>
 </tr>
+<tr id="i6" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#removeNotifications(java.util.List)">removeNotifications</a></span>&#8203;(java.util.List&lt;<a href="Notification.html" title="interface in gov.usgs.earthquake.distribution">Notification</a>&gt;&nbsp;notifications)</code></th>
+<td class="colLast">
+<div class="block">Remove notifications from index.</div>
+</td>
+</tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.gov.usgs.util.Configurable">
@@ -238,7 +245,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <pre class="methodSignature">void&nbsp;addNotification&#8203;(<a href="Notification.html" title="interface in gov.usgs.earthquake.distribution">Notification</a>&nbsp;notification)
               throws java.lang.Exception</pre>
 <div class="block">Add a notification to the index.
- 
+
  If an identical notification is already in the index, the implementation
  may choose whether or not to store the duplicate information.</div>
 <dl>
@@ -258,13 +265,32 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <pre class="methodSignature">void&nbsp;removeNotification&#8203;(<a href="Notification.html" title="interface in gov.usgs.earthquake.distribution">Notification</a>&nbsp;notification)
                  throws java.lang.Exception</pre>
 <div class="block">Remove a notification from the index.
- 
+
  All matching notifications should be removed from the index.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>notification</code> - the notification to remove.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.lang.Exception</code> - if an error occurs while removing the notification.</dd>
+</dl>
+</li>
+</ul>
+<a id="removeNotifications(java.util.List)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>removeNotifications</h4>
+<pre class="methodSignature">void&nbsp;removeNotifications&#8203;(java.util.List&lt;<a href="Notification.html" title="interface in gov.usgs.earthquake.distribution">Notification</a>&gt;&nbsp;notifications)
+                  throws java.lang.Exception</pre>
+<div class="block">Remove notifications from index.
+
+ Tracker URLs are ignored.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>notifications</code> - notifications to be removed from index</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.Exception</code> - if error occurs</dd>
 </dl>
 </li>
 </ul>
@@ -277,7 +303,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <pre class="methodSignature">java.util.List&lt;<a href="Notification.html" title="interface in gov.usgs.earthquake.distribution">Notification</a>&gt;&nbsp;findNotifications&#8203;(<a href="../product/ProductId.html" title="class in gov.usgs.earthquake.product">ProductId</a>&nbsp;id)
                                         throws java.lang.Exception</pre>
 <div class="block">Search the index for notifications matching id.
- 
+
  If more than one notification matches, all should be returned.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -301,7 +327,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
                                         throws java.lang.Exception</pre>
 <div class="block">Search the index for notifications matching the sources, types, and
  codes.
- 
+
  Only one notification for each unique ProductId
  (source+type+code+updateTime) should be returned. If sources, types,
  and/or codes are null, that parameter should be considered a wildcard. If
@@ -331,7 +357,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
                                         throws java.lang.Exception</pre>
 <div class="block">Search the index for notifications matching the sources, types, and
  codes.
- 
+
  Only one notification for each unique ProductId
  (source+type+code+updateTime) should be returned. If sources, types,
  and/or codes are null, that parameter should be considered a wildcard. If
@@ -358,7 +384,7 @@ extends <a href="../../util/Configurable.html" title="interface in gov.usgs.util
 <pre class="methodSignature">java.util.List&lt;<a href="Notification.html" title="interface in gov.usgs.earthquake.distribution">Notification</a>&gt;&nbsp;findExpiredNotifications()
                                                throws java.lang.Exception</pre>
 <div class="block">Search the index for expired notifications.
- 
+
  All expired notifications, even if duplicate, should be returned.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>

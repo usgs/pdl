@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">1.393s</div>
+<div class="counter">1.263s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,12 +79,12 @@
 </thead>
 <tr>
 <td class="success">testBroadcastOutOfOrder()</td>
-<td class="success">0.018s</td>
+<td class="success">0.012s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testStartCatchUpWhenConnected()</td>
-<td class="success">0.007s</td>
+<td class="success">0.005s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
@@ -94,12 +94,12 @@
 </tr>
 <tr>
 <td class="success">testSwitchToBroadcast()</td>
-<td class="success">0.244s</td>
+<td class="success">0.130s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">testThrottleQueue()</td>
-<td class="success">0.115s</td>
+<td class="success">0.107s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -107,57 +107,57 @@
 <div id="tab1" class="tab">
 <h2>Standard error</h2>
 <span class="code">
-<pre>Sep 16, 2022 9:04:23 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+<pre>Oct 11, 2022 12:21:21 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] onOpen connection_id=test session
-Sep 16, 2022 9:04:23 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+Oct 11, 2022 12:21:21 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] Starting catch up
-Sep 16, 2022 9:04:23 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
-INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2022-09-10T03:04:23.885089Z&quot;}
-Sep 16, 2022 9:04:24 PM gov.usgs.earthquake.aws.AwsProductReceiver onProductsCreatedAfter
+Oct 11, 2022 12:21:21 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2022-10-04T18:21:21.341574Z&quot;}
+Oct 11, 2022 12:21:21 PM gov.usgs.earthquake.aws.AwsProductReceiver onProductsCreatedAfter
 INFO: [null] Caught up, switching to broadcast
-Sep 16, 2022 9:04:24 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+Oct 11, 2022 12:21:21 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] onOpen connection_id=test session
-Sep 16, 2022 9:04:24 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+Oct 11, 2022 12:21:21 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] Starting catch up
-Sep 16, 2022 9:04:24 PM gov.usgs.earthquake.distribution.ExecutorListenerNotifier throttleQueues
+Oct 11, 2022 12:21:21 PM gov.usgs.earthquake.distribution.ExecutorListenerNotifier throttleQueues
 INFO: [null] queueing throttled until below 2500 (size=5001, remaining=?)
-Sep 16, 2022 9:04:24 PM gov.usgs.earthquake.distribution.ExecutorListenerNotifier throttleQueues
+Oct 11, 2022 12:21:21 PM gov.usgs.earthquake.distribution.ExecutorListenerNotifier throttleQueues
 INFO: [null] done throttling (size = 2499)
-Sep 16, 2022 9:04:24 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
-INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2022-09-10T03:04:24.169430Z&quot;}
-Sep 16, 2022 9:04:24 PM gov.usgs.earthquake.aws.AwsProductReceiver run
+Oct 11, 2022 12:21:21 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2022-10-04T18:21:21.534147Z&quot;}
+Oct 11, 2022 12:21:21 PM gov.usgs.earthquake.aws.AwsProductReceiver onClose
+INFO: [null] onClose CloseReason[1001,test going away]
+Oct 11, 2022 12:21:21 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+INFO: [null] onOpen connection_id=test session
+Oct 11, 2022 12:21:21 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+INFO: [null] Starting catch up
+Oct 11, 2022 12:21:21 PM gov.usgs.earthquake.aws.AwsProductReceiver run
 WARNING: Exception sending products_created_after
 java.lang.NullPointerException
 	at gov.usgs.earthquake.aws.AwsProductReceiver.sendProductsCreatedAfter(AwsProductReceiver.java:393)
 	at gov.usgs.earthquake.aws.AwsProductReceiver.run(AwsProductReceiver.java:353)
 	at java.base/java.lang.Thread.run(Thread.java:829)
 
-Sep 16, 2022 9:04:24 PM gov.usgs.earthquake.aws.AwsProductReceiver onClose
-INFO: [null] onClose CloseReason[1001,test going away]
-Sep 16, 2022 9:04:24 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+Oct 11, 2022 12:21:22 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2022-10-04T18:21:21.538922Z&quot;}
+Oct 11, 2022 12:21:22 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] onOpen connection_id=test session
-Sep 16, 2022 9:04:24 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+Oct 11, 2022 12:21:22 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] Starting catch up
-Sep 16, 2022 9:04:25 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
-INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2022-09-10T03:04:24.175996Z&quot;}
-Sep 16, 2022 9:04:25 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
-INFO: [null] onOpen connection_id=test session
-Sep 16, 2022 9:04:25 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
-INFO: [null] Starting catch up
-Sep 16, 2022 9:04:25 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
-INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2022-09-10T03:04:25.187759Z&quot;}
-Sep 16, 2022 9:04:25 PM gov.usgs.earthquake.aws.AwsProductReceiver onProductsCreatedAfter
+Oct 11, 2022 12:21:22 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2022-10-04T18:21:22.549367Z&quot;}
+Oct 11, 2022 12:21:22 PM gov.usgs.earthquake.aws.AwsProductReceiver onProductsCreatedAfter
 INFO: [null] Caught up, switching to broadcast
-Sep 16, 2022 9:04:25 PM gov.usgs.earthquake.aws.AwsProductReceiver onBroadcast
+Oct 11, 2022 12:21:22 PM gov.usgs.earthquake.aws.AwsProductReceiver onBroadcast
 INFO: [null] broadcast ids out of sequence (at 11, received 13), switching to catch up mode
-Sep 16, 2022 9:04:25 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
-INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2022-09-17T03:04:25.190287Z&quot;}
-Sep 16, 2022 9:04:25 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+Oct 11, 2022 12:21:22 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2022-10-11T18:21:22.551277Z&quot;}
+Oct 11, 2022 12:21:22 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] onOpen connection_id=test session
-Sep 16, 2022 9:04:25 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
+Oct 11, 2022 12:21:22 PM gov.usgs.earthquake.aws.AwsProductReceiver onOpen
 INFO: [null] Starting catch up
-Sep 16, 2022 9:04:25 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
-INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2022-09-10T03:04:25.206220Z&quot;}
+Oct 11, 2022 12:21:22 PM gov.usgs.earthquake.aws.TestBasicRemote sendText
+INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot;,&quot;created_after&quot;:&quot;2022-10-04T18:21:22.561681Z&quot;}
 </pre>
 </span>
 </div>
@@ -169,7 +169,7 @@ INFO: sendText called with {&quot;action&quot;:&quot;products_created_after&quot
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 7.3</a> at Sep 16, 2022, 9:05:30 PM</p>
+<a href="http://www.gradle.org">Gradle 7.3</a> at Oct 11, 2022, 12:22:27 PM</p>
 </div>
 </div>
 </body>
